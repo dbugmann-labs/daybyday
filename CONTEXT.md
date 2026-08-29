@@ -9,7 +9,7 @@ Add a term when you catch yourself explaining it twice.
 ## Status
 
 **Product definition began 2026-08-24**, when the development system was signed off. The first
-domain terms were agreed on 2026-08-28 with `EPIC: Daily commitments` (#17) and are below.
+domain terms were agreed on 2026-08-28 with `EPIC: Daily commitments` (#1) and are below.
 Terms are added as they are agreed, one term per thing, the moment you catch yourself
 explaining it twice.
 

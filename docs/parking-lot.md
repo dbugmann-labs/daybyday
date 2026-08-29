@@ -15,7 +15,7 @@ through two rounds of Epic intake is telling you something; either promote it or
 Surfaced 2026-08-28, in the first product-definition conversation.
 
 The entries describing a day screen, its ticks and the schedule behind them were promoted into
-`EPIC: Daily commitments` (#17) on 2026-08-28 and removed. What remains below is either out of
+`EPIC: Daily commitments` (#1) on 2026-08-28 and removed. What remains below is either out of
 that Epic's scope or still an open question inside it. Nothing here is agreed.
 
 ### The seven things being tracked
