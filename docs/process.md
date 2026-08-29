@@ -246,7 +246,11 @@ Every agent session starts from durable files, never from chat history. The cond
 
 **Isolation.** One Story = one change folder = one branch = one git worktree. Change folders never collide, which is OpenSpec's own design claim. The single shared mutable resource is `openspec/specs/`, and it is touched exactly once per Story: the archive commit at Stage 8.
 
-You start with **one concurrent Story**, where two changes cannot possibly race for the same spec file. Worktrees are configured and documented in Phase 2 and stay dormant until you have evidence you need two. Your review capacity, not agent wall-clock, is the constraint.
+You start with **one concurrent Story**, where two changes cannot possibly race for the same spec file. Your review capacity, not agent wall-clock, is the constraint.
+
+**The evidence for worktrees arrived on 2026-08-29 and they are no longer dormant.** Two agents were working in the one clone — one decomposing `FEAT: schedule` into Stories, one building tooling on a `chore/` branch — and the second found itself on a `story/` branch it had deleted, carrying its uncommitted work, because *two agents in one clone share `HEAD`*. A checkout by either moves the other's working tree underneath it and neither is told. Nothing was lost only because both branches pointed at the same commit. The rule is now **one agent per working tree**, with the exact commands and what does and does not carry over in `AGENTS.md` § *Working in parallel*.
+
+Note what this does and does not fix. A worktree isolates `HEAD`, the index and the files; it does nothing about two Stories racing for one file in `openspec/specs/`, which is still decided at Stage 2 by the switch-back trigger below. Working-tree collision and spec collision are separate problems with separate answers, and having one answer is not having both.
 
 **The switch-back trigger.** In-PR archiving is safe while concurrent Stories target *different* capabilities — different capabilities are different files, so git never sees a conflict. If two concurrent Stories ever target the **same** capability, either serialise them or move that pair to separate `archive/<change-id>` PRs landing after each story merges. Do not discover this at merge time: it is a decision made when the second Story is started, at Stage 2.
 

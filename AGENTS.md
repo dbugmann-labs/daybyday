@@ -158,6 +158,43 @@ will write a `design.md` that validates and still fails the DoR.
 
 The rest of the process vocabulary is in `CONTEXT.md`.
 
+## Working in parallel
+
+**Two agents in one clone share `HEAD`.** A checkout by one moves the other's working tree
+underneath it mid-task, and neither is told. This is not hypothetical: it happened on
+2026-08-29, when a session building tooling on a `chore/` branch found itself on a `story/`
+branch another session had created, with its uncommitted work carried along. Nothing was lost
+because both branches pointed at the same commit — that was luck, not design.
+
+**So: one agent per working tree.** If a second agent is working in this repository, or you
+are starting a Story while another is in flight, take a worktree instead of a branch:
+
+```bash
+git fetch origin
+git worktree add ../daybyday-<change-id> -b story/<issue#>-<change-id> origin/main
+cd ../daybyday-<change-id>
+git branch --unset-upstream          # <- same trap as `git checkout -b`; do not skip it
+pnpm install                         # a worktree starts with no node_modules
+```
+
+Work there, push and open the PR from there, and clean up after the merge:
+
+```bash
+cd ../daybyday && git worktree remove ../daybyday-<change-id>
+```
+
+Three things carry over and one does not. Each worktree has its **own `HEAD` and index**, which
+is the whole point. `.git/config` is shared, so `remote.origin.gh-resolved` comes with you and
+`gh` still resolves to `dbugmann-labs/daybyday` — a worktree is not the fresh-clone hazard in
+`docs/agents/issue-tracker.md`. Tracked configuration comes with you, so `.claude/` and its
+`deny` rules load when a session starts at the worktree root. What does **not** carry over is
+anything gitignored: `node_modules`, `CLAUDE.local.md`, `.claude/settings.local.json`. That is
+also the rule's own justification — anything another agent must know goes in a tracked file.
+
+Still one concurrent Story per capability. Worktrees remove the collision in the *working
+tree*; they do nothing about two Stories racing for one file in `openspec/specs/`, which is
+decided at Stage 2. See `docs/process.md` §7.
+
 ## Context discipline
 
 Start every session from durable files, never from chat history. You are given an issue
