@@ -1,9 +1,15 @@
-# The merge-time check. docs/process.md §7 numbers these 1..6; the step names
-# below carry those numbers so a red run maps onto the written process.
+# The merge-time checks. docs/process.md §7 numbers these 1..6; the step names
+# in `verify` carry those numbers so a red run maps onto the written process.
 #
 # Checks 2-6 are bespoke scripts in scripts/. They are the most likely part of
 # this system to rot; docs/retrospective.md section 3 scores whether each one has
 # earned its keep, and is the place to record it when one stops doing so.
+#
+# Two jobs, because the repository holds two languages doing unrelated jobs
+# (ADR 1001). `verify` runs the whole numbered check list on Linux — including
+# check 4, which reads Swift test names out of source text and so needs no
+# Swift toolchain. `swift` exists only to run the product's own tests, and is
+# the one thing here that needs macOS.
 name: CI
 
 on:
@@ -66,3 +72,41 @@ jobs:
 
       - name: 8 · openspec validate --archived
         run: pnpm run spec:validate:archived
+
+  # Standard GitHub-hosted runners, macOS included, are free and unlimited on
+  # public repositories, which ADR 0007 is the reason this repo is. Larger
+  # runners are billed even here, so this stays on a standard one.
+  swift:
+    name: swift
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: toolchain
+        run: swift --version
+
+      # No Swift exists yet — ADR 1001 is the decision, not the first Story. The
+      # job is here so the Story that writes the first test does not also have to
+      # touch CI plumbing. It discovers packages rather than hard-coding a path,
+      # because the package layout is not decided yet either.
+      #
+      # A green run that tested nothing would be worse than a red one, so this
+      # says out loud which case it took. macOS runners default to bash 3.2, so
+      # no mapfile and no arrays.
+      - name: swift test
+        run: |
+          set -eu
+          find . -name Package.swift \
+            -not -path '*/.build/*' \
+            -not -path '*/node_modules/*' \
+            | sort > "$RUNNER_TEMP/swift-packages"
+          if [ ! -s "$RUNNER_TEMP/swift-packages" ]; then
+            echo "No Package.swift in the tree — no Swift tests to run yet."
+            exit 0
+          fi
+          while IFS= read -r manifest; do
+            dir=$(dirname "$manifest")
+            echo "::group::swift test — $dir"
+            ( cd "$dir" && swift test )
+            echo "::endgroup::"
+          done < "$RUNNER_TEMP/swift-packages"
