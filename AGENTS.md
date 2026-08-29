@@ -5,9 +5,11 @@ The full reasoning lives in `docs/process.md`; this file is the operative summar
 
 ## What this repo is
 
-Atlas. The development system is **signed off as of 2026-08-24** and the product is now being
-defined. The scaffolding boundary that told earlier agents to refuse product questions has
-lifted; proposing features, data models and names is in scope.
+DayByDay: an iPhone app for the commitments you owe yourself and the rhythm each one runs on.
+It is built with **Atlas**, the development system this repository was started from and whose
+full history it carries. That development system is **signed off as of 2026-08-24** — here it
+is inherited, not work in progress. The product is defined at Epic level and **Feature
+definition is the next step**; proposing features, data models and names is in scope.
 
 What has not changed is where product detail is allowed to *land*. A feature is real when it
 is a requirement in a capability spec, reached through the pipeline below. Until then it is a

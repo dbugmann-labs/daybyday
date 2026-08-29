@@ -1,13 +1,19 @@
-# Atlas
+# DayByDay
 
-A development system: the specs, gates, agents and checks that produce software here.
+An iPhone app for the commitments you owe yourself and the rhythm each one runs on. Define
+each commitment once, along with the schedule it runs on, then open the app on any day and
+tick off what that day asks for.
 
-The development system was signed off on **2026-08-24** and the product is now being defined.
-What exists today is the machinery — how work is decomposed, how a requirement becomes a test,
-what a human must approve, and what a machine refuses to merge. `src/` holds one 48-line
-command-line entry point that exists only to prove the pipeline runs end to end.
+**Nothing is implemented yet.** The product is defined at Epic level; the next step is Feature
+definition, which is where the first capability spec gets written. What exists today is the
+machinery — how work is decomposed, how a requirement becomes a test, what a human must
+approve, and what a machine refuses to merge. This repository carries the full git history of
+**Atlas**, the development system it was started from, and it is built with that system's
+process. Atlas stays configured as the `upstream` remote so process fixes can be merged down.
 
-So there is not yet much to build *against*. There is a well-defined way to build. Read on.
+`src/` holds one 48-line command-line entry point. It is inherited from Atlas, it exists only
+to prove the pipeline runs end to end, and it is scheduled for removal through a Story whose
+delta carries `REMOVED` requirements — not by hand.
 
 ## The whole process in one paragraph
 

@@ -27,6 +27,12 @@ expected to move.
 Write an ADR when a decision was hard, is expensive to reverse, or would surprise someone
 reading the code later. Do not write one for choices the code already makes obvious.
 
+**Numbering.** This repository shares its history with Atlas, the development system it was
+started from, and may merge process fixes down from it. Numbering both from the same sequence
+would sooner or later have each of them writing a different `0015`. So `0001`–`0999` are
+reserved for Atlas, and **DayByDay's own ADRs start at `1001`**. The fourteen records below
+are Atlas ADRs this project inherits; they are real decisions and they still hold.
+
 | ADR | Decision |
 |---|---|
 | [0001](0001-monorepo.md) | Specs, docs and code live in one repository |
