@@ -105,9 +105,16 @@ human. It holds no work context: it writes no delta, no test and no `src/`. A co
 starts doing the work becomes a long session drifting across several Stories, which
 § *Context discipline* calls a bug.
 
-No subagent can conduct. `orchestrator` has no Agent tool, so it cannot spawn anything — and a
-subagent cannot ask the human a question in any case, which is the same reason rule 6 keeps
-configuration in this session. Gate decisions are authorization. See
+**A subagent could spawn the workers, and still could not conduct.** Nesting is allowed —
+subagents may spawn subagents up to three layers deep, and `orchestrator` is denied the `Agent`
+tool by choice rather than by the harness. What a subagent cannot do is the part that matters:
+`AskUserQuestion` is withheld from every subagent, so it cannot stop mid-run and ask. It runs
+to completion and returns one report. A conductor that cannot ask is not a conductor, because
+every gate is a question. That is the same reason rule 6 keeps configuration in this session —
+gate decisions are authorization, and authorization relayed through another agent is worth
+less. Two further consequences settle it: nested output reaches the human only as the parent's
+summary, so a reviewer's findings would arrive paraphrased by whatever spawned it; and the G4
+marker would be written by an agent one hop further from the human who said the word. See
 `docs/adr/1002-the-conductor-is-the-main-session.md`.
 
 **Every gate stop takes one form**, so the human learns one shape instead of five: what is in

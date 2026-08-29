@@ -11,14 +11,26 @@ human personally invoking six agents in order and knowing, each time, that it wa
 Three things made that harder than it needed to be, and the first is a defect rather than a
 gap.
 
-**The orchestrator was defined to do something it cannot do.** `.claude/agents/orchestrator.md`
+**The orchestrator was defined to do something it had no way to do.** `.claude/agents/orchestrator.md`
 listed "Delegation — hand a subagent a Story issue number and nothing else" as one of its four
 jobs, `AGENTS.md` repeated it, and §6 of the process document described the orchestrator as the
 agent that hands work on. Its frontmatter reads `tools: Read, Grep, Glob, Bash, TodoWrite,
-WebFetch`. There is no Agent tool in that list, so it could never spawn `spec-author`,
+WebFetch`. There is no `Agent` tool in that list, so it could not spawn `spec-author`,
 `implementer`, `reviewer` or `janitor`. The pipeline's stated conductor was in fact a
 specialist that wrote GitHub issues and returned. The human was the conductor all along,
 without the documents ever saying so.
+
+**That is a missing tool, not a missing capability, and the distinction was checked rather than
+assumed.** Claude Code permits nested delegation: a subagent may spawn subagents up to three
+layers deep by default, the `Agent` tool is available to subagents unless withheld, and
+`Agent(type1, type2)` scopes which types a given agent may spawn. So "give the orchestrator the
+`Agent` tool and let it conduct" is a real option, and the first draft of this record wrongly
+implied the harness forbade it. What the harness does forbid is the half that matters:
+`AskUserQuestion` is permanently withheld from every subagent, which cannot stop mid-run to ask
+anything — it runs to completion and returns one report. Every gate is a question. Two further
+properties follow from nesting itself: nested output never reaches the main conversation except
+as the parent's summary, and each layer puts another agent between the human and the record of
+what they decided.
 
 **Nothing answered "where am I?"** `pnpm run checks` answers *is this mergeable*;
 `docs/graph.mmd` draws the issue tree. Neither says *this Story is at Stage 4 and waiting on
@@ -94,11 +106,33 @@ number, and this file stays as the record of where the decision was made and fir
 
 ## Alternatives considered
 
-**Give the orchestrator an Agent tool and let it conduct.** Rejected. A subagent cannot ask the
-human a question, so every gate would round-trip through the main session anyway — losing the
-context that made the presentation worth reading — and hard rule 6 would still keep
-configuration out of its hands. It would also put the agent that writes the tracker in charge
-of deciding when to write to it.
+**Give the orchestrator an `Agent` tool and let it conduct.** This is the strongest
+alternative and it is genuinely available — see the Context above; nesting is permitted. It was
+rejected on three counts, in increasing order of weight.
+
+*Gates become cold restarts.* A subagent cannot ask, so it must terminate at every gate, return,
+and be re-spawned afterwards. That is survivable — `pnpm run status` exists precisely so a cold
+agent can recover its position in one command — but it means the conductor conducts only
+between gates, and between gates there are rarely more than two steps. The value of conducting
+is concentrated exactly where a subagent cannot be.
+
+*The reviewer's findings would arrive paraphrased.* Nested subagent output reaches the main
+conversation only as the parent's summary. At G7 the human would read the reviewer through
+whatever spawned it, and the reviewer's findings are the one artifact that must reach the human
+unmediated — the entire point of an agent that reports and never edits.
+
+*The G4 relay would gain a hop.* The human says "approved" to the session in front of them. If
+the conductor is a subagent, that decision must be relayed to it before the marker is written,
+so the agent recording the gate is not the agent that heard the decision. ADR-0014 rests on
+agents never originating that marker; adding a relay hop makes "did a human actually say this?"
+harder to audit for no gain. It is the same argument hard rule 6 already makes about
+configuration, and gate decisions are authorization in exactly that sense.
+
+What the alternative would have bought is real and is conceded: a main session that stays small
+because the workers' reports land somewhere else. The mitigation is that the conductor holds no
+work context by rule, and `/handoff` between gates is already the answer when a session does
+get long. If that proves insufficient in practice, this is the decision to revisit, and
+`Agent(spec-author, implementer, reviewer, janitor)` is the shape it would take.
 
 **A `G7: reviewed` marker to make Stage 7 observable.** Rejected above: one status line is not
 worth a second gate convention.

@@ -11,8 +11,9 @@ particular to running them in Claude Code.
   `.claude/agents/`. Route by opening the matching agent, not by choosing a model ad hoc.
 - **The conductor.** `/atlas` is this repo's own command, hand-written in
   `.claude/commands/atlas.md`. It is the session talking to you — it spawns the subagents and
-  stops at the gates. No subagent can run it: `orchestrator` holds no Agent tool, and a
-  subagent cannot ask you a question. See `docs/adr/1002-*`.
+  stops at the gates. No subagent can run it — not because nesting is blocked (it is not), but
+  because `AskUserQuestion` is withheld from every subagent, and every gate is a question.
+  See `docs/adr/1002-*`.
 - **Plugin scope.** `mattpocock-skills` is enabled per-project in `.claude/settings.json`.
   Its skills only load in a session started from the repo root, and a fresh install needs a
   session restart before they are invocable.

@@ -16,11 +16,12 @@ here — are in `docs/agents/issue-tracker.md`. Read it before your first API ca
 
 ## You are not the conductor
 
-**You cannot delegate and you must not pretend to.** You have no Agent tool, so you cannot
-spawn `spec-author`, `implementer`, `reviewer` or `janitor`. The session talking to the human
-does that, through `/atlas`. An earlier version of this file told you to "hand a subagent a
-Story issue number"; that instruction described something you were never able to do. See
-`docs/adr/1002-the-conductor-is-the-main-session.md`.
+**You do not delegate, and you must not pretend to.** You hold no `Agent` tool, so you cannot
+spawn `spec-author`, `implementer`, `reviewer` or `janitor`. That is a deliberate omission, not
+a limit of the harness — nesting is permitted, and the tool was withheld because conducting
+belongs to the session that can actually ask the human a question. `/atlas` does that. An
+earlier version of this file told you to "hand a subagent a Story issue number" while giving
+you no way to do it. See `docs/adr/1002-the-conductor-is-the-main-session.md`.
 
 When your work is done, hand back a short report: the issue numbers you created, the edges you
 verified, and what the conductor should do next. Do not attempt the next step yourself.

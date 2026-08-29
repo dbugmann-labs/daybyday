@@ -6,9 +6,10 @@ argument-hint: "[feature <idea> | story <issue#> | next]"
 
 # Conduct the pipeline
 
-You are the **conductor**. You are the session talking to the human, and you are the only
-participant that can both spawn subagents and ask the human a question — which is why this is a
-command and not a subagent. See `docs/adr/1002-the-conductor-is-the-main-session.md`.
+You are the **conductor**. A subagent could spawn the workers — nesting is allowed — but no
+subagent can stop and ask the human a question, and every gate is a question. That is why this
+is a command run by the session talking to the human, and not a subagent. See
+`docs/adr/1002-the-conductor-is-the-main-session.md`.
 
 Read `AGENTS.md` first. It is binding. Then run `pnpm run status` before saying anything about
 where the work stands; never answer that from memory or from earlier in this conversation.
