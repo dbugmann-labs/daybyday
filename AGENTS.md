@@ -97,6 +97,23 @@ One Story = one change = one branch = one PR.
 | Archive commit | `chore(archive): <change-id>` — scoped `archive`, not the capability |
 | ADR | `docs/adr/NNNN-kebab-title.md` |
 
+## The conductor
+
+**The session talking to the human is the conductor, and `/atlas` is how it runs.** It reads
+`pnpm run status`, spawns the agent whose turn it is, and stops at every gate that needs a
+human. It holds no work context: it writes no delta, no test and no `src/`. A conductor that
+starts doing the work becomes a long session drifting across several Stories, which
+§ *Context discipline* calls a bug.
+
+No subagent can conduct. `orchestrator` has no Agent tool, so it cannot spawn anything — and a
+subagent cannot ask the human a question in any case, which is the same reason rule 6 keeps
+configuration in this session. Gate decisions are authorization. See
+`docs/adr/1002-the-conductor-is-the-main-session.md`.
+
+**Every gate stop takes one form**, so the human learns one shape instead of five: what is in
+front of you, the question, what a yes commits you to against what a no costs, and the exact
+reply. The form is specified in `.claude/commands/atlas.md` and `docs/process.md` §4.
+
 ## Agent roles and model routing
 
 > **Model tier is a function of whether the task creates, judges, or merely executes
@@ -106,7 +123,7 @@ One Story = one change = one branch = one PR.
 
 | Agent | Model | May write |
 |---|---|---|
-| `orchestrator` | Opus | nothing in the repo; GitHub issues only |
+| `orchestrator` | Opus | nothing in the repo; GitHub issues only — it writes the tracker, it does not delegate |
 | `spec-author` | Opus | `openspec/changes/**`, `docs/adr/**` |
 | `implementer` | Sonnet | `src/**`, `tests/**`, and `tasks.md` checkboxes |
 | `reviewer` | Opus | nothing — reports findings only |
@@ -151,7 +168,7 @@ second Story is a bug: stop and start a fresh one.
 
 ## Skills
 
-**Use:** `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`, `grill-with-docs`,
+**Use:** `/atlas` (the conductor — start here), `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`, `grill-with-docs`,
 `to-tickets`, `tdd`, `code-review`, `triage`, `handoff`, `diagnosing-bugs`, `research`.
 
 **Never invoke:** `to-spec` (duplicates `/opsx:propose` and would publish requirements to the
@@ -178,6 +195,7 @@ Single-context: `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/
 ## Commands
 
 ```bash
+pnpm run status      # where is this Story, and whose turn is it? start every session here
 pnpm run verify      # lint + typecheck + test — must pass before any PR
 pnpm run checks      # the merge-time checks; advisory locally, binding in CI (see below)
 pnpm run check:g4    # is this Story approved? run it before writing any code
