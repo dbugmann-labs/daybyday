@@ -33,7 +33,32 @@ you are the one who heard them say it.
 |---|---|
 | `/atlas` or `/atlas next` | Read status and take the next step from wherever the work is. |
 | `/atlas feature <idea>` | Intake a feature idea: grill it, then stop at **G1**. |
-| `/atlas story <issue#>` | Check out that Story's branch and drive it from wherever it is. |
+| `/atlas story <issue#>` | Get onto that Story's branch and drive it from wherever it is. |
+
+## Getting onto a Story
+
+Branches are cut at Stage 4, so an open Story usually has no branch yet and
+`git checkout story/...` will fail. Check first, and prefer a worktree:
+
+```bash
+git fetch origin
+git for-each-ref --format='%(refname:short)' refs/heads refs/remotes/origin | grep 'story/<issue#>-'
+```
+
+**If another agent is working in this repository, take a worktree, not a branch.** Two agents
+in one clone share `HEAD`, and a checkout by either moves the other's working tree mid-task.
+`git worktree list` showing one entry is not proof you are alone — ask, or take the worktree
+anyway, since it costs a directory:
+
+```bash
+git worktree add ../daybyday-<change-id> -b story/<issue#>-<change-id> origin/main
+cd ../daybyday-<change-id> && git branch --unset-upstream && pnpm install
+```
+
+Working alone in a fresh clone, the branch form in `AGENTS.md` § *Working a Story* is fine.
+Either way `git branch --unset-upstream` is not optional: both `checkout -b` and `worktree add
+-b` set the upstream to `origin/main`, and a later bare `git push` then targets the protected
+branch. See `AGENTS.md` § *Working in parallel*.
 
 ## The loop
 

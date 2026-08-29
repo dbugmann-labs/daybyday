@@ -133,18 +133,22 @@ The intended rhythm is **four interruptions per Story** — G1, G2, G4, G7 — a
 
 Ten stages, five gates. **Gate** means work stops until a named condition holds. `H` = you sign off, `CI` = machine-checked, `A` = agent-internal.
 
-| # | Stage | Driver | Agent / model | Output | Gate |
+**Every stage is entered by the conductor** — the session running `/atlas`, which reads `pnpm run status` and spawns the agent in the *Runs where* column. The conductor executes no stage itself. *Who decides* is the column that matters when you are asking whether you can walk away: `you` means the pipeline stops until you answer.
+
+| # | Stage | Who decides | Runs where | Output | Gate |
 |---|---|---|---|---|---|
-| 0 | Epic intake | you | `orchestrator` / Opus | Epic issue | — |
-| 1 | Feature definition | you | `orchestrator` / Opus | Feature issue, sub-issue of Epic | **G1 (H)** |
-| 2 | Story decomposition | `/to-tickets` on the Feature | `orchestrator` / Opus | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
-| 3 | Grill | `/grill-with-docs` | `spec-author` / Opus | `design.md` **Open Questions** filled in — "None" is a valid and required answer — plus any new `CONTEXT.md` terms | — |
-| 4 | Propose | `/opsx:propose <change-id>` | `spec-author` / Opus | change folder: proposal, delta specs, design, tasks — cut the branch here, commit as `docs(<capability>): propose <change-id>` | **G4 (H+CI)** ← the hard gate |
-| 5 | Red | first unsatisfied scenario | `implementer` / Sonnet | one failing acceptance test | A |
-| 6 | Green + next | `/opsx:apply` driving `/tdd` | `implementer` / Sonnet | one scenario per cycle until the delta is satisfied | A |
-| 7 | Review | `/code-review` | `reviewer` / Opus | findings, two-axis: standards + spec fidelity | **G7 (H)** |
-| 8 | Archive | `/opsx:archive` on the same branch | `janitor` / Haiku | delta merged into `openspec/specs/`, change moved to `changes/archive/`, PR marked ready | — |
-| 9 | Merge | squash-merge | `janitor` / Haiku | issue auto-closed, parents settled, `docs/graph.mmd` regenerated | **G8 (CI)** |
+| 0 | Epic intake | **you** | `orchestrator` / Opus | Epic issue | — |
+| 1 | Feature definition | **you** | `orchestrator` / Opus | Feature issue, sub-issue of Epic | **G1 (H)** |
+| 2 | Story decomposition | **you** accept; `/to-tickets` proposes | `orchestrator` / Opus | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
+| 3 | Grill | agent, but **you** answer what it cannot | `spec-author` / Opus, via `/grill-with-docs` | `design.md` **Open Questions** filled in — "None" is a valid and required answer — plus any new `CONTEXT.md` terms | — |
+| 4 | Propose | agent writes; **you** approve | `spec-author` / Opus, via `/opsx:propose` | change folder: proposal, delta specs, design, tasks — cut the branch or worktree here, commit as `docs(<capability>): propose <change-id>` | **G4 (H+CI)** ← the hard gate |
+| 5 | Red | agent | `implementer` / Sonnet, via `/tdd` | one failing acceptance test | A |
+| 6 | Green + next | agent | `implementer` / Sonnet, via `/opsx:apply` | one scenario per cycle until the delta is satisfied | A |
+| 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `/code-review` | findings, two-axis: standards + spec fidelity | **G7 (H)** |
+| 8 | Archive | agent | `janitor` / Haiku, via `/opsx:archive` | delta merged into `openspec/specs/`, change moved to `changes/archive/`, PR marked ready | — |
+| 9 | Merge | agent | `janitor` / Haiku | issue auto-closed, parents settled, `docs/graph.mmd` regenerated | **G8 (CI)** |
+
+Read the bold entries down the *Who decides* column and you have your whole obligation: four stops — G1, G2, G4, G7 — plus answering whatever the grill cannot settle on its own. Stages 5, 6, 8 and 9 never wait for you.
 
 ### The gates, precisely
 
