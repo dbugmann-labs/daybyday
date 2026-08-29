@@ -49,3 +49,9 @@ are Atlas ADRs this project inherits; they are real decisions and they still hol
 | [0012](0012-no-project-board.md) | No GitHub Project board; the gate checkboxes are the status |
 | [0013](0013-permission-matrix-enforcement.md) | The write-permission matrix is enforced in three layers, and only partly |
 | [0014](0014-g4-approval-marker.md) | G4 is a relayed human decision, recorded as `G4: approved` and enforced at merge time |
+
+DayByDay's own records start here.
+
+| ADR | Decision |
+|---|---|
+| [1001](1001-swift-and-swiftui.md) | The app is built in Swift and SwiftUI, native to iPhone |
