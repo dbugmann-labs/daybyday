@@ -48,8 +48,9 @@ that Epic's scope or still an open question inside it. Nothing here is agreed.
 
 ### Open, unresolved on purpose
 
-- the stack is decided — Swift and SwiftUI, native iPhone — and still owes ADR 1001; the verified
-  material is in `docs/research/2026-08-29-ios-stack.md`
+- the stack is decided and recorded — Swift and SwiftUI, native iPhone, `docs/adr/1001-swift-and-swiftui.md`.
+  Two things it deliberately left open: SwiftData or GRDB, and how `scripts/check-scenario-coverage.ts`
+  enumerates Swift test names
 - week turnover is undefined: does an unfinished two-of-three vanish, or get recorded as a miss?
 - how far back the past stays writable, and what happens to days before a thing existed
 - "every N days" needs an anchor: N days from a fixed start, or N days from the last tick? the second
