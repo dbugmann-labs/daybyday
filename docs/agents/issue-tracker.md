@@ -1,7 +1,22 @@
 # Issue tracker: GitHub
 
-Issues and specs for this repo live as GitHub issues on `dbugmann-labs/atlas`. Use the `gh`
-CLI for all operations. `gh` infers the repo from `git remote -v` when run inside a clone.
+Issues and specs for this repo live as GitHub issues on `dbugmann-labs/daybyday`. Use the
+`gh` CLI for all operations.
+
+**Pass `--repo dbugmann-labs/daybyday`, or check the default before you trust a bare command.**
+This clone has two remotes: `origin` is `dbugmann-labs/daybyday`, and `upstream` is
+`dbugmann-labs/atlas`, the repository this one was forked from. `gh` does not simply read
+`origin` — for a fork it resolves a *base* repo, and it lands on `daybyday` here only because
+`gh repo set-default` has written `remote.origin.gh-resolved = base` into `.git/config`. That
+file is untracked, so a fresh clone does not have it and bare `gh` commands go ambiguous —
+which, unnoticed, sends issue writes to the fork parent. Confirm with:
+
+```bash
+gh repo set-default --view    # must print dbugmann-labs/daybyday
+```
+
+The repo's own scripts are unaffected: `scripts/lib/ci.ts` derives the slug from
+`git remote get-url origin` directly, never from `gh`.
 
 ## What goes in an issue body
 
@@ -35,7 +50,7 @@ and the PR closes the issue. `docs/graph.mmd` is a read-only projection regenera
   silently produces a typeless issue and breaks the three-level model. Use the API:
 
   ```bash
-  gh api --method POST /repos/dbugmann-labs/atlas/issues \
+  gh api --method POST /repos/dbugmann-labs/daybyday/issues \
     -f title='FEAT: cli-version' \
     -f body="$(cat <<'EOF'
   One sentence of intent. Link to the change folder. Gate checkboxes.
@@ -52,16 +67,47 @@ and the PR closes the issue. `docs/graph.mmd` is a read-only projection regenera
   the wrong issue or fails:
 
   ```bash
-  CHILD_ID=$(gh api /repos/dbugmann-labs/atlas/issues/<child-number> --jq .id)
-  gh api --method POST /repos/dbugmann-labs/atlas/issues/<parent-number>/sub_issues \
+  CHILD_ID=$(gh api /repos/dbugmann-labs/daybyday/issues/<child-number> --jq .id)
+  gh api --method POST /repos/dbugmann-labs/daybyday/issues/<parent-number>/sub_issues \
     -F sub_issue_id="$CHILD_ID"
   ```
 
-  Verify with `gh api /repos/dbugmann-labs/atlas/issues/<parent>/sub_issues --jq '.[].number'`.
+  Verify from **both** ends — a POST that exits 0 is not proof the edge exists:
+
+  ```bash
+  gh api /repos/dbugmann-labs/daybyday/issues/<parent>/sub_issues --jq '.[].number'
+  gh api /repos/dbugmann-labs/daybyday/issues/<child> --jq .parent_issue_url
+  ```
+
+  The child-side field is `parent_issue_url`. There is no `parent` key and no
+  `sub_issue_parent` key: `--jq .sub_issue_parent` returns null on a child that *is* correctly
+  attached, which reads as a missing edge and invites re-POSTing one that already exists.
   **Never fake the edge with a "Parent: #3" line in the body** — `docs/graph.mmd` is generated
   from real sub-issue edges and will not see it.
-- **Read an issue**: `gh issue view <number> --comments`, filtering comments by `jq` and also fetching labels.
-- **List issues**: `gh issue list --state open --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'` with appropriate `--label` and `--state` filters.
+- **Read an issue**: **not** `gh issue view <number> --comments`. In gh 2.83.0 that flag
+  replaces the issue with its comments instead of adding them, so on an issue with no comments
+  it prints *nothing at all* and exits 0 — no title, no body, no error. An agent that starts
+  from it reads silence as a missing issue. Use two calls:
+
+  ```bash
+  gh api /repos/dbugmann-labs/daybyday/issues/<number> \
+    --jq '"#\(.number) [\(.type.name // "no type")] \(.title)\n\n\(.body)"'
+  gh api /repos/dbugmann-labs/daybyday/issues/<number>/comments \
+    --jq '.[] | "--- @\(.user.login) \(.created_at)\n\(.body)"'
+  ```
+
+  The second printing nothing is correct — it was asked only for comments.
+- **Read an issue's type**: API only, as `.type.name`. gh 2.83.0 exposes no `--json` field for
+  it on either `gh issue view` or `gh issue list` — `--json issueType` is rejected as an
+  unknown field — so the type the whole three-level model rests on is invisible to every
+  `gh issue` subcommand:
+
+  ```bash
+  gh api /repos/dbugmann-labs/daybyday/issues \
+    --jq '.[] | "#\(.number) [\(.type.name // "no type")] \(.title)"'
+  ```
+
+- **List issues**: `gh issue list --state open --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'` with appropriate `--label` and `--state` filters. This returns no type; pair it with the call above when type matters.
 - **Comment on an issue**: `gh issue comment <number> --body "..."`
 - **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
 - **Close**: `gh issue close <number> --comment "..."`
@@ -90,7 +136,7 @@ close; closing that Feature makes its Epic ready. Do not try to close a whole br
 tree in one step — check the rollup after each close:
 
 ```bash
-gh api /repos/dbugmann-labs/atlas/issues/<n>/sub_issues \
+gh api /repos/dbugmann-labs/daybyday/issues/<n>/sub_issues \
   --jq '.[] | "#\(.number) \(.title) state=\(.state)"'
 ```
 
@@ -127,7 +173,8 @@ in ordinary prose — an agent writing "still waiting for the approved comment" 
 would forge the gate for any grep-based reader. **Never write the string `G4: approved` on a
 Story issue except as the approval itself.** When discussing the gate, call it "the G4 marker".
 
-Read it with `gh issue view <number> --comments`. `pnpm run check:g4` asserts it, and CI
+Read it with the comments call under **Conventions** above, not `gh issue view --comments`,
+which goes silent on an issue that has none. `pnpm run check:g4` asserts it, and CI
 check 5 blocks the merge if it is missing.
 
 ## Pull requests as a triage surface
@@ -148,7 +195,8 @@ Create a GitHub issue — as a stub, per **What goes in an issue body** above.
 
 ## When a skill says "fetch the relevant ticket"
 
-Run `gh issue view <number> --comments`, then open the change folder it links to. An issue
+Run the two-call read under **Conventions** above, then open the change folder it links to.
+An issue
 read in isolation is not enough to implement from.
 
 ## Wayfinding operations
