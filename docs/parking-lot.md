@@ -49,8 +49,11 @@ that Epic's scope or still an open question inside it. Nothing here is agreed.
 ### Open, unresolved on purpose
 
 - the stack is decided and recorded — Swift and SwiftUI, native iPhone, `docs/adr/1001-swift-and-swiftui.md`.
-  Two things it deliberately left open: SwiftData or GRDB, and how `scripts/check-scenario-coverage.ts`
-  enumerates Swift test names
+  Of the two things it left open, test enumeration is now answered: check 4 reads `@Test("...")`
+  display names out of Swift source, because no Swift tool reports them without going through
+  unpublished internals. **Still open: SwiftData or GRDB**
+- where the Swift package lives, and what the app target is called. CI discovers `Package.swift`
+  rather than assuming, so the first Story can put it wherever it belongs
 - week turnover is undefined: does an unfinished two-of-three vanish, or get recorded as a miss?
 - how far back the past stays writable, and what happens to days before a thing existed
 - "every N days" needs an anchor: N days from a fixed start, or N days from the last tick? the second
