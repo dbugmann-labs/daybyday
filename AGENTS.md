@@ -165,7 +165,7 @@ invoke them by name either.
 
 ### Issue tracker
 
-GitHub Issues on `dbugmann-labs/atlas`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+GitHub Issues on `dbugmann-labs/daybyday`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
