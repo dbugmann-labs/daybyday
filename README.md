@@ -22,7 +22,8 @@ spec that lives forever), and **Stories** (each one an OpenSpec change, one bran
 then archived). Nothing is implemented until its change folder exists, validates, and a human
 has approved it — that is the one hard gate. After approval, an implementer works the change's
 scenarios one at a time, red-green, until every scenario in the delta has a passing acceptance
-test of the same name. The change is then archived as the final commit on the same branch, so
+test of the same name. The pull request opens as a draft the moment the spec is written, so
+both human gates are read as a diff. The change is then archived as the final commit on the same branch, so
 one PR carries the spec, the code and the merge into the source of truth — and CI refuses any
 spec edit that the archived delta does not claim. The repo is authoritative for *content*;
 GitHub is authoritative for *state and order*; nothing is written down twice.
@@ -80,7 +81,8 @@ pnpm run verify      # lint + typecheck + test — must pass before any PR
 `pnpm run checks` is **staged**: mid-Story it reports rather than fails, because a check that
 demanded all four acceptance tests at once would force exactly the bulk transcription
 `AGENTS.md` rule 3 forbids. In CI the same checks bind, because a PR claims the Story is
-finished.
+finished — unless it is still a draft, which is how the PR can be open from Stage 4 without
+four of the eight checks failing by construction.
 
 ## Where things live
 

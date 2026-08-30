@@ -51,6 +51,7 @@ body:
         - label: No open questions left by the grill
         - label: "Change folder exists; `openspec validate <change-id> --strict` exits 0"
         - label: "Seam(s) named in `design.md`"
+        - label: "Draft PR open on the story branch, rebased onto current `main`"
         - label: "A comment on this issue begins `G4: approved` — recorded by a human, or relayed on a human's instruction. No agent may originate it."
   - type: checkboxes
     id: dod
@@ -59,6 +60,7 @@ body:
       options:
         - label: Every scenario in the delta has a passing, name-matched acceptance test
         - label: "`pnpm run verify` green; full CI green"
+        - label: "PR rebased onto current `main` before the review, and out of draft after the archive"
         - label: "`code-review` clean on both axes (**G7**)"
         - label: ADR written if a decision was hard, reversible-with-pain, or surprising
         - label: "`/opsx:archive` run as the last commit on the branch"

@@ -60,6 +60,28 @@ Either way `git branch --unset-upstream` is not optional: both `checkout -b` and
 -b` set the upstream to `origin/main`, and a later bare `git push` then targets the protected
 branch. See `AGENTS.md` § *Working in parallel*.
 
+## The PR both gates are read through
+
+**One draft PR per Story, open from Stage 4 to merge.** It is the surface G4 and G7 are read on,
+so before you present either gate, check `pnpm run status`: it reports the PR, whether it is
+still a draft, and how many commits `main` has moved past it, and it will hand the step back to
+an agent rather than to the human if either is wrong.
+
+- **Opened at Stage 4** by `spec-author`, right after the change folder is committed:
+  `git push -u origin story/<issue#>-<change-id>` then
+  `gh pr create --draft --base main --title '<change-id>' --body 'Closes #<issue#>'`.
+- **Draft is a signal.** CI skips checks 3, 4, 5 and 8 — the four that assert the Story is
+  finished — while the PR is a draft, and binds them when the janitor runs `gh pr ready` at
+  Stage 8. So the draft's CI is green and worth quoting at G4.
+- **Refreshed before each gate**, by whichever agent's turn it is:
+  `git fetch origin && git rebase origin/main` then
+  `git push --force-with-lease origin story/<issue#>-<change-id>`. A rebase conflict inside the
+  change folder or `openspec/specs/` is a stop, not a merge you resolve — `main` moved under
+  this Story and the human decides what that means.
+
+You do not run these yourself; they belong to the agent doing the stage. What is yours is
+refusing to present a gate whose diff is missing or stale.
+
 ## The loop
 
 Repeat until you hit a gate:
@@ -78,15 +100,15 @@ times per Story, not sixteen.
 
 ## The gate stop
 
-Every gate looks the same, so the human learns one shape instead of five. Four parts, in this
+Every gate looks the same, so the human learns one shape instead of five. Five parts, in this
 order, and nothing else:
 
 ```
 G4 — Spec approved                                     Story #12 add-schedule-rules
 
 What is in front of you
-  openspec/changes/add-schedule-rules/proposal.md
-  openspec/changes/add-schedule-rules/specs/schedule/spec.md — 4 scenarios
+  https://github.com/dbugmann-labs/daybyday/pull/21 (draft, rebased on main)
+  proposal.md, and specs/schedule/spec.md — 4 scenarios
   The decision it turns on: an "every N days" rule anchors to a fixed start
   date, not to the last tick.
 
@@ -95,6 +117,11 @@ The question
 
 What yes commits you to        Four red-green cycles, roughly a session's work.
 What no costs                  Rewriting the delta. Cheap here; expensive at review.
+
+Recommendation
+  Approve. The four scenarios cover both edges we argued about, and the anchor
+  decision is the cheaper of the two to live with. I would not hold this for
+  the naming question — that is a rename later, not a respec.
 
 Reply
   approved            → I record `G4: approved` on #12 and start the implementer
@@ -106,6 +133,20 @@ decisions the proposal turns on — a human who reads only your summary should s
 a real decision, not rubber-stamping. No praise, no recap of the pipeline, no options they did
 not ask for.
 
+**Always recommend.** There is a decision on the table at every gate, so name the reply you
+would choose and give the one reason — in two or three lines, not a case. A gate you have no
+view on is a gate you have not read. Three things it must not become:
+
+- **Not a prediction of what they want.** Recommend what you would do, then say plainly if you
+  think they will disagree.
+- **Not loyalty to your own subagent.** You spawned the `spec-author` whose delta is on the
+  table; recommending `changes:` against it is the thing that makes the other recommendations
+  worth reading. Being asked twice is not a reason to soften — but once they reaffirm, it is
+  decided: say so and move on.
+- **Not manufactured neutrality.** If the choice is genuinely a preference only they hold —
+  two names, two orderings, neither cheaper — say that in one line and say what you would pick
+  anyway. "No recommendation" is an answer you have to earn, not a default.
+
 ## The gates you stop at
 
 **G1 — Feature ready.** One capability, its slug decided, one parent Epic. Challenge the idea
@@ -115,12 +156,14 @@ it is over-engineered or where a cheaper thing would do. On approval, the `orche
 creates the issue and the sub-issue edge, and verifies the edge from both ends.
 
 **G2 — Decomposition accepted.** Every Story one sentence of intent, edges declared and
-acyclic. Iterate until the human says yes.
+acyclic. Recommend a split or a merge where you see one, and say which Story you would build
+first. Iterate until the human says yes.
 
 **G4 — Spec approved.** The hard gate. `openspec validate --strict` exits 0, `design.md` names
 a seam and leaves no open question, and every requirement has scenarios covering its edges and
-not only its happy path. **You never originate this decision.** A human says approved; you
-relay it:
+not only its happy path. **Lead with the PR link** — the draft is open by now and the change
+folder reads far better as a diff than as a list of paths. **You never originate this
+decision.** A human says approved; you relay it:
 
 ```bash
 gh issue comment <issue#> --body 'G4: approved — authorised by <name>'
@@ -129,8 +172,10 @@ gh issue comment <issue#> --body 'G4: approved — authorised by <name>'
 Never write that string on a Story issue for any other reason — including while explaining
 that you are waiting for it. Call it "the G4 marker" instead. See `docs/adr/0014-*`.
 
-**G7 — Review clean.** Present the reviewer's findings, most severe first. The implementer
-fixes; the reviewer never edits.
+**G7 — Review clean.** Present the reviewer's findings, most severe first, with the same PR
+link — it now carries the whole Story. The implementer fixes; the reviewer never edits. Your
+recommendation here is which findings must be fixed before the archive and which are a Story of
+their own — say it, rather than handing over an undifferentiated list.
 
 ## Intake: `/atlas feature <idea>`
 

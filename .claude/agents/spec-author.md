@@ -33,15 +33,31 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
 4. **Name the seam** in `design.md`. Acceptance tests attach there. Fewer seams are better and
    an existing seam beats a new one.
 5. **Validate.** `openspec validate <change-id> --strict` must exit 0 before you hand back.
+6. **Open the draft PR.** G4 is read as a diff, so leave one behind. Commit the change folder
+   as `docs(<capability>): propose <change-id>`, make sure the branch sits on current `main`,
+   push, and open it:
+
+   ```bash
+   git fetch origin && git rebase origin/main
+   git push -u origin story/<issue#>-<change-id>
+   gh pr create --draft --base main --title '<change-id>' --body 'Closes #<issue#>'
+   ```
+
+   Draft, always: CI reads that as "not finished" and skips the four checks that assert a
+   finished Story, so the PR you hand over is green rather than a red X the human learns to
+   ignore. `Closes #<issue#>` is what auto-closes the Story on merge. If the branch was already
+   pushed, refresh it instead — `git push --force-with-lease` after the rebase — and say so.
+   A rebase conflict in the change folder or `openspec/specs/` is a stop: another Story landed
+   on this capability while yours was being written (rule 5).
 
 Scenario titles are contracts: an acceptance test will carry each one verbatim, and CI checks
 it. Write them as behaviour a test can assert, and do not restate them once written.
 
 ## Where you stop
 
-You stop when the change folder validates. You do not implement, and you do not comment
-`approved` — G4 is the human reading your proposal and signing it. Say plainly that the Story
-is waiting on that comment.
+You stop when the change folder validates and its draft PR is open. You do not implement, and
+you do not comment `approved` — G4 is the human reading your PR and signing it. Hand back the
+PR URL and say plainly that the Story is waiting on that comment.
 
 If writing the delta reveals the Story is wrong — two capabilities, or a requirement that
 belongs to a different Feature — stop and say so. Rule 5. A Story that is wrong at G4 is cheap;

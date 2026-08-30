@@ -8,7 +8,7 @@
 
 ## 0. The whole process in one paragraph
 
-Work is decomposed into **Epics** (coordination only), **Features** (each one a capability spec that lives forever), and **Stories** (each one an OpenSpec change, one branch, one PR, then archived). Nothing is implemented until its change folder exists, validates, and has been approved by a human — that is the one hard gate. After approval, an implementer works the change's scenarios one at a time, red-green, until every scenario in the delta has a passing acceptance test of the same name. The change is then archived as the final commit on the same branch, so one PR carries the spec, the code and the merge into the source of truth — and CI refuses any spec edit that the archived delta does not claim. The repo is authoritative for *content*; GitHub is authoritative for *state and order*; nothing is written down twice.
+Work is decomposed into **Epics** (coordination only), **Features** (each one a capability spec that lives forever), and **Stories** (each one an OpenSpec change, one branch, one PR, then archived). Nothing is implemented until its change folder exists, validates, and has been approved by a human — that is the one hard gate. After approval, an implementer works the change's scenarios one at a time, red-green, until every scenario in the delta has a passing acceptance test of the same name. The pull request opens as a draft the moment the spec is written, so both human gates are read as a diff rather than as a folder. The change is then archived as the final commit on the same branch, so one PR carries the spec, the code and the merge into the source of truth — and CI refuses any spec edit that the archived delta does not claim. The repo is authoritative for *content*; GitHub is authoritative for *state and order*; nothing is written down twice.
 
 If you can say that paragraph from memory, you know the process.
 
@@ -33,7 +33,7 @@ This is what removes double bookkeeping. `to-tickets` normally writes acceptance
 
 **Traceability** is one-way and write-once. The Story issue is created by the agent at Stage 2 via `gh api --method POST .../issues` — not `gh issue create`, which cannot set an issue type — titled with the change-id. The branch name embeds both the issue number and the change-id. The PR closes the issue. Nothing syncs back. The dependency graph (`docs/graph.mmd`) is *regenerated read-only* by `pnpm run graph` on demand — it is a projection, never an input. That generator reads the GraphQL API, because `gh issue list --json` exposes neither the issue type nor the sub-issue edge and so cannot produce the file. See `docs/agents/issue-tracker.md`.
 
-`pnpm run status` is the second projection and follows the same rule. It derives a Story's stage from the branch, the change folder, `openspec validate`, the G4 comment, the scenario coverage and the `tasks.md` boxes, and says whose turn it is. It is read-only, derived on demand, and consumed by no check — deleting it would cost information, not correctness. If it disagrees with the change folder or the tracker, status is what is wrong. See ADR-1002.
+`pnpm run status` is the second projection and follows the same rule. It derives a Story's stage from the branch, the change folder, `openspec validate`, the G4 comment, the scenario coverage, the `tasks.md` boxes and the pull request — whether it exists, whether it is still a draft, and how far `main` has moved past it — and says whose turn it is. It is read-only, derived on demand, and consumed by no check — deleting it would cost information, not correctness. If it disagrees with the change folder or the tracker, status is what is wrong. See ADR-1002.
 
 > Rejected alternative: a bidirectional sync script. It is the highest-maintenance component in any setup like this and it fails silently. Write-once creation plus a read-only projection gets ~90% of the value with none of the drift.
 
@@ -141,11 +141,11 @@ Ten stages, five gates. **Gate** means work stops until a named condition holds.
 | 1 | Feature definition | **you** | `orchestrator` / Opus | Feature issue, sub-issue of Epic | **G1 (H)** |
 | 2 | Story decomposition | **you** accept; `/to-tickets` proposes | `orchestrator` / Opus | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
 | 3 | Grill | agent, but **you** answer what it cannot | `spec-author` / Opus, via `/grill-with-docs` | `design.md` **Open Questions** filled in — "None" is a valid and required answer — plus any new `CONTEXT.md` terms | — |
-| 4 | Propose | agent writes; **you** approve | `spec-author` / Opus, via `/opsx:propose` | change folder: proposal, delta specs, design, tasks — cut the branch or worktree here, commit as `docs(<capability>): propose <change-id>` | **G4 (H+CI)** ← the hard gate |
+| 4 | Propose | agent writes; **you** approve | `spec-author` / Opus, via `/opsx:propose` | change folder: proposal, delta specs, design, tasks — cut the branch or worktree here, commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
 | 5 | Red | agent | `implementer` / Sonnet, via `/tdd` | one failing acceptance test | A |
-| 6 | Green + next | agent | `implementer` / Sonnet, via `/opsx:apply` | one scenario per cycle until the delta is satisfied | A |
-| 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `/code-review` | findings, two-axis: standards + spec fidelity | **G7 (H)** |
-| 8 | Archive | agent | `janitor` / Haiku, via `/opsx:archive` | delta merged into `openspec/specs/`, change moved to `changes/archive/`, PR marked ready | — |
+| 6 | Green + next | agent | `implementer` / Sonnet, via `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes | A |
+| 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `/code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity | **G7 (H)** |
+| 8 | Archive | agent | `janitor` / Haiku, via `/opsx:archive` | delta merged into `openspec/specs/`, change moved to `changes/archive/`, PR taken out of draft with `gh pr ready` | — |
 | 9 | Merge | agent | `janitor` / Haiku | issue auto-closed, parents settled, `docs/graph.mmd` regenerated | **G8 (CI)** |
 
 Read the bold entries down the *Who decides* column and you have your whole obligation: four stops — G1, G2, G4, G7 — plus answering whatever the grill cannot settle on its own. Stages 5, 6, 8 and 9 never wait for you.
@@ -160,28 +160,44 @@ Read the bold entries down the *Who decides* column and you have your whole obli
 - `openspec validate <change-id> --strict` exits 0
 - the delta uses ADDED / MODIFIED / REMOVED correctly against current specs
 - every requirement has at least one scenario, and the error/edge cases have scenarios, not just the happy path
+- a **draft pull request** is open on the branch and rebased onto current `main`
 - you have read `proposal.md` and the delta, and the Story issue carries a comment beginning `G4: approved`
 
 No implementation commit may precede that comment. Enforcement is CI check 5 in §7.
 
 The **decision** must be a human's; the keystrokes need not be. A human may say "approved" and have an agent record it. The marker is the exact line `G4: approved`, not the bare word, because "approved" occurs constantly in ordinary prose and an agent writing *"waiting on the approved comment"* would otherwise forge the gate for any grep-based reader.
 
-**G7 — Review clean.** `code-review` reports no unresolved findings on either axis. The reviewer never edits code; it reports and the implementer fixes.
+**G7 — Review clean.** `code-review` reports no unresolved findings on either axis. The reviewer never edits code; it reports and the implementer fixes. The same PR is refreshed against `main` first, so what is reviewed is what will merge.
 
 **G8 — CI green.** The only gate between a finished Story and `main`. It now also carries what used to be a separate archive gate: `openspec validate --archived` proves every `tasks.md` box is ticked, and spec-diff containment proves the archive touched only capabilities the delta claims. See §7 for the exact check list.
 
 Archiving happens on the story branch as the last commit, not in a follow-up PR. The review at G7 runs *before* the archive commit, so the reviewer sees the change folder at the path you approved at G4.
 
+### The PR is the gate surface
+
+**The pull request opens at Stage 4, as a draft, and the two human gates are read through it.** At G4 it holds one commit — the change folder — and at G7 it holds the whole Story. That is one URL, one diff view, and one place where CI's verdict is already visible next to the thing you are being asked to judge. The alternative, which this replaced, was a gate presented as a list of file paths for you to open by hand, and a PR that appeared only once everything was already built.
+
+Three consequences follow, and all three are mechanical rather than matters of taste:
+
+**Draft is a signal, not decoration.** A draft PR asserts the Story is *not* finished, which is the exact opposite of what four of the eight merge-time checks in §7 test — single-change, scenario coverage, G4 recorded, archive complete. Those four are skipped while the PR is a draft and bind the moment the janitor runs `gh pr ready` at Stage 8. The other four run throughout, so a draft still tells you whether the branch lints, typechecks, tests, validates and stays inside its capabilities. This is why `ready_for_review` is in the workflow's trigger list: it is not one of GitHub's default `pull_request` event types, and without it the full check list would first run on whatever push happened to come next.
+
+**The branch is rebased onto `origin/main` before each gate**, with `git push --force-with-lease`. A rebase rather than a merge, so the PR shows the Story's own commits and nothing else. The reason is not tidiness: a delta's ADDED / MODIFIED claims are written against the specs as they stand, and `main` moving underneath the branch can invalidate them without touching a file in it. A conflict that lands inside the change folder or `openspec/specs/` is the §7 spec collision arriving late — stop and report it rather than resolving it.
+
+**Nothing about the G4 gate itself moves.** The approval is still a human's comment on the Story issue, still the exact line `G4: approved`, still CI check 5. The PR is where you read the thing you are approving; the issue is still where the decision is recorded, because that is what check 5 reads and what a merged, deleted branch leaves behind. See `docs/adr/1003-the-pr-is-the-gate-surface.md`.
+
 ### What a gate stop looks like
 
-Every gate is presented in the same four parts, so you learn one shape rather than five. This is not decoration: a gate whose presentation is improvised each time is a gate that quietly becomes a rubber stamp, and G4 is the one the whole requirement set rests on.
+Every gate is presented in the same five parts, so you learn one shape rather than five. This is not decoration: a gate whose presentation is improvised each time is a gate that quietly becomes a rubber stamp, and G4 is the one the whole requirement set rests on.
 
-1. **What is in front of you** — the files you must actually read, and the one or two decisions the work turns on. Named specifically enough that reading only the summary is still a real decision.
+1. **What is in front of you** — the PR link, and the one or two decisions the work turns on. Named specifically enough that reading only the summary is still a real decision.
 2. **The question** — one sentence, answerable yes or no.
 3. **What a yes commits you to, against what a no costs.** Both, always. A gate that only states the upside is asking for assent, not for judgement.
-4. **The exact reply** — the word, or the runnable command.
+4. **The recommendation** — which reply the conductor would choose, and the one reason. Two or three lines, never a case.
+5. **The exact reply** — the word, or the runnable command.
 
 Nothing else: no praise, no recap of the pipeline, no options you did not ask for. The form is specified for agents in `.claude/commands/atlas.md`.
+
+**Why the recommendation is part of the form rather than a courtesy.** You work four to eight hours a week and the gate arrives after an agent has spent an hour on the thing being judged. Without a stated lean, the cheapest reply is always yes, and a gate that is cheapest to approve is a rubber stamp with extra steps. A recommendation is also falsifiable in a way a summary is not: the conductor spawned the `spec-author` whose delta is on the table, so a recommendation of "changes:" against its own subagent's output is the signal that the other recommendations were read rather than relayed. What it must never be is a prediction of what you want, or a reason to answer without opening the PR — the recommendation is an argument you can reject, not the decision.
 
 ---
 
@@ -195,6 +211,8 @@ Nothing else: no praise, no recap of the pipeline, no options you did not ask fo
 | `chore/<slug>` | **no** | yes | no — but `.openspec.yaml` sets `skip_specs: true` if a change folder exists |
 
 The `chore/` lane is the deliberate escape hatch. Without it, a one-line dependency bump would need an Epic, and you would abandon the process within a month. Chore branches are for work with no behaviour change: tooling, dependency bumps, docs, CI. If you find yourself reaching for `chore/` to add behaviour, that is the process telling you to write a Story.
+
+**One PR per Story, open from Stage 4 to merge.** It is created as a draft as soon as the change folder is committed, updated by every implementation push, rebased onto `origin/main` before G4 and again before G7, and taken out of draft by the janitor once the archive commit lands. A `chore/` branch opens its PR whenever it is ready to be read — there are no gates on that lane.
 
 **Ruleset on `main`** (free org + public repo, so this costs nothing): require a pull request, require status checks to pass, require linear history, block force-push, **zero required approvals**. Required approvals are theatre when you are the only human; the status checks are the real gate.
 
@@ -271,6 +289,8 @@ Note what this does and does not fix. A worktree isolates `HEAD`, the index and 
 
 Checks 2–6 are bespoke scripts in `scripts/`. They are the most likely part of this system to rot. `docs/retrospective.md` §3 scores whether they earned their keep after the first end-to-end Story: none has yet blocked a bad merge, check 3 is now first on the cut list, and check 4 justifies itself by pacing the red-green loop rather than by ever failing.
 
+**Four of the eight are skipped while the PR is a draft** — 3, 4, 5 and 8, the ones that ask whether the Story is finished. The PR opens at Stage 4, before any code exists, so on the day it opens those four would fail by construction: nothing is archived, no scenario is covered, and G4 has not been given yet. Skipping them is what makes an early PR usable rather than a permanent red X you learn to ignore. Checks 1, 2, 6 and 7 run on every push from the first one, so a draft still proves the branch validates, stays inside its capabilities, keeps its commit history clean, and lints, typechecks and tests. `gh pr ready` at Stage 8 restores the full list, and the workflow subscribes to `ready_for_review` so that it actually runs then. ADR-1003 records what this gives up: a draft cannot be merged, so nothing those four guard can land while they are skipped, but a Story now learns about a coverage or containment failure when the draft is lifted rather than on every push. `pnpm run checks` locally is the earlier warning.
+
 **Checks 3 and 4 are staged.** Run locally on a Story still in flight they report rather than fail — the single-change rule reads "still active" until the archive at Stage 8, and scenario coverage reports how many scenarios are covered and names the next one. Failing locally would demand every acceptance test at once, which is precisely the bulk transcription §8 forbids. In CI they bind, because a PR asserts the Story is finished.
 
 **What check 5 can and cannot prove.** Agents act through the repository owner's token, so no check can prove a human rather than an agent wrote a comment. Check 5 proves the decision was *recorded*, which converts a silent omission into a blocked merge. The gate's integrity rests on agents never originating the marker — stated in `AGENTS.md` rule 1 and in `docs/agents/issue-tracker.md`. ADR-0014 records why the marker is `G4: approved` and not the bare word.
@@ -306,6 +326,7 @@ The seam is agreed *before* any test is written, per the `tdd` skill — the few
 - [ ] No open questions left by the grill
 - [ ] Change folder exists; `openspec validate <change-id> --strict` exits 0
 - [ ] Seam(s) named in `design.md`
+- [ ] Draft PR open on the branch, rebased onto current `main`
 - [ ] Human `approved` comment on the issue (**G4**)
 
 **Who ticks a box.** Whoever can verify the condition: the orchestrator ticks G1 and G2, the implementer ticks the machine-checkable DoR and DoD boxes. Ticking asserts the condition holds, not that a human looked. The one line no agent may write is the G4 marker, which is a comment rather than a checkbox precisely so the two cannot be confused.
@@ -314,6 +335,7 @@ The seam is agreed *before* any test is written, per the `tdd` skill — the few
 
 - [ ] Every scenario in the delta has a passing, name-matched acceptance test
 - [ ] `pnpm run verify` green; full CI green
+- [ ] PR rebased onto current `main` before the review, and out of draft after the archive
 - [ ] `code-review` clean on both axes
 - [ ] ADR written if a decision was hard, reversible-with-pain, or surprising
 - [ ] `/opsx:archive` run as the last commit on the branch: `openspec/specs/` updated, change under `changes/archive/`, every `tasks.md` box ticked
