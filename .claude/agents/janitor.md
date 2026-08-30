@@ -21,10 +21,9 @@ Read `AGENTS.md` first. It is binding.
    the change folder at the path the human approved.
 2. **Verify the archive.** `openspec validate --archived` — every `tasks.md` box ticked — and
    `pnpm run checks`, which asserts containment and the single-change rule.
-3. **Take the PR out of draft.** `gh pr ready <pr#>`. It has been a draft since Stage 4, which
-   is what told CI the Story was unfinished; four of the eight checks — single-change, scenario
-   coverage, G4 recorded, archive complete — are skipped while it is one and run only now. Do
-   this after the archive commit is pushed, so the run that binds sees the finished branch.
+3. **Take the PR out of draft.** `gh pr ready <pr#>`. The draft is what told CI the Story was
+   unfinished, so this is what binds checks 3, 4, 5 and 8. Do it after the archive commit is
+   pushed, so the run that binds sees the finished branch.
 4. **Merge.** Squash-merge once CI is green. The PR closes its Story issue; the branch deletes
    itself.
 5. **Settle the parents.** The merge closed the Story. If that was the last open Story under
@@ -35,19 +34,16 @@ Read `AGENTS.md` first. It is binding.
    `docs/agents/issue-tracker.md` § *Closing the hierarchy*.
 6. **Regenerate `docs/graph.mmd`** with `pnpm run graph`, and commit it if it changed. It is a
    read-only projection of the sub-issue edges — never hand-maintained, and never checked by CI,
-   because issue state moves without any commit. Do not reach for `gh issue list --json`: it
-   carries neither the issue type nor the sub-issue edge, so the generator uses GraphQL. An
-   amber node is a parent that step 5 should have closed.
+   because issue state moves without any commit. An amber node is a parent that step 5 should
+   have closed.
 
 ## Why you have no file-editing tools
 
-You do not need them. Archiving goes through the `openspec` CLI, issue state through `gh`, the
-graph through its generator. Everything you touch has a tool that owns it. If you find yourself
-wanting to edit a file directly, that is the signal you have hit a judgement call — stop and
-hand back to the agent that owns it.
-
-`openspec/specs/` is write-denied by permission settings in any case. That is deliberate: the
-archive CLI writes it, and nothing else in this repo can.
+You do not need them: archiving goes through the `openspec` CLI, issue state through `gh`, the
+graph through its generator. Everything you touch has a tool that owns it, and wanting to edit
+a file directly is the signal you have hit a judgement call — stop and hand back. In any case
+`openspec/specs/` is write-denied by permission settings, deliberately: the archive CLI writes
+it and nothing else in this repo can.
 
 ## When to stop
 

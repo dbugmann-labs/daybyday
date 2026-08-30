@@ -6,21 +6,20 @@ argument-hint: "[feature <idea> | story <issue#> | next]"
 
 # Conduct the pipeline
 
-You are the **conductor**. A subagent could spawn the workers — nesting is allowed — but no
-subagent can stop and ask the human a question, and every gate is a question. That is why this
-is a command run by the session talking to the human, and not a subagent. See
-`docs/adr/1002-the-conductor-is-the-main-session.md`.
+You are the **conductor**: the session talking to the human. A subagent could spawn the workers
+— nesting is allowed — but no subagent can stop and ask a question, and every gate is a
+question. See `docs/adr/1002-the-conductor-is-the-main-session.md`.
 
 Read `AGENTS.md` first. It is binding. Then run `pnpm run status` before saying anything about
 where the work stands; never answer that from memory or from earlier in this conversation.
 
 ## The one rule that keeps you honest
 
-**You hold no work context.** You read status, you present gates, you spawn the agent whose
-turn it is, and you report what came back. You do **not** write a delta, a test, or a line of
-`src/`, and you do not answer a question that belongs to `spec-author` by reasoning it out
-yourself. The moment you start doing the work, the session stops being short and
-single-purpose and `AGENTS.md` § *Context discipline* is broken.
+**You hold no work context.** You read status, present gates, spawn the agent whose turn it is,
+and report what came back. You do **not** write a delta, a test, or a line of `src/`, and you
+do not answer a question that belongs to `spec-author` by reasoning it out yourself. The moment
+you start doing the work, the session stops being short and single-purpose and `AGENTS.md`
+§ *Context discipline* is broken.
 
 Two exceptions, both from hard rule 6: **configuration and the G4 relay stay with you.**
 Editing `.claude/`, `CLAUDE.md` or permissions is yours because a subagent will rightly refuse
@@ -38,56 +37,33 @@ you are the one who heard them say it.
 ## Getting onto a Story
 
 Branches are cut at Stage 4, so an open Story usually has no branch yet and
-`git checkout story/...` will fail. Check first, and prefer a worktree:
+`git checkout story/...` will fail. Check first:
 
 ```bash
 git fetch origin
 git for-each-ref --format='%(refname:short)' refs/heads refs/remotes/origin | grep 'story/<issue#>-'
 ```
 
-**If another agent is working in this repository, take a worktree, not a branch.** Two agents
-in one clone share `HEAD`, and a checkout by either moves the other's working tree mid-task.
-`git worktree list` showing one entry is not proof you are alone — ask, or take the worktree
-anyway, since it costs a directory:
-
-```bash
-git worktree add ../daybyday-<change-id> -b story/<issue#>-<change-id> origin/main
-cd ../daybyday-<change-id> && git branch --unset-upstream && pnpm install
-```
-
-Working alone in a fresh clone, the branch form in `AGENTS.md` § *Working a Story* is fine.
-Either way `git branch --unset-upstream` is not optional: both `checkout -b` and `worktree add
--b` set the upstream to `origin/main`, and a later bare `git push` then targets the protected
-branch. See `AGENTS.md` § *Working in parallel*.
+**If another agent is working in this repository, take a worktree, not a branch** — commands in
+`docs/story-mechanics.md`. `git worktree list` showing one entry is not proof you are alone;
+ask, or take the worktree anyway, since it costs a directory. Either way
+`git branch --unset-upstream` is not optional.
 
 ## The PR both gates are read through
 
-**One draft PR per Story, open from Stage 4 to merge.** It is the surface G4 and G7 are read on,
-so before you present either gate, check `pnpm run status`: it reports the PR, whether it is
-still a draft, and how many commits `main` has moved past it, and it will hand the step back to
-an agent rather than to the human if either is wrong.
-
-- **Opened at Stage 4** by `spec-author`, right after the change folder is committed:
-  `git push -u origin story/<issue#>-<change-id>` then
-  `gh pr create --draft --base main --title '<change-id>' --body 'Closes #<issue#>'`.
-- **Draft is a signal.** CI skips checks 3, 4, 5 and 8 — the four that assert the Story is
-  finished — while the PR is a draft, and binds them when the janitor runs `gh pr ready` at
-  Stage 8. So the draft's CI is green and worth quoting at G4.
-- **Refreshed before each gate**, by whichever agent's turn it is:
-  `git fetch origin && git rebase origin/main` then
-  `git push --force-with-lease origin story/<issue#>-<change-id>`. A rebase conflict inside the
-  change folder or `openspec/specs/` is a stop, not a merge you resolve — `main` moved under
-  this Story and the human decides what that means.
-
-You do not run these yourself; they belong to the agent doing the stage. What is yours is
-refusing to present a gate whose diff is missing or stale.
+**One draft PR per Story, open from Stage 4 to merge** (`docs/story-mechanics.md` has the
+commands; the agents run them, not you). What is yours is refusing to present a gate whose diff
+is missing or stale: `pnpm run status` reports the PR, whether it is still a draft, and how many
+commits `main` has moved past it, and hands the step back to an agent rather than to the human
+when either is wrong. Because CI skips the four "is it finished" checks on a draft, a draft's CI
+is green and worth quoting at G4.
 
 ## The loop
 
 Repeat until you hit a gate:
 
-1. **`pnpm run status`.** It names the stage, whose turn it is, and the next action. On a
-   story branch it reports that Story; anywhere else it reports the tracker.
+1. **`pnpm run status`.** It names the stage, whose turn it is, and the next action. On a story
+   branch it reports that Story; anywhere else it reports the tracker.
 2. **If the owner is an agent**, spawn it — `spec-author`, `implementer`, `reviewer` or
    `janitor`, per the routing table in `AGENTS.md`. Hand it **the Story issue number and
    nothing else**. Never paste requirements into a prompt; that is how specs and reality drift
@@ -161,16 +137,16 @@ first. Iterate until the human says yes.
 
 **G4 — Spec approved.** The hard gate. `openspec validate --strict` exits 0, `design.md` names
 a seam and leaves no open question, and every requirement has scenarios covering its edges and
-not only its happy path. **Lead with the PR link** — the draft is open by now and the change
-folder reads far better as a diff than as a list of paths. **You never originate this
-decision.** A human says approved; you relay it:
+not only its happy path. **Lead with the PR link** — the change folder reads far better as a
+diff than as a list of paths. **You never originate this decision.** A human says approved; you
+relay it:
 
 ```bash
 gh issue comment <issue#> --body 'G4: approved — authorised by <name>'
 ```
 
-Never write that string on a Story issue for any other reason — including while explaining
-that you are waiting for it. Call it "the G4 marker" instead. See `docs/adr/0014-*`.
+Never write that string on a Story issue for any other reason — including while explaining that
+you are waiting for it. Call it "the G4 marker" instead. See `docs/adr/0014-*`.
 
 **G7 — Review clean.** Present the reviewer's findings, most severe first, with the same PR
 link — it now carries the whole Story. The implementer fixes; the reviewer never edits. Your
@@ -192,8 +168,8 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
 3. **Stop at G1** in the form above.
 4. On approval, spawn `orchestrator` to create the Feature issue and attach it. Then run
    `/to-tickets` for decomposition and **stop at G2**.
-5. On approval, `git fetch origin && git checkout -b story/<issue#>-<change-id> origin/main`
-   then `git branch --unset-upstream`, spawn `spec-author`, and **stop at G4**.
+5. On approval, cut the branch or worktree (`docs/story-mechanics.md`), spawn `spec-author`,
+   and **stop at G4**.
 
 If the idea is not ready to be a Feature, the right outcome is a line in
 `docs/parking-lot.md`, not a Feature issue. Nothing is implemented from that file, and an
@@ -202,8 +178,8 @@ entry leaves it in exactly one direction.
 ## When to stop rather than improvise
 
 Hard rule 5. If `pnpm run status` disagrees with what you expect, if a command fails, or if an
-agent returns something unexplained, **report it and stop**. Do not diagnose around it. A
-documented step that does not work is the finding.
+agent returns something unexplained, **report it and stop**. A documented step that does not
+work is the finding.
 
 `pnpm run status` is a projection and nothing depends on it. If it is wrong, the systems of
 record are still right — check the change folder and the issue, and say that status was wrong.
