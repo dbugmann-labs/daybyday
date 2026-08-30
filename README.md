@@ -67,6 +67,7 @@ pnpm run verify      # lint + typecheck + test — must pass before any PR
 
 | Command | What it does |
 |---|---|
+| `pnpm run status` | where is this Story, and whose turn is it? start every session here |
 | `pnpm run verify` | lint, typecheck, test — the gate before any PR |
 | `pnpm run checks` | the five merge-time checks; advisory locally, binding in CI |
 | `pnpm run check:g4` | is this Story approved? run it before writing any code |

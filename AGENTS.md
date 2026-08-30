@@ -97,6 +97,30 @@ One Story = one change = one branch = one PR.
 | Archive commit | `chore(archive): <change-id>` — scoped `archive`, not the capability |
 | ADR | `docs/adr/NNNN-kebab-title.md` |
 
+## The conductor
+
+**The session talking to the human is the conductor, and `/atlas` is how it runs.** It reads
+`pnpm run status`, spawns the agent whose turn it is, and stops at every gate that needs a
+human. It holds no work context: it writes no delta, no test and no `src/`. A conductor that
+starts doing the work becomes a long session drifting across several Stories, which
+§ *Context discipline* calls a bug.
+
+**A subagent could spawn the workers, and still could not conduct.** Nesting is allowed —
+subagents may spawn subagents up to three layers deep, and `orchestrator` is denied the `Agent`
+tool by choice rather than by the harness. What a subagent cannot do is the part that matters:
+`AskUserQuestion` is withheld from every subagent, so it cannot stop mid-run and ask. It runs
+to completion and returns one report. A conductor that cannot ask is not a conductor, because
+every gate is a question. That is the same reason rule 6 keeps configuration in this session —
+gate decisions are authorization, and authorization relayed through another agent is worth
+less. Two further consequences settle it: nested output reaches the human only as the parent's
+summary, so a reviewer's findings would arrive paraphrased by whatever spawned it; and the G4
+marker would be written by an agent one hop further from the human who said the word. See
+`docs/adr/1002-the-conductor-is-the-main-session.md`.
+
+**Every gate stop takes one form**, so the human learns one shape instead of five: what is in
+front of you, the question, what a yes commits you to against what a no costs, and the exact
+reply. The form is specified in `.claude/commands/atlas.md` and `docs/process.md` §4.
+
 ## Agent roles and model routing
 
 > **Model tier is a function of whether the task creates, judges, or merely executes
@@ -106,7 +130,7 @@ One Story = one change = one branch = one PR.
 
 | Agent | Model | May write |
 |---|---|---|
-| `orchestrator` | Opus | nothing in the repo; GitHub issues only |
+| `orchestrator` | Opus | nothing in the repo; GitHub issues only — it writes the tracker, it does not delegate |
 | `spec-author` | Opus | `openspec/changes/**`, `docs/adr/**` |
 | `implementer` | Sonnet | `src/**`, `tests/**`, and `tasks.md` checkboxes |
 | `reviewer` | Opus | nothing — reports findings only |
@@ -141,6 +165,43 @@ will write a `design.md` that validates and still fails the DoR.
 
 The rest of the process vocabulary is in `CONTEXT.md`.
 
+## Working in parallel
+
+**Two agents in one clone share `HEAD`.** A checkout by one moves the other's working tree
+underneath it mid-task, and neither is told. This is not hypothetical: it happened on
+2026-08-29, when a session building tooling on a `chore/` branch found itself on a `story/`
+branch another session had created, with its uncommitted work carried along. Nothing was lost
+because both branches pointed at the same commit — that was luck, not design.
+
+**So: one agent per working tree.** If a second agent is working in this repository, or you
+are starting a Story while another is in flight, take a worktree instead of a branch:
+
+```bash
+git fetch origin
+git worktree add ../daybyday-<change-id> -b story/<issue#>-<change-id> origin/main
+cd ../daybyday-<change-id>
+git branch --unset-upstream          # <- same trap as `git checkout -b`; do not skip it
+pnpm install                         # a worktree starts with no node_modules
+```
+
+Work there, push and open the PR from there, and clean up after the merge:
+
+```bash
+cd ../daybyday && git worktree remove ../daybyday-<change-id>
+```
+
+Three things carry over and one does not. Each worktree has its **own `HEAD` and index**, which
+is the whole point. `.git/config` is shared, so `remote.origin.gh-resolved` comes with you and
+`gh` still resolves to `dbugmann-labs/daybyday` — a worktree is not the fresh-clone hazard in
+`docs/agents/issue-tracker.md`. Tracked configuration comes with you, so `.claude/` and its
+`deny` rules load when a session starts at the worktree root. What does **not** carry over is
+anything gitignored: `node_modules`, `CLAUDE.local.md`, `.claude/settings.local.json`. That is
+also the rule's own justification — anything another agent must know goes in a tracked file.
+
+Still one concurrent Story per capability. Worktrees remove the collision in the *working
+tree*; they do nothing about two Stories racing for one file in `openspec/specs/`, which is
+decided at Stage 2. See `docs/process.md` §7.
+
 ## Context discipline
 
 Start every session from durable files, never from chat history. You are given an issue
@@ -151,7 +212,7 @@ second Story is a bug: stop and start a fresh one.
 
 ## Skills
 
-**Use:** `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`, `grill-with-docs`,
+**Use:** `/atlas` (the conductor — start here), `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`, `grill-with-docs`,
 `to-tickets`, `tdd`, `code-review`, `triage`, `handoff`, `diagnosing-bugs`, `research`.
 
 **Never invoke:** `to-spec` (duplicates `/opsx:propose` and would publish requirements to the
@@ -178,6 +239,7 @@ Single-context: `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/
 ## Commands
 
 ```bash
+pnpm run status      # where is this Story, and whose turn is it? start every session here
 pnpm run verify      # lint + typecheck + test — must pass before any PR
 pnpm run checks      # the merge-time checks; advisory locally, binding in CI (see below)
 pnpm run check:g4    # is this Story approved? run it before writing any code
