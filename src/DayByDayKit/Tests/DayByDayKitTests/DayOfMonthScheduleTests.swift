@@ -93,3 +93,12 @@ func aDayOfTheMonthPastTheThirtyFirstIsNotADayOfTheMonth() {
 
     #expect(dayOfMonth == nil)
 }
+
+@Test("a day of the month below the first is not a day of the month")
+func aDayOfTheMonthBelowTheFirstIsNotADayOfTheMonth() {
+    let zero = DayOfMonth(day: 0)
+    let negativeOne = DayOfMonth(day: -1)
+
+    #expect(zero == nil)
+    #expect(negativeOne == nil)
+}
