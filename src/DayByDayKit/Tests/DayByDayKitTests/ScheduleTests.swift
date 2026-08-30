@@ -8,3 +8,11 @@ func aDateOnAListedWeekdayIsDue() {
 
     #expect(schedule.isDue(on: date))
 }
+
+@Test("a date on an unlisted weekday is not due")
+func aDateOnAnUnlistedWeekdayIsNotDue() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let date = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    #expect(!schedule.isDue(on: date))
+}
