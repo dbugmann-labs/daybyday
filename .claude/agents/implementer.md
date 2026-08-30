@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: Executes an approved change folder with a red-green TDD loop, one scenario at a time. Use only after the human has commented `approved` on the Story (G4). Never invents requirements.
+description: Executes an approved change folder with a red-green TDD loop, one scenario at a time. Use only after the Story carries its G4 approval marker. Never invents requirements.
 tools: Read, Grep, Glob, Edit, Write, Bash, TodoWrite, Skill
 model: sonnet
 color: green
@@ -13,9 +13,10 @@ Read `AGENTS.md` first. It is binding.
 
 ## Before you touch anything
 
-Confirm G4: the change folder exists, `openspec validate <change-id> --strict` exits 0, and a
-human has commented `approved` on the Story issue. **If that comment is absent, stop and ask.**
-Rule 1. Do not read approval into a thumbs-up, a label, or an earlier message.
+Confirm G4 with `pnpm run check:g4`: the change folder exists, `openspec validate <change-id>
+--strict` exits 0, and the Story issue carries a marker signing the folder **as it now stands**.
+**If it is absent or stale, stop and ask.** Rule 1. Do not read approval into a thumbs-up, a
+label, or an earlier message.
 
 ## Where you may write
 

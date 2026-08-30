@@ -15,15 +15,12 @@ This repo is **single-context**: one `CONTEXT.md` and one `docs/adr/` at the roo
 
 ```
 /
+├── AGENTS.md                          ← the binding rules
 ├── CONTEXT.md                         ← shared vocabulary
-├── docs/
-│   ├── adr/                           ← numbered decisions, NNNN-kebab-title.md
-│   ├── process.md                     ← the reasoning behind AGENTS.md
-│   └── parking-lot.md                 ← deferred product detail
-├── openspec/
-│   ├── specs/<capability>/spec.md     ← what the system does today
-│   └── changes/<change-id>/           ← what a change does to that
-└── AGENTS.md
+├── docs/{adr/, process.md, parking-lot.md}
+└── openspec/
+    ├── specs/<capability>/spec.md     ← what the system does today
+    └── changes/<change-id>/           ← what a change does to that
 ```
 
 The multi-context layout (a root `CONTEXT-MAP.md` pointing at per-context `CONTEXT.md` files, with context-scoped `src/<context>/docs/adr/`) is **not in use**. Per `docs/adr/0001-monorepo.md`, this repo becomes a workspace only if the product later splits into several deployables; adopt `CONTEXT-MAP.md` then, not before.
@@ -34,7 +31,7 @@ When your output names a domain concept (in an issue title, a spec requirement, 
 
 If the concept you need isn't in the glossary yet, that's a signal: either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/domain-modeling`).
 
-Note that `CONTEXT.md` currently holds only process vocabulary — the product is not yet defined. Domain terms arrive once product definition begins; until then, don't invent them.
+`CONTEXT.md` holds process vocabulary and, since product definition began, domain vocabulary too. A term that is missing is a signal, not a licence to invent one.
 
 ## Flag ADR conflicts
 

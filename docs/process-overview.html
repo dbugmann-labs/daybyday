@@ -634,7 +634,7 @@ footer code{background:none;padding:0;color:var(--ink)}
 
   </div>
   <p>Read the bold entries down the driver column and you have the whole obligation: four stops — G1, G2, G4, G7 — plus answering, inside Stage 4, any round the grill raises because it could not settle it on its own. Stages 5, 6, 8 and 9 never wait for you.</p>
-  <div class="note"><b>There is no Stage 3.</b> The grill was one until 30 August 2026, when it was folded into Stage 4 — the first cut on <code>docs/process.md</code> §12's list, taken because at one concurrent Story it never justified a session of its own. Its obligations moved with it and none of them lapsed. The numbering was left with a gap rather than closed up, because a stage number is also its gate's name: <code>G4: approved</code> is a literal string that CI check 5, <code>pnpm run check:g4</code>, the issue template and every Story already approved are read for, and renumbering would either falsify it or leave G4 hanging off a Stage 3. The gate numbers already skip 3, 5 and 6 for the same reason. ADR-1005.</div>
+  <div class="note"><b>Stage and gate numbers are names, not positions.</b> There is no Stage 3 — the grill was one until 30 August 2026, when it was folded into Stage 4, the first cut on <code>docs/process.md</code> §12's list; its obligations moved with it and none of them lapsed. There is no G3, G5 or G6 either, and G8 is the gate on Stage 9. Every number is frozen because something reads it: <code>G4: approved</code> is a literal string in CI check 5, <code>pnpm run check:g4</code>, the issue template and every Story already approved, and two ADR titles name Stage 4. Renumbering would falsify a record to tidy a label. ADR-1005.</div>
   <div class="note"><b>Two grills, and a round.</b> The <i>Feature</i> grill at Stage 1 is a conversation and belongs to the conductor: one capability or several, the slug, the parent Epic, what it does not cover, which words enter <code>CONTEXT.md</code>. The <i>Story</i> grill inside Stage 4 is <code>spec-author</code> interrogating one Story&rsquo;s edges, which are invisible until someone writes the delta — pulling them up to Stage 1 would settle four Stories&rsquo; worth of edge cases before any is built. But no subagent can ask you anything, so the Story grill writes instead: a question it may not settle goes into <code>design.md</code> under <code>## Questions for you</code>, numbered, each with a recommended answer and what changes in the delta if you say otherwise. The folder is written anyway on those answers, so the round reaches you beside the diff it would change. The conductor relays it in the ordinary gate form. <b>A stop, not a gate</b> — no marker, no check, and only when there is a real question. ADR-1006.</div>
 </section>
 
@@ -823,7 +823,7 @@ footer code{background:none;padding:0;color:var(--ink)}
   <span><code>docs/process.md</code> — the reasoning</span>
   <span><code>AGENTS.md</code> — the operative summary</span>
   <span><code>CONTEXT.md</code> — what the words mean</span>
-  <span><code>docs/adr/</code> — fourteen inherited decisions, two of DayByDay's own</span>
+  <span><code>docs/adr/</code> — fourteen inherited decisions, plus DayByDay's own</span>
   <span><code>docs/retrospective.md</code> — what it cost</span>
 </footer>
 

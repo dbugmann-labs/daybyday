@@ -98,10 +98,9 @@ jobs:
       - name: toolchain
         run: swift --version
 
-      # No Swift exists yet — ADR 1001 is the decision, not the first Story. The
-      # job is here so the Story that writes the first test does not also have to
-      # touch CI plumbing. It discovers packages rather than hard-coding a path,
-      # because the package layout is not decided yet either.
+      # Discovers packages rather than hard-coding a path: it predates the first
+      # Swift Story (ADR 1001 was the decision, not the code) and stays discovery-
+      # based so a second package needs no CI change.
       #
       # A green run that tested nothing would be worse than a red one, so this
       # says out loud which case it took. macOS runners default to bash 3.2, so

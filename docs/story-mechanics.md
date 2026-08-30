@@ -1,9 +1,8 @@
 # Working a Story
 
-The mechanics of a Story from Stage 4 to merge: cutting the branch or worktree, opening and
-refreshing the draft PR, the staged checks, and settling the tracker afterwards. `AGENTS.md`
-carries the rules; this file carries the keystrokes. **Read it before you touch git on a
-Story.** Why any of it is shaped this way is in `docs/process.md` §5 and §7, and in ADR-1003.
+The mechanics of a Story from Stage 4 to merge. `AGENTS.md` carries the rules; this file carries
+the keystrokes. **Read it before you touch git on a Story.** Why any of it is shaped this way is
+in `docs/process.md` §5 and §7, and in ADR-1003.
 
 ## One agent per working tree
 
@@ -24,15 +23,15 @@ pnpm install                         # a worktree starts with no node_modules
 Work there, push and open the PR from there, and clean up after the merge with
 `git worktree remove ../daybyday-<change-id>` from the main clone.
 
-A worktree gets its own `HEAD` and index, which is the point. `.git/config` and tracked files
-are shared, so `gh` still resolves to `dbugmann-labs/daybyday` and `.claude/`'s `deny` rules
-load; anything gitignored does **not** come with you — `node_modules`, `CLAUDE.local.md`,
+A worktree gets its own `HEAD` and index, which is the point. `.git/config` and tracked files are
+shared, so `gh` still resolves to `dbugmann-labs/daybyday` and `.claude/`'s `deny` rules load;
+anything gitignored does **not** come with you — `node_modules`, `CLAUDE.local.md`,
 `.claude/settings.local.json`. Which is why anything another agent must know goes in a tracked
 file.
 
-Still one concurrent Story per capability: worktrees remove the collision in the *working
-tree*, not two Stories racing for one file in `openspec/specs/`, which is decided at Stage 2.
-See `docs/process.md` §7.
+Still one concurrent Story per capability: a worktree removes the collision in the *working
+tree*, not two Stories racing for one file in `openspec/specs/`, which is decided at Stage 2
+(`docs/process.md` §7).
 
 ## Cutting the branch
 
@@ -64,9 +63,9 @@ gh pr create --draft --base main --title '<change-id>' --body 'Closes #<issue#>'
 ```
 
 `Closes #<issue#>` is what auto-closes the Story on merge, so it is not optional. Draft is not
-decoration either: CI reads it as "this Story is not finished" and skips the four checks that
-assert it is — 3, 4, 5 and 8 — which bind again when the janitor runs `gh pr ready` at Stage 8.
-Keep pushing as you go; the PR is the Story's one URL from Stage 4 to merge.
+decoration either: CI reads it as "this Story is not finished" and skips checks 3, 4, 5 and 8,
+which bind again when the janitor runs `gh pr ready` at Stage 8. Keep pushing as you go; the PR
+is the Story's one URL from Stage 4 to merge.
 
 **Refresh it before each of the two gates**, G4 and G7:
 
@@ -83,11 +82,10 @@ capability, which is the human's decision, not a merge you resolve (rule 5).
 
 ## Checks and checkboxes
 
-**`pnpm run checks` is staged.** Mid-Story it reports rather than fails — the single-change
-rule reads "still active" until the archive, and coverage reports `2/4 covered — next:
-"<title>"` — because a check demanding all four tests at once would force exactly the bulk
-transcription rule 3 forbids. In CI the same checks bind, because a PR claims the Story is
-finished.
+**`pnpm run checks` is staged.** Mid-Story it reports rather than fails — the single-change rule
+reads "still active" until the archive, and coverage reports `2/4 covered — next: "<title>"` —
+because a check demanding every test at once would force exactly the bulk transcription rule 3
+forbids. In CI the same checks bind, because a PR claims the Story is finished.
 
 **Gate checkboxes** are ticked by whoever can verify the condition — the orchestrator ticks G1
 and G2, the implementer the machine-checkable DoR and DoD boxes. The one no agent may ever tick

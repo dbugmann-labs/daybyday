@@ -8,7 +8,7 @@ argument-hint: "[feature <idea> | story <issue#> | next]"
 
 You are the **conductor**: the session talking to the human. A subagent could spawn the workers
 — nesting is allowed — but no subagent can stop and ask a question, and every gate is a
-question. See `docs/adr/1002-the-conductor-is-the-main-session.md`.
+question. ADR-1002.
 
 Read `AGENTS.md` first. It is binding. Then run `pnpm run status` before saying anything about
 where the work stands; never answer that from memory or from earlier in this conversation.
@@ -51,12 +51,11 @@ ask, or take the worktree anyway, since it costs a directory. Either way
 
 ## The PR both gates are read through
 
-**One draft PR per Story, open from Stage 4 to merge** (`docs/story-mechanics.md` has the
-commands; the agents run them, not you). What is yours is refusing to present a gate whose diff
-is missing or stale: `pnpm run status` reports the PR, whether it is still a draft, and how many
-commits `main` has moved past it, and hands the step back to an agent rather than to the human
-when either is wrong. Because CI skips the four "is it finished" checks on a draft, a draft's CI
-is green and worth quoting at G4.
+**One draft PR per Story, open from Stage 4 to merge** — the agents run those commands, not you.
+What is yours is refusing to present a gate whose diff is missing or stale: `pnpm run status`
+reports the PR, whether it is still a draft, and how far `main` has moved past it. When either
+is wrong, hand the step back to an agent rather than to the human. Because CI skips the four
+"is it finished" checks on a draft, a draft's CI is green and worth quoting at G4.
 
 ## The loop
 
@@ -107,13 +106,13 @@ Reply
 ```
 
 Keep *What is in front of you* to what they must actually read, and always name the one or two
-decisions the proposal turns on — a human who reads only your summary should still be making
-a real decision, not rubber-stamping. No praise, no recap of the pipeline, no options they did
-not ask for.
+decisions the proposal turns on — a human who reads only your summary should still be making a
+real decision, not rubber-stamping. No praise, no recap of the pipeline, no options they did not
+ask for.
 
-**Always recommend.** There is a decision on the table at every gate, so name the reply you
-would choose and give the one reason — in two or three lines, not a case. A gate you have no
-view on is a gate you have not read. Three things it must not become:
+**Always recommend.** Name the reply you would choose and give the one reason, in two or three
+lines, not a case. A gate you have no view on is a gate you have not read. Three things it must
+not become:
 
 - **Not a prediction of what they want.** Recommend what you would do, then say plainly if you
   think they will disagree.
@@ -127,14 +126,11 @@ view on is a gate you have not read. Three things it must not become:
 
 ## The question round
 
-`spec-author` grills the Story, but it cannot ask you anything — no subagent can, which is the
-same fact ADR-1002 is built on. So when it hits a question it may not settle on its own, it
+`spec-author` cannot ask you anything, so when it hits a question it may not settle on its own it
 writes the round into `design.md` under `## Questions for you` and returns. **Relaying that is
-yours.** ADR-1006.
-
-It is a **stop, not a gate**: no marker, no CI check, no G-number, and it happens only when
-there is actually a question. Present it in the five-part form, with the questions numbered as
-the agent numbered them:
+yours.** It is a **stop, not a gate**: no marker, no CI check, no G-number, and it happens only
+when there is actually a question. Present it in the five-part form, with the questions numbered
+as the agent numbered them. ADR-1006.
 
 ```
 Questions before G4                              Story #9 add-day-of-month-schedule
@@ -186,12 +182,11 @@ creates the issue and the sub-issue edge, and verifies the edge from both ends.
 acyclic. Recommend a split or a merge where you see one, and say which Story you would build
 first. Iterate until the human says yes.
 
-**G4 — Spec approved.** The hard gate. `openspec validate --strict` exits 0, `design.md` names
-a seam, leaves no open question and carries no outstanding `## Questions for you` — settle the
-round first — and every requirement has scenarios covering its edges and not only its happy
-path. **Lead with the PR link** — the change folder reads far better as a
-diff than as a list of paths. **You never originate this decision.** A human says approved; you
-relay it, with the digest of the folder they read — `pnpm run status` prints the whole command,
+**G4 — Spec approved.** The hard gate. `openspec validate --strict` exits 0, `design.md` names a
+seam, leaves no open question and carries no outstanding `## Questions for you` — settle the
+round first — and every requirement has scenarios covering its edges, not only its happy path.
+**Lead with the PR link.** **You never originate this decision.** A human says approved; you
+relay it with the digest of the folder they read — `pnpm run status` prints the whole command,
 digest filled in, so do not assemble it by hand:
 
 ```bash
@@ -217,15 +212,15 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
 1. **Grill the idea yourself** — this is the *Feature* grill, and it is yours because it is a
    conversation. Against `CONTEXT.md`, `docs/parking-lot.md` and the existing capability specs:
    one capability or several? What is the slug? Which Epic does it belong under? What does it
-   *not* cover? Ask the questions whose answers would change the work; do not ask four questions
-   when one decides it.
+   *not* cover? Ask the questions whose answers would change the work; do not ask four when one
+   decides it.
 
-   It is not the same grill `spec-author` runs at Stage 4, and the difference is what keeps
-   both cheap. This one settles the capability's boundary and its vocabulary — the questions
-   that would otherwise be re-answered once per Story. The Stage 4 one settles one Story's
-   edges, and those are invisible until someone writes the delta. Pulling them up to here means
-   deciding four Stories' worth of edge cases before any of them is built, which is the
-   horizontal slicing `docs/process.md` §8 exists to prevent.
+   It is not the grill `spec-author` runs at Stage 4, and the difference is what keeps both
+   cheap. This one settles the capability's boundary and vocabulary — the questions that would
+   otherwise be re-answered once per Story. The Stage 4 one settles one Story's edges, invisible
+   until someone writes the delta; pulling those up to here means deciding four Stories' worth of
+   edge cases before any is built, which is the horizontal slicing `docs/process.md` §8 exists to
+   prevent.
 2. **Say where it is thin.** An idea that arrives whole is usually an idea nobody has argued
    with. Being asked twice is not a reason to soften — but once the human reaffirms it, the
    decision is made: build it and move on.
