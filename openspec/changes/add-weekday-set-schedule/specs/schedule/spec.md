@@ -124,20 +124,27 @@ exists. The refusal MUST be a refusal rather than an adjustment: a year outside 
 be clamped to the nearest supported year, and no schedule may be asked about a date the system
 declines to form.
 
-The lower bound is what makes the Gregorian promise above keepable. The Gregorian calendar was
-adopted on 15 October 1582, and a calendar that reaches back past that reform applies the Julian
-one before it, which places an earlier date on a weekday the Gregorian calendar does not give it.
-Rather than answer that question wrongly, the system declines the date. The upper bound keeps every
-component of a calendar date inside a range the system judges for itself, so that no extreme value
-can be mistaken for an unspecified one; a four-digit year is well past the horizon of any
-commitment a person keeps.
+The lower bound is what makes the Gregorian promise above keepable, and it is drawn at a whole
+year on purpose. The Gregorian calendar was adopted on 15 October 1582, and a calendar reaching
+back past that day applies the Julian one before it, which places a date before the reform on a
+weekday the Gregorian calendar does not give it. The reform fell inside a year, so 1583 is the
+first year that is Gregorian throughout, and the system refuses the whole of 1582 rather than the
+part of it that precedes 15 October. That over-refuses the seventy-eight days from 15 October to
+31 December 1582, whose weekdays it could in fact have answered correctly. It is refused anyway,
+because the bound is then a comparison of years, and eleven weeks of the sixteenth century are
+worth nothing to a product about commitments a person keeps this month.
+
+The upper bound keeps the year inside a range the system judges for itself, so that no year large
+enough to be read back as unspecified reaches the calendar underneath — the month and the day are
+bounded by the requirement above, not by this one. A four-digit year is well past the horizon of
+any commitment a person keeps.
 
 #### Scenario: a date before the Gregorian calendar's adoption is not a calendar date
 
 - **WHEN** the year 1500, the month January and the day 1 are offered as a calendar date
 - **THEN** no calendar date is formed
 
-#### Scenario: the last year before the Gregorian reform is not a calendar date
+#### Scenario: the last day before the first full Gregorian year is not a calendar date
 
 - **WHEN** the year 1582, the month December and the day 31 are offered as a calendar date
 - **THEN** no calendar date is formed

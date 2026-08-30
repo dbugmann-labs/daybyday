@@ -34,8 +34,10 @@ established at the G7 review, and it is what the fourth requirement in the delta
   component assigned exactly `Int.max` — its internal "undefined" sentinel — so an extreme value
   offered as a year, month or day would leave that component unset and let an under-specified date
   pass `isValidDate(in:)`. And `Calendar(identifier: .gregorian)` is a hybrid: it applies the
-  Julian calendar before the reform of 15 October 1582, so a date in an earlier year is placed on a
-  weekday the Gregorian calendar does not give it. Bounding all three components — year 1583
+  Julian calendar before the reform of 15 October 1582, so a date earlier than that day is placed
+  on a weekday the Gregorian calendar does not give it. Measured here: 4 October 1582 is Thursday
+  to that calendar and Monday to a proleptic Gregorian one, while from 15 October 1582 the two
+  agree — so the divergence stops inside 1582, not at the year boundary. Bounding all three components — year 1583
   through 9999, month 1 through 12, day 1 through 31 — closes both, at the cost of a supported year
   range that the delta now states rather than leaves implicit.
 
@@ -144,11 +146,13 @@ belongs to the screen where a commitment is edited, and it is not this capabilit
 ### A calendar date's year runs from 1583 to 9999
 
 The bounds guard exists to close the two holes in *Context* above, and both bounds are choices
-worth naming. **1583** is the first full year in which the calendar the engine derives weekdays
-from is the Gregorian one, so it is the earliest year whose weekday the type can promise; refusing
-1582 wholesale rather than 1 January to 14 October 1582 keeps the check to a year comparison and
-costs nothing a commitment app will ever want — the delta pins 31 December 1582 as refused so that
-the boundary is fixed from both sides rather than inferred from a date eighty years earlier. **9999** is a bound rather than a limit anybody will
+worth naming. **1583** is the first year that is Gregorian throughout in the calendar the engine
+derives weekdays from, so it is the earliest year the type can promise a Gregorian weekday for on
+every one of its days; refusing 1582 wholesale rather than only 1 January to 14 October 1582 keeps
+the check to a year comparison, at the price of the seventy-eight days after the reform that would
+have been answered correctly — a price a commitments app never pays. The delta states both halves
+of that rather than the flattering half, and pins 31 December 1582 as refused so the boundary is
+fixed from both sides rather than inferred from a date eighty years earlier. **9999** is a bound rather than a limit anybody will
 meet: what it buys is that every component is judged against a range the engine owns, so no value
 can reach `DateComponents` large enough to be mistaken for an unspecified one. A narrower and more
 defensible-sounding range — say 1900 to 2100 — was rejected because it would refuse dates for a

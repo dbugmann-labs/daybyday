@@ -43,11 +43,15 @@ Three consequences are part of the decision rather than incidental to it:
   decision exists to keep out of the engine.
 - **A calendar date carries a supported year range: 1583 through 9999.** This is a consequence of
   the point above rather than a separate policy. `Calendar(identifier: .gregorian)` is a hybrid
-  that applies the Julian calendar before the reform of 15 October 1582, so a date in an earlier
-  year would be placed on a weekday the Gregorian calendar does not give it — a type that promises
-  Gregorian weekdays must decline those years rather than answer wrongly. The upper bound is the
-  other half of the same guard: it keeps every component inside a range the engine judges itself,
-  so no value can reach `DateComponents` large enough to be read back as unspecified. Recorded here
+  that applies the Julian calendar before the reform of 15 October 1582, so a date earlier than
+  that day is placed on a weekday the Gregorian calendar does not give it — a type promising
+  Gregorian weekdays must decline it rather than answer wrongly. The bound is drawn at a whole
+  year, at 1583, the first year that is Gregorian throughout. That refuses the seventy-eight days
+  of 1582 that follow the reform as well, and those would have been answered correctly; the trade
+  is deliberate, because a year comparison is one comparison and the autumn of 1582 is worth
+  nothing to this product. The upper bound is the other half of the same guard: it keeps the year
+  inside a range the engine judges itself, so no year can reach `DateComponents` large enough to be
+  read back as unspecified. Recorded here
   because it is part of what a calendar date *is* in this system, and #9, #10 and #11 inherit it.
 - **Conversion between an instant and a calendar date happens at the edges** — where "what day is
   it today?" is asked of the device, and where a tick is written to or read from storage. The

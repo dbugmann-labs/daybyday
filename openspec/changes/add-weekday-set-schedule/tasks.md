@@ -17,7 +17,9 @@
 - [x] 1.4 Add `Tests/DayByDayKitTests/ScheduleTests.swift` importing `Testing` and `DayByDayKit`,
   with no test in it yet. Verify with `cd src/DayByDayKit && swift test` running and reporting no
   failures, and with `pnpm run check:scenarios` reporting `0/11` covered and naming
-  `"a date on a listed weekday is due"` as next.
+  `"a date on a listed weekday is due"` as next. Eleven was the whole delta when this box was
+  ticked; the G7 amendment took it to nineteen, so the same command run from a clean start today
+  reads `0/19`.
 
 ## 2. Scenarios — one acceptance test each, in delta order
 
@@ -73,11 +75,12 @@ changes: there is no hardening block left underneath it.
 - [x] 2.15 `a date before the Gregorian calendar's adoption is not a calendar date` — the existing
   test already carries this title verbatim. Confirm the whole set with `pnpm run check:scenarios`
   rather than by eye; nothing to edit here.
-- [x] 2.16 `the last year before the Gregorian reform is not a calendar date` — a new test:
+- [x] 2.16 `the last day before the first full Gregorian year is not a calendar date` — a new test:
   `CalendarDate(year: 1582, month: 12, day: 31)` is nil. The shipped guard refuses it, so expect
   green on the first run; this is a pin, not a cycle. Write it anyway: without it the pinned pair
   either side of the lower bound is 1500 refused and 1583 accepted, and a guard mistyped as
-  `1581...` would satisfy both.
+  `1581...` would satisfy both. **The scenario was retitled after this box was ticked** and the
+  test still carries the old title — see 2.20.
 - [x] 2.17 `the first day of the first full Gregorian year is a calendar date` — the existing test
   already carries this title verbatim. Nothing to edit.
 - [x] 2.18 `the last day of the last supported year is a calendar date` — a new test:
@@ -86,6 +89,14 @@ changes: there is no hardening block left underneath it.
   guard tightened by mistake would refuse a supported year and no test would notice.
 - [x] 2.19 `a year past the last supported year is not a calendar date` — rename
   `"a year past the upper bound is not a calendar date"`.
+- [ ] 2.20 `the last day before the first full Gregorian year is not a calendar date` — rename
+  `"the last year before the Gregorian reform is not a calendar date"` at
+  `ScheduleTests.swift:150`, and rename its function to match. The assertion and the comment above
+  it are already right and do not change. The old title was factually wrong: the Gregorian reform
+  fell on 15 October 1582, so 1582 is not a year before the reform, and the date the test uses —
+  31 December 1582 — is seventy-eight days after it. The corrected title says what the date is,
+  the last day before the first year that is Gregorian throughout. Verify with
+  `pnpm run check:scenarios` reporting 19 of 19.
 
 ## 3. Gates
 
@@ -99,7 +110,11 @@ changes: there is no hardening block left underneath it.
 - [x] 3.4 After tasks 2.12 to 2.19: `cd src/DayByDayKit && swift test` reports 19 tests passing and
   no failures, and `pnpm run verify` exits 0.
 - [x] 3.5 `pnpm exec openspec validate add-weekday-set-schedule --strict` exits 0, and
-  `pnpm run checks` reports scenario coverage as 19 of 19 with a matching title for each.
+  `pnpm run checks` reports scenario coverage as 19 of 19 with a matching title for each. True when
+  this box was ticked. The re-review then corrected one scenario title, so coverage reads 18 of 19
+  until task 2.20 lands; 3.6 is the same check afterwards.
+- [ ] 3.6 After task 2.20: `pnpm run checks` reports scenario coverage as 19 of 19 again, and
+  `cd src/DayByDayKit && swift test` still reports 19 tests passing and no failures.
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7,
 and `openspec validate --archived` requires every box above to be ticked before it.
