@@ -37,11 +37,11 @@ The repo owner works roughly 4–8 hours a week on this and is the only human in
 ## The pipeline
 
 ```
-Epic ──▶ Feature ──▶ Story ──▶ grill ──▶ propose ──▶ [G4] ──▶ red/green ──▶ review ──▶ archive ──▶ merge
-        (issue)     (issue)   (issue)      │          ▲                       │          │
-                                           │          │                       │          │
-                                     draft PR         │                 refreshed    marked ready
-                                       opened         └── nothing is implemented before this gate
+Epic ──▶ Feature ──▶ Story ──▶ propose ──▶ [G4] ──▶ red/green ──▶ review ──▶ archive ──▶ merge
+        (issue)     (issue)      │          ▲                       │          │
+                                 │          │                       │          │
+                           draft PR         │                 refreshed    marked ready
+                             opened         └── nothing is implemented before this gate
 ```
 
 | Level | GitHub | Anchor on disk |
@@ -53,6 +53,22 @@ Epic ──▶ Feature ──▶ Story ──▶ grill ──▶ propose ──�
 One Story = one change = one branch = one PR. That PR opens at Stage 4 and stays open, as a
 draft, until the archive: both human gates are read as a diff off the same URL, and it is
 rebased onto `origin/main` before each. See `docs/story-mechanics.md` and ADR-1003.
+
+**There is no grill stage.** Grilling is the first thing Stage 4 does, not a session of its
+own, and the stage numbers skip 3 where it used to sit. Its obligations moved with it and none
+of them lapsed: `design.md` § Open Questions is filled in — "None", with the reason, is a valid
+and required answer — new domain terms land in `CONTEXT.md`, and the human answers what the
+grill cannot settle before the change folder is handed over at G4. ADR-1005.
+
+**A question the grill may not settle becomes a round, and the conductor relays it.** No
+subagent can ask anything, so `spec-author` writes the round into `design.md` under
+`## Questions for you` — numbered, each with the answer it recommends and what changes in the
+delta if the answer goes the other way — and writes the change folder anyway on those
+recommended answers. The conductor presents it before G4 in the ordinary gate form and hands
+the answers back; `spec-author` folds them in and deletes the section. It is a **stop, not a
+gate**: no marker, no check, and it happens only when there is a real question. A question is
+only yours if its answer would change the delta and it is a preference rather than a fact —
+finding facts is the agent's job. ADR-1006.
 
 ## Hard rules
 
@@ -109,7 +125,7 @@ less. See ADR-1002.
 
 **Every gate stop takes one form**, so the human learns one shape instead of five: what is in
 front of you, the question, what a yes commits you to against what a no costs, **the
-recommendation**, and the exact reply. The recommendation is never omitted — a gate with no
+recommendation**, and the exact reply. A question round uses the same form. The recommendation is never omitted — a gate with no
 stated lean is one where the cheapest answer is always yes. Specified in
 `.claude/commands/atlas.md`.
 
@@ -128,6 +144,12 @@ stated lean is one where the cheapest answer is always yes. Specified in
 | `janitor` | Haiku | archive moves, generated files, issue state |
 
 Nothing writes `openspec/specs/` except `/opsx:archive`. Definitions are in `.claude/agents/`.
+
+**A skill named in this table is only reachable if the agent holds the `Skill` tool.** It is
+granted to the four agents the pipeline documents a `via /command` for; `orchestrator` has none
+and does not hold it. An agent without it cannot run the command at all — it can only read the
+SKILL.md and improvise, and the drift is invisible. Verified by probe on 2026-08-30, not
+assumed.
 
 **Know what is enforced and what is only written down.** Three things are mechanical:
 `deny` rules in `.claude/settings.json` (no agent may `Edit`/`Write` `openspec/specs/**`,
@@ -168,7 +190,9 @@ Story is a bug: stop and start a fresh one.
 issue tracker, breaking rule 4), `implement` (duplicates `/opsx:apply`, and its commit step
 bypasses review), `wayfinder`, `improve-codebase-architecture`. All four are
 `disable-model-invocation: true`, so they cannot fire on their own — do not invoke them by name
-either.
+either. That last clause is now load-bearing for subagents too: `spec-author`, `implementer`,
+`reviewer` and `janitor` hold the `Skill` tool, so the kill list is convention for them exactly
+as it is for you.
 
 ## Agent skills
 

@@ -58,3 +58,5 @@ DayByDay's own records start here.
 | [1002](1002-the-conductor-is-the-main-session.md) | The conductor is the main session; `pnpm run status` is a projection |
 | [1003](1003-the-pr-is-the-gate-surface.md) | The PR opens at Stage 4 as a draft; both human gates are read through it |
 | [1004](1004-the-rule-engine-speaks-calendar-dates.md) | The rule engine speaks calendar dates, not instants |
+| [1005](1005-the-grill-is-a-step-inside-propose.md) | The grill is a step inside Stage 4; the stage numbers keep the gap at 3 |
+| [1006](1006-the-question-round.md) | A question the grill cannot settle is relayed by the conductor as a round, not a gate |

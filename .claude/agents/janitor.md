@@ -1,7 +1,7 @@
 ---
 name: janitor
 description: Mechanical close-out — archive the change, regenerate the graph, update issue state, merge. Use after review is clean. Every action's correctness is visible in the diff.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Skill
 disallowedTools: Write, Edit, NotebookEdit
 model: haiku
 color: cyan

@@ -132,24 +132,58 @@ The intended rhythm is **four interruptions per Story** — G1, G2, G4, G7 — a
 
 ### The stages
 
-Ten stages, five gates. **Gate** means work stops until a named condition holds. `H` = you sign off, `CI` = machine-checked, `A` = agent-internal.
+Nine stages, five gates. They are numbered 0–9 with no Stage 3. **Gate** means work stops
+until a named condition holds. `H` = you sign off, `CI` = machine-checked, `A` = agent-internal.
 
 **Every stage is entered by the conductor** — the session running `/atlas`, which reads `pnpm run status` and spawns the agent in the *Runs where* column. The conductor executes no stage itself. *Who decides* is the column that matters when you are asking whether you can walk away: `you` means the pipeline stops until you answer.
 
 | # | Stage | Who decides | Runs where | Output | Gate |
 |---|---|---|---|---|---|
 | 0 | Epic intake | **you** | `orchestrator` / Opus | Epic issue | — |
-| 1 | Feature definition | **you** | `orchestrator` / Opus | Feature issue, sub-issue of Epic | **G1 (H)** |
+| 1 | Feature definition | **you** | the conductor grills; `orchestrator` / Opus writes the issue | Feature issue, sub-issue of Epic, plus any new `CONTEXT.md` terms | **G1 (H)** |
 | 2 | Story decomposition | **you** accept; `/to-tickets` proposes | `orchestrator` / Opus | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
-| 3 | Grill | agent, but **you** answer what it cannot | `spec-author` / Opus, via `/grill-with-docs` | `design.md` **Open Questions** filled in — "None" is a valid and required answer — plus any new `CONTEXT.md` terms | — |
-| 4 | Propose | agent writes; **you** approve | `spec-author` / Opus, via `/opsx:propose` | change folder: proposal, delta specs, design, tasks — cut the branch or worktree here, commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
+| 4 | Propose | agent writes; **you** answer any question round, and approve | `spec-author` / Opus, via `/opsx:propose` | the grill first — `design.md` **Open Questions** filled in, "None" being a valid and required answer, plus any new `CONTEXT.md` terms, plus a `## Questions for you` round if the grill hit something that is yours — then the change folder: proposal, delta specs, design, tasks. Cut the branch or worktree here, commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
 | 5 | Red | agent | `implementer` / Sonnet, via `/tdd` | one failing acceptance test | A |
 | 6 | Green + next | agent | `implementer` / Sonnet, via `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes | A |
 | 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `/code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity | **G7 (H)** |
 | 8 | Archive | agent | `janitor` / Haiku, via `/opsx:archive` | delta merged into `openspec/specs/`, change moved to `changes/archive/`, PR taken out of draft with `gh pr ready` | — |
 | 9 | Merge | agent | `janitor` / Haiku | issue auto-closed, parents settled, `docs/graph.mmd` regenerated | **G8 (CI)** |
 
-Read the bold entries down the *Who decides* column and you have your whole obligation: four stops — G1, G2, G4, G7 — plus answering whatever the grill cannot settle on its own. Stages 5, 6, 8 and 9 never wait for you.
+Read the bold entries down the *Who decides* column and you have your whole obligation: four stops — G1, G2, G4, G7 — plus answering, inside Stage 4, whatever the grill cannot settle on its own. Stages 5, 6, 8 and 9 never wait for you.
+
+**There is no Stage 3.** The grill was one until 2026-08-30, when it was folded into Stage 4 — §12's first cut, taken because at one concurrent Story it never justified a session of its own. Its obligations came with it and none of them lapsed: the Open Questions section is still filled in, "None" with a reason is still an answer, new terms still land in `CONTEXT.md`, and the human still answers what the grill cannot settle. They are Stage 4's obligations now. The numbering was left with a gap rather than closed up, because a stage number is also its gate's name: `G4: approved` is a literal string that CI check 5, `pnpm run check:g4`, the issue template and every Story already approved are read for, and renumbering would either falsify it or leave G4 hanging off a Stage 3. The gate numbers already skip 3, 5 and 6 for the same reason — a number names the thing it belongs to, not its place in a queue. ADR-1005.
+
+### Two grills, and the round that carries what neither can settle
+
+Grilling happens twice, and the two ask different questions. Confusing them is how one of them
+becomes expensive.
+
+**The Feature grill, at Stage 1, is a conversation and belongs to the conductor.** One capability
+or several, what the slug is, which Epic it hangs under, what it deliberately does not cover, and
+which words enter `CONTEXT.md`. These are the questions that would otherwise be re-answered once
+per Story, and they are answered out loud because the session talking to you is the only one that
+can hold a conversation. `/atlas feature <idea>` runs it and stops at G1.
+
+**The Story grill, inside Stage 4, is `spec-author` interrogating one Story's edges** — what a
+short month does, what an out-of-range number does — and those are invisible until someone writes
+the delta. Pulling them up to Stage 1 would mean settling four Stories' worth of edge cases before
+any of them is built, which is the horizontal slicing §8 exists to prevent.
+
+**The Story grill cannot ask you anything, so it writes instead.** No subagent can stop and ask;
+`AskUserQuestion` is withheld from every one of them, which is the fact ADR-1002 is built on. So a
+question `spec-author` may not settle — one whose answer would change the delta, and which is a
+preference you hold rather than a fact it could look up — goes into `design.md` under
+**`## Questions for you`**, numbered, each with the answer it recommends and what changes if you
+answer otherwise. It writes the change folder anyway, on those recommended answers, so the round
+reaches you next to the diff it would change. `pnpm run status` reports it as Stage 4 owned by
+you; the conductor presents it in the standard form, hands your answers back, and `spec-author`
+folds them in and deletes the section.
+
+**A round is a stop, not a gate.** No marker, no CI check, no G-number, and it happens only when
+there is a real question — a Story with none never triggers one, and the rhythm stays at four
+interruptions. Answering a round and signing G4 can be one sitting. Nothing enforces that a round
+was raised when it should have been, and nothing could: `status` sees the section, not the
+question that was never written down. ADR-1006.
 
 ### The gates, precisely
 
@@ -159,6 +193,7 @@ Read the bold entries down the *Who decides* column and you have your whole obli
 
 **G4 — Spec approved. This is the gate your whole requirement set rests on.** All of:
 - `openspec validate <change-id> --strict` exits 0
+- no `## Questions for you` round is left outstanding in `design.md`
 - the delta uses ADDED / MODIFIED / REMOVED correctly against current specs
 - every requirement has at least one scenario, and the error/edge cases have scenarios, not just the happy path
 - a **draft pull request** is open on the branch and rebased onto current `main`
@@ -238,7 +273,7 @@ This matrix, not good intentions, is what keeps parallel agents from corrupting 
 | `reviewer` | Opus | ✗ | ✗ | ✗ | ✗ | comment |
 | `janitor` | Haiku | via `/opsx:archive` only | move to `archive/` | ✗ | ✗ | close/update |
 
-`CONTEXT.md` is written by `spec-author` alone, at Stage 3, and by nobody else — it is the one shared file outside `openspec/` that the matrix governs.
+`CONTEXT.md` is written by `spec-author` alone, at Stage 4, and by nobody else — it is the one shared file outside `openspec/` that the matrix governs.
 
 Read as: **only `spec-author` writes deltas; nothing writes `openspec/specs/` except the archive step.**
 
@@ -314,7 +349,7 @@ The seam is agreed *before* any test is written, per the `tdd` skill — the few
 - [ ] Sub-issue of exactly one Feature, which is a sub-issue of exactly one Epic
 - [ ] Intent stated in one sentence
 - [ ] Every blocking Story closed
-- [ ] No open questions left by the grill
+- [ ] No open questions left by the grill, and no `## Questions for you` round outstanding
 - [ ] Change folder exists; `openspec validate <change-id> --strict` exits 0
 - [ ] Seam(s) named in `design.md`
 - [ ] Draft PR open on the branch, rebased onto current `main`
@@ -342,7 +377,7 @@ Installed as one pinned plugin from the official marketplace, and **not** pruned
 
 | Skill | Status | Why |
 |---|---|---|
-| `grill-with-docs` | **enabled** | Stage 3; also maintains `CONTEXT.md` |
+| `grill-with-docs` | **enabled** | the grilling step inside Stage 4, and the intake conversation upstream of Stage 0; also maintains `CONTEXT.md` |
 | `to-tickets` | **enabled**, template overridden | Stage 2; issue bodies emit stubs, not acceptance criteria |
 | `tdd` | **enabled** | Stages 5–6, invoked by `/opsx:apply` |
 | `code-review` | **enabled** | Stage 7 |
@@ -378,7 +413,7 @@ Installed as one pinned plugin from the official marketplace, and **not** pruned
 | 0013 | The write-permission matrix is enforced in three layers, and only partly |
 | 0014 | G4 is a relayed human decision, recorded as `G4: approved` and enforced at merge time |
 
-Plus the 10xx series, which records decisions taken after Atlas was signed off — 1002 (the conductor is the main session) and 1003 (the PR is the gate surface). `docs/adr/README.md` is the live index, and carries the immutability rule: a reversal is a new ADR superseding the old one, while incidental detail that was simply wrong is corrected in place and logged in a dated `## Corrections` section.
+Plus the 10xx series, which records decisions taken after Atlas was signed off — 1002 (the conductor is the main session), 1003 (the PR is the gate surface), 1005 (the grill is a step inside Stage 4) and 1006 (the question round). `docs/adr/README.md` is the live index, and carries the immutability rule: a reversal is a new ADR superseding the old one, while incidental detail that was simply wrong is corrected in place and logged in a dated `## Corrections` section.
 
 ---
 
@@ -394,10 +429,11 @@ The gates cost you roughly 45–90 minutes of *your own* time per Story — read
 
 ### If it hurts, cut in this order
 
-1. **Fold Stage 3 into Stage 4** — grill inside `/opsx:propose` rather than as a separate session. Cheapest cut, smallest loss.
-2. **Fold Stage 7 into Stage 8** — review as a PR step rather than a separate agent pass.
-3. **Drop the Epic level** — keep Feature → Story. Epics are the layer with no disk anchor and therefore the first fiction to appear.
-4. **Drop CI checks 3 and 4** — keep spec-diff containment (check 2), which is the one that actually protects the source of truth.
+1. **Fold Stage 7 into Stage 8** — review as a PR step rather than a separate agent pass.
+2. **Drop the Epic level** — keep Feature → Story. Epics are the layer with no disk anchor and therefore the first fiction to appear.
+3. **Drop CI checks 3 and 4** — keep spec-diff containment (check 2), which is the one that actually protects the source of truth.
+
+The cut that used to head this list — fold Stage 3 into Stage 4 — has been taken; see below.
 
 What you should not cut, in any version: **G4** and **CI check 2**. Those two are the process. Everything else is scaffolding around them.
 
@@ -408,3 +444,12 @@ The first draft of this document put the archive step in a second PR on `main`, 
 **It has been revisited.** `docs/retrospective.md` §6 scores this list against the first
 end-to-end Story: the order changed, the two never-cut items did not. Read that before acting
 on the list above.
+
+### Already cut, since
+
+**Stage 3, the grill — 2026-08-30.** The first cut on the list, and it had already happened in
+practice before it was taken on paper: change folders were being written in one pass, with the
+open questions closed as part of writing `design.md` rather than in a session of their own. The
+stage table was describing a session nobody ran. The grill survives as the first thing Stage 4
+does and `grill-with-docs` stays available for it; what was retired is the claim that it is a
+stage. ADR-1005 records the decision, including why the stage numbers were left with a gap.

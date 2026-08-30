@@ -122,6 +122,11 @@ is "report every defect, do not work around any of them."
 | 3. Drop the Epic level | **Promote to second.** One Epic, one Feature, one Story — the Epic carried nothing a Feature did not |
 | 4. Drop checks 3 and 4 | **Drop check 3 only.** Check 4 paces the red-green loop; check 3 defends a collision that cannot occur yet |
 
+**2026-08-30 — cut 1 was taken.** Grilling is now a step inside Stage 4 and there is no
+Stage 3. The row above is what was concluded on the day and stands as written; what changed
+since is that the fold had already happened in practice, one Story later, without anyone
+deciding it. `docs/adr/1005-the-grill-is-a-step-inside-propose.md` records the decision.
+
 Unchanged: **G4 and check 2 are never cut.** Nothing in this run argued against that.
 
 The one addition the run suggests: **the human's real cost is not the gates, it is the

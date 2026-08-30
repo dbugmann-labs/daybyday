@@ -1,7 +1,7 @@
 ---
 name: implementer
 description: Executes an approved change folder with a red-green TDD loop, one scenario at a time. Use only after the human has commented `approved` on the Story (G4). Never invents requirements.
-tools: Read, Grep, Glob, Edit, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Edit, Write, Bash, TodoWrite, Skill
 model: sonnet
 color: green
 ---
