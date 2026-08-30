@@ -114,3 +114,52 @@ func aMonthOutsideTheTwelveIsNotACalendarDate() {
     #expect(date == nil)
     #expect(date != CalendarDate(year: 2027, month: 1, day: 1))
 }
+
+// The following are hardening tests, not acceptance tests: they pin a defect fix rather than
+// a delta scenario, so they are named descriptively instead of after a `#### Scenario:` title.
+
+@Test("a month of Int.max is refused rather than read back as unset")
+func aMonthOfIntMaxIsRefusedRatherThanReadBackAsUnset() {
+    // `DateComponents.month` reads back `nil` for exactly `Int.max`, which would otherwise
+    // let this under-specified date round-trip through `isValidDate(in:)`.
+    let date = CalendarDate(year: 2026, month: Int.max, day: 1)
+
+    #expect(date == nil)
+}
+
+@Test("a year of Int.max is refused rather than read back as unset")
+func aYearOfIntMaxIsRefusedRatherThanReadBackAsUnset() {
+    let date = CalendarDate(year: Int.max, month: 1, day: 1)
+
+    #expect(date == nil)
+}
+
+@Test("a day of Int.max is refused rather than read back as unset")
+func aDayOfIntMaxIsRefusedRatherThanReadBackAsUnset() {
+    let date = CalendarDate(year: 2026, month: 1, day: Int.max)
+
+    #expect(date == nil)
+}
+
+@Test("a date before the Gregorian calendar's adoption is not a calendar date")
+func aDateBeforeTheGregorianCalendarsAdoptionIsNotACalendarDate() {
+    // `Calendar(identifier: .gregorian)` is a hybrid that still applies the Julian calendar
+    // before 1582-10-15, so an earlier date would otherwise form with the wrong weekday.
+    let date = CalendarDate(year: 1500, month: 1, day: 1)
+
+    #expect(date == nil)
+}
+
+@Test("the first day of the first full Gregorian year is a calendar date")
+func theFirstDayOfTheFirstFullGregorianYearIsACalendarDate() {
+    let date = CalendarDate(year: 1583, month: 1, day: 1)
+
+    #expect(date != nil)
+}
+
+@Test("a year past the upper bound is not a calendar date")
+func aYearPastTheUpperBoundIsNotACalendarDate() {
+    let date = CalendarDate(year: 10000, month: 1, day: 1)
+
+    #expect(date == nil)
+}
