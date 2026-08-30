@@ -105,7 +105,10 @@ func aDayOfTheMonthBelowTheFirstIsNotADayOfTheMonth() {
 
 @Test("the thirty-first is a day of the month")
 func theThirtyFirstIsADayOfTheMonth() {
-    let dayOfMonth = DayOfMonth(day: 31)
+    let schedule = Schedule.dayOfMonth(DayOfMonth(day: 31)!)
+    let thirtyFirstOfAugust = CalendarDate(year: 2026, month: 8, day: 31)!
+    let firstOfAugust = CalendarDate(year: 2026, month: 8, day: 1)!
 
-    #expect(dayOfMonth != nil)
+    #expect(schedule.isDue(on: thirtyFirstOfAugust))
+    #expect(!schedule.isDue(on: firstOfAugust))
 }
