@@ -30,7 +30,7 @@ green after, and every earlier test still green.
 - [x] 2.1 `a date on a listed weekday is due`
 - [x] 2.2 `a date on an unlisted weekday is not due`
 - [x] 2.3 `a schedule listing every weekday is due on seven consecutive dates`
-- [ ] 2.4 `a schedule listing no weekday is due on none of seven consecutive dates`
+- [x] 2.4 `a schedule listing no weekday is due on none of seven consecutive dates`
 - [ ] 2.5 `a Sunday-only schedule is due on Sunday and not on Saturday`
 - [ ] 2.6 `a leap day is placed on its Gregorian weekday`
 - [ ] 2.7 `the first day of a year is placed on its Gregorian weekday`
