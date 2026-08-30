@@ -106,17 +106,7 @@ figure{margin:0;display:flex;flex-direction:column;gap:12px}
 figcaption{font-size:.9rem;color:var(--muted);max-width:74ch}
 figcaption b{color:var(--ink);font-weight:500}
 
-/* ---- live board ---- */
-.board{background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:20px 22px;display:flex;flex-direction:column;gap:0}
-.board .brow{display:grid;grid-template-columns:132px 1fr auto;gap:14px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--rule)}
-.board .brow:last-child{border-bottom:none}
-.board .lv{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
-.board .ti{font-family:var(--sans);font-weight:600;font-size:.98rem}
-.board .ti span{font-family:var(--mono);font-weight:400;font-size:.82rem;color:var(--muted);margin-left:8px}
-.board .st{font-family:var(--mono);font-size:.78rem;color:var(--muted);text-align:right}
-.board .kids{display:flex;flex-direction:column;gap:5px;padding-left:0}
-.board .kid{font-family:var(--mono);font-size:.82rem;color:var(--ink)}
-.board .kid i{font-style:normal;color:var(--muted)}
+/* ---- note ---- */
 .note{background:var(--signal-wash);border-left:2px solid var(--signal);padding:14px 16px;font-size:.93rem}
 .note b{font-weight:500}
 
@@ -186,8 +176,6 @@ footer code{background:none;padding:0;color:var(--ink)}
   .stage .dr,.stage .who,.stage .ou{grid-column:2}
   .enf .row{grid-template-columns:1fr;gap:6px}
   .enf .row.hd{display:none}
-  .board .brow{grid-template-columns:1fr;gap:6px}
-  .board .st{text-align:left}
 }
 </style>
 </head>
@@ -200,43 +188,6 @@ footer code{background:none;padding:0;color:var(--ink)}
   <h1>From parking lot<br><em>to main</em></h1>
   <p class="thesis">DayByDay is an iPhone app for the commitments you owe yourself and the rhythm each one runs on. It is built with <strong>Atlas</strong>, the development system this repository was started from — signed off on 24 August 2026 and inherited here rather than invented. The product half is what is new: <strong>an idea is not agreed until it has passed G4 as a requirement in a change folder</strong>, and everything before that is a line in the parking lot, however confident anyone sounded when they said it.</p>
 </header>
-
-<!-- ============ WHERE IT STANDS ============ -->
-<section>
-  <h2>Where it stands</h2>
-  <p class="lede">Read straight out of the tracker by <code>pnpm run status</code>, which derives the stage rather than storing it. Nothing below is typed by hand, and nothing depends on it — status is a projection, exactly like <code>docs/graph.mmd</code>.</p>
-  <div class="board">
-    <div class="brow">
-      <span class="lv">Epic</span>
-      <span class="ti">Daily commitments <span>#1 · opened 29 Aug</span></span>
-      <span class="st">no anchor on disk</span>
-    </div>
-    <div class="brow">
-      <span class="lv">Feature</span>
-      <span class="ti">schedule <span>#6 · G1 and G2 passed</span></span>
-      <span class="st">openspec/specs/schedule/ — its first Story archived into it</span>
-    </div>
-    <div class="brow">
-      <span class="lv">Stories · 4</span>
-      <div class="kids">
-        <span class="kid">#8 &nbsp;add-weekday-set-schedule &nbsp;<i>— merged and archived, 30 Aug</i></span>
-        <span class="kid">#9 &nbsp;add-day-of-month-schedule &nbsp;<i>— stage 4, propose</i></span>
-        <span class="kid">#10 add-every-n-days-schedule &nbsp;<i>— stage 4, not started</i></span>
-        <span class="kid">#11 add-weekly-quota-schedule &nbsp;<i>— stage 4, not started</i></span>
-      </div>
-      <span class="st">#10 and #11 have no change folder — nothing in them is implementable</span>
-    </div>
-    <div class="brow">
-      <span class="lv">Archived · 2</span>
-      <div class="kids">
-        <span class="kid">add-version-command &nbsp;<i>2026-08-23 · the pipeline rehearsal</i></span>
-        <span class="kid">add-weekday-set-schedule &nbsp;<i>2026-08-30 · the first product Story</i></span>
-      </div>
-      <span class="st">openspec/specs/cli-version/ and openspec/specs/schedule/</span>
-    </div>
-  </div>
-  <div class="note"><b>One thing to decide before the second Story starts.</b> All four Stories under <code>FEAT: schedule</code> target the same capability, and the archive at Stage 8 writes <code>openspec/specs/schedule/spec.md</code>. Two of them in flight at once would race for that one file — worktrees fix the working tree, not this. Serialise them, or move the pair to separate <code>archive/&lt;change-id&gt;</code> PRs. It is a Stage 2 decision, and discovering it at merge time is the failure mode <code>docs/process.md</code> §7 exists to prevent.</div>
-</section>
 
 <!-- ============ UPSTREAM OF STAGE 0 ============ -->
 <section>
