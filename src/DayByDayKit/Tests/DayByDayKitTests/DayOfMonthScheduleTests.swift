@@ -18,3 +18,13 @@ func aDateOnAnotherDayOfTheSameMonthIsNotDue() {
     #expect(!schedule.isDue(on: dayBefore))
     #expect(!schedule.isDue(on: dayAfter))
 }
+
+@Test("a day-of-month schedule is due on exactly one date across a whole month")
+func aDayOfMonthScheduleIsDueOnExactlyOneDateAcrossAWholeMonth() {
+    let schedule = Schedule.dayOfMonth(DayOfMonth(day: 25)!)
+    let dates = (1...30).map { CalendarDate(year: 2026, month: 9, day: $0)! }
+
+    let dueDates = dates.filter { schedule.isDue(on: $0) }
+
+    #expect(dueDates == [CalendarDate(year: 2026, month: 9, day: 25)!])
+}
