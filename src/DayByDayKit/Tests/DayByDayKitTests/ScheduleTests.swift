@@ -92,3 +92,10 @@ func aDayBeyondTheEndOfItsMonthIsNotACalendarDate() {
     #expect(date == nil)
     #expect(date != CalendarDate(year: 2026, month: 3, day: 2))
 }
+
+@Test("the twenty-ninth of February in a common year is not a calendar date")
+func theTwentyNinthOfFebruaryInACommonYearIsNotACalendarDate() {
+    let date = CalendarDate(year: 2027, month: 2, day: 29)
+
+    #expect(date == nil)
+}
