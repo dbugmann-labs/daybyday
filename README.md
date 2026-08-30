@@ -38,7 +38,9 @@ Do not start from a chat log.
 
 **If you are a human picking this up cold:** read this file, then `docs/process.md` — the
 full reasoning, twelve sections, including §12 on whether the whole apparatus is
-proportionate. `docs/retrospective.md` says what actually happened when it was first run.
+proportionate. `docs/process-overview.html` is the same process drawn on one page — open it
+in a browser first if you would rather see the shape than read it. `docs/retrospective.md`
+says what actually happened when it was first run.
 
 **If you want to know why something is the way it is:** `docs/adr/`. Fourteen decision
 records, MADR format, immutable once accepted. The register is `docs/adr/README.md`.
@@ -89,6 +91,7 @@ CONTEXT.md                 shared vocabulary
 openspec/specs/            SOURCE OF TRUTH — written only by /opsx:archive, never by hand
 openspec/changes/          proposals in flight, and archive/YYYY-MM-DD-<change-id>/
 docs/process.md            the full process and its reasoning
+docs/process-overview.html the same process on one page, for a browser
 docs/retrospective.md      what the first end-to-end run actually cost and caught
 docs/adr/                  why each hard decision was made
 docs/agents/               issue tracker, triage labels, domain docs
