@@ -21,7 +21,7 @@ this is not a correction — supersede the ADR instead. Silent edits are the thi
 exists to prevent; a visible erratum is not one.
 
 An ADR should not be the place a command name lives in the first place. It fixes the *shape*
-of a decision; the operative commands belong in `AGENTS.md` or `docs/agents/`, where they are
+of a decision; the operative commands belong in `AGENTS.md` or under `docs/`, where they are
 expected to move.
 
 Write an ADR when a decision was hard, is expensive to reverse, or would surprise someone
@@ -56,4 +56,5 @@ DayByDay's own records start here.
 |---|---|
 | [1001](1001-swift-and-swiftui.md) | The app is built in Swift and SwiftUI, native to iPhone |
 | [1002](1002-the-conductor-is-the-main-session.md) | The conductor is the main session; `pnpm run status` is a projection |
+| [1003](1003-the-pr-is-the-gate-surface.md) | The PR opens at Stage 4 as a draft; both human gates are read through it |
 | [1004](1004-the-rule-engine-speaks-calendar-dates.md) | The rule engine speaks calendar dates, not instants |

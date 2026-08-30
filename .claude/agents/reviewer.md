@@ -34,6 +34,11 @@ The change folder at the path the human approved at G4, which is why review runs
 archive commit. Read `proposal.md` and the delta first, the diff second. Reviewing the diff on
 its own tells you whether the code is good, not whether it is the code that was asked for.
 
+The diff is the Story's draft PR, open since Stage 4 and rebased onto `main` by the implementer
+before it handed back — `gh pr diff` and `gh pr view` read it. If `pnpm run status` says the PR
+is missing or behind `main`, that is the finding: say so and hand back rather than reviewing a
+diff against a base that will not be there at merge time.
+
 ## Output
 
 Findings, most severe first, each naming a file and line and a concrete failure: the input or

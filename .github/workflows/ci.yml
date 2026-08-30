@@ -5,6 +5,14 @@
 # this system to rot; docs/retrospective.md section 3 scores whether each one has
 # earned its keep, and is the place to record it when one stops doing so.
 #
+# The PR opens as a draft at Stage 4, before a line of `src/` exists, so that
+# G4 and G7 are both read as a diff. A draft therefore asserts the opposite of
+# what checks 3, 4, 5 and 8 test — they ask whether the Story is finished — and
+# those four are skipped while it is one. They run in full the moment the
+# janitor takes it out of draft at Stage 8, which is why `ready_for_review` is
+# in the trigger list: it is not one of the default pull_request types, and
+# without it the first full run would be whatever push happened to follow.
+#
 # Two jobs, because the repository holds two languages doing unrelated jobs
 # (ADR 1001). `verify` runs the whole numbered check list on Linux — including
 # check 4, which reads Swift test names out of source text and so needs no
@@ -15,6 +23,7 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
 
@@ -54,12 +63,15 @@ jobs:
         run: pnpm run check:specs
 
       - name: 3 · single-change rule
+        if: github.event.pull_request.draft != true
         run: pnpm run check:change
 
       - name: 4 · scenario coverage
+        if: github.event.pull_request.draft != true
         run: pnpm run check:scenarios
 
       - name: 5 · G4 approval recorded
+        if: github.event.pull_request.draft != true
         run: pnpm run check:g4
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,6 +83,7 @@ jobs:
         run: pnpm run verify
 
       - name: 8 · openspec validate --archived
+        if: github.event.pull_request.draft != true
         run: pnpm run spec:validate:archived
 
   # Standard GitHub-hosted runners, macOS included, are free and unlimited on

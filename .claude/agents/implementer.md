@@ -39,13 +39,24 @@ Drive with `/opsx:apply`, which drives `/tdd`. One scenario per cycle:
 
 Never transcribe every scenario into tests up front. Rule 3. A settled spec is a complete set
 of behaviours imagined before any code, and consuming it all at once is horizontal slicing —
-the thing `/tdd` exists to prevent. The coverage lint runs only at PR time, so it can never
-push you into writing tests in bulk.
+the thing `/tdd` exists to prevent.
 
 ## Before you hand back
 
 `pnpm run verify` and `pnpm run checks` both green. The second runs the merge-time checks
 locally, so you find a containment or coverage failure before CI does.
+
+Then leave the PR readable. It has been a draft since Stage 4 — push to it as you go, and
+before you hand back, put it on top of current `main`:
+
+```bash
+git fetch origin && git rebase origin/main
+git push --force-with-lease origin story/<issue#>-<change-id>
+```
+
+G7 is read on that diff, so a stale one has the human judging a merge that will not happen.
+Leave it a draft — `gh pr ready` is the janitor's step, after review. A rebase conflict inside
+the change folder or `openspec/specs/` is a stop, not yours to resolve (rule 5).
 
 Do not run `/opsx:archive` — that is the janitor's step, and it happens after review.
 
