@@ -480,12 +480,12 @@ footer code{background:none;padding:0;color:var(--ink)}
   </figure>
 
   <h3>Every gate stop takes one shape</h3>
-  <p>Four parts, in this order, and nothing else — no praise, no recap of the pipeline, no options you did not ask for. A gate whose presentation is improvised each time is a gate that quietly becomes a rubber stamp, and G4 is the one the whole requirement set rests on.</p>
+  <p>Five parts, in this order, and nothing else — no praise, no recap of the pipeline, no options you did not ask for. A gate whose presentation is improvised each time is a gate that quietly becomes a rubber stamp, and G4 is the one the whole requirement set rests on.</p>
   <div class="specimen"><pre><b>G4 — Spec approved</b>                                     <i>Story #8 add-weekday-set-schedule</i>
 
 <b>What is in front of you</b>
-  openspec/changes/add-weekday-set-schedule/proposal.md
-  openspec/changes/add-weekday-set-schedule/specs/schedule/spec.md — 4 scenarios
+  github.com/dbugmann-labs/daybyday/pull/21 — draft, on top of main, CI green
+  proposal.md, and specs/schedule/spec.md — 4 scenarios
   <i>The decision it turns on: a weekday set is evaluated against the date asked
   about, not against today, so a past day can still be ticked.</i>
 
@@ -495,10 +495,16 @@ footer code{background:none;padding:0;color:var(--ink)}
 <b>What yes commits you to</b>        Four red-green cycles, roughly a session's work.
 <b>What no costs</b>                  Rewriting the delta. Cheap here; expensive at review.
 
+<b>Recommendation</b>
+  <i>Approve. The four scenarios cover both edges we argued about, and evaluating
+  against the date asked about is the cheaper of the two to live with. I would
+  not hold this for the naming question — that is a rename later, not a respec.</i>
+
 <b>Reply</b>
   approved            <i>→ I record `G4: approved` on #8 and start the implementer</i>
   changes: &lt;what&gt;     <i>→ back to spec-author with your note</i></pre></div>
   <p class="lede">Illustrative: Story #8 has no change folder yet. The form is specified in <code>.claude/commands/atlas.md</code> and <code>docs/process.md</code> §4.</p>
+  <p><b>The recommendation is part of the form, not a courtesy.</b> The gate arrives after an agent has spent an hour on the thing being judged, and without a stated lean the cheapest reply is always yes — which is a rubber stamp with extra steps. It is also the one part that can be wrong out loud: the conductor spawned the <code>spec-author</code> whose delta is on the table, so recommending <i>changes:</i> against its own subagent is what makes the rest worth reading. It is an argument to reject, never a reason to answer without opening the PR.</p>
 </section>
 
 <!-- ============ ANCHORS ============ -->
@@ -592,7 +598,7 @@ footer code{background:none;padding:0;color:var(--ink)}
       <span class="chip h">human</span></div>
 
     <div class="stage"><span class="n">3</span><span class="nm">Grill</span><span class="dr">agent, but <b>you</b> answer what it cannot</span><span class="who"><i class="dot op"></i>spec-author</span><span class="ou"><code>design.md</code> Open Questions filled in — “None” is valid and required — plus any new <code>CONTEXT.md</code> terms</span></div>
-    <div class="stage"><span class="n">4</span><span class="nm">Propose</span><span class="dr">agent writes; <b>you</b> approve</span><span class="who"><i class="dot op"></i>spec-author</span><span class="ou">the change folder: proposal, delta specs, design, tasks. <b>Cut the branch or worktree here</b>, commit as <code>docs(&lt;capability&gt;): propose &lt;change-id&gt;</code></span></div>
+    <div class="stage"><span class="n">4</span><span class="nm">Propose</span><span class="dr">agent writes; <b>you</b> approve</span><span class="who"><i class="dot op"></i>spec-author</span><span class="ou">the change folder: proposal, delta specs, design, tasks. <b>Cut the branch or worktree here</b>, commit as <code>docs(&lt;capability&gt;): propose &lt;change-id&gt;</code>, push, and open the <b>draft PR</b> G4 is read on</span></div>
 
     <div class="gate"><span class="g">G4</span>
       <div class="gt"><span class="gh">Spec approved — the hard gate</span>
@@ -601,6 +607,7 @@ footer code{background:none;padding:0;color:var(--ink)}
           <li>the delta uses ADDED / MODIFIED / REMOVED correctly against current specs</li>
           <li>every requirement has at least one scenario, and error and edge cases have scenarios too — not just the happy path</li>
           <li><code>design.md</code> names the seam</li>
+          <li>a draft pull request is open on the branch and rebased onto current <code>main</code></li>
           <li>you have read <code>proposal.md</code> and the delta</li>
           <li>the Story issue carries a comment beginning with the exact line <code>G4: approved</code></li>
         </ul>
@@ -608,15 +615,15 @@ footer code{background:none;padding:0;color:var(--ink)}
       <span class="chip h">human + ci</span></div>
 
     <div class="stage"><span class="n">5</span><span class="nm">Red</span><span class="dr">agent — the first unsatisfied scenario</span><span class="who"><i class="dot so"></i>implementer</span><span class="ou">one failing acceptance test, named for that scenario</span></div>
-    <div class="stage"><span class="n">6</span><span class="nm">Green, then next</span><span class="dr">agent — <code>/opsx:apply</code> driving <code>/tdd</code></span><span class="who"><i class="dot so"></i>implementer</span><span class="ou">one scenario per cycle, until the delta is satisfied</span></div>
-    <div class="stage"><span class="n">7</span><span class="nm">Review</span><span class="dr">agent reports; <b>you</b> judge</span><span class="who"><i class="dot op"></i>reviewer</span><span class="ou">findings on two axes — engineering standards, and fidelity to the approved delta</span></div>
+    <div class="stage"><span class="n">6</span><span class="nm">Green, then next</span><span class="dr">agent — <code>/opsx:apply</code> driving <code>/tdd</code></span><span class="who"><i class="dot so"></i>implementer</span><span class="ou">one scenario per cycle, until the delta is satisfied — pushed to the same PR as it goes</span></div>
+    <div class="stage"><span class="n">7</span><span class="nm">Review</span><span class="dr">agent reports; <b>you</b> judge</span><span class="who"><i class="dot op"></i>reviewer</span><span class="ou">the PR rebased onto current <code>main</code>, then findings on two axes — engineering standards, and fidelity to the approved delta</span></div>
 
     <div class="gate"><span class="g">G7</span>
       <div class="gt"><span class="gh">Review clean</span>
-        <p>No unresolved findings on either axis. The reviewer never edits — it reports, and the implementer fixes. Review runs <em>before</em> the archive commit, so the reviewer sees the change folder at the path you approved at G4. It is the highest-yield stage measured so far: eight findings on forty-eight lines.</p></div>
+        <p>No unresolved findings on either axis. The reviewer never edits — it reports, and the implementer fixes. Review runs <em>before</em> the archive commit, so the reviewer sees the change folder at the path you approved at G4. It is the highest-yield stage measured so far: eight findings on forty-eight lines. The PR is put back on top of <code>main</code> before the review, so what is judged is what will merge.</p></div>
       <span class="chip h">human</span></div>
 
-    <div class="stage"><span class="n">8</span><span class="nm">Archive</span><span class="dr">agent — <code>/opsx:archive</code>, same branch</span><span class="who"><i class="dot ha"></i>janitor</span><span class="ou">delta merged into <code>openspec/specs/</code>, folder moved under <code>changes/archive/</code>, PR marked ready</span></div>
+    <div class="stage"><span class="n">8</span><span class="nm">Archive</span><span class="dr">agent — <code>/opsx:archive</code>, same branch</span><span class="who"><i class="dot ha"></i>janitor</span><span class="ou">delta merged into <code>openspec/specs/</code>, folder moved under <code>changes/archive/</code>, PR taken out of draft with <code>gh pr ready</code></span></div>
     <div class="stage"><span class="n">9</span><span class="nm">Merge</span><span class="dr">agent — squash-merge</span><span class="who"><i class="dot ha"></i>janitor</span><span class="ou">issue auto-closed, parents settled, <code>docs/graph.mmd</code> regenerated</span></div>
 
     <div class="gate ci"><span class="g">G8</span>
@@ -700,7 +707,7 @@ footer code{background:none;padding:0;color:var(--ink)}
 <!-- ============ BRANCH ============ -->
 <section>
   <h2>One Story, one working tree, one PR</h2>
-  <p class="lede">The archive is the last commit on the same branch, not a follow-up PR. That is what lets a single PR carry the spec, the code and the merge into the source of truth.</p>
+  <p class="lede">The archive is the last commit on the same branch, not a follow-up PR. That is what lets a single PR carry the spec, the code and the merge into the source of truth. The PR itself opens as a draft at Stage 4 and stays open to the merge: G4 reads it holding one commit, G7 reads it holding the whole Story, and it is rebased onto <code>main</code> before each.</p>
   <figure>
     <div class="scroll">
       <svg class="dia" viewBox="0 0 1120 300" style="min-width:820px" role="img" aria-label="A story branch cut from origin slash main at stage 4, carrying a docs propose commit, feature commits one per scenario, a review-fix commit and a final chore archive commit, then squash-merged back into main. G4 sits after the propose commit; G7 sits before the archive commit.">
@@ -754,19 +761,20 @@ footer code{background:none;padding:0;color:var(--ink)}
 <!-- ============ CI ============ -->
 <section>
   <h2>What CI actually checks</h2>
-  <p class="lede">Eight numbered checks on every PR, in one Linux job. Checks 2–6 are bespoke scripts in <code>scripts/</code> — the most likely part of this system to rot.</p>
+  <p class="lede">Eight numbered checks on every PR, in one Linux job. Checks 2–6 are bespoke scripts in <code>scripts/</code> — the most likely part of this system to rot. Four of the eight ask whether the Story is <em>finished</em>, and a draft PR asserts it is not, so they wait until it comes out of draft.</p>
   <div class="checks">
     <div class="check"><span class="ci">01</span><span class="cn">Validate everything</span><span class="cd"><code>openspec validate --all --strict --no-interactive</code></span></div>
     <div class="check key"><span class="ci">02</span><span class="cn">Spec-diff containment</span><span class="cd">Every file changed under <code>openspec/specs/</code> belongs to a capability the archived delta names. On a <code>chore/</code> branch the set must be empty. This is the check that makes the source of truth safe.</span></div>
-    <div class="check"><span class="ci">03</span><span class="cn">Single-change rule</span><span class="cd">A <code>story/</code> PR adds exactly one directory under <code>changes/archive/</code> and leaves no active folder behind.<span class="tag">staged — reports locally</span></span></div>
-    <div class="check"><span class="ci">04</span><span class="cn">Scenario coverage</span><span class="cd">Every <code>#### Scenario:</code> in the delta has an acceptance test whose title matches it verbatim, in Vitest or Swift Testing.<span class="tag">staged — reports locally</span></span></div>
-    <div class="check key"><span class="ci">05</span><span class="cn">G4 approval recorded</span><span class="cd">The Story issue carries a comment beginning <code>G4: approved</code>. This is what turns “no implementation before G4” from a convention into a red build.</span></div>
+    <div class="check"><span class="ci">03</span><span class="cn">Single-change rule</span><span class="cd">A <code>story/</code> PR adds exactly one directory under <code>changes/archive/</code> and leaves no active folder behind.<span class="tag">staged — reports locally</span><span class="tag">skipped on drafts</span></span></div>
+    <div class="check"><span class="ci">04</span><span class="cn">Scenario coverage</span><span class="cd">Every <code>#### Scenario:</code> in the delta has an acceptance test whose title matches it verbatim, in Vitest or Swift Testing.<span class="tag">staged — reports locally</span><span class="tag">skipped on drafts</span></span></div>
+    <div class="check key"><span class="ci">05</span><span class="cn">G4 approval recorded</span><span class="cd">The Story issue carries a comment beginning <code>G4: approved</code>. This is what turns “no implementation before G4” from a convention into a red build.<span class="tag">skipped on drafts</span></span></div>
     <div class="check"><span class="ci">06</span><span class="cn">Commit hygiene</span><span class="cd">No commit on the branch carries an attribution trailer or names a tool. The history is a professional record.</span></div>
     <div class="check"><span class="ci">07</span><span class="cn">Verify</span><span class="cd"><code>pnpm run verify</code> — lint, typecheck, test.</span></div>
-    <div class="check"><span class="ci">08</span><span class="cn">Archive complete</span><span class="cd"><code>openspec validate --archived</code> — every <code>tasks.md</code> checkbox in the newly archived change is ticked.</span></div>
+    <div class="check"><span class="ci">08</span><span class="cn">Archive complete</span><span class="cd"><code>openspec validate --archived</code> — every <code>tasks.md</code> checkbox in the newly archived change is ticked.<span class="tag">skipped on drafts</span></span></div>
   </div>
   <p><b>A second job exists for the product itself.</b> <code>swift</code> runs on macOS, discovers every <code>Package.swift</code> in the tree rather than assuming a layout, and says out loud when it finds none — a green run that tested nothing would be worse than a red one. No Swift exists yet: ADR&nbsp;1001 is the decision, not the first Story. The job is there so that the Story writing the first test does not also have to touch CI plumbing.</p>
   <p><b>Why 3 and 4 are staged.</b> Run locally on a Story still in flight they report rather than fail — the single-change rule reads “still active” until Stage 8, and coverage reports <code>2/4 covered — next: "&lt;title&gt;"</code>. Failing locally would demand every acceptance test at once, which is precisely the bulk transcription hard rule 3 forbids. In CI they bind, because a PR asserts the Story is finished.</p>
+  <p><b>Why 3, 4, 5 and 8 skip drafts.</b> The PR opens at Stage 4, before a line of <code>src/</code> exists, so that both human gates are read as a diff. On that day those four fail by construction: nothing is archived, no scenario is covered, and G4 has not been given yet. Skipping them is what makes an early PR usable instead of a permanent red X you learn to ignore — and 1, 2, 6 and 7 still run from the first push, so a draft proves the branch validates, stays inside its capabilities, keeps its history clean and passes lint, typecheck and tests. <code>gh pr ready</code> at Stage 8 restores the full list; the workflow subscribes to <code>ready_for_review</code> so it actually runs then.</p>
 </section>
 
 <!-- ============ ENFORCEMENT ============ -->

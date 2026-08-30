@@ -9,7 +9,9 @@
  * own rule is verify, do not remember.
  *
  * **This is a projection, exactly like `docs/graph.mmd`.** It reads the systems of record
- * and derives a stage; it is never an input, writes nothing, and no check consumes it.
+ * and derives a stage; it is never an input, writes nothing, and no check consumes it. The one
+ * thing it does write is `origin/main` itself: measuring how far a PR has fallen behind needs
+ * a fetch, which moves a remote-tracking ref and no system of record.
  * Deleting it would cost information, not correctness. That is deliberate — a status command
  * that anything depended on would be a sixth gate wearing a helpful face.
  *
@@ -46,12 +48,27 @@ export type ChangeFacts = {
   tasks: { total: number; done: number }
 }
 
+/**
+ * The pull request a Story is read through. Both human gates are read as a diff, so a Story
+ * with no PR, or a PR that no longer sits on top of `main`, is a gate the human would be
+ * answering about a merge that will not happen.
+ */
+export type PrFacts = {
+  number: number
+  url: string
+  draft: boolean
+  /** Commits on `origin/main` that the branch does not have. `null` when origin/main is unknown. */
+  behindMain: number | null
+}
+
 export type StoryFacts = {
   issue: number
   changeId: string
   /** null when no change folder exists yet — the Story has been cut but nothing written down. */
   change: ChangeFacts | null
   approval: { by: string; at: string } | null
+  /** null when the branch has no pull request yet. */
+  pr: PrFacts | null
 }
 
 export type Owner = 'you' | 'agent' | 'nobody'
@@ -75,6 +92,58 @@ export type StoryStatus = {
 // ---------------------------------------------------------------------------
 // Derivation — pure, and the only part with rules in it.
 // ---------------------------------------------------------------------------
+
+/**
+ * Both human gates are read as a pull request: G4 as the change folder's diff, G7 as the whole
+ * Story's. So before either one is put to the human, the PR has to exist and has to sit on top
+ * of `main`. Staleness is not cosmetic — a delta's ADDED/MODIFIED claims are written against
+ * the specs as they are, and `main` moving underneath a branch can invalidate them without
+ * touching a file in it.
+ *
+ * Returns the step that has to happen first, or `null` when the PR is fit to be read.
+ */
+export function prNotReady(f: StoryFacts, stage: number, stageName: string, actor: string, next: string): StoryStatus | null {
+  const branch = `story/${f.issue}-${f.changeId}`
+
+  if (f.pr === null) {
+    return {
+      stage,
+      stageName,
+      owner: 'agent',
+      actor,
+      blocker: 'The branch has no pull request, so the gate has no diff to be read as. Open it as a draft — draft is what tells CI the Story is not finished yet.',
+      actions: [
+        { label: 'Push', command: `git push -u origin ${branch}` },
+        { label: 'Open', command: `gh pr create --draft --base main --title '${f.changeId}' --body 'Closes #${f.issue}'` },
+      ],
+      next,
+      unobservable: null,
+    }
+  }
+
+  if (f.pr.behindMain === null || f.pr.behindMain > 0) {
+    const behind =
+      f.pr.behindMain === null
+        ? 'The PR cannot be compared with `main` — `origin/main` is not fetched here.'
+        : `The PR is ${f.pr.behindMain} commit(s) behind \`main\`.`
+    return {
+      stage,
+      stageName,
+      owner: 'agent',
+      actor,
+      blocker: `${behind} Refresh it before the gate: a diff against a stale base is a decision about a merge that will not happen.`,
+      actions: [
+        { label: 'Refresh', command: 'git fetch origin && git rebase origin/main' },
+        { label: 'Push', command: `git push --force-with-lease origin ${branch}` },
+        { label: 'Note', command: 'a conflict in the delta or in openspec/specs/ is a stop — main moved under this Story (rule 5)' },
+      ],
+      next,
+      unobservable: null,
+    }
+  }
+
+  return null
+}
 
 /**
  * The stage a Story is in, derived from facts alone. First matching rule wins, so the order
@@ -110,6 +179,7 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
       blocker: 'The change is archived. The branch is finished and waiting to merge.',
       actions: [
         { label: 'Verify', command: 'pnpm run verify && pnpm run checks' },
+        ...(f.pr?.draft === true ? [{ label: 'Ready', command: `gh pr ready ${f.pr.number} — the full check list only binds once it is out of draft` }] : []),
         { label: 'Merge', command: `gh pr merge --squash` },
         { label: 'Then', command: 'settle the parent Feature and Epic, and `pnpm run graph`' },
       ],
@@ -167,6 +237,9 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
   }
 
   if (f.approval === null) {
+    const pr = prNotReady(f, 4, 'Propose', 'spec-author', 'G4 — you read the PR and sign it.')
+    if (pr !== null) return pr
+
     return {
       stage: 4,
       stageName: 'Propose — G4',
@@ -174,6 +247,7 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
       actor: null,
       blocker: 'The change folder is ready and unapproved. No code may be written until you have read it and signed it.',
       actions: [
+        { label: 'Read', command: `${f.pr?.url ?? 'the draft PR'} — the change folder as a diff` },
         { label: 'Read', command: path.join(c.dir, 'proposal.md') },
         ...c.capabilities.map((cap) => ({
           label: 'Read',
@@ -235,6 +309,9 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
     }
   }
 
+  const pr = prNotReady(f, 7, 'Review', 'implementer', 'G7 — review, on the diff that will actually merge.')
+  if (pr !== null) return pr
+
   return {
     stage: 7,
     stageName: 'Review',
@@ -242,6 +319,7 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
     actor: 'reviewer',
     blocker: `All ${total} scenario(s) covered and every task ticked. The Story is finished and unreviewed.`,
     actions: [
+      { label: 'Read', command: `${f.pr?.url ?? 'the PR'} — the whole Story as one diff` },
       { label: 'Run', command: 'the reviewer subagent — standards, and fidelity to the approved delta' },
       { label: 'Read', command: 'its findings; the implementer fixes them, the reviewer never edits' },
       { label: 'Then', command: `the janitor archives: /opsx:archive as the last commit on this branch` },
@@ -308,6 +386,39 @@ export function gatherChange(loc: ChangeLocation): ChangeFacts {
   }
 }
 
+/**
+ * The PR for this branch, and how far `main` has moved since it was last rebased. The
+ * behind-count is measured locally against `origin/main` after a fetch rather than read from
+ * GitHub, because `gh` reports mergeability as a lazily computed field that is frequently
+ * `UNKNOWN` on the first read. No PR, no token or no network all read as "no PR": the failure
+ * mode of guessing otherwise is a gate presented on a diff nobody can open.
+ */
+export function gatherPr(branch: string): PrFacts | null {
+  let pr: { number: number; url: string; isDraft: boolean }
+  try {
+    const raw = execFileSync('gh', ['pr', 'view', branch, '--json', 'number,url,isDraft,state'], {
+      encoding: 'utf8',
+      stdio: 'pipe',
+    })
+    const parsed = JSON.parse(raw) as { number: number; url: string; isDraft: boolean; state: string }
+    if (parsed.state !== 'OPEN') return null
+    pr = parsed
+  } catch {
+    return null
+  }
+
+  let behindMain: number | null
+  try {
+    execFileSync('git', ['fetch', '--quiet', 'origin', 'main'], { stdio: 'pipe' })
+    const count = Number(git(['rev-list', '--count', 'HEAD..origin/main']))
+    behindMain = Number.isNaN(count) ? null : count
+  } catch {
+    behindMain = null
+  }
+
+  return { number: pr.number, url: pr.url, draft: pr.isDraft, behindMain }
+}
+
 export function gatherApproval(repo: string, issue: number): { by: string; at: string } | null {
   const MARKER = /^G4: approved\b/m
   try {
@@ -354,7 +465,8 @@ export function renderStory(branchName: string, f: StoryFacts, s: StoryStatus): 
   out.push('')
   out.push(`  Derived from: change folder ${f.change === null ? 'absent' : f.change.dir}` +
     (f.change === null ? '' : `, validates=${f.change.validates}, scenarios ${f.change.scenarios.covered}/${f.change.scenarios.total}, tasks ${f.change.tasks.done}/${f.change.tasks.total}`) +
-    `, G4 ${f.approval === null ? 'absent' : `by ${f.approval.by}`}`)
+    `, G4 ${f.approval === null ? 'absent' : `by ${f.approval.by}`}` +
+    `, PR ${f.pr === null ? 'none' : `#${f.pr.number}${f.pr.draft ? ' (draft)' : ''}${f.pr.behindMain === null ? '' : `, ${f.pr.behindMain} behind main`}`}`)
   out.push('')
   return out.join('\n')
 }
@@ -454,6 +566,7 @@ if (import.meta.filename === process.argv[1]) {
       changeId: branch.changeId,
       change: loc === null ? null : gatherChange(loc),
       approval: gatherApproval(repoSlug(), branch.issue),
+      pr: gatherPr(branch.raw),
     }
     const status = deriveStoryStatus(facts)
     console.log(asJson ? JSON.stringify({ branch: branch.raw, facts, status }, null, 2) : renderStory(branch.raw, facts, status))

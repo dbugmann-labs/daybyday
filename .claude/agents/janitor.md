@@ -21,19 +21,23 @@ Read `AGENTS.md` first. It is binding.
    the change folder at the path the human approved.
 2. **Verify the archive.** `openspec validate --archived` — every `tasks.md` box ticked — and
    `pnpm run checks`, which asserts containment and the single-change rule.
-3. **Merge.** Squash-merge once CI is green. The PR closes its Story issue; the branch deletes
+3. **Take the PR out of draft.** `gh pr ready <pr#>`. It has been a draft since Stage 4, which
+   is what told CI the Story was unfinished; four of the eight checks — single-change, scenario
+   coverage, G4 recorded, archive complete — are skipped while it is one and run only now. Do
+   this after the archive commit is pushed, so the run that binds sees the finished branch.
+4. **Merge.** Squash-merge once CI is green. The PR closes its Story issue; the branch deletes
    itself.
-4. **Settle the parents.** The merge closed the Story. If that was the last open Story under
+5. **Settle the parents.** The merge closed the Story. If that was the last open Story under
    its Feature, close the Feature; if that was the last open Feature under its Epic, close the
    Epic. `open` means outstanding work at every level, so a parent whose children have all
    closed is stale state. Check the rollup rather than guessing, and stop if a parent still has
    open children — settling cascades one level per pass. See
    `docs/agents/issue-tracker.md` § *Closing the hierarchy*.
-5. **Regenerate `docs/graph.mmd`** with `pnpm run graph`, and commit it if it changed. It is a
+6. **Regenerate `docs/graph.mmd`** with `pnpm run graph`, and commit it if it changed. It is a
    read-only projection of the sub-issue edges — never hand-maintained, and never checked by CI,
    because issue state moves without any commit. Do not reach for `gh issue list --json`: it
    carries neither the issue type nor the sub-issue edge, so the generator uses GraphQL. An
-   amber node is a parent that step 4 should have closed.
+   amber node is a parent that step 5 should have closed.
 
 ## Why you have no file-editing tools
 

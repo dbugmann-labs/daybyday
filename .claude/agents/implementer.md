@@ -47,6 +47,19 @@ push you into writing tests in bulk.
 `pnpm run verify` and `pnpm run checks` both green. The second runs the merge-time checks
 locally, so you find a containment or coverage failure before CI does.
 
+Then leave the PR in a state the reviewer and the human can read. It has been open as a draft
+since Stage 4 — push to it as you go, and before you hand back, put it on top of current `main`:
+
+```bash
+git fetch origin && git rebase origin/main
+git push --force-with-lease origin story/<issue#>-<change-id>
+```
+
+G7 is read on that diff, so a stale one has the human judging a merge that will not happen.
+Leave it a draft — `gh pr ready` is the janitor's step, after review. If the rebase conflicts
+inside the change folder or `openspec/specs/`, stop and report it: `main` moved under this
+Story and that is not yours to resolve (rule 5).
+
 Do not run `/opsx:archive` — that is the janitor's step, and it happens after review.
 
 If you cannot make a scenario pass without inventing behaviour the delta does not describe,

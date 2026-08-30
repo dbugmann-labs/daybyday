@@ -41,10 +41,19 @@ shapes what is useful from you:
 ## The pipeline
 
 ```
-Epic ──▶ Feature ──▶ Story ──▶ grill ──▶ propose ──▶ [G4] ──▶ red/green ──▶ review ──▶ archive ──▶ PR ──▶ merge
-        (issue)     (issue)   (issue)                  ▲
-                                                       └── nothing is implemented before this gate
+Epic ──▶ Feature ──▶ Story ──▶ grill ──▶ propose ──▶ [G4] ──▶ red/green ──▶ review ──▶ archive ──▶ merge
+        (issue)     (issue)   (issue)      │          ▲                       │          │
+                                           │          │                       │          │
+                                     draft PR         │                 refreshed    marked ready
+                                       opened         └── nothing is implemented before this gate
 ```
+
+**The PR opens at Stage 4 and stays open, as a draft, until the archive.** Both human gates are
+read as a diff — G4 the change folder, G7 the whole Story — and the same URL carries both. A
+draft is what tells CI the Story is not finished: checks 3, 4, 5 and 8 are skipped while it is
+one and bind the moment it comes out. Before either gate the branch is rebased onto
+`origin/main` and force-pushed, because a diff against a stale base is a decision about a merge
+that will not happen. See `docs/adr/1003-the-pr-is-the-gate-surface.md`.
 
 | Level | GitHub | Anchor on disk |
 |---|---|---|
@@ -118,8 +127,11 @@ marker would be written by an agent one hop further from the human who said the 
 `docs/adr/1002-the-conductor-is-the-main-session.md`.
 
 **Every gate stop takes one form**, so the human learns one shape instead of five: what is in
-front of you, the question, what a yes commits you to against what a no costs, and the exact
-reply. The form is specified in `.claude/commands/atlas.md` and `docs/process.md` §4.
+front of you, the question, what a yes commits you to against what a no costs, **the
+recommendation** — which reply the conductor would choose and the one reason — and the exact
+reply. There is a decision on the table at every gate, so the recommendation is never omitted:
+a gate the conductor has no view on is a gate it has not read, and a gate with no stated lean
+is one where the cheapest answer is always yes. The form is specified in `.claude/commands/atlas.md` and `docs/process.md` §4.
 
 ## Agent roles and model routing
 
@@ -268,6 +280,33 @@ until G4. Implementation commits are `feat(<capability>): ...`. The archive at S
 one commit that breaks the pattern: it is `chore(archive): <change-id>`, scoped `archive`
 rather than the capability, because it moves the change folder and merges the delta rather
 than changing that capability's behaviour. Do not extrapolate `chore(<capability>): ...` here.
+
+**Open the draft PR in the same breath**, before asking for G4. The gate is read as a diff, and
+a change folder is far easier to judge as one than as four files someone has to open by hand:
+
+```bash
+git push -u origin story/<issue#>-<change-id>
+gh pr create --draft --base main --title '<change-id>' --body 'Closes #<issue#>'
+```
+
+`Closes #<issue#>` is what auto-closes the Story on merge, so it is not optional. Draft is not
+decoration either: CI reads it as "this Story is not finished", and skips the four checks that
+assert it is — 3, 4, 5 and 8. They bind again the moment the janitor runs `gh pr ready` at
+Stage 8. Keep pushing as you go; the PR is the Story's one URL from Stage 4 to merge.
+
+**Refresh the PR before each of the two gates**, G4 and G7:
+
+```bash
+git fetch origin && git rebase origin/main
+git push --force-with-lease origin story/<issue#>-<change-id>
+```
+
+`--force-with-lease` rather than `--force`, and a rebase rather than a merge, so the PR shows
+the Story's own commits on top of current `main` and nothing else. This is not tidiness: the
+delta's ADDED / MODIFIED claims are written against the specs as they stand, and `main` moving
+underneath the branch can invalidate them without touching a file in it. If the rebase
+conflicts inside the change folder or `openspec/specs/`, stop and report it — another Story
+landed on this capability, which is a decision for the human, not a merge you resolve (rule 5).
 
 **`pnpm run checks` is staged.** Mid-Story it reports rather than fails: the single-change rule
 reads "still active" until the archive at Stage 8, and scenario coverage reports `2/4 covered —

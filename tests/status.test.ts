@@ -29,6 +29,7 @@ function facts(over: Partial<StoryFacts> = {}): StoryFacts {
     changeId: 'add-schedule-rules',
     change: change(),
     approval: { by: 'diegobugmann', at: '2026-08-29T10:00:00Z' },
+    pr: { number: 21, url: 'https://github.com/dbugmann-labs/daybyday/pull/21', draft: true, behindMain: 0 },
     ...over,
   }
 }
@@ -122,6 +123,49 @@ describe('deriveStoryStatus', () => {
     const s = deriveStoryStatus(facts({ change: change({ validates: false, validationError: 'missing scenario' }) }))
     expect(s.owner).toBe('agent')
     expect(s.blocker).toContain('missing scenario')
+  })
+
+  // Both human gates are read as a diff. A gate presented without one asks the human to hold
+  // the change folder in their head; a gate presented on a stale one asks them about a merge
+  // that will not happen. Neither is put to them — the branch is made readable first.
+  it('opens the draft PR before putting G4 to the human', () => {
+    const s = deriveStoryStatus(facts({ approval: null, pr: null }))
+    expect(s.stage).toBe(4)
+    expect(s.owner).toBe('agent')
+    expect(s.actions.some((a) => a.command.includes('gh pr create --draft'))).toBe(true)
+  })
+
+  it('refreshes a PR that main has moved past before either gate', () => {
+    const behind = { number: 21, url: 'https://example.invalid/21', draft: true, behindMain: 3 }
+    const atG4 = deriveStoryStatus(facts({ approval: null, pr: behind }))
+    expect(atG4.owner).toBe('agent')
+    expect(atG4.blocker).toContain('3 commit(s) behind')
+
+    const atG7 = deriveStoryStatus(
+      facts({ pr: behind, change: change({ scenarios: { total: 4, covered: 4, next: null }, tasks: { total: 6, done: 6 } }) }),
+    )
+    expect(atG7.stage).toBe(7)
+    expect(atG7.owner).toBe('agent')
+    expect(atG7.actions.some((a) => a.command.includes('--force-with-lease'))).toBe(true)
+  })
+
+  // Offline, the count is unknown. Rebasing a branch that is already current costs nothing;
+  // presenting a gate on a diff nobody has compared with main costs the gate.
+  it('refreshes rather than guesses when main cannot be compared', () => {
+    const s = deriveStoryStatus(facts({ approval: null, pr: { number: 21, url: 'https://example.invalid/21', draft: true, behindMain: null } }))
+    expect(s.owner).toBe('agent')
+    expect(s.blocker).toContain('not fetched')
+  })
+
+  it('puts the PR first among the things to read at G4', () => {
+    const s = deriveStoryStatus(facts({ approval: null }))
+    expect(s.owner).toBe('you')
+    expect(s.actions[0]?.command).toContain('/pull/21')
+  })
+
+  it('takes the PR out of draft before the merge', () => {
+    const s = deriveStoryStatus(facts({ change: change({ archived: true }) }))
+    expect(s.actions.some((a) => a.command.startsWith('gh pr ready 21'))).toBe(true)
   })
 })
 
