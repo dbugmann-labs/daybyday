@@ -74,3 +74,13 @@ func aLeapDayIsPlacedOnItsGregorianWeekday() {
     #expect(tuesdaySchedule.isDue(on: leapDay))
     #expect(!mondaySchedule.isDue(on: leapDay))
 }
+
+@Test("the first day of a year is placed on its Gregorian weekday")
+func theFirstDayOfAYearIsPlacedOnItsGregorianWeekday() {
+    let schedule = Schedule.weekdays([.friday])
+    let newYearsDay = CalendarDate(year: 2027, month: 1, day: 1)!
+    let newYearsEve = CalendarDate(year: 2026, month: 12, day: 31)!
+
+    #expect(schedule.isDue(on: newYearsDay))
+    #expect(!schedule.isDue(on: newYearsEve))
+}

@@ -33,7 +33,7 @@ green after, and every earlier test still green.
 - [x] 2.4 `a schedule listing no weekday is due on none of seven consecutive dates`
 - [x] 2.5 `a Sunday-only schedule is due on Sunday and not on Saturday`
 - [x] 2.6 `a leap day is placed on its Gregorian weekday`
-- [ ] 2.7 `the first day of a year is placed on its Gregorian weekday`
+- [x] 2.7 `the first day of a year is placed on its Gregorian weekday`
 - [ ] 2.8 `a day beyond the end of its month is not a calendar date` — the assertion that
   2 March 2026 was not formed in its place is part of the test, not decoration: it is the
   Foundation rolling behaviour recorded in `design.md` § *Context*.
