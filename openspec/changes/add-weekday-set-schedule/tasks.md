@@ -1,6 +1,6 @@
 ## 1. The package and the seam
 
-- [ ] 1.1 Add `.build/` and `.swiftpm/` to `.gitignore`; verify with `git status --porcelain`
+- [x] 1.1 Add `.build/` and `.swiftpm/` to `.gitignore`; verify with `git status --porcelain`
   after task 1.2 that no build product is listed. This is the one task here that writes outside
   `src/**` — if that scope is binding for you, stop and hand this line to the conductor rather
   than widening it yourself (`AGENTS.md` rule 6 and `design.md` § *Risks*).
@@ -44,9 +44,9 @@ green after, and every earlier test still green.
 
 ## 3. Gates
 
-- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 11 tests passing and no failures, and
+- [x] 3.1 `cd src/DayByDayKit && swift test` reports 11 tests passing and no failures, and
   `pnpm run verify` exits 0 (the TypeScript half is unaffected and must stay green).
-- [ ] 3.2 `pnpm exec openspec validate add-weekday-set-schedule --strict` exits 0, and
+- [x] 3.2 `pnpm exec openspec validate add-weekday-set-schedule --strict` exits 0, and
   `pnpm run checks` reports scenario coverage as 11 of 11 with a matching title for each.
 - [ ] 3.3 `/code-review` reports nothing unresolved on either axis (**G7**).
 
