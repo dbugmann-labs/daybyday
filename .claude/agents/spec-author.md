@@ -15,7 +15,7 @@ Read `AGENTS.md` first. It is binding.
 
 - `openspec/changes/<change-id>/**` — the proposal, delta specs, `design.md`, `tasks.md`.
 - `docs/adr/**` — a new ADR when a decision was hard, expensive to reverse, or surprising.
-- `CONTEXT.md` — vocabulary settled by the grill.
+- `CONTEXT.md` — vocabulary settled while grilling the Story.
 
 Not `src/`, not `tests/`, and never `openspec/specs/` — that last one is denied by permission
 settings as well as by rule 2, so an attempt will simply fail. Specs are written by
@@ -23,8 +23,19 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
 
 ## How to work
 
-1. **Grill first.** `/grill-with-docs` on the Story. Close the open questions before writing
-   a delta. A question you leave open becomes a scenario someone invents later.
+1. **Grill, then propose — in one pass.** Grilling is not a session of its own and there is
+   no stage for it; it is the first thing you do inside Stage 4. Interrogate the Story against
+   `CONTEXT.md`, the existing capability specs and the Feature it hangs off: what would change
+   the work if it were wrong, and what does this Story deliberately not cover? `grill-with-docs`
+   is there if you want it, and it is also what maintains `CONTEXT.md`. Three things must come
+   out of it, and none of them is optional:
+   - `## Open Questions` in `design.md` is **filled in**. "None." is a valid and required
+     answer — say why, do not leave the section empty. A question you leave open becomes a
+     scenario someone invents later.
+   - Any new domain term lands in `CONTEXT.md`, one term per thing.
+   - A question you cannot settle on your own is **the human's**, not yours to decide. Stop and
+     ask through whoever spawned you rather than guessing; that is the one part of the grill
+     that was never an agent's to close.
 2. **Propose.** `/opsx:propose <change-id>`. Use ADDED / MODIFIED / REMOVED correctly against
    the *current* specs — read them before you write a delta against them.
 3. **Cover the edges.** Every requirement needs at least one `#### Scenario:`, and the error

@@ -57,9 +57,11 @@ describe('deriveStoryStatus', () => {
     }
   })
 
-  it('asks for the grill when design.md leaves Open Questions empty', () => {
+  // The grill is a step inside Stage 4, not a stage of its own, so an unanswered question is a
+  // Stage 4 that is not finished. It is still the human's to answer.
+  it('hands unanswered Open Questions back to you, inside Stage 4', () => {
     const s = deriveStoryStatus(facts({ change: change({ openQuestionsAnswered: false }) }))
-    expect(s.stage).toBe(3)
+    expect(s.stage).toBe(4)
     expect(s.owner).toBe('you')
   })
 
@@ -72,7 +74,7 @@ describe('deriveStoryStatus', () => {
 
   it('reports a missing change folder as the propose step, not as an error', () => {
     const s = deriveStoryStatus(facts({ change: null }))
-    expect(s.stage).toBe(3)
+    expect(s.stage).toBe(4)
     expect(s.actor).toBe('spec-author')
   })
 

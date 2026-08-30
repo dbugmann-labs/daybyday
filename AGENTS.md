@@ -37,11 +37,11 @@ The repo owner works roughly 4–8 hours a week on this and is the only human in
 ## The pipeline
 
 ```
-Epic ──▶ Feature ──▶ Story ──▶ grill ──▶ propose ──▶ [G4] ──▶ red/green ──▶ review ──▶ archive ──▶ merge
-        (issue)     (issue)   (issue)      │          ▲                       │          │
-                                           │          │                       │          │
-                                     draft PR         │                 refreshed    marked ready
-                                       opened         └── nothing is implemented before this gate
+Epic ──▶ Feature ──▶ Story ──▶ propose ──▶ [G4] ──▶ red/green ──▶ review ──▶ archive ──▶ merge
+        (issue)     (issue)      │          ▲                       │          │
+                                 │          │                       │          │
+                           draft PR         │                 refreshed    marked ready
+                             opened         └── nothing is implemented before this gate
 ```
 
 | Level | GitHub | Anchor on disk |
@@ -53,6 +53,12 @@ Epic ──▶ Feature ──▶ Story ──▶ grill ──▶ propose ──�
 One Story = one change = one branch = one PR. That PR opens at Stage 4 and stays open, as a
 draft, until the archive: both human gates are read as a diff off the same URL, and it is
 rebased onto `origin/main` before each. See `docs/story-mechanics.md` and ADR-1003.
+
+**There is no grill stage.** Grilling is the first thing Stage 4 does, not a session of its
+own, and the stage numbers skip 3 where it used to sit. Its obligations moved with it and none
+of them lapsed: `design.md` § Open Questions is filled in — "None", with the reason, is a valid
+and required answer — new domain terms land in `CONTEXT.md`, and the human answers what the
+grill cannot settle before the change folder is handed over at G4. ADR-1005.
 
 ## Hard rules
 

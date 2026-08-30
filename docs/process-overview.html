@@ -214,22 +214,25 @@ footer code{background:none;padding:0;color:var(--ink)}
     <div class="brow">
       <span class="lv">Feature</span>
       <span class="ti">schedule <span>#6 · G1 and G2 passed</span></span>
-      <span class="st">openspec/specs/schedule/ — not yet written</span>
+      <span class="st">openspec/specs/schedule/ — its first Story archived into it</span>
     </div>
     <div class="brow">
       <span class="lv">Stories · 4</span>
       <div class="kids">
-        <span class="kid">#8 &nbsp;add-weekday-set-schedule &nbsp;<i>— stage 3, grill</i></span>
-        <span class="kid">#9 &nbsp;add-day-of-month-schedule &nbsp;<i>— stage 3, grill</i></span>
-        <span class="kid">#10 add-every-n-days-schedule &nbsp;<i>— stage 3, grill</i></span>
-        <span class="kid">#11 add-weekly-quota-schedule &nbsp;<i>— stage 3, grill</i></span>
+        <span class="kid">#8 &nbsp;add-weekday-set-schedule &nbsp;<i>— merged and archived, 30 Aug</i></span>
+        <span class="kid">#9 &nbsp;add-day-of-month-schedule &nbsp;<i>— stage 4, propose</i></span>
+        <span class="kid">#10 add-every-n-days-schedule &nbsp;<i>— stage 4, not started</i></span>
+        <span class="kid">#11 add-weekly-quota-schedule &nbsp;<i>— stage 4, not started</i></span>
       </div>
-      <span class="st">no change folder yet — nothing is implementable</span>
+      <span class="st">#10 and #11 have no change folder — nothing in them is implementable</span>
     </div>
     <div class="brow">
-      <span class="lv">Archived · 1</span>
-      <span class="ti">add-version-command <span>2026-08-23 · the pipeline rehearsal</span></span>
-      <span class="st">openspec/specs/cli-version/spec.md</span>
+      <span class="lv">Archived · 2</span>
+      <div class="kids">
+        <span class="kid">add-version-command &nbsp;<i>2026-08-23 · the pipeline rehearsal</i></span>
+        <span class="kid">add-weekday-set-schedule &nbsp;<i>2026-08-30 · the first product Story</i></span>
+      </div>
+      <span class="st">openspec/specs/cli-version/ and openspec/specs/schedule/</span>
     </div>
   </div>
   <div class="note"><b>One thing to decide before the second Story starts.</b> All four Stories under <code>FEAT: schedule</code> target the same capability, and the archive at Stage 8 writes <code>openspec/specs/schedule/spec.md</code>. Two of them in flight at once would race for that one file — worktrees fix the working tree, not this. Serialise them, or move the pair to separate <code>archive/&lt;change-id&gt;</code> PRs. It is a Stage 2 decision, and discovering it at merge time is the failure mode <code>docs/process.md</code> §7 exists to prevent.</div>
@@ -303,21 +306,21 @@ footer code{background:none;padding:0;color:var(--ink)}
 <!-- ============ THE RAIL ============ -->
 <section>
   <h2>The line, end to end</h2>
-  <p class="lede">Ten stages, five gates. A gate is a place where work stops until a named condition holds; colour says who clears it — <span style="color:var(--signal)">a human</span>, or <span style="color:var(--machine)">the machine</span>.</p>
+  <p class="lede">Nine stages, five gates — numbered 0 to 9 with no Stage 3, where the grill used to be. A gate is a place where work stops until a named condition holds; colour says who clears it — <span style="color:var(--signal)">a human</span>, or <span style="color:var(--machine)">the machine</span>.</p>
   <figure>
     <div class="scroll">
-      <svg class="dia" viewBox="0 0 1340 320" style="min-width:980px" role="img" aria-label="The pipeline as a rail. Product definition feeds Stage 0, Epic intake. Ten stages run from Epic to merge, interrupted by five gates: G1 and G2 human, G4 human plus CI, G7 human, G8 CI. G4 is a hard vertical line dividing the specification half from the implementation half. The conductor spans the whole rail; each span of stages names the agent and model that runs it.">
+      <svg class="dia" viewBox="0 0 1235 320" style="min-width:980px" role="img" aria-label="The pipeline as a rail. Product definition feeds Stage 0, Epic intake. Nine stages run from Epic to merge, numbered 0 to 9 with no Stage 3, interrupted by five gates: G1 and G2 human, G4 human plus CI, G7 human, G8 CI. G4 is a hard vertical line dividing the specification half from the implementation half. The conductor spans the whole rail; each span of stages names the agent and model that runs it.">
         <defs>
           <marker id="r-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
         </defs>
 
         <!-- conductor band -->
-        <path d="M178 40 V34 H1167 V40" class="s-ink f-none" stroke-width="1.2"/>
-        <text x="672" y="26" text-anchor="middle" class="cap f-mut">THE CONDUCTOR — /atlas · ENTERS EVERY STAGE, STOPS AT EVERY GATE</text>
+        <path d="M178 40 V34 H1062 V40" class="s-ink f-none" stroke-width="1.2"/>
+        <text x="620" y="26" text-anchor="middle" class="cap f-mut">THE CONDUCTOR — /atlas · ENTERS EVERY STAGE, STOPS AT EVERY GATE</text>
 
         <!-- G4 hard line -->
-        <line x1="672" y1="64" x2="672" y2="300" class="s-sig" stroke-width="1" stroke-dasharray="3 4" opacity=".7"/>
-        <text x="672" y="54" text-anchor="middle" class="cap f-sig">NOTHING IS IMPLEMENTED LEFT OF THIS LINE</text>
+        <line x1="567" y1="64" x2="567" y2="300" class="s-sig" stroke-width="1" stroke-dasharray="3 4" opacity=".7"/>
+        <text x="567" y="54" text-anchor="middle" class="cap f-sig">NOTHING IS IMPLEMENTED LEFT OF THIS LINE</text>
 
         <!-- upstream -->
         <rect x="10" y="170" width="146" height="40" rx="3" fill="none" stroke="var(--idea)" stroke-width="1.2" stroke-dasharray="4 3"/>
@@ -326,12 +329,12 @@ footer code{background:none;padding:0;color:var(--ink)}
         <line x1="160" y1="190" x2="182" y2="190" class="s-idea" stroke-width="1.2" marker-end="url(#r-ink)" color="var(--idea)"/>
 
         <!-- rail -->
-        <line x1="165" y1="190" x2="672" y2="190" class="s-mut" stroke-width="1.6"/>
-        <line x1="672" y1="190" x2="1250" y2="190" class="s-ink" stroke-width="3.4" marker-end="url(#r-ink)"/>
-        <text x="1262" y="194" class="mono f-mut">main</text>
+        <line x1="165" y1="190" x2="567" y2="190" class="s-mut" stroke-width="1.6"/>
+        <line x1="567" y1="190" x2="1145" y2="190" class="s-ink" stroke-width="3.4" marker-end="url(#r-ink)"/>
+        <text x="1157" y="194" class="mono f-mut">main</text>
 
-        <text x="567" y="166" text-anchor="middle" class="cap f-mut">SPECIFICATION</text>
-        <text x="830" y="166" text-anchor="middle" class="cap f-mut">IMPLEMENTATION</text>
+        <text x="462" y="166" text-anchor="middle" class="cap f-mut">SPECIFICATION</text>
+        <text x="725" y="166" text-anchor="middle" class="cap f-mut">IMPLEMENTATION</text>
 
         <!-- gates -->
         <g>
@@ -347,22 +350,22 @@ footer code{background:none;padding:0;color:var(--ink)}
           <text x="462" y="88" text-anchor="middle" class="cap f-mut">HUMAN</text>
         </g>
         <g>
-          <line x1="672" y1="128" x2="672" y2="190" class="s-sig" stroke-width="3"/>
-          <rect x="643" y="96" width="58" height="34" rx="3" class="f-sig"/>
-          <text x="672" y="118" text-anchor="middle" class="hd f-pap">G4</text>
-          <text x="672" y="86" text-anchor="middle" class="cap f-sig">HUMAN + CI</text>
+          <line x1="567" y1="128" x2="567" y2="190" class="s-sig" stroke-width="3"/>
+          <rect x="538" y="96" width="58" height="34" rx="3" class="f-sig"/>
+          <text x="567" y="118" text-anchor="middle" class="hd f-pap">G4</text>
+          <text x="567" y="86" text-anchor="middle" class="cap f-sig">HUMAN + CI</text>
         </g>
         <g>
-          <line x1="987" y1="128" x2="987" y2="190" class="s-sig" stroke-width="1.4"/>
-          <rect x="962" y="98" width="50" height="30" rx="3" class="f-pap s-sig" stroke-width="1.4"/>
-          <text x="987" y="118" text-anchor="middle" class="hd f-sig">G7</text>
-          <text x="987" y="88" text-anchor="middle" class="cap f-mut">HUMAN</text>
+          <line x1="882" y1="128" x2="882" y2="190" class="s-sig" stroke-width="1.4"/>
+          <rect x="857" y="98" width="50" height="30" rx="3" class="f-pap s-sig" stroke-width="1.4"/>
+          <text x="882" y="118" text-anchor="middle" class="hd f-sig">G7</text>
+          <text x="882" y="88" text-anchor="middle" class="cap f-mut">HUMAN</text>
         </g>
         <g>
-          <line x1="1190" y1="128" x2="1190" y2="190" class="s-mac" stroke-width="1.4"/>
-          <rect x="1165" y="98" width="50" height="30" rx="3" class="f-pap s-mac" stroke-width="1.4"/>
-          <text x="1190" y="118" text-anchor="middle" class="hd f-mac">G8</text>
-          <text x="1190" y="88" text-anchor="middle" class="cap f-mut">CI</text>
+          <line x1="1085" y1="128" x2="1085" y2="190" class="s-mac" stroke-width="1.4"/>
+          <rect x="1060" y="98" width="50" height="30" rx="3" class="f-pap s-mac" stroke-width="1.4"/>
+          <text x="1085" y="118" text-anchor="middle" class="hd f-mac">G8</text>
+          <text x="1085" y="88" text-anchor="middle" class="cap f-mut">CI</text>
         </g>
 
         <!-- stages -->
@@ -370,29 +373,28 @@ footer code{background:none;padding:0;color:var(--ink)}
           <circle cx="200" cy="190" r="13" class="box"/><text x="200" y="194" text-anchor="middle" class="num f-mut">0</text><text x="200" y="224" text-anchor="middle">Epic</text>
           <circle cx="305" cy="190" r="13" class="box"/><text x="305" y="194" text-anchor="middle" class="num f-mut">1</text><text x="305" y="224" text-anchor="middle">Feature</text>
           <circle cx="410" cy="190" r="13" class="box"/><text x="410" y="194" text-anchor="middle" class="num f-mut">2</text><text x="410" y="224" text-anchor="middle">Stories</text>
-          <circle cx="515" cy="190" r="13" class="box"/><text x="515" y="194" text-anchor="middle" class="num f-mut">3</text><text x="515" y="224" text-anchor="middle">Grill</text>
-          <circle cx="620" cy="190" r="13" class="box"/><text x="620" y="194" text-anchor="middle" class="num f-mut">4</text><text x="620" y="224" text-anchor="middle">Propose</text>
-          <circle cx="725" cy="190" r="13" class="box"/><text x="725" y="194" text-anchor="middle" class="num f-mut">5</text><text x="725" y="224" text-anchor="middle">Red</text>
-          <circle cx="830" cy="190" r="13" class="box"/><text x="830" y="194" text-anchor="middle" class="num f-mut">6</text><text x="830" y="224" text-anchor="middle">Green</text>
-          <circle cx="935" cy="190" r="13" class="box"/><text x="935" y="194" text-anchor="middle" class="num f-mut">7</text><text x="935" y="224" text-anchor="middle">Review</text>
-          <circle cx="1040" cy="190" r="13" class="box"/><text x="1040" y="194" text-anchor="middle" class="num f-mut">8</text><text x="1040" y="224" text-anchor="middle">Archive</text>
-          <circle cx="1145" cy="190" r="13" class="box"/><text x="1145" y="194" text-anchor="middle" class="num f-mut">9</text><text x="1145" y="224" text-anchor="middle">Merge</text>
+          <circle cx="515" cy="190" r="13" class="box"/><text x="515" y="194" text-anchor="middle" class="num f-mut">4</text><text x="515" y="224" text-anchor="middle">Propose</text>
+          <circle cx="620" cy="190" r="13" class="box"/><text x="620" y="194" text-anchor="middle" class="num f-mut">5</text><text x="620" y="224" text-anchor="middle">Red</text>
+          <circle cx="725" cy="190" r="13" class="box"/><text x="725" y="194" text-anchor="middle" class="num f-mut">6</text><text x="725" y="224" text-anchor="middle">Green</text>
+          <circle cx="830" cy="190" r="13" class="box"/><text x="830" y="194" text-anchor="middle" class="num f-mut">7</text><text x="830" y="224" text-anchor="middle">Review</text>
+          <circle cx="935" cy="190" r="13" class="box"/><text x="935" y="194" text-anchor="middle" class="num f-mut">8</text><text x="935" y="224" text-anchor="middle">Archive</text>
+          <circle cx="1040" cy="190" r="13" class="box"/><text x="1040" y="194" text-anchor="middle" class="num f-mut">9</text><text x="1040" y="224" text-anchor="middle">Merge</text>
         </g>
 
         <!-- agent brackets -->
         <g class="s-mut" stroke-width="1" fill="none">
           <path d="M178 256 V250 H432 V256"/>
-          <path d="M493 256 V250 H642 V256"/>
-          <path d="M703 256 V250 H852 V256"/>
-          <path d="M900 256 V250 H970 V256"/>
-          <path d="M1018 256 V250 H1167 V256"/>
+          <path d="M493 256 V250 H537 V256"/>
+          <path d="M598 256 V250 H747 V256"/>
+          <path d="M795 256 V250 H865 V256"/>
+          <path d="M913 256 V250 H1062 V256"/>
         </g>
         <g class="mono f-mut" text-anchor="middle">
           <text x="305" y="274">orchestrator · Opus</text>
-          <text x="567" y="274">spec-author · Opus</text>
-          <text x="777" y="274">implementer · Sonnet</text>
-          <text x="935" y="274">reviewer · Opus</text>
-          <text x="1092" y="274">janitor · Haiku</text>
+          <text x="515" y="274">spec-author · Opus</text>
+          <text x="672" y="274">implementer · Sonnet</text>
+          <text x="830" y="274">reviewer · Opus</text>
+          <text x="987" y="274">janitor · Haiku</text>
         </g>
 
         <text x="10" y="300" class="f-mut">Thin rail: documentation. Thick rail: code.</text>
@@ -597,8 +599,7 @@ footer code{background:none;padding:0;color:var(--ink)}
         <p>Every Story states one sentence of intent. Blocking edges are declared and acyclic. You have said yes to the breakdown — <code>to-tickets</code> iterates until you do. This is also where two Stories on the same capability get serialised, rather than at merge time.</p></div>
       <span class="chip h">human</span></div>
 
-    <div class="stage"><span class="n">3</span><span class="nm">Grill</span><span class="dr">agent, but <b>you</b> answer what it cannot</span><span class="who"><i class="dot op"></i>spec-author</span><span class="ou"><code>design.md</code> Open Questions filled in — “None” is valid and required — plus any new <code>CONTEXT.md</code> terms</span></div>
-    <div class="stage"><span class="n">4</span><span class="nm">Propose</span><span class="dr">agent writes; <b>you</b> approve</span><span class="who"><i class="dot op"></i>spec-author</span><span class="ou">the change folder: proposal, delta specs, design, tasks. <b>Cut the branch or worktree here</b>, commit as <code>docs(&lt;capability&gt;): propose &lt;change-id&gt;</code>, push, and open the <b>draft PR</b> G4 is read on</span></div>
+    <div class="stage"><span class="n">4</span><span class="nm">Propose</span><span class="dr">agent writes; <b>you</b> answer what the grill cannot settle, and approve</span><span class="who"><i class="dot op"></i>spec-author</span><span class="ou"><b>The grill first</b> — <code>design.md</code> Open Questions filled in, “None” being valid and required, plus any new <code>CONTEXT.md</code> terms. Then the change folder: proposal, delta specs, design, tasks. <b>Cut the branch or worktree here</b>, commit as <code>docs(&lt;capability&gt;): propose &lt;change-id&gt;</code>, push, and open the <b>draft PR</b> G4 is read on</span></div>
 
     <div class="gate"><span class="g">G4</span>
       <div class="gt"><span class="gh">Spec approved — the hard gate</span>
@@ -632,7 +633,8 @@ footer code{background:none;padding:0;color:var(--ink)}
       <span class="chip m">machine</span></div>
 
   </div>
-  <p>Read the bold entries down the driver column and you have the whole obligation: four stops — G1, G2, G4, G7 — plus answering whatever the grill cannot settle on its own. Stages 5, 6, 8 and 9 never wait for you.</p>
+  <p>Read the bold entries down the driver column and you have the whole obligation: four stops — G1, G2, G4, G7 — plus answering, inside Stage 4, whatever the grill cannot settle on its own. Stages 5, 6, 8 and 9 never wait for you.</p>
+  <div class="note"><b>There is no Stage 3.</b> The grill was one until 30 August 2026, when it was folded into Stage 4 — the first cut on <code>docs/process.md</code> §12's list, taken because at one concurrent Story it never justified a session of its own. Its obligations moved with it and none of them lapsed. The numbering was left with a gap rather than closed up, because a stage number is also its gate's name: <code>G4: approved</code> is a literal string that CI check 5, <code>pnpm run check:g4</code>, the issue template and every Story already approved are read for, and renumbering would either falsify it or leave G4 hanging off a Stage 3. The gate numbers already skip 3, 5 and 6 for the same reason. ADR-1005.</div>
 </section>
 
 <!-- ============ THE LOOP ============ -->
@@ -810,7 +812,7 @@ footer code{background:none;padding:0;color:var(--ink)}
     <div class="h-card">
       <span class="k">if it hurts</span>
       <h3>Cut in this order</h3>
-      <p>Fold Stage 3 into Stage 4 · drop the Epic level · fold Stage 7 into Stage 8 · drop CI check 3. That order is the one the retrospective rewrote against evidence: review was promoted out of the firing line at eight findings on forty-eight lines, the Epic carried nothing a Feature did not, and check 4 earns its keep by pacing the red-green loop rather than by ever failing. <b>Never cut G4 or CI check 2</b> — those two are the process; everything else is scaffolding around them.</p>
+      <p>Drop the Epic level · fold Stage 7 into Stage 8 · drop CI check 3. That order is the one the retrospective rewrote against evidence: review was promoted out of the firing line at eight findings on forty-eight lines, the Epic carried nothing a Feature did not, and check 4 earns its keep by pacing the red-green loop rather than by ever failing. The cut that used to head the list — fold Stage 3 into Stage 4 — <b>was taken on 30 August 2026</b>, after it turned out to have already happened in practice. <b>Never cut G4 or CI check 2</b> — those two are the process; everything else is scaffolding around them.</p>
     </div>
   </div>
   <p>The real cost the estimate missed is not the gates. It is the machinery defects the gates surface — work created by a Story rather than contained in it. That decays as the system settles, but it was not zero on Story one and will not be zero on Story two.</p>

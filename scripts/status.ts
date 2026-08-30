@@ -1,8 +1,9 @@
 /**
  * `pnpm run status` — where is this Story, and whose turn is it?
  *
- * The process has ten stages and five gates (docs/process.md §4) and, until this existed,
- * no way to ask which one you were in. Reconstructing it by hand meant correlating eight
+ * The process has nine stages and five gates (docs/process.md §4) — numbered 0–9, with no
+ * Stage 3 since the grill was folded into Stage 4 — and, until this existed, no way to ask
+ * which one you were in. Reconstructing it by hand meant correlating eight
  * signals across three systems: the branch, the change folder, `openspec validate`, the
  * `G4: approved` comment, scenario coverage, the tasks list, the issue tree and the PR.
  * Nobody working four to eight hours a week holds that between sessions, and this repo's
@@ -147,17 +148,19 @@ export function prNotReady(f: StoryFacts, stage: number, stageName: string, acto
 
 /**
  * The stage a Story is in, derived from facts alone. First matching rule wins, so the order
- * below is the pipeline order and reads as one: nothing may be written down before it is
- * grilled, nothing approved before it validates, no code before G4, no archive before the
- * delta is satisfied.
+ * below is the pipeline order and reads as one: nothing is approved before its open questions
+ * are closed and it validates, no code before G4, no archive before the delta is satisfied.
+ *
+ * There is no Stage 3. The grill is the first step of Stage 4 rather than a stage, so a Story
+ * with unanswered questions is a Stage 4 that is not finished, not a stage of its own.
  */
 export function deriveStoryStatus(f: StoryFacts): StoryStatus {
   const c = f.change
 
   if (c === null) {
     return {
-      stage: 3,
-      stageName: 'Grill and propose',
+      stage: 4,
+      stageName: 'Propose',
       owner: 'agent',
       actor: 'spec-author',
       blocker: `No change folder for "${f.changeId}". There is nothing written down to approve.`,
@@ -206,14 +209,14 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
 
   if (!c.openQuestionsAnswered) {
     return {
-      stage: 3,
-      stageName: 'Grill',
+      stage: 4,
+      stageName: 'Propose — open questions',
       owner: 'you',
       actor: null,
       blocker: '`design.md` leaves its Open Questions section empty. A question left open here becomes a scenario someone invents later.',
       actions: [
         { label: 'Read', command: path.join(c.dir, 'design.md') },
-        { label: 'Answer', command: 'the grill puts your answers under `## Open Questions`; "None." is a valid and required answer' },
+        { label: 'Answer', command: 'your answers go under `## Open Questions`; "None." is a valid and required answer' },
       ],
       next: 'G4 — the proposal is only worth reading once the questions are closed.',
       unobservable: null,
