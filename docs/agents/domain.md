@@ -34,7 +34,7 @@ When your output names a domain concept (in an issue title, a spec requirement, 
 
 If the concept you need isn't in the glossary yet, that's a signal: either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/domain-modeling`).
 
-Note that `CONTEXT.md` currently holds only process vocabulary — the product is not yet defined. Domain terms arrive once product definition begins; until then, don't invent them.
+`CONTEXT.md` holds process vocabulary and, since product definition began, domain vocabulary too. A term that is missing is a signal, not a licence to invent one.
 
 ## Flag ADR conflicts
 

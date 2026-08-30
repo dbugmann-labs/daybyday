@@ -4,12 +4,11 @@ Issues and specs for this repo live as GitHub issues on `dbugmann-labs/daybyday`
 `gh` CLI for all operations.
 
 **Pass `--repo dbugmann-labs/daybyday`, or check the default before you trust a bare command.**
-This clone has two remotes: `origin` is `dbugmann-labs/daybyday`, and `upstream` is
-`dbugmann-labs/atlas`, the repository this one was forked from. `gh` does not simply read
-`origin` — for a fork it resolves a *base* repo, and it lands on `daybyday` here only because
-`gh repo set-default` has written `remote.origin.gh-resolved = base` into `.git/config`. That
-file is untracked, so a fresh clone does not have it and bare `gh` commands go ambiguous —
-which, unnoticed, sends issue writes to the fork parent. Confirm with:
+This clone has two remotes — `origin` is `dbugmann-labs/daybyday`, `upstream` is
+`dbugmann-labs/atlas`, the repo this one was forked from — and for a fork `gh` resolves a *base*
+repo rather than reading `origin`. It lands on `daybyday` only because `gh repo set-default`
+wrote `remote.origin.gh-resolved = base` into the untracked `.git/config`, so a fresh clone goes
+ambiguous and, unnoticed, sends issue writes to the fork parent. Confirm with:
 
 ```bash
 gh repo set-default --view    # must print dbugmann-labs/daybyday
@@ -20,14 +19,11 @@ The repo's own scripts are unaffected: `scripts/lib/ci.ts` derives the slug from
 
 ## What goes in an issue body
 
-**Issues carry no requirements.** An issue body holds a one-sentence intent, a link to the
-change folder, and gate checkboxes — nothing else. Requirements live in
-`openspec/specs/**` and `openspec/changes/<id>/specs/**`. Where an issue and a spec
-disagree, the spec wins and the issue is wrong. See `AGENTS.md` rule 4 and
-`docs/adr/0002-systems-of-record.md`.
-
-A skill whose default template emits acceptance criteria into the issue body (`to-tickets`
-does) must be told to emit a stub instead.
+**Issues carry no requirements.** An issue body holds a one-sentence intent, a link to the change
+folder, and gate checkboxes — nothing else. Requirements live in `openspec/specs/**` and
+`openspec/changes/<id>/specs/**`; where an issue and a spec disagree, the spec wins and the issue
+is wrong. `AGENTS.md` rule 4, ADR-0002. A skill whose default template emits acceptance criteria
+into the issue body (`to-tickets` does) must be told to emit a stub instead.
 
 ## Issue types
 
@@ -127,9 +123,9 @@ everything*.
 | Epic | every Feature under it is closed | any child Feature reopens |
 
 **A Feature is not "forever" because its issue stays open.** What lives forever is
-`openspec/specs/<capability>/spec.md`. The issue tracks work against that spec, and reopening
-it is free — `gh issue reopen <number>` — which is what keeps one Feature issue matched to one
-capability spec instead of accumulating a second one each time the capability is revisited.
+`openspec/specs/<capability>/spec.md`. The issue tracks work against that spec, and reopening it
+is free (`gh issue reopen <number>`) — which keeps one Feature issue matched to one capability
+spec instead of accumulating a second each time the capability is revisited.
 
 **Settling cascades one level per pass.** Closing the last Story makes its Feature ready to
 close; closing that Feature makes its Epic ready. Do not try to close a whole branch of the
@@ -161,23 +157,20 @@ G4 is recorded as a comment on the Story issue whose body begins with the exact 
 G4: approved 7f3c9a1b2c3d — authorised by Diego
 ```
 
-Two parts, and both are load-bearing. The **marker** is `G4: approved`, never the bare word.
-The **digest** is a fingerprint of the change folder the human read — every file in it except
-`tasks.md`, whose boxes the implementer ticks as it goes.
+Two parts, both load-bearing. The **marker** is `G4: approved`, never the bare word, because
+"approved" appears constantly in ordinary prose — an agent writing "still waiting for the
+approved comment" on the issue would forge the gate for any grep-based reader. **Never write
+that string on a Story issue except as the approval itself**; when discussing the gate, call it
+"the G4 marker". The **digest** fingerprints the change folder the human read: every file in it
+except `tasks.md`, whose boxes the implementer ticks as it goes.
 
 **Never assemble that line by hand.** `pnpm run status` on the story branch prints the whole
 command with the digest filled in, and `pnpm run check:g4` prints it in its failure message. A
 digest typed from memory is a signature over nothing.
 
-**The decision must be the human's; the keystrokes need not be.** A human who says "approved"
-in conversation may have an agent relay it. What is forbidden is originating the decision: an
-agent must never decide a proposal is fine and record it, and must never write the marker for
-any other reason.
-
-That is why the marker is `G4: approved` and not the bare word. "Approved" appears constantly
-in ordinary prose — an agent writing "still waiting for the approved comment" on the issue
-would forge the gate for any grep-based reader. **Never write the string `G4: approved` on a
-Story issue except as the approval itself.** When discussing the gate, call it "the G4 marker".
+**The decision must be the human's; the keystrokes need not be.** A human who says "approved" in
+conversation may have an agent relay it. What is forbidden is originating the decision: an agent
+must never decide a proposal is fine and record it, nor write the marker for any other reason.
 
 **A change folder edited after approval needs a second marker.** The digest no longer matches,
 check 5 fails, and the honest fix is to put the new version to the human and record their
@@ -207,9 +200,8 @@ Create a GitHub issue — as a stub, per **What goes in an issue body** above.
 
 ## When a skill says "fetch the relevant ticket"
 
-Run the two-call read under **Conventions** above, then open the change folder it links to.
-An issue
-read in isolation is not enough to implement from.
+Run the two-call read under **Conventions** above, then open the change folder it links to. An
+issue read in isolation is not enough to implement from.
 
 ## Wayfinding operations
 
