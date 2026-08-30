@@ -43,12 +43,11 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
    gh pr create --draft --base main --title '<change-id>' --body 'Closes #<issue#>'
    ```
 
-   Draft, always: CI reads that as "not finished" and skips the four checks that assert a
-   finished Story, so the PR you hand over is green rather than a red X the human learns to
-   ignore. `Closes #<issue#>` is what auto-closes the Story on merge. If the branch was already
-   pushed, refresh it instead — `git push --force-with-lease` after the rebase — and say so.
-   A rebase conflict in the change folder or `openspec/specs/` is a stop: another Story landed
-   on this capability while yours was being written (rule 5).
+   Draft, always — that is what keeps the PR you hand over green rather than a red X the human
+   learns to ignore — and `Closes #<issue#>` is what auto-closes the Story on merge. If the
+   branch was already pushed, refresh it instead with `git push --force-with-lease` after the
+   rebase, and say so. A rebase conflict in the change folder or `openspec/specs/` is a stop:
+   another Story landed on this capability while yours was being written (rule 5).
 
 Scenario titles are contracts: an acceptance test will carry each one verbatim, and CI checks
 it. Write them as behaviour a test can assert, and do not restate them once written.
