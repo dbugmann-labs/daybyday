@@ -35,7 +35,7 @@ describing all twelve as cycles; #8's `tasks.md` is the precedent.
 - [x] 2.5 `a schedule on the thirty-first is due on the last day of a thirty-day month`
 - [x] 2.6 `a schedule on the thirty-first is due on the last day of a common February`
 - [x] 2.7 `a schedule on the thirty-first is due on the leap day of a leap February`
-- [ ] 2.8 `a schedule on the twenty-ninth is due on the last day of a common February`
+- [x] 2.8 `a schedule on the twenty-ninth is due on the last day of a common February`
 - [ ] 2.9 `a schedule on the thirty-first is not moved in a month that has a thirty-first`
 - [ ] 2.10 `a day of the month past the thirty-first is not a day of the month`
 - [ ] 2.11 `a day of the month below the first is not a day of the month`
