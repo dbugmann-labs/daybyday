@@ -115,10 +115,7 @@ func aMonthOutsideTheTwelveIsNotACalendarDate() {
     #expect(date != CalendarDate(year: 2027, month: 1, day: 1))
 }
 
-// The following are hardening tests, not acceptance tests: they pin a defect fix rather than
-// a delta scenario, so they are named descriptively instead of after a `#### Scenario:` title.
-
-@Test("a month of Int.max is refused rather than read back as unset")
+@Test("a month of the largest representable integer is not a calendar date")
 func aMonthOfIntMaxIsRefusedRatherThanReadBackAsUnset() {
     // `DateComponents.month` reads back `nil` for exactly `Int.max`, which would otherwise
     // let this under-specified date round-trip through `isValidDate(in:)`.
@@ -127,14 +124,14 @@ func aMonthOfIntMaxIsRefusedRatherThanReadBackAsUnset() {
     #expect(date == nil)
 }
 
-@Test("a year of Int.max is refused rather than read back as unset")
+@Test("a year of the largest representable integer is not a calendar date")
 func aYearOfIntMaxIsRefusedRatherThanReadBackAsUnset() {
     let date = CalendarDate(year: Int.max, month: 1, day: 1)
 
     #expect(date == nil)
 }
 
-@Test("a day of Int.max is refused rather than read back as unset")
+@Test("a day of the largest representable integer is not a calendar date")
 func aDayOfIntMaxIsRefusedRatherThanReadBackAsUnset() {
     let date = CalendarDate(year: 2026, month: 1, day: Int.max)
 
@@ -150,6 +147,23 @@ func aDateBeforeTheGregorianCalendarsAdoptionIsNotACalendarDate() {
     #expect(date == nil)
 }
 
+@Test("the last year before the Gregorian reform is not a calendar date")
+func theLastYearBeforeTheGregorianReformIsNotACalendarDate() {
+    // The guard is year-granular, so the whole of 1582 is refused, including after the
+    // 15 October reform. Without this, the pinned pair either side of the lower bound is
+    // 1500 refused and 1583 accepted, and a guard mistyped as `1581...` would satisfy both.
+    let date = CalendarDate(year: 1582, month: 12, day: 31)
+
+    #expect(date == nil)
+}
+
+@Test("the last day of the last supported year is a calendar date")
+func theLastDayOfTheLastSupportedYearIsACalendarDate() {
+    let date = CalendarDate(year: 9999, month: 12, day: 31)
+
+    #expect(date != nil)
+}
+
 @Test("the first day of the first full Gregorian year is a calendar date")
 func theFirstDayOfTheFirstFullGregorianYearIsACalendarDate() {
     let date = CalendarDate(year: 1583, month: 1, day: 1)
@@ -157,7 +171,7 @@ func theFirstDayOfTheFirstFullGregorianYearIsACalendarDate() {
     #expect(date != nil)
 }
 
-@Test("a year past the upper bound is not a calendar date")
+@Test("a year past the last supported year is not a calendar date")
 func aYearPastTheUpperBoundIsNotACalendarDate() {
     let date = CalendarDate(year: 10000, month: 1, day: 1)
 

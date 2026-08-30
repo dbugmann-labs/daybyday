@@ -64,27 +64,27 @@ what its scenario says — except 2.16 and 2.18, which need tests that do not ex
 will be green the moment they are written. Delete that hardening-test comment as the last name
 changes: there is no hardening block left underneath it.
 
-- [ ] 2.12 `a month of the largest representable integer is not a calendar date` — rename
+- [x] 2.12 `a month of the largest representable integer is not a calendar date` — rename
   `"a month of Int.max is refused rather than read back as unset"`.
-- [ ] 2.13 `a year of the largest representable integer is not a calendar date` — rename
+- [x] 2.13 `a year of the largest representable integer is not a calendar date` — rename
   `"a year of Int.max is refused rather than read back as unset"`.
-- [ ] 2.14 `a day of the largest representable integer is not a calendar date` — rename
+- [x] 2.14 `a day of the largest representable integer is not a calendar date` — rename
   `"a day of Int.max is refused rather than read back as unset"`.
-- [ ] 2.15 `a date before the Gregorian calendar's adoption is not a calendar date` — the existing
+- [x] 2.15 `a date before the Gregorian calendar's adoption is not a calendar date` — the existing
   test already carries this title verbatim. Confirm the whole set with `pnpm run check:scenarios`
   rather than by eye; nothing to edit here.
-- [ ] 2.16 `the last year before the Gregorian reform is not a calendar date` — a new test:
+- [x] 2.16 `the last year before the Gregorian reform is not a calendar date` — a new test:
   `CalendarDate(year: 1582, month: 12, day: 31)` is nil. The shipped guard refuses it, so expect
   green on the first run; this is a pin, not a cycle. Write it anyway: without it the pinned pair
   either side of the lower bound is 1500 refused and 1583 accepted, and a guard mistyped as
   `1581...` would satisfy both.
-- [ ] 2.17 `the first day of the first full Gregorian year is a calendar date` — the existing test
+- [x] 2.17 `the first day of the first full Gregorian year is a calendar date` — the existing test
   already carries this title verbatim. Nothing to edit.
-- [ ] 2.18 `the last day of the last supported year is a calendar date` — a new test:
+- [x] 2.18 `the last day of the last supported year is a calendar date` — a new test:
   `CalendarDate(year: 9999, month: 12, day: 31)` is not nil. The shipped guard accepts it, so
   expect green on the first run. Write it anyway: the upper bound has no test that accepts, so a
   guard tightened by mistake would refuse a supported year and no test would notice.
-- [ ] 2.19 `a year past the last supported year is not a calendar date` — rename
+- [x] 2.19 `a year past the last supported year is not a calendar date` — rename
   `"a year past the upper bound is not a calendar date"`.
 
 ## 3. Gates
@@ -96,9 +96,9 @@ changes: there is no hardening block left underneath it.
   `pnpm run checks` reports scenario coverage as 11 of 11 with a matching title for each. Eleven
   was the whole delta at that point; 3.5 is the same check against nineteen.
 - [ ] 3.3 `/code-review` reports nothing unresolved on either axis (**G7**).
-- [ ] 3.4 After tasks 2.12 to 2.19: `cd src/DayByDayKit && swift test` reports 19 tests passing and
+- [x] 3.4 After tasks 2.12 to 2.19: `cd src/DayByDayKit && swift test` reports 19 tests passing and
   no failures, and `pnpm run verify` exits 0.
-- [ ] 3.5 `pnpm exec openspec validate add-weekday-set-schedule --strict` exits 0, and
+- [x] 3.5 `pnpm exec openspec validate add-weekday-set-schedule --strict` exits 0, and
   `pnpm run checks` reports scenario coverage as 19 of 19 with a matching title for each.
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7,
