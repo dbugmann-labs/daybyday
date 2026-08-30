@@ -39,7 +39,7 @@ describing all twelve as cycles; #8's `tasks.md` is the precedent.
 - [x] 2.9 `a schedule on the thirty-first is not moved in a month that has a thirty-first`
 - [x] 2.10 `a day of the month past the thirty-first is not a day of the month`
 - [x] 2.11 `a day of the month below the first is not a day of the month`
-- [ ] 2.12 `the thirty-first is a day of the month`
+- [x] 2.12 `the thirty-first is a day of the month`
 
 ## 3. Gates
 

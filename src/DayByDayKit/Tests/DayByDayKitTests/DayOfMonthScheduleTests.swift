@@ -102,3 +102,10 @@ func aDayOfTheMonthBelowTheFirstIsNotADayOfTheMonth() {
     #expect(zero == nil)
     #expect(negativeOne == nil)
 }
+
+@Test("the thirty-first is a day of the month")
+func theThirtyFirstIsADayOfTheMonth() {
+    let dayOfMonth = DayOfMonth(day: 31)
+
+    #expect(dayOfMonth != nil)
+}
