@@ -503,7 +503,7 @@ footer code{background:none;padding:0;color:var(--ink)}
   not hold this for the naming question — that is a rename later, not a respec.</i>
 
 <b>Reply</b>
-  approved            <i>→ I record `G4: approved` on #8 and start the implementer</i>
+  approved            <i>→ I record the G4 marker on #8 and start the implementer</i>
   changes: &lt;what&gt;     <i>→ back to spec-author with your note</i></pre></div>
   <p class="lede">Illustrative: Story #8 has no change folder yet. The form is specified in <code>.claude/commands/atlas.md</code> and <code>docs/process.md</code> §4.</p>
   <p><b>The recommendation is part of the form, not a courtesy.</b> The gate arrives after an agent has spent an hour on the thing being judged, and without a stated lean the cheapest reply is always yes — which is a rubber stamp with extra steps. It is also the one part that can be wrong out loud: the conductor spawned the <code>spec-author</code> whose delta is on the table, so recommending <i>changes:</i> against its own subagent is what makes the rest worth reading. It is an argument to reject, never a reason to answer without opening the PR.</p>
@@ -610,9 +610,9 @@ footer code{background:none;padding:0;color:var(--ink)}
           <li><code>design.md</code> names the seam</li>
           <li>a draft pull request is open on the branch and rebased onto current <code>main</code></li>
           <li>you have read <code>proposal.md</code> and the delta</li>
-          <li>the Story issue carries a comment beginning with the exact line <code>G4: approved</code></li>
+          <li>the Story issue carries a comment beginning with the exact line <code>G4: approved &lt;digest&gt;</code>, whose digest fingerprints the change folder you read</li>
         </ul>
-        <p>The <em>decision</em> must be a human’s; the keystrokes need not be. An agent may record it on instruction and must never originate it. Check with <code>pnpm run check:g4</code>. No implementation commit may precede that comment.</p></div>
+        <p>The <em>decision</em> must be a human’s; the keystrokes need not be. An agent may record it on instruction and must never originate it. Check with <code>pnpm run check:g4</code>, which recomputes the digest. No implementation commit may precede that comment — and a change folder edited afterwards comes back here for a second one, because the marker no longer signs it.</p></div>
       <span class="chip h">human + ci</span></div>
 
     <div class="stage"><span class="n">5</span><span class="nm">Red</span><span class="dr">agent — the first unsatisfied scenario</span><span class="who"><i class="dot so"></i>implementer</span><span class="ou">one failing acceptance test, named for that scenario</span></div>
@@ -770,7 +770,7 @@ footer code{background:none;padding:0;color:var(--ink)}
     <div class="check key"><span class="ci">02</span><span class="cn">Spec-diff containment</span><span class="cd">Every file changed under <code>openspec/specs/</code> belongs to a capability the archived delta names. On a <code>chore/</code> branch the set must be empty. This is the check that makes the source of truth safe.</span></div>
     <div class="check"><span class="ci">03</span><span class="cn">Single-change rule</span><span class="cd">A <code>story/</code> PR adds exactly one directory under <code>changes/archive/</code> and leaves no active folder behind.<span class="tag">staged — reports locally</span><span class="tag">skipped on drafts</span></span></div>
     <div class="check"><span class="ci">04</span><span class="cn">Scenario coverage</span><span class="cd">Every <code>#### Scenario:</code> in the delta has an acceptance test whose title matches it verbatim, in Vitest or Swift Testing.<span class="tag">staged — reports locally</span><span class="tag">skipped on drafts</span></span></div>
-    <div class="check key"><span class="ci">05</span><span class="cn">G4 approval recorded</span><span class="cd">The Story issue carries a comment beginning <code>G4: approved</code>. This is what turns “no implementation before G4” from a convention into a red build.<span class="tag">skipped on drafts</span></span></div>
+    <div class="check key"><span class="ci">05</span><span class="cn">G4 approval recorded</span><span class="cd">The Story issue carries a comment beginning <code>G4: approved &lt;digest&gt;</code>, and the digest still matches the change folder. This is what turns “no implementation before G4” from a convention into a red build, and “approved” into “approved <em>this</em>”.<span class="tag">skipped on drafts</span></span></div>
     <div class="check"><span class="ci">06</span><span class="cn">Commit hygiene</span><span class="cd">No commit on the branch carries an attribution trailer or names a tool. The history is a professional record.</span></div>
     <div class="check"><span class="ci">07</span><span class="cn">Verify</span><span class="cd"><code>pnpm run verify</code> — lint, typecheck, test.</span></div>
     <div class="check"><span class="ci">08</span><span class="cn">Archive complete</span><span class="cd"><code>openspec validate --archived</code> — every <code>tasks.md</code> checkbox in the newly archived change is ticked.<span class="tag">skipped on drafts</span></span></div>
@@ -791,9 +791,9 @@ footer code{background:none;padding:0;color:var(--ink)}
     <div class="row"><span class="l">CI check 2</span><span class="w">A spec file changing outside the capabilities the delta claims, whatever produced the change.</span><span class="s hard">Hard, at merge time</span></div>
     <div class="row"><span class="l">spec-author out of src/<br>implementer out of the delta</span><span class="w">Nothing. Path-scoped permissions are session-wide, not per-agent, and the per-agent hook that would express this is skipped unless the folder is explicitly trusted.</span><span class="s soft">Convention — caught at review</span></div>
     <div class="row"><span class="l">red before green</span><span class="w">Nothing. Checks 4 and 7 prove tests exist, are named after scenarios, and pass — not that one was red first. Nothing short of commit-order forensics does, and one rebase defeats that.</span><span class="s soft">Convention — a documented discipline and a PR checkbox</span></div>
-    <div class="row"><span class="l">a human wrote<br>“G4: approved”</span><span class="w">Nothing. Agents act through the owner's token. Check 5 proves the decision was <em>recorded</em>, converting a silent omission into a blocked merge. Integrity rests on agents never originating the marker.</span><span class="s soft">Convention — plus a red build if absent</span></div>
+    <div class="row"><span class="l">a human wrote<br>“G4: approved”</span><span class="w">Nothing. Agents act through the owner's token. Check 5 proves the decision was <em>recorded</em>, and — since ADR-1007 — recorded against the text that would merge, converting two silent omissions into a blocked merge. Integrity rests on agents never originating the marker.</span><span class="s soft">Convention — plus a red build if absent</span></div>
   </div>
-  <p>The marker is the exact line <code>G4: approved</code>, not the bare word, because “approved” occurs constantly in ordinary prose — an agent writing <em>“waiting on the approved comment”</em> would otherwise forge the gate for any grep-based reader. And one failure mode sits under all of this: project settings load from the session's startup folder, so a session started one directory above the repo gets no deny rules, no agents and no skills, and says nothing about it.</p>
+  <p>The marker is the exact line <code>G4: approved</code>, not the bare word, because “approved” occurs constantly in ordinary prose — an agent writing <em>“waiting on the approved comment”</em> would otherwise forge the gate for any grep-based reader. It carries a digest of the approved change folder, so the gate records what was agreed and not merely that someone was asked. And one failure mode sits under all of this: project settings load from the session's startup folder, so a session started one directory above the repo gets no deny rules, no agents and no skills, and says nothing about it.</p>
 </section>
 
 <!-- ============ HATCHES ============ -->

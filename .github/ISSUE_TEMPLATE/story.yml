@@ -52,7 +52,7 @@ body:
         - label: "Change folder exists; `openspec validate <change-id> --strict` exits 0"
         - label: "Seam(s) named in `design.md`"
         - label: "Draft PR open on the story branch, rebased onto current `main`"
-        - label: "A comment on this issue begins `G4: approved` — recorded by a human, or relayed on a human's instruction. No agent may originate it."
+        - label: "A comment on this issue begins `G4: approved <digest>`, and the digest matches the change folder as it stands — recorded by a human, or relayed on a human's instruction. No agent may originate it."
   - type: checkboxes
     id: dod
     attributes:

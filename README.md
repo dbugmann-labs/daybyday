@@ -110,8 +110,10 @@ scripts/                   the merge-time checks and the graph generator
 Everything else is scaffolding around these:
 
 1. **G4** — no implementation before a human has approved the proposal. Recorded as a comment
-   beginning with the exact line `G4: approved` on the Story issue, and enforced at merge time
-   by `scripts/check-g4-approval.ts`. See `docs/adr/0014-g4-approval-marker.md` for what that
+   beginning with the exact line `G4: approved <digest>` on the Story issue, where the digest
+   fingerprints the change folder that was read, and enforced at merge time by
+   `scripts/check-g4-approval.ts`, which recomputes it. See
+   `docs/adr/0014-g4-approval-marker.md` and `docs/adr/1007-g4-signs-a-digest.md` for what that
    check can and cannot prove.
 2. **CI check 2** — spec-diff containment. A pull request may not change a capability spec
    that its archived delta does not claim. This is what keeps `openspec/specs/` honest.

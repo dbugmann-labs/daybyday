@@ -18,6 +18,7 @@ function change(over: Partial<ChangeFacts> = {}): ChangeFacts {
     questionRoundOpen: false,
     seamNamed: true,
     capabilities: ['schedule'],
+    digest: 'c0ffee123456',
     scenarios: { total: 4, covered: 0, next: 'a commitment every 3 days is due on the anchor day' },
     tasks: { total: 6, done: 0 },
     ...over,
@@ -29,7 +30,7 @@ function facts(over: Partial<StoryFacts> = {}): StoryFacts {
     issue: 12,
     changeId: 'add-schedule-rules',
     change: change(),
-    approval: { by: 'diegobugmann', at: '2026-08-29T10:00:00Z' },
+    approval: { by: 'diegobugmann', at: '2026-08-29T10:00:00Z', digest: 'c0ffee123456', signsCurrent: true },
     pr: { number: 21, url: 'https://github.com/dbugmann-labs/daybyday/pull/21', draft: true, behindMain: 0 },
     ...over,
   }
@@ -41,6 +42,32 @@ describe('deriveStoryStatus', () => {
     expect(s.stage).toBe(4)
     expect(s.owner).toBe('you')
     expect(s.actions.some((a) => a.command.includes("G4: approved"))).toBe(true)
+  })
+
+  it('offers an approve command carrying the digest of what would be approved', () => {
+    const s = deriveStoryStatus(facts({ approval: null, change: change({ digest: 'c0ffee123456' })  }))
+    expect(s.actions.some((a) => a.command.includes('G4: approved c0ffee123456'))).toBe(true)
+  })
+
+  // An approval is a decision about text, and the text can move after the decision. Status has
+  // to stop for that as hard as it stops for no approval at all, or the conductor walks a Story
+  // it thinks is signed into an implementer, and CI check 5 discovers it at the merge instead.
+  it('stops again when the change folder moved after it was approved', () => {
+    const stale = { by: 'diegobugmann', at: '2026-08-29T10:00:00Z', digest: 'aaaaaaaaaaaa', signsCurrent: false }
+    const s = deriveStoryStatus(facts({ approval: stale, change: change({ scenarios: { total: 4, covered: 4, next: null } }) }))
+    expect(s.stage).toBe(4)
+    expect(s.owner).toBe('you')
+    expect(s.actions.some((a) => a.command.includes('G4: approved c0ffee123456'))).toBe(true)
+  })
+
+  it('says a pre-digest marker records no text rather than claiming the folder moved', () => {
+    // ADR-0014's form, which is what every Story approved before ADR-1007 carries. Reporting
+    // it as drift would send the human looking for a change nobody made.
+    const s = deriveStoryStatus(
+      facts({ approval: { by: 'diegobugmann', at: '2026-08-29T10:00:00Z', digest: null, signsCurrent: false } }),
+    )
+    expect(s.owner).toBe('you')
+    expect(s.blocker).toContain('predates')
   })
 
   // The ordering that matters most: a Story can be fully written, valid, seamed and still
@@ -55,6 +82,12 @@ describe('deriveStoryStatus', () => {
       const s = deriveStoryStatus(facts({ approval: null, change: change(over) }))
       expect(s.owner).toBe('you')
       expect(s.stage).toBe(4)
+
+      const stale = deriveStoryStatus(
+        facts({ approval: { by: 'diegobugmann', at: '2026-08-29T10:00:00Z', digest: null, signsCurrent: false }, change: change(over) }),
+      )
+      expect(stale.owner).toBe('you')
+      expect(stale.stage).toBe(4)
     }
   })
 

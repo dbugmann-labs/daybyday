@@ -27,6 +27,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
 import { currentBranch, deltaCapabilities, git, locateChange, parseBranch, repoSlug, type ChangeLocation } from './lib/ci.ts'
+import { changeDigest, findMarkers, markerBody } from './lib/g4.ts'
 import { scenarioCoverage } from './lib/coverage.ts'
 import { fetchIssues, type GraphIssue } from './generate-graph.ts'
 
@@ -47,6 +48,8 @@ export type ChangeFacts = {
   /** `design.md` names a seam. Required by the Definition of Ready; absent from the openspec template. */
   seamNamed: boolean
   capabilities: string[]
+  /** What a G4 marker on this folder signs — see scripts/lib/g4.ts. */
+  digest: string
   scenarios: { total: number; covered: number; next: string | null }
   tasks: { total: number; done: number }
 }
@@ -69,7 +72,12 @@ export type StoryFacts = {
   changeId: string
   /** null when no change folder exists yet — the Story has been cut but nothing written down. */
   change: ChangeFacts | null
-  approval: { by: string; at: string } | null
+  /**
+   * The G4 marker, and whether it signs the change folder as it now stands. An approval that
+   * covers text the folder has since moved past is not an approval of what would merge
+   * (ADR-1007), so the two facts travel together.
+   */
+  approval: { by: string; at: string; digest: string | null; signsCurrent: boolean } | null
   /** null when the branch has no pull request yet. */
   pr: PrFacts | null
 }
@@ -277,9 +285,34 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
           label: 'Read',
           command: `${path.join(c.dir, 'specs', cap, 'spec.md')}  (${c.scenarios.total} scenario(s))`,
         })),
-        { label: 'Approve', command: `gh issue comment ${f.issue} --body 'G4: approved — authorised by <name>'` },
+        { label: 'Approve', command: `gh issue comment ${f.issue} --body '${markerBody(c.digest, '<name>')}'` },
       ],
       next: `Stage 5 — the implementer writes one failing test for "${c.scenarios.next ?? 'the first scenario'}".`,
+      unobservable: null,
+    }
+  }
+
+  if (!f.approval.signsCurrent) {
+    return {
+      stage: 4,
+      stageName: 'Propose — G4 again',
+      owner: 'you',
+      actor: null,
+      blocker:
+        f.approval.digest === null
+          ? `The marker on #${f.issue} predates the approval digest, so it records that ${f.approval.by} was asked but not what they read.`
+          : `The change folder has changed since ${f.approval.by} approved it, so the approval on #${f.issue} covers text that is no longer what would merge.`,
+      actions: [
+        {
+          label: 'Read',
+          command: `${f.pr?.url ?? 'the draft PR'} — ${f.approval.digest === null ? 'the change folder as it stands' : 'what moved since the approval'}`,
+        },
+        { label: 'Approve', command: `gh issue comment ${f.issue} --body '${markerBody(c.digest, '<name>')}'` },
+        ...(f.approval.digest === null
+          ? []
+          : [{ label: 'Or', command: 'revert the change folder to the version that was approved' }]),
+      ],
+      next: 'The stage this Story had reached. CI check 5 blocks the merge until a marker signs the folder.',
       unobservable: null,
     }
   }
@@ -398,6 +431,7 @@ export function gatherChange(loc: ChangeLocation): ChangeFacts {
   return {
     dir: loc.dir,
     archived: loc.archived,
+    digest: changeDigest(loc.dir),
     validates,
     validationError,
     // Emptiness is observable; whether an answer is any good is not. A section reading "None."
@@ -446,16 +480,26 @@ export function gatherPr(branch: string): PrFacts | null {
   return { number: pr.number, url: pr.url, draft: pr.isDraft, behindMain }
 }
 
-export function gatherApproval(repo: string, issue: number): { by: string; at: string } | null {
-  const MARKER = /^G4: approved\b/m
+/**
+ * `digest` is the change folder's approval digest, or null when there is no folder to hash.
+ * A marker carrying it is an approval of what is on disk; any other marker — an older digest,
+ * or the pre-ADR-1007 form with none — recorded a decision about different text, and says so.
+ */
+export function gatherApproval(
+  repo: string,
+  issue: number,
+  digest: string | null,
+): { by: string; at: string; digest: string | null; signsCurrent: boolean } | null {
   try {
     const raw = execFileSync('gh', ['api', '--paginate', `/repos/${repo}/issues/${issue}/comments`], {
       encoding: 'utf8',
       stdio: 'pipe',
     })
-    const comments = JSON.parse(raw) as { body: string; user: { login: string }; created_at: string }[]
-    const hit = comments.find((c) => MARKER.test(c.body ?? ''))
-    return hit === undefined ? null : { by: hit.user.login, at: hit.created_at }
+    const markers = findMarkers(JSON.parse(raw) as Parameters<typeof findMarkers>[0])
+    if (markers.length === 0) return null
+    const signing = digest === null ? undefined : markers.find((m) => m.digest === digest)
+    const shown = signing ?? markers[markers.length - 1]!
+    return { by: shown.by, at: shown.at, digest: shown.digest, signsCurrent: signing !== undefined }
   } catch {
     // No network, no token, or no such issue. Treat as unapproved: the failure mode of a
     // status command that guesses "approved" is somebody writing code before the gate.
@@ -492,7 +536,7 @@ export function renderStory(branchName: string, f: StoryFacts, s: StoryStatus): 
   out.push('')
   out.push(`  Derived from: change folder ${f.change === null ? 'absent' : f.change.dir}` +
     (f.change === null ? '' : `, validates=${f.change.validates}, scenarios ${f.change.scenarios.covered}/${f.change.scenarios.total}, tasks ${f.change.tasks.done}/${f.change.tasks.total}`) +
-    `, G4 ${f.approval === null ? 'absent' : `by ${f.approval.by}`}` +
+    `, G4 ${f.approval === null ? 'absent' : `by ${f.approval.by}${f.approval.signsCurrent ? '' : ' (stale)'}`}` +
     `, PR ${f.pr === null ? 'none' : `#${f.pr.number}${f.pr.draft ? ' (draft)' : ''}${f.pr.behindMain === null ? '' : `, ${f.pr.behindMain} behind main`}`}`)
   out.push('')
   return out.join('\n')
@@ -592,7 +636,7 @@ if (import.meta.filename === process.argv[1]) {
       issue: branch.issue,
       changeId: branch.changeId,
       change: loc === null ? null : gatherChange(loc),
-      approval: gatherApproval(repoSlug(), branch.issue),
+      approval: gatherApproval(repoSlug(), branch.issue, loc === null ? null : changeDigest(loc.dir)),
       pr: gatherPr(branch.raw),
     }
     const status = deriveStoryStatus(facts)

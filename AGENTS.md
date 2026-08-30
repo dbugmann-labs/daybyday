@@ -74,10 +74,13 @@ finding facts is the agent's job. ADR-1006.
 
 1. **No implementation before G4.** A Story may not be implemented until its change folder
    exists, `openspec validate <change-id> --strict` exits 0, and the Story issue carries a
-   comment beginning with the exact line `G4: approved`. Check with `pnpm run check:g4`; if it
-   is absent, stop and ask. The **decision** must be a human's, but the keystrokes need not be —
-   a human may say "approved" and have you record it. Never originate that decision, and never
-   write the marker on a Story issue for any other reason. See `docs/agents/issue-tracker.md`.
+   comment beginning with the exact line `G4: approved <digest>` — the digest of the change
+   folder the human read. Check with `pnpm run check:g4`, which recomputes it; if the marker is
+   absent, or signs a version the folder has since moved past, stop and ask. The **decision**
+   must be a human's, but the keystrokes need not be — a human may say "approved" and have you
+   record it. Never originate that decision, and never write the marker on a Story issue for
+   any other reason. Editing the change folder after G4 costs a second approval, deliberately.
+   See `docs/agents/issue-tracker.md` and ADR-1007.
 2. **Never hand-edit `openspec/specs/`.** It is written by `/opsx:archive` and nothing else.
 3. **One scenario at a time.** Each red-green cycle takes the next unsatisfied
    `#### Scenario:` from the delta, writes exactly one acceptance test named identically to

@@ -102,7 +102,7 @@ Recommendation
   the naming question — that is a rename later, not a respec.
 
 Reply
-  approved            → I record `G4: approved` on #12 and start the implementer
+  approved            → I record the G4 marker on #12 and start the implementer
   changes: <what>     → back to spec-author with your note
 ```
 
@@ -191,14 +191,18 @@ a seam, leaves no open question and carries no outstanding `## Questions for you
 round first — and every requirement has scenarios covering its edges and not only its happy
 path. **Lead with the PR link** — the change folder reads far better as a
 diff than as a list of paths. **You never originate this decision.** A human says approved; you
-relay it:
+relay it, with the digest of the folder they read — `pnpm run status` prints the whole command,
+digest filled in, so do not assemble it by hand:
 
 ```bash
-gh issue comment <issue#> --body 'G4: approved — authorised by <name>'
+gh issue comment <issue#> --body 'G4: approved <digest> — authorised by <name>'
 ```
 
 Never write that string on a Story issue for any other reason — including while explaining that
-you are waiting for it. Call it "the G4 marker" instead. See `docs/adr/0014-*`.
+you are waiting for it. Call it "the G4 marker" instead. If the change folder is edited after
+this — by you, by the implementer, for any reason — the marker no longer signs it and the Story
+comes back here for a second approval; that is CI check 5, not a formality you can waive. See
+`docs/adr/0014-*` and `docs/adr/1007-*`.
 
 **G7 — Review clean.** Present the reviewer's findings, most severe first, with the same PR
 link — it now carries the whole Story. The implementer fixes; the reviewer never edits. Your
