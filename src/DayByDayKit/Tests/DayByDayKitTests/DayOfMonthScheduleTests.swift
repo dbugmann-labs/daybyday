@@ -76,3 +76,13 @@ func aScheduleOnTheTwentyNinthIsDueOnTheLastDayOfACommonFebruary() {
 
     #expect(schedule.isDue(on: lastOfFebruary))
 }
+
+@Test("a schedule on the thirty-first is not moved in a month that has a thirty-first")
+func aScheduleOnTheThirtyFirstIsNotMovedInAMonthThatHasAThirtyFirst() {
+    let schedule = Schedule.dayOfMonth(DayOfMonth(day: 31)!)
+    let thirtyFirstOfAugust = CalendarDate(year: 2026, month: 8, day: 31)!
+    let thirtiethOfAugust = CalendarDate(year: 2026, month: 8, day: 30)!
+
+    #expect(schedule.isDue(on: thirtyFirstOfAugust))
+    #expect(!schedule.isDue(on: thirtiethOfAugust))
+}
