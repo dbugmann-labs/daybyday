@@ -7,7 +7,8 @@ public enum Schedule: Hashable, Sendable {
         case .weekdays(let weekdays):
             return weekdays.contains(date.weekday)
         case .dayOfMonth(let dayOfMonth):
-            return date.day == dayOfMonth.day
+            let scheduledDay = min(dayOfMonth.day, date.daysInMonth)
+            return date.day == scheduledDay
         }
     }
 }
