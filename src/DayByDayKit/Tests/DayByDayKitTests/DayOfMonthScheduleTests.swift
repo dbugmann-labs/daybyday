@@ -58,3 +58,13 @@ func aScheduleOnTheThirtyFirstIsDueOnTheLastDayOfACommonFebruary() {
     #expect(schedule.isDue(on: lastOfFebruary))
     #expect(!schedule.isDue(on: firstOfMarch))
 }
+
+@Test("a schedule on the thirty-first is due on the leap day of a leap February")
+func aScheduleOnTheThirtyFirstIsDueOnTheLeapDayOfALeapFebruary() {
+    let schedule = Schedule.dayOfMonth(DayOfMonth(day: 31)!)
+    let leapDay = CalendarDate(year: 2028, month: 2, day: 29)!
+    let dayBefore = CalendarDate(year: 2028, month: 2, day: 28)!
+
+    #expect(schedule.isDue(on: leapDay))
+    #expect(!schedule.isDue(on: dayBefore))
+}
