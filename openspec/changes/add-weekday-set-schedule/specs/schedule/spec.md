@@ -137,6 +137,11 @@ commitment a person keeps.
 - **WHEN** the year 1500, the month January and the day 1 are offered as a calendar date
 - **THEN** no calendar date is formed
 
+#### Scenario: the last year before the Gregorian reform is not a calendar date
+
+- **WHEN** the year 1582, the month December and the day 31 are offered as a calendar date
+- **THEN** no calendar date is formed
+
 #### Scenario: the first day of the first full Gregorian year is a calendar date
 
 - **WHEN** the year 1583, the month January and the day 1 are offered as a calendar date

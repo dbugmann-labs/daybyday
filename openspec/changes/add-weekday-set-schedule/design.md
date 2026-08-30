@@ -147,7 +147,8 @@ The bounds guard exists to close the two holes in *Context* above, and both boun
 worth naming. **1583** is the first full year in which the calendar the engine derives weekdays
 from is the Gregorian one, so it is the earliest year whose weekday the type can promise; refusing
 1582 wholesale rather than 1 January to 14 October 1582 keeps the check to a year comparison and
-costs nothing a commitment app will ever want. **9999** is a bound rather than a limit anybody will
+costs nothing a commitment app will ever want — the delta pins 31 December 1582 as refused so that
+the boundary is fixed from both sides rather than inferred from a date eighty years earlier. **9999** is a bound rather than a limit anybody will
 meet: what it buys is that every component is judged against a range the engine owns, so no value
 can reach `DateComponents` large enough to be mistaken for an unspecified one. A narrower and more
 defensible-sounding range — say 1900 to 2100 — was rejected because it would refuse dates for a
@@ -196,9 +197,9 @@ not after.
   be about plumbing rather than about weekdays, and report a defect in either rather than working
   around it (rule 5). The local toolchain was verified today, so a failure on the runner and not
   on the machine is information, not noise.
-- **Eighteen scenarios is a lot for one Story** — eleven at G4 and seven added at G7 to state the
-  bounds the fix introduced. → They are eighteen one-line predicates over four small types, and
-  eleven of them exist only because Foundation's date handling fails quietly: rolling an invalid
+- **Nineteen scenarios is a lot for one Story** — eleven at G4 and eight added at G7 to state the
+  bounds the fix introduced. → They are nineteen one-line predicates over four small types, and
+  twelve of them exist only because Foundation's date handling fails quietly: rolling an invalid
   combination, reading `Int.max` back as unset, and switching to the Julian calendar before 1582.
   Cutting either validity requirement would save tests and leave the trap in place.
 
