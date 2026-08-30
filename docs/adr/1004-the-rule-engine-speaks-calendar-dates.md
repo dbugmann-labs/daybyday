@@ -1,4 +1,4 @@
-# 1003. The rule engine speaks calendar dates, not instants
+# 1004. The rule engine speaks calendar dates, not instants
 
 - Status: accepted
 - Date: 2026-08-30

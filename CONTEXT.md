@@ -69,7 +69,7 @@ combination that names no day — 30 February — is not one. Its year runs from
 inclusive: the weekday comes from a calendar that is Julian before the Gregorian reform of
 15 October 1582, and 1583 is the first year that is Gregorian throughout. Drawing the bound at a
 whole year refuses the tail of 1582 as well, which is a trade taken knowingly. Deliberately not an instant; see
-`docs/adr/1003-the-rule-engine-speaks-calendar-dates.md`.
+`docs/adr/1004-the-rule-engine-speaks-calendar-dates.md`.
 
 **Weekday set** — the first of the four schedule shapes: the days of the week a commitment runs
 on, as a set. "Gym Mon/Wed/Sat" is one. Membership is the whole rule, so a set of all seven is
