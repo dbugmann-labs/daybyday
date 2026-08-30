@@ -86,3 +86,10 @@ func aScheduleOnTheThirtyFirstIsNotMovedInAMonthThatHasAThirtyFirst() {
     #expect(schedule.isDue(on: thirtyFirstOfAugust))
     #expect(!schedule.isDue(on: thirtiethOfAugust))
 }
+
+@Test("a day of the month past the thirty-first is not a day of the month")
+func aDayOfTheMonthPastTheThirtyFirstIsNotADayOfTheMonth() {
+    let dayOfMonth = DayOfMonth(day: 32)
+
+    #expect(dayOfMonth == nil)
+}
