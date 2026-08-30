@@ -15,12 +15,15 @@ This repo is **single-context**: one `CONTEXT.md` and one `docs/adr/` at the roo
 
 ```
 /
-├── AGENTS.md                          ← the binding rules
 ├── CONTEXT.md                         ← shared vocabulary
-├── docs/{adr/, process.md, parking-lot.md}
-└── openspec/
-    ├── specs/<capability>/spec.md     ← what the system does today
-    └── changes/<change-id>/           ← what a change does to that
+├── docs/
+│   ├── adr/                           ← numbered decisions, NNNN-kebab-title.md
+│   ├── process.md                     ← the reasoning behind AGENTS.md
+│   └── parking-lot.md                 ← deferred product detail
+├── openspec/
+│   ├── specs/<capability>/spec.md     ← what the system does today
+│   └── changes/<change-id>/           ← what a change does to that
+└── AGENTS.md
 ```
 
 The multi-context layout (a root `CONTEXT-MAP.md` pointing at per-context `CONTEXT.md` files, with context-scoped `src/<context>/docs/adr/`) is **not in use**. Per `docs/adr/0001-monorepo.md`, this repo becomes a workspace only if the product later splits into several deployables; adopt `CONTEXT-MAP.md` then, not before.
