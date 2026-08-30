@@ -43,9 +43,9 @@ describing all twelve as cycles; #8's `tasks.md` is the precedent.
 
 ## 3. Gates
 
-- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 31 tests passing and no failures — the twelve
+- [x] 3.1 `cd src/DayByDayKit && swift test` reports 31 tests passing and no failures — the twelve
   here plus the nineteen from #8, none of which may change — and `pnpm run verify` exits 0.
-- [ ] 3.2 `pnpm exec openspec validate add-day-of-month-schedule --strict` exits 0 and
+- [x] 3.2 `pnpm exec openspec validate add-day-of-month-schedule --strict` exits 0 and
   `pnpm run checks` reports scenario coverage as 12 of 12.
 - [ ] 3.3 `/code-review` reports nothing unresolved on either axis (**G7**).
 
