@@ -84,3 +84,11 @@ func theFirstDayOfAYearIsPlacedOnItsGregorianWeekday() {
     #expect(schedule.isDue(on: newYearsDay))
     #expect(!schedule.isDue(on: newYearsEve))
 }
+
+@Test("a day beyond the end of its month is not a calendar date")
+func aDayBeyondTheEndOfItsMonthIsNotACalendarDate() {
+    let date = CalendarDate(year: 2026, month: 2, day: 30)
+
+    #expect(date == nil)
+    #expect(date != CalendarDate(year: 2026, month: 3, day: 2))
+}

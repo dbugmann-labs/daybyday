@@ -6,6 +6,18 @@ public struct CalendarDate: Hashable, Sendable {
     let day: Int
 
     public init?(year: Int, month: Int, day: Int) {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+
+        guard components.isValidDate(in: calendar) else {
+            return nil
+        }
+
         self.year = year
         self.month = month
         self.day = day
