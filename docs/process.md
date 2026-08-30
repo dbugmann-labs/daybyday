@@ -197,11 +197,13 @@ question that was never written down. ADR-1006.
 - the delta uses ADDED / MODIFIED / REMOVED correctly against current specs
 - every requirement has at least one scenario, and the error/edge cases have scenarios, not just the happy path
 - a **draft pull request** is open on the branch and rebased onto current `main`
-- you have read `proposal.md` and the delta, and the Story issue carries a comment beginning `G4: approved`
+- you have read `proposal.md` and the delta, and the Story issue carries a comment beginning `G4: approved <digest>`, where the digest is the fingerprint of the change folder you read
 
 No implementation commit may precede that comment. Enforcement is CI check 5 in §7.
 
 The **decision** must be a human's; the keystrokes need not be. A human may say "approved" and have an agent record it. The marker is the exact line `G4: approved`, not the bare word, because "approved" occurs constantly in ordinary prose and an agent writing *"waiting on the approved comment"* would otherwise forge the gate for any grep-based reader.
+
+**And the marker says what it approved.** It carries a digest of every file in the change folder except `tasks.md`, and check 5 recomputes it: a folder edited after the gate — a scenario softened once it proved awkward to test — no longer merges under an approval that covered different text. Re-approval is a second marker comment, and `pnpm run status` stops for a stale one exactly as it stops for a missing one. What that costs is a second stop for a typo fixed after G4, which is the price of a signature with no exceptions in it. ADR-1007, which also records why the change folder is *not* merged to `main` in a pull request of its own before implementation.
 
 **G7 — Review clean.** `code-review` reports no unresolved findings on either axis. The reviewer never edits code; it reports and the implementer fixes. The same PR is refreshed against `main` first, so what is reviewed is what will merge.
 
@@ -308,7 +310,7 @@ Note what this does and does not fix. A worktree isolates `HEAD`, the index and 
 2. **Spec-diff containment** — every file changed under `openspec/specs/` must belong to a capability named in the archived change's delta. On a `chore/` branch the set must be empty. This is the check that makes the source of truth safe.
 3. **Single-change rule** — a `story/` PR adds exactly one directory under `openspec/changes/archive/` and leaves no active change folder behind for that Story.
 4. **Scenario coverage** — every `#### Scenario:` in the change's delta has an acceptance test whose title matches it verbatim. See §8.
-5. **G4 approval recorded** — the Story issue carries a comment beginning `G4: approved`. This is what turns "no implementation before G4" from a convention into a red build.
+5. **G4 approval recorded** — the Story issue carries a comment beginning `G4: approved <digest>`, and the digest still matches the change folder. This is what turns "no implementation before G4" from a convention into a red build, and "approved" into "approved *this*".
 6. **Commit hygiene** — no commit on the branch carries an attribution trailer or names a tool (§hard rule 7).
 7. `pnpm run verify` — lint, typecheck, test.
 8. `openspec validate --archived` — every `tasks.md` checkbox in the newly archived change is ticked.
@@ -319,7 +321,7 @@ Checks 2–6 are bespoke scripts in `scripts/`. They are the most likely part of
 
 **Checks 3 and 4 are staged.** Run locally on a Story still in flight they report rather than fail — the single-change rule reads "still active" until the archive at Stage 8, and scenario coverage reports how many scenarios are covered and names the next one. Failing locally would demand every acceptance test at once, which is precisely the bulk transcription §8 forbids. In CI they bind, because a PR asserts the Story is finished.
 
-**What check 5 can and cannot prove.** Agents act through the repository owner's token, so no check can prove a human rather than an agent wrote a comment. Check 5 proves the decision was *recorded*, which converts a silent omission into a blocked merge. The gate's integrity rests on agents never originating the marker — stated in `AGENTS.md` rule 1 and in `docs/agents/issue-tracker.md`. ADR-0014 records why the marker is `G4: approved` and not the bare word.
+**What check 5 can and cannot prove.** Agents act through the repository owner's token, so no check can prove a human rather than an agent wrote a comment. Check 5 proves the decision was *recorded*, and — since ADR-1007 — that it was recorded against the text that would merge, which converts two silent omissions into a blocked merge. The gate's integrity still rests on agents never originating the marker: that half is unforgeable only by accident, not by intent, and is stated in `AGENTS.md` rule 1 and in `docs/agents/issue-tracker.md`. ADR-0014 records why the marker is `G4: approved` and not the bare word; ADR-1007 records why it carries a digest, and why the specs are not merged in a pull request of their own before implementation instead.
 
 > **What check 2 gives up.** The stricter form of this rule — "a story branch may never touch `openspec/specs/` at all" — is airtight and needs no script, but it forces archiving into a second PR. Containment is the weaker guarantee that survives one-PR archiving: it blocks unrelated or hand-edited spec changes, but cannot prove the diff is byte-for-byte what `/opsx:archive` would have produced. Accepted deliberately; recorded in ADR-0004.
 
@@ -413,7 +415,7 @@ Installed as one pinned plugin from the official marketplace, and **not** pruned
 | 0013 | The write-permission matrix is enforced in three layers, and only partly |
 | 0014 | G4 is a relayed human decision, recorded as `G4: approved` and enforced at merge time |
 
-Plus the 10xx series, which records decisions taken after Atlas was signed off — 1002 (the conductor is the main session), 1003 (the PR is the gate surface), 1005 (the grill is a step inside Stage 4) and 1006 (the question round). `docs/adr/README.md` is the live index, and carries the immutability rule: a reversal is a new ADR superseding the old one, while incidental detail that was simply wrong is corrected in place and logged in a dated `## Corrections` section.
+Plus the 10xx series, which records decisions taken after Atlas was signed off — 1002 (the conductor is the main session), 1003 (the PR is the gate surface), 1005 (the grill is a step inside Stage 4), 1006 (the question round) and 1007 (the G4 marker carries a digest of what was approved). `docs/adr/README.md` is the live index, and carries the immutability rule: a reversal is a new ADR superseding the old one, while incidental detail that was simply wrong is corrected in place and logged in a dated `## Corrections` section.
 
 ---
 

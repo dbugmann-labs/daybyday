@@ -158,10 +158,16 @@ hold its capability's Feature open. When it is promoted to a Story, reopen the F
 G4 is recorded as a comment on the Story issue whose body begins with the exact line:
 
 ```
-G4: approved
+G4: approved 7f3c9a1b2c3d — authorised by Diego
 ```
 
-optionally followed by who authorised it — `G4: approved — authorised by Diego`.
+Two parts, and both are load-bearing. The **marker** is `G4: approved`, never the bare word.
+The **digest** is a fingerprint of the change folder the human read — every file in it except
+`tasks.md`, whose boxes the implementer ticks as it goes.
+
+**Never assemble that line by hand.** `pnpm run status` on the story branch prints the whole
+command with the digest filled in, and `pnpm run check:g4` prints it in its failure message. A
+digest typed from memory is a signature over nothing.
 
 **The decision must be the human's; the keystrokes need not be.** A human who says "approved"
 in conversation may have an agent relay it. What is forbidden is originating the decision: an
@@ -173,9 +179,15 @@ in ordinary prose — an agent writing "still waiting for the approved comment" 
 would forge the gate for any grep-based reader. **Never write the string `G4: approved` on a
 Story issue except as the approval itself.** When discussing the gate, call it "the G4 marker".
 
+**A change folder edited after approval needs a second marker.** The digest no longer matches,
+check 5 fails, and the honest fix is to put the new version to the human and record their
+answer as a new comment — never to edit the old one, and never to record it yourself. Leaving
+the first marker in place is deliberate: when a requirement changed, and who agreed to it, is
+worth more than a tidy thread. ADR-1007.
+
 Read it with the comments call under **Conventions** above, not `gh issue view --comments`,
 which goes silent on an issue that has none. `pnpm run check:g4` asserts it, and CI
-check 5 blocks the merge if it is missing.
+check 5 blocks the merge if it is missing or signs a version that has moved on.
 
 ## Pull requests as a triage surface
 
