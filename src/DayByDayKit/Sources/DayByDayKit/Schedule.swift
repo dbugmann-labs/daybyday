@@ -6,8 +6,8 @@ public enum Schedule: Hashable, Sendable {
         switch self {
         case .weekdays(let weekdays):
             return weekdays.contains(date.weekday)
-        case .dayOfMonth:
-            fatalError("not implemented")
+        case .dayOfMonth(let dayOfMonth):
+            return date.day == dayOfMonth.day
         }
     }
 }

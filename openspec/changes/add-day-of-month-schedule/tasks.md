@@ -28,7 +28,7 @@ turns 2.5 green answers every short month, and the smallest that turns 2.10 gree
 out-of-range number. Record honestly in this file which ones actually ran red rather than
 describing all twelve as cycles; #8's `tasks.md` is the precedent.
 
-- [ ] 2.1 `a date on the scheduled day of the month is due`
+- [x] 2.1 `a date on the scheduled day of the month is due`
 - [ ] 2.2 `a date on another day of the same month is not due`
 - [ ] 2.3 `a day-of-month schedule is due on exactly one date across a whole month`
 - [ ] 2.4 `a schedule on the first is due on the first of a month and not on the last day of the month before`
