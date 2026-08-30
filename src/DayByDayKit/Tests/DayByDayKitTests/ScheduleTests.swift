@@ -64,3 +64,13 @@ func aSundayOnlyScheduleIsDueOnSundayAndNotOnSaturday() {
     #expect(schedule.isDue(on: sunday))
     #expect(!schedule.isDue(on: saturday))
 }
+
+@Test("a leap day is placed on its Gregorian weekday")
+func aLeapDayIsPlacedOnItsGregorianWeekday() {
+    let leapDay = CalendarDate(year: 2028, month: 2, day: 29)!
+    let tuesdaySchedule = Schedule.weekdays([.tuesday])
+    let mondaySchedule = Schedule.weekdays([.monday])
+
+    #expect(tuesdaySchedule.isDue(on: leapDay))
+    #expect(!mondaySchedule.isDue(on: leapDay))
+}
