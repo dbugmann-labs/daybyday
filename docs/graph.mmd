@@ -12,13 +12,22 @@ flowchart TD
   classDef settled stroke:#b45309,stroke-width:2px
   classDef orphan stroke:#b91c1c,stroke-width:3px,stroke-dasharray:4 3
 
-  I3["Epic 3 — Command-line surface"]
-  I4["Feature 4 — cli-version"]
-  I5["Story 5 — add-version-command"]
+  I1["Epic 1 — Daily commitments"]
+  I6["Feature 6 — schedule"]
+  I8["Story 8 — add-weekday-set-schedule"]
+  I9["Story 9 — add-day-of-month-schedule"]
+  I10["Story 10 — add-every-n-days-schedule"]
+  I11["Story 11 — add-weekly-quota-schedule"]
 
-  I3 --> I4
-  I4 --> I5
+  I1 --> I6
+  I6 --> I10
+  I6 --> I11
+  I6 --> I8
+  I6 --> I9
 
-  class I3 epic,done
-  class I4 feature,done
-  class I5 story,done
+  class I1 epic
+  class I6 feature
+  class I8 story,done
+  class I9 story
+  class I10 story
+  class I11 story
