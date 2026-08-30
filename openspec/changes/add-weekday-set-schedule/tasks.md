@@ -39,7 +39,7 @@ green after, and every earlier test still green.
   Foundation rolling behaviour recorded in `design.md` § *Context*.
 - [x] 2.9 `the twenty-ninth of February in a common year is not a calendar date`
 - [x] 2.10 `the twenty-ninth of February in a leap year is a calendar date`
-- [ ] 2.11 `a month outside the twelve is not a calendar date` — likewise assert that
+- [x] 2.11 `a month outside the twelve is not a calendar date` — likewise assert that
   1 January 2027 was not formed in its place.
 
 ## 3. Gates

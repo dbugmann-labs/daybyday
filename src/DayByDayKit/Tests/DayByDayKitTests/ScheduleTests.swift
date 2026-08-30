@@ -106,3 +106,11 @@ func theTwentyNinthOfFebruaryInALeapYearIsACalendarDate() {
 
     #expect(date != nil)
 }
+
+@Test("a month outside the twelve is not a calendar date")
+func aMonthOutsideTheTwelveIsNotACalendarDate() {
+    let date = CalendarDate(year: 2026, month: 13, day: 1)
+
+    #expect(date == nil)
+    #expect(date != CalendarDate(year: 2027, month: 1, day: 1))
+}
