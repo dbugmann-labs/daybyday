@@ -1,6 +1,6 @@
 # 1003. The rule engine speaks calendar dates, not instants
 
-- Status: proposed — accepted when Story #8 passes G4
+- Status: accepted
 - Date: 2026-08-30
 - Deciders: Diego Bugmann
 
