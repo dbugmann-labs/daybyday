@@ -89,7 +89,7 @@ changes: there is no hardening block left underneath it.
   guard tightened by mistake would refuse a supported year and no test would notice.
 - [x] 2.19 `a year past the last supported year is not a calendar date` — rename
   `"a year past the upper bound is not a calendar date"`.
-- [ ] 2.20 `the last day before the first full Gregorian year is not a calendar date` — rename
+- [x] 2.20 `the last day before the first full Gregorian year is not a calendar date` — rename
   `"the last year before the Gregorian reform is not a calendar date"` at
   `ScheduleTests.swift:150`, and rename its function to match. The assertion and the comment above
   it are already right and do not change. The old title was factually wrong: the Gregorian reform
@@ -113,7 +113,7 @@ changes: there is no hardening block left underneath it.
   `pnpm run checks` reports scenario coverage as 19 of 19 with a matching title for each. True when
   this box was ticked. The re-review then corrected one scenario title, so coverage reads 18 of 19
   until task 2.20 lands; 3.6 is the same check afterwards.
-- [ ] 3.6 After task 2.20: `pnpm run checks` reports scenario coverage as 19 of 19 again, and
+- [x] 3.6 After task 2.20: `pnpm run checks` reports scenario coverage as 19 of 19 again, and
   `cd src/DayByDayKit && swift test` still reports 19 tests passing and no failures.
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7,

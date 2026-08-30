@@ -147,8 +147,8 @@ func aDateBeforeTheGregorianCalendarsAdoptionIsNotACalendarDate() {
     #expect(date == nil)
 }
 
-@Test("the last year before the Gregorian reform is not a calendar date")
-func theLastYearBeforeTheGregorianReformIsNotACalendarDate() {
+@Test("the last day before the first full Gregorian year is not a calendar date")
+func theLastDayBeforeTheFirstFullGregorianYearIsNotACalendarDate() {
     // The guard is year-granular, so the whole of 1582 is refused, including after the
     // 15 October reform. Without this, the pinned pair either side of the lower bound is
     // 1500 refused and 1583 accepted, and a guard mistyped as `1581...` would satisfy both.
