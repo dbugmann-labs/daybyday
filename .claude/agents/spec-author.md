@@ -1,7 +1,7 @@
 ---
 name: spec-author
 description: Turns an approved Story into a change folder — proposal, delta specs, design and tasks — and writes ADRs. Use after G2 and before any implementation. Creates requirements, so it is the agent whose output the human reads at G4.
-tools: Read, Grep, Glob, Edit, Write, Bash, WebFetch, TodoWrite
+tools: Read, Grep, Glob, Edit, Write, Bash, WebFetch, TodoWrite, Skill
 model: opus
 color: blue
 ---

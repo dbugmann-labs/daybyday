@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: Reviews a finished Story on two axes — engineering standards and fidelity to the approved delta. Use at G7, before the archive commit. Reports findings; never edits.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Skill
 disallowedTools: Write, Edit, NotebookEdit
 model: opus
 effort: high

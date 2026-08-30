@@ -145,6 +145,12 @@ stated lean is one where the cheapest answer is always yes. Specified in
 
 Nothing writes `openspec/specs/` except `/opsx:archive`. Definitions are in `.claude/agents/`.
 
+**A skill named in this table is only reachable if the agent holds the `Skill` tool.** It is
+granted to the four agents the pipeline documents a `via /command` for; `orchestrator` has none
+and does not hold it. An agent without it cannot run the command at all — it can only read the
+SKILL.md and improvise, and the drift is invisible. Verified by probe on 2026-08-30, not
+assumed.
+
 **Know what is enforced and what is only written down.** Three things are mechanical:
 `deny` rules in `.claude/settings.json` (no agent may `Edit`/`Write` `openspec/specs/**`,
 `openspec/changes/archive/**` or `pnpm-lock.yaml` — survives `bypassPermissions`, but only when
@@ -184,7 +190,9 @@ Story is a bug: stop and start a fresh one.
 issue tracker, breaking rule 4), `implement` (duplicates `/opsx:apply`, and its commit step
 bypasses review), `wayfinder`, `improve-codebase-architecture`. All four are
 `disable-model-invocation: true`, so they cannot fire on their own — do not invoke them by name
-either.
+either. That last clause is now load-bearing for subagents too: `spec-author`, `implementer`,
+`reviewer` and `janitor` hold the `Skill` tool, so the kill list is convention for them exactly
+as it is for you.
 
 ## Agent skills
 
