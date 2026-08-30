@@ -1,6 +1,15 @@
 import Foundation
 
 public struct CalendarDate: Hashable, Sendable {
+    /// `TimeZone(identifier: "UTC")!` is used rather than `.gmt`: this package declares no
+    /// platform in `Package.swift`, and `.gmt` does not compile against the resulting default
+    /// deployment target.
+    private static let calendar: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        return calendar
+    }()
+
     let year: Int
     let month: Int
     let day: Int
@@ -19,15 +28,12 @@ public struct CalendarDate: Hashable, Sendable {
             return nil
         }
 
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
-
         var components = DateComponents()
         components.year = year
         components.month = month
         components.day = day
 
-        guard components.isValidDate(in: calendar) else {
+        guard components.isValidDate(in: Self.calendar) else {
             return nil
         }
 
@@ -38,16 +44,13 @@ public struct CalendarDate: Hashable, Sendable {
 
     /// The Gregorian weekday of this date, independent of the host's time zone and locale.
     var weekday: Weekday {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
-
         var components = DateComponents()
         components.year = year
         components.month = month
         components.day = day
 
-        let date = calendar.date(from: components)!
-        let foundationWeekday = calendar.component(.weekday, from: date)
+        let date = Self.calendar.date(from: components)!
+        let foundationWeekday = Self.calendar.component(.weekday, from: date)
         return Weekday(foundationWeekday: foundationWeekday)
     }
 }
