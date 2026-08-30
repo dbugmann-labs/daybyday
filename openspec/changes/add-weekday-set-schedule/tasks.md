@@ -106,7 +106,7 @@ changes: there is no hardening block left underneath it.
 - [x] 3.2 `pnpm exec openspec validate add-weekday-set-schedule --strict` exits 0, and
   `pnpm run checks` reports scenario coverage as 11 of 11 with a matching title for each. Eleven
   was the whole delta at that point; 3.5 is the same check against nineteen.
-- [ ] 3.3 `/code-review` reports nothing unresolved on either axis (**G7**).
+- [x] 3.3 `/code-review` reports nothing unresolved on either axis (**G7**).
 - [x] 3.4 After tasks 2.12 to 2.19: `cd src/DayByDayKit && swift test` reports 19 tests passing and
   no failures, and `pnpm run verify` exits 0.
 - [x] 3.5 `pnpm exec openspec validate add-weekday-set-schedule --strict` exits 0, and
