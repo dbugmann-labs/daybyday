@@ -54,4 +54,6 @@ approving.
 - **No ADR.** The short-month decision is reversible at the cost of one requirement, five scenarios
   and a few lines below the seam, and its durable home is the capability spec, which states it
   normatively and says why. `design.md` records the rejected alternative. If the owner reads it as
-  a decision that should outlive this change folder, say so at G4 and it becomes ADR 1005.
+  a decision that should outlive this change folder, say so at G4 and it is written up as an ADR
+  taking the next free number in `docs/adr/` — 1008 when this was written, so check the directory
+  rather than trusting that figure.

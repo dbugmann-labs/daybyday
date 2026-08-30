@@ -142,10 +142,10 @@ month scenarios are what hold that line.
   and across the century leap rule rather than assumed, and the seam's input contract guarantees the
   date handed in already exists. The implementer may still compute the length arithmetically; the
   requirement is about the answer, not the mechanism.
-- **Twelve scenarios for one rule shape**, where the rule itself is one comparison. → Nine of the
-  twelve are the short-month rule and its boundaries, which is where every bug in this shape will
-  live: a fixed 28, a clamp that misfires in a 31-day month, a roll into 1 March. The happy path is
-  three of them.
+- **Twelve scenarios for one rule shape**, where the rule itself is one comparison. → Only four of
+  the twelve are the happy path. Five are the short-month rule and its boundaries, which is where
+  every bug in this shape will live: a fixed 28, a clamp that misfires in a 31-day month, a roll
+  into 1 March. The remaining three are the validity of the day number itself.
 - **#11 may still not fit this seam** — unchanged from #8, and this Story does not make it better or
   worse. A weekly quota needs tick history; this shape does not.
 
