@@ -1,6 +1,10 @@
 node_modules/
 dist/
 coverage/
+
+# SwiftPM
+.build/
+.swiftpm/
 .DS_Store
 *.log
 .env

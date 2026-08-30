@@ -62,3 +62,19 @@ today can be ticked.
 
 **Day** — the unit the product is organised around. The landing screen is one day, and every
 record is keyed to a date rather than to the time it was entered.
+
+**Calendar date** — a year, a month of that year and a day of that month: the argument every
+due-ness question is asked about. It carries no clock, no time zone and no locale, and a
+combination that names no day — 30 February — is not one. Its year runs from 1583 to 9999
+inclusive: the weekday comes from a calendar that is Julian before the Gregorian reform of
+15 October 1582, and 1583 is the first year that is Gregorian throughout. Drawing the bound at a
+whole year refuses the tail of 1582 as well, which is a trade taken knowingly. Deliberately not an instant; see
+`docs/adr/1004-the-rule-engine-speaks-calendar-dates.md`.
+
+**Weekday set** — the first of the four schedule shapes: the days of the week a commitment runs
+on, as a set. "Gym Mon/Wed/Sat" is one. Membership is the whole rule, so a set of all seven is
+due every day and an empty set is due on none.
+
+**Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
+storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by
+`swift test`.

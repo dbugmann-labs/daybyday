@@ -1,0 +1,233 @@
+## Context
+
+There is no Swift in the repository yet. ADR 1001 decided the language and the shape of the
+rule engine — a Swift Package with no UI dependency, driven from the terminal by `swift test`,
+whose exported entry point is the seam — but it deliberately stopped short of saying where that
+package lives or what a date is to it, because neither was worth guessing without a requirement
+in hand. This Story has the requirement, so it answers both, and the three schedule Stories
+behind it (#9 day of month, #10 every N days, #11 weekly quota) inherit the answers.
+
+Motivation is in `proposal.md`; the behaviour contract is in `specs/schedule/spec.md` and is not
+restated here.
+
+Four facts were verified on this machine on 2026-08-30 rather than recalled, because each changes
+the design if wrong. The first three were checked before any code was written; the last was
+established at the G7 review, and it is what the fourth requirement in the delta answers:
+
+- `swift package init` on the installed toolchain (Apple Swift 6.3.3, Xcode 26.6) generates
+  `// swift-tools-version: 6.3`, `swiftLanguageModes: [.v6]`, a Swift Testing test target and no
+  external dependency. `swift test` runs offline. The `macos-26` runner CI uses defaults to
+  Xcode 26.6 as well, so the same manifest builds there.
+- **`Package(...)` takes its arguments in declaration order, and `products:` must precede
+  `swiftLanguageModes:`.** Swift enforces the order of labelled arguments, so a manifest that lists
+  the language modes first does not compile: it fails with
+  `error: argument 'products' must precede argument 'swiftLanguageModes'` before any target is
+  built. The written order is therefore `name`, `products`, `targets`, `swiftLanguageModes`.
+  Checked on 2026-08-30 by compiling a manifest in each order, because prose that lists the pieces
+  of a manifest reads like a file layout and is not one.
+- Foundation's `Calendar.date(from:)` **rolls invalid components rather than returning nil**:
+  asked for 30 February 2026 it returns 2 March 2026, and asked for month 13 of 2026 it returns
+  1 January 2027. It does not report a problem. That single fact is why the third requirement in
+  the delta exists and why it is worded as a refusal to adjust.
+- Two further Foundation facts were established at the G7 review rather than up front, and the
+  fourth requirement in the delta exists because of them. `DateComponents` reads back `nil` for a
+  component assigned exactly `Int.max` — its internal "undefined" sentinel — so an extreme value
+  offered as a year, month or day would leave that component unset and let an under-specified date
+  pass `isValidDate(in:)`. And `Calendar(identifier: .gregorian)` is a hybrid: it applies the
+  Julian calendar before the reform of 15 October 1582, so a date earlier than that day is placed
+  on a weekday the Gregorian calendar does not give it. Measured here: 4 October 1582 is Thursday
+  to that calendar and Monday to a proleptic Gregorian one, while from 15 October 1582 the two
+  agree — so the divergence stops inside 1582, not at the year boundary. Bounding all three components — year 1583
+  through 9999, month 1 through 12, day 1 through 31 — closes both, at the cost of a supported year
+  range that the delta now states rather than leaves implicit.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- One seam, named below, that every scenario in this delta attaches to and that the next three
+  schedule Stories can extend without moving.
+- A date model that makes the answer to "is this due?" a function of its two arguments and
+  nothing else — no clock, no ambient time zone, no locale.
+- The smallest package that CI's existing `swift` job and check 4 can both already handle.
+
+**Non-Goals:**
+
+- An app target, an Xcode project, or any SwiftUI. Nothing here renders.
+- Persistence. SwiftData versus GRDB stays open (ADR 1001); the rule engine touches neither.
+- Date formatting, parsing, or display. The engine consumes dates; it never prints one.
+- A general-purpose date library. `CalendarDate` exists to be the argument of one predicate.
+
+## Decisions
+
+### The seam
+
+**`Schedule.isDue(on:) -> Bool`**, a public instance method on the public enum `Schedule`,
+exported from the module `DayByDayKit`:
+
+```swift
+public enum Schedule: Hashable, Sendable {
+    case weekdays(Set<Weekday>)
+
+    public func isDue(on date: CalendarDate) -> Bool
+}
+```
+
+Every acceptance test in this change attaches here: one test per `#### Scenario:`, titled
+verbatim, constructing a `Schedule` and a `CalendarDate` and asserting on the returned `Bool`.
+No process is spawned and no global stream is captured.
+
+The seam's argument type is part of the seam, so the three validity scenarios necessarily
+observe the initializer that forms it:
+
+```swift
+public struct CalendarDate: Hashable, Sendable {
+    public init?(year: Int, month: Int, day: Int)
+}
+```
+
+That is stated rather than glossed over — it is one boundary with an input contract, not two
+seams, and there is no way to call `isDue(on:)` without going through it. Everything else in the
+module is internal: in particular `CalendarDate`'s weekday is **not** public, so no test can
+reach behind the predicate to assert on it directly. The scenarios that pin weekday derivation
+(the leap day, the year boundary) are asserted through a one-weekday schedule, which is how the
+product will actually consume it.
+
+*Alternative — a free function `isDue(_ schedule: Schedule, on date: CalendarDate)`.* Equivalent
+in testability and marginally less idiomatic Swift. Rejected on style alone; nothing turns on it.
+
+*Alternative — a `Schedule` protocol with one conforming type per rule shape.* It would let each
+of the four Stories add a type instead of a case. Rejected: an existential adds a layer for a
+closed set of four shapes that only this repository will ever implement, and a protocol cannot be
+exhaustively switched over, which is the property the UI will want when it comes to edit a rule.
+
+### `Schedule` is one enum that gains a case per Story
+
+`Schedule` ships here with exactly one case. That is deliberate, not an oversight: #9, #10 and
+#11 each add a case to this enum and none of them moves the seam. A single-case enum is the price
+of the seam surviving all four Stories, and it is cheaper than the alternative — a
+`WeekdaySetSchedule` struct now, replaced by an enum in three weeks, with every acceptance test
+already written against the struct.
+
+### A date is a calendar date, not an instant — recorded as ADR 1003
+
+`isDue(on:)` takes a year-month-day value, not a `Foundation.Date`. `CONTEXT.md` already says a
+day is the unit the product is organised around and that due-ness is asked *of a date*, not of
+the present moment; an instant would make the answer depend on the time zone the device happened
+to be in, and would make every acceptance test depend on the time zone of the CI runner. This is
+expensive to reverse — it is in the signature of every rule shape — so it is ADR 1003 rather than
+a line in a design that gets archived.
+
+### A weekday is a named case, never a number
+
+`Weekday` is a public enum with seven cases, `monday` through `sunday`, and no public raw value.
+Foundation numbers weekdays from 1 for Sunday; ISO 8601 numbers them from 1 for Monday. Both
+conventions are correct and a public integer would invite the off-by-one that picks the wrong
+one. The delta's *Sunday-only schedule* scenario exists specifically to catch it if the internal
+derivation gets it backwards. The set is a `Set<Weekday>`, so a duplicated weekday is
+unrepresentable and needs no scenario.
+
+### Where the week begins is not decided here, because this rule does not need it
+
+Set membership does not depend on which day starts the week — Sunday is Sunday whether the week
+runs Monday-first or Sunday-first. The delta says so normatively so that nobody adds a
+first-weekday parameter to the seam by reflex. The question is real, and it belongs to #11, where
+"three times a week" cannot be answered without it. Deciding it here would be deciding it without
+the requirement that forces the choice.
+
+### An empty set is legal and never due; an impossible date is not legal at all
+
+These two look inconsistent until you name the difference. An empty weekday set has a perfectly
+well-defined answer — never due — that the user may not have wanted; 30 February has no answer at
+all, so any `Bool` returned for it would be a lie. So the engine answers the first and refuses to
+form the second. Refusing to *save* a commitment that can never come due is validation, it
+belongs to the screen where a commitment is edited, and it is not this capability's job.
+
+### A calendar date's year runs from 1583 to 9999
+
+The bounds guard exists to close the two holes in *Context* above, and both bounds are choices
+worth naming. **1583** is the first year that is Gregorian throughout in the calendar the engine
+derives weekdays from, so it is the earliest year the type can promise a Gregorian weekday for on
+every one of its days; refusing 1582 wholesale rather than only 1 January to 14 October 1582 keeps
+the check to a year comparison, at the price of the seventy-eight days after the reform that would
+have been answered correctly — a price a commitments app never pays. The delta states both halves
+of that rather than the flattering half, and pins 31 December 1582 as refused so the boundary is
+fixed from both sides rather than inferred from a date eighty years earlier. **9999** is a bound rather than a limit anybody will
+meet: what it buys is that every component is judged against a range the engine owns, so no value
+can reach `DateComponents` large enough to be mistaken for an unspecified one. A narrower and more
+defensible-sounding range — say 1900 to 2100 — was rejected because it would refuse dates for a
+reason the product does not have.
+
+*This narrows the seam's input contract*, so the delta states it as a requirement of its own rather
+than leaving it as a detail of the initializer. #9, #10 and #11 inherit it: a rule shape may assume
+every `CalendarDate` it is handed has a Gregorian weekday.
+
+### The package lives at `src/DayByDayKit/`
+
+One SwiftPM package: `Package.swift` at `src/DayByDayKit/`, library target `DayByDayKit` under
+`Sources/`, test target `DayByDayKitTests` under `Tests/`, no platform requirement and no
+dependency, so `swift test` runs on the macOS CI runner with no Xcode project in the way. CI's
+`swift` job finds it by `find . -name Package.swift`, and check 4 finds its tests by walking
+`.swift` files from the repository root; both work unmodified.
+
+*Alternative — `DayByDayKit/` at the repository root*, which is the idiomatic Swift layout and
+what an Xcode app target would later sit beside. Rejected for one unglamorous reason: the
+implementer agent's write scope is `src/**` and `tests/**`, so a root-level package would make
+every implementation commit an out-of-scope write, and widening that scope is an agent-definition
+edit, which rule 6 says the conductor session must make itself. `src/DayByDayKit/` needs no
+configuration change and an Xcode project can reference a local package at any path. If the owner
+prefers the root layout, that is a G4 comment and a one-line change here — say so before Stage 5,
+not after.
+
+## Risks / Trade-offs
+
+- **#11 may not fit this seam.** "Three times a week" cannot be answered from a schedule and a
+  date alone; it needs to know what has already been ticked that week. → Accepted knowingly. The
+  seam is the right shape for three of the four Stories and for every screen that draws a day.
+  When #11 arrives it will either add a parameter to this method or add a second question beside
+  it, and it will do so with a real requirement in hand. Designing that parameter now would be
+  inventing the tick history model three Stories early.
+- **Foundation will silently roll an invalid date if it is consulted first.** → The validity
+  check must reach its verdict *before* Foundation is asked to build anything, and the three
+  refusal scenarios are what hold that line. Whether the weekday is then derived through
+  `Calendar` or by arithmetic is below the seam and is the implementer's choice.
+- **`.gitignore` has no `.build/` or `.swiftpm/` entry**, and both appear the first time
+  `swift build` runs. Left alone, the first `git add -A` commits build products. → Task 1.1 adds
+  them, and it is the one task in this change that writes outside `src/**`. If the implementer
+  treats that scope as binding, it stops there and the conductor makes that one-line edit. Better
+  to hit that on the first task than on the commit.
+- **Nothing in this repository has ever compiled Swift.** The `swift` CI job and check 4's
+  `@Test("...")` reader were both written against no Swift at all. → Expect the first red run to
+  be about plumbing rather than about weekdays, and report a defect in either rather than working
+  around it (rule 5). The local toolchain was verified today, so a failure on the runner and not
+  on the machine is information, not noise.
+- **Nineteen scenarios is a lot for one Story** — eleven at G4 and eight added at G7 to state the
+  bounds the fix introduced. → They are nineteen one-line predicates over four small types, and
+  twelve of them exist only because Foundation's date handling fails quietly: rolling an invalid
+  combination, reading `Int.max` back as unset, and switching to the Julian calendar before 1582.
+  Cutting either validity requirement would save tests and leave the trap in place.
+
+## Migration Plan
+
+None. Nothing exists to migrate: this creates a capability and a package, and removes nothing.
+
+## Open Questions
+
+None. Four questions `docs/parking-lot.md` left open reach the delta or a decision above:
+
+- *Is "every day" a set of seven weekdays or an interval of one?* Both, and it does not matter.
+  `isDue(on:)` is a predicate, not a normal form; two rules that select the same days are equally
+  correct, and the delta pins the seven-weekday answer with a scenario. No "every day" rule shape
+  is needed.
+- *What happens on days before a thing existed?* Not this capability's question. A schedule is a
+  rule about dates; when a commitment started, ended or was paused is a property of the
+  commitment, and it belongs to the Feature that defines one.
+- *Where does a week begin?* Deferred to #11, on the stated ground above that this rule cannot
+  need it.
+- *Where does the Swift package live?* Decided above: `src/DayByDayKit/`, with the reasoning and
+  the rejected root-level alternative both written down.
+
+Four facts that could have been assumptions were checked instead, and are in *Context*: the
+generated manifest's tools version, the argument order `Package(...)` demands, Foundation's rolling
+of invalid date components, and the pair of Foundation behaviours — the `Int.max` sentinel and the
+Julian-before-1582 hybrid — that the supported year range answers.
