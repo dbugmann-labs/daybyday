@@ -58,6 +58,7 @@ atlas/
 │       └── archive/YYYY-MM-DD-<change-id>/
 ├── docs/
 │   ├── process.md                # this document
+│   ├── story-mechanics.md        # Stage 4 to merge, keystroke by keystroke
 │   ├── retrospective.md          # what the first end-to-end run cost and caught
 │   ├── adr/NNNN-kebab-title.md
 │   ├── agents/{issue-tracker.md, domain.md, triage-labels.md}   # written by setup-matt-pocock-skills
@@ -260,7 +261,7 @@ Every agent session starts from durable files, never from chat history. The cond
 
 You start with **one concurrent Story**, where two changes cannot possibly race for the same spec file. Your review capacity, not agent wall-clock, is the constraint.
 
-**The evidence for worktrees arrived on 2026-08-29 and they are no longer dormant.** Two agents were working in the one clone — one decomposing `FEAT: schedule` into Stories, one building tooling on a `chore/` branch — and the second found itself on a `story/` branch it had deleted, carrying its uncommitted work, because *two agents in one clone share `HEAD`*. A checkout by either moves the other's working tree underneath it and neither is told. Nothing was lost only because both branches pointed at the same commit. The rule is now **one agent per working tree**, with the exact commands and what does and does not carry over in `AGENTS.md` § *Working in parallel*.
+**The evidence for worktrees arrived on 2026-08-29 and they are no longer dormant.** Two agents were working in the one clone — one decomposing `FEAT: schedule` into Stories, one building tooling on a `chore/` branch — and the second found itself on a `story/` branch it had deleted, carrying its uncommitted work, because *two agents in one clone share `HEAD`*. A checkout by either moves the other's working tree underneath it and neither is told. Nothing was lost only because both branches pointed at the same commit. The rule is now **one agent per working tree**, with the exact commands and what does and does not carry over in `docs/story-mechanics.md`.
 
 Note what this does and does not fix. A worktree isolates `HEAD`, the index and the files; it does nothing about two Stories racing for one file in `openspec/specs/`, which is still decided at Stage 2 by the switch-back trigger below. Working-tree collision and spec collision are separate problems with separate answers, and having one answer is not having both.
 

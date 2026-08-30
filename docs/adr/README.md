@@ -21,7 +21,7 @@ this is not a correction — supersede the ADR instead. Silent edits are the thi
 exists to prevent; a visible erratum is not one.
 
 An ADR should not be the place a command name lives in the first place. It fixes the *shape*
-of a decision; the operative commands belong in `AGENTS.md` or `docs/agents/`, where they are
+of a decision; the operative commands belong in `AGENTS.md` or under `docs/`, where they are
 expected to move.
 
 Write an ADR when a decision was hard, is expensive to reverse, or would surprise someone

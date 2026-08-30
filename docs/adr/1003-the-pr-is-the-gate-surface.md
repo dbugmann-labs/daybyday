@@ -57,7 +57,7 @@ there and current.
   containment failure when the draft is lifted rather than on every push. `pnpm run checks`
   runs the same list locally and is the earlier warning.
 - **Story branches are force-pushed.** `--force-with-lease` and one agent per working tree
-  (`AGENTS.md` § *Working in parallel*) are what make that safe. A second agent pushing to the
+  (`docs/story-mechanics.md`) are what make that safe. A second agent pushing to the
   same story branch from another clone would lose commits; the rule against that predates this
   decision and now has a second reason behind it.
 - **The rebase can fail, and that is a feature.** A conflict is the earliest honest signal that
@@ -67,3 +67,8 @@ there and current.
   invite the habit of merging past a red X. Also rejected: opening it only at G7, keeping G4 on
   file paths. That leaves the hardest gate — the one the whole requirement set rests on — with
   the worst reading surface of the two.
+
+## Corrections
+
+- **2026-08-30** — the worktree rule was cited as `AGENTS.md` § *Working in parallel*; it now
+  lives in `docs/story-mechanics.md`. The rule is unchanged, only its address.

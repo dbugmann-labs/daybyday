@@ -45,13 +45,13 @@ git for-each-ref --format='%(refname:short)' refs/heads refs/remotes/origin | gr
 ```
 
 **If another agent is working in this repository, take a worktree, not a branch** — commands in
-`AGENTS.md` § *Working in parallel*. `git worktree list` showing one entry is not proof you are
-alone; ask, or take the worktree anyway, since it costs a directory. Either way
+`docs/story-mechanics.md`. `git worktree list` showing one entry is not proof you are alone;
+ask, or take the worktree anyway, since it costs a directory. Either way
 `git branch --unset-upstream` is not optional.
 
 ## The PR both gates are read through
 
-**One draft PR per Story, open from Stage 4 to merge** (`AGENTS.md` § *Working a Story* has the
+**One draft PR per Story, open from Stage 4 to merge** (`docs/story-mechanics.md` has the
 commands; the agents run them, not you). What is yours is refusing to present a gate whose diff
 is missing or stale: `pnpm run status` reports the PR, whether it is still a draft, and how many
 commits `main` has moved past it, and hands the step back to an agent rather than to the human
@@ -168,8 +168,8 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
 3. **Stop at G1** in the form above.
 4. On approval, spawn `orchestrator` to create the Feature issue and attach it. Then run
    `/to-tickets` for decomposition and **stop at G2**.
-5. On approval, cut the branch or worktree (`AGENTS.md` § *Working a Story*), spawn
-   `spec-author`, and **stop at G4**.
+5. On approval, cut the branch or worktree (`docs/story-mechanics.md`), spawn `spec-author`,
+   and **stop at G4**.
 
 If the idea is not ready to be a Feature, the right outcome is a line in
 `docs/parking-lot.md`, not a Feature issue. Nothing is implemented from that file, and an

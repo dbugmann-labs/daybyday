@@ -52,7 +52,7 @@ Epic ──▶ Feature ──▶ Story ──▶ grill ──▶ propose ──�
 
 One Story = one change = one branch = one PR. That PR opens at Stage 4 and stays open, as a
 draft, until the archive: both human gates are read as a diff off the same URL, and it is
-rebased onto `origin/main` before each. See § *Working a Story* and ADR-1003.
+rebased onto `origin/main` before each. See `docs/story-mechanics.md` and ADR-1003.
 
 ## Hard rules
 
@@ -91,6 +91,7 @@ rebased onto `origin/main` before each. See § *Working a Story* and ADR-1003.
 | Branch | `story/<issue#>-<change-id>`, cut from `origin/main` at Stage 4 |
 | Chore branch | `chore/<slug>` — no behaviour change, no Story needed |
 | Commit | Conventional Commits — `feat(cli-version): print version` |
+| Propose commit | `docs(<capability>): propose <change-id>` — the change folder is documentation until G4 |
 | Archive commit | `chore(archive): <change-id>` — scoped `archive`, not the capability |
 | ADR | `docs/adr/NNNN-kebab-title.md` |
 
@@ -149,35 +150,6 @@ yourself, or you will write a `design.md` that validates and still fails the DoR
 
 The rest of the process vocabulary is in `CONTEXT.md`.
 
-## Working in parallel
-
-**Two agents in one clone share `HEAD`.** A checkout by one moves the other's working tree
-underneath it mid-task, and neither is told — it happened on 2026-08-29, and nothing was lost
-only because both branches happened to point at the same commit. **So: one agent per working
-tree.** If a second agent is working here, or you are starting a Story while another is in
-flight, take a worktree instead of a branch:
-
-```bash
-git fetch origin
-git worktree add ../daybyday-<change-id> -b story/<issue#>-<change-id> origin/main
-cd ../daybyday-<change-id>
-git branch --unset-upstream          # <- same trap as `git checkout -b`; do not skip it
-pnpm install                         # a worktree starts with no node_modules
-```
-
-Work there, push and open the PR from there, and clean up after the merge with
-`git worktree remove ../daybyday-<change-id>` from the main clone.
-
-A worktree gets its own `HEAD` and index, which is the point. `.git/config` and tracked files
-are shared, so `gh` still resolves to `dbugmann-labs/daybyday` and `.claude/`'s `deny` rules
-load; anything gitignored does **not** come with you — `node_modules`, `CLAUDE.local.md`,
-`.claude/settings.local.json`. Which is why anything another agent must know goes in a tracked
-file.
-
-Still one concurrent Story per capability: worktrees remove the collision in the *working
-tree*, not two Stories racing for one file in `openspec/specs/`, which is decided at Stage 2.
-See `docs/process.md` §7.
-
 ## Context discipline
 
 Start every session from durable files, never from chat history. You are given an issue number;
@@ -222,65 +194,18 @@ openspec validate --archived        # every archived tasks.md box ticked
 
 ## Working a Story
 
-**Cut the branch at Stage 4**, from `origin/main`, once the Story exists:
+The Stage-4-to-merge keystrokes — cutting the branch or worktree, opening and refreshing the
+draft PR, the staged checks, settling the tracker afterwards — are in `docs/story-mechanics.md`.
+**Read it before you touch git on a Story.** Three things from it are load-bearing enough to
+state here, because getting them wrong costs someone else's work:
 
-```bash
-git fetch origin && git checkout -b story/<issue#>-<change-id> origin/main
-git branch --unset-upstream          # <- do not skip this
-```
-
-Skipping the unset leaves the branch tracking `origin/main`, so a later bare `git push`
-targets the protected branch and is rejected.
-
-Commit the change folder as `docs(<capability>): propose <change-id>` — it is documentation
-until G4 — then `feat(<capability>): ...` for implementation. The archive at Stage 8 is the one
-commit that breaks the pattern: `chore(archive): <change-id>`, scoped `archive` because it
-moves the change folder rather than changing behaviour. Do not extrapolate
-`chore(<capability>): ...` from it.
-
-**Open the draft PR in the same breath**, before asking for G4 — a change folder is far easier
-to judge as a diff than as four files someone opens by hand:
-
-```bash
-git push -u origin story/<issue#>-<change-id>
-gh pr create --draft --base main --title '<change-id>' --body 'Closes #<issue#>'
-```
-
-`Closes #<issue#>` is what auto-closes the Story on merge, so it is not optional. Draft is not
-decoration either: CI reads it as "this Story is not finished" and skips the four checks that
-assert it is — 3, 4, 5 and 8 — which bind again when the janitor runs `gh pr ready` at Stage 8.
-
-**Refresh the PR before each of the two gates**, G4 and G7:
-
-```bash
-git fetch origin && git rebase origin/main
-git push --force-with-lease origin story/<issue#>-<change-id>
-```
-
-A rebase rather than a merge, so the PR shows the Story's own commits and nothing else. Not
-tidiness: the delta's ADDED / MODIFIED claims are written against the specs as they stand, and
-`main` moving underneath can invalidate them without touching a file on the branch. A rebase
-conflict inside the change folder or `openspec/specs/` is a stop — another Story landed on this
-capability, which is the human's decision, not a merge you resolve (rule 5).
-
-**`pnpm run checks` is staged.** Mid-Story it reports rather than fails — the single-change
-rule reads "still active" until the archive, and coverage reports `2/4 covered — next:
-"<title>"` — because a check demanding all four tests at once would force exactly the bulk
-transcription rule 3 forbids. In CI the same checks bind, because a PR claims the Story is
-finished.
-
-**Gate checkboxes** are ticked by whoever can verify the condition — the orchestrator ticks G1
-and G2, the implementer the machine-checkable DoR and DoD boxes. The one no agent may ever tick
-is G4: that is the human's decision, recorded as a comment rather than a checkbox.
-
-**Closing.** `open` means one thing at every level: there is outstanding work under this node.
-A Story closes with its PR; a Feature when no open Story remains under it, reopening when a new
-one is cut (what lives forever is the capability spec, not the issue); an Epic when its
-Features do. `docs/graph.mmd` draws a parent ready to close in amber. See
-`docs/agents/issue-tracker.md` § *Closing the hierarchy*.
-
-**Labels.** Pipeline issues carry no triage label — they are triaged by existing. The five
-triage labels are for inbound or unplanned work only.
+- **One agent per working tree.** Two agents in one clone share `HEAD`, so a checkout by one
+  moves the other's working tree mid-task and neither is told. If another agent is working
+  here, or a Story is already in flight, take a worktree, not a branch.
+- **`git branch --unset-upstream`** after every `checkout -b` or `worktree add -b` off
+  `origin/main`, or a later bare `git push` targets the protected branch.
+- **A rebase conflict inside the change folder or `openspec/specs/` is a stop**, not a merge
+  you resolve: another Story landed on this capability, and that is the human's call (rule 5).
 
 ## This machine
 

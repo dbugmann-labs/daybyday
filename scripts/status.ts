@@ -528,7 +528,7 @@ export function renderTree(issues: GraphIssue[], branches: ReadonlySet<string> =
       for (const s of live) {
         // The branch is cut at Stage 4, so most open Stories have none yet. Printing
         // `git checkout` for one of those hands over a command that errors; the branch is
-        // cut from origin/main and its upstream unset, per AGENTS.md § Working a Story.
+        // cut from origin/main and its upstream unset, per docs/story-mechanics.md.
         const branch = `story/${s.number}-${s.title}`
         out.push(`      Story #${s.number} — ${s.title}`)
         out.push(
