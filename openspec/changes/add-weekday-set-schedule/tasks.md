@@ -4,16 +4,16 @@
   after task 1.2 that no build product is listed. This is the one task here that writes outside
   `src/**` — if that scope is binding for you, stop and hand this line to the conductor rather
   than widening it yourself (`AGENTS.md` rule 6 and `design.md` § *Risks*).
-- [ ] 1.2 Create the package at `src/DayByDayKit/`: `Package.swift` with
+- [x] 1.2 Create the package at `src/DayByDayKit/`: `Package.swift` with
   `// swift-tools-version: 6.3`, `swiftLanguageModes: [.v6]`, library target `DayByDayKit` and
   test target `DayByDayKitTests`, no platform requirement and no dependency. Verify with
   `cd src/DayByDayKit && swift build` exiting 0.
-- [ ] 1.3 Declare the public surface exactly as `design.md` § *The seam* gives it — `Weekday`,
+- [x] 1.3 Declare the public surface exactly as `design.md` § *The seam* gives it — `Weekday`,
   `CalendarDate` with its failable initializer, `Schedule` with its one case, and
   `isDue(on:)` whose body is `fatalError("not implemented")`. Nothing else public; `CalendarDate`'s
   weekday stays internal. Verify with `cd src/DayByDayKit && swift build` exiting 0. The seam
   exists before any test does.
-- [ ] 1.4 Add `Tests/DayByDayKitTests/ScheduleTests.swift` importing `Testing` and `DayByDayKit`,
+- [x] 1.4 Add `Tests/DayByDayKitTests/ScheduleTests.swift` importing `Testing` and `DayByDayKit`,
   with no test in it yet. Verify with `cd src/DayByDayKit && swift test` running and reporting no
   failures, and with `pnpm run check:scenarios` reporting `0/11` covered and naming
   `"a date on a listed weekday is due"` as next.
