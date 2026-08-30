@@ -27,7 +27,7 @@ smallest change that does. Never write two of these before the first is green (`
 Verify each with `cd src/DayByDayKit && swift test`: the named test red before the implementation,
 green after, and every earlier test still green.
 
-- [ ] 2.1 `a date on a listed weekday is due`
+- [x] 2.1 `a date on a listed weekday is due`
 - [ ] 2.2 `a date on an unlisted weekday is not due`
 - [ ] 2.3 `a schedule listing every weekday is due on seven consecutive dates`
 - [ ] 2.4 `a schedule listing no weekday is due on none of seven consecutive dates`

@@ -2,6 +2,9 @@ public enum Schedule: Hashable, Sendable {
     case weekdays(Set<Weekday>)
 
     public func isDue(on date: CalendarDate) -> Bool {
-        fatalError("not implemented")
+        switch self {
+        case .weekdays(let weekdays):
+            return weekdays.contains(date.weekday)
+        }
     }
 }
