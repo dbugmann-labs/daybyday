@@ -18,6 +18,11 @@ date to the rule engine** is answered once for the three schedule Stories that f
 - Fixes what a *calendar date* is to the engine — a year, a month and a day of that month, with
   no clock and no time zone — and makes a combination that names no real day impossible to form
   rather than silently rolled into the next month.
+- Fixes the years the engine accepts — 1583 through 9999 — and refuses a year outside them rather
+  than answering about it. This was added after the G7 review, which found the shipped code
+  refusing those years for two good reasons (Foundation's calendar is Julian before the Gregorian
+  reform of 1582, and a component large enough to be read back as unspecified is not a number worth
+  judging) and no requirement saying it may.
 - Fixes how a date's weekday is decided: by the Gregorian calendar, independent of locale and of
   which day anyone considers the week to start on.
 - Settles two things left open in `docs/parking-lot.md`: a set of all seven weekdays is due every

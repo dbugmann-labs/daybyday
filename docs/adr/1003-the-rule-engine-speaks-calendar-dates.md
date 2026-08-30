@@ -41,6 +41,14 @@ Three consequences are part of the decision rather than incidental to it:
   returns 2 March 2026 when asked for 30 February 2026, and 1 January 2027 when asked for month
   13 of 2026, without reporting anything. That silent rolling is the specific behaviour this
   decision exists to keep out of the engine.
+- **A calendar date carries a supported year range: 1583 through 9999.** This is a consequence of
+  the point above rather than a separate policy. `Calendar(identifier: .gregorian)` is a hybrid
+  that applies the Julian calendar before the reform of 15 October 1582, so a date in an earlier
+  year would be placed on a weekday the Gregorian calendar does not give it — a type that promises
+  Gregorian weekdays must decline those years rather than answer wrongly. The upper bound is the
+  other half of the same guard: it keeps every component inside a range the engine judges itself,
+  so no value can reach `DateComponents` large enough to be read back as unspecified. Recorded here
+  because it is part of what a calendar date *is* in this system, and #9, #10 and #11 inherit it.
 - **Conversion between an instant and a calendar date happens at the edges** — where "what day is
   it today?" is asked of the device, and where a tick is written to or read from storage. The
   engine never performs it, so no rule is ever a function of where the phone is.

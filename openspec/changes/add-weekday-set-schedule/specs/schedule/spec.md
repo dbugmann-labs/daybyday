@@ -72,6 +72,10 @@ rather than adjust it: a day past the end of its month MUST NOT become a day of 
 month, and a month past the twelfth MUST NOT become a month of the following year. A date that
 does not exist has no weekday, so no schedule may be asked about one.
 
+The system SHALL also judge each of the three components as the number it was offered, and MUST
+NOT accept a date in which a component was treated as absent or unspecified because its value was
+extreme. A date with a component missing is not three numbers, so it names no day either.
+
 #### Scenario: a day beyond the end of its month is not a calendar date
 
 - **WHEN** the year 2026, the month February and the day 30 are offered as a calendar date
@@ -93,3 +97,57 @@ does not exist has no weekday, so no schedule may be asked about one.
 - **WHEN** the year 2026, the month 13 and the day 1 are offered as a calendar date
 - **THEN** no calendar date is formed
 - **AND** in particular 1 January 2027 is not formed in its place
+
+#### Scenario: a month of the largest representable integer is not a calendar date
+
+- **WHEN** the year 2026, the largest integer the platform can represent offered as a month, and
+  the day 1 are offered as a calendar date
+- **THEN** no calendar date is formed
+
+#### Scenario: a year of the largest representable integer is not a calendar date
+
+- **WHEN** the largest integer the platform can represent offered as a year, the month January and
+  the day 1 are offered as a calendar date
+- **THEN** no calendar date is formed
+
+#### Scenario: a day of the largest representable integer is not a calendar date
+
+- **WHEN** the year 2026, the month January and the largest integer the platform can represent
+  offered as a day are offered as a calendar date
+- **THEN** no calendar date is formed
+
+### Requirement: A calendar date lies within the years the system supports
+
+The system SHALL form a calendar date only for a year from 1583 through 9999 inclusive, and SHALL
+refuse every year outside that range even when the three components name a day that plainly
+exists. The refusal MUST be a refusal rather than an adjustment: a year outside the range MUST NOT
+be clamped to the nearest supported year, and no schedule may be asked about a date the system
+declines to form.
+
+The lower bound is what makes the Gregorian promise above keepable. The Gregorian calendar was
+adopted on 15 October 1582, and a calendar that reaches back past that reform applies the Julian
+one before it, which places an earlier date on a weekday the Gregorian calendar does not give it.
+Rather than answer that question wrongly, the system declines the date. The upper bound keeps every
+component of a calendar date inside a range the system judges for itself, so that no extreme value
+can be mistaken for an unspecified one; a four-digit year is well past the horizon of any
+commitment a person keeps.
+
+#### Scenario: a date before the Gregorian calendar's adoption is not a calendar date
+
+- **WHEN** the year 1500, the month January and the day 1 are offered as a calendar date
+- **THEN** no calendar date is formed
+
+#### Scenario: the first day of the first full Gregorian year is a calendar date
+
+- **WHEN** the year 1583, the month January and the day 1 are offered as a calendar date
+- **THEN** a calendar date is formed for 1 January 1583
+
+#### Scenario: the last day of the last supported year is a calendar date
+
+- **WHEN** the year 9999, the month December and the day 31 are offered as a calendar date
+- **THEN** a calendar date is formed for 31 December 9999
+
+#### Scenario: a year past the last supported year is not a calendar date
+
+- **WHEN** the year 10000, the month January and the day 1 are offered as a calendar date
+- **THEN** no calendar date is formed

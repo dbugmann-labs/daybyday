@@ -10,17 +10,34 @@ behind it (#9 day of month, #10 every N days, #11 weekly quota) inherit the answ
 Motivation is in `proposal.md`; the behaviour contract is in `specs/schedule/spec.md` and is not
 restated here.
 
-Two facts were verified on this machine on 2026-08-30 rather than recalled, because both change
-the design if wrong:
+Four facts were verified on this machine on 2026-08-30 rather than recalled, because each changes
+the design if wrong. The first three were checked before any code was written; the last was
+established at the G7 review, and it is what the fourth requirement in the delta answers:
 
 - `swift package init` on the installed toolchain (Apple Swift 6.3.3, Xcode 26.6) generates
   `// swift-tools-version: 6.3`, `swiftLanguageModes: [.v6]`, a Swift Testing test target and no
   external dependency. `swift test` runs offline. The `macos-26` runner CI uses defaults to
   Xcode 26.6 as well, so the same manifest builds there.
+- **`Package(...)` takes its arguments in declaration order, and `products:` must precede
+  `swiftLanguageModes:`.** Swift enforces the order of labelled arguments, so a manifest that lists
+  the language modes first does not compile: it fails with
+  `error: argument 'products' must precede argument 'swiftLanguageModes'` before any target is
+  built. The written order is therefore `name`, `products`, `targets`, `swiftLanguageModes`.
+  Checked on 2026-08-30 by compiling a manifest in each order, because prose that lists the pieces
+  of a manifest reads like a file layout and is not one.
 - Foundation's `Calendar.date(from:)` **rolls invalid components rather than returning nil**:
   asked for 30 February 2026 it returns 2 March 2026, and asked for month 13 of 2026 it returns
   1 January 2027. It does not report a problem. That single fact is why the third requirement in
   the delta exists and why it is worded as a refusal to adjust.
+- Two further Foundation facts were established at the G7 review rather than up front, and the
+  fourth requirement in the delta exists because of them. `DateComponents` reads back `nil` for a
+  component assigned exactly `Int.max` — its internal "undefined" sentinel — so an extreme value
+  offered as a year, month or day would leave that component unset and let an under-specified date
+  pass `isValidDate(in:)`. And `Calendar(identifier: .gregorian)` is a hybrid: it applies the
+  Julian calendar before the reform of 15 October 1582, so a date in an earlier year is placed on a
+  weekday the Gregorian calendar does not give it. Bounding all three components — year 1583
+  through 9999, month 1 through 12, day 1 through 31 — closes both, at the cost of a supported year
+  range that the delta now states rather than leaves implicit.
 
 ## Goals / Non-Goals
 
@@ -124,6 +141,22 @@ all, so any `Bool` returned for it would be a lie. So the engine answers the fir
 form the second. Refusing to *save* a commitment that can never come due is validation, it
 belongs to the screen where a commitment is edited, and it is not this capability's job.
 
+### A calendar date's year runs from 1583 to 9999
+
+The bounds guard exists to close the two holes in *Context* above, and both bounds are choices
+worth naming. **1583** is the first full year in which the calendar the engine derives weekdays
+from is the Gregorian one, so it is the earliest year whose weekday the type can promise; refusing
+1582 wholesale rather than 1 January to 14 October 1582 keeps the check to a year comparison and
+costs nothing a commitment app will ever want. **9999** is a bound rather than a limit anybody will
+meet: what it buys is that every component is judged against a range the engine owns, so no value
+can reach `DateComponents` large enough to be mistaken for an unspecified one. A narrower and more
+defensible-sounding range — say 1900 to 2100 — was rejected because it would refuse dates for a
+reason the product does not have.
+
+*This narrows the seam's input contract*, so the delta states it as a requirement of its own rather
+than leaving it as a detail of the initializer. #9, #10 and #11 inherit it: a rule shape may assume
+every `CalendarDate` it is handed has a Gregorian weekday.
+
 ### The package lives at `src/DayByDayKit/`
 
 One SwiftPM package: `Package.swift` at `src/DayByDayKit/`, library target `DayByDayKit` under
@@ -163,9 +196,11 @@ not after.
   be about plumbing rather than about weekdays, and report a defect in either rather than working
   around it (rule 5). The local toolchain was verified today, so a failure on the runner and not
   on the machine is information, not noise.
-- **Eleven scenarios is a lot for one Story.** → They are eleven one-line predicates over four
-  small types, and four of them exist only because Foundation's date arithmetic fails quietly.
-  Cutting the validity requirement would save three tests and leave the trap in place.
+- **Eighteen scenarios is a lot for one Story** — eleven at G4 and seven added at G7 to state the
+  bounds the fix introduced. → They are eighteen one-line predicates over four small types, and
+  eleven of them exist only because Foundation's date handling fails quietly: rolling an invalid
+  combination, reading `Int.max` back as unset, and switching to the Julian calendar before 1582.
+  Cutting either validity requirement would save tests and leave the trap in place.
 
 ## Migration Plan
 
@@ -187,5 +222,7 @@ None. Four questions `docs/parking-lot.md` left open reach the delta or a decisi
 - *Where does the Swift package live?* Decided above: `src/DayByDayKit/`, with the reasoning and
   the rejected root-level alternative both written down.
 
-Two facts that could have been assumptions were checked instead, and are in *Context*: the
-generated manifest's tools version, and Foundation's rolling of invalid date components.
+Four facts that could have been assumptions were checked instead, and are in *Context*: the
+generated manifest's tools version, the argument order `Package(...)` demands, Foundation's rolling
+of invalid date components, and the pair of Foundation behaviours — the `Int.max` sentinel and the
+Julian-before-1582 hybrid — that the supported year range answers.
