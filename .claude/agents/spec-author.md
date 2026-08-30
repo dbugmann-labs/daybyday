@@ -33,18 +33,45 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
      answer — say why, do not leave the section empty. A question you leave open becomes a
      scenario someone invents later.
    - Any new domain term lands in `CONTEXT.md`, one term per thing.
-   - A question you cannot settle on your own is **the human's**, not yours to decide. Stop and
-     ask through whoever spawned you rather than guessing; that is the one part of the grill
-     that was never an agent's to close.
-2. **Propose.** `/opsx:propose <change-id>`. Use ADDED / MODIFIED / REMOVED correctly against
+   - A question you cannot settle on your own is **the human's**, not yours to decide. Do not
+     guess it and do not bury it in `## Decisions`; raise a **question round** (step 2). That is
+     the one part of the grill that was never an agent's to close.
+
+   Finding *facts* is your job, never the human's — measure it, read the spec, check the
+   environment. Only a preference they hold, whose answer would change the delta, is theirs.
+
+2. **Raise a question round, if you have one.** Add a `## Questions for you` section to
+   `design.md`. Number each entry and give it three things: the question, **the answer you
+   recommend**, and what changes in the delta if it goes the other way.
+
+   ```markdown
+   ## Questions for you
+
+   1. **A month too short for the scheduled day.** Clamp to the last day of that month, or skip
+      the month entirely?
+      - *Recommended:* clamp — every month then has exactly one due date.
+      - *If you say skip:* the second requirement and its five short-month scenarios are
+        rewritten; nothing else in the delta moves.
+   ```
+
+   Then **write the change folder anyway**, on your recommended answers, and finish steps 3–7
+   as normal. The round is read next to the diff it would change, which is the whole reason it
+   is worth more than an interview. The section exists only while the round is outstanding: when
+   the answers come back, fold each into the delta, record it under `## Open Questions` as
+   settled, delete `## Questions for you`, revalidate and push.
+
+   You cannot ask the human yourself — no subagent can, which is why this is written down rather
+   than spoken. The conductor relays it. ADR-1006.
+
+3. **Propose.** `/opsx:propose <change-id>`. Use ADDED / MODIFIED / REMOVED correctly against
    the *current* specs — read them before you write a delta against them.
-3. **Cover the edges.** Every requirement needs at least one `#### Scenario:`, and the error
+4. **Cover the edges.** Every requirement needs at least one `#### Scenario:`, and the error
    and edge cases need scenarios too, not just the happy path. This is the most common way a
    change passes G4 and still ships the wrong thing.
-4. **Name the seam** in `design.md`. Acceptance tests attach there. Fewer seams are better and
+5. **Name the seam** in `design.md`. Acceptance tests attach there. Fewer seams are better and
    an existing seam beats a new one.
-5. **Validate.** `openspec validate <change-id> --strict` must exit 0 before you hand back.
-6. **Open the draft PR.** G4 is read as a diff, so leave one behind. Commit the change folder
+6. **Validate.** `openspec validate <change-id> --strict` must exit 0 before you hand back.
+7. **Open the draft PR.** G4 is read as a diff, so leave one behind. Commit the change folder
    as `docs(<capability>): propose <change-id>`, make sure the branch sits on current `main`,
    push, and open it:
 
@@ -68,6 +95,11 @@ it. Write them as behaviour a test can assert, and do not restate them once writ
 You stop when the change folder validates and its draft PR is open. You do not implement, and
 you do not comment `approved` — G4 is the human reading your PR and signing it. Hand back the
 PR URL and say plainly that the Story is waiting on that comment.
+
+If you raised a question round, say that instead, and say how many questions: the Story is
+waiting on **answers first**, and G4 is the stop after. Hand back the questions themselves as
+well as the PR URL, because the conductor presents them and cannot read your `design.md` for
+you.
 
 If writing the delta reveals the Story is wrong — two capabilities, or a requirement that
 belongs to a different Feature — stop and say so. Rule 5. A Story that is wrong at G4 is cheap;

@@ -15,6 +15,7 @@ function change(over: Partial<ChangeFacts> = {}): ChangeFacts {
     validates: true,
     validationError: null,
     openQuestionsAnswered: true,
+    questionRoundOpen: false,
     seamNamed: true,
     capabilities: ['schedule'],
     scenarios: { total: 4, covered: 0, next: 'a commitment every 3 days is due on the anchor day' },
@@ -62,6 +63,22 @@ describe('deriveStoryStatus', () => {
   it('hands unanswered Open Questions back to you, inside Stage 4', () => {
     const s = deriveStoryStatus(facts({ change: change({ openQuestionsAnswered: false }) }))
     expect(s.stage).toBe(4)
+    expect(s.owner).toBe('you')
+  })
+
+  // A round is spec-author asking, and no subagent can ask. If this ever reports an agent as
+  // the owner, the questions sit in design.md unread and G4 gets signed over the top of them.
+  it('hands an open question round back to you, inside Stage 4', () => {
+    const s = deriveStoryStatus(facts({ change: change({ questionRoundOpen: true }) }))
+    expect(s.stage).toBe(4)
+    expect(s.owner).toBe('you')
+    expect(s.blocker).toContain('Questions for you')
+  })
+
+  // The round is the human's whether or not the rest of the folder is finished, so it is
+  // reported ahead of the seam check — which would otherwise hand the Story back to an agent.
+  it('reports the round before a missing seam', () => {
+    const s = deriveStoryStatus(facts({ change: change({ questionRoundOpen: true, seamNamed: false }) }))
     expect(s.owner).toBe('you')
   })
 

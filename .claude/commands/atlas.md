@@ -68,7 +68,9 @@ Repeat until you hit a gate:
    `janitor`, per the routing table in `AGENTS.md`. Hand it **the Story issue number and
    nothing else**. Never paste requirements into a prompt; that is how specs and reality drift
    apart. When it returns, run status again and continue.
-3. **If the owner is you**, stop and present the gate in the form below. Then wait. Do not
+3. **If `spec-author` came back with a question round**, present it before G4 — the form is
+   below. Then re-spawn `spec-author` with the answers and nothing else.
+4. **If the owner is you**, stop and present the gate in the form below. Then wait. Do not
    proceed on a "sounds good", a thumbs-up, or your own reading of what they probably want.
 
 Between gates you run unattended. That is the point: the human should be interrupted four
@@ -123,6 +125,55 @@ view on is a gate you have not read. Three things it must not become:
   two names, two orderings, neither cheaper — say that in one line and say what you would pick
   anyway. "No recommendation" is an answer you have to earn, not a default.
 
+## The question round
+
+`spec-author` grills the Story, but it cannot ask you anything — no subagent can, which is the
+same fact ADR-1002 is built on. So when it hits a question it may not settle on its own, it
+writes the round into `design.md` under `## Questions for you` and returns. **Relaying that is
+yours.** ADR-1006.
+
+It is a **stop, not a gate**: no marker, no CI check, no G-number, and it happens only when
+there is actually a question. Present it in the five-part form, with the questions numbered as
+the agent numbered them:
+
+```
+Questions before G4                              Story #9 add-day-of-month-schedule
+
+What is in front of you
+  https://github.com/dbugmann-labs/daybyday/pull/21 (draft) — written on the
+  recommended answers, so you are reading the question next to the diff it changes.
+
+The question
+  1. A month too short for the scheduled day: clamp to its last day, or skip the
+     month? spec-author recommends clamp — every month then has exactly one due
+     date. Saying skip rewrites one requirement and five scenarios; nothing else
+     in the delta moves.
+
+What yes commits you to        The delta as it stands; G4 is the next stop.
+What no costs                  One requirement and five scenarios rewritten, before
+                               any code exists. The same change after G4 costs the
+                               implementer's work as well.
+
+Recommendation
+  Take the clamp. A rule that vanishes for five months of the year is not what
+  "monthly" means to the person who set it, and CONTEXT.md already says a
+  commitment recurs indefinitely.
+
+Reply
+  1: clamp           → I hand the answers back to spec-author
+  1: skip
+```
+
+Then re-spawn `spec-author` with the answers **and nothing else** — it folds them into the
+delta, records them under `## Open Questions` as settled, deletes the section and pushes. Run
+status again; the next stop is G4.
+
+Two things not to do with a round. **Do not answer it yourself.** A question reached you because
+it is a preference the human holds, not a fact — if it turns out to be a fact, that is a finding
+about the agent, not a question for the human, and the right move is to hand it back. **Do not
+reason your way into re-asking it better.** You carry the questions and the answers; the design
+tree that produced them stays in the agent, or you have started doing the work.
+
 ## The gates you stop at
 
 **G1 — Feature ready.** One capability, its slug decided, one parent Epic. Challenge the idea
@@ -136,8 +187,9 @@ acyclic. Recommend a split or a merge where you see one, and say which Story you
 first. Iterate until the human says yes.
 
 **G4 — Spec approved.** The hard gate. `openspec validate --strict` exits 0, `design.md` names
-a seam and leaves no open question, and every requirement has scenarios covering its edges and
-not only its happy path. **Lead with the PR link** — the change folder reads far better as a
+a seam, leaves no open question and carries no outstanding `## Questions for you` — settle the
+round first — and every requirement has scenarios covering its edges and not only its happy
+path. **Lead with the PR link** — the change folder reads far better as a
 diff than as a list of paths. **You never originate this decision.** A human says approved; you
 relay it:
 
@@ -158,10 +210,18 @@ their own — say it, rather than handing over an undifferentiated list.
 Product definition sits upstream of Stage 0 and is a conversation, not a pipeline
 (`docs/process.md` §4). Handle it in this order and stop where it says stop:
 
-1. **Grill the idea yourself**, against `CONTEXT.md`, `docs/parking-lot.md` and the existing
-   capability specs. One capability or several? What is the slug? Which Epic does it belong
-   under? What does it *not* cover? Ask the questions whose answers would change the work; do
-   not ask four questions when one decides it.
+1. **Grill the idea yourself** — this is the *Feature* grill, and it is yours because it is a
+   conversation. Against `CONTEXT.md`, `docs/parking-lot.md` and the existing capability specs:
+   one capability or several? What is the slug? Which Epic does it belong under? What does it
+   *not* cover? Ask the questions whose answers would change the work; do not ask four questions
+   when one decides it.
+
+   It is not the same grill `spec-author` runs at Stage 4, and the difference is what keeps
+   both cheap. This one settles the capability's boundary and its vocabulary — the questions
+   that would otherwise be re-answered once per Story. The Stage 4 one settles one Story's
+   edges, and those are invisible until someone writes the delta. Pulling them up to here means
+   deciding four Stories' worth of edge cases before any of them is built, which is the
+   horizontal slicing `docs/process.md` §8 exists to prevent.
 2. **Say where it is thin.** An idea that arrives whole is usually an idea nobody has argued
    with. Being asked twice is not a reason to soften — but once the human reaffirms it, the
    decision is made: build it and move on.

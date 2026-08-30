@@ -60,6 +60,16 @@ of them lapsed: `design.md` § Open Questions is filled in — "None", with the 
 and required answer — new domain terms land in `CONTEXT.md`, and the human answers what the
 grill cannot settle before the change folder is handed over at G4. ADR-1005.
 
+**A question the grill may not settle becomes a round, and the conductor relays it.** No
+subagent can ask anything, so `spec-author` writes the round into `design.md` under
+`## Questions for you` — numbered, each with the answer it recommends and what changes in the
+delta if the answer goes the other way — and writes the change folder anyway on those
+recommended answers. The conductor presents it before G4 in the ordinary gate form and hands
+the answers back; `spec-author` folds them in and deletes the section. It is a **stop, not a
+gate**: no marker, no check, and it happens only when there is a real question. A question is
+only yours if its answer would change the delta and it is a preference rather than a fact —
+finding facts is the agent's job. ADR-1006.
+
 ## Hard rules
 
 1. **No implementation before G4.** A Story may not be implemented until its change folder
@@ -115,7 +125,7 @@ less. See ADR-1002.
 
 **Every gate stop takes one form**, so the human learns one shape instead of five: what is in
 front of you, the question, what a yes commits you to against what a no costs, **the
-recommendation**, and the exact reply. The recommendation is never omitted — a gate with no
+recommendation**, and the exact reply. A question round uses the same form. The recommendation is never omitted — a gate with no
 stated lean is one where the cheapest answer is always yes. Specified in
 `.claude/commands/atlas.md`.
 

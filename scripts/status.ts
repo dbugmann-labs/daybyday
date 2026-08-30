@@ -42,6 +42,8 @@ export type ChangeFacts = {
   validationError: string | null
   /** `design.md` has an Open Questions section with something written under it ("None." counts). */
   openQuestionsAnswered: boolean
+  /** A `## Questions for you` section in design.md — spec-author asking, waiting on a relay. */
+  questionRoundOpen: boolean
   /** `design.md` names a seam. Required by the Definition of Ready; absent from the openspec template. */
   seamNamed: boolean
   capabilities: string[]
@@ -152,7 +154,8 @@ export function prNotReady(f: StoryFacts, stage: number, stageName: string, acto
  * are closed and it validates, no code before G4, no archive before the delta is satisfied.
  *
  * There is no Stage 3. The grill is the first step of Stage 4 rather than a stage, so a Story
- * with unanswered questions is a Stage 4 that is not finished, not a stage of its own.
+ * with unanswered questions is a Stage 4 that is not finished, not a stage of its own — whether
+ * the questions are the agent's, waiting on a relay, or the section it left empty.
  */
 export function deriveStoryStatus(f: StoryFacts): StoryStatus {
   const c = f.change
@@ -203,6 +206,24 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
         { label: 'Fix', command: 'spec-author owns the change folder — hand it back' },
       ],
       next: 'Once it validates, G4 is the next stop and it is yours.',
+      unobservable: null,
+    }
+  }
+
+  if (c.questionRoundOpen) {
+    return {
+      stage: 4,
+      stageName: 'Propose — question round',
+      owner: 'you',
+      actor: null,
+      blocker: '`design.md` carries a `## Questions for you` section. spec-author could not settle something and cannot ask you itself, so the questions are waiting on a relay.',
+      actions: [
+        { label: 'Read', command: `${path.join(c.dir, 'design.md')} — the round, and the delta it was written against` },
+        ...(f.pr === null ? [] : [{ label: 'Diff', command: `${f.pr.url} — the folder was written on the recommended answers` }]),
+        { label: 'Answer', command: 'answer by number; then spec-author folds them in and deletes the section' },
+        { label: 'Note', command: 'a stop, not a gate — no marker, nothing checks it (ADR-1006)' },
+      ],
+      next: 'G4, once the round is settled. Answering and approving can be one sitting.',
       unobservable: null,
     }
   }
@@ -382,6 +403,9 @@ export function gatherChange(loc: ChangeLocation): ChangeFacts {
     // Emptiness is observable; whether an answer is any good is not. A section reading "None."
     // is answered, and judging that claim is what G4 is for.
     openQuestionsAnswered: (section(design, /^#+\s*open questions\b/i) ?? '') !== '',
+    // Present only while a round is outstanding: spec-author deletes it when the answers land.
+    // So its existence is the signal, and nothing has to parse the questions themselves.
+    questionRoundOpen: (section(design, /^#+\s*questions for you\b/i) ?? '') !== '',
     seamNamed: (section(design, /^#+\s*the seam\b/i) ?? '') !== '',
     capabilities: deltaCapabilities(loc),
     scenarios: { total: cov.total, covered: cov.covered, next: cov.missing[0]?.title ?? null },
