@@ -1,14 +1,14 @@
 ## 1. The public surface
 
-- [ ] 1.1 Add `Sources/DayByDayKit/DayOfMonth.swift` declaring `public struct DayOfMonth: Hashable,
+- [x] 1.1 Add `Sources/DayByDayKit/DayOfMonth.swift` declaring `public struct DayOfMonth: Hashable,
   Sendable` with `public init?(day: Int)` exactly as `design.md` § *The seam* gives it, its body
   `fatalError("not implemented")`. Nothing else public. Verify with
   `cd src/DayByDayKit && swift build` exiting 0.
-- [ ] 1.2 Add `case dayOfMonth(DayOfMonth)` to `Schedule` and a branch for it in `isDue(on:)` whose
+- [x] 1.2 Add `case dayOfMonth(DayOfMonth)` to `Schedule` and a branch for it in `isDue(on:)` whose
   body is `fatalError("not implemented")`. The seam's signature does not change. Verify with
   `cd src/DayByDayKit && swift build` exiting 0 and `swift test` still reporting the nineteen tests
   from #8 passing.
-- [ ] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
+- [x] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
   `0/12 covered` for this change and names `"a date on the scheduled day of the month is due"` as
   next.
 
