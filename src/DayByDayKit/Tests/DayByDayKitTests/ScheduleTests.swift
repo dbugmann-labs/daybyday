@@ -54,3 +54,13 @@ func aScheduleListingNoWeekdayIsDueOnNoneOfSevenConsecutiveDates() {
         #expect(!schedule.isDue(on: date))
     }
 }
+
+@Test("a Sunday-only schedule is due on Sunday and not on Saturday")
+func aSundayOnlyScheduleIsDueOnSundayAndNotOnSaturday() {
+    let schedule = Schedule.weekdays([.sunday])
+    let sunday = CalendarDate(year: 2026, month: 9, day: 6)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+
+    #expect(schedule.isDue(on: sunday))
+    #expect(!schedule.isDue(on: saturday))
+}
