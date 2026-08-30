@@ -99,3 +99,10 @@ func theTwentyNinthOfFebruaryInACommonYearIsNotACalendarDate() {
 
     #expect(date == nil)
 }
+
+@Test("the twenty-ninth of February in a leap year is a calendar date")
+func theTwentyNinthOfFebruaryInALeapYearIsACalendarDate() {
+    let date = CalendarDate(year: 2028, month: 2, day: 29)
+
+    #expect(date != nil)
+}
