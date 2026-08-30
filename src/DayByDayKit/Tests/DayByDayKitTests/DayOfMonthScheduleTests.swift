@@ -28,3 +28,13 @@ func aDayOfMonthScheduleIsDueOnExactlyOneDateAcrossAWholeMonth() {
 
     #expect(dueDates == [CalendarDate(year: 2026, month: 9, day: 25)!])
 }
+
+@Test("a schedule on the first is due on the first of a month and not on the last day of the month before")
+func aScheduleOnTheFirstIsDueOnTheFirstOfAMonthAndNotOnTheLastDayOfTheMonthBefore() {
+    let schedule = Schedule.dayOfMonth(DayOfMonth(day: 1)!)
+    let firstOfSeptember = CalendarDate(year: 2026, month: 9, day: 1)!
+    let lastOfAugust = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    #expect(schedule.isDue(on: firstOfSeptember))
+    #expect(!schedule.isDue(on: lastOfAugust))
+}
