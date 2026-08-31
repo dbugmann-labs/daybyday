@@ -144,3 +144,23 @@ func aDateAWholeIntervalBeforeTheStartDateIsNotDue() {
     #expect(!schedule.isDue(on: oneIntervalBefore))
     #expect(!schedule.isDue(on: fourIntervalsBefore))
 }
+
+
+@Test("an every-N-days schedule is due on none of the seven dates before its start date")
+func anEveryNDaysScheduleIsDueOnNoneOfTheSevenDatesBeforeItsStartDate() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 3)!, from: start)
+    let dates = [
+        CalendarDate(year: 2026, month: 8, day: 24)!,
+        CalendarDate(year: 2026, month: 8, day: 25)!,
+        CalendarDate(year: 2026, month: 8, day: 26)!,
+        CalendarDate(year: 2026, month: 8, day: 27)!,
+        CalendarDate(year: 2026, month: 8, day: 28)!,
+        CalendarDate(year: 2026, month: 8, day: 29)!,
+        CalendarDate(year: 2026, month: 8, day: 30)!,
+    ]
+
+    for date in dates {
+        #expect(!schedule.isDue(on: date))
+    }
+}
