@@ -39,7 +39,7 @@ go, in this file, the way #9's `tasks.md` did; a prediction here is not evidence
 - [x] 2.5 `the interval counts across the end of a month` — pinned, no code change.
 - [x] 2.6 `the interval counts a leap day as a day` — pinned, no code change.
 - [x] 2.7 `the interval counts across the turn of a year` — pinned, no code change.
-- [ ] 2.8 `an interval of one day is due on every date`
+- [x] 2.8 `an interval of one day is due on every date` — pinned, no code change.
 - [ ] 2.9 `an interval longer than the supported years is due only on its start date` — the one place
   the arithmetic can go wrong catastrophically rather than subtly. `design.md` measures the whole
   supported span at 3,074,245 days, so a remainder against any `Int` interval is safe; an
