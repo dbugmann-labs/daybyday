@@ -1,14 +1,14 @@
 ## 1. The public surface
 
-- [ ] 1.1 Add `Sources/DayByDayKit/DayInterval.swift` declaring `public struct DayInterval: Hashable,
+- [x] 1.1 Add `Sources/DayByDayKit/DayInterval.swift` declaring `public struct DayInterval: Hashable,
   Sendable` with `public init?(days: Int)` exactly as `design.md` § *The seam* gives it, its body
   `fatalError("not implemented")`. Nothing else public, and `days` internal, matching `DayOfMonth`.
   Verify with `cd src/DayByDayKit && swift build` exiting 0.
-- [ ] 1.2 Add `case everyNDays(DayInterval, from: CalendarDate)` to `Schedule` and a branch for it in
+- [x] 1.2 Add `case everyNDays(DayInterval, from: CalendarDate)` to `Schedule` and a branch for it in
   `isDue(on:)` whose body is `fatalError("not implemented")`. The seam's signature does not change.
   Verify with `cd src/DayByDayKit && swift build` exiting 0 and `swift test` still reporting the
   thirty-one tests from #8 and #9 passing.
-- [ ] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
+- [x] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
   `0/14 covered` for this change and names `"a schedule is due on its start date"` as next.
 
 ## 2. Scenarios — one acceptance test each, in delta order
