@@ -18,3 +18,15 @@ func aDateOneIntervalAfterTheStartDateIsDue() {
 
     #expect(schedule.isDue(on: date))
 }
+
+
+@Test("a date between two due dates is not due")
+func aDateBetweenTwoDueDatesIsNotDue() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 3)!, from: start)
+    let dayAfter = CalendarDate(year: 2026, month: 9, day: 1)!
+    let twoDaysAfter = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    #expect(!schedule.isDue(on: dayAfter))
+    #expect(!schedule.isDue(on: twoDaysAfter))
+}
