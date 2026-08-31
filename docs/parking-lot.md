@@ -71,3 +71,8 @@ that Epic's scope or still an open question inside it. Nothing here is agreed.
 - still open: whether looking back means navigating to a past day, or a view that aggregates a
   commitment over time ("eleven gym sessions last month"). The first is already implied by ticking any
   day; the second is a surface nobody has agreed to build.
+- surfaced 2026-08-31, at #9's review. A schedule's payload cannot be read back out: `DayOfMonth`
+  and `Schedule.dayOfMonth(_)` are public but `DayOfMonth.day` is internal, so an app target can
+  build a rule on the 25th and never recover the 25 to render "the 25th" in a row. `.weekdays(Set)`
+  reads back fine, so the two shapes are asymmetric. Nothing needs it yet — no surface renders a
+  rule — and the first Story that does will need a delta widening it, not a bug fix.
