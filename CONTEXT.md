@@ -77,10 +77,12 @@ day is legal and means every day — a weekday set of all seven says the same th
 having the same effect is not a contradiction.
 
 **Start date** — the day an every-N-days schedule begins counting from. It is the only thing a
-schedule carries that the calendar does not supply, which makes it the one shape that is not a pure
-function of the date it is asked about. It is a calendar date, so it names a day that exists inside
-the supported years, and it is fixed: it is not the last tick, so no tick moves it and no past day's
-answer changes once given.
+schedule carries that the calendar does not supply: a weekday set and a day of the month are
+functions of the calendar alone, and an interval is not — it needs a reference point of its own.
+`isDue(on:)` is still pure for this shape, exactly as for the other two: the start date is part of
+the schedule value, not something the rule reaches outside itself for. It is a calendar date, so it
+names a day that exists inside the supported years, and it is fixed: it is not the last tick, so no
+tick moves it and no past day's answer changes once given.
 
 **Day of the month** — the third of the four schedule shapes: a single day number a commitment
 runs on in every month. "Finances every 25th" is one. A month too short to hold the number is due
