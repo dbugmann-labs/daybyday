@@ -63,7 +63,7 @@ gh pr create --draft --base main --title '<change-id>' --body 'Closes #<issue#>'
 ```
 
 `Closes #<issue#>` is what auto-closes the Story on merge, so it is not optional. Draft is not
-decoration either: CI reads it as "this Story is not finished" and skips checks 3, 4, 5 and 8,
+decoration either: CI reads it as "this Story is not finished" and skips checks 4, 5 and 8,
 which bind again when the janitor runs `gh pr ready` at Stage 8. Keep pushing as you go; the PR
 is the Story's one URL from Stage 4 to merge.
 
@@ -82,10 +82,10 @@ capability, which is the human's decision, not a merge you resolve (rule 5).
 
 ## Checks and checkboxes
 
-**`pnpm run checks` is staged.** Mid-Story it reports rather than fails — the single-change rule
-reads "still active" until the archive, and coverage reports `2/4 covered — next: "<title>"` —
-because a check demanding every test at once would force exactly the bulk transcription rule 3
-forbids. In CI the same checks bind, because a PR claims the Story is finished.
+**`pnpm run checks` is staged.** Mid-Story it reports rather than fails — coverage reports
+`2/4 covered — next: "<title>"` — because a check demanding every test at once would force
+exactly the bulk transcription rule 3 forbids. In CI the same checks bind, because a PR claims
+the Story is finished.
 
 **Gate checkboxes** are ticked by whoever can verify the condition — the orchestrator ticks G1
 and G2, the implementer the machine-checkable DoR and DoD boxes. The one no agent may ever tick

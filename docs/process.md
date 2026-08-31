@@ -269,7 +269,7 @@ and one place where CI's verdict sits next to the thing you are judging. Three m
 consequences, all in ADR-1003:
 
 - **Draft is a signal.** A draft asserts the Story is *not* finished, which is the opposite of
-  what four of §7's eight checks test. Those four skip while it is a draft and bind at
+  what three of §7's seven checks test. Those three skip while it is a draft and bind at
   `gh pr ready`; the other four run throughout, so a draft still proves the branch lints,
   typechecks, tests, validates and stays inside its capabilities.
 - **The branch is rebased onto `origin/main` before each gate**, force-pushed with
@@ -388,15 +388,18 @@ concurrent Stories ever target the **same** capability, either serialise them or
 separate `archive/<change-id>` PRs landing after each story merges. Do not discover this at merge
 time: it is decided when the second Story is started, at Stage 2.
 
-**The merge-time check.** CI runs two jobs on every PR: `verify`, the eight checks below, and
+**The merge-time check.** CI runs two jobs on every PR: `verify`, the seven checks below, and
 `swift`, which discovers every `Package.swift` and runs `swift test` on it.
+
+**There is no check 3.** The single-change rule was dropped on 2026-08-31 and the remaining
+checks kept their numbers, for the same reason there is no Stage 3: a number here is a name,
+read by the CI step titles and by every document that says "check 4". Renumbering would leave
+those references pointing silently at a different check. ADR-1008.
 
 1. `openspec validate --all --strict --no-interactive`
 2. **Spec-diff containment** — every file changed under `openspec/specs/` must belong to a
    capability named in the archived change's delta. On a `chore/` branch the set must be empty.
    This is the check that makes the source of truth safe.
-3. **Single-change rule** — a `story/` PR adds exactly one directory under
-   `openspec/changes/archive/` and leaves no active change folder behind for that Story.
 4. **Scenario coverage** — every `#### Scenario:` in the change's delta has an acceptance test
    whose title matches it verbatim. See §8.
 5. **G4 approval recorded** — the Story issue carries a comment beginning `G4: approved <digest>`,
@@ -408,25 +411,26 @@ time: it is decided when the second Story is started, at Stage 2.
 8. `openspec validate --archived` — every `tasks.md` checkbox in the newly archived change is
    ticked.
 
-Checks 2–6 are bespoke scripts in `scripts/` and are the most likely part of this system to rot.
-`docs/retrospective.md` §3 scores whether they earned their keep after the first end-to-end
-Story: none had yet blocked a bad merge, check 3 is first on the cut list, and check 4 justifies
-itself by pacing the red-green loop rather than by ever failing.
+Checks 2, 4, 5 and 6 are bespoke scripts in `scripts/` and are the most likely part of this
+system to rot. `docs/retrospective.md` §3 scores whether they earned their keep after the first
+end-to-end Story: none had yet blocked a bad merge, and check 4 justifies itself by pacing the
+red-green loop rather than by ever failing. §6 is where a check that stops earning its keep gets
+recorded — check 3 was cut there.
 
-**Four of the eight are skipped while the PR is a draft** — 3, 4, 5 and 8, the ones that ask
+**Three of the seven are skipped while the PR is a draft** — 4, 5 and 8, the ones that ask
 whether the Story is finished. The PR opens at Stage 4, before any code exists, so on that day
-all four would fail by construction; skipping them is what makes an early PR usable rather than a
-permanent red X you learn to ignore. `gh pr ready` at Stage 8 restores the full list, and the
+all three would fail by construction; skipping them is what makes an early PR usable rather than
+a permanent red X you learn to ignore. `gh pr ready` at Stage 8 restores the full list, and the
 workflow subscribes to `ready_for_review` so it actually runs then — not one of GitHub's default
 `pull_request` event types. What it gives up (ADR-1003): a draft cannot be merged, so nothing
-those four guard can land while they are skipped, but a Story learns about a coverage or
-containment failure when the draft is lifted rather than on every push. `pnpm run checks` locally
-is the earlier warning.
+those three guard can land while they are skipped, but a Story learns about a coverage failure
+when the draft is lifted rather than on every push. `pnpm run checks` locally is the earlier
+warning.
 
-**Checks 3 and 4 are staged.** Run locally on a Story still in flight they report rather than
-fail — the single-change rule reads "still active" until the archive, and coverage names the next
-scenario. Failing locally would demand every acceptance test at once, which is precisely the bulk
-transcription §8 forbids. In CI they bind, because a PR asserts the Story is finished.
+**Check 4 is staged.** Run locally on a Story still in flight it reports rather than fails,
+naming the next scenario. Failing locally would demand every acceptance test at once, which is
+precisely the bulk transcription §8 forbids. In CI it binds, because a PR asserts the Story is
+finished.
 
 **What check 5 can and cannot prove.** Agents act through the repository owner's token, so no
 check can prove a human rather than an agent wrote a comment. Check 5 proves the decision was
@@ -562,19 +566,24 @@ back on the assignment rather than proceed.
 1. **Fold Stage 7 into Stage 8** — review as a PR step rather than a separate agent pass.
 2. **Drop the Epic level** — keep Feature → Story. Epics are the layer with no disk anchor and
    therefore the first fiction to appear.
-3. **Drop CI checks 3 and 4** — keep spec-diff containment (check 2), which is the one that
-   actually protects the source of truth.
+The check entry that used to close this list — *drop CI checks 3 and 4* — is spent. Check 3 was
+dropped on 2026-08-31; check 4 was taken off the list by `docs/retrospective.md` §6, which found
+it earns its keep by pacing the red-green loop. Spec-diff containment (check 2) was never on it.
 
 What you should not cut, in any version: **G4** and **CI check 2**. Those two are the process;
 everything else is scaffolding around them.
 
-**Two cuts have already been taken.** Before we started: the archive step was to be a second PR
-on `main` landing after the story PR merged — the airtight option, and what OpenSpec recommends
-for teams — cut because it doubles the PR count to defend against a collision that cannot occur
-at one concurrent Story. §7 records the trigger for putting it back. Since: **Stage 3, the
-grill**, on 2026-08-30, which had already happened in practice — change folders were being
-written in one pass, and the stage table was describing a session nobody ran. The grill survives
-as the first thing Stage 4 does; what was retired is the claim that it is a stage. ADR-1005.
+**Three cuts have already been taken.** Before we started: the archive step was to be a second
+PR on `main` landing after the story PR merged — the airtight option, and what OpenSpec
+recommends for teams — cut because it doubles the PR count to defend against a collision that
+cannot occur at one concurrent Story. §7 records the trigger for putting it back. Since:
+**Stage 3, the grill**, on 2026-08-30, which had already happened in practice — change folders
+were being written in one pass, and the stage table was describing a session nobody ran. The
+grill survives as the first thing Stage 4 does; what was retired is the claim that it is a
+stage (ADR-1005). And **CI check 3, the single-change rule**, on 2026-08-31, after it blocked a
+correct PR: it defends the same collision the archive cut was weighed against, and it has no
+branch name on which a spec repair can honestly land. One change per PR is now convention
+caught at review (ADR-1008).
 
 `docs/retrospective.md` §6 scores this list against the first end-to-end Story: the order
 changed, the two never-cut items did not. Read it before acting on the list above.

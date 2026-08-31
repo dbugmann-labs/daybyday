@@ -127,6 +127,18 @@ Stage 3. The row above is what was concluded on the day and stands as written; w
 since is that the fold had already happened in practice, one Story later, without anyone
 deciding it. `docs/adr/1005-the-grill-is-a-step-inside-propose.md` records the decision.
 
+**2026-08-31 — cut 4 was taken, in the narrowed form.** Check 3 is gone; check 4 stays, exactly
+as the row concluded. The row above stands as written; what changed since is that the collision
+check 3 defends still had not occurred, and check 3 had meanwhile blocked a *correct* PR. Story
+#9's archive wrote 30 of 31 scenarios into `openspec/specs/schedule/spec.md`; the repair replays
+the archive, so its diff carries no new `openspec/changes/archive/<date>-<id>/` directory — the
+archive landed in PR #18 — and check 3 reads the PR's own diff for exactly that. On a `chore/`
+branch check 2 fails instead, and on any other prefix `parseBranch` returns `other` and checks 2,
+3, 4, 5 and 6 all skip. There was no branch name on which that repair could land under honest
+scrutiny. A guardrail whose only recorded effect is to block correct work is the case §3 said it
+would take. One change per PR is now convention caught at review.
+`docs/adr/1008-the-single-change-rule-is-convention.md` records the decision.
+
 Unchanged: **G4 and check 2 are never cut.** Nothing in this run argued against that.
 
 The one addition the run suggests: **the human's real cost is not the gates, it is the
