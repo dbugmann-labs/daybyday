@@ -16,11 +16,12 @@ purpose, since the first product-definition conversation on 2026-08-28:
 > second makes a late tick shift everything after it, which is a different mechanism from the
 > calendar rules.
 
-This proposal answers it — a fixed start date — and that answer is the substance of what G4
-approves. It is also the first of **two questions raised to the owner** in `design.md`
-§ *Questions for you*; the second is whether the rule reaches back to dates before its start date.
-The change folder is written on the recommended answers, so both questions arrive with the delta
-they would change already visible.
+This proposal answers it — a fixed start date — and that answer is the substance of what G4 approves.
+It was not the agent's to answer: it went to the owner as **question 1 of a question round**, with a
+second question beside it on whether the rule reaches back to dates before its start date. **Both
+came back on 2026-08-31 on the recommended answers** — a fixed start date, and not due before it —
+so the delta below is unchanged from the one the round was read against. `design.md` § *Open
+Questions* records them as settled, with what the other answers would have cost.
 
 ## What Changes
 

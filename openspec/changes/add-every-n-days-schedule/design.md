@@ -57,8 +57,8 @@ value, `case everyNDays(DayInterval, from: CalendarDate)`, and its pattern bindi
   three requirements out of one.
 - An end date, a pause, a skipped occurrence, or a rule that resumes on a different phase after a
   gap. Nothing asks for any of them.
-- Reading a tick. Nothing in this capability may, and Question 1 below is exactly about the boundary
-  that keeps it that way.
+- Reading a tick. Nothing in this capability may, and the first question of the round the owner
+  settled on 2026-08-31 was exactly about the boundary that keeps it that way.
 
 ## Decisions
 
@@ -109,8 +109,9 @@ speculation; the first Story that draws a schedule on screen widens both shapes 
 ### The anchor is a fixed start date carried by the schedule
 
 This is the decision the Story turns on and the one the parking lot has been holding open, so both
-readings are written out. It is also **Question 1** below, because it is a product preference rather
-than a fact.
+readings are written out. It was not an agent's to close — a product preference, not a fact — so it
+went to the owner as question 1 of a round, and he settled it on 2026-08-31 on the recommendation
+below. § *Open Questions* records the answer.
 
 **Chosen: a fixed start date.** "Every 14 days from 25 August" is a rule about the calendar, and it
 answers for any date without knowing anything else.
@@ -125,7 +126,8 @@ past day's answer change after the fact: tick today, and yesterday's page reads 
 did yesterday, which contradicts `CONTEXT.md`'s "whether a commitment is due is a question asked *of
 a date*, not of the present moment", and undermines the writable past the whole product is built on.
 If the owner wants it, it is a fifth rule shape arriving after ticks exist — a Story of its own with
-a seam question of its own — and not a different setting of this one. Question 1 says so plainly.
+a seam question of its own — and not a different setting of this one. The round said so plainly, and
+the answer leaves it that way.
 
 *Alternative — a fixed epoch, so the interval is pure parity.* "Due when the day number is divisible
 by N", with no anchor at all. Rejected twice over: ADR-1004 already rejected day numbers on the
@@ -135,8 +137,9 @@ of these commitments is actually created.
 ### The rule does not reach back before its start date
 
 **Chosen: not due before the start date.** The reasoning is in the delta's requirement prose and is
-not repeated. It is **Question 2** below for the same reason as Question 1: it is a preference about
-what the product should show, not a fact.
+not repeated. It went to the owner as question 2 of the same round, for the same reason: it is a
+preference about what the product should show, not a fact. He settled it on 2026-08-31, on the
+recommendation.
 
 *Alternative — symmetric parity around the start date*, so the start date is only a phase reference
 and the rule is due every N days in both directions. It is arguably simpler to explain ("every third
@@ -171,14 +174,14 @@ not that, while an exported one would be the start of it.
 
 ## Risks / Trade-offs
 
-- **The anchor is a product decision an agent is proposing, and the parking lot says it was never
-  settled.** → It is not buried in this section: it is Question 1 in a round the conductor relays
-  before G4, with the delta already written on the recommended answer so the cost of the other answer
-  is visible. If the answer is "from the last tick", this Story stops rather than being rewritten —
-  see the round.
-- **The backwards question could be answered either way without anyone noticing for months.** →
-  Question 2, for the same reason. If it goes the other way the cost is one requirement and two
-  scenarios, and the first requirement's prose loses one clause.
+- **The anchor was a product decision an agent was proposing, and the parking lot said it had never
+  been settled.** → It was not buried in this section: it went out as question 1 of a round, relayed
+  before G4 with the delta already written on the recommended answer, so the cost of the other answer
+  was visible rather than argued. Answered *a fixed start date* on 2026-08-31, and the risk is
+  discharged — what remains is an owner's decision, not an agent's.
+- **The backwards question could have been answered either way without anyone noticing for months.**
+  → Question 2 of the same round, for the same reason. Answered *not due before the start date*, so
+  the second requirement and its two scenarios stand as written.
 - **Foundation again, and #8's review found it quiet about things it should have been loud about.**
   → Measured above at both ends of the supported range and across a leap day and a year boundary,
   and the seam's input contract guarantees both dates already exist. The implementer may compute the
@@ -192,8 +195,9 @@ not that, while an exported one would be the start of it.
   of 2026-08-31 now describes two shapes rather than one. → Left as is, deliberately, and recorded
   here so the eventual widening delta covers both.
 - **#11 may still not fit this seam.** Unchanged from #8 and #9, but this Story sharpens it: a weekly
-  quota needs tick history, and so would a last-tick interval. If Question 1 comes back as "last
-  tick", the two arrive together and the seam question is one question rather than two.
+  quota needs tick history, and so would a last-tick interval. The round's answer keeps the two
+  apart for now — this shape ships without tick history — so #11 meets the seam question alone,
+  exactly as it would have.
 
 ## Migration Plan
 
@@ -201,41 +205,28 @@ None. Nothing is stored yet, no `Schedule` value exists outside a test, and the 
 requirements without touching one. `Schedule` gaining a case is source-breaking only for an
 exhaustive `switch` outside the module, and there is none.
 
-## Questions for you
-
-1. **The anchor: a fixed start date, or the last tick?** `docs/parking-lot.md` has held this open
-   since 2026-08-28, and the shape cannot be specified without answering it. A fixed start date makes
-   "every 14 days" a calendar rule that answers for any date on its own; counting from the last tick
-   makes it a rule about what you did, so a late tick moves every date after it.
-   - *Recommended:* **a fixed start date.** Beyond preference, it is the only one of the two that
-     fits what ADR-1004 put at the seam, and the only one that keeps a past day's answer from
-     changing after you have already looked at that day.
-   - *If you say last tick:* **this Story stops** rather than being rewritten. Due-ness would need
-     the tick history, which nothing has built, and the seam would take more than a date — which is
-     #8's claim failing and an ADR-1004 question, not a delta edit. The honest sequence is: ticks
-     first, then this shape re-cut against them. Say so and the change folder is withdrawn.
-   - *If you want both:* also a different answer from this one. The fixed-start rule shipped here
-     stands unchanged and a last-tick shape is added later as its own rule shape, after ticks exist.
-     Nothing in this delta blocks that.
-
-2. **Before the start date: silent, or due?** A schedule of every 3 days starting 3 September — is it
-   due on 31 August, which is exactly one interval earlier?
-   - *Recommended:* **not due.** The start date is where the commitment begins. Reaching backwards
-     would mark days due before you had committed to anything, and an unticked due day reads as a
-     miss, so the product would open by showing you a history of failures you never had.
-   - *If you say due:* the second requirement and its two scenarios are deleted, the first
-     requirement's prose drops "or falls a whole number of intervals after it" in favour of a
-     symmetric statement, and one scenario is added asserting the symmetric case. Nothing else in the
-     delta moves, and no other rule shape is affected.
-
 ## Open Questions
 
-None left open by the grill. The two above are not open questions — they are questions an agent may
-not close at all, and they are recorded in the section that exists to say so. Everything else the
-grill turned up is closed, here or in the delta: the anchor's shape, the backwards boundary, whether
-the seam moves (it does not), whether the start date needs validity rules of its own (it does not),
-and whether an interval has an upper bound (it does not, and the measurement above shows why one is
-not needed for safety).
+None. Two of them were never an agent's to close and went to the owner as a question round; he
+answered both on 2026-08-31, and both answers are recorded here as settled:
+
+1. **The anchor: a fixed start date, or the last tick?** — *a fixed start date*, as recommended. A
+   last-tick rule is a different mechanism rather than a different setting of this one: it cannot be
+   answered from a date alone, so it would need tick history nothing has built and a seam ADR-1004
+   did not put there. It is not ruled out for the future — it would arrive as a rule shape of its
+   own, after ticks exist, and nothing in this delta blocks it. The delta was written on this answer
+   and does not change.
+2. **Before the start date: silent, or due?** — *not due*, as recommended. The second requirement
+   and its two scenarios stand as written, and the first requirement keeps its "or falls a whole
+   number of intervals after it" phrasing rather than becoming symmetric.
+
+`docs/parking-lot.md`'s anchor entry, open since 2026-08-28, is answered by the first of those and
+should be deleted from that file once this lands; this change does not write there.
+
+Everything else the grill turned up the agent closed, here or in the delta: whether the seam moves
+(it does not), whether the start date needs validity rules of its own (it does not), and whether an
+interval has an upper bound (it does not, and the measurement above shows why one is not needed for
+safety).
 
 Three questions this shape deliberately does not answer, with the reason:
 
