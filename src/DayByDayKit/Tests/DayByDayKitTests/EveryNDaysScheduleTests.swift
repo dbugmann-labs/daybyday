@@ -87,3 +87,15 @@ func theIntervalCountsALeapDayAsADay() {
     #expect(schedule.isDue(on: leapDay))
     #expect(!schedule.isDue(on: dayAfter))
 }
+
+
+@Test("the interval counts across the turn of a year")
+func theIntervalCountsAcrossTheTurnOfAYear() {
+    let start = CalendarDate(year: 2026, month: 12, day: 28)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 7)!, from: start)
+    let dueDate = CalendarDate(year: 2027, month: 1, day: 4)!
+    let notDueDate = CalendarDate(year: 2027, month: 1, day: 1)!
+
+    #expect(schedule.isDue(on: dueDate))
+    #expect(!schedule.isDue(on: notDueDate))
+}
