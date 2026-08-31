@@ -238,6 +238,12 @@ every month" and not a collision to be resolved.
 - **WHEN** a schedule on the 29th of the month is asked about 28 February 2027
 - **THEN** the commitment is due on that date
 
+#### Scenario: a schedule on the thirty-first is not moved in a month that has a thirty-first
+
+- **WHEN** a schedule on the 31st of the month is asked about 31 August 2026
+- **THEN** the commitment is due on that date
+- **AND** the same schedule asked about 30 August 2026 answers that it is not due
+
 ### Requirement: A day of the month is a number from the first to the thirty-first
 
 The system SHALL form a day of the month only from a number from 1 through 31 inclusive, and MUST
