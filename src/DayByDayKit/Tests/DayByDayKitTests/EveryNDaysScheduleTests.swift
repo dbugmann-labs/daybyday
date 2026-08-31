@@ -182,3 +182,11 @@ func anIntervalOfANegativeNumberOfDaysIsNotAnInterval() {
     #expect(negativeThree == nil)
     #expect(negativeOne == nil)
 }
+
+
+@Test("an interval of one day is an interval")
+func anIntervalOfOneDayIsAnInterval() {
+    let interval = DayInterval(days: 1)
+
+    #expect(interval != nil)
+}

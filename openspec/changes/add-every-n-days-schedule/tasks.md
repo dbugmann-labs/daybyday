@@ -55,7 +55,7 @@ go, in this file, the way #9's `tasks.md` did; a prediction here is not evidence
   pinned, no code change.
 - [x] 2.12 `an interval of no days is not an interval` — pinned, no code change.
 - [x] 2.13 `an interval of a negative number of days is not an interval` — pinned, no code change.
-- [ ] 2.14 `an interval of one day is an interval`
+- [x] 2.14 `an interval of one day is an interval` — pinned, no code change.
 
 ## 3. Gates
 
