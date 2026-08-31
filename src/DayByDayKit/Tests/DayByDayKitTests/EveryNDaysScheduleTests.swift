@@ -75,3 +75,15 @@ func theIntervalCountsAcrossTheEndOfAMonth() {
     #expect(schedule.isDue(on: dueDate))
     #expect(!schedule.isDue(on: notDueDate))
 }
+
+
+@Test("the interval counts a leap day as a day")
+func theIntervalCountsALeapDayAsADay() {
+    let start = CalendarDate(year: 2028, month: 2, day: 26)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 3)!, from: start)
+    let leapDay = CalendarDate(year: 2028, month: 2, day: 29)!
+    let dayAfter = CalendarDate(year: 2028, month: 3, day: 1)!
+
+    #expect(schedule.isDue(on: leapDay))
+    #expect(!schedule.isDue(on: dayAfter))
+}
