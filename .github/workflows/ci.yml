@@ -1,14 +1,17 @@
-# The merge-time checks. docs/process.md §7 numbers these 1..6; the step names
-# in `verify` carry those numbers so a red run maps onto the written process.
+# The merge-time checks. docs/process.md §7 numbers these; the step names in
+# `verify` carry those numbers so a red run maps onto the written process.
+# There is no check 3 — the single-change rule was dropped on 2026-08-31 and
+# the numbers below keep the gap, because renumbering would silently move what
+# every other document means by "check 4". ADR 1008.
 #
-# Checks 2-6 are bespoke scripts in scripts/. They are the most likely part of
-# this system to rot; docs/retrospective.md section 3 scores whether each one has
-# earned its keep, and is the place to record it when one stops doing so.
+# Checks 2, 4, 5 and 6 are bespoke scripts in scripts/. They are the most likely
+# part of this system to rot; docs/retrospective.md section 3 scores whether each
+# one has earned its keep, and is the place to record it when one stops doing so.
 #
 # The PR opens as a draft at Stage 4, before a line of `src/` exists, so that
 # G4 and G7 are both read as a diff. A draft therefore asserts the opposite of
-# what checks 3, 4, 5 and 8 test — they ask whether the Story is finished — and
-# those four are skipped while it is one. They run in full the moment the
+# what checks 4, 5 and 8 test — they ask whether the Story is finished — and
+# those three are skipped while it is one. They run in full the moment the
 # janitor takes it out of draft at Stage 8, which is why `ready_for_review` is
 # in the trigger list: it is not one of the default pull_request types, and
 # without it the first full run would be whatever push happened to follow.
@@ -61,10 +64,6 @@ jobs:
 
       - name: 2 · spec-diff containment
         run: pnpm run check:specs
-
-      - name: 3 · single-change rule
-        if: github.event.pull_request.draft != true
-        run: pnpm run check:change
 
       - name: 4 · scenario coverage
         if: github.event.pull_request.draft != true

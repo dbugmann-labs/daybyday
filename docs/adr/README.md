@@ -61,3 +61,4 @@ DayByDay's own records start here.
 | [1005](1005-the-grill-is-a-step-inside-propose.md) | The grill is a step inside Stage 4; the stage numbers keep the gap at 3 |
 | [1006](1006-the-question-round.md) | A question the grill cannot settle is relayed by the conductor as a round, not a gate |
 | [1007](1007-g4-signs-a-digest.md) | The G4 marker carries a digest of what was approved; the specs are not merged first |
+| [1008](1008-the-single-change-rule-is-convention.md) | CI check 3 is dropped; one change per PR is convention, and the check numbers keep the gap |

@@ -20,9 +20,9 @@ Read `AGENTS.md` first. It is binding.
    under `openspec/changes/archive/`. This runs only after review is clean, so the reviewer saw
    the change folder at the path the human approved.
 2. **Verify the archive.** `openspec validate --archived` — every `tasks.md` box ticked — and
-   `pnpm run checks`, which asserts containment and the single-change rule.
+   `pnpm run checks`, which asserts spec-diff containment and scenario coverage.
 3. **Take the PR out of draft.** `gh pr ready <pr#>`. The draft is what told CI the Story was
-   unfinished, so this is what binds checks 3, 4, 5 and 8. Do it after the archive commit is
+   unfinished, so this is what binds checks 4, 5 and 8. Do it after the archive commit is
    pushed, so the run that binds sees the finished branch.
 4. **Merge.** Squash-merge once CI is green. The PR closes its Story issue; the branch deletes
    itself.
