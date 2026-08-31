@@ -50,7 +50,7 @@ go, in this file, the way #9's `tasks.md` did; a prediction here is not evidence
   supported span at 3,074,245 days, so a remainder against any `Int` interval is safe; an
   implementation that instead steps forward from the start date one interval at a time will hang here
   rather than fail, which is the point of the scenario.
-- [ ] 2.10 `a date a whole interval before the start date is not due`
+- [x] 2.10 `a date a whole interval before the start date is not due` — pinned, no code change.
 - [ ] 2.11 `an every-N-days schedule is due on none of the seven dates before its start date`
 - [ ] 2.12 `an interval of no days is not an interval`
 - [ ] 2.13 `an interval of a negative number of days is not an interval`
