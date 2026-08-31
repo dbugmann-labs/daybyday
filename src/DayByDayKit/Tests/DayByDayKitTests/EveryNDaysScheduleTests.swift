@@ -172,3 +172,13 @@ func anIntervalOfNoDaysIsNotAnInterval() {
 
     #expect(interval == nil)
 }
+
+
+@Test("an interval of a negative number of days is not an interval")
+func anIntervalOfANegativeNumberOfDaysIsNotAnInterval() {
+    let negativeThree = DayInterval(days: -3)
+    let negativeOne = DayInterval(days: -1)
+
+    #expect(negativeThree == nil)
+    #expect(negativeOne == nil)
+}

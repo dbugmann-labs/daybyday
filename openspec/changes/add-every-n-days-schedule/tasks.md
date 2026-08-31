@@ -54,7 +54,7 @@ go, in this file, the way #9's `tasks.md` did; a prediction here is not evidence
 - [x] 2.11 `an every-N-days schedule is due on none of the seven dates before its start date` —
   pinned, no code change.
 - [x] 2.12 `an interval of no days is not an interval` — pinned, no code change.
-- [ ] 2.13 `an interval of a negative number of days is not an interval`
+- [x] 2.13 `an interval of a negative number of days is not an interval` — pinned, no code change.
 - [ ] 2.14 `an interval of one day is an interval`
 
 ## 3. Gates
