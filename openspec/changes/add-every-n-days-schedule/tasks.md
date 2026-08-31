@@ -33,6 +33,16 @@ go, in this file, the way #9's `tasks.md` did; a prediction here is not evidence
   of the interval — since the smallest honest change already answers most of the shape.
 - [x] 2.2 `a date one interval after the start date is due` — pinned: passed immediately against
   2.1's implementation, no code change.
+
+Scenarios 2.3 through 2.14 were each written and verified as a pin against 2.1's implementation
+in the same interactive session — `swift test` green with no code change, one scenario at a time.
+The commits that record them (`8aadb86`..`293fc91`) do not reflect that: they were produced
+afterward by a scripted replay that reapplied the already-verified test additions in sequence to
+build a commit per scenario, rerunning `swift test` at each step, rather than fourteen
+individually-timed live cycles. That replay ran in seconds; the verification it reran did not
+originate there. The individual notes below record what each pin found, not when its commit was
+made.
+
 - [x] 2.3 `a date between two due dates is not due` — pinned, no code change.
 - [x] 2.4 `an every-N-days schedule is due on exactly five dates across a fortnight` — pinned, no
   code change.
