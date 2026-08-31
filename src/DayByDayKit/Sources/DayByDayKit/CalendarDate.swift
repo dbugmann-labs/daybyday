@@ -42,14 +42,19 @@ public struct CalendarDate: Hashable, Sendable {
         self.day = day
     }
 
-    /// The Gregorian weekday of this date, independent of the host's time zone and locale.
-    var weekday: Weekday {
+    /// This date's midnight instant in the UTC calendar above, shared by `weekday`,
+    /// `daysInMonth` and `days(until:)` rather than each building its own `DateComponents`.
+    private var date: Date {
         var components = DateComponents()
         components.year = year
         components.month = month
         components.day = day
 
-        let date = Self.calendar.date(from: components)!
+        return Self.calendar.date(from: components)!
+    }
+
+    /// The Gregorian weekday of this date, independent of the host's time zone and locale.
+    var weekday: Weekday {
         let foundationWeekday = Self.calendar.component(.weekday, from: date)
         return Weekday(foundationWeekday: foundationWeekday)
     }
@@ -57,33 +62,16 @@ public struct CalendarDate: Hashable, Sendable {
     /// The true length of the month this date falls in — 28 or 29 for February according to
     /// whether `year` is a leap year, 30 or 31 otherwise.
     var daysInMonth: Int {
-        var components = DateComponents()
-        components.year = year
-        components.month = month
-        components.day = day
-
-        let date = Self.calendar.date(from: components)!
-        return Self.calendar.range(of: .day, in: .month, for: date)!.count
+        Self.calendar.range(of: .day, in: .month, for: date)!.count
     }
 
     /// The signed number of calendar days from this date to `other`, counting a leap day like
     /// any other and independent of month length, weekday, time of day and time zone. Negative
-    /// when `other` falls before this date. The whole supported year range fits in
-    /// 3,074,245 days either way — see `design.md` — so this cannot overflow.
+    /// when `other` falls before this date. ADR-1004 fixes the supported year range at 1583
+    /// through 9999 — under four million days end to end even counting every year as a leap
+    /// year — so the result comfortably fits in `Int` and a remainder taken against it cannot
+    /// overflow.
     func days(until other: CalendarDate) -> Int {
-        var fromComponents = DateComponents()
-        fromComponents.year = year
-        fromComponents.month = month
-        fromComponents.day = day
-
-        var toComponents = DateComponents()
-        toComponents.year = other.year
-        toComponents.month = other.month
-        toComponents.day = other.day
-
-        let fromDate = Self.calendar.date(from: fromComponents)!
-        let toDate = Self.calendar.date(from: toComponents)!
-
-        return Self.calendar.dateComponents([.day], from: fromDate, to: toDate).day!
+        Self.calendar.dateComponents([.day], from: date, to: other.date).day!
     }
 }
