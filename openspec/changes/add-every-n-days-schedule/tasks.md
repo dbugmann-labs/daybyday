@@ -31,7 +31,8 @@ go, in this file, the way #9's `tasks.md` did; a prediction here is not evidence
   `DayInterval.init?` (`days >= 1`), `CalendarDate.days(until:)` and the `everyNDays` branch of
   `isDue(on:)` in full — not due before the start date, due when the count is an exact multiple
   of the interval — since the smallest honest change already answers most of the shape.
-- [ ] 2.2 `a date one interval after the start date is due`
+- [x] 2.2 `a date one interval after the start date is due` — pinned: passed immediately against
+  2.1's implementation, no code change.
 - [ ] 2.3 `a date between two due dates is not due`
 - [ ] 2.4 `an every-N-days schedule is due on exactly five dates across a fortnight`
 - [ ] 2.5 `the interval counts across the end of a month`
