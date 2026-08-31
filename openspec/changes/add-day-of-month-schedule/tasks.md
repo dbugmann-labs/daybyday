@@ -55,7 +55,7 @@ prediction was wrong, not the guard. #8's `tasks.md` is the precedent for record
   here plus the nineteen from #8, none of which may change — and `pnpm run verify` exits 0.
 - [x] 3.2 `pnpm exec openspec validate add-day-of-month-schedule --strict` exits 0 and
   `pnpm run checks` reports scenario coverage as 12 of 12.
-- [ ] 3.3 `/code-review` reports nothing unresolved on either axis (**G7**).
+- [x] 3.3 `/code-review` reports nothing unresolved on either axis (**G7**).
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7,
 and `openspec validate --archived` requires every box above to be ticked before it.
