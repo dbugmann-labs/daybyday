@@ -68,6 +68,20 @@ an instant; ADR-1004.
 on, as a set. "Gym Mon/Wed/Sat" is one. Membership is the whole rule, so a set of all seven is
 due every day and an empty set is due on none.
 
+**Every N days** — the second of the four schedule shapes: an interval of a whole number of days,
+counted from a start date. "Contact lenses every 14 days" is one. The interval counts calendar days
+and nothing else, so it drifts across weekdays and months rather than lining up with either, and the
+leap day of a leap year counts as a day like any other. A commitment on one is due on its start date
+and on every date a whole number of intervals after it, and on no date before it. An interval of one
+day is legal and means every day — a weekday set of all seven says the same thing, and two rules
+having the same effect is not a contradiction.
+
+**Start date** — the day an every-N-days schedule begins counting from. It is the only thing a
+schedule carries that the calendar does not supply, which makes it the one shape that is not a pure
+function of the date it is asked about. It is a calendar date, so it names a day that exists inside
+the supported years, and it is fixed: it is not the last tick, so no tick moves it and no past day's
+answer changes once given.
+
 **Day of the month** — the third of the four schedule shapes: a single day number a commitment
 runs on in every month. "Finances every 25th" is one. A month too short to hold the number is due
 on its last day rather than skipped, so a commitment on the 31st comes due once in February too,
