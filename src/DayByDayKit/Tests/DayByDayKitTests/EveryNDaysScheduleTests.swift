@@ -119,3 +119,16 @@ func anIntervalOfOneDayIsDueOnEveryDate() {
         #expect(schedule.isDue(on: date))
     }
 }
+
+
+@Test("an interval longer than the supported years is due only on its start date")
+func anIntervalLongerThanTheSupportedYearsIsDueOnlyOnItsStartDate() {
+    let start = CalendarDate(year: 1583, month: 1, day: 1)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 4_000_000)!, from: start)
+    let dayAfter = CalendarDate(year: 1583, month: 1, day: 2)!
+    let lastDate = CalendarDate(year: 9999, month: 12, day: 31)!
+
+    #expect(schedule.isDue(on: start))
+    #expect(!schedule.isDue(on: dayAfter))
+    #expect(!schedule.isDue(on: lastDate))
+}
