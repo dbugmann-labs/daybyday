@@ -9,7 +9,6 @@ func aScheduleIsDueOnItsStartDate() {
     #expect(schedule.isDue(on: start))
 }
 
-
 @Test("a date one interval after the start date is due")
 func aDateOneIntervalAfterTheStartDateIsDue() {
     let start = CalendarDate(year: 2026, month: 8, day: 31)!
@@ -18,7 +17,6 @@ func aDateOneIntervalAfterTheStartDateIsDue() {
 
     #expect(schedule.isDue(on: date))
 }
-
 
 @Test("a date between two due dates is not due")
 func aDateBetweenTwoDueDatesIsNotDue() {
@@ -30,7 +28,6 @@ func aDateBetweenTwoDueDatesIsNotDue() {
     #expect(!schedule.isDue(on: dayAfter))
     #expect(!schedule.isDue(on: twoDaysAfter))
 }
-
 
 @Test("an every-N-days schedule is due on exactly five dates across a fortnight")
 func anEveryNDaysScheduleIsDueOnExactlyFiveDatesAcrossAFortnight() {
@@ -64,7 +61,6 @@ func anEveryNDaysScheduleIsDueOnExactlyFiveDatesAcrossAFortnight() {
     ])
 }
 
-
 @Test("the interval counts across the end of a month")
 func theIntervalCountsAcrossTheEndOfAMonth() {
     let start = CalendarDate(year: 2026, month: 8, day: 25)!
@@ -75,7 +71,6 @@ func theIntervalCountsAcrossTheEndOfAMonth() {
     #expect(schedule.isDue(on: dueDate))
     #expect(!schedule.isDue(on: notDueDate))
 }
-
 
 @Test("the interval counts a leap day as a day")
 func theIntervalCountsALeapDayAsADay() {
@@ -88,7 +83,6 @@ func theIntervalCountsALeapDayAsADay() {
     #expect(!schedule.isDue(on: dayAfter))
 }
 
-
 @Test("the interval counts across the turn of a year")
 func theIntervalCountsAcrossTheTurnOfAYear() {
     let start = CalendarDate(year: 2026, month: 12, day: 28)!
@@ -99,7 +93,6 @@ func theIntervalCountsAcrossTheTurnOfAYear() {
     #expect(schedule.isDue(on: dueDate))
     #expect(!schedule.isDue(on: notDueDate))
 }
-
 
 @Test("an interval of one day is due on every date")
 func anIntervalOfOneDayIsDueOnEveryDate() {
@@ -120,7 +113,6 @@ func anIntervalOfOneDayIsDueOnEveryDate() {
     }
 }
 
-
 @Test("an interval longer than the supported years is due only on its start date")
 func anIntervalLongerThanTheSupportedYearsIsDueOnlyOnItsStartDate() {
     let start = CalendarDate(year: 1583, month: 1, day: 1)!
@@ -133,7 +125,6 @@ func anIntervalLongerThanTheSupportedYearsIsDueOnlyOnItsStartDate() {
     #expect(!schedule.isDue(on: lastDate))
 }
 
-
 @Test("a date a whole interval before the start date is not due")
 func aDateAWholeIntervalBeforeTheStartDateIsNotDue() {
     let start = CalendarDate(year: 2026, month: 9, day: 3)!
@@ -144,7 +135,6 @@ func aDateAWholeIntervalBeforeTheStartDateIsNotDue() {
     #expect(!schedule.isDue(on: oneIntervalBefore))
     #expect(!schedule.isDue(on: fourIntervalsBefore))
 }
-
 
 @Test("an every-N-days schedule is due on none of the seven dates before its start date")
 func anEveryNDaysScheduleIsDueOnNoneOfTheSevenDatesBeforeItsStartDate() {
@@ -165,14 +155,12 @@ func anEveryNDaysScheduleIsDueOnNoneOfTheSevenDatesBeforeItsStartDate() {
     }
 }
 
-
 @Test("an interval of no days is not an interval")
 func anIntervalOfNoDaysIsNotAnInterval() {
     let interval = DayInterval(days: 0)
 
     #expect(interval == nil)
 }
-
 
 @Test("an interval of a negative number of days is not an interval")
 func anIntervalOfANegativeNumberOfDaysIsNotAnInterval() {
@@ -182,7 +170,6 @@ func anIntervalOfANegativeNumberOfDaysIsNotAnInterval() {
     #expect(negativeThree == nil)
     #expect(negativeOne == nil)
 }
-
 
 @Test("an interval of one day is an interval")
 func anIntervalOfOneDayIsAnInterval() {
