@@ -170,8 +170,15 @@ fresh one.
 ## Skills
 
 **Use, and any agent holding `Skill` may invoke:** `/atlas` (the conductor — start here),
-`/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`, `tdd`, `code-review`,
-`diagnosing-bugs`, `research`.
+`/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`, `mattpocock-skills:tdd`,
+`mattpocock-skills:code-review`, `mattpocock-skills:diagnosing-bugs`,
+`mattpocock-skills:research`.
+
+**Name the plugin's skills with their `mattpocock-skills:` prefix.** The bare name resolves only
+where nothing else claims it — `tdd` does reach the plugin's — but **`code-review` does not**. A
+built-in skill of that name is also registered, a bare call reaches that one, and the two behave
+differently: the built-in forks a background review agent, the plugin's loads reference text into
+the current turn. Prefix all four and the collision cannot bite you.
 
 **Use, but only the human can type:** `grill-with-docs`, `to-tickets`, `triage`, `handoff`.
 All four declare `disable-model-invocation: true`, so **no agent can fire them — the conductor
@@ -187,7 +194,10 @@ not naming them is convention for every agent here, you included.
 
 **The flag is the truth, not this table.** Read `disable-model-invocation` out of the skill's own
 `SKILL.md` frontmatter before assuming anything here is invocable; a plugin upgrade moves it and
-nothing in this repo checks.
+nothing in this repo checks. The two ways a `Skill` call fails read differently and mean
+different things: a flagged skill errors with `cannot be used with Skill tool due to
+disable-model-invocation`, whereas `Unknown skill: <name>` means the skill is not in the session
+at all — a plugin problem, not a flag. Do not read the second as the first.
 
 Where a skill asks about this repo's conventions: the tracker is GitHub Issues on
 `dbugmann-labs/daybyday` via `gh` (`docs/agents/issue-tracker.md`), triage uses the five

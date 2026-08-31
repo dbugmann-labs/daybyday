@@ -15,10 +15,11 @@ to running it in Claude Code.
 - **Plugin scope.** `mattpocock-skills` is *enabled* per-project in `.claude/settings.json`, but
   **enabling is not installing.** The install is recorded separately, in
   `~/.claude/plugins/installed_plugins.json`, against the `projectPath` it was installed from.
-  This repo inherited Atlas's `settings.json` without that record, so the plugin read as enabled
-  while its skills silently never loaded — and no session restart fixed it, because the record
-  pointed at `~/Coding/atlas`. If `/to-tickets` and friends are missing from a session, check
-  that file for an entry whose `projectPath` is this repo. If there is none:
+  This repo inherited Atlas's `settings.json` without that record, so for a time the plugin read
+  as enabled while its skills silently never loaded — and no session restart fixed it, because
+  the only record pointed at `~/Coding/atlas`. **That is fixed.** The file now carries a second
+  entry whose `projectPath` is this repo, and the plugin's skills do load. If they stop loading
+  again, check for that entry, and if it has gone:
 
   ```bash
   claude plugin install mattpocock-skills@claude-plugins-official --scope project
@@ -26,6 +27,13 @@ to running it in Claude Code.
 
   from the repo root, then restart the session. Diagnose from that file, not from the fact that
   `.claude/settings.json` lists the plugin — that is the symptom that misleads.
+
+  **`/to-tickets` is not the canary.** It, and every other skill declaring
+  `disable-model-invocation: true`, is absent from an agent's `Skill` roster *even when the
+  plugin is installed correctly* — the flag is what removes it, not a broken install. An agent
+  that tests for it there will always conclude the plugin is broken. Test with the skills that
+  are **not** flagged instead: `mattpocock-skills:tdd`, `:code-review`, `:research`,
+  `:diagnosing-bugs`. If those are in the roster, the plugin loaded.
 - **OpenSpec commands.** `/opsx:*` are generated into `.claude/commands/opsx/` by
   `openspec update` — do not hand-edit them.
 - **Scratch.** `CLAUDE.local.md` and `.claude/settings.local.json` are gitignored. Anything
