@@ -30,3 +30,36 @@ func aDateBetweenTwoDueDatesIsNotDue() {
     #expect(!schedule.isDue(on: dayAfter))
     #expect(!schedule.isDue(on: twoDaysAfter))
 }
+
+
+@Test("an every-N-days schedule is due on exactly five dates across a fortnight")
+func anEveryNDaysScheduleIsDueOnExactlyFiveDatesAcrossAFortnight() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 3)!, from: start)
+    let dates = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+        CalendarDate(year: 2026, month: 9, day: 7)!,
+        CalendarDate(year: 2026, month: 9, day: 8)!,
+        CalendarDate(year: 2026, month: 9, day: 9)!,
+        CalendarDate(year: 2026, month: 9, day: 10)!,
+        CalendarDate(year: 2026, month: 9, day: 11)!,
+        CalendarDate(year: 2026, month: 9, day: 12)!,
+        CalendarDate(year: 2026, month: 9, day: 13)!,
+    ]
+
+    let dueDates = dates.filter { schedule.isDue(on: $0) }
+
+    #expect(dueDates == [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+        CalendarDate(year: 2026, month: 9, day: 9)!,
+        CalendarDate(year: 2026, month: 9, day: 12)!,
+    ])
+}

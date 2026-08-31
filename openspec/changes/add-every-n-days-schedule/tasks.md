@@ -34,7 +34,8 @@ go, in this file, the way #9's `tasks.md` did; a prediction here is not evidence
 - [x] 2.2 `a date one interval after the start date is due` — pinned: passed immediately against
   2.1's implementation, no code change.
 - [x] 2.3 `a date between two due dates is not due` — pinned, no code change.
-- [ ] 2.4 `an every-N-days schedule is due on exactly five dates across a fortnight`
+- [x] 2.4 `an every-N-days schedule is due on exactly five dates across a fortnight` — pinned, no
+  code change.
 - [ ] 2.5 `the interval counts across the end of a month`
 - [ ] 2.6 `the interval counts a leap day as a day`
 - [ ] 2.7 `the interval counts across the turn of a year`
