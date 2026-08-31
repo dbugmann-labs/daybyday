@@ -164,3 +164,11 @@ func anEveryNDaysScheduleIsDueOnNoneOfTheSevenDatesBeforeItsStartDate() {
         #expect(!schedule.isDue(on: date))
     }
 }
+
+
+@Test("an interval of no days is not an interval")
+func anIntervalOfNoDaysIsNotAnInterval() {
+    let interval = DayInterval(days: 0)
+
+    #expect(interval == nil)
+}
