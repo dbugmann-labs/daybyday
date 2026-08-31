@@ -65,4 +65,25 @@ public struct CalendarDate: Hashable, Sendable {
         let date = Self.calendar.date(from: components)!
         return Self.calendar.range(of: .day, in: .month, for: date)!.count
     }
+
+    /// The signed number of calendar days from this date to `other`, counting a leap day like
+    /// any other and independent of month length, weekday, time of day and time zone. Negative
+    /// when `other` falls before this date. The whole supported year range fits in
+    /// 3,074,245 days either way — see `design.md` — so this cannot overflow.
+    func days(until other: CalendarDate) -> Int {
+        var fromComponents = DateComponents()
+        fromComponents.year = year
+        fromComponents.month = month
+        fromComponents.day = day
+
+        var toComponents = DateComponents()
+        toComponents.year = other.year
+        toComponents.month = other.month
+        toComponents.day = other.day
+
+        let fromDate = Self.calendar.date(from: fromComponents)!
+        let toDate = Self.calendar.date(from: toComponents)!
+
+        return Self.calendar.dateComponents([.day], from: fromDate, to: toDate).day!
+    }
 }

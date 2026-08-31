@@ -25,7 +25,12 @@ Expect most of these to pin rather than drive, as on #8 and #9 — the smallest 
 turns 2.1 green already answers a good deal of the shape. Record which ones actually ran red as you
 go, in this file, the way #9's `tasks.md` did; a prediction here is not evidence.
 
-- [ ] 2.1 `a schedule is due on its start date`
+- [x] 2.1 `a schedule is due on its start date` — ran red: crashed on the unimplemented
+  `DayInterval.init?` (`fatalError("not implemented")`), which the scenario's own schedule
+  construction reaches before `isDue(on:)` is called. Made green by implementing
+  `DayInterval.init?` (`days >= 1`), `CalendarDate.days(until:)` and the `everyNDays` branch of
+  `isDue(on:)` in full — not due before the start date, due when the count is an exact multiple
+  of the interval — since the smallest honest change already answers most of the shape.
 - [ ] 2.2 `a date one interval after the start date is due`
 - [ ] 2.3 `a date between two due dates is not due`
 - [ ] 2.4 `an every-N-days schedule is due on exactly five dates across a fortnight`

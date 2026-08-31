@@ -11,7 +11,11 @@ public enum Schedule: Hashable, Sendable {
             let scheduledDay = min(dayOfMonth.day, date.daysInMonth)
             return date.day == scheduledDay
         case .everyNDays(let interval, from: let start):
-            fatalError("not implemented")
+            let count = start.days(until: date)
+            guard count >= 0 else {
+                return false
+            }
+            return count % interval.days == 0
         }
     }
 }
