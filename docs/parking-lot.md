@@ -76,3 +76,15 @@ that Epic's scope or still an open question inside it. Nothing here is agreed.
   build a rule on the 25th and never recover the 25 to render "the 25th" in a row. `.weekdays(Set)`
   reads back fine, so the two shapes are asymmetric. Nothing needs it yet — no surface renders a
   rule — and the first Story that does will need a delta widening it, not a bug fix.
+- surfaced 2026-08-31, at `day-screen`'s G1. A UI smoke layer, deliberately deferred. Acceptance
+  tests for the first screen attach at a view-model seam inside `DayByDayKit`, so nothing
+  automated proves SwiftUI actually draws — a row left blank by a misspelled binding passes CI.
+  The answer is one or two XCUITest cases, and it is parked because it costs an ADR, an
+  `xcodebuild` job against a simulator, and a change to CI check 4, which reads `@Test("...")`
+  display names out of Swift source and cannot see an XCTest method name. Revisit when there is
+  a second screen to regress against.
+- surfaced 2026-08-31, same conversation. Playwright is ruled out on a fact rather than a
+  preference, recorded here so it is not re-proposed: it drives browser engines only, ships no
+  `_ios` counterpart to its experimental `_android`, and cannot launch Apple's Simulator. It is
+  unreachable without reversing ADR-1001, which chose native Swift and SwiftUI partly by
+  rejecting the browser-based option outright.
