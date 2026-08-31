@@ -36,7 +36,7 @@ approving.
 
 ### Modified Capabilities
 
-- `schedule`: gains the second of the four rule shapes. Three requirements are added; no existing
+- `schedule`: gains the third of the four rule shapes. Three requirements are added; no existing
   requirement is modified or removed, and the weekday-set rule, the Gregorian weekday derivation
   and the calendar-date validity rules all stand as written.
 

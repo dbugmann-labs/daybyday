@@ -24,7 +24,7 @@ know the requirement is satisfiable without leaving the calendar the rest of the
 
 **Goals:**
 
-- The second rule shape, on the seam that already exists, with no change to it.
+- The third rule shape, on the seam that already exists, with no change to it.
 - A day-of-month value that cannot be out of range, so that "never due because the number was 32" is
   not a state the product can reach.
 - One decision, taken explicitly and reviewable in isolation: what a short month does.
