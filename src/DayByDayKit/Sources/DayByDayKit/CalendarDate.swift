@@ -42,14 +42,19 @@ public struct CalendarDate: Hashable, Sendable {
         self.day = day
     }
 
-    /// The Gregorian weekday of this date, independent of the host's time zone and locale.
-    var weekday: Weekday {
+    /// This date's midnight instant in the UTC calendar above, shared by `weekday`,
+    /// `daysInMonth` and `days(until:)` rather than each building its own `DateComponents`.
+    private var date: Date {
         var components = DateComponents()
         components.year = year
         components.month = month
         components.day = day
 
-        let date = Self.calendar.date(from: components)!
+        return Self.calendar.date(from: components)!
+    }
+
+    /// The Gregorian weekday of this date, independent of the host's time zone and locale.
+    var weekday: Weekday {
         let foundationWeekday = Self.calendar.component(.weekday, from: date)
         return Weekday(foundationWeekday: foundationWeekday)
     }
@@ -57,12 +62,16 @@ public struct CalendarDate: Hashable, Sendable {
     /// The true length of the month this date falls in — 28 or 29 for February according to
     /// whether `year` is a leap year, 30 or 31 otherwise.
     var daysInMonth: Int {
-        var components = DateComponents()
-        components.year = year
-        components.month = month
-        components.day = day
+        Self.calendar.range(of: .day, in: .month, for: date)!.count
+    }
 
-        let date = Self.calendar.date(from: components)!
-        return Self.calendar.range(of: .day, in: .month, for: date)!.count
+    /// The signed number of calendar days from this date to `other`, counting a leap day like
+    /// any other and independent of month length, weekday, time of day and time zone. Negative
+    /// when `other` falls before this date. ADR-1004 fixes the supported year range at 1583
+    /// through 9999 — under four million days end to end even counting every year as a leap
+    /// year — so the result comfortably fits in `Int` and a remainder taken against it cannot
+    /// overflow.
+    func days(until other: CalendarDate) -> Int {
+        Self.calendar.dateComponents([.day], from: date, to: other.date).day!
     }
 }

@@ -56,8 +56,6 @@ that Epic's scope or still an open question inside it. Nothing here is agreed.
   rather than assuming, so the first Story can put it wherever it belongs
 - week turnover is undefined: does an unfinished two-of-three vanish, or get recorded as a miss?
 - how far back the past stays writable, and what happens to days before a thing existed
-- "every N days" needs an anchor: N days from a fixed start, or N days from the last tick? the second
-  makes a late tick shift everything after it, which is a different mechanism from the calendar rules
 - whether "every day" is a set of seven weekdays or an interval of one — two rules can express it
 - supplements and habits were named as one line; a habit phrased as a negative is not a supplement
 - checked against what already exists on 2026-08-29. Nothing found does all four rule shapes without
