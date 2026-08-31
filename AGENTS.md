@@ -162,21 +162,32 @@ The rest of the vocabulary is in `CONTEXT.md`.
 
 Start every session from durable files, never from chat history. You are given an issue number;
 read this file, `CONTEXT.md`, the change folder, and the relevant capability spec. When a
-session must end mid-Story, use `/handoff` and write the continuation state into the change
-folder — not into a chat log, not into the issue. A session that has drifted onto a second
-Story is a bug: stop and start a fresh one.
+session must end mid-Story, the continuation state goes into the change folder, never into a
+chat log and never into the issue. `/handoff` writes it, and only the human can type that (see
+§ *Skills*), so ask. A session that has drifted onto a second Story is a bug: stop and start a
+fresh one.
 
 ## Skills
 
-**Use:** `/atlas` (the conductor — start here), `/opsx:propose`, `/opsx:apply`,
-`/opsx:archive`, `/opsx:explore`, `grill-with-docs`, `to-tickets`, `tdd`, `code-review`,
-`triage`, `handoff`, `diagnosing-bugs`, `research`.
+**Use, and any agent holding `Skill` may invoke:** `/atlas` (the conductor — start here),
+`/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`, `tdd`, `code-review`,
+`diagnosing-bugs`, `research`.
+
+**Use, but only the human can type:** `grill-with-docs`, `to-tickets`, `triage`, `handoff`.
+All four declare `disable-model-invocation: true`, so **no agent can fire them — the conductor
+included.** Wherever this process says to run one, the step is *ask the human to type it* and
+then act on what it produces. Two places that bites: `/to-tickets` at Stage 2 decomposition
+(`.claude/commands/atlas.md` § *Intake*), and `/handoff` in § *Context discipline* above.
 
 **Never invoke:** `to-spec` (duplicates `/opsx:propose` and would publish requirements to the
 tracker, breaking rule 4), `implement` (duplicates `/opsx:apply`, and its commit step bypasses
-review), `wayfinder`, `improve-codebase-architecture`. All four declare
-`disable-model-invocation: true` so they cannot fire on their own, but the pipeline agents hold
-the `Skill` tool — not naming them is convention for every agent here, you included.
+review), `wayfinder`, `improve-codebase-architecture`. These four also declare
+`disable-model-invocation: true`, so the flag is not what separates them from the list above —
+not naming them is convention for every agent here, you included.
+
+**The flag is the truth, not this table.** Read `disable-model-invocation` out of the skill's own
+`SKILL.md` frontmatter before assuming anything here is invocable; a plugin upgrade moves it and
+nothing in this repo checks.
 
 Where a skill asks about this repo's conventions: the tracker is GitHub Issues on
 `dbugmann-labs/daybyday` via `gh` (`docs/agents/issue-tracker.md`), triage uses the five

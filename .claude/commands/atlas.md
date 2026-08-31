@@ -225,8 +225,10 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
    with. Being asked twice is not a reason to soften — but once the human reaffirms it, the
    decision is made: build it and move on.
 3. **Stop at G1** in the form above.
-4. On approval, spawn `orchestrator` to create the Feature issue and attach it. Then run
-   `/to-tickets` for decomposition and **stop at G2**.
+4. On approval, spawn `orchestrator` to create the Feature issue and attach it. Then **ask the
+   human to type `/to-tickets <issue#>`** — it declares `disable-model-invocation: true`, so you
+   cannot run it and neither can any subagent (`AGENTS.md` § *Skills*). Present what it produces
+   and **stop at G2**.
 5. On approval, cut the branch or worktree (`docs/story-mechanics.md`), spawn `spec-author`,
    and **stop at G4**.
 
