@@ -63,3 +63,15 @@ func anEveryNDaysScheduleIsDueOnExactlyFiveDatesAcrossAFortnight() {
         CalendarDate(year: 2026, month: 9, day: 12)!,
     ])
 }
+
+
+@Test("the interval counts across the end of a month")
+func theIntervalCountsAcrossTheEndOfAMonth() {
+    let start = CalendarDate(year: 2026, month: 8, day: 25)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 14)!, from: start)
+    let dueDate = CalendarDate(year: 2026, month: 9, day: 8)!
+    let notDueDate = CalendarDate(year: 2026, month: 9, day: 25)!
+
+    #expect(schedule.isDue(on: dueDate))
+    #expect(!schedule.isDue(on: notDueDate))
+}
