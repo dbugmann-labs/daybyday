@@ -68,6 +68,11 @@ an instant; ADR-1004.
 on, as a set. "Gym Mon/Wed/Sat" is one. Membership is the whole rule, so a set of all seven is
 due every day and an empty set is due on none.
 
+**Day of the month** — the third of the four schedule shapes: a single day number a commitment
+runs on in every month. "Finances every 25th" is one. A month too short to hold the number is due
+on its last day rather than skipped, so a commitment on the 31st comes due once in February too,
+and every month has exactly one due date.
+
 **Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
 storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by
 `swift test`.

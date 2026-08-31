@@ -53,4 +53,16 @@ public struct CalendarDate: Hashable, Sendable {
         let foundationWeekday = Self.calendar.component(.weekday, from: date)
         return Weekday(foundationWeekday: foundationWeekday)
     }
+
+    /// The true length of the month this date falls in — 28 or 29 for February according to
+    /// whether `year` is a leap year, 30 or 31 otherwise.
+    var daysInMonth: Int {
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+
+        let date = Self.calendar.date(from: components)!
+        return Self.calendar.range(of: .day, in: .month, for: date)!.count
+    }
 }
