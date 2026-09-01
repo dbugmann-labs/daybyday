@@ -54,7 +54,7 @@ ask, or take the worktree anyway, since it costs a directory. Either way
 **One draft PR per Story, open from Stage 4 to merge** — the agents run those commands, not you.
 What is yours is refusing to present a gate whose diff is missing or stale: `pnpm run status`
 reports the PR, whether it is still a draft, and how far `main` has moved past it. When either
-is wrong, hand the step back to an agent rather than to the human. Because CI skips the four
+is wrong, hand the step back to an agent rather than to the human. Because CI skips the three
 "is it finished" checks on a draft, a draft's CI is green and worth quoting at G4.
 
 ## The loop

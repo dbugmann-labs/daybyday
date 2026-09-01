@@ -4,16 +4,17 @@ An iPhone app for the commitments you owe yourself and the rhythm each one runs 
 each commitment once, along with the schedule it runs on, then open the app on any day and
 tick off what that day asks for.
 
-**One capability is real so far**: `schedule`, which answers whether a commitment is due on a
-given calendar date, starting with weekday sets. It lives in `src/DayByDayKit`, a Swift package
-with no UI and no storage under it. Everything else is the machinery — how work is decomposed,
+**One product capability is real so far**: `schedule`, which answers whether a commitment is
+due on a given calendar date. Three of its four rule shapes are built — weekday sets, day of the
+month, and every N days — and it lives in `src/DayByDayKit`, a Swift package with no UI and no
+storage under it. Everything else is the machinery — how work is decomposed,
 how a requirement becomes a test, what a human must approve, and what a machine refuses to
 merge. This repository carries the full git history of **Atlas**, the development system it was
 started from, and is built with that system's process; Atlas stays configured as the `upstream`
 remote so process fixes can be merged down.
 
-`src/bin.ts` and `src/cli.ts` are 48 lines of inherited TypeScript that exist only to prove the
-pipeline runs end to end. They are scheduled for removal through a Story whose delta carries
+`src/bin.ts` and `src/cli.ts` are 48 lines of inherited TypeScript, specced as the `cli-version`
+capability, that exist only to prove the pipeline runs end to end. They are scheduled for removal through a Story whose delta carries
 `REMOVED` requirements — not by hand.
 
 ## The whole process in one paragraph
@@ -64,7 +65,7 @@ pnpm run verify      # lint + typecheck + test — must pass before any PR
 |---|---|
 | `pnpm run status` | where is this Story, and whose turn is it? start every session here |
 | `pnpm run verify` | lint, typecheck, test — the gate before any PR |
-| `pnpm run checks` | the five bespoke merge-time checks; advisory locally, binding in CI |
+| `pnpm run checks` | the four bespoke merge-time checks; advisory locally, binding in CI |
 | `pnpm run check:g4` | is this Story approved? run it before writing any code |
 | `pnpm run test:watch` | the TDD loop |
 | `pnpm run graph` | regenerate `docs/graph.mmd` from the tracker |
@@ -73,7 +74,7 @@ pnpm run verify      # lint + typecheck + test — must pass before any PR
 `pnpm run checks` is **staged**: mid-Story it reports rather than fails, because a check that
 demanded every acceptance test at once would force exactly the bulk transcription `AGENTS.md`
 rule 3 forbids. In CI the same checks bind, because a PR claims the Story is finished — unless
-it is still a draft, which is how the PR can be open from Stage 4 without four of the eight CI
+it is still a draft, which is how the PR can be open from Stage 4 without three of the seven CI
 checks failing by construction.
 
 ## Where things live
@@ -96,7 +97,7 @@ scripts/                   the merge-time checks and the graph generator
 src/DayByDayKit/           the Swift package: the rule engine and its tests
 .claude/agents/            the five pipeline agents and their model routing
 .claude/commands/atlas.md  the conductor
-.github/workflows/ci.yml   the eight verify checks, plus a Swift job
+.github/workflows/ci.yml   the seven verify checks, plus a Swift job
 ```
 
 ## The two things that are actually load-bearing
