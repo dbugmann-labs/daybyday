@@ -39,7 +39,7 @@ Then read `CONTEXT.md` for vocabulary, then the change folder for the Story you 
 Do not start from a chat log.
 
 **If you are a human picking this up cold:** read this file, then `docs/process.md` — the full
-reasoning, thirteen numbered sections, including §12 on whether the whole apparatus is
+reasoning, twelve numbered sections, including §12 on whether the whole apparatus is
 proportionate. `docs/process-overview.html` is the same process drawn on one page — open it in
 a browser first if you would rather see the shape than read it. `docs/retrospective.md` says
 what actually happened when it was first run.
