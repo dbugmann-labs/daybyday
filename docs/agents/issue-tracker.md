@@ -22,8 +22,15 @@ The repo's own scripts are unaffected: `scripts/lib/ci.ts` derives the slug from
 **Issues carry no requirements.** An issue body holds a one-sentence intent, a link to the change
 folder, and gate checkboxes — nothing else. Requirements live in `openspec/specs/**` and
 `openspec/changes/<id>/specs/**`; where an issue and a spec disagree, the spec wins and the issue
-is wrong. `AGENTS.md` rule 4, ADR-0002. A skill whose default template emits acceptance criteria
-into the issue body (`to-tickets` does) must be told to emit a stub instead.
+is wrong. `AGENTS.md` rule 4, ADR-0002.
+
+`to-tickets`' default template emits acceptance criteria into the issue body, and its `<issue-template>`
+is not this repo's shape. It is **not** overridden — the template is inline in the plugin's own
+`SKILL.md` and nothing here can rewrite it. Instead the skill is stopped after its breakdown quiz
+and never reaches its publish step, so `orchestrator` writes the issues from
+`.github/ISSUE_TEMPLATE/story.yml`. See `docs/process.md` §10 § *Where `to-tickets` stops*. If a
+ticket does arrive with an `## Acceptance criteria` block or a `ready-for-agent` label, strip both
+and report it: the skill ran a step too far.
 
 ## Issue types
 

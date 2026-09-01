@@ -193,6 +193,17 @@ then act on what it produces. Two places that bites: `/to-tickets` at Stage 2 de
 `grill-with-docs` is on this list but nothing routes to it any more: the process needed it at a
 step where nobody could type it, so `grill` wraps the two skills it calls. ADR-1009.
 
+**`/to-tickets` proposes a breakdown; it never publishes one.** Its own step 5 publishes straight
+to GitHub, and what it publishes is wrong here three times over: an `## Acceptance criteria`
+block, which is rule 4; a `ready-for-agent` label, which `docs/story-mechanics.md` § *Labels*
+forbids on pipeline issues; and its own body shape rather than
+`.github/ISSUE_TEMPLATE/story.yml`. **Stop it after step 4 — the numbered breakdown and the
+quiz.** That part is worth having: its vertical-slice rules are the same concern as
+`docs/process.md` §8. You accept the breakdown at G2 and `orchestrator` writes the issues, which
+is already how `.claude/commands/atlas.md` § *Intake* is written. If Stories appear on the
+tracker before you have said yes, the skill ran a step too far — that is a defect to report,
+not a diff to tidy.
+
 **Never invoke:** `to-spec` (duplicates `/opsx:propose` and would publish requirements to the
 tracker, breaking rule 4), `implement` (duplicates `/opsx:apply`, and its commit step bypasses
 review), `wayfinder`, `improve-codebase-architecture`. These four also declare
