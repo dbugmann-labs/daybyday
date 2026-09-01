@@ -89,6 +89,15 @@ runs on in every month. "Finances every 25th" is one. A month too short to hold 
 on its last day rather than skipped, so a commitment on the 31st comes due once in February too,
 and every month has exactly one due date.
 
+**Weekly quota** — the fourth and last of the four schedule shapes: a number of completions owed
+within a week, on no particular days. "Reading 3x a week, any nights" is one. The number says how
+many times the week owes, never which days it is owed on, so a commitment on this shape is due on
+every date and the count does not narrow that — a quota of one and a quota of seven are due on
+exactly the same dates. It runs from 1 to 7, because a tick is one per commitment per day and a week
+cannot hold an eighth. Whether the week's completions have already been recorded, so the row can go
+quiet, is deliberately not part of this shape: that is a question about ticks rather than about a
+date, and it is answered above the rule engine rather than inside it.
+
 **Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
 storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by
 `swift test`.
