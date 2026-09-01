@@ -21,9 +21,9 @@ to running it in Claude Code.
   `~/.claude/plugins/installed_plugins.json`, against the `projectPath` it was installed from.
   This repo inherited Atlas's `settings.json` without that record, so from the repo's creation
   until 2026-08-31 the plugin read as enabled while its skills never loaded — and no session
-  restart fixed it, because the only record pointed at `~/Coding/atlas`. If `/to-tickets` and
-  friends go missing from a session, check that file for an entry whose `projectPath` is this
-  repo. If there is none:
+  restart fixed it, because the only record pointed at `~/Coding/atlas`. If the skills go missing
+  from a session, check that file for an entry whose `projectPath` is this repo. If there is
+  none:
 
   ```bash
   claude plugin install mattpocock-skills@claude-plugins-official --scope project
@@ -31,6 +31,14 @@ to running it in Claude Code.
 
   from the repo root, then restart the session. Diagnose from that file, not from the fact that
   `.claude/settings.json` lists the plugin — that is the symptom that misleads.
+
+  **Do not use a flagged skill as the canary.** `to-tickets`, `triage`, `handoff` and
+  `grill-with-docs` are absent from an agent's `Skill` roster *even on a healthy install* — the
+  `disable-model-invocation` flag is what removes them, not a broken plugin — so an agent testing
+  for one there concludes the plugin is broken every time. Test with an unflagged skill instead:
+  `mattpocock-skills:tdd`, `:code-review`, `:research`, `:diagnosing-bugs`. If those are in the
+  roster, the plugin loaded. `claude plugin details mattpocock-skills` answers it without a
+  session at all.
 - **Skills this repo owns.** `.claude/skills/` holds `grill`, which both grills run through —
   ADR-1009 has why it exists rather than `grill-with-docs`. Project skills carry no
   `disable-model-invocation` flag and load without a session restart: verified 2026-09-01, the
