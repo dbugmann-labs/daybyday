@@ -175,11 +175,15 @@ technically fire it, so this one is convention rather than a flag — a subagent
 
 **Use, and any agent holding `Skill` may invoke:** `grill` (this repo's own — both grills run
 through it), `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`,
-`mattpocock-skills:tdd`, `mattpocock-skills:code-review`, `diagnosing-bugs`, `research`.
+`mattpocock-skills:tdd`, `mattpocock-skills:code-review`, `mattpocock-skills:diagnosing-bugs`,
+`mattpocock-skills:research`.
 
-**Namespace `tdd` and `code-review`.** A bare `code-review` resolves to Claude Code's built-in
-review, not the two-axis one Stage 7 means — and the built-in carries a `--fix` flag that edits,
-which is the one thing `reviewer` must never do. Write `mattpocock-skills:` in front of both.
+**Name every plugin skill with its `mattpocock-skills:` prefix.** A bare name resolves only where
+nothing else claims it. `tdd`, `research` and `diagnosing-bugs` do reach the plugin's today —
+**`code-review` does not.** Claude Code registers a built-in of that name, a bare call reaches
+that one, and it is a different tool carrying a `--fix` flag that edits the working tree, which
+is the one thing `reviewer` must never do. Prefixing all four costs nothing and survives the next
+built-in that claims a name.
 
 **Use, but only the human can type:** `grill-with-docs`, `to-tickets`, `triage`, `handoff`.
 All four declare `disable-model-invocation: true`, so **no agent can fire them — the conductor
@@ -199,6 +203,19 @@ not naming them is convention for every agent here, you included.
 `SKILL.md` frontmatter before assuming anything here is invocable; a plugin upgrade moves it and
 nothing in this repo checks. The one-liner that prints the whole picture is in
 `docs/process.md` §10 — run it rather than trusting either table.
+
+**The two ways a `Skill` call fails mean opposite things.** Both observed 2026-09-01:
+
+```
+Skill <name> cannot be used with Skill tool due to disable-model-invocation
+    → the flag. The skill is installed and healthy; ask the human to type it.
+Unknown skill: <name>
+    → not in the session at all. A plugin or naming problem — never a flag.
+```
+
+Reading the second as the first is how a working install gets diagnosed as broken. The flag is
+enforced by the tool itself, by name, not merely by omission from your roster — so a flagged
+skill is unreachable to every agent, and there is no wording that gets around it.
 
 Where a skill asks about this repo's conventions: the tracker is GitHub Issues on
 `dbugmann-labs/daybyday` via `gh` (`docs/agents/issue-tracker.md`), triage uses the five

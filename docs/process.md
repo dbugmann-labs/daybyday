@@ -541,6 +541,11 @@ done
 Anything this document tells an **agent** to invoke must print `invocable`. Anything it tells
 **you** to type must print `HUMAN-ONLY`, or the step is describing a keystroke nobody needs.
 
+A flagged skill is refused **by the tool, by name** — `cannot be used with Skill tool due to
+disable-model-invocation`, observed 2026-09-01 — not merely left out of your roster. `Unknown
+skill: <name>` is the other failure and means the opposite: not installed. `AGENTS.md` § *Skills*
+carries both strings.
+
 The flag is only half of reachability; the other half is whether the agent holds the `Skill`
 tool at all. `orchestrator` does not, which is why Stage 2 routes through you. Check the
 `tools:` line in `.claude/agents/<name>.md` before writing a skill into an agent's file — the
