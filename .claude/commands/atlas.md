@@ -229,10 +229,18 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
 3. **Stop at G1** in the form above.
 4. On approval, spawn `orchestrator` to create the Feature issue and attach it. Then **ask the
    human to type `/to-tickets <issue#>`** — it declares `disable-model-invocation: true`, so you
-   cannot run it and neither can any subagent (`AGENTS.md` § *Skills*). Present what it produces
-   and **stop at G2**.
-5. On approval, cut the branch or worktree (`docs/story-mechanics.md`), spawn `spec-author`,
-   and **stop at G4**.
+   cannot run it and neither can any subagent (`AGENTS.md` § *Skills*). **Ask them to stop it
+   after the breakdown quiz, before it publishes**: its step 5 writes issues straight to GitHub,
+   with acceptance criteria in the body and a `ready-for-agent` label, both of which this
+   process forbids. What you want from it is the numbered slices and their blocking edges.
+   Present that and **stop at G2**.
+5. On approval, spawn `orchestrator` to write the Stories from the accepted breakdown — issue
+   bodies come from `.github/ISSUE_TEMPLATE/story.yml`, never from the skill's template. Then cut
+   the branch or worktree (`docs/story-mechanics.md`), spawn `spec-author`, and **stop at G4**.
+
+If Stories are already on the tracker when the human hands you the breakdown, `/to-tickets` ran
+its publish step. Say so and check what it wrote before going on — rule 5. Issues carrying
+acceptance criteria are a rule 4 breach that the spec, not the issue, has to win against later.
 
 If the idea is not ready to be a Feature, the right outcome is a line in
 `docs/parking-lot.md`, not a Feature issue. Nothing is implemented from that file, and an

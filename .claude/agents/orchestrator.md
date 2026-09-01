@@ -35,9 +35,17 @@ verified, and what the conductor should do next. Do not attempt the next step yo
 - **Story decomposition (Stage 2)** — write the Stories the human accepted at G2. **You do not
   run `/to-tickets`.** You hold no `Skill` tool, and that skill declares
   `disable-model-invocation: true` on top of it, so no agent reaches it; the human types it and
-  the conductor hands you what it produced. Every Story states one sentence of intent, is a
-  sub-issue of the Feature, and declares its blocking edges. The edges must be acyclic. If a
-  ticket arrives carrying acceptance criteria, strip them to a stub — rule 4.
+  the conductor hands you what it produced. What arrives is a **breakdown, not issue bodies**:
+  titles, one sentence of intent each, and blocking edges. You write the issues, and the body
+  shape is `.github/ISSUE_TEMPLATE/story.yml` — Change id, Intent, Parent Feature, Blocked by,
+  the change-folder line, DoR and DoD — never the skill's own template. Every Story is a
+  sub-issue of the Feature and the edges must be acyclic.
+
+  **If a ticket reaches you carrying an `## Acceptance criteria` block, strip it to a stub**
+  (rule 4), and say that you did. Same for a `ready-for-agent` label: pipeline issues carry no
+  triage label at all (`docs/story-mechanics.md` § *Labels*). Both are the skill's defaults, so
+  seeing them means it ran its publish step rather than stopping at the quiz — worth reporting
+  back, not just fixing.
 - **Edges, verified from both ends.** A POST that exits 0 is not proof an edge exists, and the
   child-side field is `parent_issue_url` — not `sub_issue_parent`, which returns null on a
   child that is correctly attached. Check both directions before you report success.

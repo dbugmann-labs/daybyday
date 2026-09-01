@@ -228,7 +228,8 @@ Feature is a sub-issue of exactly one Epic.
 
 **G2 — Decomposition accepted.** Every Story states one sentence of intent. Blocking edges are
 declared and acyclic. You have said yes to the breakdown; `to-tickets`, which you type, iterates
-until you do.
+until you do — and then you **stop it**, before its publish step. It proposes the slices;
+`orchestrator` writes the issues. §10 § *Where `to-tickets` stops* has why.
 
 **G4 — Spec approved. This is the gate your whole requirement set rests on.** All of:
 
@@ -558,6 +559,28 @@ It prints 25 lines. Only `engineering/` and `productivity/` are searched because
 no session can see. `claude plugin details mattpocock-skills` prints the shipped inventory and
 the count to check against.
 
+### Where `to-tickets` stops
+
+`to-tickets` is the only skill this process uses for part of what it does. Steps 3 and 4 — the
+vertical-slice rules and the numbered quiz — are worth having, and its slicing rule is the same
+concern as §8's. **Step 5 is not ours.** It publishes one issue per ticket directly to GitHub,
+and its output conflicts with this repo three times:
+
+| It emits | This repo requires |
+|---|---|
+| an `## Acceptance criteria` checkbox block | rule 4 — issues carry no requirements |
+| the `ready-for-agent` triage label | no triage label at all on pipeline issues (`docs/story-mechanics.md` § *Labels*) |
+| its own `<issue-template>` body | `.github/ISSUE_TEMPLATE/story.yml` — Change id, Intent, Parent Feature, Blocked by, DoR, DoD |
+
+So the step is: type it, read the breakdown, accept it at G2, and let `orchestrator` write the
+Stories. **The template is not overridden and cannot be** — it is inline in the plugin's own
+`SKILL.md`, and the only lever this repo has over a skill is prose it may or may not honour,
+which is exactly the guardrail ADR-0013 says not to assume exists. Stopping before the step is
+the enforcement, and it is yours: you are the one typing.
+
+`docs/agents/issue-tracker.md` § *What goes in an issue body* is the fallback if it publishes
+anyway.
+
 ### The inventory
 
 | Skill | Reachable | Used at |
@@ -568,7 +591,7 @@ the count to check against.
 | `mattpocock-skills:code-review` | agent + human | Stage 7, standards axis. Namespace it: a bare `code-review` is Claude Code's built-in, a different tool that can edit |
 | `codebase-design`, `diagnosing-bugs`, `research`, `resolving-merge-conflicts` | agent + human | narrow, no overlap |
 | `grill-with-docs` | **human only** | nothing. Its body is two Skill calls; `grill` makes them and adds the subagent branch it cannot have |
-| `to-tickets` | **human only** | Stage 2. You type it; `orchestrator` writes what you accepted. Its default template emits acceptance criteria — **strip them to a stub** (rule 4). Nothing enforces that yet |
+| `to-tickets` | **human only** | Stage 2, **steps 1–4 only**. You type it, stop it at the breakdown quiz, and `orchestrator` writes the issues. Letting it reach step 5 publishes acceptance criteria and a `ready-for-agent` label straight to GitHub — see below |
 | `triage` | **human only** | label state machine for inbound work |
 | `handoff` | **human only** | context discipline, §6 |
 | `to-spec` | human only, and **never invoke** | duplicates `/opsx:propose`; would publish requirements prose to the issue tracker, breaking §1 |
