@@ -87,6 +87,13 @@ is a preference rather than a fact; finding facts is the agent's job. ADR-1006.
    naming a model, no "generated with" footer, no session link — this repository is public and
    its history is a professional record. Write the message as the author's own work. This
    overrides your harness's default trailer behaviour; drop it.
+8. **Every branch is worked in its own worktree** — Story, chore, archive, spike, anything. Do
+   not `git checkout -b` in a clone, this one included. Two agents in one clone share `HEAD`, so
+   a checkout by one moves the other's working tree underneath it mid-task and neither is told;
+   `git worktree list` showing a single entry is not proof you are alone, and a worktree costs a
+   directory. Commands in `docs/story-mechanics.md` — including the `pnpm install` a fresh
+   worktree needs, because `node_modules` is gitignored and does not come with you.
+   `pnpm run status` prints the exact command for each open Story.
 
 ## Naming
 
@@ -99,6 +106,7 @@ is a preference rather than a fact; finding facts is the agent's job. ADR-1006.
 | Story issue title | the change id, verbatim |
 | Branch | `story/<issue#>-<change-id>`, cut from `origin/main` at Stage 4 |
 | Chore branch | `chore/<slug>` — no behaviour change, no Story needed |
+| Worktree directory | `../daybyday-<change-id>`, or `../daybyday-<slug>` for a chore — one per branch, rule 8 |
 | Commit | Conventional Commits — `feat(cli-version): print version` |
 | Propose commit | `docs(<capability>): propose <change-id>` — the change folder is docs until G4 |
 | Archive commit | `chore(archive): <change-id>` — scoped `archive`, not the capability |
@@ -238,10 +246,11 @@ openspec validate --archived        # every archived tasks.md box ticked
 The Stage-4-to-merge keystrokes are in `docs/story-mechanics.md`. **Read it before you touch
 git on a Story.** Its three traps, because each one costs someone else's work:
 
-- **One agent per working tree** — two agents in one clone share `HEAD`. If another agent is
-  working here, or a Story is in flight, take a worktree, not a branch.
-- **`git branch --unset-upstream`** after every `checkout -b` or `worktree add -b` off
-  `origin/main`, or a later bare `git push` targets the protected branch.
+- **A worktree, never a checkout** — rule 8, restated here because this is where you will reach
+  for `git checkout -b`. A chore branch is no exception; it has no Story and no gates, but it
+  takes a working tree like everything else.
+- **`git branch --unset-upstream`** after every `worktree add -b` off `origin/main`, or a later
+  bare `git push` targets the protected branch.
 - **A rebase conflict in the change folder or `openspec/specs/` is a stop**, not a merge you
   resolve: another Story landed on this capability, which is the human's call (rule 5).
 

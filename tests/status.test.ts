@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { deriveStoryStatus, renderTree, type ChangeFacts, type StoryFacts } from '../scripts/status.ts'
+import { deriveStoryStatus, parseWorktrees, renderTree, type ChangeFacts, type StoryFacts } from '../scripts/status.ts'
 import type { GraphIssue } from '../scripts/generate-graph.ts'
 
 // `pnpm run status` tells a human whose turn it is. Two properties make it worth trusting, and
@@ -225,6 +225,32 @@ function issue(over: Partial<GraphIssue> & Pick<GraphIssue, 'number'>): GraphIss
   return { title: `issue ${over.number}`, state: 'OPEN', type: 'Task', parent: null, ...over }
 }
 
+describe('parseWorktrees', () => {
+  // The porcelain form is the only stable one; the human-readable listing pads columns and
+  // brackets the branch, which is a parse waiting to break.
+  it('maps each branch to the worktree holding it, ignoring a detached one', () => {
+    const found = parseWorktrees(
+      [
+        'worktree /Users/x/Coding/daybyday',
+        'HEAD 1af8802',
+        'branch refs/heads/main',
+        '',
+        'worktree /Users/x/Coding/daybyday-add-schedule-rules',
+        'HEAD 5a09e2f',
+        'branch refs/heads/story/12-add-schedule-rules',
+        '',
+        'worktree /Users/x/Coding/daybyday-detached',
+        'HEAD 67d364c',
+        'detached',
+        '',
+      ].join('\n'),
+    )
+    expect(found.get('main')).toBe('/Users/x/Coding/daybyday')
+    expect(found.get('story/12-add-schedule-rules')).toBe('/Users/x/Coding/daybyday-add-schedule-rules')
+    expect(found.size).toBe(2)
+  })
+})
+
 describe('renderTree', () => {
   it('names a Feature with no Story as yours to decompose', () => {
     const out = renderTree([
@@ -242,19 +268,31 @@ describe('renderTree', () => {
     issue({ number: 12, title: 'add-schedule-rules', type: 'Task', parent: 6 }),
   ]
 
-  it('gives the exact command to switch to a Story whose branch exists', () => {
+  it('walks you to the worktree a Story is already checked out in', () => {
+    const out = renderTree(
+      WITH_STORY,
+      new Set(['story/12-add-schedule-rules']),
+      new Map([['story/12-add-schedule-rules', '/Users/x/Coding/daybyday-add-schedule-rules']]),
+    )
+    expect(out).toContain('cd /Users/x/Coding/daybyday-add-schedule-rules && pnpm run status')
+  })
+
+  // A branch with no worktree is a worktree waiting to be re-attached, not an invitation to
+  // check it out here: hard rule 8 gives every branch its own working tree.
+  it('re-attaches a worktree for a branch that has none', () => {
     const out = renderTree(WITH_STORY, new Set(['story/12-add-schedule-rules']))
-    expect(out).toContain('git checkout story/12-add-schedule-rules && pnpm run status')
+    expect(out).toContain('git worktree add ../daybyday-add-schedule-rules story/12-add-schedule-rules')
+    expect(out).not.toContain('git checkout story/12-add-schedule-rules')
   })
 
   // Branches are cut at Stage 4, so most open Stories have none. Printing `git checkout` for
   // one of those hands the human a command that errors — and this file exists to hand over
   // commands that run.
-  it('offers to cut the branch when a Story does not have one yet', () => {
+  it('offers to cut the worktree when a Story has no branch yet', () => {
     const out = renderTree(WITH_STORY)
-    expect(out).toContain('git checkout -b story/12-add-schedule-rules origin/main')
+    expect(out).toContain('git worktree add ../daybyday-add-schedule-rules -b story/12-add-schedule-rules origin/main')
     expect(out).toContain('--unset-upstream')
-    expect(out).not.toContain('git checkout story/12-add-schedule-rules &&')
+    expect(out).not.toContain('git checkout -b')
   })
 
   it('says an Epic with no Feature is waiting on G1', () => {

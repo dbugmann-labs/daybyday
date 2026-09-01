@@ -43,3 +43,14 @@ archive PRs. This is decided when the second Story is started, not discovered at
 **Separate archive PR on `main`.** The airtight option, and what OpenSpec recommends for
 teams. Rejected as disproportionate at one concurrent Story; recorded here so it is not
 rediscovered as an oversight.
+
+## Corrections
+
+- **2026-09-01** — this ADR always read "one branch, one worktree", but `AGENTS.md` and
+  `docs/story-mechanics.md` had softened it to a condition: take a worktree *if* another agent
+  is working here. That condition is unverifiable from inside a session — you cannot see the
+  other agent, and an empty `git worktree list` says only that nobody has taken one yet — so it
+  was read as permission for the branch form, and Story #11 was worked on a branch in the main
+  clone while Story #42 held the only worktree. It is now unconditional and covers every branch,
+  chore branches included: hard rule 8. No decision here changed; the rule stopped being
+  optional.
