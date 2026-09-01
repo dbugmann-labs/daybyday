@@ -88,7 +88,17 @@ things each day, without much navigation)".
 the monthly finances, watering the plants. It is defined once and recurs indefinitely. It is
 deliberately not a *task*, which is completed once and then gone; not a *habit*, which fits
 supplements but not finances; and not an *area*, a word tried first and dropped because it was
-covering three unlike behaviours at once.
+covering three unlike behaviours at once. It is made of a name and the schedule it runs on, and
+it is due on a day exactly when that schedule is — a commitment adds nothing of its own to the
+answer. It carries no identifier either: two commitments with the same name and the same
+schedule are the same commitment, and telling apart two a person deliberately kept separate is
+a property of whatever stores them, not of the commitment.
+
+**Commitment name** — the words a person gave a commitment, and the only part of one that is
+not a rule. It has to say something: a name that is empty, or made only of blank space, names
+nothing and is refused, the same refusal that stops 30 February being a calendar date. Anything
+else is a name — there is no length limit, no restricted script and no reserved word, because
+the name is the owner's own words rather than the system's.
 
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
