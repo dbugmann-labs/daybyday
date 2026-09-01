@@ -139,7 +139,7 @@ rhythms behind `EPIC: Daily commitments`, for instance. Detail like that stays p
 change folder exists to receive it, and is deleted when the spec superseding it is archived. An
 entry outliving its Epic is expected; one outliving the spec that covers it is stale.
 
-`/opsx:explore` and `grill-with-docs` are the tools here; new domain terms land in `CONTEXT.md`
+`/opsx:explore` and `grill` are the tools here; new domain terms land in `CONTEXT.md`
 as they are agreed. The phase ends when there is a body of work you can name in a sentence and a
 human who agrees that is the next thing to build. That is a Stage 0 Epic.
 
@@ -168,12 +168,12 @@ when you are asking whether you can walk away: `you` means the pipeline stops un
 | # | Stage | Who decides | Runs where | Output | Gate |
 |---|---|---|---|---|---|
 | 0 | Epic intake | **you** | `orchestrator` / Opus | Epic issue | — |
-| 1 | Feature definition | **you** | the conductor grills; `orchestrator` / Opus writes the issue | Feature issue, sub-issue of Epic, plus any new `CONTEXT.md` terms | **G1 (H)** |
-| 2 | Story decomposition | **you** accept; `to-tickets` proposes | `orchestrator` / Opus | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
-| 4 | Propose | agent writes; **you** answer any question round, and approve | `spec-author` / Opus, via `/opsx:propose` | the grill first — `design.md` **Open Questions** filled in, plus any new `CONTEXT.md` terms, plus a `## Questions for you` round if the grill hit something that is yours — then the change folder: proposal, delta specs, design, tasks. Cut the branch or worktree here, commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
-| 5 | Red | agent | `implementer` / Sonnet, via `tdd` | one failing acceptance test | A |
-| 6 | Green + next | agent | `implementer` / Sonnet, via `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes | A |
-| 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity | **G7 (H)** |
+| 1 | Feature definition | **you** | the conductor grills via `grill`; `orchestrator` / Opus writes the issue | Feature issue, sub-issue of Epic, plus any new `CONTEXT.md` terms | **G1 (H)** |
+| 2 | Story decomposition | **you** accept; **you** type `to-tickets`, which proposes | `orchestrator` / Opus writes what you accepted | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
+| 4 | Propose | agent writes; **you** answer any question round, and approve | `spec-author` / Opus, via `grill` then `/opsx:propose` | the grill first — `design.md` **Open Questions** filled in, plus any new `CONTEXT.md` terms, plus a `## Questions for you` round if the grill hit something that is yours — then the change folder: proposal, delta specs, design, tasks. Cut the branch or worktree here, commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
+| 5 | Red | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` | one failing acceptance test | A |
+| 6 | Green + next | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` and `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes | A |
+| 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `mattpocock-skills:code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity | **G7 (H)** |
 | 8 | Archive | agent | `janitor` / Haiku, via `/opsx:archive` | delta merged into `openspec/specs/`, change moved to `changes/archive/`, PR taken out of draft with `gh pr ready` | — |
 | 9 | Merge | agent | `janitor` / Haiku | issue auto-closed, parents settled, `docs/graph.mmd` regenerated | **G8 (CI)** |
 
@@ -190,7 +190,10 @@ approved, and two ADR titles name Stage 4. Renumbering would falsify a record to
 ### The two grills, and the round that carries what neither can settle
 
 Grilling happens twice, and the two ask different questions. Confusing them is how one of them
-becomes expensive.
+becomes expensive. **Both run through one skill, `grill`**, which lives in `.claude/skills/` and
+is this repository's own. It calls `mattpocock-skills:grilling` and
+`mattpocock-skills:domain-modeling` — the two skills `grill-with-docs` calls — and then splits on
+the one thing the two grills cannot share: whether the session can wait for your answer. ADR-1009.
 
 **The Feature grill, at Stage 1, is a conversation and belongs to the conductor:** one capability
 or several, what the slug is, which Epic it hangs under, what it deliberately does not cover, and
@@ -203,7 +206,8 @@ short month does, what an out-of-range number does. Those are invisible until so
 delta, and pulling them up to Stage 1 would mean settling four Stories' worth of edge cases
 before any is built, which is the horizontal slicing §8 exists to prevent.
 
-**The Story grill cannot ask you anything, so it writes instead.** A question `spec-author` may
+**The Story grill cannot ask you anything, so it writes instead** — that is the split, and the
+skill's subagent branch is where it is written down. A question `spec-author` may
 not settle — one whose answer would change the delta, and which is a preference you hold rather
 than a fact it could look up — goes into `design.md` under **`## Questions for you`**, numbered,
 each with the answer it recommends and what changes if you answer otherwise. It writes the change
@@ -223,7 +227,8 @@ ADR-1006.
 Feature is a sub-issue of exactly one Epic.
 
 **G2 — Decomposition accepted.** Every Story states one sentence of intent. Blocking edges are
-declared and acyclic. You have said yes to the breakdown; `to-tickets` iterates until you do.
+declared and acyclic. You have said yes to the breakdown; `to-tickets`, which you type, iterates
+until you do.
 
 **G4 — Spec approved. This is the gate your whole requirement set rests on.** All of:
 
@@ -509,26 +514,69 @@ than a checkbox precisely so the two cannot be confused.
 
 ## 10. Skill inventory
 
-The skills plugin is installed whole and **not** pruned, because pruning is unnecessary: Claude
-Code has no per-skill disable mechanism, but every skill on the kill list already declares
-`disable-model-invocation: true`, so nothing can invoke one accidentally, while the two we most
-want firing automatically — `tdd` and `code-review` — are model-invocable. So "never invoke"
-below means exactly that, enforced by `AGENTS.md`. No fork, no vendoring. ADR-0009.
+The skills plugin is installed whole and **not** pruned. Claude Code has no per-skill disable
+mechanism, deleting directories from the installed copy is reverted by `claude plugin update`,
+and every skill on the kill list already declares `disable-model-invocation: true` — so nothing
+can invoke one accidentally. "Never invoke" below means exactly that, enforced by `AGENTS.md`.
+No fork, no vendoring. ADR-0009.
 
-| Skill | Status | Why |
+**Three columns, and only one of them is a fact about this repo.** *Reachable* is read out of
+the skill's own frontmatter and changes when the plugin updates; *Used at* is ours.
+
+### Reachability is machine-readable — check it, do not remember it
+
+Nothing in CI checks this table, and four documented commands in this repo's history were wrong
+because someone wrote them from memory (`docs/retrospective.md` §5). Regenerate it:
+
+```bash
+P=$(node -e 'const p=require(require("os").homedir()+"/.claude/plugins/installed_plugins.json");
+  console.log(p.plugins["mattpocock-skills@claude-plugins-official"].at(-1).installPath)')
+for f in $(find "$P/skills/engineering" "$P/skills/productivity" -name SKILL.md | sort); do
+  n=${f#$P/skills/}; n=${n%/SKILL.md}
+  awk 'NR==1&&/^---/{f=1;next} f&&/^---/{exit} f{print}' "$f" \
+    | grep -q disable-model-invocation && echo "HUMAN-ONLY  $n" || echo "invocable   $n"
+done
+```
+
+Anything this document tells an **agent** to invoke must print `invocable`. Anything it tells
+**you** to type must print `HUMAN-ONLY`, or the step is describing a keystroke nobody needs.
+
+The flag is only half of reachability; the other half is whether the agent holds the `Skill`
+tool at all. `orchestrator` does not, which is why Stage 2 routes through you. Check the
+`tools:` line in `.claude/agents/<name>.md` before writing a skill into an agent's file — the
+Stage 2 instruction that named `/to-tickets` failed both tests at once.
+
+Neither check covers **project** skills — `.claude/skills/`, where `grill` lives. Those carry no
+flag and load without a restart. Whether a subagent can see one is proved by spawning it:
+
+```
+Invoke the Skill tool for `grill`, report the first line it returns, then stop. Write nothing.
+```
+
+It prints 25 lines. Only `engineering/` and `productivity/` are searched because only those ship
+— `misc/` and `in-progress/` sit in the cache unpublished, and scanning them invents skills that
+no session can see. `claude plugin details mattpocock-skills` prints the shipped inventory and
+the count to check against.
+
+### The inventory
+
+| Skill | Reachable | Used at |
 |---|---|---|
-| `grill-with-docs` | **enabled** | the grilling step inside Stage 4, and the intake conversation upstream of Stage 0; also maintains `CONTEXT.md` |
-| `to-tickets` | **enabled**, template overridden | Stage 2; issue bodies emit stubs, not acceptance criteria |
-| `tdd` | **enabled** | Stages 5–6, invoked by `/opsx:apply` |
-| `code-review` | **enabled** | Stage 7 |
-| `triage` | **enabled** | label state machine for inbound work |
-| `handoff` | **enabled** | context discipline, §6 |
-| `diagnosing-bugs`, `research`, `domain-modeling`, `codebase-design`, `resolving-merge-conflicts` | enabled | narrow, no overlap |
-| `to-spec` | **never invoke** | duplicates `/opsx:propose`; would publish requirements prose to the issue tracker, breaking §1 |
-| `implement` | **never invoke** | duplicates `/opsx:apply`, and its "commit your work to the current branch" step bypasses G7/G8 |
-| `wayfinder` | **never invoke** | multi-session decision tickets; premature at one concurrent Story |
-| `improve-codebase-architecture` | **never invoke** | there is no codebase yet |
-| `prototype`, `wizard`, `teach`, `to-questionnaire`, `wait-what`, `grill-me`, `ask-matt` | disabled | unused; keeps the model-invoked surface small |
+| `grill` (**this repo's own**, `.claude/skills/grill/`) | agent + human | both grills — Stage 1 and inside Stage 4; maintains `CONTEXT.md`. ADR-1009 |
+| `grilling`, `domain-modeling` | agent + human | not invoked directly; `grill` calls both |
+| `mattpocock-skills:tdd` | agent + human | Stages 5–6. **The implementer invokes it** — `/opsx:apply` does not |
+| `mattpocock-skills:code-review` | agent + human | Stage 7, standards axis. Namespace it: a bare `code-review` is Claude Code's built-in, a different tool that can edit |
+| `codebase-design`, `diagnosing-bugs`, `research`, `resolving-merge-conflicts` | agent + human | narrow, no overlap |
+| `grill-with-docs` | **human only** | nothing. Its body is two Skill calls; `grill` makes them and adds the subagent branch it cannot have |
+| `to-tickets` | **human only** | Stage 2. You type it; `orchestrator` writes what you accepted. Its default template emits acceptance criteria — **strip them to a stub** (rule 4). Nothing enforces that yet |
+| `triage` | **human only** | label state machine for inbound work |
+| `handoff` | **human only** | context discipline, §6 |
+| `to-spec` | human only, and **never invoke** | duplicates `/opsx:propose`; would publish requirements prose to the issue tracker, breaking §1 |
+| `implement` | human only, and **never invoke** | duplicates `/opsx:apply`, and its "commit your work to the current branch" step bypasses G7/G8 |
+| `wayfinder` | human only, and **never invoke** | multi-session decision tickets; premature at one concurrent Story |
+| `improve-codebase-architecture` | human only, and **never invoke** | there is no codebase yet |
+| `prototype`, `wizard`, `writing-for-agents` | **agent + human** | unused, but nothing stops an agent invoking one. Convention only, like the kill list |
+| `teach`, `to-questionnaire`, `wait-what`, `grill-me`, `ask-matt`, `setup-matt-pocock-skills` | human only | unused |
 
 ---
 

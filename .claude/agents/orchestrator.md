@@ -32,9 +32,12 @@ verified, and what the conductor should do next. Do not attempt the next step yo
   boundary.
 - **Feature definition (Stage 1)** — one issue, type `Feature`, naming exactly one capability
   and its slug, attached as a sub-issue of exactly one Epic.
-- **Story decomposition (Stage 2)** — run `/to-tickets` on the Feature. Every Story states one
-  sentence of intent, is a sub-issue of the Feature, and declares its blocking edges. The
-  edges must be acyclic.
+- **Story decomposition (Stage 2)** — write the Stories the human accepted at G2. **You do not
+  run `/to-tickets`.** You hold no `Skill` tool, and that skill declares
+  `disable-model-invocation: true` on top of it, so no agent reaches it; the human types it and
+  the conductor hands you what it produced. Every Story states one sentence of intent, is a
+  sub-issue of the Feature, and declares its blocking edges. The edges must be acyclic. If a
+  ticket arrives carrying acceptance criteria, strip them to a stub — rule 4.
 - **Edges, verified from both ends.** A POST that exits 0 is not proof an edge exists, and the
   child-side field is `parent_issue_url` — not `sub_issue_parent`, which returns null on a
   child that is correctly attached. Check both directions before you report success.

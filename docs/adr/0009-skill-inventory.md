@@ -27,8 +27,9 @@ the four skills in `AGENTS.md` as **never invoke**.
 - Updates remain a one-command operation with no upstream tracking burden.
 - The four skills carry `disable-model-invocation: true` in their own frontmatter, so they
   cannot fire on their own; only an explicit invocation by name reaches them. `tdd` and
-  `code-review`, the two we want firing automatically, are the model-invocable ones. The
-  split happens to be exactly right.
+  `code-review`, the two we want firing automatically, are the model-invocable ones. The split
+  covers the kill list, but it is not exactly right: `grill-with-docs` carries the flag too, and
+  the process depends on it. See ADR-1009.
 - Enforcement is therefore documentation plus a mechanical guarantee against accidental
   triggering, which is sufficient. It is not a guarantee against deliberate misuse.
 - Verified from the plugin manifest: it declares 25 skills and **no hooks, no MCP servers and
@@ -40,3 +41,12 @@ the four skills in `AGENTS.md` as **never invoke**.
 **Fork the repo and strip the four skills.** Durable, but creates a permanent manual
 upstream-tracking burden. Rejected once the frontmatter flags made it unnecessary.
 **Vendor a curated subset via `npx skills add`.** Rejected for the same reason.
+
+## Corrections
+
+**2026-09-01.** The last sentence of the second consequence read "The split happens to be exactly
+right." It is corrected to record that `grill-with-docs` also carries the flag, with a pointer to
+ADR-1009. This is not a change of mind: the decision — install whole, do not fork, list four
+skills as never invoke — is untouched, and ADR-1009 wraps the flagged skill rather than forking,
+which is this ADR's rule holding rather than bending. The sentence was a factual claim about the
+plugin's frontmatter that was checked against four skills and generalised to twenty-five.

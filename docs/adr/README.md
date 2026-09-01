@@ -62,3 +62,4 @@ DayByDay's own records start here.
 | [1006](1006-the-question-round.md) | A question the grill cannot settle is relayed by the conductor as a round, not a gate |
 | [1007](1007-g4-signs-a-digest.md) | The G4 marker carries a digest of what was approved; the specs are not merged first |
 | [1008](1008-the-single-change-rule-is-convention.md) | CI check 3 is dropped; one change per PR is convention, and the check numbers keep the gap |
+| [1009](1009-one-grill-skill-wraps-the-flagged-one.md) | One `grill` skill owned by this repo wraps `grill-with-docs`, which no agent can invoke |

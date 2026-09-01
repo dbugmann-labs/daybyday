@@ -1,7 +1,7 @@
 # CONTEXT
 
 The project's shared vocabulary. Agents read this so that spec wording, test names and issue
-titles all use the same words for the same things. Maintained by the `grill-with-docs` skill as
+titles all use the same words for the same things. Maintained by the `grill` skill as
 domain understanding develops — add a term when you catch yourself explaining it twice, one term
 per thing. Product definition began 2026-08-24; the first domain terms were agreed on 2026-08-28
 with `EPIC: Daily commitments` (#1).

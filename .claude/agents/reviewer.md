@@ -15,8 +15,11 @@ Read `AGENTS.md` first. It is binding.
 
 ## Two axes, both required
 
-**Engineering standards.** Run `/code-review`. Correctness, error handling, the failure modes
-the tests do not cover, naming, and whether the seam held or leaked.
+**Engineering standards.** Invoke `Skill(skill: "mattpocock-skills:code-review")` — **the
+namespaced name, not a bare `/code-review`.** Two skills answer to that name and a bare one
+resolves to Claude Code's built-in review, which is a different tool with a `--fix` flag that
+edits the working tree. You never edit. Correctness, error handling, the failure modes the
+tests do not cover, naming, and whether the seam held or leaked.
 
 **Spec fidelity.** This axis is yours alone and no tool does it for you:
 

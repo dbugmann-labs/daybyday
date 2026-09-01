@@ -25,7 +25,16 @@ to running it in Claude Code.
   ```
 
   from the repo root, then restart the session. Diagnose from that file, not from the fact that
-  `.claude/settings.json` lists the plugin — that is the symptom that misleads.
+  `.claude/settings.json` lists the plugin — that is the symptom that misleads. **Fixed
+  2026-08-31** — the record now carries a `daybyday` entry and the skills load. Kept because the
+  failure is silent and this is the only place that says how to spot it. Verify with
+  `claude plugin details mattpocock-skills`, which should report `Skills (25)`.
+- **Skills this repo owns.** `.claude/skills/` holds `grill`, which both grills run through.
+  Project skills load without a session restart — verified 2026-09-01, the file appeared in the
+  live session's skill list on write. Whether a *subagent* sees them is not verified here; the
+  check is in `docs/process.md` §10.
+  Reachability of the *plugin's* skills is a frontmatter flag that a plugin update can move —
+  `docs/process.md` §10 has the one-liner that prints it, and ADR-1009 has why `grill` exists.
 - **OpenSpec commands.** `/opsx:*` are generated into `.claude/commands/opsx/` by
   `openspec update` — do not hand-edit them.
 - **Scratch.** `CLAUDE.local.md` and `.claude/settings.local.json` are gitignored. Anything
