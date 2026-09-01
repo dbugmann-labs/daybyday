@@ -559,12 +559,34 @@ function wrap(text: string, width: number): string[] {
 }
 
 /**
+ * `git worktree list --porcelain` prints a stanza per worktree: a `worktree <path>` line and,
+ * unless it is detached, a `branch refs/heads/<name>` line. Mapping branch to path is what lets
+ * the tree print `cd <path>` for a Story someone has already taken a worktree for, instead of a
+ * checkout git would refuse — a branch checked out elsewhere cannot be checked out here.
+ */
+export function parseWorktrees(porcelain: string): Map<string, string> {
+  const found = new Map<string, string>()
+  let path: string | null = null
+  for (const line of porcelain.split('\n')) {
+    if (line.startsWith('worktree ')) path = line.slice('worktree '.length)
+    else if (line.startsWith('branch refs/heads/') && path !== null) {
+      found.set(line.slice('branch refs/heads/'.length), path)
+    } else if (line === '') path = null
+  }
+  return found
+}
+
+/**
  * Off a story branch there is no single Story to report on, so the question becomes "what is
  * outstanding across the tracker, and which of it is mine?". Derived from issue state and the
  * sub-issue edges alone — one GraphQL request, no per-issue calls — because a session starting
  * on `main` wants the shape of the work, not the detail of one Story.
  */
-export function renderTree(issues: GraphIssue[], branches: ReadonlySet<string> = new Set()): string {
+export function renderTree(
+  issues: GraphIssue[],
+  branches: ReadonlySet<string> = new Set(),
+  worktrees: ReadonlyMap<string, string> = new Map(),
+): string {
   const open = issues.filter((i) => i.state === 'OPEN' && i.type !== null)
   const kids = (n: number) => issues.filter((i) => i.parent === n)
   const openKids = (n: number) => kids(n).filter((i) => i.state === 'OPEN')
@@ -597,15 +619,20 @@ export function renderTree(issues: GraphIssue[], branches: ReadonlySet<string> =
       out.push(`    Feature #${feat.number} — ${feat.title.replace(/^FEAT:\s*/i, '')}  [${state}]`)
       if (stories.length === 0) waiting.push(`decompose Feature #${feat.number} into Stories`)
       for (const s of live) {
-        // The branch is cut at Stage 4, so most open Stories have none yet. Printing
-        // `git checkout` for one of those hands over a command that errors; the branch is
-        // cut from origin/main and its upstream unset, per docs/story-mechanics.md.
+        // Every branch is worked in its own worktree (hard rule 8), so none of these commands
+        // is a `git checkout` in this clone. Three cases: the worktree exists and you walk to
+        // it; the branch exists without one, which is a worktree waiting to be re-attached;
+        // or neither exists, which is the Stage 4 cut. Commands in docs/story-mechanics.md.
         const branch = `story/${s.number}-${s.title}`
+        const dir = `../daybyday-${s.title}`
+        const path = worktrees.get(branch)
         out.push(`      Story #${s.number} — ${s.title}`)
         out.push(
-          branches.has(branch)
-            ? `        git checkout ${branch} && pnpm run status`
-            : `        git fetch origin && git checkout -b ${branch} origin/main && git branch --unset-upstream`,
+          path !== undefined
+            ? `        cd ${path} && pnpm run status`
+            : branches.has(branch)
+              ? `        git worktree add ${dir} ${branch} && cd ${dir} && pnpm install`
+              : `        git fetch origin && git worktree add ${dir} -b ${branch} origin/main && cd ${dir} && git branch --unset-upstream && pnpm install`,
         )
       }
     }
@@ -650,5 +677,10 @@ if (import.meta.filename === process.argv[1]) {
       .split('\n')
       .filter((b) => b !== ''),
   )
-  console.log(asJson ? JSON.stringify({ branch: branch.raw, issues, branches: [...branches] }, null, 2) : renderTree(issues, branches))
+  const worktrees = parseWorktrees(git(['worktree', 'list', '--porcelain']))
+  console.log(
+    asJson
+      ? JSON.stringify({ branch: branch.raw, issues, branches: [...branches], worktrees: [...worktrees] }, null, 2)
+      : renderTree(issues, branches, worktrees),
+  )
 }

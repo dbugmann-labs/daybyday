@@ -4,13 +4,14 @@ The mechanics of a Story from Stage 4 to merge. `AGENTS.md` carries the rules; t
 the keystrokes. **Read it before you touch git on a Story.** Why any of it is shaped this way is
 in `docs/process.md` §5 and §7, and in ADR-1003.
 
-## One agent per working tree
+## One branch, one working tree
 
 **Two agents in one clone share `HEAD`.** A checkout by one moves the other's working tree
 underneath it mid-task, and neither is told — it happened on 2026-08-29, and nothing was lost
-only because both branches happened to point at the same commit. So if a second agent is working
-here, or you are starting a Story while another is in flight, take a worktree instead of a
-branch:
+only because both branches happened to point at the same commit. So every branch is worked in
+its own worktree (hard rule 8): a Story, a chore, an archive branch, a throwaway spike. Not "if
+someone else is here" — you cannot see the other agent, and `git worktree list` showing one
+entry only tells you nobody has *taken* a worktree, which is what you are about to do:
 
 ```bash
 git fetch origin
@@ -20,8 +21,11 @@ git branch --unset-upstream          # <- same trap as `git checkout -b`; do not
 pnpm install                         # a worktree starts with no node_modules
 ```
 
+A chore is the same four commands with `../daybyday-<slug>` and `chore/<slug>`.
+
 Work there, push and open the PR from there, and remove it from the main clone after the merge
-with `git worktree remove ../daybyday-<change-id>`.
+with `git worktree remove ../daybyday-<change-id>`. `pnpm run status` prints the exact command
+for every open Story, so you rarely have to assemble one by hand.
 
 A worktree gets its own `HEAD` and index, which is the point. `.git/config` and tracked files are
 shared, so `gh` still resolves to `dbugmann-labs/daybyday` and `.claude/`'s `deny` rules load;
@@ -35,16 +39,12 @@ tree*, not two Stories racing for one file in `openspec/specs/`, which is decide
 
 ## Cutting the branch
 
-**At Stage 4**, from `origin/main`, once the Story exists — if you are alone in the clone, the
-branch form is fine:
+**At Stage 4**, from `origin/main`, once the Story exists — with `git worktree add -b`, per the
+section above. There is no branch-only form: `git checkout -b` in this clone is rule 8's one
+prohibition, and the worktree costs a directory.
 
-```bash
-git fetch origin && git checkout -b story/<issue#>-<change-id> origin/main
-git branch --unset-upstream          # <- do not skip this
-```
-
-Skipping the unset leaves the branch tracking `origin/main`, so a later bare `git push` targets
-the protected branch and is rejected.
+`git branch --unset-upstream` is not optional. Skipping it leaves the branch tracking
+`origin/main`, so a later bare `git push` targets the protected branch and is rejected.
 
 Commit the change folder as `docs(<capability>): propose <change-id>` — it is documentation
 until G4 — then `feat(<capability>): ...` for implementation. The archive at Stage 8 is the one

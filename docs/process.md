@@ -165,7 +165,7 @@ when you are asking whether you can walk away: `you` means the pipeline stops un
 | 0 | Epic intake | **you** | `orchestrator` / Opus | Epic issue | — |
 | 1 | Feature definition | **you** | the conductor grills via `grill`; `orchestrator` / Opus writes the issue | Feature issue, sub-issue of Epic, plus any new `CONTEXT.md` terms | **G1 (H)** |
 | 2 | Story decomposition | **you** accept; **you** type `to-tickets`, which proposes | `orchestrator` / Opus writes what you accepted | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
-| 4 | Propose | agent writes; **you** answer any question round, and approve | `spec-author` / Opus, via `grill` then `/opsx:propose` | the grill first — `design.md` **Open Questions** filled in, plus any new `CONTEXT.md` terms, plus a `## Questions for you` round if the grill hit something that is yours — then the change folder: proposal, delta specs, design, tasks. Cut the branch or worktree here, commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
+| 4 | Propose | agent writes; **you** answer any question round, and approve | `spec-author` / Opus, via `grill` then `/opsx:propose` | the grill first — `design.md` **Open Questions** filled in, plus any new `CONTEXT.md` terms, plus a `## Questions for you` round if the grill hit something that is yours — then the change folder: proposal, delta specs, design, tasks. Cut the worktree here, commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
 | 5 | Red | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` | one failing acceptance test | A |
 | 6 | Green + next | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` and `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes | A |
 | 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `mattpocock-skills:code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity | **G7 (H)** |
@@ -363,8 +363,9 @@ capacity, not agent wall-clock, is the constraint.
 
 **One agent per working tree**, on evidence: two agents in one clone share `HEAD`, so a checkout
 by one moves the other's working tree underneath it mid-task and neither is told. It happened on
-2026-08-29 and nothing was lost only because both branches pointed at the same commit. Commands
-in `docs/story-mechanics.md`. Note what this does *not* fix: a worktree isolates `HEAD`, the
+2026-08-29 and nothing was lost only because both branches pointed at the same commit. So every
+branch takes a worktree — Story or chore, unconditionally, because "is anyone else working here?"
+cannot be answered from inside a session (hard rule 8). Commands in `docs/story-mechanics.md`. Note what this does *not* fix: a worktree isolates `HEAD`, the
 index and the files, and does nothing about two Stories racing for one file in
 `openspec/specs/`. Separate problems, separate answers.
 

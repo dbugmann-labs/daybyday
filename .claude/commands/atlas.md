@@ -44,10 +44,10 @@ git fetch origin
 git for-each-ref --format='%(refname:short)' refs/heads refs/remotes/origin | grep 'story/<issue#>-'
 ```
 
-**If another agent is working in this repository, take a worktree, not a branch** — commands in
-`docs/story-mechanics.md`. `git worktree list` showing one entry is not proof you are alone;
-ask, or take the worktree anyway, since it costs a directory. Either way
-`git branch --unset-upstream` is not optional.
+**Every branch is worked in its own worktree — never `git checkout -b` here** (hard rule 8,
+commands in `docs/story-mechanics.md`). `git worktree list` showing one entry is not proof you
+are alone, and the worktree costs a directory. `git branch --unset-upstream` is not optional
+either, and a fresh worktree needs `pnpm install` before anything runs.
 
 ## The PR both gates are read through
 
@@ -236,7 +236,7 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
    Present that and **stop at G2**.
 5. On approval, spawn `orchestrator` to write the Stories from the accepted breakdown — issue
    bodies come from `.github/ISSUE_TEMPLATE/story.yml`, never from the skill's template. Then cut
-   the branch or worktree (`docs/story-mechanics.md`), spawn `spec-author`, and **stop at G4**.
+   the worktree (`docs/story-mechanics.md`), spawn `spec-author`, and **stop at G4**.
 
 If Stories are already on the tracker when the human hands you the breakdown, `/to-tickets` ran
 its publish step. Say so and check what it wrote before going on — rule 5. Issues carrying
