@@ -46,7 +46,7 @@ nothing specified what the human is shown at the moment of deciding. Each sessio
 the presentation, which is how a gate quietly becomes a rubber stamp.
 
 The retrospective is the counter-argument and it is a real one: scaffolding to product stands
-at roughly 60:1, and none of the five bespoke merge-time checks has ever blocked a bad merge.
+at roughly 60:1, and none of the four bespoke merge-time checks has ever blocked a bad merge.
 Adding machinery here deserves suspicion.
 
 ## Decision
@@ -140,3 +140,10 @@ worth a second gate convention.
 **Do nothing and keep driving by hand.** Rejected, but it was the honest baseline. It works; it
 costs the scarcest thing in this project, which is the owner's attention, and it degrades
 fastest exactly when sessions are far apart.
+
+## Corrections
+
+- **2026-09-01** — the counter-argument read "five bespoke merge-time checks". Check 3 was
+  dropped by ADR-1008 on 2026-08-31, leaving four: 2, 4, 5 and 6. Not a change of mind — the
+  retrospective finding this sentence records, that none of them had blocked a bad merge, is
+  unchanged, and so is the decision it was weighed against.

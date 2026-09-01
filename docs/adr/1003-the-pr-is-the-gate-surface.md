@@ -34,10 +34,10 @@ rather than a merge, so the PR shows the Story's own commits on top of current `
 nothing else. A conflict landing inside the change folder or `openspec/specs/` is a stop, not a
 merge to resolve: it is §7's spec collision arriving late, and it belongs to the human.
 
-**Draft state is the signal that the Story is unfinished.** Four of the eight merge-time
-checks — 3 single-change, 4 scenario coverage, 5 G4 recorded, 8 archive complete — ask whether
-the Story is *finished*, and are skipped while the PR is a draft. Checks 1, 2, 6 and 7 run from
-the first push. The workflow subscribes to `ready_for_review` so the full list actually runs
+**Draft state is the signal that the Story is unfinished.** Three of the seven merge-time
+checks — 4 scenario coverage, 5 G4 recorded, 8 archive complete — ask whether the Story is
+*finished*, and are skipped while the PR is a draft. Checks 1, 2, 6 and 7 run from the first
+push. The workflow subscribes to `ready_for_review` so the full list actually runs
 when the draft is lifted; it is not one of GitHub's default `pull_request` event types.
 
 `pnpm run status` gained the PR as a fact — whether it exists, whether it is a draft, how many
@@ -63,7 +63,7 @@ there and current.
 - **The rebase can fail, and that is a feature.** A conflict is the earliest honest signal that
   two Stories raced for one capability. Before this, the same collision surfaced at merge time,
   which §7 names as the failure mode to avoid.
-- Rejected: opening the PR non-draft at Stage 4. It would fail four checks on day one and
+- Rejected: opening the PR non-draft at Stage 4. It would fail three checks on day one and
   invite the habit of merging past a red X. Also rejected: opening it only at G7, keeping G4 on
   file paths. That leaves the hardest gate — the one the whole requirement set rests on — with
   the worst reading surface of the two.
@@ -72,3 +72,8 @@ there and current.
 
 - **2026-08-30** — the worktree rule was cited as `AGENTS.md` § *Working in parallel*; it now
   lives in `docs/story-mechanics.md`. The rule is unchanged, only its address.
+- **2026-09-01** — the counts read "four of the eight merge-time checks", listing check 3 among
+  the three skipped on a draft, and "fail four checks on day one". ADR-1008 dropped check 3 on
+  2026-08-31 and the rest kept their numbers, so it is three of seven: 4, 5 and 8. Not a change
+  of mind — which checks ask whether the Story is finished, and the decision that a draft
+  asserts it is not, are both unchanged.

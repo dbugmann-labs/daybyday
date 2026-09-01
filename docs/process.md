@@ -2,15 +2,13 @@
 
 **Status:** in force. Scaffolding signed off 2026-08-24; run end to end by `add-version-command`
 and again by `add-weekday-set-schedule`.
-**Audience:** any agent or human picking up any issue in this repo, with zero prior context
+**Audience:** any agent or human picking up any issue in this repo, with zero prior context.
 **See also:** `AGENTS.md` for the binding summary, `README.md` to get started,
-`docs/retrospective.md` for what this actually cost
+`docs/retrospective.md` for what this actually cost.
 
----
-
-## 0. The whole process in one paragraph
-
-It is in `README.md`, and it is worth being able to say from memory.
+The whole process in one paragraph is in `README.md`, and it is worth being able to say from
+memory. What follows is the reasoning behind it. Section numbers are frozen — other documents
+cite them — which is why this file starts at §1.
 
 ---
 
@@ -30,9 +28,9 @@ twice.
 
 **The rule: the repo owns content, GitHub owns state.** An issue body never contains
 requirements, acceptance criteria, or design — only a one-sentence intent, a link to the change
-folder, and checkboxes for the process gates. If an issue and a spec disagree, the spec wins and
-the issue is wrong. That is what removes double bookkeeping, and it is why `to-tickets`, whose
-default template writes acceptance criteria into issue bodies, is overridden here to emit stubs.
+folder, and gate checkboxes. If an issue and a spec disagree, the spec wins and the issue is
+wrong. That is what removes double bookkeeping, and it is why `to-tickets` is stopped before the
+step that would write acceptance criteria into an issue body (§10).
 
 **Traceability is one-way and write-once.** The Story issue is created at Stage 2 via
 `gh api --method POST .../issues` — not `gh issue create`, which cannot set an issue type —
@@ -45,7 +43,7 @@ the issue type nor the sub-issue edge). `pnpm run status` derives a Story's stag
 branch, the change folder, `openspec validate`, the G4 comment, scenario coverage, the
 `tasks.md` boxes and the pull request, and says whose turn it is. Neither is consumed by any
 check: if a projection disagrees with the change folder or the tracker, the projection is what
-is wrong. See `docs/agents/issue-tracker.md` and ADR-1002.
+is wrong. `docs/agents/issue-tracker.md`, ADR-1002.
 
 > Rejected alternative: a bidirectional sync script. It is the highest-maintenance component in
 > any setup like this and it fails silently. Write-once creation plus a read-only projection
@@ -107,14 +105,11 @@ it is a file.
 buildable in one focused session. If describing it needs "and also", split it. If reviewing it
 would take an afternoon, split it.
 
-**Edge cases.** A Story that touches more than one capability hangs off the Feature it primarily
-advances; the additional capabilities are named in `proposal.md`. A Feature belongs to exactly
-one Epic, so sub-issues stay a tree rather than a graph. Work with no behaviour change —
-tooling, refactors, docs — skips the Feature level entirely and uses the `chore/` escape hatch
-in §5.
-
-Naming conventions for all of it are the table in `AGENTS.md` § *Naming*, which is the one
-place they live.
+**Edge cases.** A Story touching more than one capability hangs off the Feature it primarily
+advances, with the others named in `proposal.md`. A Feature belongs to exactly one Epic, so
+sub-issues stay a tree rather than a graph. Work with no behaviour change — tooling, refactors,
+docs — skips the Feature level entirely and uses the `chore/` escape hatch in §5. Naming
+conventions are the table in `AGENTS.md` § *Naming*, the one place they live.
 
 ---
 
@@ -139,9 +134,9 @@ rhythms behind `EPIC: Daily commitments`, for instance. Detail like that stays p
 change folder exists to receive it, and is deleted when the spec superseding it is archived. An
 entry outliving its Epic is expected; one outliving the spec that covers it is stale.
 
-`/opsx:explore` and `grill` are the tools here; new domain terms land in `CONTEXT.md`
-as they are agreed. The phase ends when there is a body of work you can name in a sentence and a
-human who agrees that is the next thing to build. That is a Stage 0 Epic.
+`/opsx:explore` and `grill` are the tools here, and new domain terms land in `CONTEXT.md` as
+they are agreed. The phase ends when there is a body of work you can name in a sentence and a
+human who agrees it is the next thing to build. That is a Stage 0 Epic.
 
 ### Who drives
 
@@ -149,8 +144,8 @@ human who agrees that is the next thing to build. That is a Stage 0 Epic.
 `pnpm run status`, spawns the agent whose turn it is, stops at every gate that needs a human, and
 holds no work context of its own. No subagent can do this job, because none can ask the human a
 question and gate decisions are authorization — the same reason hard rule 6 keeps configuration
-in the human-facing session. ADR-1002 has the reasoning, including the fact that the orchestrator
-was documented for months as delegating work it was never able to delegate.
+in the human-facing session. ADR-1002, which also records that the orchestrator was documented
+for months as delegating work it was never able to delegate.
 
 The intended rhythm is **four interruptions per Story** — G1, G2, G4, G7 — and unattended running
 between them. `/atlas feature <idea>` starts at the top: it grills the idea, stops at G1, and
@@ -190,10 +185,10 @@ approved, and two ADR titles name Stage 4. Renumbering would falsify a record to
 ### The two grills, and the round that carries what neither can settle
 
 Grilling happens twice, and the two ask different questions. Confusing them is how one of them
-becomes expensive. **Both run through one skill, `grill`**, which lives in `.claude/skills/` and
-is this repository's own. It calls `mattpocock-skills:grilling` and
-`mattpocock-skills:domain-modeling` — the two skills `grill-with-docs` calls — and then splits on
-the one thing the two grills cannot share: whether the session can wait for your answer. ADR-1009.
+becomes expensive. **Both run through one skill, `grill`**, this repository's own, which calls
+`mattpocock-skills:grilling` and `mattpocock-skills:domain-modeling` — the two skills
+`grill-with-docs` calls — and then splits on the one thing the two grills cannot share: whether
+the session can wait for your answer. ADR-1009.
 
 **The Feature grill, at Stage 1, is a conversation and belongs to the conductor:** one capability
 or several, what the slug is, which Epic it hangs under, what it deliberately does not cover, and
@@ -206,20 +201,19 @@ short month does, what an out-of-range number does. Those are invisible until so
 delta, and pulling them up to Stage 1 would mean settling four Stories' worth of edge cases
 before any is built, which is the horizontal slicing §8 exists to prevent.
 
-**The Story grill cannot ask you anything, so it writes instead** — that is the split, and the
-skill's subagent branch is where it is written down. A question `spec-author` may
-not settle — one whose answer would change the delta, and which is a preference you hold rather
-than a fact it could look up — goes into `design.md` under **`## Questions for you`**, numbered,
-each with the answer it recommends and what changes if you answer otherwise. It writes the change
-folder anyway on those answers, so the round reaches you next to the diff it would change.
-`pnpm run status` reports it as Stage 4 owned by you; the conductor presents it in the standard
-form and hands your answers back, and `spec-author` folds them in and deletes the section.
+**The Story grill cannot ask you anything, so it writes instead** — that is the split. A question
+`spec-author` may not settle — one whose answer would change the delta, and which is a preference
+you hold rather than a fact it could look up — goes into `design.md` under
+`## Questions for you`, numbered, each with the answer it recommends and what changes if you
+answer otherwise. It writes the change folder anyway on those answers, so the round reaches you
+next to the diff it would change. `pnpm run status` reports it as Stage 4 owned by you; the
+conductor presents it in the standard form and hands your answers back, and `spec-author` folds
+them in and deletes the section.
 
 **A round is a stop, not a gate:** no marker, no CI check, no G-number, and it happens only when
-there is a real question, so the rhythm stays at four interruptions. Answering a round and
-signing G4 can be one sitting. Nothing enforces that a round was raised when it should have been,
-and nothing could — `status` sees the section, not the question that was never written down.
-ADR-1006.
+there is a real question, so the rhythm stays at four interruptions. Nothing enforces that a
+round was raised when it should have been, and nothing could — `status` sees the section, not the
+question that was never written down. ADR-1006.
 
 ### The gates, precisely
 
@@ -231,31 +225,20 @@ declared and acyclic. You have said yes to the breakdown; `to-tickets`, which yo
 until you do — and then you **stop it**, before its publish step. It proposes the slices;
 `orchestrator` writes the issues. §10 § *Where `to-tickets` stops* has why.
 
-**G4 — Spec approved. This is the gate your whole requirement set rests on.** All of:
-
-- `openspec validate <change-id> --strict` exits 0
-- no `## Questions for you` round is left outstanding in `design.md`
-- the delta uses ADDED / MODIFIED / REMOVED correctly against current specs
-- every requirement has at least one scenario, and the error and edge cases have scenarios, not
-  just the happy path
-- a **draft pull request** is open on the branch and rebased onto current `main`
-- you have read `proposal.md` and the delta, and the Story issue carries a comment beginning
-  `G4: approved <digest>`, where the digest fingerprints the change folder you read
-
-No implementation commit may precede that comment; enforcement is CI check 5 in §7.
+**G4 — Spec approved. This is the gate your whole requirement set rests on.** Its conditions are
+the Definition of Ready in §9. No implementation commit may precede the approval comment;
+enforcement is CI check 5 in §7.
 
 The **decision** must be a human's; the keystrokes need not be. The marker is the exact line
 `G4: approved`, not the bare word, because "approved" occurs constantly in ordinary prose and an
 agent writing *"waiting on the approved comment"* would otherwise forge the gate for any
-grep-based reader.
-
-**And the marker says what it approved.** It carries a digest of every file in the change folder
-except `tasks.md`, and check 5 recomputes it: a folder edited after the gate — a scenario
-softened once it proved awkward to test — no longer merges under an approval that covered
-different text. Re-approval is a second marker comment, and `pnpm run status` stops for a stale
-one exactly as it stops for a missing one. What that costs is a second stop for a typo fixed
-after G4, which is the price of a signature with no exceptions in it. ADR-1007, which also
-records why the change folder is *not* merged to `main` in a pull request of its own first.
+grep-based reader. **And the marker says what it approved:** it carries a digest of every file in
+the change folder except `tasks.md`, and check 5 recomputes it, so a folder edited after the gate
+— a scenario softened once it proved awkward to test — no longer merges under an approval that
+covered different text. Re-approval is a second marker comment, and `pnpm run status` stops for a
+stale one exactly as it stops for a missing one. What that costs is a second stop for a typo
+fixed after G4, which is the price of a signature with no exceptions in it. ADR-1007, which also
+records why the change folder is *not* merged to `main` in a PR of its own first.
 
 **G7 — Review clean.** `code-review` reports no unresolved findings on either axis. The reviewer
 never edits code; it reports and the implementer fixes. The same PR is refreshed against `main`
@@ -291,20 +274,18 @@ consequences, all in ADR-1003:
 ### What a gate stop looks like
 
 Every gate is presented in the same five parts — what is in front of you, the question, what a
-yes commits you to against what a no costs, the recommendation, and the exact reply — so you
-learn one shape rather than five. The form is specified with a worked example for agents in
-`.claude/commands/atlas.md`. This is not decoration: a gate whose presentation is improvised each
-time is a gate that quietly becomes a rubber stamp, and G4 is the one the whole requirement set
-rests on.
+yes commits you to against what a no costs, **the recommendation**, and the exact reply — so you
+learn one shape rather than five. The form, with worked examples, is in
+`.claude/commands/atlas.md`; a gate whose presentation is improvised each time quietly becomes a
+rubber stamp, and G4 is the one the whole requirement set rests on.
 
-**Why the recommendation is part of the form rather than a courtesy.** The gate arrives after an
-agent has spent an hour on the thing being judged. Without a stated lean the cheapest reply is
-always yes, and a gate that is cheapest to approve is a rubber stamp with extra steps. A
-recommendation is also falsifiable in a way a summary is not: the conductor spawned the
+The recommendation is part of the form rather than a courtesy because the gate arrives after an
+agent has spent an hour on the thing being judged, and without a stated lean the cheapest reply
+is always yes. It is also falsifiable in a way a summary is not: the conductor spawned the
 `spec-author` whose delta is on the table, so a recommendation of "changes:" against its own
 subagent's output is the signal that the other recommendations were read rather than relayed. It
-must never be a prediction of what you want, or a reason to answer without opening the PR — it is
-an argument you can reject, not the decision.
+is an argument you can reject, never a prediction of what you want or a reason to answer without
+opening the PR.
 
 ---
 
@@ -322,7 +303,7 @@ need an Epic, and you would abandon the process within a month. Chore branches a
 no behaviour change: tooling, dependency bumps, docs, CI. If you find yourself reaching for
 `chore/` to add behaviour, that is the process telling you to write a Story.
 
-**One PR per Story, open from Stage 4 to merge** — the mechanics are in §4 and
+**One PR per Story, open from Stage 4 to merge** — mechanics in §4 and
 `docs/story-mechanics.md`. A `chore/` branch opens its PR whenever it is ready to be read; there
 are no gates on that lane.
 
@@ -364,12 +345,11 @@ per-agent. The claim that the matrix rather than good intentions keeps agents ho
 the source of truth and nothing else. `AGENTS.md` § *Agent roles and model routing* states the
 three precisely; ADR-0013 records why.
 
-### Context discipline
-
-Stated for agents in `AGENTS.md` § *Context discipline*. The reason it belongs to this section:
+**Context discipline** is stated for agents in `AGENTS.md`. It belongs to this section because
 the write-permission matrix only holds if each session's inputs are durable files rather than
 whatever an earlier conversation happened to contain. Sessions are deliberately short and
-single-purpose, and one that has drifted onto a second Story is a bug.
+single-purpose; one that has drifted onto a second Story is a bug. `/handoff` writes the
+continuation state into the change folder, and only the human can type it (§10).
 
 ---
 
@@ -386,7 +366,7 @@ by one moves the other's working tree underneath it mid-task and neither is told
 2026-08-29 and nothing was lost only because both branches pointed at the same commit. Commands
 in `docs/story-mechanics.md`. Note what this does *not* fix: a worktree isolates `HEAD`, the
 index and the files, and does nothing about two Stories racing for one file in
-`openspec/specs/`. Those are separate problems with separate answers.
+`openspec/specs/`. Separate problems, separate answers.
 
 **The switch-back trigger.** In-PR archiving is safe while concurrent Stories target *different*
 capabilities — different capabilities are different files, so git never sees a conflict. If two
@@ -398,9 +378,8 @@ time: it is decided when the second Story is started, at Stage 2.
 `swift`, which discovers every `Package.swift` and runs `swift test` on it.
 
 **There is no check 3.** The single-change rule was dropped on 2026-08-31 and the remaining
-checks kept their numbers, for the same reason there is no Stage 3: a number here is a name,
-read by the CI step titles and by every document that says "check 4". Renumbering would leave
-those references pointing silently at a different check. ADR-1008.
+checks kept their numbers, for the same reason there is no Stage 3: a number here is a name, read
+by the CI step titles and by every document that says "check 4". ADR-1008.
 
 1. `openspec validate --all --strict --no-interactive`
 2. **Spec-diff containment** — every file changed under `openspec/specs/` must belong to a
@@ -418,10 +397,8 @@ those references pointing silently at a different check. ADR-1008.
    ticked.
 
 Checks 2, 4, 5 and 6 are bespoke scripts in `scripts/` and are the most likely part of this
-system to rot. `docs/retrospective.md` §3 scores whether they earned their keep after the first
-end-to-end Story: none had yet blocked a bad merge, and check 4 justifies itself by pacing the
-red-green loop rather than by ever failing. §6 is where a check that stops earning its keep gets
-recorded — check 3 was cut there.
+system to rot. `docs/retrospective.md` §3 scores whether they earned their keep, and its §6 is
+where a check that stops earning it gets recorded — check 3 was cut there.
 
 **Three of the seven are skipped while the PR is a draft** — 4, 5 and 8, the ones that ask
 whether the Story is finished. The PR opens at Stage 4, before any code exists, so on that day
@@ -440,8 +417,8 @@ finished.
 
 **What check 5 can and cannot prove.** Agents act through the repository owner's token, so no
 check can prove a human rather than an agent wrote a comment. Check 5 proves the decision was
-*recorded*, and — since ADR-1007 — that it was recorded against the text that would merge. The
-gate's integrity still rests on agents never originating the marker: that half is unforgeable by
+*recorded*, and — since ADR-1007 — recorded against the text that would merge. The gate's
+integrity still rests on agents never originating the marker: that half is unforgeable by
 accident, not by intent. ADR-0014, ADR-1007.
 
 > **What check 2 gives up.** The stricter form — "a story branch may never touch
@@ -451,10 +428,10 @@ accident, not by intent. ADR-0014, ADR-1007.
 > `/opsx:archive` would have produced. Accepted deliberately; ADR-0004.
 
 **TDD enforcement, honestly.** Checks 4 and 5 prove tests exist, are named after scenarios, and
-pass. They do *not* prove a test was red before the implementation was written. Nothing short of
+pass. They do *not* prove a test was red before the implementation was written — nothing short of
 commit-order forensics does, and that is defeated by one rebase. Red-before-green is therefore a
-**documented discipline plus a PR checkbox you tick**, and the `tdd` skill's own loop rules. A
-deliberate weakening of the requirement, recorded in ADR-0010.
+documented discipline plus a PR checkbox you tick, and the `tdd` skill's own loop rules. A
+deliberate weakening, recorded in ADR-0010.
 
 ---
 
@@ -471,11 +448,11 @@ The seam is agreed *before* any test is written, per the `tdd` skill — the few
 better, and existing seams beat new ones. The seam for a Story is named in its `design.md`.
 
 **The tension this resolves:** a settled OpenSpec spec is, by construction, a complete set of
-behaviours imagined before any code — which is exactly what the `tdd` skill calls horizontal
-slicing and names an anti-pattern. The resolution is consumption order. The spec is written up
-front; the *tests are not*. Each red-green cycle picks up one not-yet-satisfied scenario, writes
-that one test, makes it pass, and moves on. The coverage lint only runs at PR time, when the
-change is finished — never per-commit — so it can never push you into writing tests in bulk.
+behaviours imagined before any code — exactly what the `tdd` skill calls horizontal slicing and
+names an anti-pattern. The resolution is consumption order. The spec is written up front; the
+*tests are not*. Each red-green cycle picks up one not-yet-satisfied scenario, writes that one
+test, makes it pass, and moves on. The coverage lint only runs at PR time, when the change is
+finished — never per-commit — so it can never push you into writing tests in bulk.
 
 ---
 
@@ -488,9 +465,11 @@ change is finished — never per-commit — so it can never push you into writin
 - [ ] Every blocking Story closed
 - [ ] No open questions left by the grill, and no `## Questions for you` round outstanding
 - [ ] Change folder exists; `openspec validate <change-id> --strict` exits 0
+- [ ] The delta uses ADDED / MODIFIED / REMOVED correctly against current specs, and every
+      requirement has scenarios covering its error and edge cases, not just the happy path
 - [ ] Seam(s) named in `design.md`
 - [ ] Draft PR open on the branch, rebased onto current `main`
-- [ ] Human `G4: approved <digest>` comment on the issue
+- [ ] Human `G4: approved <digest>` comment on the issue, signing the folder as it now stands
 
 ### DoD — a Story is finished
 
@@ -518,16 +497,14 @@ than a checkbox precisely so the two cannot be confused.
 The skills plugin is installed whole and **not** pruned. Claude Code has no per-skill disable
 mechanism, deleting directories from the installed copy is reverted by `claude plugin update`,
 and every skill on the kill list already declares `disable-model-invocation: true` — so nothing
-can invoke one accidentally. "Never invoke" below means exactly that, enforced by `AGENTS.md`.
-No fork, no vendoring. ADR-0009.
-
-**Three columns, and only one of them is a fact about this repo.** *Reachable* is read out of
-the skill's own frontmatter and changes when the plugin updates; *Used at* is ours.
+can invoke one accidentally. "Never invoke" means exactly that, enforced by `AGENTS.md`. No fork,
+no vendoring. ADR-0009.
 
 ### Reachability is machine-readable — check it, do not remember it
 
-Nothing in CI checks this table, and four documented commands in this repo's history were wrong
-because someone wrote them from memory (`docs/retrospective.md` §5). Regenerate it:
+Whether a skill is reachable is read out of its own frontmatter and changes when the plugin
+updates. Nothing in CI checks it, and four documented commands in this repo's history were wrong
+because someone wrote them from memory (`docs/retrospective.md` §5). Regenerate the picture:
 
 ```bash
 P=$(node -e 'const p=require(require("os").homedir()+"/.claude/plugins/installed_plugins.json");
@@ -539,8 +516,12 @@ for f in $(find "$P/skills/engineering" "$P/skills/productivity" -name SKILL.md 
 done
 ```
 
-Anything this document tells an **agent** to invoke must print `invocable`. Anything it tells
-**you** to type must print `HUMAN-ONLY`, or the step is describing a keystroke nobody needs.
+Anything this document tells an **agent** to invoke must print `invocable`; anything it tells
+**you** to type must print `HUMAN-ONLY`, or the step describes a keystroke nobody needs. It
+prints 25 lines. Only `engineering/` and `productivity/` are searched because only those ship —
+`misc/` and `in-progress/` sit in the cache unpublished, and scanning them invents skills no
+session can see. `claude plugin details mattpocock-skills` prints the shipped count to check
+against.
 
 A flagged skill is refused **by the tool, by name** — `cannot be used with Skill tool due to
 disable-model-invocation`, observed 2026-09-01 — not merely left out of your roster. `Unknown
@@ -558,11 +539,6 @@ flag and load without a restart. Whether a subagent can see one is proved by spa
 ```
 Invoke the Skill tool for `grill`, report the first line it returns, then stop. Write nothing.
 ```
-
-It prints 25 lines. Only `engineering/` and `productivity/` are searched because only those ship
-— `misc/` and `in-progress/` sit in the cache unpublished, and scanning them invents skills that
-no session can see. `claude plugin details mattpocock-skills` prints the shipped inventory and
-the count to check against.
 
 ### Where `to-tickets` stops
 
@@ -582,7 +558,6 @@ Stories. **The template is not overridden and cannot be** — it is inline in th
 `SKILL.md`, and the only lever this repo has over a skill is prose it may or may not honour,
 which is exactly the guardrail ADR-0013 says not to assume exists. Stopping before the step is
 the enforcement, and it is yours: you are the one typing.
-
 `docs/agents/issue-tracker.md` § *What goes in an issue body* is the fallback if it publishes
 anyway.
 
@@ -593,17 +568,14 @@ anyway.
 | `grill` (**this repo's own**, `.claude/skills/grill/`) | agent + human | both grills — Stage 1 and inside Stage 4; maintains `CONTEXT.md`. ADR-1009 |
 | `grilling`, `domain-modeling` | agent + human | not invoked directly; `grill` calls both |
 | `mattpocock-skills:tdd` | agent + human | Stages 5–6. **The implementer invokes it** — `/opsx:apply` does not |
-| `mattpocock-skills:code-review` | agent + human | Stage 7, standards axis. Namespace it: a bare `code-review` is Claude Code's built-in, a different tool that can edit |
+| `mattpocock-skills:code-review` | agent + human | Stage 7, standards axis. Prefix it: a bare `code-review` is Claude Code's built-in, a different tool that can edit |
 | `codebase-design`, `diagnosing-bugs`, `research`, `resolving-merge-conflicts` | agent + human | narrow, no overlap |
 | `grill-with-docs` | **human only** | nothing. Its body is two Skill calls; `grill` makes them and adds the subagent branch it cannot have |
-| `to-tickets` | **human only** | Stage 2, **steps 1–4 only**. You type it, stop it at the breakdown quiz, and `orchestrator` writes the issues. Letting it reach step 5 publishes acceptance criteria and a `ready-for-agent` label straight to GitHub — see below |
+| `to-tickets` | **human only** | Stage 2, **steps 1–4 only**. You type it, stop it at the breakdown quiz, and `orchestrator` writes the issues — see above |
 | `triage` | **human only** | label state machine for inbound work |
 | `handoff` | **human only** | context discipline, §6 |
-| `to-spec` | human only, and **never invoke** | duplicates `/opsx:propose`; would publish requirements prose to the issue tracker, breaking §1 |
-| `implement` | human only, and **never invoke** | duplicates `/opsx:apply`, and its "commit your work to the current branch" step bypasses G7/G8 |
-| `wayfinder` | human only, and **never invoke** | multi-session decision tickets; premature at one concurrent Story |
-| `improve-codebase-architecture` | human only, and **never invoke** | there is no codebase yet |
-| `prototype`, `wizard`, `writing-for-agents` | **agent + human** | unused, but nothing stops an agent invoking one. Convention only, like the kill list |
+| `to-spec`, `implement`, `wayfinder`, `improve-codebase-architecture` | human only, and **never invoke** | `to-spec` duplicates `/opsx:propose` and would publish requirements to the tracker (§1); `implement` duplicates `/opsx:apply` and commits past G7/G8; `wayfinder` is premature at one concurrent Story; there is no codebase for `improve-codebase-architecture` yet |
+| `prototype`, `wizard`, `writing-for-agents` | agent + human | unused, but nothing stops an agent invoking one. Convention only, like the kill list |
 | `teach`, `to-questionnaire`, `wait-what`, `grill-me`, `ask-matt`, `setup-matt-pocock-skills` | human only | unused |
 
 ---
@@ -630,36 +602,32 @@ needs no explanation, and decisions you can still reconstruct in a year. That is
 
 **A Story smaller than roughly two hours of work must not go through the full pipeline.** Batch
 it into a larger change, or route it through `chore/`. The single fastest way to make this
-apparatus feel absurd is to run a five-line fix through ten stages.
-
-*One exception:* a Story whose purpose is to exercise the pipeline itself — a scaffolding dry
-run, or a rehearsal after the process changes materially. There the trivial size is the point.
-Say so in the Story's intent; absent that sentence, this rule stands and a cold agent should push
-back on the assignment rather than proceed.
+apparatus feel absurd is to run a five-line fix through ten stages. *One exception:* a Story
+whose purpose is to exercise the pipeline itself — a scaffolding dry run, or a rehearsal after
+the process changes materially. Say so in the Story's intent; absent that sentence, this rule
+stands and a cold agent should push back on the assignment rather than proceed.
 
 ### If it hurts, cut in this order
 
 1. **Fold Stage 7 into Stage 8** — review as a PR step rather than a separate agent pass.
 2. **Drop the Epic level** — keep Feature → Story. Epics are the layer with no disk anchor and
    therefore the first fiction to appear.
-The check entry that used to close this list — *drop CI checks 3 and 4* — is spent. Check 3 was
-dropped on 2026-08-31; check 4 was taken off the list by `docs/retrospective.md` §6, which found
-it earns its keep by pacing the red-green loop. Spec-diff containment (check 2) was never on it.
+
+The entry that used to close this list — *drop CI checks 3 and 4* — is spent: check 3 was dropped
+on 2026-08-31, and check 4 was taken off the list by `docs/retrospective.md` §6, which found it
+earns its keep by pacing the red-green loop. Spec-diff containment (check 2) was never on it.
 
 What you should not cut, in any version: **G4** and **CI check 2**. Those two are the process;
 everything else is scaffolding around them.
 
-**Three cuts have already been taken.** Before we started: the archive step was to be a second
-PR on `main` landing after the story PR merged — the airtight option, and what OpenSpec
-recommends for teams — cut because it doubles the PR count to defend against a collision that
-cannot occur at one concurrent Story. §7 records the trigger for putting it back. Since:
-**Stage 3, the grill**, on 2026-08-30, which had already happened in practice — change folders
-were being written in one pass, and the stage table was describing a session nobody ran. The
-grill survives as the first thing Stage 4 does; what was retired is the claim that it is a
-stage (ADR-1005). And **CI check 3, the single-change rule**, on 2026-08-31, after it blocked a
-correct PR: it defends the same collision the archive cut was weighed against, and it has no
-branch name on which a spec repair can honestly land. One change per PR is now convention
-caught at review (ADR-1008).
+**Three cuts have already been taken.** Before we started: the archive step was to be a second PR
+on `main` landing after the story PR merged — the airtight option, and what OpenSpec recommends
+for teams — cut because it doubles the PR count to defend against a collision that cannot occur
+at one concurrent Story; §7 records the trigger for putting it back. Since: **Stage 3, the
+grill**, on 2026-08-30, which had already happened in practice, the stage table describing a
+session nobody ran (ADR-1005). And **CI check 3, the single-change rule**, on 2026-08-31, after
+it blocked a correct PR: it defends the same collision the archive cut was weighed against, and
+there was no branch name on which a spec repair could honestly land (ADR-1008).
 
 `docs/retrospective.md` §6 scores this list against the first end-to-end Story: the order
 changed, the two never-cut items did not. Read it before acting on the list above.
