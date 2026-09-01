@@ -169,15 +169,25 @@ fresh one.
 
 ## Skills
 
-**Use, and any agent holding `Skill` may invoke:** `/atlas` (the conductor — start here),
-`/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`, `tdd`, `code-review`,
-`diagnosing-bugs`, `research`.
+**The conductor's, and no one else's:** `/atlas`. Every worker holds `Skill` and could
+technically fire it, so this one is convention rather than a flag — a subagent that invokes
+`/atlas` has started conducting, which ADR-1002 forbids because it cannot ask a question.
+
+**Use, and any agent holding `Skill` may invoke:** `grill` (this repo's own — both grills run
+through it), `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`,
+`mattpocock-skills:tdd`, `mattpocock-skills:code-review`, `diagnosing-bugs`, `research`.
+
+**Namespace `tdd` and `code-review`.** A bare `code-review` resolves to Claude Code's built-in
+review, not the two-axis one Stage 7 means — and the built-in carries a `--fix` flag that edits,
+which is the one thing `reviewer` must never do. Write `mattpocock-skills:` in front of both.
 
 **Use, but only the human can type:** `grill-with-docs`, `to-tickets`, `triage`, `handoff`.
 All four declare `disable-model-invocation: true`, so **no agent can fire them — the conductor
 included.** Wherever this process says to run one, the step is *ask the human to type it* and
 then act on what it produces. Two places that bites: `/to-tickets` at Stage 2 decomposition
 (`.claude/commands/atlas.md` § *Intake*), and `/handoff` in § *Context discipline* above.
+`grill-with-docs` is on this list but nothing routes to it any more: the process needed it at a
+step where nobody could type it, so `grill` wraps the two skills it calls. ADR-1009.
 
 **Never invoke:** `to-spec` (duplicates `/opsx:propose` and would publish requirements to the
 tracker, breaking rule 4), `implement` (duplicates `/opsx:apply`, and its commit step bypasses
@@ -187,7 +197,8 @@ not naming them is convention for every agent here, you included.
 
 **The flag is the truth, not this table.** Read `disable-model-invocation` out of the skill's own
 `SKILL.md` frontmatter before assuming anything here is invocable; a plugin upgrade moves it and
-nothing in this repo checks.
+nothing in this repo checks. The one-liner that prints the whole picture is in
+`docs/process.md` §10 — run it rather than trusting either table.
 
 Where a skill asks about this repo's conventions: the tracker is GitHub Issues on
 `dbugmann-labs/daybyday` via `gh` (`docs/agents/issue-tracker.md`), triage uses the five

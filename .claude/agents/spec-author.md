@@ -26,9 +26,12 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
 1. **Grill, then propose — in one pass.** Grilling is not a session of its own and there is
    no stage for it; it is the first thing you do inside Stage 4. Interrogate the Story against
    `CONTEXT.md`, the existing capability specs and the Feature it hangs off: what would change
-   the work if it were wrong, and what does this Story deliberately not cover? `grill-with-docs`
-   is there if you want it, and it is also what maintains `CONTEXT.md`. Three things must come
-   out of it, and none of them is optional:
+   the work if it were wrong, and what does this Story deliberately not cover? **Invoke the
+   `grill` skill** — `Skill(skill: "grill")`. It is this repository's own, it carries the
+   subagent branch you need, and it is what maintains `CONTEXT.md`. Do not reach for
+   `grill-with-docs`: it declares `disable-model-invocation: true`, so you cannot invoke it and
+   you cannot ask the human to type it either. ADR-1009. Three things must come out of the
+   grill, and none of them is optional:
    - `## Open Questions` in `design.md` is **filled in**. "None." is a valid and required
      answer — say why, do not leave the section empty. A question you leave open becomes a
      scenario someone invents later.

@@ -209,14 +209,16 @@ their own — say it, rather than handing over an undifferentiated list.
 Product definition sits upstream of Stage 0 and is a conversation, not a pipeline
 (`docs/process.md` §4). Handle it in this order and stop where it says stop:
 
-1. **Grill the idea yourself** — this is the *Feature* grill, and it is yours because it is a
-   conversation. Against `CONTEXT.md`, `docs/parking-lot.md` and the existing capability specs:
+1. **Grill the idea yourself, with the `grill` skill** — `Skill(skill: "grill")`. This is the
+   *Feature* grill, and it is yours because it is a conversation: you are the only session that
+   can ask a round and wait for the answer, and the skill's conductor branch is written for
+   exactly that. Against `CONTEXT.md`, `docs/parking-lot.md` and the existing capability specs:
    one capability or several? What is the slug? Which Epic does it belong under? What does it
    *not* cover? Ask the questions whose answers would change the work; do not ask four when one
    decides it.
 
-   It is not the grill `spec-author` runs at Stage 4, and the difference is what keeps both
-   cheap. This one settles the capability's boundary and vocabulary — the questions that would
+   It is the same skill `spec-author` runs at Stage 4 — one grill, two branches — but not the
+   same grill, and the difference is what keeps both cheap. This one settles the capability's boundary and vocabulary — the questions that would
    otherwise be re-answered once per Story. The Stage 4 one settles one Story's edges, invisible
    until someone writes the delta; pulling those up to here means deciding four Stories' worth of
    edge cases before any is built, which is the horizontal slicing `docs/process.md` §8 exists to

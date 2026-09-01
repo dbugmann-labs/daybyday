@@ -27,7 +27,10 @@ it goes back to `spec-author`. Not `openspec/specs/`, which is denied outright.
 
 ## The loop
 
-Drive with `/opsx:apply`, which drives `/tdd`. One scenario per cycle:
+Drive with two skills, and **invoke both yourself**: `Skill(skill: "mattpocock-skills:tdd")`
+for the red-green loop, and `/opsx:apply` for the change's task list. `/opsx:apply` does **not**
+invoke `tdd` — it is an OpenSpec workflow and says nothing about tests, so if you do not call
+`tdd` the red step simply never happens. One scenario per cycle:
 
 1. Take the **next unsatisfied** `#### Scenario:` from the delta. One. Not all of them.
 2. Write exactly one acceptance test at the seam named in `design.md`, its title **identical**
@@ -40,7 +43,7 @@ Drive with `/opsx:apply`, which drives `/tdd`. One scenario per cycle:
 
 Never transcribe every scenario into tests up front. Rule 3. A settled spec is a complete set
 of behaviours imagined before any code, and consuming it all at once is horizontal slicing —
-the thing `/tdd` exists to prevent.
+the thing the `tdd` skill exists to prevent.
 
 ## Before you hand back
 
