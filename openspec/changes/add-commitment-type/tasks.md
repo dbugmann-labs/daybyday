@@ -1,16 +1,16 @@
 ## 1. The public surface
 
-- [ ] 1.1 Add `Sources/DayByDayKit/Commitment.swift` declaring `public struct Commitment: Hashable,
+- [x] 1.1 Add `Sources/DayByDayKit/Commitment.swift` declaring `public struct Commitment: Hashable,
   Sendable` exactly as `design.md` § *The seam* gives it — `public let name: String`, internal
   `schedule: Schedule` and `keptFrom: CalendarDate`, `public init?(name:schedule:keptFrom:)` and
   `public func isDue(on:) -> Bool`, with both bodies `fatalError("not implemented")`. Nothing else
   public. Verify with `cd src/DayByDayKit && swift build` exiting 0.
-- [ ] 1.2 Confirm nothing else in the package moved: `Schedule.swift`, `CalendarDate.swift`,
+- [x] 1.2 Confirm nothing else in the package moved: `Schedule.swift`, `CalendarDate.swift`,
   `DayOfMonth.swift`, `DayInterval.swift`, `Weekday.swift` and `Package.swift` are untouched in
   `git diff --stat`, and `cd src/DayByDayKit && swift test` still reports the forty-five tests from
   #8, #9 and #10 passing. `CalendarDate` in particular gains no member: `design.md` measures that the
   floor is answered by the internal `days(until:)` it already has, whose sign is the whole comparison.
-- [ ] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
+- [x] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
   `0/19 covered` for this change and names `"a commitment reads back the name it was given"` as next.
 
 ## 2. Scenarios — one acceptance test each, in delta order
@@ -28,14 +28,19 @@ this file**, the way #9's and #10's `tasks.md` did; a prediction here is not evi
 likely to run red on their own are 2.6 and 2.7, if 2.1 was made green without the name guard, and
 2.15 through 2.19, if it was made green without the floor.
 
-- [ ] 2.1 `a commitment reads back the name it was given`
-- [ ] 2.2 `two commitments alike in name, schedule and kept-from day are the same commitment`
-- [ ] 2.3 `two commitments differing only in name are different commitments`
-- [ ] 2.4 `two commitments differing only in schedule are different commitments` — with 2.5, the only
+- [x] 2.1 `a commitment reads back the name it was given` — ran red: `fatalError` in the
+  initializer.
+- [x] 2.2 `two commitments alike in name, schedule and kept-from day are the same commitment` —
+  ran green immediately: synthesised `Hashable`/`Equatable` over the stored properties already
+  answers it, so this pins rather than drives.
+- [x] 2.3 `two commitments differing only in name are different commitments` — ran green
+  immediately (pins synthesised `Equatable`).
+- [x] 2.4 `two commitments differing only in schedule are different commitments` — with 2.5, the only
   observable proof that what was handed in is what is kept. Neither can be written by reading the
   property back: both are internal, and the test target imports `DayByDayKit` plainly, without
-  `@testable`.
-- [ ] 2.5 `two commitments differing only in the day they are kept from are different commitments`
+  `@testable`. Ran green immediately.
+- [x] 2.5 `two commitments differing only in the day they are kept from are different commitments`
+  — ran green immediately.
 - [ ] 2.6 `an empty name is not a commitment`
 - [ ] 2.7 `a name of only whitespace is not a commitment` — one test, two assertions: three spaces,
   and a tab followed by a newline. `design.md` measures that
