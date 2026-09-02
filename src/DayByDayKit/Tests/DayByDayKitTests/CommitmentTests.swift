@@ -54,3 +54,47 @@ func twoCommitmentsDifferingOnlyInTheDayTheyAreKeptFromAreDifferentCommitments()
 
     #expect(keptFromFirst != keptFromSecond)
 }
+
+@Test("an empty name is not a commitment")
+func anEmptyNameIsNotACommitment() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+
+    let commitment = Commitment(name: "", schedule: schedule, keptFrom: keptFrom)
+
+    #expect(commitment == nil)
+}
+
+@Test("a name of only whitespace is not a commitment")
+func aNameOfOnlyWhitespaceIsNotACommitment() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+
+    let threeSpaces = Commitment(name: "   ", schedule: schedule, keptFrom: keptFrom)
+    let tabThenNewline = Commitment(name: "\t\n", schedule: schedule, keptFrom: keptFrom)
+
+    #expect(threeSpaces == nil)
+    #expect(tabThenNewline == nil)
+}
+
+@Test("a name with a space at each end is stored exactly as given")
+func aNameWithASpaceAtEachEndIsStoredExactlyAsGiven() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+
+    let padded = Commitment(name: " Gym ", schedule: schedule, keptFrom: keptFrom)
+    let unpadded = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)
+
+    #expect(padded?.name == " Gym ")
+    #expect(padded != unpadded)
+}
+
+@Test("a name of a single emoji is a commitment")
+func aNameOfASingleEmojiIsACommitment() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+
+    let commitment = Commitment(name: "🏋️", schedule: schedule, keptFrom: keptFrom)
+
+    #expect(commitment?.name == "🏋️")
+}

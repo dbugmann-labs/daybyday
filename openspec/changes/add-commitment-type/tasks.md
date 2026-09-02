@@ -41,16 +41,19 @@ likely to run red on their own are 2.6 and 2.7, if 2.1 was made green without th
   `@testable`. Ran green immediately.
 - [x] 2.5 `two commitments differing only in the day they are kept from are different commitments`
   — ran green immediately.
-- [ ] 2.6 `an empty name is not a commitment`
-- [ ] 2.7 `a name of only whitespace is not a commitment` — one test, two assertions: three spaces,
+- [x] 2.6 `an empty name is not a commitment` — ran red: no blank-name guard existed yet. Made
+  green with `guard !name.allSatisfy(\.isWhitespace) else { return nil }`.
+- [x] 2.7 `a name of only whitespace is not a commitment` — one test, two assertions: three spaces,
   and a tab followed by a newline. `design.md` measures that
   `guard !name.allSatisfy(\.isWhitespace)` covers 2.6 and this one together; an implementation that
-  instead checks `name.isEmpty` passes 2.6 and fails here.
-- [ ] 2.8 `a name with a space at each end is stored exactly as given` — the scenario that pins *no
+  instead checks `name.isEmpty` passes 2.6 and fails here. Ran green immediately, confirming the
+  guard already covers both.
+- [x] 2.8 `a name with a space at each end is stored exactly as given` — the scenario that pins *no
   trimming*, which is the owner's answer to question 2. It also asserts the padded name is a
-  different commitment from the unpadded one, the observable half of the same decision.
-- [ ] 2.9 `a name of a single emoji is a commitment` — one grapheme cluster, the shape a length or
-  character-class check gets wrong.
+  different commitment from the unpadded one, the observable half of the same decision. Ran green
+  immediately — no trimming logic was ever added.
+- [x] 2.9 `a name of a single emoji is a commitment` — one grapheme cluster, the shape a length or
+  character-class check gets wrong. Ran green immediately.
 - [ ] 2.10 `a commitment on a weekday-set schedule is due on a listed weekday and not on another`
 - [ ] 2.11 `a commitment on a day-of-month schedule is due on the last day of a month too short for
   its day` — deliberately the short-month clamp rather than a plain hit, so it fails if the
