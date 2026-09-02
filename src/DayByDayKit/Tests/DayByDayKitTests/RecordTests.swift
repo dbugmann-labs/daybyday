@@ -35,6 +35,7 @@ func aCommitmentTakesNoTickOnADateBeforeTheDayItIsKeptFrom() {
     let beforeFloor = Tick(commitment, on: monday)
     let onFloor = Tick(commitment, on: keptFrom)
 
+    #expect(schedule.isDue(on: monday))
     #expect(beforeFloor == nil)
     #expect(onFloor != nil)
 }
@@ -81,6 +82,7 @@ func anIntervalLandingBeforeTheDayItIsKeptFromTakesNoTickAndTheFirstLandingAfter
     let beforeFloor = CalendarDate(year: 2026, month: 8, day: 28)!
     let afterFloor = CalendarDate(year: 2026, month: 9, day: 3)!
 
+    #expect(schedule.isDue(on: beforeFloor))
     #expect(Tick(commitment, on: beforeFloor) == nil)
     #expect(Tick(commitment, on: afterFloor) != nil)
 }
