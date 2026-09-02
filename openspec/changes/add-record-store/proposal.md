@@ -14,10 +14,10 @@ one thing in this repository that will outlive every rewrite around it: the form
 what a restore to a new phone (B-009), a commitment identity (B-014) and a second kind of record
 (B-001..B-004) will each have to read first.
 
-One question in it is a preference rather than a fact and goes to the owner as a question round:
-where the record is kept — a file, SwiftData or GRDB. The folder is written on the recommended
-answer, a file, and `design.md` § *Questions for you* says exactly what changes if he answers
-otherwise.
+One question in it was a preference rather than a fact and went to the owner as a question round:
+where the record is kept — a file, SwiftData or GRDB. He answered on 2026-09-02, **a file**, which
+is what the folder was written on, so nothing in it moved. It is recorded settled in `design.md`
+§ *Open Questions*.
 
 ## What Changes
 
@@ -38,7 +38,8 @@ otherwise.
   and overwrite on the next tap — destroys the only copy of the record to keep the app usable.
 - **Decides where the record is kept**, in ADR-1017: one JSON file, versioned, written whole and
   atomically on every change, at a place the app names. SwiftData and GRDB are declined with
-  reasons and named as the reversal path. This is the question round's one question.
+  reasons and named as the reversal path. This was the question round's one question, and the
+  owner settled it on 2026-09-02 as recommended.
 - Adds one public type and one error to `DayByDayKit`, `RecordStore` and `RecordStoreError`, in
   the same module as the engine. `Tick`, `History`, `Commitment`, `Schedule` and `CalendarDate` do
   not change and are not widened: the store reads their `internal` members, so the read-back #55
@@ -79,9 +80,9 @@ and its durability in different files for no reader's benefit.
   one per scenario, taken one at a time, each on a fresh URL under the temporary directory. The
   existing ninety-seven are untouched and must stay green. This is the first test file in the
   repository that touches a disk; the macOS CI job already runs `swift test` and needs nothing new.
-- **ADR:** `docs/adr/1017-records-are-kept-in-one-file.md`, proposed with this folder and accepted
-  by the same G4 if question 1 goes as recommended — rewritten before G4, not superseded, if not.
-  Numbered 1017 because 1015 and 1016 were taken on `main` while this folder was being written.
+- **ADR:** `docs/adr/1017-records-are-kept-in-one-file.md`, proposed with this folder; the question
+  round settled on its answer on 2026-09-02, so it is accepted by this Story's G4 rather than
+  rewritten. Numbered 1017 because 1015 and 1016 were taken on `main` while this folder was written.
   `docs/adr/README.md` gains its row.
 - **`CONTEXT.md`:** one term added by this grill, **Store**.
 - **`docs/open-questions.md`:** three entries are affected, and none is this change's to write

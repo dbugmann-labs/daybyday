@@ -126,9 +126,10 @@ a set of pairs whose whole value fits in a few kilobytes for a decade of one per
 easiest possible thing to read, migrate, back up and debug. SwiftData and GRDB are both answers to
 questions this Story does not ask: partial loads, queries, relationships, concurrency.
 
-This is the one question in the grill that is a preference the owner holds — ADR-1001 named the
-choice as his to make with a real requirement in hand — so it is also **question 1 under
-`## Questions for you`**, and the whole folder is written on the recommended answer.
+This is the one question in the grill that was a preference the owner holds rather than a fact —
+ADR-1001 named the choice as his to make with a real requirement in hand — so it went to him as a
+question round, and **he answered it on 2026-09-02: a file.** The folder was written on that
+recommendation and stands unchanged; ADR-1017 is the decision, accepted by this Story's G4.
 
 ### The form on disk
 
@@ -291,14 +292,16 @@ the entries for its owner.
 
 ## Open Questions
 
-None. One question is a preference rather than a fact and is put to the owner under
-`## Questions for you`; the folder is written on its recommended answer, and it moves here, marked
-settled, when the answer comes back. Everything else the grill turned up was a fact, and is closed
-here or in the delta:
+None. One question was a preference rather than a fact and went to the owner as a question round;
+he answered it on 2026-09-02 and it is recorded settled below. Everything else the grill turned up
+was a fact, and is closed here or in the delta:
 
-- *Where the record is kept — SwiftData, GRDB or a file?* Recommended a file; **question 1 below**,
-  because ADR-1001 named it as the owner's to decide with a requirement in hand. ADR-1017 carries
-  the argument.
+- *Where the record is kept — SwiftData, GRDB or a file?* **Settled 2026-09-02 by the owner: a
+  file** — the recommended answer, so nothing in the delta moved. ADR-1001 had named this his to
+  decide once a Story had the requirement in hand, and this is that Story; ADR-1017 carries the
+  argument and the trigger that would reverse it. The three refusal scenarios keep their file-shaped
+  wording, `Package.swift` gains neither a `platforms:` line nor a dependency, and SwiftData and
+  GRDB stay one import away.
 - *Is a tick kept when it is added, or when the app is closed?* When it is added. iOS can kill the
   app without warning, and the product's promise is the record; the first requirement says so and
   the write-through is § *Written whole, before the call returns*.
@@ -333,25 +336,3 @@ here or in the delta:
   *after* the write. Last writer wins and nothing here pretends otherwise.
 - *Does restore to a new phone (B-009) need anything now?* Only that the store is one file at one
   place, which it is. Everything else is B-009's.
-
-## Questions for you
-
-1. **Where the record is kept.** ADR-1001 left this to the first Story that persists a tick: it named
-   SwiftData as "adequate for a data set this small" and GRDB as "the escape hatch". Having the
-   requirement in hand, I recommend neither: **one JSON file, written whole and atomically on every
-   tick, at a place the app names** — ADR-1017 has the full argument. The record is a set of
-   (commitment, date) pairs that fits in kilobytes for years and is already a value (`History`);
-   a file needs no `platforms:` line, no dependency, no macros, no schema tooling, and it is the
-   form a person can read, repair and back up. SwiftData would add a class-based `@Model` mirror
-   of every engine type and a macOS 14 / iOS 17 floor; GRDB would add a third-party package and
-   SQL for a set of pairs. Both remain one import away if a write ever stalls a tap.
-   - *Recommended:* a file, as written. The one real reason to say otherwise is if you want this
-     Story to be where you learn SwiftData; that is a legitimate preference and it is yours.
-   - *If you say SwiftData or GRDB:* the two requirements and ten of the thirteen scenarios stand
-     as they are — they describe a store, not a file. The three refusal scenarios are rewritten to
-     the chosen store's notion of "a later form" and "not a store" (a schema version and a
-     corrupt database); `design.md` §§ *The form on disk*, *Written whole* and *Inside
-     `DayByDayKit`* are replaced; `Package.swift` gains `platforms:` (SwiftData) or a dependency
-     (GRDB); `tasks.md` is rewritten; ADR-1017 is rewritten before G4 rather than superseded, since
-     it will not have been accepted. The seam's shape — `init(at:)`, `history`, `add`, `remove` —
-     does not change.
