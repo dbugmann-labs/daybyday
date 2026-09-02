@@ -60,46 +60,78 @@ shape it lacks, not the quota.
 
 > "weight — a number entered once a day, looked at as a line over months"
 
+*Folded in 2026-09-02:*
+
+> "Track weight daily"
+
 - **Trigger** — once a day, on the scale. Separately and rarely, to look at the trend.
 - **Touches** — `commitment`, as a numeric payload rather than a tick; the line is a surface
   that is not the day screen.
 - **Open** — one want or two? Entering a number and reading months of them are different
-  triggers, and the second may be B-011 wearing a different name.
+  triggers, and the second may be B-007 or B-008 wearing a different name. The 2026-09-02
+  braindump named the entry and the graph in separate breaths — the graph as "a separate area
+  which can be navigated to" — which strengthens the split without deciding it.
 
 ### B-002 — add to a running total across a day
 *Captured 2026-08-28, migrated 2026-09-02.*
 
 > "protein — a number entered several times a day that accumulates rather than overwrites"
 
+*Folded in 2026-09-02:*
+
+> "Track grams of protein daily"
+
 - **Trigger** — several times a day, after eating.
 - **Touches** — `commitment`. The same numeric payload as B-001 with the opposite write
   semantics: add, never replace.
 - **Open** — is there a target for the day, and does reaching it make the commitment done?
+- **Open** — the 2026-09-02 braindump groups protein with weight, mood and journal as "daily",
+  and says nothing about accumulating. That is not a contradiction of the original words, but
+  accumulation is this entry's whole identity, so grooming has to confirm it is still wanted
+  rather than assume it.
 
 ### B-003 — set a mood for the day with one tap
 *Captured 2026-08-28, migrated 2026-09-02.*
 
 > "mood — a number set by a single tap, once a day"
 
+*Folded in 2026-09-02:*
+
+> "Track mood (1-10) daily"
+
 - **Trigger** — once a day, in the row itself, with no second screen.
 - **Touches** — `commitment` numeric payload and `day-screen`, because "one tap" is a claim
   about the row, not about the value.
-- **Open** — a scale of how many? Three, five and ten are different taps.
+- **Answered 2026-09-02** — the scale is 1 to 10. It was the open question on this entry, and
+  the braindump states it outright.
+- **Open** — ten values and "a single tap" pull against each other: a ten-point scale is a
+  slider or a row of ten targets, neither of which is one tap in a row. This is the same
+  tension B-010 raises for every entry that carries a value.
 
 ### B-004 — write two or three sentences about a day
 *Captured 2026-08-28, migrated 2026-09-02.*
 
 > "journal — two or three sentences a day, deliberately not an essay"
 
+*Folded in 2026-09-02:*
+
+> "Track journal entries daily"
+
 - **Trigger** — once a day, evening.
 - **Touches** — `commitment` with a text payload, plus somewhere to type that a row is not.
-- **Open** — the day-one list has journaling as a **tick**, not as written text. Either this is
-  two wants or it is one that changed its mind, and grooming has to say which.
+- **Open** — the day-one list has journaling as a **tick**, not as written text. The 2026-09-02
+  braindump lists journal entries alongside weight, protein and mood — the three things that
+  carry a value — and not alongside sports, supplements and habits, which are the ticks. That
+  leans to written text, and grooming should say so rather than leave it leaning.
 
 ### B-005 — tick a habit phrased as a negative, where ticking records that it was *not* done
 *Captured 2026-08-28, migrated 2026-09-02.*
 
 > "a habit phrased as a negative, where ticking it records that the thing was *not* done"
+
+*Folded in 2026-09-02:*
+
+> "Same for sticking to habits (did I NOT byte my nails today -> check)"
 
 - **Trigger** — daily, alongside supplements.
 - **Touches** — `commitment`. Supplements and habits arrived as one line, and this is the half
@@ -121,11 +153,21 @@ shape it lacks, not the quota.
 
 > "a detail page per area, visited deliberately and rarely, to look rather than to enter"
 
+*Folded in 2026-09-02:*
+
+> "It's possible that there will be some areas which have a detail page, e.g. a graph where you
+> can see the weight / mood / protein over time. But this should be a separate area which can be
+> navigated to."
+
 - **Trigger** — occasionally, and never as part of the five daily visits.
 - **Touches** — unclaimed. Probably its own capability rather than `day-screen`, because its
-  whole point is that it is not the landing screen.
+  whole point is that it is not the landing screen — and the braindump says so twice, calling it
+  "a separate area which can be navigated to".
 - **Open** — the word *area* was dropped from the vocabulary (`CONTEXT.md`). What this is a page
-  *per* needs re-deciding before it is a Feature.
+  *per* needs re-deciding before it is a Feature. The braindump narrows it without settling it:
+  the three examples it gives — weight, mood, protein — are the commitments that carry a number,
+  and it says "some areas", not all. A page per numeric commitment and a page per commitment are
+  different Features.
 
 ### B-008 — see a commitment aggregated over time — "eleven gym sessions last month"
 *Captured 2026-08-29, migrated 2026-09-02.*
@@ -148,6 +190,42 @@ shape it lacks, not the quota.
   `docs/open-questions.md`.
 - **Open** — restore is stated as the boundary, so live sync is out. What "restore" means
   concretely — a file, iCloud, a backup you can see — is not decided.
+
+### B-010 — make every daily entry from the landing screen, without navigating
+*Captured 2026-09-02.*
+
+> "Focusing of keeping things very simple, with little interaction needed (e.g. just multiple
+> buttons to add things each day, without much navigation)"
+
+- **Trigger** — every one of the daily visits. It is the shape all of them share rather than one
+  of them.
+- **Touches** — `day-screen`. B-003 makes this claim for mood alone; this is the same claim over
+  every commitment, including the ones carrying a number or a sentence.
+- **Principle** — tested against *five percent of seven things*: it passes as a constraint on how
+  cheap each of the seven is to enter, but it makes nothing new possible on its own, which is why
+  it may not be a want at all — see Open.
+- **Open** — is this a want or a fifth product principle? It says how everything else is entered
+  rather than adding anything to enter. If grooming reads it as a principle it belongs in
+  `CONTEXT.md` § *Product principles*, and this entry is dropped into that.
+- **Open** — it collides with B-004 and B-003 as written. Two or three sentences of journal and a
+  ten-point mood are not buttons, so either "little interaction" means something looser than a
+  button per commitment, or those two wants are exceptions to it.
+
+### B-011 — see something of a commitment's history on the day screen itself
+*Captured 2026-09-02.*
+
+> "It can be decided if you want to see some information also on the landing screen, where
+> entries are made"
+
+- **Trigger** — passive, during a daily entry visit rather than a deliberate look.
+- **Touches** — `day-screen`, and whatever B-007's page turns out to be: it is the same history,
+  shown in the other place.
+- **Principle** — tested against *nothing congratulates you*: a number's recent trend is a record
+  and survives, but this want is one design decision away from failing — "six days in a row" on
+  the landing screen is the streak the principle exists to forbid.
+- **Open** — the owner explicitly left this undecided ("it can be decided"), so what grooming
+  inherits is a decision, not a want. It cannot be taken before B-007, because what may appear on
+  the day screen depends on what the detail page is a page *per*.
 
 ## Decided
 
