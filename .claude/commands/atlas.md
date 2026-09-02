@@ -69,11 +69,15 @@ is wrong, hand the step back to an agent rather than to the human. Because CI sk
 Repeat until you hit a gate:
 
 1. **`pnpm run status`.** It names the stage, whose turn it is, and the next action. On a story
-   branch it reports that Story; anywhere else it reports the tracker.
-2. **If the owner is an agent**, spawn it — `spec-author`, `implementer`, `reviewer` or
-   `janitor`, per the routing table in `AGENTS.md`. Hand it **the Story issue number and
-   nothing else**. Never paste requirements into a prompt; that is how specs and reality drift
-   apart. When it returns, run status again and continue.
+   branch it reports that Story; anywhere else it reports the tracker. **Echo it once, verbatim,
+   on entry** — that is the "where am I?" the human asked — and never again inside the loop: the
+   step report below carries the one thing that changed, and a transcript that is the same tree
+   five times is one they stop reading.
+2. **If the owner is an agent**, print the step report's *spawned* form, then spawn it —
+   `spec-author`, `implementer`, `reviewer` or `janitor`, per the routing table in `AGENTS.md`.
+   Hand it **the Story issue number and nothing else**. Never paste requirements into a prompt;
+   that is how specs and reality drift apart. When it returns, print the *returned* form, run
+   status again and continue.
 3. **If `spec-author` came back with a question round**, present it before G4 — the form is
    below. Then re-spawn `spec-author` with the answers and nothing else.
 4. **If the owner is you**, stop and present the gate in the form below. Then wait. Do not
@@ -82,15 +86,69 @@ Repeat until you hit a gate:
 Between gates you run unattended. That is the point: the human should be interrupted four
 times per Story, not sixteen.
 
+## Three things you print, and what each asks of the human
+
+Everything the conductor says is one of three shapes, and the shape is what tells the human
+whether a reply is wanted before they read a word. ADR-1012.
+
+| Tier | Header | Form | Ends your turn? |
+|---|---|---|---|
+| **Gate** | `G4 — Spec approved` | five-part | yes — nothing moves until the exact reply arrives |
+| **Stop** | `Stop — questions before G4` | five-part | yes — no marker, no CI check, no G-number, but it is still a question |
+| **Report** | `▸ implementer returned` | three-line step report | no — you print it and carry on |
+
+A five-part block means *answer me*; a `▸` line means *for your information*. **There is no
+fourth shape** — no "report, and proceed if they say nothing", because in a turn-based session
+either the turn ends and you are asking, or it does not and you are telling. Where this file used
+to say that, it now says *Stop*.
+
+## The step report
+
+Between gates the human is away, and what they come back to is the trail. Three lines, fixed:
+what ran, what it left behind, what comes next. **The middle line lists only things they can
+open, run or count** — a URL, a commit, an exit code, a number — and never a summary of how it
+went. No adjectives, no "successfully".
+
+```
+▸ spec-author returned · Story #12 add-schedule-rules · Stage 4
+  left   PR #21 https://github.com/dbugmann-labs/daybyday/pull/21 (draft, on main) ·
+         validate --strict: 0 · 4 scenarios · 1 question for you
+  next   Stop — questions before G4, below
+```
+
+The *spawned* form drops `left` and makes `next` the walk-away line — the one thing the stage
+table's *Who decides* column says at runtime, which is when they will next be needed:
+
+```
+▸ implementer spawned · Story #12 add-schedule-rules · Stages 5–6, unattended
+  next   G7, after four red-green cycles — you are not needed until then
+```
+
+The *stopped* form is hard rule 5 given a shape. It is the report the human most needs to
+trust, so it carries the failing command and its output **verbatim, in a code block**, and says
+plainly what was not done. Never diagnose in it; never route around it.
+
+```
+▸ implementer stopped · Story #12 add-schedule-rules · Stage 6, scenario 3 of 4
+  said
+         $ pnpm run checks
+         check:scenarios — "Rule anchors to start date" has no test named for it
+  not done   scenarios 3 and 4; last push is 4f2a9c1, PR #21 still a draft
+  next   nothing — this is yours (rule 5)
+```
+
+One report per event, never a running commentary. If nothing ran, print nothing.
+
 ## The gate stop
 
-Every gate looks the same, so the human learns one shape instead of five. Five parts, in this
-order, and nothing else:
+Every gate and every stop looks the same, so the human learns one shape instead of five. Five
+parts, in this order, and nothing else:
 
 ```
 G4 — Spec approved                                     Story #12 add-schedule-rules
 
 What is in front of you
+  since your G2 reply: spec-author ran once, PR #21 opened, CI green on the draft
   https://github.com/dbugmann-labs/daybyday/pull/21 (draft, rebased on main)
   proposal.md, and specs/schedule/spec.md — 4 scenarios
   The decision it turns on: an "every N days" rule anchors to a fixed start
@@ -99,8 +157,8 @@ What is in front of you
 The question
   Are these the right requirements, and is anything missing from the edges?
 
-What yes commits you to        Four red-green cycles, roughly a session's work.
-What no costs                  Rewriting the delta. Cheap here; expensive at review.
+If you take the recommendation    Four red-green cycles, roughly a session's work.
+If you don't                      Rewriting the delta. Cheap here; expensive at review.
 
 Recommendation
   Approve. The four scenarios cover both edges we argued about, and the anchor
@@ -112,10 +170,20 @@ Reply
   changes: <what>     → back to spec-author with your note
 ```
 
-Keep *What is in front of you* to what they must actually read, and always name the one or two
-decisions the proposal turns on — a human who reads only your summary should still be making a
-real decision, not rubber-stamping. No praise, no recap of the pipeline, no options they did not
-ask for.
+**The first line of *What is in front of you* is the trail since they last replied** — what ran,
+in one clause, only when something did. Their sessions are days apart and a gate that arrives
+after an unattended run has to stand on its own; this is the same rule as starting every session
+from durable files, applied to the gate. Omit the line when nothing ran, never pad it.
+
+Keep the rest of *What is in front of you* to what they must actually read, and always name the
+one or two decisions the proposal turns on — a human who reads only your summary should still be
+making a real decision, not rubber-stamping. No praise, no recap of the pipeline, no options they
+did not ask for.
+
+**The pair is *If you take the recommendation* against *If you don't*** — not yes against no.
+The two read identically at a binary gate and, unlike yes/no, they fit a stop whose reply is a
+choice — a cluster to take forward, `1: clamp` against `1: skip` — without the form being bent
+to hold it. One shape only earns its keep if it fits every stop it is used for.
 
 **Always recommend.** Name the reply you would choose and give the one reason, in two or three
 lines, not a case. A gate you have no view on is a gate you have not read. Three things it must
@@ -140,9 +208,10 @@ when there is actually a question. Present it in the five-part form, with the qu
 as the agent numbered them. ADR-1006.
 
 ```
-Questions before G4                              Story #9 add-day-of-month-schedule
+Stop — questions before G4                       Story #9 add-day-of-month-schedule
 
 What is in front of you
+  since your G2 reply: spec-author ran once and opened PR #21
   https://github.com/dbugmann-labs/daybyday/pull/21 (draft) — written on the
   recommended answers, so you are reading the question next to the diff it changes.
 
@@ -152,10 +221,10 @@ The question
      date. Saying skip rewrites one requirement and five scenarios; nothing else
      in the delta moves.
 
-What yes commits you to        The delta as it stands; G4 is the next stop.
-What no costs                  One requirement and five scenarios rewritten, before
-                               any code exists. The same change after G4 costs the
-                               implementer's work as well.
+If you take the recommendation    The delta as it stands; G4 is the next stop.
+If you don't                      One requirement and five scenarios rewritten, before
+                                  any code exists. The same change after G4 costs the
+                                  implementer's work as well.
 
 Recommendation
   Take the clamp. A rule that vanishes for five months of the year is not what
@@ -206,10 +275,13 @@ this — by you, by the implementer, for any reason — the marker no longer sig
 comes back here for a second approval; that is CI check 5, not a formality you can waive. See
 `docs/adr/0014-*` and `docs/adr/1007-*`.
 
-**G7 — Review clean.** Present the reviewer's findings, most severe first, with the same PR
-link — it now carries the whole Story. The implementer fixes; the reviewer never edits. Your
-recommendation here is which findings must be fixed before the archive and which are a Story of
-their own — say it, rather than handing over an undifferentiated list.
+**G7 — Review clean.** Present the reviewer's findings with the same PR link — it now carries
+the whole Story. **The findings go in verbatim**, each with its file, line and failure as the
+reviewer wrote them: ADR-1002 makes them the one artifact that must reach the human
+unmediated, and that outranks keeping *What is in front of you* short. What you add is the
+grouping — *fix before archive*, *a Story of its own*, *leave* — and that triage is the
+recommendation, said rather than left as an undifferentiated list. The implementer fixes; the
+reviewer never edits.
 
 ## Capture: `/atlas idea <want>`
 
@@ -275,8 +347,9 @@ do exactly one of four things and say which:
 **Ask at most one question, and only about which want it is** — never about how it should work.
 If you can write the entry without asking, do not ask. Everything else goes in **Open**.
 
-Then commit — `docs(backlog): capture B-014 <heading>` — report the entry in three lines, and
-stop. No gate, no G-number, nothing spawned.
+Then commit — `docs(backlog): capture B-014 <heading>` — and report it in the step-report shape:
+`▸ captured B-014 · chore/backlog`, `left` the entry's heading and the commit, `next` nothing.
+A report, not a stop: the command is finished, nothing is being asked, nothing is spawned.
 
 ### A braindump of several wants
 
@@ -290,11 +363,13 @@ Read the four sources once, then:
 
 1. **Split the bullets into entries** and run the four-outcome table over each, exactly as
    above — a bullet can perfectly well be a duplicate of another bullet in the same braindump.
-2. **Report the split and stop before committing.** Which bullet became which `B-nnn`, which two
-   were folded together and why, which wrote nothing. **This is the only thing in the whole
-   command worth their attention**: it is the one judgement they can correct in a sentence and
-   nobody else can, and it is cheap to get wrong silently. It is a report, not a gate — if they
-   say nothing, proceed.
+2. **Stop at the split, before committing** — `Stop — the split`, in the five-part form. Which
+   bullet became which `B-nnn`, which two were folded together and why, which wrote nothing.
+   **This is the only thing in the whole command worth their attention**: it is the one
+   judgement they can correct in a sentence and nobody else can, and it is cheap to get wrong
+   silently. That is the definition of a stop, so it ends your turn like one; the reply
+   vocabulary is `go` against `<which entries to split, fold or drop>`, and the recommendation
+   is `go`. No marker, no G-number.
 3. **One commit for the burst**, `docs(backlog): capture B-014..B-017 <n> wants`, and one PR.
 
 **Where the line goes: one entry per outcome they would want independently.** "Track my weight"
@@ -332,14 +407,15 @@ Walk three lists and report the silence in each:
 - **`docs/open-questions.md`** — a question that has quietly become a want belongs here as one,
   not there as a question.
 
-Present the gaps as a numbered list and offer to capture them on the spot. **A gap the human
-confirms becomes a `B-nnn` entry in this same pass, before you cluster** — so it joins the
+Present the gaps as `Stop — the sweep`, in the five-part form, the gaps numbered under *What is
+in front of you* and the reply vocabulary the numbers to capture against `none`. **A gap the
+human confirms becomes a `B-nnn` entry in this same pass, before you cluster** — so it joins the
 clustering rather than waiting for the next pass. Fill in the **Principle** line on any older
 entry that predates that field while you are reading it.
 
-The sweep is a *finding*, not a gate. If it turns up nothing, say so in one line and move on;
-if it turns up five things, that is five captures and the clustering that follows is better for
-them. Record it either way — step 4 writes the pass line whatever the sweep found.
+The sweep is a *finding*, not a gate. If it turns up nothing, say so in one `▸` line and move on
+without stopping; if it turns up five things, that is five captures and the clustering that
+follows is better for them. Record it either way — step 4 writes the pass line whatever the sweep found.
 
 **2 — Read and cluster.** Every want in `docs/backlog.md`, including anything the sweep just
 added, against the capability specs, the open Features and `CONTEXT.md` § *Product principles*.
@@ -358,9 +434,9 @@ clusters:
   is the rule the parking lot stated and never enforced. **Do not count the passes by eye:**
   `pnpm run status` off a story branch prints the ids, read out of the *Grooming passes* log.
 
-Present that as a stop, in the five-part form: the clusters and their dispositions, the question
-*which cluster do we take forward*, and a recommendation naming one. It is a stop, not a gate —
-no marker, no CI check, no G-number.
+Present that as `Stop — which cluster`, in the five-part form: the clusters and their
+dispositions, the question *which cluster do we take forward*, and a recommendation naming one.
+It is a stop, not a gate — no marker, no CI check, no G-number.
 
 **3 — Grill the cluster they pick.** `Skill(skill: "grill")`, the conductor branch, exactly as
 Intake step 1 below describes it. Same skill, same questions, same output.
@@ -447,8 +523,9 @@ opening a Feature issue for it. Nothing is implemented from that file.
 ## When to stop rather than improvise
 
 Hard rule 5. If `pnpm run status` disagrees with what you expect, if a command fails, or if an
-agent returns something unexplained, **report it and stop**. A documented step that does not
-work is the finding.
+agent returns something unexplained, **report it in the step report's *stopped* form and stop**.
+A documented step that does not work is the finding, and the finding is the verbatim output, not
+your reading of it.
 
 `pnpm run status` is a projection and nothing depends on it. If it is wrong, the systems of
 record are still right — check the change folder and the issue, and say that status was wrong.

@@ -318,11 +318,22 @@ consequences, all in ADR-1003:
 
 ### What a gate stop looks like
 
-Every gate is presented in the same five parts — what is in front of you, the question, what a
-yes commits you to against what a no costs, **the recommendation**, and the exact reply — so you
-learn one shape rather than five. The form, with worked examples, is in
-`.claude/commands/atlas.md`; a gate whose presentation is improvised each time quietly becomes a
-rubber stamp, and G4 is the one the whole requirement set rests on.
+Every gate is presented in the same five parts — what is in front of you, the question, what
+taking the recommendation commits you to against what declining it costs, **the
+recommendation**, and the exact reply — so you learn one shape rather than five. The form, with
+worked examples, is in `.claude/commands/atlas.md`; a gate whose presentation is improvised each
+time quietly becomes a rubber stamp, and G4 is the one the whole requirement set rests on. The
+first line of *what is in front of you* is what ran since you last replied, so a gate that
+arrives after an unattended run stands on its own.
+
+**Between gates the conductor prints one other shape, and only one.** The step report is three
+lines — what ran, what it left behind, what comes next — printed before every spawn, after every
+return, and as the form of a rule-5 stop. Its middle line names only things you can open, run or
+count; its `next` line before a spawn is when you will next be needed, which is the *Who decides*
+column above said at runtime. The distinction the two shapes carry is whether a reply is wanted:
+a five-part block is a question, a `▸` line is not, and there is no "report, and proceed if you
+say nothing" — in a session that takes turns, either the turn ends and you are being asked, or
+it does not and you are being told. ADR-1012.
 
 The recommendation is part of the form rather than a courtesy because the gate arrives after an
 agent has spent an hour on the thing being judged, and without a stated lean the cheapest reply
