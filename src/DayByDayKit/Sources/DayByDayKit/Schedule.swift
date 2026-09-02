@@ -2,6 +2,7 @@ public enum Schedule: Hashable, Sendable {
     case weekdays(Set<Weekday>)
     case dayOfMonth(DayOfMonth)
     case everyNDays(DayInterval, from: CalendarDate)
+    case weeklyQuota(WeeklyQuota)
 
     public func isDue(on date: CalendarDate) -> Bool {
         switch self {
@@ -16,6 +17,8 @@ public enum Schedule: Hashable, Sendable {
                 return false
             }
             return count % interval.days == 0
+        case .weeklyQuota:
+            return true
         }
     }
 }

@@ -1,15 +1,15 @@
 ## 1. The public surface
 
-- [ ] 1.1 Add `Sources/DayByDayKit/WeeklyQuota.swift` declaring `public struct WeeklyQuota: Hashable,
+- [x] 1.1 Add `Sources/DayByDayKit/WeeklyQuota.swift` declaring `public struct WeeklyQuota: Hashable,
   Sendable` with `public init?(timesPerWeek: Int)` exactly as `design.md` § *The seam* gives it, its
   body `fatalError("not implemented")`. Nothing else public; the stored `timesPerWeek` stays
   internal, matching `DayOfMonth.day` and `DayInterval.days`. Verify with
   `cd src/DayByDayKit && swift build` exiting 0.
-- [ ] 1.2 Add `case weeklyQuota(WeeklyQuota)` to `Schedule` and a branch for it in `isDue(on:)` whose
+- [x] 1.2 Add `case weeklyQuota(WeeklyQuota)` to `Schedule` and a branch for it in `isDue(on:)` whose
   body is `fatalError("not implemented")`. The seam's signature does not change. Verify with
   `cd src/DayByDayKit && swift build` exiting 0 and `swift test` still reporting the 64 tests from
   #8, #9, #10 and #42 passing.
-- [ ] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
+- [x] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
   `0/10 covered` for this change and names `"a weekly quota is due on every date of a week"` as
   next.
 
@@ -31,7 +31,7 @@ regression pins — four of them on calendar boundaries where a future implement
 consulting the calendar would break — and not proofs that a requirement was unmet. If one of the
 eight does run red, that is a finding worth reporting, not a task that went well.
 
-- [ ] 2.1 `a weekly quota is due on every date of a week` — expected to run red.
+- [x] 2.1 `a weekly quota is due on every date of a week` — expected to run red.
 - [ ] 2.2 `a weekly quota of one is due on every date of a week`
 - [ ] 2.3 `a weekly quota is due on the dates either side of a week boundary`
 - [ ] 2.4 `a weekly quota is due on a leap day`
