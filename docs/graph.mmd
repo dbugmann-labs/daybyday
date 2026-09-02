@@ -24,12 +24,18 @@ flowchart TD
   I53["Feature 53 — record"]
   I55["Story 55 — add-tick-record"]
   I56["Story 56 — add-record-store"]
+  I70["Story 70 — add-day-view"]
+  I71["Story 71 — add-tick-from-row"]
+  I72["Story 72 — add-day-navigation"]
 
   I1 --> I26
   I1 --> I27
   I1 --> I53
   I1 --> I6
   I26 --> I42
+  I27 --> I70
+  I27 --> I71
+  I27 --> I72
   I53 --> I55
   I53 --> I56
   I6 --> I10
@@ -46,6 +52,9 @@ flowchart TD
   class I26 feature,done
   class I27 feature
   class I42 story,done
-  class I53 feature
+  class I53 feature,done
   class I55 story,done
-  class I56 story
+  class I56 story,done
+  class I70 story
+  class I71 story
+  class I72 story
