@@ -28,9 +28,11 @@ would have to argue against.
 **Backlog** — `docs/backlog.md`, the wants and nothing else. Not a plan, not an order of work,
 and not a place anything is implemented from. An entry leaves it only through a grooming pass.
 
-**Grooming** — the pass `/atlas backlog` runs over the backlog: cluster the wants by the
-capability they would land in, propose a promotion, a merge, a split or a drop for each, grill
-the cluster you take forward, and stop at G1. It is a stop, not a gate — no marker, no CI check,
+**Grooming** — the pass `/atlas backlog` runs over the backlog: sweep for the commitments and
+lifecycle verbs that have no want against them at all, cluster the wants by the capability they
+would land in, propose a promotion, a merge, a split or a drop for each, grill the cluster you
+take forward, and stop at G1. The sweep comes first and is the only step in the process that
+asks what is *missing* rather than whether what is present is coherent. It is a stop, not a gate — no marker, no CI check,
 no G-number — and it adds exactly one stop in front of Stage 1 rather than a stage of its own.
 
 **Change** — OpenSpec's unit of work: the folder `openspec/changes/<change-id>/` holding a

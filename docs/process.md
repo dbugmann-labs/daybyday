@@ -137,13 +137,25 @@ post-mortem.
 - **`/atlas idea <want>`** captures one want. One shot, no grill, at most one question, and only
   about which want it is. It dedupes against the backlog, the *Decided* ledger, the capability
   specs and the open Features first, so a want already shipped as a requirement is reported
-  rather than written down twice.
-- **`/atlas backlog`** grooms. It clusters the wants **by the capability they would land in**,
-  proposes a promotion, a merge, a split or a drop for each, forces a choice on any entry that
-  has survived two passes, then grills the cluster taken forward and stops at **G1**. It adds one
-  stop in front of Stage 1 and nothing else — no new stage, no new gate, no second grill. Every
-  pass appends a dated line to the backlog's *Grooming passes* log, promotion or not, because
-  that log is the only thing "survived two passes" can be counted against.
+  rather than written down twice. The entry records which **product principle** the want was
+  tested against and what the test returned, so grooming can tell a want that was judged from
+  one that was merely typed.
+- **`/atlas backlog`** grooms, in two halves. It **sweeps** first — the day-one week, every
+  capability and open Feature against the lifecycle verbs *create, change, retire*, and
+  `docs/open-questions.md` — and reports what has no want against it at all, capturing the gaps
+  the human confirms before it goes on. Then it clusters the wants **by the capability they would
+  land in**, proposes a promotion, a merge, a split or a drop for each, forces a choice on any
+  entry that has survived two passes, grills the cluster taken forward and stops at **G1**. It
+  adds one stop in front of Stage 1 and nothing else — no new stage, no new gate, no second
+  grill. Every pass appends a dated line to the backlog's *Grooming passes* log, promotion or
+  not, because that log is the only thing "survived two passes" can be counted against.
+
+**The sweep is there because every other check in the chain is a duplication or a coherence
+check.** The four outcomes at capture ask whether a want is already recorded; the clustering
+rules ask whether two wants belong together; the three conditions before G1 ask whether a cluster
+is a capability yet. All of them reason about what is in front of them, so a want nobody ever
+said is invisible to all of them — and grooming is the only step that ever holds the whole
+picture at once. It is a finding, not a gate: no marker, no CI check, no G-number.
 
 **`pnpm run status` reports the backlog off a story branch**, under the issue tree: how many
 wants, how many decided, what has arrived since the last pass, and which entries are now a forced
