@@ -1,13 +1,13 @@
 ## 1. The public surface
 
-- [ ] 1.1 Add `Sources/DayByDayKit/RecordStore.swift` declaring `public final class RecordStore`
+- [x] 1.1 Add `Sources/DayByDayKit/RecordStore.swift` declaring `public final class RecordStore`
   and `public enum RecordStoreError: Error, Equatable, Sendable` exactly as `design.md` § *The seam*
   gives them — `public init(at place: URL) throws`, `public private(set) var history: History`,
   `public func add(_ tick: Tick) throws`, `public func remove(_ tick: Tick) throws`; the three cases
   `notAStore(at:)`, `laterForm(at:version:)`, `cannotWrite(at:)` — with the initializer and both
   methods bodied `fatalError("not implemented")`. Nothing else public. Verify with
   `cd src/DayByDayKit && swift build` exiting 0.
-- [ ] 1.2 Add `Sources/DayByDayKit/RecordDocument.swift` declaring the `internal` document type for
+- [x] 1.2 Add `Sources/DayByDayKit/RecordDocument.swift` declaring the `internal` document type for
   version 1 as `design.md` § *The form on disk* fixes it — `version`, `ticks`, each tick a
   `commitment` (`name`, `keptFrom` as `{year, month, day}`, `schedule` as exactly one of
   `{ "weekdays": [...] }`, `{ "dayOfMonth": n }`, `{ "everyNDays": n, "from": {year, month, day} }`,
@@ -15,10 +15,10 @@
   `func history() -> History?` both bodied `fatalError("not implemented")`. The conversion from
   `Schedule` is an exhaustive `switch` over its four cases, so a case you did not expect is a
   compile error to report under § 4, not to paper over. Verify with `swift build` exiting 0.
-- [ ] 1.3 Confirm nothing else in the package moved: every file that existed before this Story is
+- [x] 1.3 Confirm nothing else in the package moved: every file that existed before this Story is
   untouched in `git diff --stat`, `Package.swift` included, and `cd src/DayByDayKit && swift test`
   still reports the ninety-seven tests from #8, #9, #10, #11, #42 and #55 passing.
-- [ ] 1.4 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
+- [x] 1.4 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
   `0/13 covered` for this change and names `"a store opened where nothing has been kept holds an
   empty history"` as next.
 
@@ -44,9 +44,9 @@ assigns before writing passes everything before it and fails here), 2.11 (the fi
 document first reports a later form as `notAStore` and fails the `laterForm` assertion), and 2.13
 if decoding does not go through the failable initializers.
 
-- [ ] 2.1 `a store opened where nothing has been kept holds an empty history` — opens at a place
+- [x] 2.1 `a store opened where nothing has been kept holds an empty history` — opens at a place
   under a directory that does not exist yet; asserts no throw and `history == History()`.
-- [ ] 2.2 `a tick added to a store is held by a second store opened at the same place while the
+- [x] 2.2 `a tick added to a store is held by a second store opened at the same place while the
   first is still open` — the write-through: the first store is a live local, the second is opened
   without any save or close on the first, and asserts `isKept` on the second.
 - [ ] 2.3 `a tick taken back is not held by a store opened afterwards at the same place` — two
