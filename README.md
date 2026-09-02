@@ -92,7 +92,8 @@ docs/retrospective.md      what the first end-to-end run actually cost and caugh
 docs/adr/                  why each hard decision was made; README.md is the register
 docs/agents/               issue tracker, triage labels, domain docs
 docs/graph.mmd             generated projection of the issue hierarchy — never an input
-docs/parking-lot.md        product ideas, deliberately not acted on
+docs/backlog.md            what the app should do — wants only, groomed into Features
+docs/open-questions.md     open product questions, open technical decisions, known gaps
 scripts/                   the merge-time checks and the graph generator
 src/DayByDayKit/           the Swift package: the rule engine and its tests
 .claude/agents/            the five pipeline agents and their model routing

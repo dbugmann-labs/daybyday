@@ -1,7 +1,7 @@
 ---
 name: "Atlas"
 description: "Drive the pipeline: say where we are, do the next agent step, and stop at every gate that needs you."
-argument-hint: "[feature <idea> | story <issue#> | next]"
+argument-hint: "[idea <want> | backlog [B-nnn] | feature <idea> | story <issue#> | next]"
 ---
 
 # Conduct the pipeline
@@ -31,8 +31,13 @@ you are the one who heard them say it.
 | Form | What it does |
 |---|---|
 | `/atlas` or `/atlas next` | Read status and take the next step from wherever the work is. |
-| `/atlas feature <idea>` | Intake a feature idea: grill it, then stop at **G1**. |
+| `/atlas idea <want>` | Capture one thing the app should do into `docs/backlog.md`. One shot, no gate. |
+| `/atlas backlog` | Groom the backlog: cluster, propose, grill the cluster taken forward, stop at **G1**. |
+| `/atlas backlog B-007` | Skip the clustering and take that entry forward on its own. |
+| `/atlas feature <idea>` | Intake a feature idea that skips the backlog: grill it, then stop at **G1**. |
 | `/atlas story <issue#>` | Get onto that Story's branch and drive it from wherever it is. |
+
+`idea` and `backlog` are the two halves of what used to be one unread file. ADR-1010.
 
 ## Getting onto a Story
 
@@ -174,7 +179,7 @@ tree that produced them stays in the agent, or you have started doing the work.
 
 **G1 — Feature ready.** One capability, its slug decided, one parent Epic. Challenge the idea
 before it becomes a Feature: is it really one capability, or two wearing one name? Is it
-already a line in `docs/parking-lot.md`? Does it need a term in `CONTEXT.md`? Say plainly where
+already a want in `docs/backlog.md`? Does it need a term in `CONTEXT.md`? Say plainly where
 it is over-engineered or where a cheaper thing would do. On approval, the `orchestrator`
 creates the issue and the sub-issue edge, and verifies the edge from both ends.
 
@@ -204,6 +209,113 @@ link — it now carries the whole Story. The implementer fixes; the reviewer nev
 recommendation here is which findings must be fixed before the archive and which are a Story of
 their own — say it, rather than handing over an undifferentiated list.
 
+## Capture: `/atlas idea <want>`
+
+One thing the human wants the app to do, into `docs/backlog.md`. **This is one shot and it does
+not grill.** Interrogating a want at capture spends rounds on things that will be dropped and
+makes the entry point one they avoid; the Feature grill at Stage 1 is where a want is argued
+with. `docs/process.md` §4, ADR-1010.
+
+**Where you write.** `main` takes no direct push, so captures accumulate on a long-lived
+`chore/backlog` branch in its own worktree — rule 8, and no exception for a one-line edit:
+
+```bash
+git fetch origin
+git worktree list | grep -q daybyday-backlog \
+  || git worktree add ../daybyday-backlog -b chore/backlog origin/main \
+  && cd ../daybyday-backlog && git branch --unset-upstream
+```
+
+Reuse it if it is there. Push and open the PR on the first capture of a burst; leave it open, and
+merge it at the next grooming pass.
+
+**Before writing anything, read four things** — `docs/backlog.md` including its *Decided* ledger,
+`openspec/specs/*/spec.md`, the open Feature issues, and `CONTEXT.md` § *Product principles*. Then
+do exactly one of four things and say which:
+
+| What you found | What you do |
+|---|---|
+| Nothing like it | Write a new entry, next free `B-nnn`. |
+| An entry that is the same want said differently | Fold it in — add the trigger or the open question it brings, and say you did. |
+| A requirement already in a capability spec | Write nothing. Name the spec and the requirement. |
+| A line already in *Decided* | Write nothing. Quote the line, including why it was dropped. |
+
+**The entry.** Four fields, each one there because it changes a grooming decision:
+
+```markdown
+### B-014 — see my weight as a line over months
+*Captured 2026-09-02.*
+
+> "I want to be able to track my weight for a day."
+
+- **Trigger** — evening, after stepping on the scale.
+- **Touches** — `commitment`, probably a numeric payload rather than a tick.
+- **Open** — is a weight entry a commitment with a value, or a different thing?
+```
+
+- **The heading is the outcome, never the mechanism.** "See my weight as a line", not "add a
+  weight field". A want phrased as a mechanism has pre-decided the design.
+- **The blockquote is their words, verbatim.** Do not tidy it into spec wording. Five archived
+  `design.md` files cite the old parking lot precisely because it recorded what was said, and a
+  paraphrase is you making the call the grill exists to make.
+- **Touches** is the clustering key: the capability slug you would guess, or `unclaimed`.
+- **Open** is where what you do not know goes, instead of a question to them.
+
+**Ask at most one question, and only about which want it is** — never about how it should work.
+If you can write the entry without asking, do not ask. Everything else goes in **Open**.
+
+Then commit — `docs(backlog): capture B-014 <heading>` — report the entry in three lines, and
+stop. No gate, no G-number, nothing spawned.
+
+## Grooming: `/atlas backlog`
+
+The pass that turns wants into a Feature. **It adds one stop in front of G1 and nothing else** —
+no new stage, no new gate, no second grill. ADR-1010.
+
+**1 — Read and cluster.** Every want in `docs/backlog.md`, against the capability specs, the open
+Features and `CONTEXT.md` § *Product principles*. Then propose a disposition for each: promote to
+a new Feature, promote as a Story against an existing Feature, merge two entries, split one, or
+drop with the reason. Four rules decide the clusters:
+
+- **Cluster by capability, never by theme.** Two wants belong together when they would be
+  requirements in the same `openspec/specs/<slug>/spec.md`. "Things about numbers" is a theme.
+- **A want that names a screen is not a capability.** Find the capability under it.
+- **A want that is a payload variation of something that exists is a Story, not a Feature** — a
+  number where there was a tick. Reopen that Feature rather than minting a second one against
+  the same spec (`docs/agents/issue-tracker.md` § *Closing the hierarchy*).
+- **An entry that has survived two grooming passes untouched is a forced choice** — promote it or
+  drop it, and say which you would do. There is no third option and no deferring it again. This
+  is the rule the parking lot stated and never enforced.
+
+Present that as a stop, in the five-part form: the clusters and their dispositions, the question
+*which cluster do we take forward*, and a recommendation naming one. It is a stop, not a gate —
+no marker, no CI check, no G-number.
+
+**2 — Grill the cluster they pick.** `Skill(skill: "grill")`, the conductor branch, exactly as
+Intake step 1 below describes it. Same skill, same questions, same output.
+
+**Three things must hold before you may present the cluster at G1.** They are what separates a
+Feature from a theme, and none is optional:
+
+- **You can state the Feature's first Story in one sentence.** If you cannot, the cluster is not
+  a capability yet. Say so and go back to step 1 — this is the cheapest readiness test there is.
+- **You can name the wants it deliberately leaves behind**, by id. G1 asks what the Feature does
+  not cover; naming the specific entries turns that from a sentence into a decision.
+- **You can say which of its Stories you would build first**, judged against the five-percent
+  principle: a thin version of seven things beats a deep version of one.
+
+**3 — Stop at G1**, in the standard form. On approval, spawn `orchestrator` for the Feature issue
+and its sub-issue edge — and for a new Epic first, if the cluster does not belong under an
+existing one. Then move every promoted entry out of *Wants* into *Decided*, one line each with
+the issue number, and commit that with the same message the issues went out under. Merge the
+backlog PR.
+
+From there you are on the existing path: ask the human to type `/to-tickets <issue#>`, stop it
+after the breakdown quiz, and **stop at G2**. Intake step 4 below is that step, unchanged.
+
+`/atlas backlog B-007` skips step 1 and takes that entry forward on its own. Use it when they
+name an entry; do not use it to avoid clustering, because clustering is most of the value.
+
 ## Intake: `/atlas feature <idea>`
 
 Product definition sits upstream of Stage 0 and is a conversation, not a pipeline
@@ -212,7 +324,7 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
 1. **Grill the idea yourself, with the `grill` skill** — `Skill(skill: "grill")`. This is the
    *Feature* grill, and it is yours because it is a conversation: you are the only session that
    can ask a round and wait for the answer, and the skill's conductor branch is written for
-   exactly that. Against `CONTEXT.md`, `docs/parking-lot.md` and the existing capability specs:
+   exactly that. Against `CONTEXT.md`, `docs/backlog.md` and the existing capability specs:
    one capability or several? What is the slug? Which Epic does it belong under? What does it
    *not* cover? Ask the questions whose answers would change the work; do not ask four when one
    decides it.
@@ -242,9 +354,9 @@ If Stories are already on the tracker when the human hands you the breakdown, `/
 its publish step. Say so and check what it wrote before going on — rule 5. Issues carrying
 acceptance criteria are a rule 4 breach that the spec, not the issue, has to win against later.
 
-If the idea is not ready to be a Feature, the right outcome is a line in
-`docs/parking-lot.md`, not a Feature issue. Nothing is implemented from that file, and an
-entry leaves it in exactly one direction.
+If the idea is not ready to be a Feature, the right outcome is a want in
+`docs/backlog.md` — say so and capture it with the `/atlas idea` procedure below, rather than
+opening a Feature issue for it. Nothing is implemented from that file.
 
 ## When to stop rather than improvise
 
