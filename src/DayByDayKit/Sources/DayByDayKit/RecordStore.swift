@@ -69,9 +69,15 @@ public final class RecordStore {
         history.remove(tick)
     }
 
-    private func write(_ ticks: Set<Tick>) throws {
-        let document = RecordDocument(ticks)
-        let data = try JSONEncoder().encode(document)
+    /// Writes `nextTicks` as the whole document, in the byte-stable form `design.md` § *The form
+    /// on disk* fixes: `.sortedKeys` so a keyed container's keys do not follow Foundation's
+    /// per-process hash order, on top of `RecordDocument`'s own stable tick order, so two equal
+    /// sets of ticks always produce byte-identical files.
+    private func write(_ nextTicks: Set<Tick>) throws {
+        let document = RecordDocument(nextTicks)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let data = try encoder.encode(document)
 
         do {
             try FileManager.default.createDirectory(

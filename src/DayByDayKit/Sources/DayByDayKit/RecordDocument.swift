@@ -18,8 +18,9 @@ struct RecordDocument: Codable {
     var ticks: [TickRecord]
 
     /// Builds the document that exactly represents `ticks`, in the stable order `design.md` fixes:
-    /// by commitment name, then kept-from day, then date — so two equal sets of ticks produce
-    /// byte-identical files.
+    /// by commitment name, then kept-from day, then date, then schedule as the last tiebreaker for
+    /// two commitments alike in the first three — so two equal sets of ticks produce byte-identical
+    /// files.
     init(_ ticks: Set<Tick>) {
         version = Self.currentVersion
         self.ticks = ticks
@@ -31,7 +32,10 @@ struct RecordDocument: Codable {
                 if lhs.commitment.keptFrom != rhs.commitment.keptFrom {
                     return lhs.commitment.keptFrom < rhs.commitment.keptFrom
                 }
-                return lhs.date < rhs.date
+                if lhs.date != rhs.date {
+                    return lhs.date < rhs.date
+                }
+                return lhs.commitment.schedule < rhs.commitment.schedule
             }
     }
 
@@ -122,7 +126,7 @@ struct DateRecord: Codable, Equatable, Comparable {
 /// One of the four shapes `Schedule` has. The conversion from `Schedule` is an exhaustive `switch`,
 /// so a fifth case is a compile error here rather than a silent gap — `design.md` § *A fifth
 /// schedule shape* names this on purpose.
-enum ScheduleRecord: Codable {
+enum ScheduleRecord: Codable, Equatable, Comparable {
     case weekdays([String])
     case dayOfMonth(Int)
     case everyNDays(Int, from: DateRecord)
@@ -237,6 +241,25 @@ enum ScheduleRecord: Codable {
             try container.encode(start, forKey: .from)
         case .timesPerWeek(let timesPerWeek):
             try container.encode(timesPerWeek, forKey: .timesPerWeek)
+        }
+    }
+
+    /// Orders every shape against every other, case first then payload, so `RecordDocument` has a
+    /// tiebreaker for two ticks alike in commitment name, kept-from day and date but not schedule.
+    static func < (lhs: ScheduleRecord, rhs: ScheduleRecord) -> Bool {
+        lhs.sortKey < rhs.sortKey
+    }
+
+    private var sortKey: String {
+        switch self {
+        case .weekdays(let names):
+            return "0:" + names.joined(separator: ",")
+        case .dayOfMonth(let day):
+            return "1:\(day)"
+        case .everyNDays(let days, from: let start):
+            return "2:\(days):\(start.year)-\(start.month)-\(start.day)"
+        case .timesPerWeek(let timesPerWeek):
+            return "3:\(timesPerWeek)"
         }
     }
 }
