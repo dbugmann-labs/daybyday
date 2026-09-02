@@ -323,6 +323,23 @@ func aCommitmentHandedTwiceHasTwoRows() {
     #expect(dayView.rows.map(\.isKept) == [false, false])
 }
 
+@Test("two day views of the same commitments, date and history are the same day view")
+func twoDayViewsOfTheSameCommitmentsDateAndHistoryAreTheSameDayView() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.monday, .thursday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+
+    let first = DayView(of: [gym, run], on: monday, in: history)
+    let second = DayView(of: [gym, run], on: monday, in: history)
+
+    #expect(first == second)
+}
+
 @Test("a day view of no commitments at all has no rows")
 func aDayViewOfNoCommitmentsAtAllHasNoRows() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!

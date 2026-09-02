@@ -81,7 +81,7 @@ and #55's `tasks.md` did; a prediction here is not evidence.
 - [x] 2.18 `a commitment handed twice has two rows` — no deduplication. Fails an implementation
   backed by a `Set` or one that filters duplicates out. Pinned rather than drove: 2.1's array `map`
   never deduplicated.
-- [ ] 2.19 `two day views of the same commitments, date and history are the same day view` — expected
+- [x] 2.19 `two day views of the same commitments, date and history are the same day view` — expected
   to pin synthesised `Equatable`.
 - [ ] 2.20 `two day views of the same commitments and history on different dates are different day
   views` — the rows are identical on both dates, so this fails unless the date is part of the value.
