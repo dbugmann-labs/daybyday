@@ -74,3 +74,33 @@ func aWeeklyQuotaOfOneIsDueOnEveryDateOfAWeek() {
         #expect(schedule.isDue(on: date))
     }
 }
+
+@Test("a quota below one time a week is not a weekly quota")
+func aQuotaBelowOneTimeAWeekIsNotAWeeklyQuota() {
+    let zero = WeeklyQuota(timesPerWeek: 0)
+    let negativeOne = WeeklyQuota(timesPerWeek: -1)
+
+    #expect(zero == nil)
+    #expect(negativeOne == nil)
+}
+
+@Test("a quota of more times a week than the week has days is not a weekly quota")
+func aQuotaOfMoreTimesAWeekThanTheWeekHasDaysIsNotAWeeklyQuota() {
+    let eight = WeeklyQuota(timesPerWeek: 8)
+
+    #expect(eight == nil)
+}
+
+@Test("one time a week is a weekly quota")
+func oneTimeAWeekIsAWeeklyQuota() {
+    let quota = WeeklyQuota(timesPerWeek: 1)
+
+    #expect(quota != nil)
+}
+
+@Test("seven times a week is a weekly quota")
+func sevenTimesAWeekIsAWeeklyQuota() {
+    let quota = WeeklyQuota(timesPerWeek: 7)
+
+    #expect(quota != nil)
+}
