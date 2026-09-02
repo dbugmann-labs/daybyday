@@ -10,8 +10,8 @@
 - [x] 1.2 Confirm nothing else in the package moved: `Commitment.swift`, `History.swift`,
   `Tick.swift`, `Schedule.swift`, `CalendarDate.swift`, `DayOfMonth.swift`, `DayInterval.swift`,
   `Weekday.swift`, `WeeklyQuota.swift` and `Package.swift` are untouched in `git diff --stat`, and
-  `cd src/DayByDayKit && swift test` still reports the ninety-seven tests from #8, #9, #10, #11, #42
-  and #55 passing.
+  `cd src/DayByDayKit && swift test` still reports the one hundred and twelve tests from #8, #9,
+  #10, #11, #42, #55 and #56 passing.
 - [x] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
   `0/21 covered` for this change and names `"a day view holds a row for each commitment due on the
   date"` as next.
@@ -112,9 +112,12 @@ for this.
 
 ## 3. Gates
 
-- [x] 3.1 `cd src/DayByDayKit && swift test` reports 120 tests passing and no failures — the
-  twenty-three here plus the ninety-seven from #8, #9, #10, #11, #42 and #55, none of which may change
-  — and `pnpm run verify` exits 0.
+- [x] 3.1 `cd src/DayByDayKit && swift test` reports 135 tests passing and no failures — the
+  twenty-three here plus the one hundred and twelve from #8, #9, #10, #11, #42, #55 and #56, none of
+  which may change — and `pnpm run verify` exits 0. Both figures were re-measured at #74's second
+  G7, which found them stale rather than wrong: the branch has since been rebased onto #56's
+  `RecordStoreTests` and `RecordDocumentTests`, fifteen tests that landed after `design.md` took its
+  count of ninety-seven.
 - [x] 3.2 `pnpm exec openspec validate add-day-view --strict` exits 0 and `pnpm run checks` reports
   scenario coverage as 23 of 23.
 - [ ] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).

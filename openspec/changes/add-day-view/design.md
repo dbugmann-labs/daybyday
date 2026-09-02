@@ -18,14 +18,16 @@ for the first screen attach at a view-model seam inside `DayByDayKit`"* — so n
 beyond this Story: #71 taps it and #72 moves it.
 
 **Measured on this machine on 2026-09-02, on Apple Swift 6.3.3 in language mode 6, rather than
-recalled.** `cd src/DayByDayKit && swift test` reports 97 tests passing today, which is the number
-`tasks.md` counts up from; `openspec` is 1.10.0. Every weekday this delta pins was checked in
-Foundation's own `.gregorian` calendar under UTC, the calendar `CalendarDate` uses, rather than
-trusted from any other source: in 2026, 31 August is a Monday, 1 September a Tuesday, 2 September a
-Wednesday, 5 September a Saturday and 6 September a Sunday; 1 January 2026 is a Thursday, which is
-deliberately not a day any of the delta's schedules is due on, since the day a commitment is kept from
-need not be one (ADR-1013). 3 January 1583 and 27 December 9999 are both Mondays, which is what lets
-one scenario pin the two ends of the supported range against the same weekday set.
+recalled.** `cd src/DayByDayKit && swift test` reported 97 tests passing when this design was
+written; the branch has since been rebased onto #56's fifteen, so `tasks.md` counts up from one
+hundred and twelve and the package reports 135 with this change in it. `openspec` is 1.10.0. Every
+weekday this delta pins was checked in Foundation's own `.gregorian` calendar under UTC, the
+calendar `CalendarDate` uses, rather than trusted from any other source: in 2026, 31 August is a
+Monday, 1 September a Tuesday, 2 September a Wednesday, 5 September a Saturday and 6 September a
+Sunday; 1 January 2026 is a Thursday, which is deliberately not a day any of the delta's schedules
+is due on, since the day a commitment is kept from need not be one (ADR-1013). 3 January 1583 and 27
+December 9999 are both Mondays, which is what lets one scenario pin the two ends of the supported
+range against the same weekday set.
 
 Two arithmetic facts the delta stands on, checked against the shipped rules rather than assumed: a
 schedule on the 25th of the month is not due on 31 August 2026, and an interval of 14 days starting

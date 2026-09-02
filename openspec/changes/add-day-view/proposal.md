@@ -71,7 +71,7 @@ either capability that it does not already export.
 
 - **`src/DayByDayKit`** — one new source file, `Sources/DayByDayKit/DayView.swift`, and one new test
   file, `Tests/DayByDayKitTests/DayViewTests.swift`. Nothing existing is edited. The package reports
-  97 tests passing today, measured on 2026-09-02; this change takes it to 120.
+  112 tests passing today, measured on 2026-09-02; this change takes it to 135.
 - **No new dependency, no `Package.swift` change, no CI change.** CI discovers `Package.swift` and
   reads `@Test("...")` display names out of the source, both of which this change leaves alone.
 - **`openspec/specs/day-screen/spec.md`** is created at archive time, by `/opsx:archive` and nothing

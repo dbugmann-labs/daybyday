@@ -181,14 +181,16 @@ given that is due, in that order, and combines none of them — the same commitm
 has two rows, because deciding otherwise would be deciding something about identity that no
 capability has given a day view to decide. It is also an **answer, not a window**: it reports a
 history as that history stood when the view was made, so a tick made afterwards is seen by the next
-day view rather than by this one. It **is what it holds** — the rows and the date, and nothing of what
-it was handed: two day views a reader could not tell apart are the same day view, even where one was
-offered a commitment that was not due on the date or read a history holding a tick it never looked up.
-What was offered is the caller's to remember; the day view keeps the answer. Corrected 2026-09-02 at
-#70's G7, where the requirement had claimed identity followed the arguments. A commitment on a **weekly quota** is due every day (ADR-1015), so
+day view rather than by this one. A commitment on a **weekly quota** is due every day (ADR-1015), so
 it has a row every day of its week, unticked on the days it was not done; whether the week's quota
 has been met is not something a day view can see, and hiding a met one is a later Story's. Settled
 2026-09-02 at the grill of `add-day-view` (#70).
+
+It **is what it holds** — the rows and the date, and nothing of what it was handed: two day views a
+reader could not tell apart are the same day view, even where one was offered a commitment that was
+not due on the date or read a history holding a tick it never looked up. What was offered is the
+caller's to remember; the day view keeps the answer. Corrected 2026-09-02 at #70's G7, where the
+requirement had claimed identity followed the arguments.
 
 **Row** — one commitment's line in a day view: its name, whether it is kept, and the place a tick is
 made. Ticking belongs to the row and therefore to `day-screen`: `record` says what a tick is and
