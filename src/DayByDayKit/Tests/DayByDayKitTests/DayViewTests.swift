@@ -359,6 +359,25 @@ func twoDayViewsOfTheSameCommitmentsAndHistoryOnDifferentDatesAreDifferentDayVie
     #expect(onMonday != onWednesday)
 }
 
+@Test("a day view does not change when the history it was built from is ticked afterwards")
+func aDayViewDoesNotChangeWhenTheHistoryItWasBuiltFromIsTickedAfterwards() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+
+    let before = DayView(of: [gym], on: monday, in: history)
+    history.add(Tick(gym, on: monday)!)
+    let after = DayView(of: [gym], on: monday, in: history)
+
+    #expect(before.rows.count == 1)
+    #expect(!before.rows[0].isKept)
+    #expect(after.rows.count == 1)
+    #expect(after.rows[0].isKept)
+    #expect(before != after)
+}
+
 @Test("a day view of no commitments at all has no rows")
 func aDayViewOfNoCommitmentsAtAllHasNoRows() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!

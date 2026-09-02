@@ -87,9 +87,10 @@ and #55's `tasks.md` did; a prediction here is not evidence.
   views` — the rows are identical on both dates, so this fails unless the date is part of the value.
   The scenario that justifies storing it. Pinned rather than drove: 2.1's implementation already
   stored `date`.
-- [ ] 2.21 `a day view does not change when the history it was built from is ticked afterwards` — the
+- [x] 2.21 `a day view does not change when the history it was built from is ticked afterwards` — the
   snapshot pin, and the one that would fail a `DayView` holding a reference to a live history. Three
   assertions: the old view unchanged, a freshly formed one kept, the two unequal. Deliberately last.
+  Pinned rather than drove: `History` is a value type and `isKept` is read at construction.
 
 ## 3. Gates
 
