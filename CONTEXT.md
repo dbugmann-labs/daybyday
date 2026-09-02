@@ -54,8 +54,8 @@ before any test is written.
 ## Product principles
 
 The rules a want is judged against. These are not backlog entries — they are what decides
-whether one is any good, which is why they live here rather than in `docs/backlog.md`. Agreed
-2026-08-28 with `EPIC: Daily commitments` (#1).
+whether one is any good, which is why they live here rather than in `docs/backlog.md`. The
+first four were agreed 2026-08-28 with `EPIC: Daily commitments` (#1); each later one says when.
 
 **Nothing congratulates you.** No streaks, no gamification, no celebration of a run of good
 days. A row that has been ticked just goes quiet. This is not a stylistic preference: streaks
@@ -74,6 +74,14 @@ product's want. ADR-1001.
 **Restore, not sync.** History survives moving to a new phone. Live synchronisation between two
 devices is out of scope, and saying so is what keeps it out.
 
+**Entered where you stand.** Every daily entry is made on the day screen, in the row, with as
+little interaction as the value allows: a tick is one tap, a number is a few, a sentence is typed
+there and not somewhere else. A want that puts a second screen into the daily visit is judged
+against this and usually loses; a screen for *looking* is not a daily visit and is not what this
+rules out. Agreed 2026-09-02 at the first grooming pass, from a want that turned out to be a rule
+rather than a thing to build — "little interaction needed (e.g. just multiple buttons to add
+things each day, without much navigation)".
+
 ## Domain vocabulary
 
 **Commitment** — something you have decided you owe yourself on a recurring rhythm: the gym,
@@ -89,8 +97,17 @@ times within a week on any days.
 **Due** — a commitment is due on a day when that day's date satisfies its schedule. Whether a
 commitment is due is a question asked *of a date*, not of the present moment.
 
-**Tick** — to record that a due commitment was done. The past is writable: a day other than
-today can be ticked.
+**Record** — what a day holds for a commitment: the durable fact that, on that calendar date,
+the commitment was kept. It is keyed to the date and never to the time it was entered, there is
+at most one per commitment per day, and it survives the app being closed and opened again —
+durability is a property of the record, not of some store behind it, because a record a few
+days old that cannot be reconstructed is the failure the product exists to remove. A tick is
+the plain kind; a number or a sentence would be other kinds, and none of those exists yet.
+Agreed 2026-09-02 at the first grooming pass, with `FEAT: record`.
+
+**Tick** — to record that a due commitment was done, and the plain kind of record that
+results. A tick is of a *due* commitment: a day on which the commitment is not due takes no
+tick. The past is writable: a day other than today can be ticked.
 
 **Day** — the unit the product is organised around. The landing screen is one day, and every
 record is keyed to a date rather than to the time it was entered.

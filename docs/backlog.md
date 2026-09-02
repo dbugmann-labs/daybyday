@@ -30,8 +30,8 @@ ever opened it.
 want was tested against and what the test returned — one principle, not all four. A want that
 *fails* one is still captured, with the failure written down, because that is a drop the next
 grooming pass makes deliberately rather than an idea that quietly never came back. Entries
-B-001 to B-009 predate the field and do not carry it yet; the next grooming pass fills them in
-as it reads them.
+B-001 to B-009 predated the field; the first grooming pass, on 2026-09-02, filled them in as
+it read them.
 
 ## What day one looks like
 
@@ -67,6 +67,9 @@ shape it lacks, not the quota.
 - **Trigger** — once a day, on the scale. Separately and rarely, to look at the trend.
 - **Touches** — `commitment`, as a numeric payload rather than a tick; the line is a surface
   that is not the day screen.
+- **Principle** — tested against *five percent of seven things*: passes. A number where
+  there was a tick makes a new kind of record possible rather than deepening one; the line
+  over months is a look-back and is judged with B-007.
 - **Open** — one want or two? Entering a number and reading months of them are different
   triggers, and the second may be B-007 or B-008 wearing a different name. The 2026-09-02
   braindump named the entry and the graph in separate breaths — the graph as "a separate area
@@ -84,6 +87,9 @@ shape it lacks, not the quota.
 - **Trigger** — several times a day, after eating.
 - **Touches** — `commitment`. The same numeric payload as B-001 with the opposite write
   semantics: add, never replace.
+- **Principle** — tested against *five percent of seven things*: passes as a number, strains
+  as a running total. The number is B-001's new kind of record; accumulating is depth on it,
+  and is worth less on its own than the plain number.
 - **Open** — is there a target for the day, and does reaching it make the commitment done?
 - **Open** — the 2026-09-02 braindump groups protein with weight, mood and journal as "daily",
   and says nothing about accumulating. That is not a contradiction of the original words, but
@@ -102,6 +108,9 @@ shape it lacks, not the quota.
 - **Trigger** — once a day, in the row itself, with no second screen.
 - **Touches** — `commitment` numeric payload and `day-screen`, because "one tap" is a claim
   about the row, not about the value.
+- **Principle** — tested against *an iPhone, in your hand*: passes, and is the want that
+  states it most sharply — one tap, in the row, phone in hand. The ten-point scale is what
+  strains it, not the principle.
 - **Answered 2026-09-02** — the scale is 1 to 10. It was the open question on this entry, and
   the braindump states it outright.
 - **Open** — ten values and "a single tap" pull against each other: a ten-point scale is a
@@ -119,6 +128,9 @@ shape it lacks, not the quota.
 
 - **Trigger** — once a day, evening.
 - **Touches** — `commitment` with a text payload, plus somewhere to type that a row is not.
+- **Principle** — tested against *an iPhone, in your hand*: passes only because it is short.
+  Two or three sentences typed on a phone is the most interaction any daily entry asks for,
+  and "deliberately not an essay" is the owner drawing that line.
 - **Open** — the day-one list has journaling as a **tick**, not as written text. The 2026-09-02
   braindump lists journal entries alongside weight, protein and mood — the three things that
   carry a value — and not alongside sports, supplements and habits, which are the ticks. That
@@ -136,6 +148,9 @@ shape it lacks, not the quota.
 - **Trigger** — daily, alongside supplements.
 - **Touches** — `commitment`. Supplements and habits arrived as one line, and this is the half
   that is not a supplement: the tick means the opposite thing.
+- **Principle** — tested against *nothing congratulates you*: passes narrowly. Ticking that a
+  thing was *not* done records an absence, and a run of absences is a streak by another
+  name; it survives as long as the tick stays a record and never becomes a count.
 - **Open** — is the negation a property of the commitment, or only of how its row is worded?
 
 ### B-006 — keep unticked commitments visible into the evening rather than silently missed
@@ -145,6 +160,10 @@ shape it lacks, not the quota.
 
 - **Trigger** — passive; it is what the day screen does when you have not done something yet.
 - **Touches** — `day-screen`.
+- **Principle** — tested against *nothing congratulates you*, read from the other side:
+  passes. A row that is not ticked simply does not go quiet, which is the principle's own
+  mechanic; it fails the moment "visible" becomes a badge or a nudge, which is the nag the
+  Open line names.
 - **Open** — visible how? This is one sentence away from being a nag, which
   `CONTEXT.md` § *Product principles* rules out.
 
@@ -159,26 +178,27 @@ shape it lacks, not the quota.
 > can see the weight / mood / protein over time. But this should be a separate area which can be
 > navigated to."
 
+*Merged in 2026-09-02, from B-008 (captured 2026-08-29):*
+
+> "still open: whether looking back means navigating to a past day, or a view that aggregates a
+> commitment over time"
+
 - **Trigger** — occasionally, and never as part of the five daily visits.
 - **Touches** — unclaimed. Probably its own capability rather than `day-screen`, because its
   whole point is that it is not the landing screen — and the braindump says so twice, calling it
   "a separate area which can be navigated to".
+- **Principle** — tested against *five percent of seven things*: strains. A page per
+  commitment is depth on one thing at a time, and it passes only if the page is the same
+  thin thing for every commitment rather than a deep one for weight.
 - **Open** — the word *area* was dropped from the vocabulary (`CONTEXT.md`). What this is a page
   *per* needs re-deciding before it is a Feature. The braindump narrows it without settling it:
   the three examples it gives — weight, mood, protein — are the commitments that carry a number,
   and it says "some areas", not all. A page per numeric commitment and a page per commitment are
   different Features.
-
-### B-008 — see a commitment aggregated over time — "eleven gym sessions last month"
-*Captured 2026-08-29, migrated 2026-09-02.*
-
-> "still open: whether looking back means navigating to a past day, or a view that aggregates a
-> commitment over time"
-
-- **Trigger** — occasionally, out of curiosity rather than obligation.
-- **Touches** — unclaimed, and likely the same surface as B-001's line and B-007's page.
-- **Open** — navigating to a past day is already implied by ticking any day; this is the other
-  half, and nobody has agreed to build it. Strong candidate to merge with B-001 and B-007.
+- **Open** — from B-008: the page *is* the aggregate — "eleven gym sessions last month" for a
+  tick, a line for a number — and B-008's principle test travels with it: a count is one step
+  from a streak, and it stays on the right side only while it is looked at deliberately and
+  never shown unasked. B-008's other half, navigating to a past day, is B-016.
 
 ### B-009 — carry my history to a new phone
 *Captured 2026-08-28, migrated 2026-09-02.*
@@ -188,28 +208,11 @@ shape it lacks, not the quota.
 - **Trigger** — once every few years, and catastrophically if it does not work.
 - **Touches** — unclaimed. Storage, which is also the open technical decision in
   `docs/open-questions.md`.
+- **Principle** — tested against *restore, not sync*: passes by definition. It is the want
+  the principle exists to promise, and the principle's second half — no live sync — is the
+  boundary the quote already draws.
 - **Open** — restore is stated as the boundary, so live sync is out. What "restore" means
   concretely — a file, iCloud, a backup you can see — is not decided.
-
-### B-010 — make every daily entry from the landing screen, without navigating
-*Captured 2026-09-02.*
-
-> "Focusing of keeping things very simple, with little interaction needed (e.g. just multiple
-> buttons to add things each day, without much navigation)"
-
-- **Trigger** — every one of the daily visits. It is the shape all of them share rather than one
-  of them.
-- **Touches** — `day-screen`. B-003 makes this claim for mood alone; this is the same claim over
-  every commitment, including the ones carrying a number or a sentence.
-- **Principle** — tested against *five percent of seven things*: it passes as a constraint on how
-  cheap each of the seven is to enter, but it makes nothing new possible on its own, which is why
-  it may not be a want at all — see Open.
-- **Open** — is this a want or a fifth product principle? It says how everything else is entered
-  rather than adding anything to enter. If grooming reads it as a principle it belongs in
-  `CONTEXT.md` § *Product principles*, and this entry is dropped into that.
-- **Open** — it collides with B-004 and B-003 as written. Two or three sentences of journal and a
-  ten-point mood are not buttons, so either "little interaction" means something looser than a
-  button per commitment, or those two wants are exceptions to it.
 
 ### B-011 — see something of a commitment's history on the day screen itself
 *Captured 2026-09-02.*
@@ -227,12 +230,87 @@ shape it lacks, not the quota.
   inherits is a decision, not a want. It cannot be taken before B-007, because what may appear on
   the day screen depends on what the detail page is a page *per*.
 
+### B-013 — stop keeping a commitment
+*Captured 2026-09-02, from the sweep. The wording is the sweep's, accepted with "accept" rather
+than said.*
+
+> "Stop keeping a commitment."
+
+- **Trigger** — rarely, when a commitment has run its course: the plants died, the lenses gave
+  way to glasses.
+- **Touches** — `commitment` (#26). Story #42 excludes "archiving or deleting one" by name.
+- **Principle** — tested against *five percent of seven things*: fails on its face, since it makes
+  nothing new possible, and is captured anyway. A commitment that cannot be retired stays due
+  every day, unticked, and reads as a miss for ever; the sweep exists for the want nobody says.
+- **Open** — what happens to its history. The record is durable (`docs/open-questions.md`
+  § *Settled*), so retiring must keep the ticks, and nobody has said whether a retired commitment
+  can still be looked at (B-007) or brought back.
+- **Open** — is retiring a *kept-until* day, the mirror of ADR-1011's kept-from day? That would
+  leave every past day answering as it did.
+
+### B-014 — change a commitment: its name, or the rhythm it runs on
+*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
+
+> "Change a commitment — rename it, move the gym to Tue/Thu."
+
+- **Trigger** — rarely; a new gym timetable, a typo in a name.
+- **Touches** — `commitment` (#26). Story #42 excludes editing and renaming by name.
+- **Principle** — tested against *five percent of seven things*: fails on its face and is captured
+  anyway, because the alternative — retire it and define it again — splits one commitment's
+  history in two.
+- **Open** — what changing the rhythm does to the past. ADR-1011 fixes that a past day's answer
+  does not change once given; a rhythm changed today either rewrites which past days were due, or
+  applies from a day forward, and only the second keeps that promise.
+
+### B-015 — define a commitment from the phone: a name and the rhythm it runs on
+*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
+
+> "Define a commitment from the phone."
+
+- **Trigger** — day one, eight times over; then rarely.
+- **Touches** — `commitment` (#26), and a screen that is not the day screen. Story #42 is the
+  type, and excludes "anything on screen"; without this the eight day-one commitments have no way
+  in.
+- **Principle** — tested against *an iPhone, in your hand*: passes. Choosing one of four rhythm
+  shapes on a phone is the whole interaction, and it happens rarely enough to be allowed a screen.
+- **Open** — the kept-from day (ADR-1011): typed, or defaulted to today? The type has no default on
+  purpose, so a screen has to choose.
+- **Open** — "every day" can be said three ways (`docs/open-questions.md` § *Settled*); a picker
+  shows one of them.
+
+### B-016 — go to a day other than today, and tick it
+*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
+
+> "Go to a day other than today."
+
+- **Trigger** — the morning after, or a gap a few days old — the failure the product exists to
+  remove.
+- **Touches** — `day-screen` (#27). Its intent is "for a given date", and nothing yet says the
+  owner is the one who gives it.
+- **Principle** — tested against *nothing congratulates you*: passes, and is that principle's
+  precondition. A record that can be filled in late is what makes a missed day a fact rather than
+  a broken streak.
+- **Open** — how far back, which is `docs/open-questions.md`'s open product question, forced by
+  B-012 and met here.
+- **Open** — forward as well? A day not yet arrived has nothing to tick; whether it is reachable
+  at all is the first Story's to say.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-02 — tick a due commitment on a day, and have it kept → `FEAT: record` (#53),
+  under `EPIC: Daily commitments` (#1). B-001..B-005 stay wants and reopen it when they come;
+  B-009 is now a Story against it rather than a capability of its own.
+- 2026-09-02 — merged: B-008 (see a commitment aggregated over time) into B-007. A page per
+  commitment *is* the aggregate; the two were one look-back said in two breaths, and B-008's
+  other half — navigating to a past day — is B-016.
+- 2026-09-02 — dropped into `CONTEXT.md` § *Product principles* as *Entered where you stand*:
+  B-010 (make every daily entry from the landing screen, without navigating). It says how
+  everything is entered and adds nothing to enter, so it judges wants rather than being one —
+  the reading its own Open line suspected.
 - 2026-08-31 — reading 3× a week, any nights, open until the week turns over → Story #11
   `add-weekly-quota-schedule`, under `FEAT: schedule` (#6).
 - 2026-08-31 — a commitment due on the 25th of every month → shipped, `openspec/specs/schedule/`.
@@ -253,4 +331,14 @@ what "survived two passes" is counted against; an entry captured after a pass di
 through it. A pass that promoted nothing still gets a line — it is the pass the staleness rule
 most needs to count. Say what the coverage sweep found, including when it found nothing.
 
-*None yet. The backlog was migrated from the parking lot on 2026-09-02 and has not been groomed.*
+- 2026-09-02 — pass over 11 wants, the first. Sweep: every rhythm on the day-one week is
+  shipped or in flight (#11), and not one of the eight commitments can yet be defined on the
+  phone, shown for a day, or ticked. Ticking has no Feature, no Story and no want — the Epic
+  absorbed it on 2026-08-28 and no Feature claimed it, and both in-flight Stories say in
+  writing that no tick exists. `commitment` (#42) excludes changing and retiring one by name
+  and nothing wants either; defining one from a screen is unsaid; going to a day other than
+  today is implied by "the past is writable" and said nowhere. `docs/open-questions.md`
+  holds no want in disguise. Principle lines filled in on B-001..B-009. Captured B-012..B-016
+  from the sweep; merged B-008 into B-007; dropped B-010 into `CONTEXT.md` as *Entered where
+  you stand*. Cluster A — the record: B-012, with B-001..B-005 behind it — grilled and
+  promoted at G1: B-012 → `FEAT: record` (#53).
