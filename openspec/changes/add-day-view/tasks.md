@@ -62,7 +62,7 @@ and #55's `tasks.md` did; a prediction here is not evidence.
 - [x] 2.10 `two commitments with the same name and different schedules each have their own row` —
   two rows, both named "Gym", kept independently. Pins that a row is a commitment's line rather than
   a name's, and that nothing collapses them.
-- [ ] 2.11 `a commitment on a weekly quota has a row on every day of the week` — ADR-1015's cost made
+- [x] 2.11 `a commitment on a weekly quota has a row on every day of the week` — ADR-1015's cost made
   visible: a seven-date sweep with an empty history, then the same sweep with three ticks. The four
   unticked days still hold a row.
 - [ ] 2.12 `a day view is formed in the first supported year and in the last` — the *no clock* pin:

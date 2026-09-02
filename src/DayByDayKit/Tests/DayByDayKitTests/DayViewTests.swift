@@ -152,6 +152,47 @@ func twoCommitmentsWithTheSameNameAndDifferentSchedulesEachHaveTheirOwnRow() {
     #expect(!dayView.rows[1].isKept)
 }
 
+@Test("a commitment on a weekly quota has a row on every day of the week")
+func aCommitmentOnAWeeklyQuotaHasARowOnEveryDayOfTheWeek() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let week = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ]
+    let emptyHistory = History()
+
+    let unticked = week.map { DayView(of: [reading], on: $0, in: emptyHistory) }
+
+    for dayView in unticked {
+        #expect(dayView.rows.count == 1)
+        #expect(dayView.rows[0].name == "Reading")
+        #expect(!dayView.rows[0].isKept)
+    }
+
+    var tickedHistory = History()
+    let monday = week[0]
+    let wednesday = week[2]
+    let saturday = week[5]
+    tickedHistory.add(Tick(reading, on: monday)!)
+    tickedHistory.add(Tick(reading, on: wednesday)!)
+    tickedHistory.add(Tick(reading, on: saturday)!)
+
+    let ticked = week.map { DayView(of: [reading], on: $0, in: tickedHistory) }
+    let keptDates = Set([monday, wednesday, saturday])
+
+    for (date, dayView) in zip(week, ticked) {
+        #expect(dayView.rows.count == 1)
+        #expect(dayView.rows[0].isKept == keptDates.contains(date))
+    }
+}
+
 @Test("a day view of no commitments at all has no rows")
 func aDayViewOfNoCommitmentsAtAllHasNoRows() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
