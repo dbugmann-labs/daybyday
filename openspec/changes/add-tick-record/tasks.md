@@ -1,20 +1,20 @@
 ## 1. The public surface
 
-- [ ] 1.1 Add `Sources/DayByDayKit/Tick.swift` declaring `public struct Tick: Hashable, Sendable`
+- [x] 1.1 Add `Sources/DayByDayKit/Tick.swift` declaring `public struct Tick: Hashable, Sendable`
   exactly as `design.md` § *The seam* gives it — internal stored `commitment: Commitment` and
   `date: CalendarDate`, `public init?(_ commitment: Commitment, on date: CalendarDate)` with a body
   of `fatalError("not implemented")`. Nothing else public. Verify with `cd src/DayByDayKit && swift
   build` exiting 0.
-- [ ] 1.2 Add `Sources/DayByDayKit/History.swift` declaring `public struct History: Hashable,
+- [x] 1.2 Add `Sources/DayByDayKit/History.swift` declaring `public struct History: Hashable,
   Sendable` as § *The seam* gives it — `public init()`, `public mutating func add(_ tick: Tick)`,
   `public mutating func remove(_ tick: Tick)`, `public func isKept(_ commitment: Commitment, on date:
   CalendarDate) -> Bool`, the three methods bodied with `fatalError("not implemented")`, over an
   internal `Set<Tick>`. Nothing else public. Verify with `swift build` exiting 0.
-- [ ] 1.3 Confirm nothing else in the package moved: `Commitment.swift`, `Schedule.swift`,
+- [x] 1.3 Confirm nothing else in the package moved: `Commitment.swift`, `Schedule.swift`,
   `CalendarDate.swift`, `DayOfMonth.swift`, `DayInterval.swift`, `Weekday.swift` and `Package.swift`
   are untouched in `git diff --stat`, and `cd src/DayByDayKit && swift test` still reports the
   sixty-four tests from #8, #9, #10 and #42 passing.
-- [ ] 1.4 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
+- [x] 1.4 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
   `0/23 covered` for this change and names `"a tick is formed for a commitment on a date it is due
   on"` as next.
 
@@ -34,34 +34,38 @@ did; a prediction here is not evidence. The ones `design.md` expects to run red 
 a value unconditionally), 2.12 (the first `isKept`), 2.17 if `add` was made green with anything other
 than a set, 2.19 (the first `remove`), and 2.22 and 2.23 if `remove` left any residue behind.
 
-- [ ] 2.1 `a tick is formed for a commitment on a date it is due on`
-- [ ] 2.2 `a commitment takes no tick on a date it is not due on` — the refusal; made green with
-  `guard commitment.isDue(on: date) else { return nil }` and nothing more.
-- [ ] 2.3 `a commitment takes no tick on a date before the day it is kept from` — pins that the
+- [x] 2.1 `a tick is formed for a commitment on a date it is due on` — ran red (the
+  initializer's `fatalError`), as expected.
+- [x] 2.2 `a commitment takes no tick on a date it is not due on` — the refusal; made green with
+  `guard commitment.isDue(on: date) else { return nil }` and nothing more. Ran red as expected.
+- [x] 2.3 `a commitment takes no tick on a date before the day it is kept from` — pins that the
   guard asks the *commitment* and not the schedule: an implementation that reaches past
-  `Commitment.isDue(on:)` to `Schedule.isDue(on:)` passes 2.2 and fails here.
-- [ ] 2.4 `a commitment on a schedule due on no date takes no tick on any date` — a seven-date
+  `Commitment.isDue(on:)` to `Schedule.isDue(on:)` passes 2.2 and fails here. Pinned green.
+- [x] 2.4 `a commitment on a schedule due on no date takes no tick on any date` — a seven-date
   sweep on the empty weekday set; a legal commitment that can never be ticked, answered rather than
-  errored.
-- [ ] 2.5 `a tick is formed on the last day of a month too short for the scheduled day` —
+  errored. Pinned green.
+- [x] 2.5 `a tick is formed on the last day of a month too short for the scheduled day` —
   delegation reaches the short-month clamp; two assertions, 28 February 2027 formed and 1 March
-  2027 not.
-- [ ] 2.6 `an interval landing before the day it is kept from takes no tick and the first landing
+  2027 not. Pinned green.
+- [x] 2.6 `an interval landing before the day it is kept from takes no tick and the first landing
   after it does` — the two-date interaction from ADR-1013, seen from the tick's side; 28 August
-  2026 not formed, 3 September 2026 formed.
-- [ ] 2.7 `a tick is formed on a due date in the first supported year and in the last` — the *no
+  2026 not formed, 3 September 2026 formed. Pinned green.
+- [x] 2.7 `a tick is formed on a due date in the first supported year and in the last` — the *no
   clock* pin: 3 January 1583 and 27 December 9999 are both Mondays (measured in `design.md`
   § *Context*) and both form. An implementation that compares against `Date()` in any way fails one
-  of them.
-- [ ] 2.8 `two ticks alike in commitment and date are the same tick` — expected to pin synthesised
-  `Equatable`.
-- [ ] 2.9 `two ticks of the same commitment on different dates are different ticks` — with 2.10,
-  the only observable proof that both parts are carried; neither is public.
-- [ ] 2.10 `two ticks of different commitments on the same date are different ticks`
-- [ ] 2.11 `an empty history has kept nothing` — `History()` answers `false`; may pin or drive
-  depending on how 1.2's `fatalError` was replaced.
-- [ ] 2.12 `a commitment ticked on a date was kept on that date` — the first `add` and the first
-  true `isKept`; expected to run red.
+  of them. Pinned green.
+- [x] 2.8 `two ticks alike in commitment and date are the same tick` — expected to pin synthesised
+  `Equatable`. Pinned green.
+- [x] 2.9 `two ticks of the same commitment on different dates are different ticks` — with 2.10,
+  the only observable proof that both parts are carried; neither is public. Pinned green.
+- [x] 2.10 `two ticks of different commitments on the same date are different ticks` — Pinned green.
+- [x] 2.11 `an empty history has kept nothing` — `History()` answers `false`; may pin or drive
+  depending on how 1.2's `fatalError` was replaced. Ran red (the `isKept` `fatalError`); made green
+  by implementing `isKept` as `Tick(commitment, on: date).map(ticks.contains) ?? false`-shaped logic
+  (a `guard let tick` and `ticks.contains(tick)`).
+- [x] 2.12 `a commitment ticked on a date was kept on that date` — the first `add` and the first
+  true `isKept`; expected to run red. Ran red (the `add` `fatalError`); made green with
+  `ticks.insert(tick)`.
 - [ ] 2.13 `a commitment ticked on one date was not kept on another date it is due on`
 - [ ] 2.14 `a tick of one commitment does not keep another on the same date` — two assertions,
   "Run" not kept and "Gym" kept; pins that the key is the commitment value, not the date alone.
