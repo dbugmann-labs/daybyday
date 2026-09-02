@@ -142,17 +142,10 @@ One report per event, never a running commentary. If nothing ran, print nothing.
 ## The gate stop
 
 Every gate and every stop looks the same, so the human learns one shape instead of five. Five
-parts, in this order, and nothing else:
+parts, in this order, and nothing else — **the question first, the detail last**:
 
 ```
 G4 — Spec approved                                     Story #12 add-schedule-rules
-
-What is in front of you
-  since your G2 reply: spec-author ran once, PR #21 opened, CI green on the draft
-  https://github.com/dbugmann-labs/daybyday/pull/21 (draft, rebased on main)
-  proposal.md, and specs/schedule/spec.md — 4 scenarios
-  The decision it turns on: an "every N days" rule anchors to a fixed start
-  date, not to the last tick.
 
 The question
   Are these the right requirements, and is anything missing from the edges?
@@ -168,17 +161,43 @@ Recommendation
 Reply
   approved            → I record the G4 marker on #12 and start the implementer
   changes: <what>     → back to spec-author with your note
+
+Detail
+  since your G2 reply: spec-author ran once, PR #21 opened, CI green on the draft
+  https://github.com/dbugmann-labs/daybyday/pull/21 (draft, rebased on main)
+  proposal.md, and specs/schedule/spec.md — 4 scenarios
+  The decision it turns on: an "every N days" rule anchors to a fixed start
+  date, not to the last tick.
 ```
 
-**The first line of *What is in front of you* is the trail since they last replied** — what ran,
-in one clause, only when something did. Their sessions are days apart and a gate that arrives
-after an unattended run has to stand on its own; this is the same rule as starting every session
-from durable files, applied to the gate. Omit the line when nothing ran, never pad it.
+**The question comes first because that is the order they read in.** Their loop is *what am I
+being asked, what do you think, what do I type* — and a block that puts a page of context in
+front of that is one they answer from the recommendation alone, which is the rubber stamp this
+form exists to prevent, reached from the other side. The ask, the lean and the reply vocabulary
+fit on one screen; everything supporting them sits under `Detail`, where it is read second or
+not at all. ADR-1012, amended.
 
-Keep the rest of *What is in front of you* to what they must actually read, and always name the
-one or two decisions the proposal turns on — a human who reads only your summary should still be
-making a real decision, not rubber-stamping. No praise, no recap of the pipeline, no options they
-did not ask for.
+**`Detail` carries three things and nothing else**: the trail since they last replied, the
+links, and the one or two decisions the thing turns on. The test is mechanical — **anything they
+could read by opening a link is a link, not a paste.** Ten lines is the working budget; if it
+runs longer, what has happened is that an agent's report has been relayed into the block instead
+of the artifact it wrote.
+
+- **Not the agent's report.** `spec-author` describing its own Stories, `orchestrator` listing
+  what it wrote — that is on the tracker and in the PR, and the human opens those.
+- **Not findings that are not the question.** A stop asking about #42 does not also carry three
+  repo edits it noticed. They belong in `docs/open-questions.md`, `docs/backlog.md` or an issue,
+  and the block names where they went in one clause, if at all.
+- **Not praise, not a recap of the pipeline, and no options they did not ask for.**
+
+**The first line of `Detail` is the trail since they last replied** — what ran, in one clause,
+only when something did. Their sessions are days apart and a gate that arrives after an
+unattended run has to stand on its own; this is the same rule as starting every session from
+durable files, applied to the gate. Omit the line when nothing ran, never pad it.
+
+**One exemption, and only one: G7's findings go in verbatim.** ADR-1002 makes the reviewer the
+one artifact that must reach the human unmediated, and that outranks the budget. Everything else
+obeys it.
 
 **The pair is *If you take the recommendation* against *If you don't*** — not yes against no.
 The two read identically at a binary gate and, unlike yes/no, they fit a stop whose reply is a
@@ -210,11 +229,6 @@ as the agent numbered them. ADR-1006.
 ```
 Stop — questions before G4                       Story #9 add-day-of-month-schedule
 
-What is in front of you
-  since your G2 reply: spec-author ran once and opened PR #21
-  https://github.com/dbugmann-labs/daybyday/pull/21 (draft) — written on the
-  recommended answers, so you are reading the question next to the diff it changes.
-
 The question
   1. A month too short for the scheduled day: clamp to its last day, or skip the
      month? spec-author recommends clamp — every month then has exactly one due
@@ -234,6 +248,11 @@ Recommendation
 Reply
   1: clamp           → I hand the answers back to spec-author
   1: skip
+
+Detail
+  since your G2 reply: spec-author ran once and opened PR #21
+  https://github.com/dbugmann-labs/daybyday/pull/21 (draft) — written on the
+  recommended answers, so you are reading the question next to the diff it changes.
 ```
 
 Then re-spawn `spec-author` with the answers **and nothing else** — it folds them into the
@@ -261,7 +280,7 @@ first. Iterate until the human says yes.
 **G4 — Spec approved.** The hard gate. `openspec validate --strict` exits 0, `design.md` names a
 seam, leaves no open question and carries no outstanding `## Questions for you` — settle the
 round first — and every requirement has scenarios covering its edges, not only its happy path.
-**Lead with the PR link.** **You never originate this decision.** A human says approved; you
+**The PR link is the first thing under `Detail`.** **You never originate this decision.** A human says approved; you
 relay it with the digest of the folder they read — `pnpm run status` prints the whole command,
 digest filled in, so do not assemble it by hand:
 
@@ -277,11 +296,12 @@ comes back here for a second approval; that is CI check 5, not a formality you c
 
 **G7 — Review clean.** Present the reviewer's findings with the same PR link — it now carries
 the whole Story. **The findings go in verbatim**, each with its file, line and failure as the
-reviewer wrote them: ADR-1002 makes them the one artifact that must reach the human
-unmediated, and that outranks keeping *What is in front of you* short. What you add is the
-grouping — *fix before archive*, *a Story of its own*, *leave* — and that triage is the
-recommendation, said rather than left as an undifferentiated list. The implementer fixes; the
-reviewer never edits.
+reviewer wrote them: ADR-1002 makes them the one artifact that must reach the human unmediated,
+and that is the single exemption from `Detail`'s budget. They go under `Detail` like everything
+else, at whatever length the reviewer wrote them. What you add is the grouping — *fix before
+archive*, *a Story of its own*, *leave* — and that triage is the recommendation, said in its own
+part rather than left as an undifferentiated list. The implementer fixes; the reviewer never
+edits.
 
 ## Capture: `/atlas idea <want>`
 

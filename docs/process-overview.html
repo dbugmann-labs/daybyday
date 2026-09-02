@@ -438,21 +438,15 @@ footer code{background:none;padding:0;color:var(--ink)}
     <figcaption><b>A subagent could spawn the workers, and still could not conduct.</b> Nesting is allowed; what a subagent cannot do is stop mid-run and ask, because <code>AskUserQuestion</code> is withheld from every subagent. It runs to completion and returns one report — and a conductor that cannot ask is not a conductor, since every gate is a question. That is the same reason configuration stays in this session: gate decisions are authorization, and authorization relayed through another agent is worth less. Recorded in <code>docs/adr/1002-the-conductor-is-the-main-session.md</code>.</figcaption>
   </figure>
 
-  <h3>Every gate stop takes one shape</h3>
-  <p>Five parts, in this order, and nothing else — no praise, no recap of the pipeline, no options you did not ask for. A gate whose presentation is improvised each time is a gate that quietly becomes a rubber stamp, and G4 is the one the whole requirement set rests on.</p>
+  <h3>Every gate stop takes one shape, and it asks before it explains</h3>
+  <p>Five parts, in this order, and nothing else — no praise, no recap of the pipeline, no options you did not ask for. The question comes first, so the ask, the lean and the reply vocabulary fit on one screen; the supporting <i>Detail</i> is read second, or not at all. A gate whose presentation is improvised each time is a gate that quietly becomes a rubber stamp, and G4 is the one the whole requirement set rests on.</p>
   <div class="specimen"><pre><b>G4 — Spec approved</b>                                     <i>Story #8 add-weekday-set-schedule</i>
-
-<b>What is in front of you</b>
-  github.com/dbugmann-labs/daybyday/pull/21 — draft, on top of main, CI green
-  proposal.md, and specs/schedule/spec.md — 4 scenarios
-  <i>The decision it turns on: a weekday set is evaluated against the date asked
-  about, not against today, so a past day can still be ticked.</i>
 
 <b>The question</b>
   Are these the right requirements, and is anything missing from the edges?
 
-<b>What yes commits you to</b>        Four red-green cycles, roughly a session's work.
-<b>What no costs</b>                  Rewriting the delta. Cheap here; expensive at review.
+<b>If you take the recommendation</b>    Four red-green cycles, roughly a session's work.
+<b>If you don't</b>                      Rewriting the delta. Cheap here; expensive at review.
 
 <b>Recommendation</b>
   <i>Approve. The four scenarios cover both edges we argued about, and evaluating
@@ -461,8 +455,16 @@ footer code{background:none;padding:0;color:var(--ink)}
 
 <b>Reply</b>
   approved            <i>→ I record the G4 marker on #8 and start the implementer</i>
-  changes: &lt;what&gt;     <i>→ back to spec-author with your note</i></pre></div>
+  changes: &lt;what&gt;     <i>→ back to spec-author with your note</i>
+
+<b>Detail</b>
+  <i>since your G2 reply: spec-author ran once, PR #21 opened, CI green on the draft</i>
+  github.com/dbugmann-labs/daybyday/pull/21 — draft, on top of main, CI green
+  proposal.md, and specs/schedule/spec.md — 4 scenarios
+  <i>The decision it turns on: a weekday set is evaluated against the date asked
+  about, not against today, so a past day can still be ticked.</i></pre></div>
   <p class="lede">Invented, and left as written: #8 has since shipped, on pull request 16 and a delta of nineteen scenarios rather than the four here. The shape of the stop is the point; the numbers in it were never real. The form is specified in <code>.claude/commands/atlas.md</code> and <code>docs/process.md</code> §4.</p>
+  <p><b><i>Detail</i> carries three things and nothing else</b> — the trail since you last replied, the links, and the one or two decisions the thing turns on, in about ten lines. The test is mechanical: anything you could read by opening a link is a link rather than a paste, so an agent's own account of its work never arrives relayed into the block. The single exemption is G7, where the reviewer's findings go in verbatim at whatever length they were written, because <code>docs/adr/1002-the-conductor-is-the-main-session.md</code> makes them the one artifact that must reach you unmediated. Recorded in <code>docs/adr/1014-the-question-comes-first.md</code>.</p>
   <p><b>The recommendation is part of the form, not a courtesy.</b> The gate arrives after an agent has spent an hour on the thing being judged, and without a stated lean the cheapest reply is always yes — which is a rubber stamp with extra steps. It is also the one part that can be wrong out loud: the conductor spawned the <code>spec-author</code> whose delta is on the table, so recommending <i>changes:</i> against its own subagent is what makes the rest worth reading. It is an argument to reject, never a reason to answer without opening the PR.</p>
 </section>
 

@@ -124,10 +124,12 @@ context of its own — no delta, no test, no `src/`. **No subagent can conduct:*
 allowed, but `AskUserQuestion` is withheld from every subagent and every gate is a question.
 Same reason rule 6 keeps configuration here. ADR-1002.
 
-**Every gate stop takes one form** — what is in front of you (opening with what ran since the
-human last replied), the question, *if you take the recommendation* against *if you don't*,
-**the recommendation**, the exact reply — with the recommendation never omitted. **Everything
-between gates takes a second form**, the three-line step report — what ran, what it left behind,
+**Every gate stop takes one form, and the question comes first** — the question, *if you take
+the recommendation* against *if you don't*, **the recommendation**, the exact reply, and only
+then `Detail`: the trail since the human last replied, the links, and the decisions it turns on,
+in about ten lines and never a relayed agent report. The recommendation is never omitted, and
+G7's reviewer findings are the one exemption from that budget. **Everything between gates takes
+a second form**, the three-line step report — what ran, what it left behind,
 what comes next — printed before every spawn, after every return, and as the shape of a rule-5
 stop. A five-part block asks; a `▸` line tells; there is no third. Worked examples in
 `.claude/commands/atlas.md`, ADR-1012.

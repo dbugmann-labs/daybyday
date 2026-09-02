@@ -318,13 +318,19 @@ consequences, all in ADR-1003:
 
 ### What a gate stop looks like
 
-Every gate is presented in the same five parts — what is in front of you, the question, what
-taking the recommendation commits you to against what declining it costs, **the
-recommendation**, and the exact reply — so you learn one shape rather than five. The form, with
-worked examples, is in `.claude/commands/atlas.md`; a gate whose presentation is improvised each
-time quietly becomes a rubber stamp, and G4 is the one the whole requirement set rests on. The
-first line of *what is in front of you* is what ran since you last replied, so a gate that
-arrives after an unattended run stands on its own.
+Every gate is presented in the same five parts, and **the question is the first of them** — the
+question, what taking the recommendation commits you to against what declining it costs, **the
+recommendation**, the exact reply, and last *Detail* — so you learn one shape rather than five,
+and the ask, the lean and the reply vocabulary fit on one screen. The form, with worked examples,
+is in `.claude/commands/atlas.md`; a gate whose presentation is improvised each time quietly
+becomes a rubber stamp, and G4 is the one the whole requirement set rests on.
+
+*Detail* carries three things — the trail since you last replied, the links, and the one or two
+decisions the thing turns on — in about ten lines. Anything you could read by opening a link is a
+link rather than a paste, so an agent's own report never arrives relayed into the block; the one
+exemption is G7, where the reviewer's findings go in verbatim at whatever length they were
+written. Its first line is what ran since you last replied, so a gate that arrives after an
+unattended run stands on its own.
 
 **Between gates the conductor prints one other shape, and only one.** The step report is three
 lines — what ran, what it left behind, what comes next — printed before every spawn, after every
