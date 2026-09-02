@@ -88,11 +88,11 @@ things each day, without much navigation)".
 the monthly finances, watering the plants. It is defined once and recurs indefinitely. It is
 deliberately not a *task*, which is completed once and then gone; not a *habit*, which fits
 supplements but not finances; and not an *area*, a word tried first and dropped because it was
-covering three unlike behaviours at once. It is made of a name and the schedule it runs on, and
-it is due on a day exactly when that schedule is — a commitment adds nothing of its own to the
-answer. It carries no identifier either: two commitments with the same name and the same
-schedule are the same commitment, and telling apart two a person deliberately kept separate is
-a property of whatever stores them, not of the commitment.
+covering three unlike behaviours at once. It is made of three things and no others: a name, the
+schedule it runs on, and the day it is kept from. From that day onwards it is due exactly when
+its schedule is, and it adds nothing of its own to that answer. It carries no identifier: two
+commitments alike in all three are the same commitment, and telling apart two a person
+deliberately kept separate is a property of whatever stores them, not of the commitment.
 
 **Commitment name** — the words a person gave a commitment, and the only part of one that is
 not a rule. It has to say something: a name that is empty, or made only of blank space, names
@@ -100,12 +100,24 @@ nothing and is refused, the same refusal that stops 30 February being a calendar
 else is a name — there is no length limit, no restricted script and no reserved word, because
 the name is the owner's own words rather than the system's.
 
+**Kept from** — the day a person began keeping a commitment, and the day from which it can be
+owed: before it the commitment is not due, whatever its schedule says. It is what stops a
+commitment written down today reading as missed on every matching day since 1583, because an
+unticked due day is what a miss looks like. It is deliberately not the day the commitment was
+entered into the app — someone who has kept the gym since June says June — and it is a floor
+rather than a rhythm: it need not be a day the schedule is due on, and it does not move the
+schedule to begin there. Distinct from a **start date**, which an every-N-days schedule carries
+for a different job; a commitment can hold both, and they can disagree. ADR-1010.
+
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
 times within a week on any days.
 
-**Due** — a commitment is due on a day when that day's date satisfies its schedule. Whether a
-commitment is due is a question asked *of a date*, not of the present moment.
+**Due** — a commitment is due on a day when that day's date satisfies its schedule and is not
+earlier than the day the commitment is kept from. Whether a commitment is due is a question
+asked *of a date*, not of the present moment. A schedule on its own is also said to be due on a
+date, meaning only the first half of that: the rules in `schedule` answer for every date the
+system supports, and the floor belongs to the commitment carrying one.
 
 **Record** — what a day holds for a commitment: the durable fact that, on that calendar date,
 the commitment was kept. It is keyed to the date and never to the time it was entered, there is
@@ -148,7 +160,9 @@ functions of the calendar alone, and an interval is not — it needs a reference
 `isDue(on:)` is still pure for this shape, exactly as for the other two: the start date is part of
 the schedule value, not something the rule reaches outside itself for. It is a calendar date, so it
 names a day that exists inside the supported years, and it is fixed: it is not the last tick, so no
-tick moves it and no past day's answer changes once given.
+tick moves it and no past day's answer changes once given. Distinct from the day a commitment is
+**kept from**: the start date sets which dates the rhythm lands on, the kept-from day suppresses
+landings earlier than itself, and an interval commitment carries both.
 
 **Day of the month** — the third of the four schedule shapes: a single day number a commitment
 runs on in every month. "Finances every 25th" is one. A month too short to hold the number is due
