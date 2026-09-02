@@ -103,7 +103,7 @@ than a set, 2.19 (the first `remove`), and 2.22 and 2.23 if `remove` left any re
   `pnpm run verify` exits 0.
 - [x] 3.2 `pnpm exec openspec validate add-tick-record --strict` exits 0 and `pnpm run checks`
   reports scenario coverage as 23 of 23.
-- [ ] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
+- [x] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7, and
 `openspec validate --archived` requires every box above to be ticked before it.
