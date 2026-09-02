@@ -65,7 +65,7 @@ and #55's `tasks.md` did; a prediction here is not evidence.
 - [x] 2.11 `a commitment on a weekly quota has a row on every day of the week` — ADR-1015's cost made
   visible: a seven-date sweep with an empty history, then the same sweep with three ticks. The four
   unticked days still hold a row.
-- [ ] 2.12 `a day view is formed in the first supported year and in the last` — the *no clock* pin:
+- [x] 2.12 `a day view is formed in the first supported year and in the last` — the *no clock* pin:
   3 January 1583 and 27 December 9999 are both Mondays. An implementation that compares against
   `Date()` in any way fails one of them.
 - [ ] 2.13 `a row carries the commitment's name exactly as it was given` — " Gym " with both spaces,

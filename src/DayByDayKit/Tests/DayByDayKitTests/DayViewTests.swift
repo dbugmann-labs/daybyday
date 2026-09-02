@@ -193,6 +193,26 @@ func aCommitmentOnAWeeklyQuotaHasARowOnEveryDayOfTheWeek() {
     }
 }
 
+@Test("a day view is formed in the first supported year and in the last")
+func aDayViewIsFormedInTheFirstSupportedYearAndInTheLast() {
+    let keptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let firstYear = CalendarDate(year: 1583, month: 1, day: 3)!
+    let lastYear = CalendarDate(year: 9999, month: 12, day: 27)!
+    let history = History()
+
+    let onFirstYear = DayView(of: [gym], on: firstYear, in: history)
+    let onLastYear = DayView(of: [gym], on: lastYear, in: history)
+
+    #expect(onFirstYear.rows.count == 1)
+    #expect(onFirstYear.rows[0].name == "Gym")
+    #expect(!onFirstYear.rows[0].isKept)
+    #expect(onLastYear.rows.count == 1)
+    #expect(onLastYear.rows[0].name == "Gym")
+    #expect(!onLastYear.rows[0].isKept)
+}
+
 @Test("a day view of no commitments at all has no rows")
 func aDayViewOfNoCommitmentsAtAllHasNoRows() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
