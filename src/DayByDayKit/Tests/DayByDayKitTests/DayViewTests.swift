@@ -387,3 +387,23 @@ func aDayViewOfNoCommitmentsAtAllHasNoRows() {
 
     #expect(dayView.rows.isEmpty)
 }
+
+@Test("two day views differing only in a commitment that is not due are the same day view")
+func twoDayViewsDifferingOnlyInACommitmentThatIsNotDueAreTheSameDayView() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let finances = Commitment(
+        name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let first = DayView(of: [gym], on: monday, in: history)
+    let second = DayView(of: [gym, finances], on: monday, in: history)
+
+    #expect(first.rows.map(\.name) == ["Gym"])
+    #expect(!first.rows[0].isKept)
+    #expect(second.rows.map(\.name) == ["Gym"])
+    #expect(!second.rows[0].isKept)
+    #expect(first == second)
+}

@@ -99,10 +99,11 @@ for this.
   snapshot pin, and the one that would fail a `DayView` holding a reference to a live history. Three
   assertions: the old view unchanged, a freshly formed one kept, the two unequal. Deliberately last.
   Pinned rather than drove: `History` is a value type and `isKept` is read at construction.
-- [ ] 2.22 `two day views differing only in a commitment that is not due are the same day view` — the
+- [x] 2.22 `two day views differing only in a commitment that is not due are the same day view` — the
   same commitments plus one that is not due on the date; identical rows, so the same day view. Fails a
   `DayView` that stores the list it was handed and counts it towards equality, which is the reading the
-  requirement used to invite.
+  requirement used to invite. Pinned rather than drove: synthesised equality already compares only
+  `rows` and `date`, and the not-due commitment was already filtered out before either is populated.
 - [ ] 2.23 `two day views differing only in a tick for a commitment neither was handed are the same day
   view` — 2.8's input read through equality rather than through the row count: a tick the day view
   never looks up leaves no mark on it. Fails a `DayView` that stores the whole `History`.
