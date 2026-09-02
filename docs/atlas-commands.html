@@ -317,13 +317,13 @@ footer code{background:none;padding:0;color:var(--ink)}
     </div>
     <div class="row key">
       <span class="f">/atlas idea &lt;want&gt;</span>
-      <span class="d">Captures one thing you want the app to do. Reads the backlog, the <i>Decided</i> ledger, the capability specs and the open Features first. Asks at most one question, and only about which want it is.</span>
-      <span class="o">One <code>B-nnn</code> entry in <code>docs/backlog.md</code>, committed on <code>chore/backlog</code> — <b>or nothing at all</b>, plus the reason: already an entry, already a shipped requirement, or already dropped.</span>
+      <span class="d">Captures what you want the app to do — <b>one want, or a whole braindump in a single go</b>. Reads the backlog, the <i>Decided</i> ledger, the capability specs and the open Features once, splits the bullets into entries, and reports the split before it commits. Asks at most one question, and only about which want it is.</span>
+      <span class="o">One <code>B-nnn</code> entry in <code>docs/backlog.md</code>, committed on <code>chore/backlog</code> — <b>or nothing at all</b>, plus the reason: already an entry, already a shipped requirement, or already dropped. The entry names the <b>product principle</b> the want was tested against, and what the test returned.</span>
     </div>
     <div class="row key">
       <span class="f">/atlas backlog<br>/atlas backlog B-007</span>
-      <span class="d">Grooms. Clusters the wants by the capability they would land in, proposes promote, merge, split or drop for each, forces a choice on anything two passes old, grills the cluster you pick. The <code>B-007</code> form skips the clustering.</span>
-      <span class="o">A grooming stop, then <b>G1</b>. On approval: a Feature issue and its sub-issue edge, an Epic first if needed, the promoted entries moved to <i>Decided</i>, the backlog PR merged. Then <b>G2</b>, then <b>G4</b>. <b>Every pass appends a dated line to the <i>Grooming passes</i> log</b>, promotion or not.</span>
+      <span class="d"><b>Sweeps first</b> — the day-one week, every capability and open Feature against <i>create, change, retire</i>, and the open questions — and reports what has no want at all. Then clusters the wants by the capability they would land in, proposes promote, merge, split or drop for each, forces a choice on anything two passes old, grills the cluster you pick. The <code>B-007</code> form skips the clustering, never the sweep.</span>
+      <span class="o">The sweep's gaps as captures you confirm, a grooming stop, then <b>G1</b>. On approval: a Feature issue and its sub-issue edge, an Epic first if needed, the promoted entries moved to <i>Decided</i>, the backlog PR merged. Then <b>G2</b>, then <b>G4</b>. <b>Every pass appends a dated line to the <i>Grooming passes</i> log</b>, promotion or not.</span>
     </div>
     <div class="row key">
       <span class="f">/atlas feature &lt;idea&gt;</span>
@@ -348,13 +348,13 @@ footer code{background:none;padding:0;color:var(--ink)}
     <div class="w-card">
       <span class="k">/atlas idea</span>
       <p class="said">“I want this and I don't know what it is yet.”</p>
-      <p>You thought of something in the shower. You do not know whether it is a capability, half of one, or three. <b>Use it liberally</b> — the file is designed to be cheap to add to and expensive to leave alone. It writes your words verbatim and the outcome as the heading, never the mechanism, so nothing about the design has been decided by the act of capturing it.</p>
+      <p>You thought of something in the shower, or you have eight bullets and twenty seconds — <b>paste the lot in one go</b> rather than running it once per bullet, so the dedup can fire between them and two bullets that are one want get caught now instead of a pass later. You do not know whether it is a capability, half of one, or three. <b>Use it liberally</b> — the file is designed to be cheap to add to and expensive to leave alone. It writes your words verbatim and the outcome as the heading, never the mechanism, so nothing about the design has been decided by the act of capturing it.</p>
       <span class="cost">COSTS ONE LINE · INTERRUPTS NOTHING</span>
     </div>
     <div class="w-card">
       <span class="k">/atlas backlog</span>
       <p class="said">“I have twenty minutes and I want to decide what to build next.”</p>
-      <p>The raw material is everything <code>idea</code> has accumulated, and <b>the clustering is the entire value</b>. It is where three separate wants get spotted as one surface, where one entry turns out to be two, and where something that has sat through two passes forces you to admit you are never building it.</p>
+      <p>The raw material is everything <code>idea</code> has accumulated, and <b>the clustering is most of the value</b>. It is where three separate wants get spotted as one surface, where one entry turns out to be two, and where something that has sat through two passes forces you to admit you are never building it. The sweep in front of it is the rest: <b>the only step in the whole process that asks what you never said</b>.</p>
       <span class="cost">COSTS THREE STOPS · ENDS AT G4</span>
     </div>
     <div class="w-card">
@@ -364,6 +364,7 @@ footer code{background:none;padding:0;color:var(--ink)}
       <span class="cost">COSTS TWO STOPS · ENDS AT G4</span>
     </div>
   </div>
+  <div class="note"><b>Every other check in this process reasons about what is in front of it.</b> The four outcomes at capture ask whether a want is already recorded — that is duplication. The clustering rules ask whether two wants belong together, and the three conditions before G1 ask whether a cluster is a capability yet — that is coherence. None of them can see a want nobody ever said. <b>The sweep is the one step pointed at silence</b>, and it lives in grooming because grooming is the only step that ever holds the whole picture at once.</div>
   <div class="note"><b>The failure mode worth naming is reaching for <code>/atlas feature</code> when <code>/atlas backlog</code> was the right call</b> — it feels faster and it skips the one step that catches merges and splits. A Feature minted from a single idea in isolation is the horizontal slice you find out about three Stories later. The test: <i>if I had not just thought of this, would it already be in the backlog?</i> If yes, groom. If it genuinely arrived whole and separate, take the bypass.</div>
   <p>The mirror failure is hoarding — forty entries and no grooming pass, which is the parking lot again with a better filename. The two-passes rule is the guard, but it only fires when <code>/atlas backlog</code> runs, so the cadence is yours. Roughly: groom whenever you are about to ask <i>what next?</i></p>
 </section>

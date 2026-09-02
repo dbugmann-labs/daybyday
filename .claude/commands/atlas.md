@@ -31,9 +31,9 @@ you are the one who heard them say it.
 | Form | What it does |
 |---|---|
 | `/atlas` or `/atlas next` | Read status and take the next step from wherever the work is. |
-| `/atlas idea <want>` | Capture one thing the app should do into `docs/backlog.md`. One shot, no gate. |
-| `/atlas backlog` | Groom the backlog: cluster, propose, grill the cluster taken forward, stop at **G1**. |
-| `/atlas backlog B-007` | Skip the clustering and take that entry forward on its own. |
+| `/atlas idea <want>` | Capture what the app should do into `docs/backlog.md` — one want or a braindump. One shot, no gate. |
+| `/atlas backlog` | Groom the backlog: sweep for gaps, cluster, propose, grill the cluster taken forward, stop at **G1**. |
+| `/atlas backlog B-007` | Skip the clustering and take that entry forward on its own. Still sweeps. |
 | `/atlas feature <idea>` | Intake a feature idea that skips the backlog: grill it, then stop at **G1**. |
 | `/atlas story <issue#>` | Get onto that Story's branch and drive it from wherever it is. |
 
@@ -213,8 +213,8 @@ their own — say it, rather than handing over an undifferentiated list.
 
 ## Capture: `/atlas idea <want>`
 
-One thing the human wants the app to do, into `docs/backlog.md`. **This is one shot and it does
-not grill.** Interrogating a want at capture spends rounds on things that will be dropped and
+What the human wants the app to do, into `docs/backlog.md` — **one want, or a braindump of
+several in one go.** **This is one shot and it does not grill.** Interrogating a want at capture spends rounds on things that will be dropped and
 makes the entry point one they avoid; the Feature grill at Stage 1 is where a want is argued
 with. `docs/process.md` §4, ADR-1010.
 
@@ -242,7 +242,7 @@ do exactly one of four things and say which:
 | A requirement already in a capability spec | Write nothing. Name the spec and the requirement. |
 | A line already in *Decided* | Write nothing. Quote the line, including why it was dropped. |
 
-**The entry.** Four fields, each one there because it changes a grooming decision:
+**The entry.** Five fields, each one there because it changes a grooming decision:
 
 ```markdown
 ### B-014 — see my weight as a line over months
@@ -252,6 +252,8 @@ do exactly one of four things and say which:
 
 - **Trigger** — evening, after stepping on the scale.
 - **Touches** — `commitment`, probably a numeric payload rather than a tick.
+- **Principle** — survives *five percent of seven things*: it makes a new kind of record
+  possible rather than deepening one that exists. Nothing here congratulates anyone.
 - **Open** — is a weight entry a commitment with a value, or a different thing?
 ```
 
@@ -261,6 +263,13 @@ do exactly one of four things and say which:
   `design.md` files cite the old parking lot precisely because it recorded what was said, and a
   paraphrase is you making the call the grill exists to make.
 - **Touches** is the clustering key: the capability slug you would guess, or `unclaimed`.
+- **Principle** names which of `CONTEXT.md` § *Product principles* you actually tested the want
+  against, and what the test returned. **Name a principle, never all four** — a line that
+  gestures at the whole section is one nobody applied. If the want *fails* one, write that down
+  and capture it anyway: a want that loses to a principle is a drop the next grooming pass makes
+  deliberately, and it is worth more on the record than absent. This field is why the section
+  exists; before it, the principles were read at capture and their verdict was never written
+  down, so grooming could not see whether a want had been judged or merely typed.
 - **Open** is where what you do not know goes, instead of a question to them.
 
 **Ask at most one question, and only about which want it is** — never about how it should work.
@@ -269,15 +278,74 @@ If you can write the entry without asking, do not ask. Everything else goes in *
 Then commit — `docs(backlog): capture B-014 <heading>` — report the entry in three lines, and
 stop. No gate, no G-number, nothing spawned.
 
+### A braindump of several wants
+
+**Take the whole thing in one invocation. Never tell them to run the command once per bullet.**
+Five invocations mean five dedup reads, five commits and five reports — and each one dedupes
+against a backlog that does not yet hold the other four bullets, so two bullets that are really
+one want get written as two entries and are not caught until a grooming pass. One invocation
+sees them all at once, which is the only way the dedup table can fire *between* them.
+
+Read the four sources once, then:
+
+1. **Split the bullets into entries** and run the four-outcome table over each, exactly as
+   above — a bullet can perfectly well be a duplicate of another bullet in the same braindump.
+2. **Report the split and stop before committing.** Which bullet became which `B-nnn`, which two
+   were folded together and why, which wrote nothing. **This is the only thing in the whole
+   command worth their attention**: it is the one judgement they can correct in a sentence and
+   nobody else can, and it is cheap to get wrong silently. It is a report, not a gate — if they
+   say nothing, proceed.
+3. **One commit for the burst**, `docs(backlog): capture B-014..B-017 <n> wants`, and one PR.
+
+**Where the line goes: one entry per outcome they would want independently.** "Track my weight"
+and "see my weight as a line over months" are two entries if either is worth having without the
+other, and one if the number is pointless unless you can see the trend. **When it is genuinely
+unclear it stays one entry with the ambiguity in Open** — B-001 does exactly this — because
+merging two entries at grooming is one line and splitting one is a judgement call made without
+the words that produced it.
+
+**Every entry keeps its own blockquote, verbatim.** The bullet that produced it, unedited. A
+braindump split across four entries must leave four quotes that reconstruct what they typed;
+one summary quote spread over four entries destroys the evidence the split was made from, which
+is the whole reason the field exists.
+
 ## Grooming: `/atlas backlog`
 
 The pass that turns wants into a Feature. **It adds one stop in front of G1 and nothing else** —
 no new stage, no new gate, no second grill. ADR-1010.
 
-**1 — Read and cluster.** Every want in `docs/backlog.md`, against the capability specs, the open
-Features and `CONTEXT.md` § *Product principles*. Then propose a disposition for each: promote to
-a new Feature, promote as a Story against an existing Feature, merge two entries, split one, or
-drop with the reason. Four rules decide the clusters:
+**1 — Sweep for what is missing.** Before clustering anything, ask the one question no other
+step in this process asks: **what has no want against it at all?** Every other check in the
+chain — the four-outcome table at capture, the clustering rules below, the three conditions
+before G1 — tests what is in front of you for duplication or for coherence. A want that was
+never said is invisible to all of them, and grooming is the only step that ever holds the whole
+picture, so it is the only place this can happen.
+
+Walk three lists and report the silence in each:
+
+- **The day-one week** at the top of `docs/backlog.md` — the owner's actual commitments. Each
+  line either has a want, has a spec, has an open Story, or is a gap. Name which.
+- **Every capability in `openspec/specs/`, and every open Feature issue** — against the
+  **lifecycle verbs**: create, change, retire. A capability that can only be brought into
+  existence is a capability nobody has finished thinking about, and this is the shape the sweep
+  catches most often, because nobody says out loud that they want to stop doing something.
+- **`docs/open-questions.md`** — a question that has quietly become a want belongs here as one,
+  not there as a question.
+
+Present the gaps as a numbered list and offer to capture them on the spot. **A gap the human
+confirms becomes a `B-nnn` entry in this same pass, before you cluster** — so it joins the
+clustering rather than waiting for the next pass. Fill in the **Principle** line on any older
+entry that predates that field while you are reading it.
+
+The sweep is a *finding*, not a gate. If it turns up nothing, say so in one line and move on;
+if it turns up five things, that is five captures and the clustering that follows is better for
+them. Record it either way — step 4 writes the pass line whatever the sweep found.
+
+**2 — Read and cluster.** Every want in `docs/backlog.md`, including anything the sweep just
+added, against the capability specs, the open Features and `CONTEXT.md` § *Product principles*.
+Then propose a disposition for each: promote to a new Feature, promote as a Story against an
+existing Feature, merge two entries, split one, or drop with the reason. Four rules decide the
+clusters:
 
 - **Cluster by capability, never by theme.** Two wants belong together when they would be
   requirements in the same `openspec/specs/<slug>/spec.md`. "Things about numbers" is a theme.
@@ -294,20 +362,20 @@ Present that as a stop, in the five-part form: the clusters and their dispositio
 *which cluster do we take forward*, and a recommendation naming one. It is a stop, not a gate —
 no marker, no CI check, no G-number.
 
-**2 — Grill the cluster they pick.** `Skill(skill: "grill")`, the conductor branch, exactly as
+**3 — Grill the cluster they pick.** `Skill(skill: "grill")`, the conductor branch, exactly as
 Intake step 1 below describes it. Same skill, same questions, same output.
 
 **Three things must hold before you may present the cluster at G1.** They are what separates a
 Feature from a theme, and none is optional:
 
 - **You can state the Feature's first Story in one sentence.** If you cannot, the cluster is not
-  a capability yet. Say so and go back to step 1 — this is the cheapest readiness test there is.
+  a capability yet. Say so and go back to step 2 — this is the cheapest readiness test there is.
 - **You can name the wants it deliberately leaves behind**, by id. G1 asks what the Feature does
   not cover; naming the specific entries turns that from a sentence into a decision.
 - **You can say which of its Stories you would build first**, judged against the five-percent
   principle: a thin version of seven things beats a deep version of one.
 
-**3 — Stop at G1**, in the standard form. On approval, spawn `orchestrator` for the Feature issue
+**4 — Stop at G1**, in the standard form. On approval, spawn `orchestrator` for the Feature issue
 and its sub-issue edge — and for a new Epic first, if the cluster does not belong under an
 existing one. Then move every promoted entry out of *Wants* into *Decided*, one line each with
 the issue number, and commit that with the same message the issues went out under. Merge the
@@ -328,8 +396,11 @@ backlog; the wants sat through it.
 From there you are on the existing path: ask the human to type `/to-tickets <issue#>`, stop it
 after the breakdown quiz, and **stop at G2**. Intake step 4 below is that step, unchanged.
 
-`/atlas backlog B-007` skips step 1 and takes that entry forward on its own. Use it when they
+`/atlas backlog B-007` skips step 2 and takes that entry forward on its own. Use it when they
 name an entry; do not use it to avoid clustering, because clustering is most of the value.
+**It does not skip the sweep** — the sweep costs one pass over three lists and is the only
+protection against the thing nobody said, so a targeted groom still runs it and still records
+the pass.
 
 ## Intake: `/atlas feature <idea>`
 

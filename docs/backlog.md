@@ -1,8 +1,9 @@
 # Backlog
 
 **Things I want the application to do, in my own words, before anyone has agreed to build
-them.** One entry per want. `/atlas idea <whatever you say>` writes them; `/atlas backlog`
-grooms them into Features. Nothing here is agreed and nothing is implemented from this file —
+them.** One entry per want. `/atlas idea <whatever you say>` writes them — **one want or a
+whole braindump in a single go**, split into entries and the split reported back before it
+commits; `/atlas backlog` grooms them into Features. Nothing here is agreed and nothing is implemented from this file —
 an idea becomes real when it is a requirement in a capability spec that has passed G4, however
 obvious it seems. `docs/process.md` §4.
 
@@ -25,10 +26,20 @@ story branch and reports the count without being asked, which is the half of ADR
 diagnosis that `/atlas backlog` alone does not fix — the parking lot failed because nothing
 ever opened it.
 
+**Each entry carries a *Principle* line** naming which of `CONTEXT.md` § *Product principles* the
+want was tested against and what the test returned — one principle, not all four. A want that
+*fails* one is still captured, with the failure written down, because that is a drop the next
+grooming pass makes deliberately rather than an idea that quietly never came back. Entries
+B-001 to B-009 predate the field and do not carry it yet; the next grooming pass fills them in
+as it reads them.
+
 ## What day one looks like
 
 The owner's actual week, as stated on 2026-08-28. Every cluster `/atlas backlog` proposes is
-judged against this rather than against a category of app:
+judged against this rather than against a category of app — **and every grooming pass walks it
+line by line to find the commitments that have no want, no spec and no open Story at all.** That
+sweep is the only step in the whole process that asks what is *missing* rather than whether what
+is here is coherent, which is why it runs before any clustering:
 
 > gym Mon/Wed/Sat · run Tue/Thu/Sun · finances every 25th · reading 3× a week · supplements and
 > habits daily · journaling daily · contact lenses every 14 days · water plants every 3rd day
@@ -161,6 +172,7 @@ months later.
 
 One dated line per `/atlas backlog` pass, appended by the pass itself, oldest first. This is
 what "survived two passes" is counted against; an entry captured after a pass did not sit
-through it.
+through it. A pass that promoted nothing still gets a line — it is the pass the staleness rule
+most needs to count. Say what the coverage sweep found, including when it found nothing.
 
 *None yet. The backlog was migrated from the parking lot on 2026-09-02 and has not been groomed.*
