@@ -291,6 +291,23 @@ func aKeptCommitmentKeepsItsPlaceAmongTheOnesThatAreNotKept() {
     #expect(dayView.rows.map(\.isKept) == [false, true, false])
 }
 
+@Test("dropping a commitment that is not due leaves the others in their order")
+func droppingACommitmentThatIsNotDueLeavesTheOthersInTheirOrder() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let finances = Commitment(
+        name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.monday, .thursday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, finances, run], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Run"])
+}
+
 @Test("a day view of no commitments at all has no rows")
 func aDayViewOfNoCommitmentsAtAllHasNoRows() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!

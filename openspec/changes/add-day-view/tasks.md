@@ -76,7 +76,7 @@ and #55's `tasks.md` did; a prediction here is not evidence.
   pair that fails any sort by name.
 - [x] 2.16 `a kept commitment keeps its place among the ones that are not kept` — the middle row is
   the kept one and stays in the middle. Fails an implementation that floats unticked rows to the top.
-- [ ] 2.17 `dropping a commitment that is not due leaves the others in their order` — a not-due
+- [x] 2.17 `dropping a commitment that is not due leaves the others in their order` — a not-due
   commitment removed from the middle; the two that remain keep their relative order.
 - [ ] 2.18 `a commitment handed twice has two rows` — no deduplication. Fails an implementation
   backed by a `Set` or one that filters duplicates out.
