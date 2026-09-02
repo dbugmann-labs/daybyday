@@ -295,6 +295,56 @@ than said.*
 - **Open** — forward as well? A day not yet arrived has nothing to tick; whether it is reachable
   at all is the first Story's to say.
 
+### B-017 — meet a quota over a longer span than a week
+*Captured 2026-09-02.*
+
+> "maybe I also want daily / biweekly / monthly quotas?"
+
+- **Trigger** — the same trigger as the weekly quota, said of a longer stretch: gym twelve times
+  this month, any days.
+- **Touches** — `schedule` (#6). It is the weekly quota shape with its span made a parameter, and
+  it needs no change to what a record is — which is what separates it from B-018.
+- **Principle** — tested against *five percent of seven things*: fails, and is captured anyway.
+  A quota over a different span deepens a rhythm that Story #11 already makes expressible; nothing
+  on the day-one week asks for it, where reading 3× a week asks for the weekly one.
+- **Re-opens a drop.** *Decided*, 2026-08-28: an unanchored "once a month" rule and a rule bounded
+  to a stretch of weeks were dropped as *"invented while answering a question about rules; nothing
+  in the day-one list claims either. Re-capture it if something real does."* This is that
+  re-capture, and the monthly half is the same want the drop refused — refused then for want of
+  anyone asking, not on its merits.
+- **Open** — a fixed menu of spans, or any number of weeks? A quota of 12 a month and a quota of
+  3 every 2 weeks are the same rule under different parameters, and the shape of the parameter is
+  what decides whether this is one Story or three.
+- **Open** — does "monthly" mean a calendar month or four weeks? February and a 31-day month hold
+  different numbers of chances, which is the same collision `day-of-month` met and answered by
+  clamping.
+- **Open** — the week boundary that Story #11 could not answer (`docs/open-questions.md`
+  § *Week turnover*) becomes worse here, not better: a span longer than a week has to say where it
+  starts before a quota over it means anything.
+
+### B-018 — meet a quota more than once in a single day
+*Captured 2026-09-02.*
+
+> "maybe I also want daily / biweekly / monthly quotas?"
+
+- **Trigger** — several times within one day: supplements morning and evening, water three times.
+- **Touches** — `commitment` and `record`, **not** `schedule`. This is the half of the want that is
+  not a rhythm at all: a rhythm already says "every day", and what a daily quota adds is a count
+  *within* the day.
+- **Principle** — tested against *entered where you stand*: passes on the interaction — tapping a
+  row three times is still one tap at a time, in the row — and that is the only principle it
+  clearly passes. It fails *five percent of seven things* for the same reason B-017 does.
+- **Contradicts agreed vocabulary.** `CONTEXT.md` § *Record* says there is *"at most one per
+  commitment per day"*, agreed 2026-09-02 with `FEAT: record` (#53). That sentence is what settled
+  the 1–7 ceiling on Story #11's weekly quota at G4 on the same day. So this want is not a Story
+  against `schedule`: taking it means changing **Record** first, and then #55's delta.
+- **Open** — is this B-002 (protein: *"a number entered several times a day that accumulates
+  rather than overwrites"*) said in other words? Three taps that count up to three and a number
+  that accumulates to a target may be one want with two vocabularies, and B-002 already carries
+  the open question *"is there a target for the day, and does reaching it make the commitment
+  done?"* — which is a daily quota described from the other side. Grooming should merge or
+  separate these deliberately rather than let both survive by default.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
