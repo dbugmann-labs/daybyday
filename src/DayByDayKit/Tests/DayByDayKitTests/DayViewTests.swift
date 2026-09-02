@@ -62,3 +62,13 @@ func aCommitmentNotTickedOnTheDateHasARowThatSaysItIsNotKept() {
     #expect(dayView.rows[0].name == "Gym")
     #expect(!dayView.rows[0].isKept)
 }
+
+@Test("a day view of no commitments at all has no rows")
+func aDayViewOfNoCommitmentsAtAllHasNoRows() {
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [], on: monday, in: history)
+
+    #expect(dayView.rows.isEmpty)
+}
