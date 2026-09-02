@@ -345,6 +345,61 @@ than said.*
   done?"* — which is a daily quota described from the other side. Grooming should merge or
   separate these deliberately rather than let both survive by default.
 
+### B-019 — tick a commitment from the day I am looking at
+*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
+
+> "Tick a commitment from its row on the day screen."
+
+- **Trigger** — the daily visit itself, five times over, phone in hand. This is the interaction
+  the product exists for.
+- **Touches** — `day-screen` (#27) and `record` (#53), and it is the seam between them: #27
+  shows the row, #53 holds the fact, and nothing yet says the row writes one. #27's intent is
+  "show"; #53's is the type and the store.
+- **Principle** — tested against *entered where you stand*: passes, and is the want that
+  principle was abstracted from on 2026-09-02. A principle judges wants rather than being one,
+  so it does not put a tap on a row — that has to be said as a want or it is never built.
+- **Open** — which capability owns the tap. A tick made from a row is either a `day-screen`
+  requirement that calls into `record`, or a `record` requirement about where a tick comes from.
+  #27's G2 is the next decision that meets it.
+- **Open** — does the row show that it is already ticked, and does the same tap take it back?
+  `CONTEXT.md` § *Untick* exists at the type level and no surface offers it.
+
+### B-020 — see every commitment I keep, in one place
+*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
+
+> "See every commitment I keep, in one place."
+
+- **Trigger** — rarely: adding the ninth, a new gym timetable, the plants dying.
+- **Touches** — `commitment` (#26), and a screen that is not the day screen. The day screen
+  shows what one date asks for; nothing shows what you have taken on.
+- **Principle** — tested against *five percent of seven things*: passes. A list is the thinnest
+  possible surface across every commitment at once, and it is what B-013 and B-014 both have to
+  reach a commitment *through* — neither says how you get to the one you want to change.
+- **Open** — is this B-015's screen or a separate one? One entry point or two changes nothing
+  about what is stored and everything about what the Stories are.
+- **Open** — does it show retired commitments (B-013)? A list that hides them is one you cannot
+  bring a commitment back from.
+
+### B-021 — see what rhythm a commitment runs on, in words
+*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
+
+> "See what rhythm a commitment runs on, in words — 'every 14 days', 'the 25th'."
+
+- **Trigger** — passive, wherever a commitment is named: B-020's list, and possibly the day
+  screen row.
+- **Touches** — `schedule` (#6) and whatever surface names a commitment. Saying a rule back in
+  English is not the job `schedule` does today, which is deciding due-ness.
+- **Principle** — tested against *an iPhone, in your hand*: passes. "Every 14 days" is three
+  words in a row, and it is what stops a list of eight names being unreadable.
+- **A known gap already points at this.** `docs/open-questions.md` § *Known gaps*: `DayOfMonth`
+  is public but `DayOfMonth.day` is internal, and `DayInterval` carries the same asymmetry, so a
+  screen can build "the 25th" and never recover the `25` to render it. The first Story that
+  renders a rule needs a delta widening the type. That gap was recorded before anyone had said
+  they wanted this; the want is its other half.
+- **Open** — may fold into B-020. If the words only ever appear in that list, this is one of
+  that Feature's requirements rather than a want of its own. It stays separate while the day
+  screen row is still a candidate for them.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
