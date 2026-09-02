@@ -310,6 +310,33 @@ describe('renderTree', () => {
     expect(out).toContain('ready to close')
   })
 
+  // "Here is what is outstanding" is the header, and a closed Feature is not outstanding. It
+  // used to render anyway, and — having no open Story left — advertised itself as ready to
+  // close, which is a close that already happened. Feature #26 did exactly this after Story
+  // #42 merged and closed it.
+  it('leaves a closed Feature out of the tree', () => {
+    const out = renderTree([
+      issue({ number: 1, title: 'EPIC: Daily commitments', type: 'Epic' }),
+      issue({ number: 26, title: 'FEAT: commitment', type: 'Feature', state: 'CLOSED', parent: 1 }),
+      issue({ number: 42, title: 'add-commitment-type', type: 'Task', state: 'CLOSED', parent: 26 }),
+      issue({ number: 53, title: 'FEAT: record', type: 'Feature', parent: 1 }),
+    ])
+    expect(out).not.toContain('Feature #26')
+    expect(out).not.toContain('ready to close')
+    expect(out).toContain('Feature #53')
+  })
+
+  // Hiding closed Features must not make an Epic that has finished some look like an Epic that
+  // has never had one — those want opposite things from the human.
+  it('does not ask for a Feature under an Epic whose Features have all closed', () => {
+    const out = renderTree([
+      issue({ number: 1, title: 'EPIC: Daily commitments', type: 'Epic' }),
+      issue({ number: 26, title: 'FEAT: commitment', type: 'Feature', state: 'CLOSED', parent: 1 }),
+    ])
+    expect(out).not.toContain('G1 is yours')
+    expect(out).toContain('every Feature closed')
+  })
+
   it('says plainly that an empty tracker starts with the human', () => {
     expect(renderTree([])).toContain('starts with you')
   })

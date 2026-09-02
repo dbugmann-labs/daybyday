@@ -609,12 +609,17 @@ export function renderTree(
 
   for (const epic of open.filter((i) => i.type === 'Epic')) {
     out.push(`  Epic #${epic.number} — ${epic.title.replace(/^EPIC:\s*/i, '')}`)
+    // Closed Features are counted but not printed. "What is outstanding" is the header, and a
+    // closed Feature is not — printed, it lands in the every-Story-closed branch below and
+    // advertises a close that already happened, which is what Feature #26 did after Story #42
+    // merged. Counting them still matters: an Epic whose Features have all closed is a
+    // different thing from an Epic that has never had one, and only the second wants G1.
     const features = kids(epic.number).filter((i) => i.type === 'Feature')
     if (features.length === 0) {
       out.push('    (no Feature yet — G1 is yours: name one capability and its slug)')
       waiting.push(`define a Feature under Epic #${epic.number}`)
     }
-    for (const feat of features) {
+    for (const feat of features.filter((i) => i.state === 'OPEN')) {
       const stories = kids(feat.number).filter((i) => i.type === 'Task')
       const live = stories.filter((s) => s.state === 'OPEN')
       const state =
