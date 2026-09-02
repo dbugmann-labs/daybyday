@@ -39,8 +39,8 @@ and #55's `tasks.md` did; a prediction here is not evidence.
 - [x] 2.1 `a day view holds a row for each commitment due on the date` — three commitments handed
   over, two due; two rows, named "Gym" and "Run". Ran red against the seam's `fatalError`, as
   `design.md` predicted.
-- [ ] 2.2 `a commitment not due on the date has no row` — Mon/Wed/Sat asked about a Tuesday; the
-  filter.
+- [x] 2.2 `a commitment not due on the date has no row` — Mon/Wed/Sat asked about a Tuesday; the
+  filter. Pinned rather than drove: 2.1's implementation already filtered on `isDue(on:)`.
 - [ ] 2.3 `a commitment ticked on the date has a row that says it is kept` — the first
   `History.isKept`, and the pin that a ticked commitment stays in the view rather than leaving it.
 - [ ] 2.4 `a commitment not ticked on the date has a row that says it is not kept` — the other side

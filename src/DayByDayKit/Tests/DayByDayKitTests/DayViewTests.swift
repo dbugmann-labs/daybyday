@@ -18,3 +18,16 @@ func aDayViewHoldsARowForEachCommitmentDueOnTheDate() {
     #expect(dayView.rows.count == 2)
     #expect(dayView.rows.map(\.name) == ["Gym", "Run"])
 }
+
+@Test("a commitment not due on the date has no row")
+func aCommitmentNotDueOnTheDateHasNoRow() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let history = History()
+
+    let dayView = DayView(of: [gym], on: tuesday, in: history)
+
+    #expect(dayView.rows.isEmpty)
+}
