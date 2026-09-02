@@ -273,6 +273,20 @@ func aStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     #expect(try Data(contentsOf: place) == bytes)
 }
 
+@Test("a store written in an earlier form than version 1 is refused")
+func aStoreWrittenInAnEarlierFormThanVersion1IsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(#"{"version": 0, "ticks": []}"#.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RecordStoreError.notAStore(at: place)) {
+        try RecordStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
 @Test("a store holding what could not be a tick is refused")
 func aStoreHoldingWhatCouldNotBeATickIsRefused() throws {
     let notDuePlace = freshPlace()

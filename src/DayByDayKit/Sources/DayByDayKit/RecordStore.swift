@@ -27,8 +27,11 @@ public final class RecordStore {
         guard let envelope = try? JSONDecoder().decode(RecordDocumentEnvelope.self, from: data) else {
             throw RecordStoreError.notAStore(at: place)
         }
-        guard envelope.version <= RecordDocument.currentVersion else {
-            throw RecordStoreError.laterForm(at: place, version: envelope.version)
+        guard envelope.version == RecordDocument.currentVersion else {
+            if envelope.version > RecordDocument.currentVersion {
+                throw RecordStoreError.laterForm(at: place, version: envelope.version)
+            }
+            throw RecordStoreError.notAStore(at: place)
         }
         guard let document = try? JSONDecoder().decode(RecordDocument.self, from: data),
             let ticks = document.formTicks()
