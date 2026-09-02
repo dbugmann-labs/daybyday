@@ -18,3 +18,59 @@ func aWeeklyQuotaIsDueOnEveryDateOfAWeek() {
         #expect(schedule.isDue(on: date))
     }
 }
+
+@Test("a weekly quota is due on the dates either side of a week boundary")
+func aWeeklyQuotaIsDueOnTheDatesEitherSideOfAWeekBoundary() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let sunday = CalendarDate(year: 2026, month: 9, day: 6)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 7)!
+
+    #expect(schedule.isDue(on: sunday))
+    #expect(schedule.isDue(on: monday))
+}
+
+@Test("a weekly quota is due on a leap day")
+func aWeeklyQuotaIsDueOnALeapDay() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let leapDay = CalendarDate(year: 2028, month: 2, day: 29)!
+
+    #expect(schedule.isDue(on: leapDay))
+}
+
+@Test("a weekly quota is due across the turn of a year")
+func aWeeklyQuotaIsDueAcrossTheTurnOfAYear() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let newYearsEve = CalendarDate(year: 2026, month: 12, day: 31)!
+    let newYearsDay = CalendarDate(year: 2027, month: 1, day: 1)!
+
+    #expect(schedule.isDue(on: newYearsEve))
+    #expect(schedule.isDue(on: newYearsDay))
+}
+
+@Test("a weekly quota is due on the first and last dates the system forms")
+func aWeeklyQuotaIsDueOnTheFirstAndLastDatesTheSystemForms() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let firstDate = CalendarDate(year: 1583, month: 1, day: 1)!
+    let lastDate = CalendarDate(year: 9999, month: 12, day: 31)!
+
+    #expect(schedule.isDue(on: firstDate))
+    #expect(schedule.isDue(on: lastDate))
+}
+
+@Test("a weekly quota of one is due on every date of a week")
+func aWeeklyQuotaOfOneIsDueOnEveryDateOfAWeek() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 1)!)
+    let dates = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ]
+
+    for date in dates {
+        #expect(schedule.isDue(on: date))
+    }
+}

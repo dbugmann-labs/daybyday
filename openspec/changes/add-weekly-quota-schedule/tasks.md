@@ -32,11 +32,11 @@ consulting the calendar would break — and not proofs that a requirement was un
 eight does run red, that is a finding worth reporting, not a task that went well.
 
 - [x] 2.1 `a weekly quota is due on every date of a week` — expected to run red.
-- [ ] 2.2 `a weekly quota of one is due on every date of a week`
-- [ ] 2.3 `a weekly quota is due on the dates either side of a week boundary`
-- [ ] 2.4 `a weekly quota is due on a leap day`
-- [ ] 2.5 `a weekly quota is due across the turn of a year`
-- [ ] 2.6 `a weekly quota is due on the first and last dates the system forms`
+- [x] 2.2 `a weekly quota of one is due on every date of a week`
+- [x] 2.3 `a weekly quota is due on the dates either side of a week boundary`
+- [x] 2.4 `a weekly quota is due on a leap day`
+- [x] 2.5 `a weekly quota is due across the turn of a year`
+- [x] 2.6 `a weekly quota is due on the first and last dates the system forms`
 - [ ] 2.7 `a quota below one time a week is not a weekly quota` — expected to run red.
 - [ ] 2.8 `a quota of more times a week than the week has days is not a weekly quota`
 - [ ] 2.9 `one time a week is a weekly quota`
