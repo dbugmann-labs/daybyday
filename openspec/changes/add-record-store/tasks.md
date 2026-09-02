@@ -96,7 +96,7 @@ if decoding does not go through the failable initializers.
   exits 0.
 - [x] 3.2 `pnpm exec openspec validate add-record-store --strict` exits 0 and `pnpm run checks`
   reports scenario coverage as 13 of 13.
-- [ ] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Two
+- [x] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Two
   things the reviewer is asked to look for by name: that `history` is assigned only *after*
   `Data.write(to:options: .atomic)` returns, in both `add` and `remove`; and that decoding reaches
   every value through the engine's failable initializers rather than constructing one around them.
