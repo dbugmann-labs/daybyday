@@ -114,6 +114,25 @@ func aTickForACommitmentTheDayViewWasNotHandedAddsNoRow() {
     #expect(!dayView.rows[0].isKept)
 }
 
+@Test("a tick on another date does not make the row say it is kept")
+func aTickOnAnotherDateDoesNotMakeTheRowSayItIsKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    var history = History()
+    history.add(Tick(gym, on: saturday)!)
+
+    let onMonday = DayView(of: [gym], on: monday, in: history)
+    let onSaturday = DayView(of: [gym], on: saturday, in: history)
+
+    #expect(onMonday.rows.count == 1)
+    #expect(!onMonday.rows[0].isKept)
+    #expect(onSaturday.rows.count == 1)
+    #expect(onSaturday.rows[0].isKept)
+}
+
 @Test("a day view of no commitments at all has no rows")
 func aDayViewOfNoCommitmentsAtAllHasNoRows() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!

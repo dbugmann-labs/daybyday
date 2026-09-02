@@ -57,7 +57,7 @@ and #55's `tasks.md` did; a prediction here is not evidence.
   Pinned rather than drove: 2.1's implementation already asks `Commitment.isDue(on:)`.
 - [x] 2.8 `a tick for a commitment the day view was not handed adds no row` — pins that rows come
   from the commitments handed over and never from the history.
-- [ ] 2.9 `a tick on another date does not make the row say it is kept` — pins that the day view's
+- [x] 2.9 `a tick on another date does not make the row say it is kept` — pins that the day view's
   date is the one passed to `isKept`; two assertions, 31 August not kept and 5 September kept.
 - [ ] 2.10 `two commitments with the same name and different schedules each have their own row` —
   two rows, both named "Gym", kept independently. Pins that a row is a commitment's line rather than
