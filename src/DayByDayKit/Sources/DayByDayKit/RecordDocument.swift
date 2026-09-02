@@ -168,8 +168,12 @@ enum ScheduleRecord: Codable {
         case .weekdays(let weekdays):
             let ordered = Self.weekOrder.filter { weekdays.contains($0) }.map(Self.name(for:))
             self = .weekdays(ordered)
-        case .dayOfMonth, .everyNDays, .weeklyQuota:
-            fatalError("not implemented")
+        case .dayOfMonth(let dayOfMonth):
+            self = .dayOfMonth(dayOfMonth.day)
+        case .everyNDays(let interval, from: let start):
+            self = .everyNDays(interval.days, from: DateRecord(start))
+        case .weeklyQuota(let quota):
+            self = .timesPerWeek(quota.timesPerWeek)
         }
     }
 
@@ -184,8 +188,21 @@ enum ScheduleRecord: Codable {
                 weekdays.insert(weekday)
             }
             return .weekdays(weekdays)
-        case .dayOfMonth, .everyNDays, .timesPerWeek:
-            fatalError("not implemented")
+        case .dayOfMonth(let day):
+            guard let dayOfMonth = DayOfMonth(day: day) else {
+                return nil
+            }
+            return .dayOfMonth(dayOfMonth)
+        case .everyNDays(let days, from: let start):
+            guard let interval = DayInterval(days: days), let start = start.calendarDate() else {
+                return nil
+            }
+            return .everyNDays(interval, from: start)
+        case .timesPerWeek(let timesPerWeek):
+            guard let quota = WeeklyQuota(timesPerWeek: timesPerWeek) else {
+                return nil
+            }
+            return .weeklyQuota(quota)
         }
     }
 
@@ -193,8 +210,18 @@ enum ScheduleRecord: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         if let weekdays = try container.decodeIfPresent([String].self, forKey: .weekdays) {
             self = .weekdays(weekdays)
+        } else if let dayOfMonth = try container.decodeIfPresent(Int.self, forKey: .dayOfMonth) {
+            self = .dayOfMonth(dayOfMonth)
+        } else if let everyNDays = try container.decodeIfPresent(Int.self, forKey: .everyNDays) {
+            let from = try container.decode(DateRecord.self, forKey: .from)
+            self = .everyNDays(everyNDays, from: from)
+        } else if let timesPerWeek = try container.decodeIfPresent(Int.self, forKey: .timesPerWeek) {
+            self = .timesPerWeek(timesPerWeek)
         } else {
-            fatalError("not implemented")
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription: "no recognised schedule shape"))
         }
     }
 
@@ -203,8 +230,13 @@ enum ScheduleRecord: Codable {
         switch self {
         case .weekdays(let names):
             try container.encode(names, forKey: .weekdays)
-        case .dayOfMonth, .everyNDays, .timesPerWeek:
-            fatalError("not implemented")
+        case .dayOfMonth(let day):
+            try container.encode(day, forKey: .dayOfMonth)
+        case .everyNDays(let days, from: let start):
+            try container.encode(days, forKey: .everyNDays)
+            try container.encode(start, forKey: .from)
+        case .timesPerWeek(let timesPerWeek):
+            try container.encode(timesPerWeek, forKey: .timesPerWeek)
         }
     }
 }

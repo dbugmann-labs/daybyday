@@ -56,7 +56,7 @@ if decoding does not go through the failable initializers.
   in, one out, equality with a `History` built from the three that remain.
 - [x] 2.5 `adding a tick the store already holds leaves what is kept unchanged` — equality with a
   history the tick was added to once; fails a document that appends rather than holds a set.
-- [ ] 2.6 `ticks of commitments on every schedule shape are read back as the same ticks` — one
+- [x] 2.6 `ticks of commitments on every schedule shape are read back as the same ticks` — one
   commitment per `Schedule` case: "Gym" on the weekday set, "Finances" on the 25th ticked
   25 September 2026, "Plants" every 3 days from 25 August 2026 kept from 1 September and ticked
   3 September 2026, "Reading" on a weekly quota of 3 ticked Monday 7 September 2026. Equality with

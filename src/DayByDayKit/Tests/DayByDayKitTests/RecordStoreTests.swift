@@ -101,3 +101,54 @@ func addingATickTheStoreAlreadyHoldsLeavesWhatIsKeptUnchanged() throws {
     expected.add(tick)
     #expect(later.history == expected)
 }
+
+@Test("ticks of commitments on every schedule shape are read back as the same ticks")
+func ticksOfCommitmentsOnEveryScheduleShapeAreReadBackAsTheSameTicks() throws {
+    let place = freshPlace()
+    let januaryFirst2026 = CalendarDate(year: 2026, month: 1, day: 1)!
+
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([.monday, .wednesday, .saturday]),
+        keptFrom: januaryFirst2026)!
+    let gymTick = Tick(gym, on: CalendarDate(year: 2026, month: 8, day: 31)!)!
+
+    let finances = Commitment(
+        name: "Finances",
+        schedule: .dayOfMonth(DayOfMonth(day: 25)!),
+        keptFrom: januaryFirst2026)!
+    let financesTick = Tick(finances, on: CalendarDate(year: 2026, month: 9, day: 25)!)!
+
+    let plants = Commitment(
+        name: "Plants",
+        schedule: .everyNDays(
+            DayInterval(days: 3)!, from: CalendarDate(year: 2026, month: 8, day: 25)!),
+        keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!)!
+    let plantsTick = Tick(plants, on: CalendarDate(year: 2026, month: 9, day: 3)!)!
+
+    let reading = Commitment(
+        name: "Reading",
+        schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!),
+        keptFrom: januaryFirst2026)!
+    let readingTick = Tick(reading, on: CalendarDate(year: 2026, month: 9, day: 7)!)!
+
+    let store = try RecordStore(at: place)
+    try store.add(gymTick)
+    try store.add(financesTick)
+    try store.add(plantsTick)
+    try store.add(readingTick)
+
+    let later = try RecordStore(at: place)
+
+    var expected = History()
+    expected.add(gymTick)
+    expected.add(financesTick)
+    expected.add(plantsTick)
+    expected.add(readingTick)
+    #expect(later.history == expected)
+
+    #expect(later.history.isKept(gym, on: CalendarDate(year: 2026, month: 8, day: 31)!))
+    #expect(later.history.isKept(finances, on: CalendarDate(year: 2026, month: 9, day: 25)!))
+    #expect(later.history.isKept(plants, on: CalendarDate(year: 2026, month: 9, day: 3)!))
+    #expect(later.history.isKept(reading, on: CalendarDate(year: 2026, month: 9, day: 7)!))
+}
