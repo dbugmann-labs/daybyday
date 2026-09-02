@@ -74,7 +74,7 @@ and #55's `tasks.md` did; a prediction here is not evidence.
   the order given.
 - [x] 2.15 `handing the same commitments in the opposite order reverses the rows` — with 2.14, the
   pair that fails any sort by name.
-- [ ] 2.16 `a kept commitment keeps its place among the ones that are not kept` — the middle row is
+- [x] 2.16 `a kept commitment keeps its place among the ones that are not kept` — the middle row is
   the kept one and stays in the middle. Fails an implementation that floats unticked rows to the top.
 - [ ] 2.17 `dropping a commitment that is not due leaves the others in their order` — a not-due
   commitment removed from the middle; the two that remain keep their relative order.

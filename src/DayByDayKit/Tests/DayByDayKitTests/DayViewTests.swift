@@ -269,6 +269,28 @@ func handingTheSameCommitmentsInTheOppositeOrderReversesTheRows() {
     #expect(dayView.rows.map(\.name) == ["Vitamins", "Run", "Gym"])
 }
 
+@Test("a kept commitment keeps its place among the ones that are not kept")
+func aKeptCommitmentKeepsItsPlaceAmongTheOnesThatAreNotKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.monday, .thursday]), keptFrom: keptFrom)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Tick(run, on: monday)!)
+
+    let dayView = DayView(of: [gym, run, vitamins], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Run", "Vitamins"])
+    #expect(dayView.rows.map(\.isKept) == [false, true, false])
+}
+
 @Test("a day view of no commitments at all has no rows")
 func aDayViewOfNoCommitmentsAtAllHasNoRows() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
