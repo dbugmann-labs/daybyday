@@ -17,7 +17,7 @@ carries a third thing: the day it is kept from, before which it is not due. The 
 the one the round was raised to surface — *"I don't want to have due ticks in the past I was never
 able to fulfill because the commitment was not there yet."* § *Open Questions* records both answers
 as settled, and this document and the delta are written on them rather than on what was recommended.
-That answer is also why `docs/adr/1010-a-commitment-is-kept-from-a-day.md` exists: `proposal.md`
+That answer is also why `docs/adr/1013-a-commitment-is-kept-from-a-day.md` exists: `proposal.md`
 undertook to write one if the answer went this way.
 
 **Measured on this machine on 2026-09-02, on Apple Swift 6.3.3 in language mode 6, rather than
@@ -298,7 +298,7 @@ on 2026-09-02, and both answers are recorded here as settled:
    fulfill because the commitment was not there yet."* A commitment is therefore three things, not
    two; the delta gained a fourth requirement — *a commitment is not due before the day it is kept
    from* — with five scenarios, the first requirement was rewritten around the third field, the seam's
-   initializer gained `keptFrom:`, and the decision is written up as **ADR-1011**, which
+   initializer gained `keptFrom:`, and the decision is written up as **ADR-1013**, which
    `proposal.md` undertook to do if the answer came back this way. The recommendation's own argument
    is answered in § *The day a commitment is kept from* rather than quietly dropped.
 2. **Is the name stored exactly as typed, or trimmed?** — **exactly as typed**, as recommended. The

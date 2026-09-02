@@ -1,4 +1,4 @@
-# 1011. A commitment is kept from a day, and is not due before it
+# 1013. A commitment is kept from a day, and is not due before it
 
 - Status: accepted
 - Date: 2026-09-02

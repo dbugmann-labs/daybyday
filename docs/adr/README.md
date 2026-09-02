@@ -66,4 +66,4 @@ DayByDay's own records start here.
 | [1010](1010-a-groomed-backlog-replaces-the-parking-lot.md) | A groomed backlog replaces the parking lot; `/atlas idea` captures, `/atlas backlog` promotes |
 | [1011](1011-fable-is-the-fourth-model-tier.md) | Fable is a fourth model tier, taken by `spec-author` alone; supersedes ADR-0006's routing rule |
 | [1012](1012-the-conductor-prints-two-shapes.md) | The conductor prints two shapes: the five-part stop and the three-line step report; extends ADR-1002 |
-| [1011](1011-a-commitment-is-kept-from-a-day.md) | A commitment is kept from a day, and is not due before it |
+| [1013](1013-a-commitment-is-kept-from-a-day.md) | A commitment is kept from a day, and is not due before it |

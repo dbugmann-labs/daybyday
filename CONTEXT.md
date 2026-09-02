@@ -107,7 +107,7 @@ unticked due day is what a miss looks like. It is deliberately not the day the c
 entered into the app — someone who has kept the gym since June says June — and it is a floor
 rather than a rhythm: it need not be a day the schedule is due on, and it does not move the
 schedule to begin there. Distinct from a **start date**, which an every-N-days schedule carries
-for a different job; a commitment can hold both, and they can disagree. ADR-1011.
+for a different job; a commitment can hold both, and they can disagree. ADR-1013.
 
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
