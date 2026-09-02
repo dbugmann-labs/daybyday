@@ -275,3 +275,91 @@ func twoHistoriesHoldingTheSameTicksAreTheSameHistory() {
 
     #expect(first == second)
 }
+
+@Test("a tick taken back leaves the commitment not kept on that date")
+func aTickTakenBackLeavesTheCommitmentNotKeptOnThatDate() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tick = Tick(commitment, on: monday)!
+
+    var history = History()
+    history.add(tick)
+    history.remove(tick)
+
+    #expect(!history.isKept(commitment, on: monday))
+}
+
+@Test("taking back a tick leaves the same commitment's ticks on other dates standing")
+func takingBackATickLeavesTheSameCommitmentsTicksOnOtherDatesStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let onMonday = Tick(commitment, on: monday)!
+    let onSaturday = Tick(commitment, on: saturday)!
+
+    var history = History()
+    history.add(onMonday)
+    history.add(onSaturday)
+    history.remove(onMonday)
+
+    #expect(history.isKept(commitment, on: saturday))
+    #expect(!history.isKept(commitment, on: monday))
+}
+
+@Test("taking back a tick leaves another commitment's tick on the same date standing")
+func takingBackATickLeavesAnotherCommitmentsTickOnTheSameDateStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gymTick = Tick(gym, on: monday)!
+    let runTick = Tick(run, on: monday)!
+
+    var history = History()
+    history.add(gymTick)
+    history.add(runTick)
+    history.remove(gymTick)
+
+    #expect(history.isKept(run, on: monday))
+    #expect(!history.isKept(gym, on: monday))
+}
+
+@Test("taking back a tick the history does not hold leaves it unchanged")
+func takingBackATickTheHistoryDoesNotHoldLeavesItUnchanged() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let onSaturday = Tick(commitment, on: saturday)!
+    let onMonday = Tick(commitment, on: monday)!
+
+    var before = History()
+    before.add(onSaturday)
+
+    var after = before
+    after.remove(onMonday)
+
+    #expect(after == before)
+    #expect(after.isKept(commitment, on: saturday))
+}
+
+@Test("a history ticked and then unticked is the same as one never ticked")
+func aHistoryTickedAndThenUntickedIsTheSameAsOneNeverTicked() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tick = Tick(commitment, on: monday)!
+
+    var tickedThenUnticked = History()
+    tickedThenUnticked.add(tick)
+    tickedThenUnticked.remove(tick)
+
+    #expect(tickedThenUnticked == History())
+}

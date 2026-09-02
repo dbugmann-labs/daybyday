@@ -10,7 +10,7 @@ public struct History: Hashable, Sendable {
     }
 
     public mutating func remove(_ tick: Tick) {
-        fatalError("not implemented")
+        ticks.remove(tick)
     }
 
     public func isKept(_ commitment: Commitment, on date: CalendarDate) -> Bool {

@@ -82,19 +82,19 @@ than a set, 2.19 (the first `remove`), and 2.22 and 2.23 if `remove` left any re
   (the `Set<Tick>` backing already dedupes).
 - [x] 2.18 `two histories holding the same ticks are the same history` — added in opposite order;
   pins that order is not part of the value. Pinned green.
-- [ ] 2.19 `a tick taken back leaves the commitment not kept on that date` — the first `remove`;
-  expected to run red.
-- [ ] 2.20 `taking back a tick leaves the same commitment's ticks on other dates standing` — two
-  assertions, 5 September kept and 31 August not.
-- [ ] 2.21 `taking back a tick leaves another commitment's tick on the same date standing` — two
-  assertions, "Run" kept and "Gym" not.
-- [ ] 2.22 `taking back a tick the history does not hold leaves it unchanged` — equality with the
+- [x] 2.19 `a tick taken back leaves the commitment not kept on that date` — the first `remove`;
+  expected to run red. Ran red (the `remove` `fatalError`); made green with `ticks.remove(tick)`.
+- [x] 2.20 `taking back a tick leaves the same commitment's ticks on other dates standing` — two
+  assertions, 5 September kept and 31 August not. Pinned green.
+- [x] 2.21 `taking back a tick leaves another commitment's tick on the same date standing` — two
+  assertions, "Run" kept and "Gym" not. Pinned green.
+- [x] 2.22 `taking back a tick the history does not hold leaves it unchanged` — equality with the
   history as it stood before, and 5 September still kept. Fails an implementation that records the
-  attempt.
-- [ ] 2.23 `a history ticked and then unticked is the same as one never ticked` — equality with
+  attempt. Pinned green (`Set.remove` of an absent member is a no-op).
+- [x] 2.23 `a history ticked and then unticked is the same as one never ticked` — equality with
   `History()`; the scenario that fails any tombstone, counter or flag left behind by `remove`.
   Deliberately last: an implementation that passes 2.19 through 2.22 by marking a tick removed
-  rather than removing it fails only here.
+  rather than removing it fails only here. Pinned green (`Set.remove` leaves no residue).
 
 ## 3. Gates
 
