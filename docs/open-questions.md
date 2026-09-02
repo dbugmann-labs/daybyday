@@ -23,6 +23,16 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 - **SwiftData or GRDB.** ADR-1001 chose Swift and SwiftUI and deliberately left persistence
   open. Still open, and nothing has forced it: the rule engine is pure and stores nothing.
   The Story that first persists a tick decides it, and it is worth an ADR when it does.
+- **When an ADR number is claimed.** Today it is taken at Stage 4, when the file is written,
+  and merged at Stage 9 — so two branches open at once can both write the same number and
+  neither learns of it until a rebase conflicts in `docs/adr/README.md`. Story #11 hit it twice
+  in one day (`docs/retrospective.md` §7), the second time for the price of a G4 signature,
+  because the number is cross-referenced from inside the signed change folder. The candidate
+  answers are: claim the number at merge and let the branch carry a placeholder; let the
+  archive assign it, as `/opsx:archive` already assigns an archive date; or keep claiming
+  early and add a check that fails the PR when the number is taken. The first two stop the
+  collision reaching the change folder at all, which is what made it expensive. Worth an ADR
+  when something forces it; nothing does yet, and the workaround is a rename.
 - **What the app target is called.** Where the package lives is settled — `src/DayByDayKit`, and
   CI discovers `Package.swift` rather than assuming a path, so a second package needs no CI
   change. The target that draws the screens does not exist yet and is unnamed.
