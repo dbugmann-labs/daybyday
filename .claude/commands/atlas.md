@@ -355,7 +355,7 @@ its publish step. Say so and check what it wrote before going on — rule 5. Iss
 acceptance criteria are a rule 4 breach that the spec, not the issue, has to win against later.
 
 If the idea is not ready to be a Feature, the right outcome is a want in
-`docs/backlog.md` — say so and capture it with the `/atlas idea` procedure below, rather than
+`docs/backlog.md` — say so and capture it with the `/atlas idea` procedure above, rather than
 opening a Feature issue for it. Nothing is implemented from that file.
 
 ## When to stop rather than improvise
