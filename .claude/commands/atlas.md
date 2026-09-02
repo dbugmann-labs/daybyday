@@ -536,6 +536,28 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
    with acceptance criteria in the body and a `ready-for-agent` label, both of which this
    process forbids. What you want from it is the numbered slices and their blocking edges.
    Present that and **stop at G2**.
+
+   **Load the Feature's decomposition input before it runs.** The skill reads two things — the
+   conversation it is typed into, and the issue you point it at — and rule 4 keeps a Feature
+   issue a stub, so in any session that did not itself just run `/atlas backlog`, the grooming
+   pass's thinking reaches the breakdown only because you fetched it. Read, before drafting or
+   presenting anything: the issue itself, via the two-call read in
+   `docs/agents/issue-tracker.md` § *Conventions*; every `## Grooming passes` line in
+   `docs/backlog.md` naming it; the `## Wants` entries those lines park against its G2; and any
+   `CONTEXT.md` terms the G1 grill landed.
+
+   ```bash
+   grep -n '#<issue#>' docs/backlog.md   # its Decided line, the passes' dispositions, and
+                                        # the Touches line of every want that names it
+   ```
+
+   **`pnpm run status` will not do this for you.** It parses a want as id, heading, capture date
+   and passes-survived, and holds no edge from a want to a Feature (`scripts/lib/backlog.ts`) —
+   it will tell you B-006 exists and never that it belongs to #27's G2. A pass records which
+   wants it deliberately did *not* take, and why, precisely so the next step starts from that
+   rather than from the wants alone; a decomposition that skips it re-derives the slices from
+   one sentence of intent and loses the reasoning to the transcript, which is the failure
+   ADR-1010 diagnosed one level up.
 5. On approval, spawn `orchestrator` to write the Stories from the accepted breakdown — issue
    bodies come from `.github/ISSUE_TEMPLATE/story.yml`, never from the skill's template. Then cut
    the worktree (`docs/story-mechanics.md`), spawn `spec-author`, and **stop at G4**.
