@@ -172,6 +172,16 @@ document because they are the same kind of thing: a rule the process states and 
   for the collision; `git rebase` finds it, in `docs/adr/README.md`, at the worst moment. What
   to do about it is an open technical decision rather than a fix, and it is recorded as one in
   `docs/open-questions.md`.
+- **A written instruction failed three times in the place it was written.**
+  `.claude/agents/reviewer.md` tells the reviewer that the missing `Agent` tool is a deliberate
+  decision — a sub-agent would not inherit its `disallowedTools` and could edit the working
+  tree — and to run the two `code-review` axes inline instead. That paragraph exists *because*
+  the reviewer reported it twice on Story #42; it reported it a third time on Story #11,
+  2026-09-02, from a session that had read the file. Rewritten on 2026-09-02 to say "do not
+  report this" as its own instruction rather than as a clause at the end of the rationale. The
+  general point is the one worth keeping: an instruction placed after the reasoning that
+  justifies it is read as commentary, and prose the agent must *act* on has to be shaped as an
+  action.
 - **Rule 3 is unenforced, and a batched Story is indistinguishable from a disciplined one after
   the fact.** Found at Story #11's review, 2026-09-02 (PR #45): nine of ten scenarios were
   written in two commits — five tests and five ticked boxes in one, four tests and the guard
