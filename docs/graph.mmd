@@ -20,10 +20,18 @@ flowchart TD
   I11["Story 11 — add-weekly-quota-schedule"]
   I26["Feature 26 — commitment"]
   I27["Feature 27 — day-screen"]
+  I42["Story 42 — add-commitment-type"]
+  I53["Feature 53 — record"]
+  I55["Story 55 — add-tick-record"]
+  I56["Story 56 — add-record-store"]
 
   I1 --> I26
   I1 --> I27
+  I1 --> I53
   I1 --> I6
+  I26 --> I42
+  I53 --> I55
+  I53 --> I56
   I6 --> I10
   I6 --> I11
   I6 --> I8
@@ -35,5 +43,9 @@ flowchart TD
   class I9 story,done
   class I10 story,done
   class I11 story
-  class I26 feature
+  class I26 feature,done
   class I27 feature
+  class I42 story,done
+  class I53 feature
+  class I55 story
+  class I56 story

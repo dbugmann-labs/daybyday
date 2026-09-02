@@ -21,6 +21,14 @@ resolves to Claude Code's built-in review, which is a different tool with a `--f
 edits the working tree. You never edit. Correctness, error handling, the failure modes the
 tests do not cover, naming, and whether the seam held or leaked.
 
+**Run that skill's two axes yourself, in this session.** Its step 4 says to spawn a Standards
+and a Spec sub-agent in parallel, and **you hold no `Agent` tool, deliberately** — a sub-agent
+you spawned would not inherit your `disallowedTools`, so it could edit the working tree, which
+is the one thing this role may never do. Follow every other step of the skill; do the two axes
+sequentially in your own context instead of delegating them, and say in your output that you did.
+This is the documented substitution, so it is not a rule-5 defect to report — reported twice on
+Story #42 before it was written down here.
+
 **Spec fidelity.** This axis is yours alone and no tool does it for you:
 
 - Every `#### Scenario:` in the delta has a test whose title matches it verbatim, and that

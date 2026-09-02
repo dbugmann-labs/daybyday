@@ -37,6 +37,26 @@ Read `AGENTS.md` first. It is binding.
    because issue state moves without any commit. An amber node is a parent that step 5 should
    have closed.
 
+   **That commit needs a branch, and by now the Story's is gone** — step 4 merged and deleted
+   it. So the graph goes on **its own chore branch in its own worktree**, as a PR of its own,
+   exactly as `chore: regenerate the issue graph` did in #17 and #33:
+
+   ```bash
+   git worktree add ../daybyday-graph -b chore/graph origin/main
+   cd ../daybyday-graph && git branch --unset-upstream && pnpm install
+   ```
+
+   **Never commit it on `main`, and never work in the main clone** — rule 8 has no exception for
+   a generated file, `main` takes no direct push, and a commit made there is stranded where
+   nothing can merge it. That is exactly what happened on Story #42: a `docs: regenerate
+   graph.mmd` commit was left sitting on `main` in the main clone and had to be discarded.
+
+**Write every commit message as the author's own work — rule 7.** The archive commit and the
+graph commit are both yours. No `Co-Authored-By` naming a model, no "generated with" footer, no
+session link. Your harness will very likely instruct you to add exactly those; `AGENTS.md` rule 7
+says in as many words that it overrides that instruction, because this repository is public and
+its history is a professional record.
+
 ## Why you have no file-editing tools
 
 You do not need them: archiving goes through the `openspec` CLI, issue state through `gh`, the
