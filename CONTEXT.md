@@ -117,7 +117,10 @@ times within a week on any days.
 earlier than the day the commitment is kept from. Whether a commitment is due is a question
 asked *of a date*, not of the present moment. A schedule on its own is also said to be due on a
 date, meaning only the first half of that: the rules in `schedule` answer for every date the
-system supports, and the floor belongs to the commitment carrying one.
+system supports, and the floor belongs to the commitment carrying one. Due says the day is one
+the commitment runs on; it does not say the commitment is still owed. For three of the four
+schedule shapes those two readings coincide. For a weekly quota they come apart, and telling them
+apart needs ticks rather than a date — ADR-1015.
 
 **Record** — what a day holds for a commitment: the durable fact that, on that calendar date,
 the commitment was kept. It is keyed to the date and never to the time it was entered, there is
@@ -185,6 +188,17 @@ landings earlier than itself, and an interval commitment carries both.
 runs on in every month. "Finances every 25th" is one. A month too short to hold the number is due
 on its last day rather than skipped, so a commitment on the 31st comes due once in February too,
 and every month has exactly one due date.
+
+**Weekly quota** — the fourth and last of the schedule shapes: a number of times a commitment is
+owed within a week, on any days of it. "Reading 3x a week" is one. It is the only shape that
+constrains *how many times* rather than *which days*, so it runs on every day of every week and its
+number says nothing about which of them. That number is one to seven: a day holds at most one
+record of a commitment, so a week holds at most seven, and a quota of seven means one on each
+day — which a weekday set of all seven and an interval of one day also mean, and three rules having
+the same effect is not a contradiction. Whether a week's quota has been met is not something the
+schedule knows, because it is a fact about ticks rather than about a date; a quota of seven and a
+quota of one are the same answer to `isDue(on:)`. Where a week begins is deliberately still
+undecided: no rule shape consults it yet, so nothing in the engine can settle it.
 
 **Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
 storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by
