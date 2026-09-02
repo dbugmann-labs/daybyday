@@ -120,7 +120,7 @@ date, meaning only the first half of that: the rules in `schedule` answer for ev
 system supports, and the floor belongs to the commitment carrying one. Due says the day is one
 the commitment runs on; it does not say the commitment is still owed. For three of the four
 schedule shapes those two readings coincide. For a weekly quota they come apart, and telling them
-apart needs ticks rather than a date — ADR-1014.
+apart needs ticks rather than a date — ADR-1015.
 
 **Record** — what a day holds for a commitment: the durable fact that, on that calendar date,
 the commitment was kept. It is keyed to the date and never to the time it was entered, there is

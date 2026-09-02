@@ -28,7 +28,7 @@ tracker but is neither built nor specified anywhere in this repository.
 - Adds one case to the existing `Schedule` enum and one small public type beside it. **The seam does
   not move**, so `add-weekday-set-schedule`'s claim that it would survive all four shapes holds for
   the fourth and last time.
-- **An ADR**, `docs/adr/1014-*`, recording that a weekly quota's due-ness is opportunity rather than
+- **An ADR**, `docs/adr/1015-*`, recording that a weekly quota's due-ness is opportunity rather than
   obligation and that completion lives outside this capability. It qualifies on all three of
   `docs/adr/README.md`'s tests: reversing it means widening the seam for every shape or moving the
   quota out of `Schedule`; `.weeklyQuota(3).isDue(on:)` answering `true` on a Thursday is surprising
@@ -55,7 +55,7 @@ tracker but is neither built nor specified anywhere in this repository.
   consumer of `Schedule`, delegates rather than switches and compiles unchanged.
 - **Specs:** `openspec/specs/schedule/spec.md` at archive time, and nothing else — CI check 2 has
   exactly one claimed capability.
-- **Docs:** `docs/adr/1014-*.md` and two `CONTEXT.md` entries, both written at Stage 4 rather than
+- **Docs:** `docs/adr/1015-*.md` and two `CONTEXT.md` entries, both written at Stage 4 rather than
   at archive.
 - **Tests:** ten acceptance tests in the existing `Tests/DayByDayKitTests/`, one per scenario, taken
   one at a time. The sixty-four that pass today — forty-five from #8, #9 and #10 and nineteen from

@@ -50,7 +50,7 @@ eight does run red, that is a finding worth reporting, not a task that went well
   `pnpm run checks` reports scenario coverage as 10 of 10.
 - [ ] 3.3 `/code-review` reports nothing unresolved on either axis (**G7**).
 
-`docs/adr/1014-a-weekly-quota-is-due-every-day.md` is **not** a task here. It was written at Stage 4
+`docs/adr/1015-a-weekly-quota-is-due-every-day.md` is **not** a task here. It was written at Stage 4
 with the rest of this folder and needs no further edit — `docs/adr/**` is the spec-author's to write
 and not the implementer's, and the ADR is accepted by the same G4 signature that approves this
 change folder.

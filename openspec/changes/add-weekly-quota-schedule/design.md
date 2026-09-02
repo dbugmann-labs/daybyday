@@ -223,7 +223,7 @@ other out-of-range number, and a `WeeklyQuota` never becomes a `DateComponents`,
 
 ### An ADR, because three design documents have already needed this answer
 
-`docs/adr/1014-a-weekly-quota-is-due-every-day.md` records the first decision above. It meets all
+`docs/adr/1015-a-weekly-quota-is-due-every-day.md` records the first decision above. It meets all
 three of `docs/adr/README.md`'s tests: reversing it means widening the seam for every shape or
 moving the quota out of `Schedule`, and now reopening `commitment` either way;
 `.weeklyQuota(3).isDue(on:)` answering `true` on a Thursday will surprise every future reader who
@@ -231,7 +231,10 @@ has not been through this reasoning; and the alternatives were real enough that 
 one of them to the owner.
 
 It was numbered 1010 when first written; ADR-1010 was taken on `main` by the backlog decision the
-same day, so it is 1014 now, after #42's ADR-1013. It is written on the branch and merges with it,
+same day, so it became 1014 after #42's ADR-1013. Then #61 landed ADR-1014 on `main` while this
+Story was in review, and `docs/adr/README.md`'s immutability rule fixes a merged number in place, so
+it is 1015 now. The first move was signed at G4; this one came after, and is why the folder carries
+a second signature. It is written on the branch and merges with it,
 which is the precedent ADR-1004 set — that file landed in #8's implementation commit, not in a pass
 of its own. `Status: accepted` is therefore written now and the acceptance is the owner's G4
 signature on this diff, which the ADR says in as many words. If G4 declines it, the file goes with
@@ -296,7 +299,7 @@ moves in each case.
    *when* the eighth day-one commitment can be formed as a `Commitment`, which is sequencing, and
    sequencing is what the owner exercised by cutting this Story at G2 and asking for Stage 4 on it
    twice. Declining G4 is still available and still means what the first pass said: the folder and
-   ADR-1014 go, #11 is blocked behind the first Story that renders a quota's state, and #6 stays
+   ADR-1015 go, #11 is blocked behind the first Story that renders a quota's state, and #6 stays
    open with one Story outstanding.
 2. **Is a quota capped at seven a week, or can it ask for more?** — **withdrawn: settled by
    `CONTEXT.md`.** The first pass raised it because the ceiling rested on "a day holds at most one
