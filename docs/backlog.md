@@ -30,8 +30,8 @@ ever opened it.
 want was tested against and what the test returned — one principle, not all four. A want that
 *fails* one is still captured, with the failure written down, because that is a drop the next
 grooming pass makes deliberately rather than an idea that quietly never came back. Entries
-B-001 to B-009 predate the field and do not carry it yet; the next grooming pass fills them in
-as it reads them.
+B-001 to B-009 predated the field; the first grooming pass, on 2026-09-02, filled them in as
+it read them.
 
 ## What day one looks like
 
@@ -67,6 +67,9 @@ shape it lacks, not the quota.
 - **Trigger** — once a day, on the scale. Separately and rarely, to look at the trend.
 - **Touches** — `commitment`, as a numeric payload rather than a tick; the line is a surface
   that is not the day screen.
+- **Principle** — tested against *five percent of seven things*: passes. A number where
+  there was a tick makes a new kind of record possible rather than deepening one; the line
+  over months is a look-back and is judged with B-007.
 - **Open** — one want or two? Entering a number and reading months of them are different
   triggers, and the second may be B-007 or B-008 wearing a different name. The 2026-09-02
   braindump named the entry and the graph in separate breaths — the graph as "a separate area
@@ -84,6 +87,9 @@ shape it lacks, not the quota.
 - **Trigger** — several times a day, after eating.
 - **Touches** — `commitment`. The same numeric payload as B-001 with the opposite write
   semantics: add, never replace.
+- **Principle** — tested against *five percent of seven things*: passes as a number, strains
+  as a running total. The number is B-001's new kind of record; accumulating is depth on it,
+  and is worth less on its own than the plain number.
 - **Open** — is there a target for the day, and does reaching it make the commitment done?
 - **Open** — the 2026-09-02 braindump groups protein with weight, mood and journal as "daily",
   and says nothing about accumulating. That is not a contradiction of the original words, but
@@ -102,6 +108,9 @@ shape it lacks, not the quota.
 - **Trigger** — once a day, in the row itself, with no second screen.
 - **Touches** — `commitment` numeric payload and `day-screen`, because "one tap" is a claim
   about the row, not about the value.
+- **Principle** — tested against *an iPhone, in your hand*: passes, and is the want that
+  states it most sharply — one tap, in the row, phone in hand. The ten-point scale is what
+  strains it, not the principle.
 - **Answered 2026-09-02** — the scale is 1 to 10. It was the open question on this entry, and
   the braindump states it outright.
 - **Open** — ten values and "a single tap" pull against each other: a ten-point scale is a
@@ -119,6 +128,9 @@ shape it lacks, not the quota.
 
 - **Trigger** — once a day, evening.
 - **Touches** — `commitment` with a text payload, plus somewhere to type that a row is not.
+- **Principle** — tested against *an iPhone, in your hand*: passes only because it is short.
+  Two or three sentences typed on a phone is the most interaction any daily entry asks for,
+  and "deliberately not an essay" is the owner drawing that line.
 - **Open** — the day-one list has journaling as a **tick**, not as written text. The 2026-09-02
   braindump lists journal entries alongside weight, protein and mood — the three things that
   carry a value — and not alongside sports, supplements and habits, which are the ticks. That
@@ -136,6 +148,9 @@ shape it lacks, not the quota.
 - **Trigger** — daily, alongside supplements.
 - **Touches** — `commitment`. Supplements and habits arrived as one line, and this is the half
   that is not a supplement: the tick means the opposite thing.
+- **Principle** — tested against *nothing congratulates you*: passes narrowly. Ticking that a
+  thing was *not* done records an absence, and a run of absences is a streak by another
+  name; it survives as long as the tick stays a record and never becomes a count.
 - **Open** — is the negation a property of the commitment, or only of how its row is worded?
 
 ### B-006 — keep unticked commitments visible into the evening rather than silently missed
@@ -145,6 +160,10 @@ shape it lacks, not the quota.
 
 - **Trigger** — passive; it is what the day screen does when you have not done something yet.
 - **Touches** — `day-screen`.
+- **Principle** — tested against *nothing congratulates you*, read from the other side:
+  passes. A row that is not ticked simply does not go quiet, which is the principle's own
+  mechanic; it fails the moment "visible" becomes a badge or a nudge, which is the nag the
+  Open line names.
 - **Open** — visible how? This is one sentence away from being a nag, which
   `CONTEXT.md` § *Product principles* rules out.
 
@@ -163,6 +182,9 @@ shape it lacks, not the quota.
 - **Touches** — unclaimed. Probably its own capability rather than `day-screen`, because its
   whole point is that it is not the landing screen — and the braindump says so twice, calling it
   "a separate area which can be navigated to".
+- **Principle** — tested against *five percent of seven things*: strains. A page per
+  commitment is depth on one thing at a time, and it passes only if the page is the same
+  thin thing for every commitment rather than a deep one for weight.
 - **Open** — the word *area* was dropped from the vocabulary (`CONTEXT.md`). What this is a page
   *per* needs re-deciding before it is a Feature. The braindump narrows it without settling it:
   the three examples it gives — weight, mood, protein — are the commitments that carry a number,
@@ -177,6 +199,10 @@ shape it lacks, not the quota.
 
 - **Trigger** — occasionally, out of curiosity rather than obligation.
 - **Touches** — unclaimed, and likely the same surface as B-001's line and B-007's page.
+- **Principle** — tested against *nothing congratulates you*: passes as a record looked at
+  deliberately, fails if shown unasked. "Eleven gym sessions last month" is a count, and a
+  count is one step from a streak; the trigger — curiosity, never obligation — is what keeps
+  it on the right side.
 - **Open** — navigating to a past day is already implied by ticking any day; this is the other
   half, and nobody has agreed to build it. Strong candidate to merge with B-001 and B-007.
 
@@ -188,6 +214,9 @@ shape it lacks, not the quota.
 - **Trigger** — once every few years, and catastrophically if it does not work.
 - **Touches** — unclaimed. Storage, which is also the open technical decision in
   `docs/open-questions.md`.
+- **Principle** — tested against *restore, not sync*: passes by definition. It is the want
+  the principle exists to promise, and the principle's second half — no live sync — is the
+  boundary the quote already draws.
 - **Open** — restore is stated as the boundary, so live sync is out. What "restore" means
   concretely — a file, iCloud, a backup you can see — is not decided.
 
@@ -253,4 +282,12 @@ what "survived two passes" is counted against; an entry captured after a pass di
 through it. A pass that promoted nothing still gets a line — it is the pass the staleness rule
 most needs to count. Say what the coverage sweep found, including when it found nothing.
 
-*None yet. The backlog was migrated from the parking lot on 2026-09-02 and has not been groomed.*
+- 2026-09-02 — pass over 11 wants, the first. Sweep: every rhythm on the day-one week is
+  shipped or in flight (#11), and not one of the eight commitments can yet be defined on the
+  phone, shown for a day, or ticked. Ticking has no Feature, no Story and no want — the Epic
+  absorbed it on 2026-08-28 and no Feature claimed it, and both in-flight Stories say in
+  writing that no tick exists. `commitment` (#42) excludes changing and retiring one by name
+  and nothing wants either; defining one from a screen is unsaid; going to a day other than
+  today is implied by "the past is writable" and said nowhere. `docs/open-questions.md`
+  holds no want in disguise. Principle lines filled in on B-001..B-009. Stopped at the
+  cluster choice.
