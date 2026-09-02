@@ -102,6 +102,31 @@ func addingATickTheStoreAlreadyHoldsLeavesWhatIsKeptUnchanged() throws {
     #expect(later.history == expected)
 }
 
+@Test("a tick in the first supported year and one in the last are read back unchanged")
+func aTickInTheFirstSupportedYearAndOneInTheLastAreReadBackUnchanged() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let firstDate = CalendarDate(year: 1583, month: 1, day: 3)!
+    let lastDate = CalendarDate(year: 9999, month: 12, day: 27)!
+    let firstTick = Tick(commitment, on: firstDate)!
+    let lastTick = Tick(commitment, on: lastDate)!
+
+    let store = try RecordStore(at: place)
+    try store.add(firstTick)
+    try store.add(lastTick)
+
+    let later = try RecordStore(at: place)
+
+    #expect(later.history.isKept(commitment, on: firstDate))
+    #expect(later.history.isKept(commitment, on: lastDate))
+    var expected = History()
+    expected.add(firstTick)
+    expected.add(lastTick)
+    #expect(later.history == expected)
+}
+
 @Test("ticks of commitments on every schedule shape are read back as the same ticks")
 func ticksOfCommitmentsOnEveryScheduleShapeAreReadBackAsTheSameTicks() throws {
     let place = freshPlace()
@@ -151,4 +176,45 @@ func ticksOfCommitmentsOnEveryScheduleShapeAreReadBackAsTheSameTicks() throws {
     #expect(later.history.isKept(finances, on: CalendarDate(year: 2026, month: 9, day: 25)!))
     #expect(later.history.isKept(plants, on: CalendarDate(year: 2026, month: 9, day: 3)!))
     #expect(later.history.isKept(reading, on: CalendarDate(year: 2026, month: 9, day: 7)!))
+}
+
+@Test("a commitment name is read back exactly, whatever it contains")
+func aCommitmentNameIsReadBackExactlyWhateverItContains() throws {
+    let place = freshPlace()
+    let name = "Zürich — „langer“ Lauf 🏃\nSonntags"
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tick = Tick(commitment, on: monday)!
+
+    let store = try RecordStore(at: place)
+    try store.add(tick)
+
+    let later = try RecordStore(at: place)
+
+    #expect(later.history.isKept(commitment, on: monday))
+    var expected = History()
+    expected.add(tick)
+    #expect(later.history == expected)
+}
+
+@Test("stores at different places hold different histories")
+func storesAtDifferentPlacesHoldDifferentHistories() throws {
+    let firstPlace = freshPlace()
+    let secondPlace = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tick = Tick(commitment, on: monday)!
+
+    let first = try RecordStore(at: firstPlace)
+    try first.add(tick)
+    let second = try RecordStore(at: secondPlace)
+
+    #expect(second.history == History())
+
+    let laterFirst = try RecordStore(at: firstPlace)
+    #expect(laterFirst.history.isKept(commitment, on: monday))
 }

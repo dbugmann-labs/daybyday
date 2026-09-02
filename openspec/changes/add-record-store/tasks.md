@@ -62,13 +62,13 @@ if decoding does not go through the failable initializers.
   3 September 2026, "Reading" on a weekly quota of 3 ticked Monday 7 September 2026. Equality with
   a `History` of the same ticks, plus `isKept` for each. This is the test that proves each payload
   round-trips, since no payload is public.
-- [ ] 2.7 `a commitment name is read back exactly, whatever it contains` — the name in the scenario,
+- [x] 2.7 `a commitment name is read back exactly, whatever it contains` — the name in the scenario,
   with the line break written as `\n` in the Swift literal; pins JSON escaping and that the name
   is stored as the person gave it, untrimmed and unnormalised.
-- [ ] 2.8 `a tick in the first supported year and one in the last are read back unchanged` — the
+- [x] 2.8 `a tick in the first supported year and one in the last are read back unchanged` — the
   ADR-1004 pin for the disk: 3 January 1583 and 27 December 9999 are both Mondays and both round-
   trip. An implementation that encodes through `Date` or a `DateFormatter` fails one of them.
-- [ ] 2.9 `stores at different places hold different histories` — two places, one tick in the
+- [x] 2.9 `stores at different places hold different histories` — two places, one tick in the
   first; the second opens empty and the first still holds it.
 - [ ] 2.10 `a tick that cannot be kept is refused and not held` — the place is
   `<temporaryDirectory>/<uuid>/blocker/store.json` where `blocker` is an ordinary file written by
