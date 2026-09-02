@@ -96,6 +96,7 @@ func oneTimeAWeekIsAWeeklyQuota() {
     let quota = WeeklyQuota(timesPerWeek: 1)
 
     #expect(quota != nil)
+    #expect(quota != WeeklyQuota(timesPerWeek: 7))
 }
 
 @Test("seven times a week is a weekly quota")
@@ -103,4 +104,5 @@ func sevenTimesAWeekIsAWeeklyQuota() {
     let quota = WeeklyQuota(timesPerWeek: 7)
 
     #expect(quota != nil)
+    #expect(quota != WeeklyQuota(timesPerWeek: 1))
 }
