@@ -1,18 +1,18 @@
 ## 1. The public surface
 
-- [ ] 1.1 Add `Sources/DayByDayKit/DayView.swift` declaring `public struct DayView: Hashable,
+- [x] 1.1 Add `Sources/DayByDayKit/DayView.swift` declaring `public struct DayView: Hashable,
   Sendable` exactly as `design.md` § *The seam* gives it — a nested `public struct Row: Hashable,
   Sendable` with an internal stored `commitment: Commitment`, a `public let isKept: Bool` and a
   `public var name: String` reading the commitment's; an internal stored `date: CalendarDate`; a
   `public let rows: [Row]`; and `public init(of commitments: [Commitment], on date: CalendarDate, in
   history: History)` with a body of `fatalError("not implemented")`. Nothing else public, and the
   initializer is not failable. Verify with `cd src/DayByDayKit && swift build` exiting 0.
-- [ ] 1.2 Confirm nothing else in the package moved: `Commitment.swift`, `History.swift`,
+- [x] 1.2 Confirm nothing else in the package moved: `Commitment.swift`, `History.swift`,
   `Tick.swift`, `Schedule.swift`, `CalendarDate.swift`, `DayOfMonth.swift`, `DayInterval.swift`,
   `Weekday.swift`, `WeeklyQuota.swift` and `Package.swift` are untouched in `git diff --stat`, and
   `cd src/DayByDayKit && swift test` still reports the ninety-seven tests from #8, #9, #10, #11, #42
   and #55 passing.
-- [ ] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
+- [x] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
   `0/21 covered` for this change and names `"a day view holds a row for each commitment due on the
   date"` as next.
 
@@ -36,8 +36,9 @@ the rows were built from a `Set` or otherwise deduplicated), and 2.20 and 2.21 (
 stored on the day view). **Record which ones actually ran red as you go, in this file**, the way #42's
 and #55's `tasks.md` did; a prediction here is not evidence.
 
-- [ ] 2.1 `a day view holds a row for each commitment due on the date` — three commitments handed
-  over, two due; two rows, named "Gym" and "Run".
+- [x] 2.1 `a day view holds a row for each commitment due on the date` — three commitments handed
+  over, two due; two rows, named "Gym" and "Run". Ran red against the seam's `fatalError`, as
+  `design.md` predicted.
 - [ ] 2.2 `a commitment not due on the date has no row` — Mon/Wed/Sat asked about a Tuesday; the
   filter.
 - [ ] 2.3 `a commitment ticked on the date has a row that says it is kept` — the first
