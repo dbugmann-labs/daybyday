@@ -178,6 +178,11 @@ shape it lacks, not the quota.
 > can see the weight / mood / protein over time. But this should be a separate area which can be
 > navigated to."
 
+*Merged in 2026-09-02, from B-008 (captured 2026-08-29):*
+
+> "still open: whether looking back means navigating to a past day, or a view that aggregates a
+> commitment over time"
+
 - **Trigger** — occasionally, and never as part of the five daily visits.
 - **Touches** — unclaimed. Probably its own capability rather than `day-screen`, because its
   whole point is that it is not the landing screen — and the braindump says so twice, calling it
@@ -190,21 +195,10 @@ shape it lacks, not the quota.
   the three examples it gives — weight, mood, protein — are the commitments that carry a number,
   and it says "some areas", not all. A page per numeric commitment and a page per commitment are
   different Features.
-
-### B-008 — see a commitment aggregated over time — "eleven gym sessions last month"
-*Captured 2026-08-29, migrated 2026-09-02.*
-
-> "still open: whether looking back means navigating to a past day, or a view that aggregates a
-> commitment over time"
-
-- **Trigger** — occasionally, out of curiosity rather than obligation.
-- **Touches** — unclaimed, and likely the same surface as B-001's line and B-007's page.
-- **Principle** — tested against *nothing congratulates you*: passes as a record looked at
-  deliberately, fails if shown unasked. "Eleven gym sessions last month" is a count, and a
-  count is one step from a streak; the trigger — curiosity, never obligation — is what keeps
-  it on the right side.
-- **Open** — navigating to a past day is already implied by ticking any day; this is the other
-  half, and nobody has agreed to build it. Strong candidate to merge with B-001 and B-007.
+- **Open** — from B-008: the page *is* the aggregate — "eleven gym sessions last month" for a
+  tick, a line for a number — and B-008's principle test travels with it: a count is one step
+  from a streak, and it stays on the right side only while it is looked at deliberately and
+  never shown unasked. B-008's other half, navigating to a past day, is B-016.
 
 ### B-009 — carry my history to a new phone
 *Captured 2026-08-28, migrated 2026-09-02.*
@@ -219,26 +213,6 @@ shape it lacks, not the quota.
   boundary the quote already draws.
 - **Open** — restore is stated as the boundary, so live sync is out. What "restore" means
   concretely — a file, iCloud, a backup you can see — is not decided.
-
-### B-010 — make every daily entry from the landing screen, without navigating
-*Captured 2026-09-02.*
-
-> "Focusing of keeping things very simple, with little interaction needed (e.g. just multiple
-> buttons to add things each day, without much navigation)"
-
-- **Trigger** — every one of the daily visits. It is the shape all of them share rather than one
-  of them.
-- **Touches** — `day-screen`. B-003 makes this claim for mood alone; this is the same claim over
-  every commitment, including the ones carrying a number or a sentence.
-- **Principle** — tested against *five percent of seven things*: it passes as a constraint on how
-  cheap each of the seven is to enter, but it makes nothing new possible on its own, which is why
-  it may not be a want at all — see Open.
-- **Open** — is this a want or a fifth product principle? It says how everything else is entered
-  rather than adding anything to enter. If grooming reads it as a principle it belongs in
-  `CONTEXT.md` § *Product principles*, and this entry is dropped into that.
-- **Open** — it collides with B-004 and B-003 as written. Two or three sentences of journal and a
-  ten-point mood are not buttons, so either "little interaction" means something looser than a
-  button per commitment, or those two wants are exceptions to it.
 
 ### B-011 — see something of a commitment's history on the day screen itself
 *Captured 2026-09-02.*
@@ -256,12 +230,104 @@ shape it lacks, not the quota.
   inherits is a decision, not a want. It cannot be taken before B-007, because what may appear on
   the day screen depends on what the detail page is a page *per*.
 
+### B-012 — tick a due commitment on a day, and have it kept
+*Captured 2026-09-02, from the first grooming pass's sweep.*
+
+> "open the app on any day and tick off what that day asks for"
+
+The outcome line of `EPIC: Daily commitments` (#1), 2026-08-28. The Epic absorbed the tick and no
+Feature claimed it; this entry is what the sweep found in that silence.
+
+- **Trigger** — every one of the five daily visits. It *is* the visit.
+- **Touches** — unclaimed. None of `schedule`, `commitment` or `day-screen` claims it, and both
+  in-flight Stories (#11, #42) say in writing that no tick exists anywhere. B-001 to B-005 are
+  each a variation on this record: a number, a running total, a one-tap number, a sentence, a
+  tick that means the opposite.
+- **Principle** — tested against *five percent of seven things*: passes outright. One tick makes
+  all eight day-one commitments recordable at once, and nothing else in this file can be built
+  before it.
+- **Open** — can a tick be taken back? Nothing says. The first Story's grill decides.
+- **Open** — how far back the past stays writable is `docs/open-questions.md`'s question, and it is
+  forced by this entry rather than by B-016.
+
+### B-013 — stop keeping a commitment
+*Captured 2026-09-02, from the sweep. The wording is the sweep's, accepted with "accept" rather
+than said.*
+
+> "Stop keeping a commitment."
+
+- **Trigger** — rarely, when a commitment has run its course: the plants died, the lenses gave
+  way to glasses.
+- **Touches** — `commitment` (#26). Story #42 excludes "archiving or deleting one" by name.
+- **Principle** — tested against *five percent of seven things*: fails on its face, since it makes
+  nothing new possible, and is captured anyway. A commitment that cannot be retired stays due
+  every day, unticked, and reads as a miss for ever; the sweep exists for the want nobody says.
+- **Open** — what happens to its history. The record is durable (`docs/open-questions.md`
+  § *Settled*), so retiring must keep the ticks, and nobody has said whether a retired commitment
+  can still be looked at (B-007) or brought back.
+- **Open** — is retiring a *kept-until* day, the mirror of ADR-1011's kept-from day? That would
+  leave every past day answering as it did.
+
+### B-014 — change a commitment: its name, or the rhythm it runs on
+*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
+
+> "Change a commitment — rename it, move the gym to Tue/Thu."
+
+- **Trigger** — rarely; a new gym timetable, a typo in a name.
+- **Touches** — `commitment` (#26). Story #42 excludes editing and renaming by name.
+- **Principle** — tested against *five percent of seven things*: fails on its face and is captured
+  anyway, because the alternative — retire it and define it again — splits one commitment's
+  history in two.
+- **Open** — what changing the rhythm does to the past. ADR-1011 fixes that a past day's answer
+  does not change once given; a rhythm changed today either rewrites which past days were due, or
+  applies from a day forward, and only the second keeps that promise.
+
+### B-015 — define a commitment from the phone: a name and the rhythm it runs on
+*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
+
+> "Define a commitment from the phone."
+
+- **Trigger** — day one, eight times over; then rarely.
+- **Touches** — `commitment` (#26), and a screen that is not the day screen. Story #42 is the
+  type, and excludes "anything on screen"; without this the eight day-one commitments have no way
+  in.
+- **Principle** — tested against *an iPhone, in your hand*: passes. Choosing one of four rhythm
+  shapes on a phone is the whole interaction, and it happens rarely enough to be allowed a screen.
+- **Open** — the kept-from day (ADR-1011): typed, or defaulted to today? The type has no default on
+  purpose, so a screen has to choose.
+- **Open** — "every day" can be said three ways (`docs/open-questions.md` § *Settled*); a picker
+  shows one of them.
+
+### B-016 — go to a day other than today, and tick it
+*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
+
+> "Go to a day other than today."
+
+- **Trigger** — the morning after, or a gap a few days old — the failure the product exists to
+  remove.
+- **Touches** — `day-screen` (#27). Its intent is "for a given date", and nothing yet says the
+  owner is the one who gives it.
+- **Principle** — tested against *nothing congratulates you*: passes, and is that principle's
+  precondition. A record that can be filled in late is what makes a missed day a fact rather than
+  a broken streak.
+- **Open** — how far back, which is `docs/open-questions.md`'s open product question, forced by
+  B-012 and met here.
+- **Open** — forward as well? A day not yet arrived has nothing to tick; whether it is reachable
+  at all is the first Story's to say.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-02 — merged: B-008 (see a commitment aggregated over time) into B-007. A page per
+  commitment *is* the aggregate; the two were one look-back said in two breaths, and B-008's
+  other half — navigating to a past day — is B-016.
+- 2026-09-02 — dropped into `CONTEXT.md` § *Product principles* as *Entered where you stand*:
+  B-010 (make every daily entry from the landing screen, without navigating). It says how
+  everything is entered and adds nothing to enter, so it judges wants rather than being one —
+  the reading its own Open line suspected.
 - 2026-08-31 — reading 3× a week, any nights, open until the week turns over → Story #11
   `add-weekly-quota-schedule`, under `FEAT: schedule` (#6).
 - 2026-08-31 — a commitment due on the 25th of every month → shipped, `openspec/specs/schedule/`.
@@ -289,5 +355,6 @@ most needs to count. Say what the coverage sweep found, including when it found 
   writing that no tick exists. `commitment` (#42) excludes changing and retiring one by name
   and nothing wants either; defining one from a screen is unsaid; going to a day other than
   today is implied by "the past is writable" and said nowhere. `docs/open-questions.md`
-  holds no want in disguise. Principle lines filled in on B-001..B-009. Stopped at the
-  cluster choice.
+  holds no want in disguise. Principle lines filled in on B-001..B-009. Captured B-012..B-016
+  from the sweep; merged B-008 into B-007; dropped B-010 into `CONTEXT.md` as *Entered where
+  you stand*. Cluster A — the record: B-012, with B-001..B-005 behind it — taken to the grill.

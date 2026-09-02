@@ -54,8 +54,8 @@ before any test is written.
 ## Product principles
 
 The rules a want is judged against. These are not backlog entries — they are what decides
-whether one is any good, which is why they live here rather than in `docs/backlog.md`. Agreed
-2026-08-28 with `EPIC: Daily commitments` (#1).
+whether one is any good, which is why they live here rather than in `docs/backlog.md`. The
+first four were agreed 2026-08-28 with `EPIC: Daily commitments` (#1); each later one says when.
 
 **Nothing congratulates you.** No streaks, no gamification, no celebration of a run of good
 days. A row that has been ticked just goes quiet. This is not a stylistic preference: streaks
@@ -73,6 +73,14 @@ product's want. ADR-1001.
 
 **Restore, not sync.** History survives moving to a new phone. Live synchronisation between two
 devices is out of scope, and saying so is what keeps it out.
+
+**Entered where you stand.** Every daily entry is made on the day screen, in the row, with as
+little interaction as the value allows: a tick is one tap, a number is a few, a sentence is typed
+there and not somewhere else. A want that puts a second screen into the daily visit is judged
+against this and usually loses; a screen for *looking* is not a daily visit and is not what this
+rules out. Agreed 2026-09-02 at the first grooming pass, from a want that turned out to be a rule
+rather than a thing to build — "little interaction needed (e.g. just multiple buttons to add
+things each day, without much navigation)".
 
 ## Domain vocabulary
 
