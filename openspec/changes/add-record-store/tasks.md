@@ -63,8 +63,10 @@ if decoding does not go through the failable initializers.
   a `History` of the same ticks, plus `isKept` for each. This is the test that proves each payload
   round-trips, since no payload is public.
 - [x] 2.7 `a commitment name is read back exactly, whatever it contains` — the name in the scenario,
-  with the line break written as `\n` in the Swift literal; pins JSON escaping and that the name
-  is stored as the person gave it, untrimmed and unnormalised.
+  with the line break written as `\n` in the Swift literal; pins that the round trip through JSON
+  gives back a name equal to what went in, observed through `History` equality and `isKept` (Swift
+  `String ==`, canonical equivalence, not byte-for-byte). The name in the scenario carries no
+  leading or trailing whitespace, so trimming is not what this test proves.
 - [x] 2.8 `a tick in the first supported year and one in the last are read back unchanged` — the
   ADR-1004 pin for the disk: 3 January 1583 and 27 December 9999 are both Mondays and both round-
   trip. An implementation that encodes through `Date` or a `DateFormatter` fails one of them.
