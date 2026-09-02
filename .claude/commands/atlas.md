@@ -31,7 +31,7 @@ you are the one who heard them say it.
 | Form | What it does |
 |---|---|
 | `/atlas` or `/atlas next` | Read status and take the next step from wherever the work is. |
-| `/atlas idea <want>` | Capture one thing the app should do into `docs/backlog.md`. One shot, no gate. |
+| `/atlas idea <want>` | Capture what the app should do into `docs/backlog.md` — one want or a braindump. One shot, no gate. |
 | `/atlas backlog` | Groom the backlog: sweep for gaps, cluster, propose, grill the cluster taken forward, stop at **G1**. |
 | `/atlas backlog B-007` | Skip the clustering and take that entry forward on its own. Still sweeps. |
 | `/atlas feature <idea>` | Intake a feature idea that skips the backlog: grill it, then stop at **G1**. |
@@ -213,8 +213,8 @@ their own — say it, rather than handing over an undifferentiated list.
 
 ## Capture: `/atlas idea <want>`
 
-One thing the human wants the app to do, into `docs/backlog.md`. **This is one shot and it does
-not grill.** Interrogating a want at capture spends rounds on things that will be dropped and
+What the human wants the app to do, into `docs/backlog.md` — **one want, or a braindump of
+several in one go.** **This is one shot and it does not grill.** Interrogating a want at capture spends rounds on things that will be dropped and
 makes the entry point one they avoid; the Feature grill at Stage 1 is where a want is argued
 with. `docs/process.md` §4, ADR-1010.
 
@@ -277,6 +277,37 @@ If you can write the entry without asking, do not ask. Everything else goes in *
 
 Then commit — `docs(backlog): capture B-014 <heading>` — report the entry in three lines, and
 stop. No gate, no G-number, nothing spawned.
+
+### A braindump of several wants
+
+**Take the whole thing in one invocation. Never tell them to run the command once per bullet.**
+Five invocations mean five dedup reads, five commits and five reports — and each one dedupes
+against a backlog that does not yet hold the other four bullets, so two bullets that are really
+one want get written as two entries and are not caught until a grooming pass. One invocation
+sees them all at once, which is the only way the dedup table can fire *between* them.
+
+Read the four sources once, then:
+
+1. **Split the bullets into entries** and run the four-outcome table over each, exactly as
+   above — a bullet can perfectly well be a duplicate of another bullet in the same braindump.
+2. **Report the split and stop before committing.** Which bullet became which `B-nnn`, which two
+   were folded together and why, which wrote nothing. **This is the only thing in the whole
+   command worth their attention**: it is the one judgement they can correct in a sentence and
+   nobody else can, and it is cheap to get wrong silently. It is a report, not a gate — if they
+   say nothing, proceed.
+3. **One commit for the burst**, `docs(backlog): capture B-014..B-017 <n> wants`, and one PR.
+
+**Where the line goes: one entry per outcome they would want independently.** "Track my weight"
+and "see my weight as a line over months" are two entries if either is worth having without the
+other, and one if the number is pointless unless you can see the trend. **When it is genuinely
+unclear it stays one entry with the ambiguity in Open** — B-001 does exactly this — because
+merging two entries at grooming is one line and splitting one is a judgement call made without
+the words that produced it.
+
+**Every entry keeps its own blockquote, verbatim.** The bullet that produced it, unedited. A
+braindump split across four entries must leave four quotes that reconstruct what they typed;
+one summary quote spread over four entries destroys the evidence the split was made from, which
+is the whole reason the field exists.
 
 ## Grooming: `/atlas backlog`
 

@@ -134,8 +134,10 @@ the same exit rule and the same staleness rule, and neither ever ran, because no
 the file: the rules were sentences and the file was append-only in practice. ADR-1010 has the
 post-mortem.
 
-- **`/atlas idea <want>`** captures one want. One shot, no grill, at most one question, and only
-  about which want it is. It dedupes against the backlog, the *Decided* ledger, the capability
+- **`/atlas idea <want>`** captures a want, or a braindump of several in one invocation — one
+  dedup read across all of them, the split into entries reported back before it commits, and one
+  commit for the burst. One shot, no grill, at most one question, and only about which want it
+  is. It dedupes against the backlog, the *Decided* ledger, the capability
   specs and the open Features first, so a want already shipped as a requirement is reported
   rather than written down twice. The entry records which **product principle** the want was
   tested against and what the test returned, so grooming can tell a want that was judged from

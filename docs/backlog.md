@@ -1,8 +1,9 @@
 # Backlog
 
 **Things I want the application to do, in my own words, before anyone has agreed to build
-them.** One entry per want. `/atlas idea <whatever you say>` writes them; `/atlas backlog`
-grooms them into Features. Nothing here is agreed and nothing is implemented from this file —
+them.** One entry per want. `/atlas idea <whatever you say>` writes them — **one want or a
+whole braindump in a single go**, split into entries and the split reported back before it
+commits; `/atlas backlog` grooms them into Features. Nothing here is agreed and nothing is implemented from this file —
 an idea becomes real when it is a requirement in a capability spec that has passed G4, however
 obvious it seems. `docs/process.md` §4.
 
