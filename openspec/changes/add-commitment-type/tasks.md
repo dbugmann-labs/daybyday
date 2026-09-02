@@ -90,10 +90,10 @@ likely to run red on their own are 2.6 and 2.7, if 2.1 was made green without th
 
 ## 3. Gates
 
-- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 64 tests passing and no failures — the nineteen
+- [x] 3.1 `cd src/DayByDayKit && swift test` reports 64 tests passing and no failures — the nineteen
   here plus the forty-five from #8, #9 and #10, none of which may change — and `pnpm run verify`
   exits 0.
-- [ ] 3.2 `pnpm exec openspec validate add-commitment-type --strict` exits 0 and `pnpm run checks`
+- [x] 3.2 `pnpm exec openspec validate add-commitment-type --strict` exits 0 and `pnpm run checks`
   reports scenario coverage as 19 of 19.
 - [ ] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
 
