@@ -210,7 +210,7 @@ when you are asking whether you can walk away: `you` means the pipeline stops un
 | 0 | Epic intake | **you** | `orchestrator` / Opus | Epic issue | — |
 | 1 | Feature definition | **you** | the conductor grills via `grill`; `orchestrator` / Opus writes the issue | Feature issue, sub-issue of Epic, plus any new `CONTEXT.md` terms | **G1 (H)** |
 | 2 | Story decomposition | **you** accept; **you** type `to-tickets`, which proposes | `orchestrator` / Opus writes what you accepted | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
-| 4 | Propose | agent writes; **you** answer any question round, and approve | `spec-author` / **Fable**, via `grill` then `/opsx:propose` | the grill first — `design.md` **Open Questions** filled in, plus any new `CONTEXT.md` terms, plus a `## Questions for you` round if the grill hit something that is yours — then the change folder: proposal, delta specs, design, tasks. Cut the worktree here, commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
+| 4 | Propose | agent writes; **you** answer any question round, and approve | `spec-author` / Opus, via `grill` then `/opsx:propose` | the grill first — `design.md` **Open Questions** filled in, plus any new `CONTEXT.md` terms, plus a `## Questions for you` round if the grill hit something that is yours — then the change folder: proposal, delta specs, design, tasks. Cut the worktree here, commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
 | 5 | Red | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` | one failing acceptance test | A |
 | 6 | Green + next | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` and `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes | A |
 | 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `mattpocock-skills:code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity | **G7 (H)** |
@@ -381,8 +381,7 @@ the real gate.
 > **Model tier is a function of whether the task creates, judges, or merely executes
 > requirements.** Creating or judging requirements → **Opus**. Executing an approved,
 > written-down plan → **Sonnet**. Mechanical work whose correctness is visible in the diff →
-> **Haiku**. Where creating a requirement is the step that is *ratified rather than checked* —
-> Stage 4 — → **Fable**.
+> **Haiku**.
 
 That rule is the whole policy. It is written in `AGENTS.md` and in each agent's frontmatter, not
 decided per session.
@@ -392,7 +391,7 @@ decided per session.
 | Agent | Model | `openspec/specs/` | `openspec/changes/` | `src/` + `tests/` | `docs/adr/` | GitHub |
 |---|---|---|---|---|---|---|
 | `orchestrator` | Opus | ✗ | ✗ | ✗ | ✗ | create/label/link |
-| `spec-author` | Fable | ✗ | **write** | ✗ | **write** | comment |
+| `spec-author` | Opus | ✗ | **write** | ✗ | **write** | comment |
 | `implementer` | Sonnet | ✗ | `tasks.md` only | **write** | ✗ | comment |
 | `reviewer` | Opus | ✗ | ✗ | ✗ | ✗ | comment |
 | `janitor` | Haiku | via `/opsx:archive` only | move to `archive/` | ✗ | ✗ | close/update |

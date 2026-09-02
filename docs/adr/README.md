@@ -69,3 +69,4 @@ DayByDay's own records start here.
 | [1013](1013-a-commitment-is-kept-from-a-day.md) | A commitment is kept from a day, and is not due before it |
 | [1014](1014-the-question-comes-first.md) | The gate stop asks first and details last, with `Detail` budgeted; supersedes ADR-1012's ordering |
 | [1015](1015-a-weekly-quota-is-due-every-day.md) | A weekly quota is due every day; whether it has been met is not a schedule question |
+| [1016](1016-the-fourth-model-tier-is-withdrawn.md) | The fourth model tier is withdrawn on price; `spec-author` returns to Opus; supersedes ADR-1011 |
