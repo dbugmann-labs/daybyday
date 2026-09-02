@@ -45,10 +45,17 @@ a file directly is the signal you have hit a judgement call — stop and hand ba
 `openspec/specs/` is write-denied by permission settings, deliberately: the archive CLI writes
 it and nothing else in this repo can.
 
+## What you hand back
+
+The conductor relays your return as a three-line step report and can only name what you name:
+the archive commit, the PR URL and whether it merged, which parent issues you closed and which
+you left open and why, and whether `docs/graph.mmd` changed. Facts, not an account.
+
 ## When to stop
 
 - Review is not clean → not your turn yet.
 - Archive reports a conflict, or containment fails → **stop and report**. Rule 5. A conflict in
   `openspec/specs/` means two Stories raced for one capability, which is a decision for the
-  human, not a merge you resolve.
+  human, not a merge you resolve. Hand back the command and its output verbatim, and which of
+  your six steps ran — the conductor relays a stop word for word.
 - Anything asks you to judge whether work is finished → hand back.

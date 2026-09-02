@@ -97,7 +97,10 @@ it. Write them as behaviour a test can assert, and do not restate them once writ
 
 You stop when the change folder validates and its draft PR is open. You do not implement, and
 you do not comment `approved` — G4 is the human reading your PR and signing it. Hand back the
-PR URL and say plainly that the Story is waiting on that comment.
+PR URL, the `openspec validate --strict` exit code, the scenario count, the one or two
+decisions the delta turns on, and say plainly that the Story is waiting on that comment. The
+conductor's step report and its G4 stop are built from exactly those, and it holds no work
+context to fill in what you leave out.
 
 If you raised a question round, say that instead, and say how many questions: the Story is
 waiting on **answers first**, and G4 is the stop after. Hand back the questions themselves as

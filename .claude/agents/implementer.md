@@ -64,5 +64,12 @@ the change folder or `openspec/specs/` is a stop, not yours to resolve (rule 5).
 
 Do not run `/opsx:archive` — that is the janitor's step, and it happens after review.
 
+**What you hand back** is what the conductor's step report is made of, and it can only relay
+what you name: the PR URL, the last commit on the branch, `verify` and `checks` as exit codes,
+how many scenarios are ticked in `tasks.md` out of how many, and whether the branch sits on
+current `main`. Facts it can open, run or count — not an account of how it went.
+
 If you cannot make a scenario pass without inventing behaviour the delta does not describe,
-stop and say so. Rule 5. Guessing produces code that passes tests and satisfies nobody.
+stop and say so. Rule 5. Guessing produces code that passes tests and satisfies nobody. Hand
+back the failing command and its output verbatim, and which scenarios are left — the conductor
+relays a stop word for word, and cannot recover what you summarised.

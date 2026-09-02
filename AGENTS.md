@@ -124,9 +124,13 @@ context of its own — no delta, no test, no `src/`. **No subagent can conduct:*
 allowed, but `AskUserQuestion` is withheld from every subagent and every gate is a question.
 Same reason rule 6 keeps configuration here. ADR-1002.
 
-**Every gate stop takes one form** — what is in front of you, the question, yes against no, **the
-recommendation**, the exact reply — with the recommendation never omitted. Worked examples in
-`.claude/commands/atlas.md`.
+**Every gate stop takes one form** — what is in front of you (opening with what ran since the
+human last replied), the question, *if you take the recommendation* against *if you don't*,
+**the recommendation**, the exact reply — with the recommendation never omitted. **Everything
+between gates takes a second form**, the three-line step report — what ran, what it left behind,
+what comes next — printed before every spawn, after every return, and as the shape of a rule-5
+stop. A five-part block asks; a `▸` line tells; there is no third. Worked examples in
+`.claude/commands/atlas.md`, ADR-1012.
 
 ## Agent roles and model routing
 
