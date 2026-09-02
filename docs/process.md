@@ -72,6 +72,7 @@ daybyday/
 ├── docs/
 │   ├── process.md                # this document
 │   ├── story-mechanics.md        # Stage 4 to merge, keystroke by keystroke
+│   ├── atlas-commands.html       # the five /atlas forms, and when each is right
 │   ├── retrospective.md          # what the first end-to-end run cost and caught
 │   ├── adr/NNNN-kebab-title.md   # README.md is the register
 │   ├── agents/{issue-tracker.md, domain.md, triage-labels.md}

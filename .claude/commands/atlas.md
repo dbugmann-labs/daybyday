@@ -38,6 +38,8 @@ you are the one who heard them say it.
 | `/atlas story <issue#>` | Get onto that Story's branch and drive it from wherever it is. |
 
 `idea` and `backlog` are the two halves of what used to be one unread file. ADR-1010.
+`docs/atlas-commands.html` is the same table on one page, with the funnel drawn and the
+when-to-use-which reasoning — written for the human, not for you.
 
 ## Getting onto a Story
 
