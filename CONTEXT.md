@@ -131,6 +131,23 @@ Agreed 2026-09-02 at the first grooming pass, with `FEAT: record`.
 results. A tick is of a *due* commitment: a day on which the commitment is not due takes no
 tick. The past is writable: a day other than today can be ticked.
 
+**History** — every tick there is, across all commitments and all days, held together so that
+one question can be asked of it: was this commitment *kept* on this date? It answers from the ticks
+it holds and from nothing else — a commitment it has never seen is simply not kept, and a day the
+commitment is not due on is answered *not kept* rather than refused, because telling *not due* apart
+from *missed* is the asker's job with the commitment's own answer beside it. It holds at most one
+tick per commitment per day, so ticking a day twice is one tick, and it is a value: two histories
+holding the same ticks are the same history, whatever order they were ticked in. Deliberately not
+the **store**, which is where a history survives the app being closed and is #56's to define.
+Agreed 2026-09-02 at the grill of `add-tick-record` (#55).
+
+**Untick** — to take a tick back, leaving the history as though that tick had never been: the
+commitment is not kept on that day, every other tick stands, and nothing remembers that the tick was
+ever there — an untick is not a record of its own. Taking back a tick that was never there is
+nothing rather than an error. It exists because a tick is one tap on a phone, and a tap that cannot
+be undone turns every mis-tap into a permanent false record. Proposed 2026-09-02 at the grill of
+`add-tick-record` (#55), on the recommended answer to its question round.
+
 **Day** — the unit the product is organised around. The landing screen is one day, and every
 record is keyed to a date rather than to the time it was entered.
 
