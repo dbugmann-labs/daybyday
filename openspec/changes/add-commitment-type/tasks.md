@@ -69,21 +69,24 @@ likely to run red on their own are 2.6 and 2.7, if 2.1 was made green without th
   never come due is a legal value and answers, rather than erroring. `schedule` already requires this
   of the empty weekday set; this asserts a commitment does not add a refusal on top of it. Ran green
   immediately.
-- [ ] 2.15 `a commitment is not due on a date before the day it is kept from` — the floor's plain
-  case: the schedule says due, the floor says no, and the floor wins.
-- [ ] 2.16 `a commitment is due on the day it is kept from when its schedule is due that day` — the
-  boundary is inclusive.
-- [ ] 2.17 `a commitment is not due on the day it is kept from when its schedule is not due that day`
+- [x] 2.15 `a commitment is not due on a date before the day it is kept from` — the floor's plain
+  case: the schedule says due, the floor says no, and the floor wins. Ran red: no floor existed.
+  Made green with `guard keptFrom.days(until: date) >= 0 else { return false }` ahead of the
+  delegation.
+- [x] 2.16 `a commitment is due on the day it is kept from when its schedule is due that day` — the
+  boundary is inclusive. Ran green immediately: `>= 0` already made it so.
+- [x] 2.17 `a commitment is not due on the day it is kept from when its schedule is not due that day`
   — the floor is a floor, not a phase. An implementation that starts the schedule at the kept-from
-  day passes 2.15 and 2.16 and fails this.
-- [ ] 2.18 `a commitment is due on none of the dates in the month before it is kept from` — a
+  day passes 2.15 and 2.16 and fails this. Ran green immediately — the floor-then-delegate
+  implementation never touched the schedule's own phase.
+- [x] 2.18 `a commitment is due on none of the dates in the month before it is kept from` — a
   thirty-one-date sweep, the regression pin that catches a floor that is right about single dates and
-  wrong about a run of them.
-- [ ] 2.19 `an every-N-days occurrence before the day it is kept from is not due` — the two-date
+  wrong about a run of them. Ran green immediately.
+- [x] 2.19 `an every-N-days occurrence before the day it is kept from is not due` — the two-date
   interaction, and the last scenario deliberately: an implementation that conflates the interval's
   start date with the floor passes everything above and fails here. `design.md` § *Two dates, and why
   neither is the other* has the reasoning; the measured answer is that 28 and 31 August are not due
-  and 3 September is.
+  and 3 September is. Ran green immediately.
 
 ## 3. Gates
 

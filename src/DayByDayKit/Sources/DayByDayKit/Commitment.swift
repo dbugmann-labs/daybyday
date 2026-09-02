@@ -14,6 +14,10 @@ public struct Commitment: Hashable, Sendable {
     }
 
     public func isDue(on date: CalendarDate) -> Bool {
-        schedule.isDue(on: date)
+        guard keptFrom.days(until: date) >= 0 else {
+            return false
+        }
+
+        return schedule.isDue(on: date)
     }
 }

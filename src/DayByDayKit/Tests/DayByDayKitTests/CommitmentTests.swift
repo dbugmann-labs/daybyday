@@ -170,3 +170,66 @@ func aCommitmentOnAScheduleThatIsDueOnNoDateIsNeverDue() {
         #expect(!commitment.isDue(on: date))
     }
 }
+
+@Test("a commitment is not due on a date before the day it is kept from")
+func aCommitmentIsNotDueOnADateBeforeTheDayItIsKeptFrom() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 9, day: 2)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    #expect(!commitment.isDue(on: monday))
+    #expect(commitment.isDue(on: keptFrom))
+}
+
+@Test("a commitment is due on the day it is kept from when its schedule is due that day")
+func aCommitmentIsDueOnTheDayItIsKeptFromWhenItsScheduleIsDueThatDay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    #expect(commitment.isDue(on: keptFrom))
+}
+
+@Test("a commitment is not due on the day it is kept from when its schedule is not due that day")
+func aCommitmentIsNotDueOnTheDayItIsKeptFromWhenItsScheduleIsNotDueThatDay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 9, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    #expect(!commitment.isDue(on: keptFrom))
+    #expect(commitment.isDue(on: wednesday))
+}
+
+@Test("a commitment is due on none of the dates in the month before it is kept from")
+func aCommitmentIsDueOnNoneOfTheDatesInTheMonthBeforeItIsKeptFrom() {
+    let schedule = Schedule.dayOfMonth(DayOfMonth(day: 25)!)
+    let keptFrom = CalendarDate(year: 2026, month: 9, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let august = (1...31).map { CalendarDate(year: 2026, month: 8, day: $0)! }
+
+    for date in august {
+        #expect(!commitment.isDue(on: date))
+    }
+    #expect(commitment.isDue(on: CalendarDate(year: 2026, month: 9, day: 25)!))
+}
+
+@Test("an every-N-days occurrence before the day it is kept from is not due")
+func anEveryNDaysOccurrenceBeforeTheDayItIsKeptFromIsNotDue() {
+    let start = CalendarDate(year: 2026, month: 8, day: 25)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 3)!, from: start)
+    let keptFrom = CalendarDate(year: 2026, month: 9, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let firstLandingBeforeFloor = CalendarDate(year: 2026, month: 8, day: 28)!
+    let nextLandingBeforeFloor = CalendarDate(year: 2026, month: 8, day: 31)!
+    let firstLandingOnOrAfterFloor = CalendarDate(year: 2026, month: 9, day: 3)!
+
+    #expect(!commitment.isDue(on: firstLandingBeforeFloor))
+    #expect(!commitment.isDue(on: nextLandingBeforeFloor))
+    #expect(commitment.isDue(on: firstLandingOnOrAfterFloor))
+}
