@@ -151,6 +151,17 @@ nothing rather than an error. It exists because a tick is one tap on a phone, an
 be undone turns every mis-tap into a permanent false record. Proposed 2026-09-02 at the grill of
 `add-tick-record` (#55) and settled by the owner the same day, in answer to its question round.
 
+**Store** — where a history survives the app being closed and opened again: the ticks, kept at a
+*place* the app names, so that whatever opens the store at that place next holds the same history. A
+tick is kept the moment it is added and an untick the moment it is taken back — there is no separate
+moment at which a store is saved, because the app can be stopped without warning and a tick waiting
+to be saved is the record the product promises not to lose. A store never holds more than is kept at
+its place, and never answers with less than is there: what it cannot read it refuses whole, rather
+than opening empty over the top of it. It persists exactly what a tick is and nothing it invented,
+keyed to the calendar date and never to the moment of entry. Deliberately not a backup and not a
+sync: carrying a store to a new phone is B-009's, and the store's only part in it is to be one thing
+at one place that a backup can carry. Agreed 2026-09-02 at the grill of `add-record-store` (#56).
+
 **Day** — the unit the product is organised around. The landing screen is one day, and every
 record is keyed to a date rather than to the time it was entered.
 
