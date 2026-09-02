@@ -72,7 +72,7 @@ and #55's `tasks.md` did; a prediction here is not evidence.
   and a single emoji; pins that the day view neither trims nor rewrites what `commitment` stored.
 - [x] 2.14 `rows are in the order the commitments were handed over` — three due commitments, rows in
   the order given.
-- [ ] 2.15 `handing the same commitments in the opposite order reverses the rows` — with 2.14, the
+- [x] 2.15 `handing the same commitments in the opposite order reverses the rows` — with 2.14, the
   pair that fails any sort by name.
 - [ ] 2.16 `a kept commitment keeps its place among the ones that are not kept` — the middle row is
   the kept one and stays in the middle. Fails an implementation that floats unticked rows to the top.
