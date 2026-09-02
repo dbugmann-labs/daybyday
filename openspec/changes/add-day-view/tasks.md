@@ -120,7 +120,7 @@ for this.
   count of ninety-seven.
 - [x] 3.2 `pnpm exec openspec validate add-day-view --strict` exits 0 and `pnpm run checks` reports
   scenario coverage as 23 of 23.
-- [ ] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
+- [x] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7, and
 `openspec validate --archived` requires every box above to be ticked before it.
