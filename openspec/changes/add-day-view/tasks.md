@@ -94,10 +94,10 @@ and #55's `tasks.md` did; a prediction here is not evidence.
 
 ## 3. Gates
 
-- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 118 tests passing and no failures — the
+- [x] 3.1 `cd src/DayByDayKit && swift test` reports 118 tests passing and no failures — the
   twenty-one here plus the ninety-seven from #8, #9, #10, #11, #42 and #55, none of which may change —
   and `pnpm run verify` exits 0.
-- [ ] 3.2 `pnpm exec openspec validate add-day-view --strict` exits 0 and `pnpm run checks` reports
+- [x] 3.2 `pnpm exec openspec validate add-day-view --strict` exits 0 and `pnpm run checks` reports
   scenario coverage as 21 of 21.
 - [ ] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
 
