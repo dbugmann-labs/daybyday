@@ -141,7 +141,15 @@ post-mortem.
 - **`/atlas backlog`** grooms. It clusters the wants **by the capability they would land in**,
   proposes a promotion, a merge, a split or a drop for each, forces a choice on any entry that
   has survived two passes, then grills the cluster taken forward and stops at **G1**. It adds one
-  stop in front of Stage 1 and nothing else — no new stage, no new gate, no second grill.
+  stop in front of Stage 1 and nothing else — no new stage, no new gate, no second grill. Every
+  pass appends a dated line to the backlog's *Grooming passes* log, promotion or not, because
+  that log is the only thing "survived two passes" can be counted against.
+
+**`pnpm run status` reports the backlog off a story branch**, under the issue tree: how many
+wants, how many decided, what has arrived since the last pass, and which entries are now a forced
+choice — those go in WAITING ON YOU. That is the other half of ADR-1010's finding. `/atlas
+backlog` makes a pass countable; this is what surfaces the count without being asked, which is
+the thing the parking lot never had.
 
 **Wants only, and this is what keeps it groomable.** Everything the parking lot also accumulated
 has a named home now: open product questions, open technical decisions and known gaps go to

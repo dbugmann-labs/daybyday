@@ -9,6 +9,9 @@
  * Nobody working four to eight hours a week holds that between sessions, and this repo's
  * own rule is verify, do not remember.
  *
+ * Off a story branch it reports the tracker and, under it, `docs/backlog.md` — the half of the
+ * work that has no issue yet. ADR-1010.
+ *
  * **This is a projection, exactly like `docs/graph.mmd`.** It reads the systems of record
  * and derives a stage; it is never an input, writes nothing, and no check consumes it. The one
  * thing it does write is `origin/main` itself: measuring how far a PR has fallen behind needs
@@ -26,6 +29,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
+import { readBacklog, type Backlog, type Want } from './lib/backlog.ts'
 import { currentBranch, deltaCapabilities, git, locateChange, parseBranch, repoSlug, type ChangeLocation } from './lib/ci.ts'
 import { changeDigest, findMarkers, markerBody } from './lib/g4.ts'
 import { scenarioCoverage } from './lib/coverage.ts'
@@ -586,6 +590,7 @@ export function renderTree(
   issues: GraphIssue[],
   branches: ReadonlySet<string> = new Set(),
   worktrees: ReadonlyMap<string, string> = new Map(),
+  backlog: Backlog | null = null,
 ): string {
   const open = issues.filter((i) => i.state === 'OPEN' && i.type !== null)
   const kids = (n: number) => issues.filter((i) => i.parent === n)
@@ -593,12 +598,14 @@ export function renderTree(
 
   const out: string[] = ['', '  Not on a story branch — here is what is outstanding.', '']
 
+  const waiting: string[] = []
+
   if (open.length === 0) {
     out.push('  No open Epic, Feature or Story. The next step is an Epic, and it starts with you.', '')
+    out.push(...renderBacklog(backlog, waiting))
+    out.push(...renderWaiting(waiting))
     return out.join('\n')
   }
-
-  const waiting: string[] = []
 
   for (const epic of open.filter((i) => i.type === 'Epic')) {
     out.push(`  Epic #${epic.number} — ${epic.title.replace(/^EPIC:\s*/i, '')}`)
@@ -642,13 +649,55 @@ export function renderTree(
     out.push('')
   }
 
-  if (waiting.length > 0) {
-    out.push('  ▸ WAITING ON YOU')
-    for (const w of waiting) out.push(`      ${w}`)
-    out.push('')
+  out.push(...renderBacklog(backlog, waiting))
+  out.push(...renderWaiting(waiting))
+  return out.join('\n')
+}
+
+function renderWaiting(waiting: readonly string[]): string[] {
+  if (waiting.length === 0) return []
+  return ['  ▸ WAITING ON YOU', ...waiting.map((w) => `      ${w}`), '']
+}
+
+/**
+ * The backlog, as one block under the tree.
+ *
+ * It is here rather than on a story branch because it answers the same question the tree does
+ * — what is outstanding, and which of it is mine — for the half of the work that has no issue
+ * yet. Printing it beside an open Story would be noise: a Story in flight is not the moment to
+ * be told a want has gone stale.
+ *
+ * **A stale want is put in WAITING ON YOU deliberately.** ADR-1010's whole finding was that the
+ * parking lot's staleness rule never ran because nothing surfaced it. A count that appears only
+ * when you remember to run `/atlas backlog` reproduces exactly that failure one level up.
+ */
+function renderBacklog(backlog: Backlog | null, waiting: string[]): string[] {
+  if (backlog === null) return []
+
+  const { wants, decided, passes, lastPass, fresh, stale } = backlog
+  const groomed = passes.length === 0 ? 'never groomed' : `${passes.length} pass(es), last ${lastPass}`
+
+  if (wants.length === 0) {
+    return [`  Backlog — empty, ${decided} decided (${groomed})`, '', '      /atlas idea <want>', '']
   }
 
-  return out.join('\n')
+  const out = [`  Backlog — ${wants.length} want(s), ${decided} decided (${groomed})`]
+  // With no pass behind it every want is "fresh", which the count above has already said.
+  if (lastPass !== null && fresh.length > 0) {
+    out.push(`      ${fresh.length} captured since ${lastPass}: ${ids(fresh)}`)
+  }
+  if (stale.length > 0) {
+    out.push(`      ${stale.length} survived two passes — promote or drop: ${ids(stale)}`)
+    waiting.push(`groom the backlog — ${stale.length} want(s) have survived two passes: ${ids(stale)}`)
+  }
+  out.push('', '      /atlas backlog', '')
+  return out
+}
+
+/** Ids, truncated: a status line is a prompt to open the file, not a substitute for reading it. */
+function ids(wants: readonly Want[]): string {
+  const shown = wants.slice(0, 6).map((w) => w.id)
+  return wants.length > shown.length ? `${shown.join(', ')} +${wants.length - shown.length} more` : shown.join(', ')
 }
 
 // ---------------------------------------------------------------------------
@@ -678,9 +727,10 @@ if (import.meta.filename === process.argv[1]) {
       .filter((b) => b !== ''),
   )
   const worktrees = parseWorktrees(git(['worktree', 'list', '--porcelain']))
+  const backlog = readBacklog(git(['rev-parse', '--show-toplevel']))
   console.log(
     asJson
-      ? JSON.stringify({ branch: branch.raw, issues, branches: [...branches], worktrees: [...worktrees] }, null, 2)
-      : renderTree(issues, branches, worktrees),
+      ? JSON.stringify({ branch: branch.raw, issues, branches: [...branches], worktrees: [...worktrees], backlog }, null, 2)
+      : renderTree(issues, branches, worktrees, backlog),
   )
 }

@@ -287,7 +287,8 @@ drop with the reason. Four rules decide the clusters:
   the same spec (`docs/agents/issue-tracker.md` § *Closing the hierarchy*).
 - **An entry that has survived two grooming passes untouched is a forced choice** — promote it or
   drop it, and say which you would do. There is no third option and no deferring it again. This
-  is the rule the parking lot stated and never enforced.
+  is the rule the parking lot stated and never enforced. **Do not count the passes by eye:**
+  `pnpm run status` off a story branch prints the ids, read out of the *Grooming passes* log.
 
 Present that as a stop, in the five-part form: the clusters and their dispositions, the question
 *which cluster do we take forward*, and a recommendation naming one. It is a stop, not a gate —
@@ -311,6 +312,18 @@ and its sub-issue edge — and for a new Epic first, if the cluster does not bel
 existing one. Then move every promoted entry out of *Wants* into *Decided*, one line each with
 the issue number, and commit that with the same message the issues went out under. Merge the
 backlog PR.
+
+**Append the pass to `## Grooming passes` before you commit, whatever the outcome** — one dated
+line, and a promotion is not what makes it one. A pass that promoted nothing is exactly the pass
+the staleness rule is counting, so an unrecorded pass resets every want's age to zero and quietly
+restores the parking lot. `pnpm run status` reads that log and nothing else:
+
+```
+- 2026-09-10 — pass over 9 wants. Promoted B-001, B-007, B-008 → FEAT: measurement (#48).
+```
+
+Record it even when the human walks away at the stop without picking a cluster. You read the
+backlog; the wants sat through it.
 
 From there you are on the existing path: ask the human to type `/to-tickets <issue#>`, stop it
 after the breakdown quiz, and **stop at G2**. Intake step 4 below is that step, unchanged.

@@ -19,6 +19,12 @@ into another entry. Whichever it is, the entry is deleted from *Wants* and one l
 forced choice — promote it or drop it.** That rule is the whole difference between a backlog and
 a graveyard, and it is `/atlas backlog`'s job to enforce it rather than yours to remember.
 
+That is why *Grooming passes* below is a dated log rather than a formality: a pass an entry
+sat through is only countable if the pass was written down. `pnpm run status` reads it off a
+story branch and reports the count without being asked, which is the half of ADR-1010's
+diagnosis that `/atlas backlog` alone does not fix — the parking lot failed because nothing
+ever opened it.
+
 ## What day one looks like
 
 The owner's actual week, as stated on 2026-08-28. Every cluster `/atlas backlog` proposes is
@@ -150,3 +156,11 @@ months later.
 - 2026-08-28 — dropped: an unanchored "once a month" rule, and a rule bounded to a stretch of
   weeks. Invented while answering a question about rules; nothing in the day-one list claims
   either. Re-capture it if something real does.
+
+## Grooming passes
+
+One dated line per `/atlas backlog` pass, appended by the pass itself, oldest first. This is
+what "survived two passes" is counted against; an entry captured after a pass did not sit
+through it.
+
+*None yet. The backlog was migrated from the parking lot on 2026-09-02 and has not been groomed.*
