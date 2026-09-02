@@ -133,7 +133,7 @@ Four smaller choices inside that shape:
 
 **`schedule` and `keptFrom` are stored properties and stay internal.** A commitment is constructed
 *with* them and answers *from* them, and nothing yet needs either back — the day screen renders a
-name and a tick box. This is the same asymmetry `docs/parking-lot.md` recorded on 2026-08-31 for
+name and a tick box. This is the same asymmetry `docs/open-questions.md` § *Known gaps* records for
 `DayOfMonth.day` and `DayInterval.days`, and the answer is the same: the first Story that draws a
 rule on screen widens all of them in one delta, and until then nothing is exported on speculation.
 The delta is careful not to require read-back of either, so the internal properties satisfy it rather
@@ -206,8 +206,8 @@ equality over all three.** No `UUID`, no row id, no sequence number.
 
 *Alternative — give it an identifier now, because storage will need one.* Rejected, and the reason is
 about who gets to decide rather than about cost. An identifier is not a property of a commitment; it
-is a property of a *store's* record of one, and `docs/parking-lot.md` still has SwiftData versus GRDB
-open. Minting an id here would pick a shape for a store nobody has chosen, and would put a field in
+is a property of a *store's* record of one, and `docs/open-questions.md` still has SwiftData versus
+GRDB open. Minting an id here would pick a shape for a store nobody has chosen, and would put a field in
 the engine that no rule reads and no scenario can pin except by reading it straight back. When
 storage arrives it brings its own identity, and a commitment is what it wraps.
 
@@ -276,8 +276,8 @@ the name.
   onward, and whatever it cannot answer was already #11's problem. What this change adds is one more
   caller to fix if that seam ever moves, and it is a one-line one.
 - **`Commitment` joins the read-back asymmetry, now with two internal fields rather than one.** →
-  Deliberate, argued in § *The seam*, and flagged in `proposal.md` § *Impact* for the parking-lot
-  entry, which `spec-author` may not write.
+  Deliberate, argued in § *The seam*, and flagged in `proposal.md` § *Impact* against the
+  `docs/open-questions.md` entry, which `spec-author` may not write.
 - **A commitment is immutable, so renaming one produces a new value that is not equal to the old.**
   → Correct for a value type and wrong for a record, which is the same trade-off as the identity
   decision and attaches at the same seam. Nothing edits a commitment yet, so nothing is blocked.
@@ -298,7 +298,7 @@ on 2026-09-02, and both answers are recorded here as settled:
    fulfill because the commitment was not there yet."* A commitment is therefore three things, not
    two; the delta gained a fourth requirement — *a commitment is not due before the day it is kept
    from* — with five scenarios, the first requirement was rewritten around the third field, the seam's
-   initializer gained `keptFrom:`, and the decision is written up as **ADR-1010**, which
+   initializer gained `keptFrom:`, and the decision is written up as **ADR-1011**, which
    `proposal.md` undertook to do if the answer came back this way. The recommendation's own argument
    is answered in § *The day a commitment is kept from* rather than quietly dropped.
 2. **Is the name stored exactly as typed, or trimmed?** — **exactly as typed**, as recommended. The
@@ -309,7 +309,7 @@ Everything else the grill turned up was a fact rather than a preference, and is 
 delta:
 
 - *Does a commitment need an identifier of its own?* No — § *A commitment carries no identity of its
-  own*. Identity belongs to a store, and which store is still open in `docs/parking-lot.md`.
+  own*. Identity belongs to a store, and which store is still open in `docs/open-questions.md`.
 - *Must commitment names be unique?* Not a question this Story can even state. Uniqueness is a
   property of a collection, and no type here holds more than one commitment. It arrives, if it ever
   does, with the thing that holds a list.

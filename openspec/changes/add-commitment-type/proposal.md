@@ -19,7 +19,7 @@ round existed to surface — *"I don't want to have due ticks in the past I was 
 because the commitment was not there yet."* Without it, a commitment created this afternoon on
 Mon/Wed/Sat answers *due* for every such day back to 1583, and since an unticked due day is what a
 miss looks like, the product would open with a history of failures nobody could have avoided. That
-answer is written up as **ADR-1010**, which this proposal undertook to do if it went this way. The
+answer is written up as **ADR-1011**, which this proposal undertook to do if it went this way. The
 second came back on the recommendation: a name is stored exactly as typed, never trimmed.
 
 ## What Changes
@@ -53,7 +53,7 @@ second came back on the recommendation: a name is stored exactly as typed, never
 - **Not in this change:** the weekly quota (#11); ticking, and anything that reads a tick; an end
   date, a pause or a window — a floor is not one; a list of commitments, their order, or uniqueness
   among them; editing, renaming, archiving or deleting one; storage and the SwiftData/GRDB question
-  `docs/parking-lot.md` still holds open; reading a schedule or a kept-from day back out of a
+  `docs/open-questions.md` still holds open; reading a schedule or a kept-from day back out of a
   commitment to render it; anything on screen.
 
 ## Capabilities
@@ -79,13 +79,17 @@ exactly one claimed capability.
 - **Specs:** creates `openspec/specs/commitment/spec.md` at archive time, and touches nothing else.
 - **Tests:** nineteen acceptance tests in a new `Tests/DayByDayKitTests/CommitmentTests.swift`, one
   per scenario, taken one at a time. The existing forty-five tests are untouched and must stay green.
-- **ADR:** `docs/adr/1010-a-commitment-is-kept-from-a-day.md`, written with this change and listed in
+- **ADR:** `docs/adr/1011-a-commitment-is-kept-from-a-day.md`, written with this change and listed in
   `docs/adr/README.md`. It records the floor, its three consequences, and the two alternatives that
   were weighed — answering it in storage, and anchoring every schedule shape instead.
-- **`docs/parking-lot.md`:** two entries move. The one open since 2026-08-28 — *what happens to days
-  before a thing existed* — is now half answered: due-ness is settled by ADR-1010, while how far back
-  the past stays writable is about ticks and remains open, so that entry should be narrowed rather
-  than deleted. And the read-back asymmetry entry of 2026-08-31 grows a third case: a `Commitment`
-  gives back neither its `Schedule` nor its kept-from day, for the same reason `DayOfMonth` does not
-  give back its day, and the first Story that renders a rule widens all of them in one delta. This
-  change does not write there; `spec-author` may not, so both are flagged here for whoever does.
+- **`docs/open-questions.md`:** two entries move, and neither is this change's to write. Under *Open
+  product questions*, **How far back the past stays writable** is now half answered — the clause
+  *"and what a day before the commitment existed shows"* is settled by ADR-1011 and should be struck,
+  while how far back the past stays writable is about ticks and stays open. Under *Known gaps*, **A
+  schedule's payload cannot be read back out** grows a third case: a `Commitment` gives back neither
+  its `Schedule` nor its kept-from day, for the same reason `DayOfMonth` does not give back its day,
+  and the first Story that renders a rule widens all of them in one delta.
+
+  These paths are new. `docs/parking-lot.md` was replaced on 2026-09-02 by `docs/backlog.md` and
+  `docs/open-questions.md` (ADR-1010), which landed on `main` while this Story was being written and
+  collided with it — see the branch's second commit.

@@ -13,18 +13,19 @@ every-N-days shape carries a date of its own, and `add-every-n-days-schedule` (#
 a start date — with a requirement that it is not due before it, for a reason it stated plainly: a
 rule reaching backwards manufactures a history of misses that never happened. That reasoning was
 scoped to the interval shape, and #10 said in as many words that the general case — *what happens
-to days before a thing existed* — was not its Story to answer. `docs/parking-lot.md` has carried
-the question since 2026-08-28.
+to days before a thing existed* — was not its Story to answer. It has been carried as an open
+product question since 2026-08-28, latterly in `docs/open-questions.md`.
 
 `add-commitment-type` (#42) is the Story that defines what a commitment is, so it is the last
 honest place to leave the question open. Without an answer, a commitment created this afternoon on
 "Mon/Wed/Sat" answers *due* for every Monday, Wednesday and Saturday since the sixteenth century.
 
-That would not merely be untidy. DayByDay has no streaks and no congratulation; the entire signal
-it gives a person is which due days carry a tick and which do not, so **an unticked due day is what
-a miss looks like.** A rule anchored only to the calendar therefore opens the record with hundreds
-of failures nobody could have avoided, in a product whose one job is to say honestly what was
-actually kept.
+That would not merely be untidy. DayByDay has no streaks and no congratulation — `CONTEXT.md`
+§ *Product principles* — so the entire signal it gives a person is which due days carry a tick and
+which do not, and `docs/backlog.md` B-006 asks for unticked commitments to stay visible *"rather
+than being silently missed"*. **An unticked due day is therefore what a miss looks like.** A rule
+anchored only to the calendar opens the record with hundreds of failures nobody could have avoided,
+in a product whose one job is to say honestly what was actually kept.
 
 The question was put to the owner as a question round at Stage 4, with the recommendation that the
 commitment stay two things — a name and a schedule — and that "this did not exist yet" be answered
@@ -72,9 +73,9 @@ Four things are part of the decision rather than incidental to it:
 - **Every caller must supply a day**, including tests and every future edge that creates a
   commitment. This is intended: a missing floor is the failure mode, so it is made impossible rather
   than defaulted.
-- **The parking-lot question is half answered.** *What happens to days before a thing existed* is
-  settled for due-ness. Its other half — how far back the past stays writable, which is about ticks
-  and storage — is untouched by this and remains open.
+- **A long-open product question is half answered.** *What a day before the commitment existed
+  shows* is settled for due-ness. Its other half — how far back the past stays writable, which is
+  about ticks and storage — is untouched by this and remains open in `docs/open-questions.md`.
 - **An end date is not implied and is not decided here.** A floor is not a window. Nothing has asked
   for the other side of one, and a commitment that has been stopped is a different idea from one
   that has not started.
