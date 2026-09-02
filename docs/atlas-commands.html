@@ -312,7 +312,7 @@ footer code{background:none;padding:0;color:var(--ink)}
     <div class="row hd"><span>Form</span><span>What it does</span><span>What comes out</span></div>
     <div class="row">
       <span class="f">/atlas<br>/atlas next</span>
-      <span class="d">Reads <code>pnpm run status</code> and takes the next step from wherever the work actually is. On a story branch it reports that Story; anywhere else it reports the tracker.</span>
+      <span class="d">Reads <code>pnpm run status</code> and takes the next step from wherever the work actually is. On a story branch it reports that Story; anywhere else it reports the tracker <i>and the backlog</i>.</span>
       <span class="o">Either a gate stop put to you, or an agent's work plus a fresh status. <b>It creates nothing of its own.</b></span>
     </div>
     <div class="row key">
@@ -323,7 +323,7 @@ footer code{background:none;padding:0;color:var(--ink)}
     <div class="row key">
       <span class="f">/atlas backlog<br>/atlas backlog B-007</span>
       <span class="d">Grooms. Clusters the wants by the capability they would land in, proposes promote, merge, split or drop for each, forces a choice on anything two passes old, grills the cluster you pick. The <code>B-007</code> form skips the clustering.</span>
-      <span class="o">A grooming stop, then <b>G1</b>. On approval: a Feature issue and its sub-issue edge, an Epic first if needed, the promoted entries moved to <i>Decided</i>, the backlog PR merged. Then <b>G2</b>, then <b>G4</b>.</span>
+      <span class="o">A grooming stop, then <b>G1</b>. On approval: a Feature issue and its sub-issue edge, an Epic first if needed, the promoted entries moved to <i>Decided</i>, the backlog PR merged. Then <b>G2</b>, then <b>G4</b>. <b>Every pass appends a dated line to the <i>Grooming passes</i> log</b>, promotion or not.</span>
     </div>
     <div class="row key">
       <span class="f">/atlas feature &lt;idea&gt;</span>
@@ -336,6 +336,7 @@ footer code{background:none;padding:0;color:var(--ink)}
       <span class="o">Whatever the next gate is, <b>G4</b> or <b>G7</b>, or a merged Story and a closed issue.</span>
     </div>
   </div>
+  <div class="note"><b>You do not have to remember to groom.</b> <code>pnpm run status</code>, run anywhere but a story branch, prints the backlog under the issue tree — how many wants, how many decided, what has arrived since the last pass, and which entries have now survived two passes. Those last go straight into <span style="font-family:var(--mono);font-size:.85em">WAITING ON YOU</span> beside the Features you owe a decomposition. It is counted off the <i>Grooming passes</i> log, which is why a pass that promoted nothing still gets written down: an unrecorded pass resets every want's age to zero.</div>
   <div class="note"><b>Count the stops.</b> <code>idea</code> is zero — no gate, no G-number, no tracker write. <code>backlog</code> is three before any code exists: the grooming stop, G1, G2. <code>feature</code> is two, because it has no grooming stop. From G4 onward all of them are the same four-interruption Story.</div>
 </section>
 

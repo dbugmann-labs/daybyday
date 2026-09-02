@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { parseBacklog } from '../scripts/lib/backlog.ts'
 import { deriveStoryStatus, parseWorktrees, renderTree, type ChangeFacts, type StoryFacts } from '../scripts/status.ts'
 import type { GraphIssue } from '../scripts/generate-graph.ts'
 
@@ -311,5 +312,64 @@ describe('renderTree', () => {
 
   it('says plainly that an empty tracker starts with the human', () => {
     expect(renderTree([])).toContain('starts with you')
+  })
+
+  // The backlog is the half of the work that has no issue yet, so it belongs under the tree
+  // rather than beside a Story. ADR-1010: the parking lot failed because nothing opened it,
+  // and a count you only see when you remember to ask reproduces that one level up.
+  const WANTS = `# Backlog
+
+## Wants
+
+### B-001 — see my weight as a line over months
+*Captured 2026-08-28.*
+
+### B-002 — add to a running total
+*Captured 2026-09-20.*
+
+## Decided
+
+- 2026-08-31 — reading 3x a week → Story #11.
+
+## Grooming passes
+
+- 2026-09-10 — pass one.
+- 2026-09-30 — pass two.
+`
+
+  it('reports the backlog under the tree, with the command to groom it', () => {
+    const out = renderTree(WITH_STORY, new Set(), new Map(), parseBacklog(WANTS))
+    expect(out).toContain('Backlog — 2 want(s), 1 decided (2 pass(es), last 2026-09-30)')
+    expect(out).toContain('/atlas backlog')
+  })
+
+  it('puts a want that has survived two passes in WAITING ON YOU', () => {
+    const out = renderTree(WITH_STORY, new Set(), new Map(), parseBacklog(WANTS))
+    expect(out).toContain('1 survived two passes — promote or drop: B-001')
+    expect(out).toContain('WAITING ON YOU')
+    expect(out).toContain('groom the backlog — 1 want(s) have survived two passes: B-001')
+  })
+
+  it('names what has been captured since the last pass', () => {
+    const out = renderTree(WITH_STORY, new Set(), new Map(), parseBacklog(WANTS.replace('- 2026-09-30 — pass two.\n', '')))
+    expect(out).toContain('1 captured since 2026-09-10: B-002')
+  })
+
+  it('reports an ungroomed backlog without claiming anything is stale', () => {
+    const out = renderTree(WITH_STORY, new Set(), new Map(), parseBacklog(WANTS.split('## Grooming passes')[0]!))
+    expect(out).toContain('never groomed')
+    expect(out).not.toContain('survived two passes')
+  })
+
+  it('points an empty backlog at the capture command, not the grooming one', () => {
+    const out = renderTree(WITH_STORY, new Set(), new Map(), parseBacklog('# Backlog\n\n## Wants\n\n## Decided\n'))
+    expect(out).toContain('Backlog — empty')
+    expect(out).toContain('/atlas idea <want>')
+  })
+
+  // Every existing caller passes three arguments. A repo with no backlog file at all — and
+  // every test above this one — must render exactly as before.
+  it('says nothing about a backlog when there is none', () => {
+    expect(renderTree(WITH_STORY)).not.toContain('Backlog')
   })
 })
