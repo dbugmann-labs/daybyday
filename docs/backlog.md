@@ -459,3 +459,32 @@ most needs to count. Say what the coverage sweep found, including when it found 
   B-009, a Story against #53 once the first record Story has chosen the store. **E**, the
   commitment's lifecycle: B-013, B-014, B-015 as Stories reopening #26 — define first, then
   change, then retire; B-013 may be a kept-until day mirroring ADR-1011.
+
+- 2026-09-02 — pass over 18 wants, the second, on the same day as the first. **Sweep**: three
+  silences, all captured before clustering — B-019, ticking from the row, which is the seam
+  between `day-screen` (#27) and `record` (#53) that neither Feature's intent claims; B-020,
+  seeing every commitment in one place, which B-013 and B-014 both have to reach a commitment
+  *through*; B-021, a rhythm said in words, whose technical half was already in
+  `docs/open-questions.md` § *Known gaps* before anyone had asked for it. The day-one week has no
+  rhythm left uncovered: all four shapes shipped when #45 merged mid-pass, closing Story #11 and
+  `FEAT: schedule` (#6). Nothing was stale — the counter counts passes dated strictly after a
+  capture and both passes are 2026-09-02, so the forced choice first fires on a later date.
+  **Taken forward**: cluster A, the day screen you can use — B-019, B-006, B-016 — grilled and
+  taken to `FEAT: day-screen` (#27). #27 is at G2 rather than G1, so no Feature was minted and
+  the three wants stay in *Wants* until its Stories carry numbers. The grill settled three things,
+  now in `CONTEXT.md` as **day view** and **row**: ticking belongs to `day-screen` and #53 stays
+  closed; a day view answers for every supported date, and a row after today is shown and refuses
+  the tick; the day preserves the order it is handed, because a commitment has no identifier to
+  order by. The open product question *how far back the past stays writable* is answered in
+  direction but stays open in `docs/open-questions.md`, by that file's own rule that an item
+  leaves when the change forcing it settles it — here, #27's first Story. **Not taken**, each with
+  the disposition this pass proposed — **B**, the commitment's lifecycle: B-015, B-020, B-014,
+  B-013, B-021 as Stories reopening `commitment` (#26), plus a screen capability that should not
+  be minted before #27 has proved the seam; recommended next, once #56 has chosen the store.
+  **C**, a record that is not a tick: B-001..B-005 and B-018 reopen #53 and change `CONTEXT.md`
+  § *Record*, agreed the same morning; whoever takes it must merge or separate B-002 and B-018
+  deliberately rather than let both survive by default. **D**, looking back: B-007 and B-011,
+  unclaimed, nothing to look back at until #56 lands a store. **E**, restore: B-009, a Story
+  against #53 once the store is chosen — and Epic #1 excludes "export and restore" by name, so
+  promoting it amends the Epic's exclusion list. **F**, quota spans: B-017 stays; the weekly quota
+  shipped today and nothing on the day-one week asks for a longer span.

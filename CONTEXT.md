@@ -154,6 +154,24 @@ be undone turns every mis-tap into a permanent false record. Proposed 2026-09-02
 **Day** — the unit the product is organised around. The landing screen is one day, and every
 record is keyed to a date rather than to the time it was entered.
 
+**Day view** — what one calendar date asks of you and what you did about it: the commitments due
+on that date, each with whether it is kept, in the order it was handed them. Like due-ness, it is a
+question asked *of a date* rather than of the present moment, so it answers for every date the
+system supports and not only for today. It orders nothing of its own — a commitment carries no
+identifier and no day it was written down, so any order a day view invented would be a rule about
+names, which are the owner's words and not the system's. It counts nothing: it says of each
+commitment that it is kept or not, never how many days in a row, and a commitment that has been
+ticked stays in the view and goes quiet rather than leaving it. Deliberately not the **screen** that
+draws one, in the way a history is not the store that keeps it. Agreed 2026-09-02 at the second
+grooming pass, with `FEAT: day-screen` (#27).
+
+**Row** — one commitment's line in a day view: its name, whether it is kept, and the place a tick is
+made. Ticking belongs to the row and therefore to `day-screen`: `record` says what a tick is and
+what a history answers and knows nothing of a row, of a date being displayed or of an order. A row
+for a date later than today is shown and refuses the tick — a day that has not arrived cannot have
+been kept, and `record` hands that judgement to the screen by name, since it never consults the
+present moment. Agreed 2026-09-02, the same pass.
+
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
 combination that names no day — 30 February — is not one. Its year runs from 1583 to 9999
