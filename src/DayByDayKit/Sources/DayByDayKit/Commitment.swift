@@ -14,6 +14,6 @@ public struct Commitment: Hashable, Sendable {
     }
 
     public func isDue(on date: CalendarDate) -> Bool {
-        fatalError("not implemented")
+        schedule.isDue(on: date)
     }
 }

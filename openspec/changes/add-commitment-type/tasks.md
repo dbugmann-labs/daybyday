@@ -54,17 +54,21 @@ likely to run red on their own are 2.6 and 2.7, if 2.1 was made green without th
   immediately — no trimming logic was ever added.
 - [x] 2.9 `a name of a single emoji is a commitment` — one grapheme cluster, the shape a length or
   character-class check gets wrong. Ran green immediately.
-- [ ] 2.10 `a commitment on a weekday-set schedule is due on a listed weekday and not on another`
-- [ ] 2.11 `a commitment on a day-of-month schedule is due on the last day of a month too short for
+- [x] 2.10 `a commitment on a weekday-set schedule is due on a listed weekday and not on another`
+  — ran red: `fatalError` in `isDue(on:)`. Made green with plain delegation,
+  `schedule.isDue(on: date)`, deliberately without the floor yet — 2.15 through 2.19 drive that.
+- [x] 2.11 `a commitment on a day-of-month schedule is due on the last day of a month too short for
   its day` — deliberately the short-month clamp rather than a plain hit, so it fails if the
-  delegation reimplements the rule instead of asking the schedule.
-- [ ] 2.12 `a commitment on an every-N-days schedule is due on its start date and not on the day
-  before it` — deliberately the start-date boundary, for the same reason.
-- [ ] 2.13 `two commitments with different names and the same schedule are due on the same dates` —
-  seven dates each, asserting the two answer identically; the name must not reach the rule.
-- [ ] 2.14 `a commitment on a schedule that is due on no date is never due` — a commitment that can
+  delegation reimplements the rule instead of asking the schedule. Ran green immediately.
+- [x] 2.12 `a commitment on an every-N-days schedule is due on its start date and not on the day
+  before it` — deliberately the start-date boundary, for the same reason. Ran green immediately.
+- [x] 2.13 `two commitments with different names and the same schedule are due on the same dates` —
+  seven dates each, asserting the two answer identically; the name must not reach the rule. Ran
+  green immediately.
+- [x] 2.14 `a commitment on a schedule that is due on no date is never due` — a commitment that can
   never come due is a legal value and answers, rather than erroring. `schedule` already requires this
-  of the empty weekday set; this asserts a commitment does not add a refusal on top of it.
+  of the empty weekday set; this asserts a commitment does not add a refusal on top of it. Ran green
+  immediately.
 - [ ] 2.15 `a commitment is not due on a date before the day it is kept from` — the floor's plain
   case: the schedule says due, the floor says no, and the floor wins.
 - [ ] 2.16 `a commitment is due on the day it is kept from when its schedule is due that day` — the
