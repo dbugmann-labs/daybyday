@@ -203,12 +203,26 @@ identity that no capability has given it to decide.
 
 ### Requirement: A day view is a value
 
-Two day views SHALL be the same day view when they were formed from the same commitments, in the same
-order, on the same calendar date, from the same history; and SHALL be different when any of those
-differs. A day view holds no identity of its own, so two day views a person would call identical are
-not distinguishable to the system. The calendar date is part of what a day view is, not merely an
-argument used to build it: two dates whose commitments and ticks happen to coincide are two days, not
-one.
+A day view SHALL be the rows it holds and the calendar date it was formed on, and nothing else. Two
+day views SHALL be the same day view when they hold the same rows in the same order on the same date,
+and SHALL be different when the date differs, or when the rows differ in how many there are, in their
+order, in the commitment any one of them is for, or in whether any one of them says its commitment is
+kept. Forming a day view twice from the same commitments, in the same order, on the same date and from
+the same history therefore SHALL give the same day view.
+
+A day view holds no identity of its own: two day views a person could not tell apart are not
+distinguishable to the system either. That cuts both ways, and the second way is the one worth saying
+out loud, because a day view is what a date asked and what was done about it rather than a record of
+what it was asked from. A difference in what a day view was handed that does not reach a row SHALL
+make no difference to the day view. Both ways that can happen follow from the first requirement rather
+than adding anything to it: a commitment that is not due on the date produces no row, so a day view
+handed it is the same day view as one that was not; and a tick for a commitment the day view was not
+handed is never looked up, so a history holding one gives the same day view as a history that does
+not. Which commitments were offered, and which ticks a history held besides the ones asked about, are
+the caller's to remember; what a day view keeps is the answer.
+
+The calendar date is part of what a day view is, not merely an argument used to build it: two dates
+whose rows happen to coincide are two days, not one.
 
 A day view SHALL be an answer given from a history as that history stood, and not a window onto one.
 Ticking a history after a day view was formed from it MUST NOT change that day view; the answer that
@@ -230,6 +244,25 @@ that can be held, compared and handed on rather than something that changes unde
   on Monday 31 August 2026 and one on Wednesday 2 September 2026
 - **THEN** each holds one row named "Gym", saying the commitment is not kept
 - **AND** the two are different day views
+
+#### Scenario: two day views differing only in a commitment that is not due are the same day view
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of a
+  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
+  2026, and a second day view is formed on that same date and from that same history, of that same
+  commitment followed by one named "Finances" on a schedule on the 25th of the month, also kept from
+  1 January 2026
+- **THEN** each holds one row named "Gym", saying the commitment is not kept
+- **AND** the two are the same day view
+
+#### Scenario: two day views differing only in a tick for a commitment neither was handed are the same day view
+
+- **WHEN** two day views are formed on Monday 31 August 2026, each of a commitment named "Gym" on a
+  schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, the first from a history
+  that has taken no tick and the second from a history holding a tick on that date for a commitment
+  named "Run" on a schedule listing Monday and Thursday, kept from 1 January 2026
+- **THEN** each holds one row named "Gym", saying the commitment is not kept
+- **AND** the two are the same day view
 
 #### Scenario: a day view does not change when the history it was built from is ticked afterwards
 

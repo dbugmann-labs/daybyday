@@ -32,9 +32,17 @@ Expect most of these to pin rather than drive, as on #42 and #55. The ones `desi
 red on their own are 2.1 (the initializer's `fatalError`), 2.2 (no due-ness filter yet, if 2.1 was
 made green by mapping every commitment to a row), 2.3 (the first kept-ness, if 2.1 was made green
 with a hard-coded `false`), 2.7 (if the filter asks the schedule rather than the commitment), 2.18 (if
-the rows were built from a `Set` or otherwise deduplicated), and 2.20 and 2.21 (if the date was not
-stored on the day view). **Record which ones actually ran red as you go, in this file**, the way #42's
-and #55's `tasks.md` did; a prediction here is not evidence.
+the rows were built from a `Set` or otherwise deduplicated), 2.20 and 2.21 (if the date was not
+stored on the day view), and 2.22 (if the day view kept the list of commitments it was handed).
+**Record which ones actually ran red as you go, in this file**, the way #42's and #55's `tasks.md`
+did; a prediction here is not evidence.
+
+**2.22 and 2.23 were added after #74's G7 review**, which found the third requirement claiming a day
+view's identity followed the arguments it was formed from when the code makes it follow the rows and
+the date. The owner ruled the code right and the sentence over-promising, so the requirement was
+rewritten and these two scenarios added to pin the corrected reading; the change folder was re-signed
+at a second G4. Everything above them is unchanged and stays green — do not rewrite an existing test
+for this.
 
 - [x] 2.1 `a day view holds a row for each commitment due on the date` — three commitments handed
   over, two due; two rows, named "Gym" and "Run". Ran red against the seam's `fatalError`, as
@@ -91,14 +99,21 @@ and #55's `tasks.md` did; a prediction here is not evidence.
   snapshot pin, and the one that would fail a `DayView` holding a reference to a live history. Three
   assertions: the old view unchanged, a freshly formed one kept, the two unequal. Deliberately last.
   Pinned rather than drove: `History` is a value type and `isKept` is read at construction.
+- [ ] 2.22 `two day views differing only in a commitment that is not due are the same day view` — the
+  same commitments plus one that is not due on the date; identical rows, so the same day view. Fails a
+  `DayView` that stores the list it was handed and counts it towards equality, which is the reading the
+  requirement used to invite.
+- [ ] 2.23 `two day views differing only in a tick for a commitment neither was handed are the same day
+  view` — 2.8's input read through equality rather than through the row count: a tick the day view
+  never looks up leaves no mark on it. Fails a `DayView` that stores the whole `History`.
 
 ## 3. Gates
 
-- [x] 3.1 `cd src/DayByDayKit && swift test` reports 118 tests passing and no failures — the
-  twenty-one here plus the ninety-seven from #8, #9, #10, #11, #42 and #55, none of which may change —
-  and `pnpm run verify` exits 0.
-- [x] 3.2 `pnpm exec openspec validate add-day-view --strict` exits 0 and `pnpm run checks` reports
-  scenario coverage as 21 of 21.
+- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 120 tests passing and no failures — the
+  twenty-three here plus the ninety-seven from #8, #9, #10, #11, #42 and #55, none of which may change
+  — and `pnpm run verify` exits 0.
+- [ ] 3.2 `pnpm exec openspec validate add-day-view --strict` exits 0 and `pnpm run checks` reports
+  scenario coverage as 23 of 23.
 - [ ] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7, and

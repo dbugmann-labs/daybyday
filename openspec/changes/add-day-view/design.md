@@ -86,11 +86,11 @@ public struct DayView: Hashable, Sendable {
 ```
 
 `Row` stores the `Commitment` it is a row for, internally, and exposes only the name off it; `DayView`
-stores the `CalendarDate` internally. Twenty-one scenarios in the delta observe that initializer and
-`rows`, three of them additionally through day-view equality. No process is spawned and no global
+stores the `CalendarDate` internally. Twenty-three scenarios in the delta observe that initializer and
+`rows`, five of them additionally through day-view equality. No process is spawned and no global
 stream is captured.
 
-Four smaller choices inside that shape:
+Five smaller choices inside that shape:
 
 **The initializer is not failable.** Every other type in this package refuses something at
 construction — 30 February is not a date, a blank name is not a commitment, a tick on a Tuesday is not
@@ -113,6 +113,20 @@ view *is* — two dates whose rows coincide are two days, not one — and the de
 equality scenario rather than with a getter. Not exposed because nothing here reads it back: a screen
 holds the date it asked for. #72, which moves a view from one date to another, is the Story that will
 want it, and it widens the surface then.
+
+**A day view is its rows and its date, and equality is over those two and nothing else.** The
+initializer's three arguments are consumed rather than kept: the commitments survive only as the rows
+they produced, and the history survives only as the `isKept` answers it gave. So two day views formed
+from different lists or different histories that yield the same rows on the same date *are* the same
+day view — a commitment that is not due leaves no trace, and neither does a tick for a commitment that
+was never asked about. That is the right answer rather than a shortcoming, and for the reason the
+third requirement gives: a day view is what a date asked and what was done about it, not a record of
+what it was asked from, and a caller that needs to know which list it offered still has that list. The
+alternative — storing the commitments and the history so that provenance counts towards identity —
+would make two indistinguishable day views unequal, keep a whole `History` alive behind every view,
+and buy nothing any scenario reads. **This paragraph and the third requirement's wording were
+corrected after #74's G7 review**, which found the requirement claiming identity followed the
+*arguments*; the code was right, the sentence over-promised, and two scenarios now pin the correction.
 
 **`rows` is an `Array`, and the initializer takes one.** Not a `Set`, which would deduplicate and lose
 the order that is half the requirement; not a generic `Sequence`, which buys nothing the delta
@@ -239,9 +253,10 @@ register that says nothing `CONTEXT.md`, ADR-1015 and this delta do not.
   with a SwiftUI row bound to the wrong property. → This is `docs/open-questions.md` § *Known gaps*,
   "No UI smoke layer", recorded at #27's G1 before this Story existed, and its trigger — a second
   screen to regress against — has not fired. Flagged in `proposal.md`; not closed here.
-- **Twenty-one scenarios on a type whose body is a `filter` and a `map` will mostly pin rather than
+- **Twenty-three scenarios on a type whose body is a `filter` and a `map` will mostly pin rather than
   drive.** → As on #42 and #55. The ones expected to drive are the first row, the first kept-ness, the
-  kept-from floor, the duplicate, and the two equality scenarios that depend on the date being stored;
+  kept-from floor, the duplicate, the two equality scenarios that depend on the date being stored, and
+  the one that fails a day view keeping the list it was handed;
   `tasks.md` names them and asks the implementer to record which actually ran red, because a prediction
   is not evidence.
 - **The list of commitments has no source.** Nothing in the system can produce one, so every caller for
@@ -305,6 +320,13 @@ the weekly quota, is recorded below as settled twice over on 2026-09-02.
   produces a list yet, and a day view that owned one would be answering B-020 without being asked.
 - *Is the day view a live window onto a history?* No, a snapshot; § *A day view is a snapshot* has the
   reasoning and a scenario pins it. #71 forms a new one after a tick.
+- *Is a day view formed from different commitments, or from a different history, necessarily a
+  different day view?* **No, and it should not be.** Identity is the rows and the date; a difference in
+  what was handed over that never reaches a row is not a difference in the answer. Settled by the owner
+  on 2026-09-02, after #74's G7 review read the requirement the other way: the code was right and the
+  sentence over-promised, so the requirement was rewritten and two scenarios added — a commitment that
+  is not due, and a tick for a commitment neither day view was handed. § *The seam* has the reasoning
+  and what the alternative would have cost.
 - *Is the date part of a day view's identity?* Yes. Two dates whose rows coincide are two days, and an
   equality scenario pins it — which is also what forces the date to be stored rather than merely used.
 - *Does anything in `commitment`, `record`, `schedule` or `CalendarDate` have to change?* No. Every

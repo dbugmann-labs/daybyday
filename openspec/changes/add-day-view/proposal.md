@@ -37,12 +37,19 @@ screen.
   does not sort by name, by rhythm or by whether a thing is done, and it does not deduplicate — a
   commitment handed twice has two rows. `CONTEXT.md` § *Day view* already says it orders nothing of
   its own; this delta makes that observable.
+- **Makes a day view its rows and its date, and nothing of what it was handed.** Two day views that
+  hold the same rows on the same date are the same day view, even where one was offered a commitment
+  that was not due or read a history holding a tick it never looked up — a day view is what a date
+  asked and what was done about it, not a record of what it was asked from. The requirement said the
+  opposite until #74's G7; the code was right and the sentence over-promised, and two scenarios now
+  pin the corrected reading.
 - **Keeps a ticked commitment in the view.** The row says it is kept and stays where it was. Nothing
   counts, nothing is tallied and nothing leaves — `CONTEXT.md` § *Nothing congratulates you*.
-- Sharpens `CONTEXT.md` § *Day view* with three things this grill settled: that the view is handed
-  its commitments rather than holding a list of its own, that it is an answer given from a history as
-  that history stood rather than a window onto one, and that a weekly-quota commitment therefore has
-  a row every day.
+- Sharpens `CONTEXT.md` § *Day view* with four things: three this grill settled — that the view is
+  handed its commitments rather than holding a list of its own, that it is an answer given from a
+  history as that history stood rather than a window onto one, and that a weekly-quota commitment
+  therefore has a row every day — and one corrected at G7, that a day view is what it holds rather
+  than what it was handed.
 
 Nothing is drawn on a screen, nothing is tapped, nothing is stored and no existing capability's
 requirements move.
@@ -64,7 +71,7 @@ either capability that it does not already export.
 
 - **`src/DayByDayKit`** — one new source file, `Sources/DayByDayKit/DayView.swift`, and one new test
   file, `Tests/DayByDayKitTests/DayViewTests.swift`. Nothing existing is edited. The package reports
-  97 tests passing today, measured on 2026-09-02; this change takes it to 118.
+  97 tests passing today, measured on 2026-09-02; this change takes it to 120.
 - **No new dependency, no `Package.swift` change, no CI change.** CI discovers `Package.swift` and
   reads `@Test("...")` display names out of the source, both of which this change leaves alone.
 - **`openspec/specs/day-screen/spec.md`** is created at archive time, by `/opsx:archive` and nothing
