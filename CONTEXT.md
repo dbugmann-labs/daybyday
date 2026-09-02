@@ -97,8 +97,17 @@ times within a week on any days.
 **Due** — a commitment is due on a day when that day's date satisfies its schedule. Whether a
 commitment is due is a question asked *of a date*, not of the present moment.
 
-**Tick** — to record that a due commitment was done. The past is writable: a day other than
-today can be ticked.
+**Record** — what a day holds for a commitment: the durable fact that, on that calendar date,
+the commitment was kept. It is keyed to the date and never to the time it was entered, there is
+at most one per commitment per day, and it survives the app being closed and opened again —
+durability is a property of the record, not of some store behind it, because a record a few
+days old that cannot be reconstructed is the failure the product exists to remove. A tick is
+the plain kind; a number or a sentence would be other kinds, and none of those exists yet.
+Agreed 2026-09-02 at the first grooming pass, with `FEAT: record`.
+
+**Tick** — to record that a due commitment was done, and the plain kind of record that
+results. A tick is of a *due* commitment: a day on which the commitment is not due takes no
+tick. The past is writable: a day other than today can be ticked.
 
 **Day** — the unit the product is organised around. The landing screen is one day, and every
 record is keyed to a date rather than to the time it was entered.
