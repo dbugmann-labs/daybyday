@@ -59,7 +59,7 @@ and #55's `tasks.md` did; a prediction here is not evidence.
   from the commitments handed over and never from the history.
 - [x] 2.9 `a tick on another date does not make the row say it is kept` — pins that the day view's
   date is the one passed to `isKept`; two assertions, 31 August not kept and 5 September kept.
-- [ ] 2.10 `two commitments with the same name and different schedules each have their own row` —
+- [x] 2.10 `two commitments with the same name and different schedules each have their own row` —
   two rows, both named "Gym", kept independently. Pins that a row is a commitment's line rather than
   a name's, and that nothing collapses them.
 - [ ] 2.11 `a commitment on a weekly quota has a row on every day of the week` — ADR-1015's cost made
