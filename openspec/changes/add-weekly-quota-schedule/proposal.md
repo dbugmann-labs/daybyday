@@ -9,8 +9,8 @@ It is also the shape three previous design documents flagged as the one that mig
 because a quota sounds like it needs to know what has already been done. That question is the
 substance of what G4 approves here, and the answer is not the obvious one: **`schedule` answers
 which days a commitment runs on, and a weekly quota runs on all of them.** How many of the week's
-completions are still owed is a question about ticks, and ticks are neither built nor specified
-anywhere in this repository.
+completions are still owed is a question about ticks, and a tick has a Feature and a Story on the
+tracker but is neither built nor specified anywhere in this repository.
 
 ## What Changes
 
@@ -28,7 +28,7 @@ anywhere in this repository.
 - Adds one case to the existing `Schedule` enum and one small public type beside it. **The seam does
   not move**, so `add-weekday-set-schedule`'s claim that it would survive all four shapes holds for
   the fourth and last time.
-- **An ADR**, `docs/adr/1010-*`, recording that a weekly quota's due-ness is opportunity rather than
+- **An ADR**, `docs/adr/1014-*`, recording that a weekly quota's due-ness is opportunity rather than
   obligation and that completion lives outside this capability. It qualifies on all three of
   `docs/adr/README.md`'s tests: reversing it means widening the seam for every shape or moving the
   quota out of `Schedule`; `.weeklyQuota(3).isDue(on:)` answering `true` on a Thursday is surprising
@@ -51,16 +51,19 @@ anywhere in this repository.
 - **Code:** `src/DayByDayKit/Sources/DayByDayKit/` only. One new file for the quota value, one new
   case and one new branch in `Schedule.isDue(on:)`. No new dependency, no change to `Package.swift`,
   and — for the first time in this capability — **no calendar arithmetic at all**: the branch is a
-  `return true`, and nothing in the shape consults `CalendarDate`'s internals.
+  `return true`, and nothing in the shape consults `CalendarDate`'s internals. `Commitment`, the one
+  consumer of `Schedule`, delegates rather than switches and compiles unchanged.
 - **Specs:** `openspec/specs/schedule/spec.md` at archive time, and nothing else — CI check 2 has
   exactly one claimed capability.
-- **Docs:** `docs/adr/1010-*.md` and two `CONTEXT.md` entries, both written at Stage 4 rather than
+- **Docs:** `docs/adr/1014-*.md` and two `CONTEXT.md` entries, both written at Stage 4 rather than
   at archive.
 - **Tests:** ten acceptance tests in the existing `Tests/DayByDayKitTests/`, one per scenario, taken
-  one at a time. The forty-five that pass today must all still pass; none may change.
+  one at a time. The sixty-four that pass today — forty-five from #8, #9 and #10 and nineteen from
+  #42 — must all still pass; none may change.
 - **Repository configuration:** none. The package, the CI job and the `@Test("...")` reader all
   exist and have run green through three Stories.
-- **What this leaves undone, said plainly:** after this change the engine can express every one of
-  the owner's day-one commitments, and can still not tell him that reading is finished for the week.
+- **What this leaves undone, said plainly:** after this change a `Commitment` can be formed for
+  every one of the owner's day-one commitments, and the engine can still not tell him that reading
+  is finished for the week.
   That is the day screen's work and it needs a tick store; this change does not pretend otherwise
   and the spec says so.

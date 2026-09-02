@@ -1,4 +1,4 @@
-# 1010. A weekly quota is due every day, and completion is not a schedule question
+# 1014. A weekly quota is due every day, and completion is not a schedule question
 
 - Status: accepted
 - Date: 2026-09-02
@@ -16,9 +16,9 @@ The first three fit it without argument, because each is a function of the calen
 fourth does not obviously fit it at all, and the design documents of #8, #9 and #10 each ended with
 the same sentence: *"#11 may still not fit this seam — a weekly quota needs tick history."*
 
-The reason is the product behaviour the shape comes from. `docs/parking-lot.md` records it in the
-owner's words: *"reading — an obligation of three times a week, any nights, open until the week
-turns over."* Read literally, such a commitment is due until three completions exist and then quiet
+The reason is the product behaviour the shape comes from. `docs/backlog.md` § *Decided* records it
+in the owner's words: *"reading 3× a week, any nights, open until the week turns over."* Read
+literally, such a commitment is due until three completions exist and then quiet
 until the week turns — which is a function of a date **and** of everything ticked before it. That is
 not what ADR-1004 put at the seam, and answering it there would break the writable past `CONTEXT.md`
 insists on: ticking today would change what yesterday's screen says about yesterday.
@@ -48,13 +48,14 @@ Three consequences are part of the decision rather than incidental to it:
   `isDue(on: CalendarDate) -> Bool`. Widening it to take a completion count was considered and
   rejected below.
 - **A quota is one to seven.** Zero is a commitment with nothing to do and eight is a promise no
-  week can keep, because a day records at most one completion of a commitment. Out-of-range numbers
+  week can keep, because a day holds at most one record of a commitment — `CONTEXT.md` **Record**,
+  agreed with the owner on 2026-09-02. Out-of-range numbers
   are refused at construction, the stance `CalendarDate`, `DayOfMonth` and `DayInterval` already
   take.
 
-This ADR takes effect when the Story that carries it merges. It records an answer the repo owner
-gives at G4, alongside the change folder it belongs to; if that answer had been *wait for ticks*,
-this file would have been deleted with the branch rather than superseded.
+This ADR takes effect when the Story that carries it merges. The repo owner's G4 signature on the
+change folder it belongs to is its acceptance; if G4 declines, this file goes with the branch rather
+than being superseded.
 
 ## Consequences
 
@@ -68,8 +69,9 @@ this file would have been deleted with the branch rather than superseded.
   it, and no signature has to change for it to exist.
 - **Where a week begins is still undecided, and this decision is why.** Because a quota is due on
   every date, no week boundary is ever consulted, so the question cannot be settled by any test in
-  this capability. It stays in `docs/parking-lot.md` for the first Story that counts ticks within a
-  week. This corrects three earlier design documents that assigned the question to the quota Story.
+  this capability. It stays in `docs/open-questions.md`, inside *Week turnover*, for the first Story
+  that counts ticks within a week. This corrects three earlier design documents that assigned the
+  question to the quota Story.
 - **Reversing this is expensive**, which is why it is an ADR rather than a line in a design document
   that gets archived: the alternatives all touch either the signature every rule shape shares or the
   vocabulary the product is defined in.
@@ -97,7 +99,10 @@ over that pair, which is the enum that already exists with one more layer around
 bought more cheaply by the spec stating what `true` does and does not mean.
 
 **Ship nothing until ticks exist.** Genuinely defensible: a shape whose number nothing reads is a
-data carrier, not behaviour. Rejected because the wait has no end date — no tick capability, Story
-or spec exists, and `FEAT: day-screen` has not been decomposed — while the next Story on the tracker
-defines a commitment as a name and a schedule, and without this shape would ship a commitment type
-unable to express one of the eight commitments the product was specified from.
+data carrier, not behaviour. Rejected because waiting changes nothing at this seam. Ticks now have
+a Feature and a Story — `FEAT: record` (#53), `add-tick-record` (#55) — but the seam takes a
+calendar date (ADR-1004) and the `commitment` spec forbids due-ness from considering whether a
+commitment has been ticked, so a quota Story written after #55 would arrive at this same decision
+with the same two requirements. `add-commitment-type` (#42) shipped with a delegation rule that
+reaches any later shape unchanged, so nothing else is waiting on this either; deferral would only
+move the day the eighth commitment on the owner's day-one list can be formed as a `Commitment`.

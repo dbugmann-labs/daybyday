@@ -11,22 +11,41 @@ and `CONTEXT.md` fixes what due-ness is: *"whether a commitment is due is a ques
 date, not of the present moment."* Motivation is in `proposal.md`; the behaviour contract is in
 `specs/schedule/spec.md` and is not restated here.
 
-**What was measured on this machine on 2026-09-02 rather than recalled**, because a design that
-claims a seam survives should show the ground it stands on:
+**This folder was written twice.** The first pass, on 2026-09-02, went out with a two-question round
+and was overtaken before it was answered: `add-commitment-type` (#42) merged and archived the same
+day, the parking lot was replaced by `docs/backlog.md` and `docs/open-questions.md` (ADR-1010), and
+`FEAT: record` (#53) was cut with two Stories under it. The second pass re-measured everything below
+against that `main`, and § *Open Questions* says what became of the round.
 
-- `swift test` in `src/DayByDayKit` reports **45 tests passing**, on Apple Swift 6.3.3
-  (`swiftlang-6.3.3.1.3`). That is the baseline this change may not disturb.
-- `Schedule` today is three cases and `isDue(on:)` is a three-way switch over them; `CalendarDate`
-  exposes `year`, `month`, `day`, `weekday`, `daysInMonth` and `days(until:)`, and every one of
-  those six is **internal**. Nothing outside the module can read a date's parts.
-- Nothing in this repository consumes `Schedule`. There is no app target, no commitment type — that
-  is #42, not started — and no exhaustive `switch` over the enum outside the module.
-- No tick exists anywhere: not in `src/`, not in `openspec/specs/`, not as a Feature or Story on the
-  tracker. `FEAT: day-screen` (#27) has not been decomposed. **"After ticks exist" is not a date;
-  it is an unscheduled future.** That fact is load-bearing for the question below.
-- `add-commitment-type` (#42) declares no blocking edge, so it can be worked whether or not this
-  Story lands. What it cannot do without this Story is express "reading 3x a week", which is one of
-  the eight items on the owner's day-one list in `docs/parking-lot.md`.
+**What was measured on this machine on 2026-09-02, on the rebased branch, rather than recalled**,
+because a design that claims a seam survives should show the ground it stands on:
+
+- `swift test` in `src/DayByDayKit` reports **64 tests passing**, on Apple Swift 6.3.3
+  (`swiftlang-6.3.3.1.3`): the 45 from #8, #9 and #10 and the 19 #42 added. That is the baseline
+  this change may not disturb.
+- `Schedule` today is three cases and `isDue(on:)` is a three-way switch over them, and that switch
+  is **the only `switch` in the package**, sources and tests alike. `CalendarDate` exposes `year`,
+  `month`, `day`, `weekday`, `daysInMonth` and `days(until:)`, and every one of those six is
+  internal. Nothing outside the module can read a date's parts.
+- **`Schedule` now has one consumer: `Commitment`**, inside the same module, which stores one as an
+  internal property and answers `isDue(on:)` by applying its kept-from floor and then delegating to
+  `schedule.isDue(on:)`. It does not switch over the enum, so a new case reaches it with no edit.
+  That is not an accident of the implementation: `openspec/specs/commitment/spec.md` requires that
+  delegation *"holds for every schedule shape the `schedule` capability defines and for every shape
+  added to it later, without this requirement changing,"* and #42's own design lists *"does the
+  fourth rule shape (#11) need anything from this delta? No."* This change therefore touches no
+  file in `commitment` and claims no second capability.
+- **A tick now has a Feature and two Stories, and still no spec and no code.** `FEAT: record` (#53)
+  was accepted at G1 and G2 on 2026-09-02 with #55 `add-tick-record` — blocked only by #42, so it is
+  unblocked today — and #56 `add-record-store` behind it. There is no `openspec/specs/record/`, no
+  change folder for either, and nothing in `src/` that records anything. "After ticks exist" is now
+  a named Story rather than an unscheduled future, and § *Open Questions* says why that does not
+  change what this delta can say.
+- `CONTEXT.md` now defines **Record** as *"at most one per commitment per day"*, agreed with the
+  owner at the first grooming pass on 2026-09-02, and **Tick** as being *"of a due commitment: a day
+  on which the commitment is not due takes no tick."* Both were written after this folder's first
+  pass, and both bear on it directly — the first is what the `1...7` ceiling rests on, the second is
+  why a quota must answer *due* on every day a tick might be recorded.
 
 Nothing else needed measuring. This is the first rule shape in the capability that performs **no
 calendar arithmetic at all**, so there is no Foundation call to pin down, which is why this design
@@ -48,8 +67,12 @@ has no table of measurements where #9's and #10's did.
 - Moving, widening or wrapping `Schedule.isDue(on:)`. If this Story needed the seam to change, #8's
   claim was wrong and that is a finding, not a refactor. It did not; the finding is recorded in
   § *Decisions* either way.
-- Ticks, a tick store, counting completions, or any predicate taking a count. Nothing has built one
-  and inventing an argument no caller can supply is speculation, not design.
+- Touching `Commitment` or the `commitment` capability. Delegation is already required to reach
+  through to shapes that do not exist yet, and it does, so there is nothing to add there and a
+  scenario placed there would claim a second capability for no behaviour of its own.
+- Ticks, a tick store, counting completions, or any predicate taking a count. #55 is the Story that
+  builds the first of those, and inventing an argument no caller can yet supply is speculation, not
+  design.
 - Deciding where a week begins. It cannot be observed anywhere in this change, so it cannot be
   specified here — see § *Open Questions*, which corrects three earlier design documents that
   assigned the question to this Story.
@@ -90,9 +113,15 @@ public struct WeeklyQuota: Hashable, Sendable {
 The four validity scenarios in the delta observe that initializer; the other six construct a
 `Schedule` and a `CalendarDate` and assert on the `Bool` that comes back. No process is spawned, no
 global stream is captured, and `WeeklyQuota.timesPerWeek` stays internal, matching `DayOfMonth.day`
-and `DayInterval.days` — the read-back asymmetry `docs/parking-lot.md` recorded on 2026-08-31 now
-covers three shapes rather than two, and the first Story that draws a rule on screen widens all
-three in one delta.
+and `DayInterval.days` — the read-back asymmetry `docs/open-questions.md` § *Known gaps* records now
+covers three shapes rather than two (four things, counting `Commitment`'s two internal fields), and
+the first Story that draws a rule on screen widens all of them in one delta.
+
+`Commitment` is the package's other seam and this change does not attach to it. It does not need to:
+a `Commitment` on a `.weeklyQuota` schedule answers *due* from its kept-from day onward and *not
+due* before it, exactly as it does on the other three shapes, because it delegates and the
+`commitment` spec requires it to. Nothing here can observe that without restating a requirement
+that has already passed G4, so nothing here tries to.
 
 `case weeklyQuota(WeeklyQuota)` repeats the type's name for the same reason
 `case dayOfMonth(DayOfMonth)` does: the case is the shape and the payload is its one number. The
@@ -113,7 +142,10 @@ answered elsewhere.** The reasoning is that a schedule answers *which days a com
 and the honest answer for "3 times a week, any nights" is *all of them*. The quota's number is a
 second, different fact about the commitment — how many of those days must end in a tick — and it is
 not a fact about a date at all. `CONTEXT.md` already draws that line: due-ness is asked of a date,
-and a date does not know what was done.
+and a date does not know what was done. Since the first pass it has drawn a second one that points
+the same way: a tick is *of a due commitment*, and a day on which the commitment is not due takes no
+tick. A quota that answered *not due* on any day would be a day on which reading could not be
+recorded — which is the opposite of "any nights".
 
 The cost is precise and worth saying out loud: `.weeklyQuota(3)` and `.weeklyQuota(7)` and
 `.weekdays(all seven)` are indistinguishable through the seam. This change therefore adds a case
@@ -128,30 +160,34 @@ preference.** `isDue(on:)` takes one calendar date; a quota answered this way is
 date *and* a commitment's entire history, which is not what ADR-1004 put at the seam and not what
 the other three shapes take. It also breaks the writable past outright: ticking today would change
 what yesterday's screen says about yesterday, which `CONTEXT.md` forbids in as many words. #10
-rejected a last-tick interval for exactly this reason and the owner confirmed it on 2026-08-31, so
-this is a line the product has already drawn once.
+rejected a last-tick interval for exactly this reason and the owner confirmed it on 2026-08-31, and
+#42 has since written it into a requirement: a commitment's due-ness *"MUST NOT consider … whether
+the commitment has been ticked."* This is a line the product has now drawn twice.
 
 *Alternative — widen the seam so it can take a completion count*, e.g.
 `isDue(on: CalendarDate, completedThisWeek: Int)`. Rejected on two grounds. It makes every one of
 the other three shapes carry a parameter they cannot use, which is the tax #10 refused to pay when
-it declined to give the other shapes a start date. And no caller can supply the argument: no tick
-record exists in this repository, so the parameter would be answered `0` by every test and every
-future caller until something built one. Designing a signature around a value nothing can compute is
-speculation with an API attached.
+it declined to give the other shapes a start date, and it would now also break `Commitment`, the one
+caller that exists. And no caller can supply the argument: no tick record exists in this repository,
+so the parameter would be answered `0` by every test and every caller until #55 built one — and
+when it does, the commitment spec forbids that count from reaching this predicate anyway. Designing
+a signature around a value nothing can compute and nothing may pass is speculation with an API
+attached.
 
 *Alternative — take the quota out of `Schedule` and give it a type of its own*, so that no one can
 ask `isDue` of a quota and be misled by the `true`. This is the most tempting of the three, and it
 is the one a reviewer should push on. It is rejected because it contradicts vocabulary the owner has
 already agreed: `CONTEXT.md` records four *schedule* shapes and names the quota as one of them, and
-`docs/parking-lot.md` has "four rule shapes cover all of it" in the owner's own framing. It also
-moves the problem rather than solving it: a commitment would then hold either a schedule or a quota,
-and every consumer would have to switch over the pair — which is the enum that already exists, with
-one extra layer. The safety it buys is bought more cheaply by the spec saying, normatively, what
-`true` does and does not mean.
+`docs/backlog.md` § *What day one looks like* has the owner's own framing of the four shapes as the
+whole list. It also moves the problem rather than solving it, and now at a real cost: `Commitment`
+holds exactly one `Schedule` by a requirement that has passed G4, so a commitment holding "a
+schedule or a quota" would reopen the `commitment` spec — and every consumer would still switch over
+the pair, which is the enum that already exists with one extra layer. The safety it buys is bought
+more cheaply by the spec saying, normatively, what `true` does and does not mean.
 
-*Alternative — do not ship this shape until ticks exist.* Genuinely defensible, and it is the one
-thing here that is a preference rather than a fact, so it is question 1 of the round below rather
-than a decision taken in this section.
+*Alternative — do not ship this shape until ticks exist.* The first pass put this to the owner as a
+question, on the ground that it was a preference. It is withdrawn in § *Open Questions*, because on
+the rebased `main` it turns out to be settled by a fact: ticks cannot change what this delta says.
 
 ### The limitation is a requirement, not a design note
 
@@ -167,18 +203,19 @@ showing on all seven days — instead of describing only the part that works. #9
 when it wrote the four-schedules-collide-in-February consequence into the spec rather than hiding
 it.
 
-### One through seven, because a day holds one tick
+### One through seven, because a day holds one record
 
 `case weeklyQuota(Int)` would let 0 and 8 through. Zero is a commitment with nothing to do — a rule
 that is never satisfiable and never explains why. Eight or more is worse: it is a promise no week
-can keep, because `CONTEXT.md` defines a tick as recording *that* a due commitment was done, one
-record against one day, and `docs/parking-lot.md` draws the contrast explicitly by listing protein —
-*"a number entered several times a day that accumulates rather than overwrites"* — as a different
-kind of thing, and one outside this Epic. Seven days, at most one tick each, so at most seven.
+can keep, because `CONTEXT.md` now defines a **Record** as *"at most one per commitment per day"*,
+agreed with the owner on 2026-09-02, and `docs/backlog.md` B-002 keeps the one thing that
+accumulates within a day — protein — as a want of a different kind, outside this Epic. Seven days,
+at most one record each, so at most seven.
 
-That upper bound is the one place this change reasons from something not yet built. It is a
-deliberate, small bet, and § *Open Questions* records what would move it. The lower bound needs no
-such argument: zero is refused for the same reason `DayOfMonth` refuses zero.
+The first pass had to argue that bound from a tick's definition and a parking-lot contrast, and it
+said so: it was the one place the change reasoned from something not yet written down. It no
+longer is. The lower bound needs no such argument: zero is refused for the same reason `DayOfMonth`
+refuses zero.
 
 `Int.max` gets no scenario of its own, for the reason #9 gave: the `1...7` guard refuses it like any
 other out-of-range number, and a `WeeklyQuota` never becomes a `DateComponents`, so Foundation's
@@ -186,42 +223,45 @@ other out-of-range number, and a `WeeklyQuota` never becomes a `DateComponents`,
 
 ### An ADR, because three design documents have already needed this answer
 
-`docs/adr/1010-a-weekly-quota-is-due-every-day.md` records the first decision above. It meets all
+`docs/adr/1014-a-weekly-quota-is-due-every-day.md` records the first decision above. It meets all
 three of `docs/adr/README.md`'s tests: reversing it means widening the seam for every shape or
-moving the quota out of `Schedule`; `.weeklyQuota(3).isDue(on:)` answering `true` on a Thursday will
-surprise every future reader who has not been through this reasoning; and the alternatives were real
-enough that one of them goes to the owner as a question.
+moving the quota out of `Schedule`, and now reopening `commitment` either way;
+`.weeklyQuota(3).isDue(on:)` answering `true` on a Thursday will surprise every future reader who
+has not been through this reasoning; and the alternatives were real enough that the first pass put
+one of them to the owner.
 
-It is written on the branch and merges with it, which is the precedent ADR-1004 set — that file
-landed in #8's implementation commit, not in a pass of its own. `Status: accepted` is therefore
-written now and the acceptance is the owner's G4 signature on this diff, which the ADR says in as
-many words. If question 1 comes back as *wait*, the file is deleted with the branch rather than
-superseded: `docs/adr/README.md`'s immutability rule binds accepted records in `main`, and nothing
-here has reached it.
+It was numbered 1010 when first written; ADR-1010 was taken on `main` by the backlog decision the
+same day, so it is 1014 now, after #42's ADR-1013. It is written on the branch and merges with it,
+which is the precedent ADR-1004 set — that file landed in #8's implementation commit, not in a pass
+of its own. `Status: accepted` is therefore written now and the acceptance is the owner's G4
+signature on this diff, which the ADR says in as many words. If G4 declines it, the file goes with
+the branch rather than being superseded: `docs/adr/README.md`'s immutability rule binds accepted
+records in `main`, and nothing here has reached it.
 
 ## Risks / Trade-offs
 
 - **This change adds a case that carries data and almost no behaviour.** A reviewer at G7 will
   reasonably ask what it bought. → It is not disguised: `proposal.md` says it, this document says
-  it, and the alternative — deferring the whole Story — is question 1 of the round rather than a
-  choice made quietly. What it buys is concrete and checkable: `add-commitment-type` (#42) can then
-  express every one of the eight day-one commitments instead of seven.
+  it, and § *Open Questions* says why deferring it was withdrawn as a question. What it buys is
+  concrete and checkable: `Commitment` can then be formed for every one of the eight day-one
+  commitments instead of seven, and `FEAT: schedule` (#6) closes.
 - **A confident `true` is the failure mode #9 named**, and this shape produces one on four days out
   of seven for a three-times-a-week commitment. → Mitigated the only way it can be at this seam: by
   making the spec say so normatively, so the first consumer meets the limitation as a requirement
   rather than as a surprise. It is not mitigated away, and pretending otherwise would be worse than
   the risk.
-- **The `1...7` ceiling rests on "a day holds at most one tick", which is not yet specified
-  anywhere.** → Argued above from `CONTEXT.md` and `docs/parking-lot.md` rather than assumed, and
-  recorded in § *Open Questions* with what it would cost to move: one requirement, one scenario and
-  one guard. It is the cheapest thing in the change to be wrong about.
+- **`add-tick-record` (#55) is unblocked and may land first, or alongside.** → Neither order costs
+  anything here. Nothing in this change reads a tick and nothing in #55 can switch over `Schedule`
+  without contradicting the `commitment` spec's delegation rule, so the two touch different files
+  and neither rebases into the other's delta. If #55's grill finds it needs the quota shape to state
+  a scenario, that is a blocking edge for `orchestrator` to declare, not a change to this folder.
 - **Six scenarios asserting the same `true`.** → Four of the six pin calendar boundaries — a week
   boundary, a leap day, a year turn, and both ends of the supported range — which is exactly where a
   later implementation that starts consulting the calendar would break. `tasks.md` says plainly that
   they are pins rather than drivers, and that only the first is expected to run red.
 - **`WeeklyQuota` carries the same read-back asymmetry `DayOfMonth` and `DayInterval` do.** → Left
-  as is, deliberately; the parking-lot entry of 2026-08-31 now describes three shapes, and the
-  eventual widening delta should cover all three.
+  as is, deliberately; the `docs/open-questions.md` § *Known gaps* entry now describes three shapes,
+  and the eventual widening delta should cover all three.
 - **The week boundary leaves this Story unanswered after three design documents said it would be
   answered here.** → Reported rather than papered over, in § *Open Questions*. Writing a normative
   "a week begins on Monday" that no scenario in this change could observe would be an idea
@@ -229,54 +269,50 @@ here has reached it.
 
 ## Migration Plan
 
-None. Nothing is stored yet, no `Schedule` value exists outside a test, and the delta adds
-requirements without touching one. `Schedule` gaining a case is source-breaking only for an
-exhaustive `switch` outside the module, and there is none — verified above rather than assumed.
-
-## Questions for you
-
-1. **Ship the fourth shape now, or wait until ticks exist?** As written, this change gives
-   `Schedule` a `.weeklyQuota` case that is due on every date and whose number nothing yet reads.
-   The alternative is to close or park #11 until a tick capability exists, and let the Story be
-   re-grilled then, when the quota can be given its full meaning in one piece.
-   - *Recommended:* **ship it now.** Three things decide it. `add-commitment-type` (#42) is the next
-     Story on the tracker and, without this case, ships a commitment type that cannot express
-     "reading 3x a week" — one of your eight day-one items. Waiting is not waiting for a scheduled
-     event: no tick Feature, Story or spec exists, and `FEAT: day-screen` (#27) has not been
-     decomposed, so "later" has no date attached to it. And the thing that makes shipping safe is in
-     the delta rather than in a design note — the spec states normatively that this capability does
-     not answer whether a week's quota has been met, so the day screen inherits an explicit
-     obligation rather than a trap.
-   - *If you say wait:* the whole change folder goes. There is no smaller version of it — a quota
-     case with no due-ness answer is not a thing `Schedule` can hold, since the enum must be total.
-     #11 would be marked blocked behind a tick Story that does not exist yet, `FEAT: schedule` (#6)
-     stays open with one Story outstanding, and ADR-1010 is deleted rather than written. Nothing
-     else in the repository changes, and nothing already merged depends on this.
-
-2. **Is a quota capped at seven a week, or can it ask for more?** The delta refuses 8 and above,
-   reasoning that a day records at most one tick of a commitment, so a week holds at most seven and
-   an eighth could never be met.
-   - *Recommended:* **cap it at seven.** A commitment that can never be kept is the same failure as
-     one that never comes due, which this capability already refuses in #9's short-month rule. Seven
-     also gives the ceiling a meaning a picker can show — "every day".
-   - *If you say uncapped:* the second requirement loses its upper bound and its 8-is-refused
-     scenario, becoming "one or more times a week"; the guard in the implementation drops to
-     `>= 1`, matching `DayInterval`. One requirement and one scenario move, the first requirement
-     and all six of its scenarios are untouched, and it implies a day can carry more than one tick
-     of the same commitment — which is a bigger statement about the product than about this Story,
-     so say it deliberately if you say it.
+None. Nothing is stored, no `Schedule` or `Commitment` value exists outside a test, and the delta
+adds requirements without modifying one. `Schedule` gaining a case is source-breaking only for an
+exhaustive `switch` over it, and the only such switch in the repository is `isDue(on:)` itself —
+measured on the rebased branch, sources and tests, rather than assumed. `Commitment`, the one
+consumer, delegates rather than switches and compiles unchanged. The `commitment` spec is not
+modified, so CI check 2 sees exactly one claimed capability.
 
 ## Open Questions
 
-None left open by the grill. Two went to you as the round above, because both are preferences whose
-answers change the delta; the rest were settled here or in the delta, and the ones this shape
-deliberately does not answer are listed with their reasons.
+None. The first pass raised two as a question round; both were overtaken by what landed on `main`
+on 2026-09-02, and both are withdrawn here, on facts rather than on a guess at the owner's
+preference. If either withdrawal is wrong, G4 is where to say so, and § *Decisions* records what
+moves in each case.
+
+1. **Ship the fourth shape now, or wait until ticks exist?** — **withdrawn: waiting cannot change
+   this delta, so there is nothing for the answer to decide.** The first pass recommended shipping
+   on the ground that `add-commitment-type` (#42) needed this case to express "reading 3x a week";
+   #42 shipped without it, on a delegation rule that reaches through to shapes added later, so that
+   argument is gone and is not re-made. What replaces it is stronger and is not a preference. Ticks
+   now have a Feature (#53) and an unblocked Story (#55), so "wait" has a date for the first time —
+   and it would still buy nothing: `Schedule.isDue(on:)` takes a calendar date (ADR-1004), and the
+   `commitment` spec now requires that due-ness *"MUST NOT consider … whether the commitment has
+   been ticked."* A quota Story grilled after #55 lands would therefore be answering the same
+   question at the same seam with the same two requirements. The only thing deferral changes is
+   *when* the eighth day-one commitment can be formed as a `Commitment`, which is sequencing, and
+   sequencing is what the owner exercised by cutting this Story at G2 and asking for Stage 4 on it
+   twice. Declining G4 is still available and still means what the first pass said: the folder and
+   ADR-1014 go, #11 is blocked behind the first Story that renders a quota's state, and #6 stays
+   open with one Story outstanding.
+2. **Is a quota capped at seven a week, or can it ask for more?** — **withdrawn: settled by
+   `CONTEXT.md`.** The first pass raised it because the ceiling rested on "a day holds at most one
+   tick", which was not written down anywhere. It now is — **Record** is *"at most one per
+   commitment per day"*, agreed with the owner at the grooming pass that cut `FEAT: record` — so an
+   eighth time in a week is unrecordable by definition, and refusing it is the same refusal that
+   stops a 32nd day of the month. Lifting the cap would now contradict agreed vocabulary rather than
+   express a preference, and if the owner wants a day to carry more than one record of a commitment,
+   that is a change to **Record** and to #55's delta, which is where it should be said.
 
 Settled by finding out rather than by asking: that the seam does not have to move (all four shapes
-fit the signature #8 fixed); that no exhaustive `switch` outside the module breaks when the enum
-grows; that `add-commitment-type` declares no blocking edge on this Story; and that no tick exists
-anywhere in the repository or on the tracker, which is what turns "wait for ticks" from a schedule
-into an open-ended deferral.
+fit the signature #8 fixed); that `Commitment` is the only consumer of `Schedule` and reaches the new
+case by delegation, with no switch anywhere in the package but `isDue(on:)`; that the `commitment`
+spec promises exactly that for shapes added later, so this change claims one capability; that #42 is
+merged and archived, so this Story blocks nothing and is blocked by nothing; and that a tick now has
+a Feature and a Story but no spec and no code.
 
 Deliberately not answered here, each with the reason:
 
@@ -285,17 +321,26 @@ Deliberately not answered here, each with the reason:
   decision above a weekly quota is due on every date, so no week boundary is ever consulted, nothing
   in this change can observe one, and no scenario could assert one. A normative "a week begins on
   Monday" would therefore be a requirement no test could hold, which is precisely the "obvious idea
-  that is not yet real" `AGENTS.md` keeps in `docs/parking-lot.md` instead. The question belongs to
-  the first Story that counts ticks within a week, which is where it becomes observable. The
-  parking-lot entry stays where it is; this change does not write to that file.
-- ***Can a day carry more than one tick of the same commitment?*** Argued above as no, from
-  `CONTEXT.md`'s definition of a tick and the parking lot's explicit contrast with protein, and that
-  is what the `1...7` ceiling rests on. It is question 2's real subject and it is not settled by
-  this Story beyond that bound — a tick capability will have to state it properly.
-- ***What happens to an unmet quota when the week turns over?*** `docs/parking-lot.md` has carried
-  this since 2026-08-28 and it is untouched here. It is a question about what is recorded, not about
-  which days a commitment runs on, so nothing in this capability can answer it.
+  that is not yet real" `AGENTS.md` keeps out of specs. The question belongs to the first Story that
+  counts ticks within a week, which is where it becomes observable. `docs/open-questions.md`
+  § *Open product questions* carries it inside *Week turnover* — "the answer changes what a week
+  *is*" — without naming the boundary in so many words; this change does not write to that file.
+- ***What happens to an unmet quota when the week turns over?*** `docs/open-questions.md` has
+  carried it as *Week turnover* since the parking lot did, and it is untouched here. It is a
+  question about what is recorded, not about which days a commitment runs on, so nothing in this
+  capability can answer it.
+- ***What does a quota mean in a partial first week?*** A commitment on 3 times a week, kept from a
+  Friday, is due on Friday, Saturday and Sunday of its first week and on no earlier day, because the
+  kept-from floor (ADR-1013) applies ahead of every shape. Whether three are still owed in a week
+  with three days in it, or fewer, is a counting question for the Story that renders a quota's
+  state, and it belongs with *Week turnover*. This capability's answer — due on each of those three
+  days — is already required by `commitment` and is not restated here.
+- ***May a fourth tick be recorded in a week whose quota is three?*** The schedule says yes: every
+  day is due, and a tick is of a due commitment. Whether the record capability wants to refuse or
+  merely count it is #55's or a later Story's to say; nothing in `schedule` can distinguish the
+  fourth from the first, and the delta says so.
 - ***Is "every day" a weekday set of seven, an interval of one, or a quota of seven?*** All three,
-  now, and that remains fine for the reason #10 gave: two rules having the same extension is not a
-  contradiction, and it becomes a real question only when a screen has to name a rule back to the
-  user. This change adds a third way to say it and no new problem.
+  now, and that remains fine for the reason #10 gave and `docs/open-questions.md` § *Settled*
+  records: two rules having the same extension is not a contradiction, and it becomes a real
+  question only when a screen has to name a rule back to the user — `docs/backlog.md` B-015 already
+  lists it as that screen's open point. This change adds a third way to say it and no new problem.

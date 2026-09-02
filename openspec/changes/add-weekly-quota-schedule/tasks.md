@@ -7,8 +7,8 @@
   `cd src/DayByDayKit && swift build` exiting 0.
 - [ ] 1.2 Add `case weeklyQuota(WeeklyQuota)` to `Schedule` and a branch for it in `isDue(on:)` whose
   body is `fatalError("not implemented")`. The seam's signature does not change. Verify with
-  `cd src/DayByDayKit && swift build` exiting 0 and `swift test` still reporting the 45 tests from
-  #8, #9 and #10 passing.
+  `cd src/DayByDayKit && swift build` exiting 0 and `swift test` still reporting the 64 tests from
+  #8, #9, #10 and #42 passing.
 - [ ] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
   `0/10 covered` for this change and names `"a weekly quota is due on every date of a week"` as
   next.
@@ -44,13 +44,13 @@ eight does run red, that is a finding worth reporting, not a task that went well
 
 ## 3. Gates
 
-- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 55 tests passing and no failures — the ten here
-  plus the 45 from #8, #9 and #10, none of which may change — and `pnpm run verify` exits 0.
+- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 74 tests passing and no failures — the ten here
+  plus the 64 from #8, #9, #10 and #42, none of which may change — and `pnpm run verify` exits 0.
 - [ ] 3.2 `pnpm exec openspec validate add-weekly-quota-schedule --strict` exits 0 and
   `pnpm run checks` reports scenario coverage as 10 of 10.
 - [ ] 3.3 `/code-review` reports nothing unresolved on either axis (**G7**).
 
-`docs/adr/1010-a-weekly-quota-is-due-every-day.md` is **not** a task here. It was written at Stage 4
+`docs/adr/1014-a-weekly-quota-is-due-every-day.md` is **not** a task here. It was written at Stage 4
 with the rest of this folder and needs no further edit — `docs/adr/**` is the spec-author's to write
 and not the implementer's, and the ADR is accepted by the same G4 signature that approves this
 change folder.

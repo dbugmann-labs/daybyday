@@ -192,8 +192,8 @@ and every month has exactly one due date.
 **Weekly quota** — the fourth and last of the schedule shapes: a number of times a commitment is
 owed within a week, on any days of it. "Reading 3x a week" is one. It is the only shape that
 constrains *how many times* rather than *which days*, so it runs on every day of every week and its
-number says nothing about which of them. That number is one to seven: a day records at most one
-completion of a commitment, so a week holds at most seven, and a quota of seven means one on each
+number says nothing about which of them. That number is one to seven: a day holds at most one
+record of a commitment, so a week holds at most seven, and a quota of seven means one on each
 day — which a weekday set of all seven and an interval of one day also mean, and three rules having
 the same effect is not a contradiction. Whether a week's quota has been met is not something the
 schedule knows, because it is a fact about ticks rather than about a date; a quota of seven and a
