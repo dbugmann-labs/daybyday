@@ -104,9 +104,11 @@ for this.
   `DayView` that stores the list it was handed and counts it towards equality, which is the reading the
   requirement used to invite. Pinned rather than drove: synthesised equality already compares only
   `rows` and `date`, and the not-due commitment was already filtered out before either is populated.
-- [ ] 2.23 `two day views differing only in a tick for a commitment neither was handed are the same day
+- [x] 2.23 `two day views differing only in a tick for a commitment neither was handed are the same day
   view` — 2.8's input read through equality rather than through the row count: a tick the day view
-  never looks up leaves no mark on it. Fails a `DayView` that stores the whole `History`.
+  never looks up leaves no mark on it. Fails a `DayView` that stores the whole `History`. Pinned
+  rather than drove: `History` is consumed at construction into per-row `isKept` answers and is never
+  stored, so a tick for a commitment that produced no row never reaches either day view's rows.
 
 ## 3. Gates
 

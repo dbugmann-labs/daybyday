@@ -407,3 +407,25 @@ func twoDayViewsDifferingOnlyInACommitmentThatIsNotDueAreTheSameDayView() {
     #expect(!second.rows[0].isKept)
     #expect(first == second)
 }
+
+@Test("two day views differing only in a tick for a commitment neither was handed are the same day view")
+func twoDayViewsDifferingOnlyInATickForACommitmentNeitherWasHandedAreTheSameDayView() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.monday, .thursday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let noTicks = History()
+    var withATick = History()
+    withATick.add(Tick(run, on: monday)!)
+
+    let first = DayView(of: [gym], on: monday, in: noTicks)
+    let second = DayView(of: [gym], on: monday, in: withATick)
+
+    #expect(first.rows.map(\.name) == ["Gym"])
+    #expect(!first.rows[0].isKept)
+    #expect(second.rows.map(\.name) == ["Gym"])
+    #expect(!second.rows[0].isKept)
+    #expect(first == second)
+}
