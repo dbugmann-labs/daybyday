@@ -51,9 +51,10 @@ and #55's `tasks.md` did; a prediction here is not evidence.
 - [x] 2.6 `a day view holds no rows when none of the commitments is due` — a day-of-month and an
   interval commitment, neither due on 31 August 2026 (the arithmetic is in `design.md` § *Context*);
   an empty view is an answer, not an error. Pinned rather than drove.
-- [ ] 2.7 `a commitment whose schedule is due but which is kept from a later day has no row` — the
+- [x] 2.7 `a commitment whose schedule is due but which is kept from a later day has no row` — the
   ADR-1013 catch. An implementation that reaches past `Commitment.isDue(on:)` to `Schedule.isDue(on:)`
   passes 2.2 and fails only here. Two assertions: no row on 31 August, one row on 2 September.
+  Pinned rather than drove: 2.1's implementation already asks `Commitment.isDue(on:)`.
 - [ ] 2.8 `a tick for a commitment the day view was not handed adds no row` — pins that rows come
   from the commitments handed over and never from the history.
 - [ ] 2.9 `a tick on another date does not make the row say it is kept` — pins that the day view's

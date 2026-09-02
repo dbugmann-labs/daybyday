@@ -49,6 +49,22 @@ func aDayViewHoldsNoRowsWhenNoneOfTheCommitmentsIsDue() {
     #expect(dayView.rows.isEmpty)
 }
 
+@Test("a commitment whose schedule is due but which is kept from a later day has no row")
+func aCommitmentWhoseScheduleIsDueButWhichIsKeptFromALaterDayHasNoRow() {
+    let keptFrom = CalendarDate(year: 2026, month: 9, day: 2)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let history = History()
+
+    let onMonday = DayView(of: [gym], on: monday, in: history)
+    let onWednesday = DayView(of: [gym], on: wednesday, in: history)
+
+    #expect(onMonday.rows.isEmpty)
+    #expect(onWednesday.rows.map(\.name) == ["Gym"])
+}
+
 @Test("a commitment ticked on the date has a row that says it is kept")
 func aCommitmentTickedOnTheDateHasARowThatSaysItIsKept() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
