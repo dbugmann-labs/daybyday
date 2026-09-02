@@ -14,15 +14,9 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 - **Week turnover.** A quota of three reading nights, met twice by Sunday: does the unfinished
   third vanish, or is it recorded as a miss? Nothing in the day-one list decides it and the
   answer changes what a week *is*. Forced by the first Story that renders a quota's state.
-- **How far back the past stays writable**, and what a day before the commitment existed shows.
-  `CONTEXT.md` says the past is writable; it does not say how far, and "for ever" and "since the
-  commitment was created" are both defensible.
 
 ## Open technical decisions
 
-- **SwiftData or GRDB.** ADR-1001 chose Swift and SwiftUI and deliberately left persistence
-  open. Still open, and nothing has forced it: the rule engine is pure and stores nothing.
-  The Story that first persists a tick decides it, and it is worth an ADR when it does.
 - **When an ADR number is claimed.** Today it is taken at Stage 4, when the file is written,
   and merged at Stage 9 — so two branches open at once can both write the same number and
   neither learns of it until a rebase conflicts in `docs/adr/README.md`. Story #11 hit it twice
@@ -46,7 +40,25 @@ Things that are built, or deliberately not built, in a state someone will trip o
   app target can build a rule on the 25th and never recover the `25` to render "the 25th" in a
   row. `.weekdays(Set)` reads back fine, so the two shapes are asymmetric, and `DayInterval`
   carries the same asymmetry. Nothing needs it yet — no surface renders a rule — and the first
-  Story that does needs a delta widening it, not a bug fix.
+  Story that does needs a delta widening it, not a bug fix. Grew a fourth case with
+  `add-tick-record` (#55), 2026-09-02: a `History` gives back nothing but a yes or no, and a
+  `Tick` gives back neither its commitment nor its date. `add-record-store` (#56) was expected
+  to widen that and did not need to — the store lives in the same module and reads the internal
+  members — so the gap is still the screen's, and the widening is still owed by whichever Story
+  first renders a rule or a tick.
+- **The store must be opened under `Library/Application Support/`.** Owed by #56's design,
+  2026-09-02. `RecordStore` keeps the record at whatever place it is given and cannot enforce
+  the choice from where it sits; `Caches/` is purged by the system and `tmp/` is not backed up,
+  and either would silently lose the one thing the product promises to keep. Whichever Story
+  creates the app target chooses the place, and this is the line that says which.
+- **`RecordStore.init` can throw outside `RecordStoreError`.** Surfaced at #56's review,
+  2026-09-02. A place that exists but cannot be read as data — a directory, a file without
+  read permission, or on iOS a store protected by data protection when the app is launched
+  in the background before first unlock — escapes as a raw Foundation error rather than one
+  of the three declared cases, so a caller has nothing to match on. Every delta requirement
+  holds (it is still refused, and nothing is overwritten); what is missing is a fourth case in
+  the seam, which is a `design.md` edit and a second G4. Left deliberately, for the Story that
+  first meets it — realistically the app target or `day-screen` (#27) — to add with a delta.
 - **No UI smoke layer.** Surfaced at `day-screen`'s G1, 2026-08-31. Acceptance tests for the
   first screen attach at a view-model seam inside `DayByDayKit`, so nothing automated proves
   SwiftUI actually draws: a row left blank by a misspelled binding passes CI. The answer is one
@@ -61,6 +73,18 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
 ## Settled
 
+- 2026-09-02 — **the record is kept in one file, neither SwiftData nor GRDB.** One versioned JSON
+  file, written whole and atomically on every tick, at a place the app names. The record is a set
+  of (commitment, date) pairs that is already a value and fits in kilobytes for years; a file
+  adds no platform floor, no dependency and no model mirror of the engine types, and it is the
+  form a person can read and copy to a new phone. The trigger for reversing it is a tap that
+  measurably stalls on the write, and the file is then what a database imports from.
+  `docs/adr/1017-records-are-kept-in-one-file.md`, settled by `add-record-store` (#56).
+- 2026-09-02 — **the past is writable back to the day a commitment is kept from, and no
+  further.** Answered as a consequence rather than a choice: a tick exists exactly where the
+  commitment is due, and ADR-1013 already bounds that at the kept-from day. Whether a screen
+  offers all of it is `day-screen`'s (#27, B-016), not the record's. Settled by
+  `add-tick-record` (#55).
 - 2026-08-31 — **"every day" may be expressed two ways** and that is not a contradiction: an
   interval of one day and a weekday set of all seven say the same thing. `CONTEXT.md`
   § *Every N days*, settled by `add-every-n-days-schedule`.
