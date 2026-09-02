@@ -48,9 +48,9 @@ and #55's `tasks.md` did; a prediction here is not evidence.
   of 2.3, against a history that has taken no tick. Pinned rather than drove.
 - [x] 2.5 `a day view of no commitments at all has no rows` — the empty input, answered rather than
   refused. Pinned rather than drove.
-- [ ] 2.6 `a day view holds no rows when none of the commitments is due` — a day-of-month and an
+- [x] 2.6 `a day view holds no rows when none of the commitments is due` — a day-of-month and an
   interval commitment, neither due on 31 August 2026 (the arithmetic is in `design.md` § *Context*);
-  an empty view is an answer, not an error.
+  an empty view is an answer, not an error. Pinned rather than drove.
 - [ ] 2.7 `a commitment whose schedule is due but which is kept from a later day has no row` — the
   ADR-1013 catch. An implementation that reaches past `Commitment.isDue(on:)` to `Schedule.isDue(on:)`
   passes 2.2 and fails only here. Two assertions: no row on 31 August, one row on 2 September.

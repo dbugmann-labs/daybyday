@@ -32,6 +32,23 @@ func aCommitmentNotDueOnTheDateHasNoRow() {
     #expect(dayView.rows.isEmpty)
 }
 
+@Test("a day view holds no rows when none of the commitments is due")
+func aDayViewHoldsNoRowsWhenNoneOfTheCommitmentsIsDue() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let finances = Commitment(
+        name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom)!
+    let contactLensesStart = CalendarDate(year: 2026, month: 8, day: 25)!
+    let contactLenses = Commitment(
+        name: "Contact lenses", schedule: .everyNDays(DayInterval(days: 14)!, from: contactLensesStart),
+        keptFrom: contactLensesStart)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [finances, contactLenses], on: monday, in: history)
+
+    #expect(dayView.rows.isEmpty)
+}
+
 @Test("a commitment ticked on the date has a row that says it is kept")
 func aCommitmentTickedOnTheDateHasARowThatSaysItIsKept() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
