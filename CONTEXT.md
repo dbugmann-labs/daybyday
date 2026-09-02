@@ -146,7 +146,7 @@ commitment is not kept on that day, every other tick stands, and nothing remembe
 ever there — an untick is not a record of its own. Taking back a tick that was never there is
 nothing rather than an error. It exists because a tick is one tap on a phone, and a tap that cannot
 be undone turns every mis-tap into a permanent false record. Proposed 2026-09-02 at the grill of
-`add-tick-record` (#55), on the recommended answer to its question round.
+`add-tick-record` (#55) and settled by the owner the same day, in answer to its question round.
 
 **Day** — the unit the product is organised around. The landing screen is one day, and every
 record is keyed to a date rather than to the time it was entered.

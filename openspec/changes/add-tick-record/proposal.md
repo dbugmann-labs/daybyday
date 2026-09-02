@@ -14,10 +14,9 @@ is worth a Story of its own before any store or screen exists: what a tick is, w
 what a history answers are fixed here by requirement, so that the store persists a shape somebody
 signed rather than one it invented.
 
-One question in it is a preference rather than a fact and goes to the owner as a **question round**
-in `design.md` § *Questions for you*: whether a tick can be taken back in this Story. The change is
-written on the recommended answer — yes — and the round says exactly what leaves the delta if he
-says no.
+One question in it was a preference rather than a fact and went to the owner as a question round:
+whether a tick can be taken back in this Story. He answered yes on 2026-09-02, the recommended
+answer, and `design.md` § *Open Questions* records it as settled.
 
 ## What Changes
 
@@ -39,7 +38,7 @@ says no.
   has kept nothing; a tick of one commitment says nothing about another on the same date; a tick on
   one date says nothing about another date. Asking about a day the commitment is not due on is
   answered — *not kept* — rather than refused.
-- **Lets a tick be taken back**, on the round's recommended answer: an untick leaves the history as
+- **Lets a tick be taken back**, as the owner settled on 2026-09-02: an untick leaves the history as
   if that tick had never been, every other tick standing, and nothing remembers it happened. Taking
   back a tick that was never there is a no-op rather than an error.
 - Adds two public types to `DayByDayKit` beside `Commitment`. `Commitment` and `Schedule` do not
@@ -86,5 +85,5 @@ the same reason, one step further away. CI check 2 sees exactly one claimed capa
   this capability's. Under *Known gaps*, **A schedule's payload cannot be read back out** grows a
   fourth case: a `History` gives back nothing but a yes or no, and a `Tick` gives back neither its
   commitment nor its date — #56 needs both to persist anything, and widens them in its own delta.
-- **`CONTEXT.md`:** two terms added by this grill, **History** and **Untick**. The second stands or
-  falls with question 1 of the round.
+- **`CONTEXT.md`:** two terms added by this grill, **History** and **Untick**. The second stood on
+  the question round's one question, which the owner settled yes on 2026-09-02.

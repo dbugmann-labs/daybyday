@@ -157,17 +157,18 @@ for the file's owner to move.
 
 ### Taking a tick back
 
-**Chosen, on the round's recommended answer: a history lets a tick be removed, and remembers nothing
-of it.** The Story's sentence says *tick* and *read back*; it does not say *untick*, and the reasoning
-for adding it is in § *Questions for you* rather than repeated here. The design point is narrower:
+**Chosen, settled by the owner on 2026-09-02: a history lets a tick be removed, and remembers
+nothing of it.** The Story's sentence says *tick* and *read back*; it does not say *untick*, and the
+reasoning for adding it is under § *Open Questions* rather than repeated here. The design point is
+narrower:
 untick is `Set.remove`, one line, and its whole contract is *as though it had never been added* —
 which is why the last scenario of the delta compares a ticked-then-unticked history with an empty
 one. An implementation that kept a tombstone, a count, or a "was unticked" flag would fail it, and
 that is the one way this could go wrong.
 
-*Alternative — a tick is permanent in this Story, and taking one back is a later want.* This is what
-the delta becomes if the round's answer is no, and it is the smaller delta; § *Questions for you*
-says exactly what leaves.
+*Alternative — a tick is permanent in this Story, and taking one back is a later want.* The smaller
+delta, by one requirement and five scenarios, and the one the owner declined; § *Open Questions*
+records what it would have cost.
 
 ### No ADR
 
@@ -217,11 +218,19 @@ modified, so CI check 2 sees exactly one claimed capability.
 
 ## Open Questions
 
-None. One question was a preference rather than a fact and is put to the owner under
-§ *Questions for you*, with the change written on the recommended answer; it moves here as settled
-when the answer comes back. Everything else the grill turned up was a fact, and is closed here or in
-the delta:
+None. One question was a preference rather than a fact and went to the owner as a question round;
+he answered it on 2026-09-02 and it is settled first below. Everything else the grill turned up was
+a fact, and is closed here or in the delta:
 
+- *Can a tick be taken back in this Story?* **Yes — settled by the owner on 2026-09-02, on the
+  recommended answer.** The Story's sentence says *tick, and read back* and nothing about untick,
+  and no want in `docs/backlog.md` asked for one; but a tick is one tap on a phone, and a tap that
+  cannot be undone turns every mis-tap into a permanent false record in a product whose one promise
+  is an honest one. So the third requirement, *A tick can be taken back*, and its five scenarios
+  stay in the delta; `History.remove(_:)` stays in the seam; **Untick** stays in `CONTEXT.md`. The
+  alternative — a tick permanent in this Story and untick a later want — would have dropped the
+  delta to eighteen scenarios and cost #56 a second delta to both capabilities at the first mis-tap.
+  § *Taking a tick back* has the design point.
 - *Is a tick on a day the commitment is not due on refused, or recorded and flagged?* Refused. Agreed
   with the owner at the grooming pass on 2026-09-02 and written into `CONTEXT.md` § *Tick* then; the
   delta makes it a refusal at formation, § *A tick cannot be malformed*.
@@ -248,19 +257,3 @@ the delta:
   and of a tick's parts — and it is deliberately left to #56's delta, § *The seam*.
 - *Does the weekly quota (#11) need anything here?* No. A tick follows whatever `isDue` says; if the
   quota needs due-ness to consult the history, that is `commitment`'s seam and #11's problem.
-
-## Questions for you
-
-1. **Can a tick be taken back in this Story?** The Story's sentence is *tick, and read back*; it says
-   nothing about untick, and no want in `docs/backlog.md` asks for one. But *Entered where you stand*
-   makes a tick one tap on a phone, and a one-tap entry that cannot be undone turns every mis-tap
-   into a permanent false record — in a product whose one promise is an honest one.
-   - *Recommended:* yes, in this Story. It is one requirement, five scenarios, and one line of
-     implementation (`Set.remove`), and it fixes now that an untick leaves *nothing* behind — no
-     tombstone, no count — which is the thing a later Story might get wrong. #56 then persists a
-     shape that already knows how to forget, instead of needing a second delta to both capabilities
-     when the first mis-tap happens.
-   - *If you say no:* the third requirement, *A tick can be taken back*, and its five scenarios
-     leave the delta, which drops to eighteen; `History.remove(_:)` leaves the seam; **Untick** leaves
-     `CONTEXT.md`; and the want is captured with `/atlas idea` so it is not lost. Nothing else in the
-     delta moves.
