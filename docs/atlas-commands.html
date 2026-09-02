@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>:root{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>The Five Ways In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --paper:#E6E9EC;
+  --surface:#F2F4F6;
+  --sunk:#DCE0E4;
+  --ink:#131A20;
+  --muted:#5D686F;
+  --rule:#C0C7CD;
+  --signal:#AF3527;
+  --signal-wash:#F0DCD8;
+  --machine:#2A6459;
+  --machine-wash:#D7E5E1;
+  --idea:#414F79;
+  --idea-wash:#DFE3EE;
+  --sans:'Archivo',ui-sans-serif,system-ui,sans-serif;
+  --serif:'Newsreader',Georgia,'Times New Roman',serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1317;
+    --surface:#161F25;
+    --sunk:#0A1013;
+    --ink:#DCE4E9;
+    --muted:#8B979F;
+    --rule:#2B3941;
+    --signal:#DE7160;
+    --signal-wash:#2C1A17;
+    --machine:#5FB09E;
+    --machine-wash:#12241F;
+    --idea:#93A4D4;
+    --idea-wash:#191F2E;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1317;
+  --surface:#161F25;
+  --sunk:#0A1013;
+  --ink:#DCE4E9;
+  --muted:#8B979F;
+  --rule:#2B3941;
+  --signal:#DE7160;
+  --signal-wash:#2C1A17;
+  --machine:#5FB09E;
+  --machine-wash:#12241F;
+  --idea:#93A4D4;
+  --idea-wash:#191F2E;
+}
+
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:17px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:56px 28px 96px;display:flex;flex-direction:column;gap:64px}
+
+/* ---- masthead ---- */
+.mast{display:flex;flex-direction:column;gap:20px;border-bottom:2px solid var(--ink);padding-bottom:28px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--sans);font-weight:700;font-size:clamp(2.6rem,7vw,4.6rem);line-height:.94;letter-spacing:-.028em;text-wrap:balance;margin:0}
+h1 em{font-style:normal;color:var(--signal)}
+.thesis{max-width:64ch;font-size:1.12rem;color:var(--ink)}
+.thesis strong{font-weight:500;box-shadow:inset 0 -.45em 0 var(--signal-wash)}
+
+/* ---- sections ---- */
+section{display:flex;flex-direction:column;gap:22px}
+h2{font-family:var(--sans);font-weight:600;font-size:1.55rem;letter-spacing:-.015em;margin:0;text-wrap:balance;display:flex;align-items:baseline;gap:14px}
+h2::before{content:"";flex:0 0 26px;height:2px;background:var(--signal);transform:translateY(-.32em)}
+h3{font-family:var(--sans);font-weight:600;font-size:1.02rem;letter-spacing:-.005em;margin:0}
+.lede{max-width:66ch;color:var(--muted);margin:0}
+p{margin:0;max-width:68ch}
+code{font-family:var(--mono);font-size:.855em;background:var(--sunk);padding:.1em .34em;border-radius:3px}
+
+/* ---- figures ---- */
+figure{margin:0;display:flex;flex-direction:column;gap:12px}
+.scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:22px 20px}
+.dia{display:block;width:100%;height:auto;color:var(--ink)}
+.dia text{font-family:var(--sans);fill:currentColor;font-size:11.5px}
+.dia .mono{font-family:var(--mono);font-size:10.5px}
+.dia .cap{font-size:9.5px;letter-spacing:.11em}
+.dia .num{font-family:var(--mono);font-size:10.5px;font-weight:500}
+.dia .hd{font-family:var(--sans);font-size:12px;font-weight:600}
+.f-sig{fill:var(--signal)}.s-sig{stroke:var(--signal)}
+.f-mac{fill:var(--machine)}.s-mac{stroke:var(--machine)}
+.f-mut{fill:var(--muted)}.s-mut{stroke:var(--muted)}
+.f-idea{fill:var(--idea)}.s-idea{stroke:var(--idea)}
+.f-pap{fill:var(--surface)}
+.f-none{fill:none}
+.s-ink{stroke:currentColor}
+.box{fill:var(--surface);stroke:var(--rule);stroke-width:1}
+.sunkbox{fill:var(--sunk);stroke:var(--rule);stroke-width:1}
+figcaption{font-size:.9rem;color:var(--muted);max-width:74ch}
+figcaption b{color:var(--ink);font-weight:500}
+
+/* ---- note ---- */
+.note{background:var(--signal-wash);border-left:2px solid var(--signal);padding:14px 16px;font-size:.93rem}
+.note b{font-weight:500}
+
+/* ---- stage ladder ---- */
+.ladder{display:flex;flex-direction:column;gap:2px}
+.stage{display:grid;grid-template-columns:34px minmax(140px,1.05fr) minmax(130px,1fr) 152px minmax(180px,1.5fr);gap:16px;align-items:baseline;padding:13px 14px;background:var(--surface);border-left:2px solid var(--rule)}
+.stage .n{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stage .nm{font-family:var(--sans);font-weight:600;font-size:1rem;letter-spacing:-.01em}
+.stage .dr,.stage .ou{font-size:.9rem;color:var(--muted)}
+.stage .ou{color:var(--ink)}
+.stage .dr b{color:var(--signal);font-weight:500}
+.stage code{background:var(--sunk);font-size:.78rem}
+.who{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.who .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.op{background:var(--signal)}.so{background:var(--machine)}.ha{background:var(--muted)}
+
+.gate{display:grid;grid-template-columns:34px 1fr auto;gap:16px;align-items:start;padding:15px 14px;background:var(--signal-wash);border-left:2px solid var(--signal)}
+.gate.ci{background:var(--machine-wash);border-left-color:var(--machine)}
+.gate .g{font-family:var(--sans);font-weight:700;font-size:12.5px;color:var(--signal);letter-spacing:.02em}
+.gate.ci .g{color:var(--machine)}
+.gate .gt{display:flex;flex-direction:column;gap:6px}
+.gate .gh{font-family:var(--sans);font-weight:600;font-size:1rem}
+.gate ul{margin:0;padding-left:1.05em;font-size:.9rem;display:flex;flex-direction:column;gap:3px}
+.gate p{font-size:.9rem}
+.chip{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1px solid currentColor;white-space:nowrap}
+.chip.h{color:var(--signal)}
+.chip.m{color:var(--machine)}
+
+/* ---- gate stop specimen ---- */
+.specimen{background:var(--sunk);border:1px solid var(--rule);border-radius:5px;padding:20px 22px;overflow-x:auto}
+.specimen pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:var(--ink);white-space:pre}
+.specimen b{color:var(--signal);font-weight:500}
+.specimen i{font-style:normal;color:var(--muted)}
+
+/* ---- checks ---- */
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2px}
+.check{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;border-top:2px solid var(--rule)}
+.check.key{border-top-color:var(--signal)}
+.check .ci{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.check .cn{font-family:var(--sans);font-weight:600;font-size:.96rem}
+.check .cd{font-size:.88rem;color:var(--muted)}
+.check .cd code{font-size:.8rem}
+.tag{align-self:flex-start;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--machine);border:1px solid currentColor;border-radius:99px;padding:2px 7px;margin-top:2px}
+
+/* ---- enforcement ---- */
+.enf{display:flex;flex-direction:column;gap:2px}
+.enf .row{display:grid;grid-template-columns:minmax(190px,1fr) minmax(240px,1.7fr) 132px;gap:16px;padding:13px 14px;background:var(--surface);align-items:baseline}
+.enf .row.hd{background:transparent;padding-bottom:4px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.enf .l{font-family:var(--mono);font-size:.82rem;line-height:1.45}
+.enf .w{font-size:.9rem;color:var(--muted)}
+.enf .s{font-family:var(--sans);font-weight:600;font-size:.82rem;letter-spacing:.02em}
+.hard{color:var(--machine)}
+.soft{color:var(--signal)}
+
+/* ---- cards ---- */
+.hatch{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2px}
+.h-card{background:var(--surface);border-top:2px solid var(--ink);padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.h-card .k{font-family:var(--mono);font-size:11px;color:var(--signal)}
+.h-card p{font-size:.92rem;color:var(--muted)}
+.h-card p b{color:var(--ink);font-weight:500}
+
+footer{border-top:1px solid var(--rule);padding-top:22px;font-size:.86rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 26px}
+footer code{background:none;padding:0;color:var(--ink)}
+
+@media (max-width:720px){
+  .stage{grid-template-columns:26px 1fr;gap:6px 12px}
+  .stage .dr,.stage .who,.stage .ou{grid-column:2}
+  .enf .row{grid-template-columns:1fr;gap:6px}
+  .enf .row.hd{display:none}
+}
+
+/* ---- command reference ---- */
+.cmds{display:flex;flex-direction:column;gap:2px}
+.cmds .row{display:grid;grid-template-columns:minmax(190px,1fr) minmax(230px,1.5fr) minmax(215px,1.35fr);gap:16px;padding:14px;background:var(--surface);align-items:baseline}
+.cmds .row.hd{background:transparent;padding:0 14px 4px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cmds .row.key{border-left:2px solid var(--idea)}
+.cmds .f{font-family:var(--mono);font-size:.84rem;line-height:1.5}
+.cmds .d{font-size:.9rem;color:var(--muted)}
+.cmds .o{font-size:.9rem}
+.cmds .o b{font-weight:500;color:var(--idea)}
+
+/* ---- when to use which ---- */
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(288px,1fr));gap:2px}
+.w-card{background:var(--surface);border-top:2px solid var(--idea);padding:17px 18px;display:flex;flex-direction:column;gap:9px}
+.w-card .k{font-family:var(--mono);font-size:11.5px;color:var(--idea)}
+.w-card .said{font-family:var(--serif);font-style:italic;font-size:1.02rem;color:var(--ink);max-width:none}
+.w-card p{font-size:.91rem;color:var(--muted);max-width:none}
+.w-card p b{color:var(--ink);font-weight:500}
+.w-card .cost{margin-top:auto;padding-top:9px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--muted)}
+
+@media(max-width:720px){.cmds .row{grid-template-columns:1fr;gap:7px}.cmds .row.hd{display:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">DayByDay &nbsp;/&nbsp; .claude/commands/atlas.md &nbsp;/&nbsp; in force, 2 September 2026</div>
+  <h1>The five<br><em>ways in</em></h1>
+  <p class="thesis">One command drives this pipeline. <code>/atlas</code> takes five forms, and three of them are entry points that differ in exactly one way: <strong>how much you have already decided</strong>. <code>idea</code> writes, <code>backlog</code> chooses, <code>feature</code> skips choosing. They converge on the same Feature issue at G1, and nothing downstream can tell which route it took.</p>
+</header>
+
+<!-- ============ THE FUNNEL ============ -->
+<section>
+  <h2>How the five forms fit together</h2>
+  <p class="lede">Three ways in, one rail out. <code>/atlas idea</code> is the only form that stops nothing and decides nothing; <code>/atlas story</code> is the only one that starts downstream of every product decision.</p>
+  <figure>
+    <div class="scroll">
+      <svg class="dia" viewBox="0 0 1080 320" style="min-width:860px" role="img" aria-label="Slash atlas idea writes a want into docs slash backlog dot md. Slash atlas backlog reads that file, clusters the wants, and enters the rail at G1. Slash atlas feature skips the backlog and enters at the same place, for an idea you already know is one capability. The rail runs G1, G2, G4, G7 to main, and slash atlas story resumes it from wherever a Story already is. Slash atlas next reads status and takes whatever step is next.">
+        <defs>
+          <marker id="a-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
+        </defs>
+
+        <text x="20" y="18" class="cap f-idea">NOTHING HERE IS AGREED</text>
+        <text x="628" y="18" class="cap f-mut">ON THE TRACKER</text>
+
+        <!-- idea -->
+        <rect x="20" y="36" width="150" height="46" rx="3" class="box"/>
+        <text x="32" y="58" class="hd">/atlas idea</text>
+        <text x="32" y="74" class="mono f-mut">one shot · no gate</text>
+        <line x1="174" y1="59" x2="212" y2="59" class="s-mut" stroke-width="1.2" marker-end="url(#a-arrow)" color="var(--muted)"/>
+
+        <!-- the backlog -->
+        <rect x="220" y="30" width="190" height="104" rx="3" fill="var(--idea-wash)" stroke="var(--idea)" stroke-width="1.2"/>
+        <text x="232" y="52" class="hd f-idea">docs/backlog.md</text>
+        <text x="232" y="74" class="mono f-mut">B-001 weight as a line</text>
+        <text x="232" y="92" class="mono f-mut">B-003 mood in one tap</text>
+        <text x="232" y="110" class="mono f-mut">B-009 history to a new phone</text>
+        <text x="232" y="128" class="cap f-idea">TWO PASSES OLD → DECIDE</text>
+        <line x1="414" y1="82" x2="452" y2="82" class="s-mut" stroke-width="1.2" marker-end="url(#a-arrow)" color="var(--muted)"/>
+
+        <!-- backlog command -->
+        <rect x="458" y="59" width="150" height="46" rx="3" class="box"/>
+        <text x="470" y="81" class="hd">/atlas backlog</text>
+        <text x="470" y="97" class="mono f-mut">clusters, then G1</text>
+
+        <!-- the bypass -->
+        <path d="M315 140 V178 H452" class="s-idea f-none" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a-arrow)" color="var(--idea)"/>
+        <text x="322" y="170" class="mono f-idea">when you already know it is one capability</text>
+
+        <!-- feature command -->
+        <rect x="458" y="155" width="150" height="46" rx="3" class="box"/>
+        <text x="470" y="177" class="hd">/atlas feature</text>
+        <text x="470" y="193" class="mono f-mut">skips the clustering</text>
+
+        <!-- converge -->
+        <path d="M612 82 H626 V206" class="s-mut f-none" stroke-width="1.2" color="var(--muted)"/>
+        <path d="M612 178 H626 V206" class="s-mut f-none" stroke-width="1.2" color="var(--muted)"/>
+
+        <!-- rail -->
+        <line x1="626" y1="212" x2="818" y2="212" class="s-mut" stroke-width="1.6"/>
+        <line x1="818" y1="212" x2="1032" y2="212" class="s-ink" stroke-width="3.4" marker-end="url(#a-arrow)"/>
+        <text x="1042" y="216" class="mono f-mut">main</text>
+        <text x="722" y="238" text-anchor="middle" class="cap f-mut">SPECIFICATION</text>
+        <text x="925" y="238" text-anchor="middle" class="cap f-mut">IMPLEMENTATION</text>
+
+        <!-- gates -->
+        <g>
+          <line x1="662" y1="212" x2="662" y2="180" class="s-sig" stroke-width="1.4"/>
+          <rect x="640" y="150" width="44" height="30" rx="3" class="f-pap s-sig" stroke-width="1.4"/>
+          <text x="662" y="170" text-anchor="middle" class="hd f-sig">G1</text>
+        </g>
+        <g>
+          <line x1="736" y1="212" x2="736" y2="180" class="s-sig" stroke-width="1.4"/>
+          <rect x="714" y="150" width="44" height="30" rx="3" class="f-pap s-sig" stroke-width="1.4"/>
+          <text x="736" y="170" text-anchor="middle" class="hd f-sig">G2</text>
+        </g>
+        <g>
+          <line x1="818" y1="212" x2="818" y2="180" class="s-sig" stroke-width="1.4"/>
+          <rect x="796" y="150" width="44" height="30" rx="3" class="f-pap s-sig" stroke-width="1.4"/>
+          <text x="818" y="170" text-anchor="middle" class="hd f-sig">G4</text>
+          <text x="818" y="140" text-anchor="middle" class="cap f-sig">THE HARD GATE</text>
+        </g>
+        <g>
+          <line x1="936" y1="212" x2="936" y2="180" class="s-sig" stroke-width="1.4"/>
+          <rect x="914" y="150" width="44" height="30" rx="3" class="f-pap s-sig" stroke-width="1.4"/>
+          <text x="936" y="170" text-anchor="middle" class="hd f-sig">G7</text>
+        </g>
+
+        <!-- story -->
+        <line x1="866" y1="256" x2="866" y2="218" class="s-mut" stroke-width="1.2" marker-end="url(#a-arrow)" color="var(--muted)"/>
+        <rect x="766" y="258" width="200" height="48" rx="3" class="box"/>
+        <text x="778" y="280" class="hd">/atlas story &lt;issue#&gt;</text>
+        <text x="778" y="296" class="mono f-mut">resumes from wherever it is</text>
+
+        <!-- next -->
+        <rect x="20" y="242" width="212" height="64" rx="3" class="sunkbox"/>
+        <text x="32" y="264" class="mono">/atlas &nbsp;·&nbsp; /atlas next</text>
+        <text x="32" y="282" class="f-mut" style="font-size:10.5px">reads pnpm run status and takes</text>
+        <text x="32" y="298" class="f-mut" style="font-size:10.5px">the next step, wherever that is</text>
+      </svg>
+    </div>
+    <figcaption><b>The two entry points converge, deliberately.</b> <code>/atlas backlog</code> and <code>/atlas feature</code> both hand a Feature issue to the same G1, so the pipeline from there on is unchanged and does not need to know which route was taken. What separates them is only whether the selection step happened — and that step is where merges, splits and two-passes-old drops get caught.</figcaption>
+  </figure>
+</section>
+
+<!-- ============ THE REFERENCE ============ -->
+<section>
+  <h2>What each form does, and what comes out</h2>
+  <p class="lede">Every form ends either at a stop you answer or at an artifact you can open. Nothing runs unattended past a gate.</p>
+  <div class="cmds">
+    <div class="row hd"><span>Form</span><span>What it does</span><span>What comes out</span></div>
+    <div class="row">
+      <span class="f">/atlas<br>/atlas next</span>
+      <span class="d">Reads <code>pnpm run status</code> and takes the next step from wherever the work actually is. On a story branch it reports that Story; anywhere else it reports the tracker.</span>
+      <span class="o">Either a gate stop put to you, or an agent's work plus a fresh status. <b>It creates nothing of its own.</b></span>
+    </div>
+    <div class="row key">
+      <span class="f">/atlas idea &lt;want&gt;</span>
+      <span class="d">Captures one thing you want the app to do. Reads the backlog, the <i>Decided</i> ledger, the capability specs and the open Features first. Asks at most one question, and only about which want it is.</span>
+      <span class="o">One <code>B-nnn</code> entry in <code>docs/backlog.md</code>, committed on <code>chore/backlog</code> — <b>or nothing at all</b>, plus the reason: already an entry, already a shipped requirement, or already dropped.</span>
+    </div>
+    <div class="row key">
+      <span class="f">/atlas backlog<br>/atlas backlog B-007</span>
+      <span class="d">Grooms. Clusters the wants by the capability they would land in, proposes promote, merge, split or drop for each, forces a choice on anything two passes old, grills the cluster you pick. The <code>B-007</code> form skips the clustering.</span>
+      <span class="o">A grooming stop, then <b>G1</b>. On approval: a Feature issue and its sub-issue edge, an Epic first if needed, the promoted entries moved to <i>Decided</i>, the backlog PR merged. Then <b>G2</b>, then <b>G4</b>.</span>
+    </div>
+    <div class="row key">
+      <span class="f">/atlas feature &lt;idea&gt;</span>
+      <span class="d">The same intake for an idea that skips the backlog, because you already know it is one capability. Grills it, and says where it is thin.</span>
+      <span class="o">The same Feature issue in the same place. <b>G1</b>, then <b>G2</b>, then <b>G4</b>.</span>
+    </div>
+    <div class="row">
+      <span class="f">/atlas story &lt;issue#&gt;</span>
+      <span class="d">Gets onto that Story's worktree — cutting it if Stage 4 has not — and drives it from wherever it is: propose, red, green, review, archive, merge.</span>
+      <span class="o">Whatever the next gate is, <b>G4</b> or <b>G7</b>, or a merged Story and a closed issue.</span>
+    </div>
+  </div>
+  <div class="note"><b>Count the stops.</b> <code>idea</code> is zero — no gate, no G-number, no tracker write. <code>backlog</code> is three before any code exists: the grooming stop, G1, G2. <code>feature</code> is two, because it has no grooming stop. From G4 onward all of them are the same four-interruption Story.</div>
+</section>
+
+<!-- ============ WHICH ONE ============ -->
+<section>
+  <h2>idea, backlog, feature — when each is right</h2>
+  <p class="lede">Three points on one funnel. The only thing separating them is how much you have already decided.</p>
+  <div class="three">
+    <div class="w-card">
+      <span class="k">/atlas idea</span>
+      <p class="said">“I want this and I don't know what it is yet.”</p>
+      <p>You thought of something in the shower. You do not know whether it is a capability, half of one, or three. <b>Use it liberally</b> — the file is designed to be cheap to add to and expensive to leave alone. It writes your words verbatim and the outcome as the heading, never the mechanism, so nothing about the design has been decided by the act of capturing it.</p>
+      <span class="cost">COSTS ONE LINE · INTERRUPTS NOTHING</span>
+    </div>
+    <div class="w-card">
+      <span class="k">/atlas backlog</span>
+      <p class="said">“I have twenty minutes and I want to decide what to build next.”</p>
+      <p>The raw material is everything <code>idea</code> has accumulated, and <b>the clustering is the entire value</b>. It is where three separate wants get spotted as one surface, where one entry turns out to be two, and where something that has sat through two passes forces you to admit you are never building it.</p>
+      <span class="cost">COSTS THREE STOPS · ENDS AT G4</span>
+    </div>
+    <div class="w-card">
+      <span class="k">/atlas feature</span>
+      <p class="said">“I already know this is one capability and I want it now.”</p>
+      <p>A bug you decided to fix properly. Something the last Story made obviously necessary. It is <b>deliberately a bypass</b>, and what it bypasses is the clustering — so it is right exactly when there is nothing to cluster against.</p>
+      <span class="cost">COSTS TWO STOPS · ENDS AT G4</span>
+    </div>
+  </div>
+  <div class="note"><b>The failure mode worth naming is reaching for <code>/atlas feature</code> when <code>/atlas backlog</code> was the right call</b> — it feels faster and it skips the one step that catches merges and splits. A Feature minted from a single idea in isolation is the horizontal slice you find out about three Stories later. The test: <i>if I had not just thought of this, would it already be in the backlog?</i> If yes, groom. If it genuinely arrived whole and separate, take the bypass.</div>
+  <p>The mirror failure is hoarding — forty entries and no grooming pass, which is the parking lot again with a better filename. The two-passes rule is the guard, but it only fires when <code>/atlas backlog</code> runs, so the cadence is yours. Roughly: groom whenever you are about to ask <i>what next?</i></p>
+</section>
+
+<footer>
+  <span><code>.claude/commands/atlas.md</code> — the conductor, in full</span>
+  <span><code>docs/process.md</code> §4 — where the product comes from</span>
+  <span><code>docs/backlog.md</code> — the wants</span>
+  <span><code>docs/open-questions.md</code> — what is not a want</span>
+  <span><code>docs/adr/1010-*</code> — why the backlog replaced the parking lot</span>
+</footer>
+
+</div>
+</body>
+</html>

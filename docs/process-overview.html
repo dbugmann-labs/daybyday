@@ -185,17 +185,17 @@ footer code{background:none;padding:0;color:var(--ink)}
 
 <header class="mast">
   <div class="eyebrow">DayByDay &nbsp;/&nbsp; docs/process.md &nbsp;/&nbsp; in force, 1 September 2026</div>
-  <h1>From parking lot<br><em>to main</em></h1>
-  <p class="thesis">DayByDay is an iPhone app for the commitments you owe yourself and the rhythm each one runs on. It is built with <strong>Atlas</strong>, the development system this repository was started from — signed off on 24 August 2026 and inherited here rather than invented. The product half is what is new: <strong>an idea is not agreed until it has passed G4 as a requirement in a change folder</strong>, and everything before that is a line in the parking lot, however confident anyone sounded when they said it.</p>
+  <h1>From backlog<br><em>to main</em></h1>
+  <p class="thesis">DayByDay is an iPhone app for the commitments you owe yourself and the rhythm each one runs on. It is built with <strong>Atlas</strong>, the development system this repository was started from — signed off on 24 August 2026 and inherited here rather than invented. The product half is what is new: <strong>an idea is not agreed until it has passed G4 as a requirement in a change folder</strong>, and everything before that is a want in the backlog, however confident anyone sounded when they said it.</p>
 </header>
 
 <!-- ============ UPSTREAM OF STAGE 0 ============ -->
 <section>
   <h2>Before Stage 0: where the product comes from</h2>
-  <p class="lede">The pipeline receives a body of work; it does not discover one. Product definition sits upstream of Stage 0 and is deliberately <em>not</em> a numbered stage, because it is a conversation rather than a pipeline with gates. It has one rule and one artifact.</p>
+  <p class="lede">The pipeline receives a body of work; it does not discover one. Product definition sits upstream of Stage 0 and is deliberately <em>not</em> a numbered stage, because it is a conversation rather than a pipeline with gates. It has one rule — <em>an idea is not agreed until it has passed G4</em> — one artifact, <code>docs/backlog.md</code>, and two commands that read it, which is the part its predecessor never had.</p>
   <figure>
     <div class="scroll">
-      <svg class="dia" viewBox="0 0 1080 300" style="min-width:800px" role="img" aria-label="Ideas enter docs slash parking-lot dot md in one line each. An entry leaves in exactly one direction, promoted into an Epic or Feature issue and deleted. Concrete detail stays parked until a change folder exists to receive it, because issues carry no requirements. Domain terms are agreed into CONTEXT dot md along the way.">
+      <svg class="dia" viewBox="0 0 1080 300" style="min-width:800px" role="img" aria-label="Slash atlas idea writes one want into docs slash backlog dot md. Slash atlas backlog grooms them: it clusters the wants by the capability they would land in, then takes one cluster forward to an Epic and a Feature at G1. An entry that has survived two grooming passes is a forced choice, promote or drop. Anything that is not a want goes to docs slash open-questions dot md, and the principles that judge a want are in CONTEXT dot md.">
         <defs>
           <marker id="p-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
         </defs>
@@ -206,51 +206,57 @@ footer code{background:none;padding:0;color:var(--ink)}
         <!-- conversation -->
         <rect x="30" y="52" width="190" height="52" rx="3" class="box"/>
         <text x="44" y="74" class="hd">A conversation</text>
-        <text x="44" y="92" class="mono f-mut">/opsx:explore · grill</text>
+        <text x="44" y="92" class="mono f-mut">/atlas idea &lt;want&gt;</text>
 
         <line x1="226" y1="78" x2="286" y2="78" class="s-mut" stroke-width="1.2" marker-end="url(#p-a)" color="var(--muted)"/>
 
-        <!-- parking lot -->
+        <!-- backlog -->
         <rect x="292" y="44" width="300" height="176" rx="3" fill="var(--idea-wash)" stroke="var(--idea)" stroke-width="1.2"/>
-        <text x="308" y="68" class="hd f-idea">docs/parking-lot.md</text>
-        <text x="308" y="88" class="mono f-mut">one line per idea, then move on</text>
+        <text x="308" y="68" class="hd f-idea">docs/backlog.md</text>
+        <text x="308" y="88" class="mono f-mut">wants only — one thing the app should do</text>
         <line x1="308" y1="100" x2="576" y2="100" class="s-idea" stroke-width=".8" opacity=".5"/>
-        <text x="308" y="120" class="mono f-mut">gym Mon/Wed/Sat · run Tue/Thu/Sun</text>
-        <text x="308" y="140" class="mono f-mut">finances every 25th · reading 3× a week</text>
-        <text x="308" y="160" class="mono f-mut">contact lenses every 14 days</text>
-        <text x="308" y="180" class="mono f-mut">no streaks, nothing congratulates you</text>
-        <text x="308" y="206" class="cap f-idea">TWO INTAKES OLD → PROMOTE OR DELETE</text>
+        <text x="308" y="120" class="mono f-mut">B-001 record a weight, see it as a line</text>
+        <text x="308" y="140" class="mono f-mut">B-003 set a mood with one tap</text>
+        <text x="308" y="160" class="mono f-mut">B-006 unticked stays visible in the evening</text>
+        <text x="308" y="180" class="mono f-mut">B-009 carry my history to a new phone</text>
+        <text x="308" y="206" class="cap f-idea">TWO PASSES OLD → PROMOTE OR DROP</text>
 
-        <!-- promotion -->
+        <!-- grooming -->
         <line x1="598" y1="112" x2="694" y2="112" class="s-ink" stroke-width="1.6" marker-end="url(#p-a)"/>
-        <text x="646" y="102" text-anchor="middle" class="mono f-mut">promoted</text>
-        <text x="646" y="130" text-anchor="middle" class="mono f-mut">and deleted</text>
+        <text x="646" y="102" text-anchor="middle" class="mono f-mut">/atlas backlog</text>
+        <text x="646" y="130" text-anchor="middle" class="mono f-mut">clusters, then G1</text>
 
-        <!-- epic -->
+        <!-- epic and feature -->
         <rect x="700" y="86" width="350" height="52" rx="3" class="box"/>
-        <text x="716" y="108" class="hd">Stage 0 — an Epic issue</text>
+        <text x="716" y="108" class="hd">Stage 0 → 1 — an Epic, then a Feature</text>
         <text x="716" y="126" class="mono f-mut">a body of work you can name in a sentence</text>
 
-        <!-- detail stays -->
-        <path d="M598 176 H660 V246 H360 V226" class="s-idea f-none" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#p-a)" color="var(--idea)"/>
-        <text x="672" y="180" class="mono f-idea">concrete detail cannot ride along —</text>
-        <text x="672" y="196" class="mono f-idea">issues carry no requirements (rule 4),</text>
-        <text x="672" y="212" class="mono f-idea">so it stays parked until a change</text>
-        <text x="672" y="228" class="mono f-idea">folder exists to receive it</text>
+        <!-- what a cluster has to prove -->
+        <text x="672" y="172" class="mono f-idea">a cluster may only be presented at G1 if</text>
+        <text x="672" y="188" class="mono f-idea">its first Story fits in one sentence, the</text>
+        <text x="672" y="204" class="mono f-idea">wants it leaves behind are named by id,</text>
+        <text x="672" y="220" class="mono f-idea">and you can say which to build first</text>
+
+        <!-- not a want -->
+        <line x1="442" y1="220" x2="442" y2="240" class="s-idea" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#p-a)" color="var(--idea)"/>
+        <rect x="292" y="246" width="300" height="40" rx="3" class="sunkbox"/>
+        <text x="308" y="264" class="mono">docs/open-questions.md</text>
+        <text x="308" y="279" class="f-mut" style="font-size:10.5px">not a want — open questions, known gaps</text>
 
         <!-- context -->
-        <rect x="30" y="150" width="190" height="70" rx="3" class="sunkbox"/>
+        <rect x="30" y="150" width="190" height="86" rx="3" class="sunkbox"/>
         <text x="44" y="172" class="mono">CONTEXT.md</text>
         <text x="44" y="192" class="f-mut" style="font-size:10.5px">commitment · schedule</text>
         <text x="44" y="208" class="f-mut" style="font-size:10.5px">due · tick · day</text>
+        <text x="44" y="226" class="f-mut" style="font-size:10.5px">§ product principles</text>
         <line x1="125" y1="146" x2="125" y2="110" class="s-mut" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#p-a)" color="var(--muted)"/>
-        <text x="30" y="252" class="mono f-mut">a term lands here the second</text>
-        <text x="30" y="268" class="mono f-mut">time you explain it</text>
+        <text x="30" y="256" class="mono f-mut">a term lands here the second</text>
+        <text x="30" y="272" class="mono f-mut">time you explain it — and the</text>
+        <text x="30" y="288" class="mono f-mut">rules a want is judged against</text>
 
-        <text x="30" y="292" class="f-mut">Ends when there is work you can name and a human who agrees it is next. That is a Stage 0 Epic.</text>
       </svg>
     </div>
-    <figcaption><b>An entry leaves the parking lot in exactly one direction.</b> Promotion deletes it only when the issue can actually carry it — <code>EPIC: Daily commitments</code> absorbed the day screen and its ticks, and left the eight commitments and their rhythms parked, because an Epic issue holds a sentence of intent and no requirements. An entry outliving its Epic is expected; an entry outliving the spec that covers it is stale. The vocabulary the conversation settles goes to <code>CONTEXT.md</code>, which is why <em>commitment</em> is not <em>task</em>, not <em>habit</em>, and no longer <em>area</em>.</figcaption>
+    <figcaption><b>An entry leaves the backlog in exactly three directions</b> — promoted, merged into another entry, or dropped with the reason — and one line lands in the <em>Decided</em> ledger whichever it is. That ledger is what <code>/atlas idea</code> greps, so a want dropped once is not re-argued from scratch three months later. Its predecessor, <code>docs/parking-lot.md</code>, carried the same exit rule and never ran it: no command opened the file, so the rule was a sentence and the file was append-only. Grooming clusters <em>by the capability a want would land in</em>, never by theme, and adds one stop in front of Stage 1 — no new stage, no new gate, no second grill. ADR-1010.</figcaption>
   </figure>
 </section>
 
@@ -276,7 +282,7 @@ footer code{background:none;padding:0;color:var(--ink)}
         <!-- upstream -->
         <rect x="10" y="170" width="146" height="40" rx="3" fill="none" stroke="var(--idea)" stroke-width="1.2" stroke-dasharray="4 3"/>
         <text x="24" y="188" class="f-idea" style="font-size:11px">product definition</text>
-        <text x="24" y="203" class="mono f-idea">docs/parking-lot.md</text>
+        <text x="24" y="203" class="mono f-idea">docs/backlog.md</text>
         <line x1="160" y1="190" x2="182" y2="190" class="s-idea" stroke-width="1.2" marker-end="url(#r-ink)" color="var(--idea)"/>
 
         <!-- rail -->
@@ -540,7 +546,7 @@ footer code{background:none;padding:0;color:var(--ink)}
 
     <div class="gate"><span class="g">G1</span>
       <div class="gt"><span class="gh">Feature ready</span>
-        <p>The Feature names one capability, the capability slug is decided, and it hangs off exactly one Epic. Challenge it here: is it one capability, or two wearing one name? Is it already a line in the parking lot?</p></div>
+        <p>The Feature names one capability, the capability slug is decided, and it hangs off exactly one Epic. Challenge it here: is it one capability, or two wearing one name? Is it already a want in the backlog, or a cluster of several?</p></div>
       <span class="chip h">human</span></div>
 
     <div class="stage"><span class="n">2</span><span class="nm">Story decomposition</span><span class="dr"><b>you</b> type <code>to-tickets</code>, stop it, and accept</span><span class="who"><i class="dot op"></i>orchestrator</span><span class="ou">Story issues as sub-issues, blocking edges declared</span></div>

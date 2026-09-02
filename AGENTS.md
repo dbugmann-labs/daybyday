@@ -12,7 +12,10 @@ carries — signed off 2026-08-24, inherited, not work in progress.
 The product is defined at Epic level and **Feature definition is the next step**, so proposing
 features, data models and names is in scope. Where that detail may *land* is not: an idea is
 real when it is a requirement in a capability spec that has passed G4, however obvious it
-seems; until then it is a line in `docs/parking-lot.md`. `docs/process.md` §4.
+seems; until then it is a want in `docs/backlog.md`. Capture one with `/atlas idea <want>`
+and promote it with `/atlas backlog`; everything that is *not* a want — an open product
+question, an open technical decision, a known gap — is `docs/open-questions.md`, and the rules a
+want is judged against are `CONTEXT.md` § *Product principles*. `docs/process.md` §4, ADR-1010.
 
 ## Working with the human
 

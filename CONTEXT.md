@@ -1,10 +1,10 @@
 # CONTEXT
 
-The project's shared vocabulary. Agents read this so that spec wording, test names and issue
-titles all use the same words for the same things. Maintained by the `grill` skill as
-domain understanding develops — add a term when you catch yourself explaining it twice, one term
-per thing. Product definition began 2026-08-24; the first domain terms were agreed on 2026-08-28
-with `EPIC: Daily commitments` (#1).
+The project's shared vocabulary, and the principles that judge a product decision. Agents read
+this so that spec wording, test names and issue titles all use the same words for the same
+things. Maintained by the `grill` skill as domain understanding develops — add a term when you
+catch yourself explaining it twice, one term per thing. Product definition began 2026-08-24; the
+first domain terms were agreed on 2026-08-28 with `EPIC: Daily commitments` (#1).
 
 ## Process vocabulary
 
@@ -18,6 +18,20 @@ across all three levels. `docs/agents/issue-tracker.md` § *Closing the hierarch
 
 **Story** — one unit of implementable work. A GitHub issue of type `Task`, one-to-one with an
 OpenSpec change, a branch and a pull request.
+
+**Want** — one thing the owner has said the application should let them do, in their own
+words, before anyone has agreed to build it. An entry in `docs/backlog.md`, written by
+`/atlas idea`. A want is not a requirement: it is evidence of what was asked for, and it is
+deliberately never paraphrased into spec wording, because the paraphrase is what a later grill
+would have to argue against.
+
+**Backlog** — `docs/backlog.md`, the wants and nothing else. Not a plan, not an order of work,
+and not a place anything is implemented from. An entry leaves it only through a grooming pass.
+
+**Grooming** — the pass `/atlas backlog` runs over the backlog: cluster the wants by the
+capability they would land in, propose a promotion, a merge, a split or a drop for each, grill
+the cluster you take forward, and stop at G1. It is a stop, not a gate — no marker, no CI check,
+no G-number — and it adds exactly one stop in front of Stage 1 rather than a stage of its own.
 
 **Change** — OpenSpec's unit of work: the folder `openspec/changes/<change-id>/` holding a
 proposal, delta specs, a design and a task list. One change is one Story.
@@ -34,6 +48,29 @@ acceptance test of the same name. ADR-0005.
 before any test is written.
 
 **G4** — the spec-approval gate. Nothing is implemented before it. `docs/process.md` §4.
+
+## Product principles
+
+The rules a want is judged against. These are not backlog entries — they are what decides
+whether one is any good, which is why they live here rather than in `docs/backlog.md`. Agreed
+2026-08-28 with `EPIC: Daily commitments` (#1).
+
+**Nothing congratulates you.** No streaks, no gamification, no celebration of a run of good
+days. A row that has been ticked just goes quiet. This is not a stylistic preference: streaks
+are the mechanic the owner abandoned other apps over, because breaking one is a reason to stop
+using the app, and a product built on the durability of a record cannot afford that.
+
+**Five percent of seven things, not all of one.** A thin version of every commitment beats a
+deep version of a single one. A want that deepens something already thin is worth less than a
+want that makes a new thing possible at all, and a Feature that proposes to do one thing
+thoroughly is usually the wrong slice.
+
+**An iPhone, in your hand.** Every one of the five daily visits happens with a phone in hand,
+never at a laptop. A want whose interaction only makes sense on a large screen is not this
+product's want. ADR-1001.
+
+**Restore, not sync.** History survives moving to a new phone. Live synchronisation between two
+devices is out of scope, and saying so is what keeps it out.
 
 ## Domain vocabulary
 
