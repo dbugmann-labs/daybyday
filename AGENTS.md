@@ -132,15 +132,25 @@ recommendation**, the exact reply — with the recommendation never omitted. Wor
 
 > **Model tier follows whether the task creates, judges, or merely executes requirements.**
 > Creating or judging → **Opus**. Executing an approved, written-down plan → **Sonnet**.
-> Mechanical work whose correctness is visible in the diff → **Haiku**.
+> Mechanical work whose correctness is visible in the diff → **Haiku**. Where creating a
+> requirement is the step that is *ratified rather than checked* — Stage 4 — → **Fable**.
 
 | Agent | Model | May write |
 |---|---|---|
 | `orchestrator` | Opus | nothing in the repo; GitHub issues only — it writes the tracker, it does not delegate |
-| `spec-author` | Opus | `openspec/changes/**`, `docs/adr/**`, `CONTEXT.md` |
+| `spec-author` | **Fable** | `openspec/changes/**`, `docs/adr/**`, `CONTEXT.md` |
 | `implementer` | Sonnet | `src/**`, `tests/**`, and `tasks.md` checkboxes |
 | `reviewer` | Opus | nothing — reports findings only |
 | `janitor` | Haiku | archive moves, generated files, issue state |
+
+**Only `spec-author` takes the fourth tier**, because Stage 4 is the one step no later step
+re-examines: G4 signs it, the implementer executes it scenario by scenario, the reviewer checks
+the code against it rather than it against reality, and the archive writes it into
+`openspec/specs/`. The conductor may be run on Fable for Stages 1–2 by the human
+(`claude --model fable`, or `/model fable` and back) when a Feature is new territory — a
+per-session choice, never a setting. `reviewer` stays on Opus; escalate a single review by
+re-running it in a Fable session. `implementer`, `janitor` and `orchestrator` never take it.
+ADR-1011.
 
 Nothing writes `openspec/specs/` except `/opsx:archive`. Definitions are in `.claude/agents/`.
 A `via /command` step is reachable only by an agent holding the `Skill` tool: the four pipeline

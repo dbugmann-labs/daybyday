@@ -64,3 +64,4 @@ DayByDay's own records start here.
 | [1008](1008-the-single-change-rule-is-convention.md) | CI check 3 is dropped; one change per PR is convention, and the check numbers keep the gap |
 | [1009](1009-one-grill-skill-wraps-the-flagged-one.md) | One `grill` skill owned by this repo wraps `grill-with-docs`, which no agent can invoke |
 | [1010](1010-a-groomed-backlog-replaces-the-parking-lot.md) | A groomed backlog replaces the parking lot; `/atlas idea` captures, `/atlas backlog` promotes |
+| [1011](1011-fable-is-the-fourth-model-tier.md) | Fable is a fourth model tier, taken by `spec-author` alone; supersedes ADR-0006's routing rule |
