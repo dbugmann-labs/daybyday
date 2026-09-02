@@ -341,4 +341,16 @@ most needs to count. Say what the coverage sweep found, including when it found 
   holds no want in disguise. Principle lines filled in on B-001..B-009. Captured B-012..B-016
   from the sweep; merged B-008 into B-007; dropped B-010 into `CONTEXT.md` as *Entered where
   you stand*. Cluster A — the record: B-012, with B-001..B-005 behind it — grilled and
-  promoted at G1: B-012 → `FEAT: record` (#53).
+  promoted at G1: B-012 → `FEAT: record` (#53). Its G1 left behind B-001..B-005, which reopen
+  #53 when they come and mean amending Epic #1's exclusion list then; and for its G2 the pass
+  suggested the pure record shape as Story 1, durability with the storage ADR as Story 2, and
+  a check whether #27's first Story reads records, which decides whether #27 and #53
+  serialise (`docs/process.md` §7). **Not taken**, each with the disposition the pass
+  proposed, so the next pass starts from it rather than from the Touches lines alone —
+  **B**, day-screen: B-006, B-011, B-016 stay wants for #27's G2, which status already lists;
+  B-006 reads as a requirement of #27's first Story rather than a Story of its own, and B-011
+  cannot be decided before B-007. **C**, looking back: B-007, with B-008 now inside it,
+  unclaimed; nothing to look back at until #53 has a Story, so it stays. **D**, restore:
+  B-009, a Story against #53 once the first record Story has chosen the store. **E**, the
+  commitment's lifecycle: B-013, B-014, B-015 as Stories reopening #26 — define first, then
+  change, then retire; B-013 may be a kept-until day mirroring ADR-1011.

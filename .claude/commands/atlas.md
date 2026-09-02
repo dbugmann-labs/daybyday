@@ -460,11 +460,19 @@ backlog PR.
 **Append the pass to `## Grooming passes` before you commit, whatever the outcome** — one dated
 line, and a promotion is not what makes it one. A pass that promoted nothing is exactly the pass
 the staleness rule is counting, so an unrecorded pass resets every want's age to zero and quietly
-restores the parking lot. `pnpm run status` reads that log and nothing else:
+restores the parking lot. `pnpm run status` reads that log and nothing else — only the date at
+the head of the line, so the rest is yours to fill:
 
 ```
 - 2026-09-10 — pass over 9 wants. Promoted B-001, B-007, B-008 → FEAT: measurement (#48).
+  Not taken: B-002, B-004 → Stories against #48 once it has a spec; B-009 stays until a
+  store exists.
 ```
+
+**A pass that took one cluster forward logs the others too**, each with the disposition it
+proposed and the reason. The Touches lines rebuild the clusters in a minute; they do not
+rebuild what this pass thought about them, and the next pass should start from that rather
+than from scratch — the first pass lost exactly this to the transcript.
 
 Record it even when the human walks away at the stop without picking a cluster. You read the
 backlog; the wants sat through it.
