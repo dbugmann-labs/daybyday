@@ -68,7 +68,7 @@ and #55's `tasks.md` did; a prediction here is not evidence.
 - [x] 2.12 `a day view is formed in the first supported year and in the last` — the *no clock* pin:
   3 January 1583 and 27 December 9999 are both Mondays. An implementation that compares against
   `Date()` in any way fails one of them.
-- [ ] 2.13 `a row carries the commitment's name exactly as it was given` — " Gym " with both spaces,
+- [x] 2.13 `a row carries the commitment's name exactly as it was given` — " Gym " with both spaces,
   and a single emoji; pins that the day view neither trims nor rewrites what `commitment` stored.
 - [ ] 2.14 `rows are in the order the commitments were handed over` — three due commitments, rows in
   the order given.

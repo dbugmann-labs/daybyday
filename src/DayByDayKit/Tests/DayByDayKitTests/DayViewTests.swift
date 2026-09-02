@@ -213,6 +213,22 @@ func aDayViewIsFormedInTheFirstSupportedYearAndInTheLast() {
     #expect(!onLastYear.rows[0].isKept)
 }
 
+@Test("a row carries the commitment's name exactly as it was given")
+func aRowCarriesTheCommitmentsNameExactlyAsItWasGiven() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let spaced = Commitment(name: " Gym ", schedule: schedule, keptFrom: keptFrom)!
+    let emoji = Commitment(name: "🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [spaced, emoji], on: monday, in: history)
+
+    #expect(dayView.rows.count == 2)
+    #expect(dayView.rows[0].name == " Gym ")
+    #expect(dayView.rows[1].name == "🏋️")
+}
+
 @Test("a day view of no commitments at all has no rows")
 func aDayViewOfNoCommitmentsAtAllHasNoRows() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
