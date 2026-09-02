@@ -44,9 +44,9 @@ eight does run red, that is a finding worth reporting, not a task that went well
 
 ## 3. Gates
 
-- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 74 tests passing and no failures — the ten here
+- [x] 3.1 `cd src/DayByDayKit && swift test` reports 74 tests passing and no failures — the ten here
   plus the 64 from #8, #9, #10 and #42, none of which may change — and `pnpm run verify` exits 0.
-- [ ] 3.2 `pnpm exec openspec validate add-weekly-quota-schedule --strict` exits 0 and
+- [x] 3.2 `pnpm exec openspec validate add-weekly-quota-schedule --strict` exits 0 and
   `pnpm run checks` reports scenario coverage as 10 of 10.
 - [ ] 3.3 `/code-review` reports nothing unresolved on either axis (**G7**).
 
