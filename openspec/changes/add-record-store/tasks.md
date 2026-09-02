@@ -49,12 +49,12 @@ if decoding does not go through the failable initializers.
 - [x] 2.2 `a tick added to a store is held by a second store opened at the same place while the
   first is still open` — the write-through: the first store is a live local, the second is opened
   without any save or close on the first, and asserts `isKept` on the second.
-- [ ] 2.3 `a tick taken back is not held by a store opened afterwards at the same place` — two
+- [x] 2.3 `a tick taken back is not held by a store opened afterwards at the same place` — two
   assertions on the later store: not kept, and `history == History()`. Fails an implementation
   that writes on `add` but not on `remove`.
-- [ ] 2.4 `a store opened again holds exactly the ticks added and not taken back` — four ticks
+- [x] 2.4 `a store opened again holds exactly the ticks added and not taken back` — four ticks
   in, one out, equality with a `History` built from the three that remain.
-- [ ] 2.5 `adding a tick the store already holds leaves what is kept unchanged` — equality with a
+- [x] 2.5 `adding a tick the store already holds leaves what is kept unchanged` — equality with a
   history the tick was added to once; fails a document that appends rather than holds a set.
 - [ ] 2.6 `ticks of commitments on every schedule shape are read back as the same ticks` — one
   commitment per `Schedule` case: "Gym" on the weekday set, "Finances" on the 25th ticked

@@ -58,7 +58,12 @@ public final class RecordStore {
     }
 
     public func remove(_ tick: Tick) throws {
-        fatalError("not implemented")
+        var nextTicks = ticks
+        nextTicks.remove(tick)
+        try write(nextTicks)
+
+        ticks = nextTicks
+        history.remove(tick)
     }
 
     private func write(_ ticks: Set<Tick>) throws {
