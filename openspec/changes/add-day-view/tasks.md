@@ -55,7 +55,7 @@ and #55's `tasks.md` did; a prediction here is not evidence.
   ADR-1013 catch. An implementation that reaches past `Commitment.isDue(on:)` to `Schedule.isDue(on:)`
   passes 2.2 and fails only here. Two assertions: no row on 31 August, one row on 2 September.
   Pinned rather than drove: 2.1's implementation already asks `Commitment.isDue(on:)`.
-- [ ] 2.8 `a tick for a commitment the day view was not handed adds no row` — pins that rows come
+- [x] 2.8 `a tick for a commitment the day view was not handed adds no row` — pins that rows come
   from the commitments handed over and never from the history.
 - [ ] 2.9 `a tick on another date does not make the row say it is kept` — pins that the day view's
   date is the one passed to `isKept`; two assertions, 31 August not kept and 5 September kept.
