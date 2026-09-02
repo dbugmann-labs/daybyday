@@ -176,6 +176,16 @@ ticked stays in the view and goes quiet rather than leaving it. Deliberately not
 draws one, in the way a history is not the store that keeps it. Agreed 2026-09-02 at the second
 grooming pass, with `FEAT: day-screen` (#27).
 
+It is **handed** its commitments and holds no list of its own: it shows a row for each one it was
+given that is due, in that order, and combines none of them — the same commitment handed over twice
+has two rows, because deciding otherwise would be deciding something about identity that no
+capability has given a day view to decide. It is also an **answer, not a window**: it reports a
+history as that history stood when the view was made, so a tick made afterwards is seen by the next
+day view rather than by this one. A commitment on a **weekly quota** is due every day (ADR-1015), so
+it has a row every day of its week, unticked on the days it was not done; whether the week's quota
+has been met is not something a day view can see, and hiding a met one is a later Story's. Settled
+2026-09-02 at the grill of `add-day-view` (#70).
+
 **Row** — one commitment's line in a day view: its name, whether it is kept, and the place a tick is
 made. Ticking belongs to the row and therefore to `day-screen`: `record` says what a tick is and
 what a history answers and knows nothing of a row, of a date being displayed or of an order. A row
