@@ -230,26 +230,6 @@ shape it lacks, not the quota.
   inherits is a decision, not a want. It cannot be taken before B-007, because what may appear on
   the day screen depends on what the detail page is a page *per*.
 
-### B-012 — tick a due commitment on a day, and have it kept
-*Captured 2026-09-02, from the first grooming pass's sweep.*
-
-> "open the app on any day and tick off what that day asks for"
-
-The outcome line of `EPIC: Daily commitments` (#1), 2026-08-28. The Epic absorbed the tick and no
-Feature claimed it; this entry is what the sweep found in that silence.
-
-- **Trigger** — every one of the five daily visits. It *is* the visit.
-- **Touches** — unclaimed. None of `schedule`, `commitment` or `day-screen` claims it, and both
-  in-flight Stories (#11, #42) say in writing that no tick exists anywhere. B-001 to B-005 are
-  each a variation on this record: a number, a running total, a one-tap number, a sentence, a
-  tick that means the opposite.
-- **Principle** — tested against *five percent of seven things*: passes outright. One tick makes
-  all eight day-one commitments recordable at once, and nothing else in this file can be built
-  before it.
-- **Open** — can a tick be taken back? Nothing says. The first Story's grill decides.
-- **Open** — how far back the past stays writable is `docs/open-questions.md`'s question, and it is
-  forced by this entry rather than by B-016.
-
 ### B-013 — stop keeping a commitment
 *Captured 2026-09-02, from the sweep. The wording is the sweep's, accepted with "accept" rather
 than said.*
@@ -321,6 +301,9 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-02 — tick a due commitment on a day, and have it kept → `FEAT: record` (#53),
+  under `EPIC: Daily commitments` (#1). B-001..B-005 stay wants and reopen it when they come;
+  B-009 is now a Story against it rather than a capability of its own.
 - 2026-09-02 — merged: B-008 (see a commitment aggregated over time) into B-007. A page per
   commitment *is* the aggregate; the two were one look-back said in two breaths, and B-008's
   other half — navigating to a past day — is B-016.
@@ -357,4 +340,5 @@ most needs to count. Say what the coverage sweep found, including when it found 
   today is implied by "the past is writable" and said nowhere. `docs/open-questions.md`
   holds no want in disguise. Principle lines filled in on B-001..B-009. Captured B-012..B-016
   from the sweep; merged B-008 into B-007; dropped B-010 into `CONTEXT.md` as *Entered where
-  you stand*. Cluster A — the record: B-012, with B-001..B-005 behind it — taken to the grill.
+  you stand*. Cluster A — the record: B-012, with B-001..B-005 behind it — grilled and
+  promoted at G1: B-012 → `FEAT: record` (#53).
