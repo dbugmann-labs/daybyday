@@ -163,3 +163,115 @@ func aCommitmentTickedOnADateWasKeptOnThatDate() {
 
     #expect(history.isKept(commitment, on: monday))
 }
+
+@Test("a commitment ticked on one date was not kept on another date it is due on")
+func aCommitmentTickedOnOneDateWasNotKeptOnAnotherDateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let tick = Tick(commitment, on: monday)!
+
+    var history = History()
+    history.add(tick)
+
+    #expect(!history.isKept(commitment, on: wednesday))
+}
+
+@Test("a tick of one commitment does not keep another on the same date")
+func aTickOfOneCommitmentDoesNotKeepAnotherOnTheSameDate() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tick = Tick(gym, on: monday)!
+
+    var history = History()
+    history.add(tick)
+
+    #expect(!history.isKept(run, on: monday))
+    #expect(history.isKept(gym, on: monday))
+}
+
+@Test("a commitment was not kept on a date it is not due on")
+func aCommitmentWasNotKeptOnADateItIsNotDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let tick = Tick(commitment, on: monday)!
+
+    var history = History()
+    history.add(tick)
+
+    #expect(!history.isKept(commitment, on: tuesday))
+}
+
+@Test("a history answers each date on its own across a week")
+func aHistoryAnswersEachDateOnItsOwnAcrossAWeek() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+
+    var history = History()
+    history.add(Tick(commitment, on: monday)!)
+    history.add(Tick(commitment, on: saturday)!)
+
+    let week = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ]
+
+    let keptDates = week.filter { history.isKept(commitment, on: $0) }
+
+    #expect(keptDates == [monday, saturday])
+}
+
+@Test("adding a tick the history already holds leaves it unchanged")
+func addingATickTheHistoryAlreadyHoldsLeavesItUnchanged() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tick = Tick(commitment, on: monday)!
+
+    var addedOnce = History()
+    addedOnce.add(tick)
+
+    var addedTwice = History()
+    addedTwice.add(tick)
+    addedTwice.add(tick)
+
+    #expect(addedTwice == addedOnce)
+}
+
+@Test("two histories holding the same ticks are the same history")
+func twoHistoriesHoldingTheSameTicksAreTheSameHistory() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let onMonday = Tick(commitment, on: monday)!
+    let onWednesday = Tick(commitment, on: wednesday)!
+
+    var first = History()
+    first.add(onMonday)
+    first.add(onWednesday)
+
+    var second = History()
+    second.add(onWednesday)
+    second.add(onMonday)
+
+    #expect(first == second)
+}

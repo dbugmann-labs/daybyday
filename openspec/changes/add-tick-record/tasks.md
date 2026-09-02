@@ -66,18 +66,22 @@ than a set, 2.19 (the first `remove`), and 2.22 and 2.23 if `remove` left any re
 - [x] 2.12 `a commitment ticked on a date was kept on that date` — the first `add` and the first
   true `isKept`; expected to run red. Ran red (the `add` `fatalError`); made green with
   `ticks.insert(tick)`.
-- [ ] 2.13 `a commitment ticked on one date was not kept on another date it is due on`
-- [ ] 2.14 `a tick of one commitment does not keep another on the same date` — two assertions,
+- [x] 2.13 `a commitment ticked on one date was not kept on another date it is due on` — Pinned
+  green.
+- [x] 2.14 `a tick of one commitment does not keep another on the same date` — two assertions,
   "Run" not kept and "Gym" kept; pins that the key is the commitment value, not the date alone.
-- [ ] 2.15 `a commitment was not kept on a date it is not due on` — the history *answers* for a
+  Pinned green.
+- [x] 2.15 `a commitment was not kept on a date it is not due on` — the history *answers* for a
   date that could never hold a tick, rather than refusing; there is no `Tick` to look up, so the
-  test asks `isKept` directly with a date the commitment is not due on.
-- [ ] 2.16 `a history answers each date on its own across a week` — a seven-date sweep with two
+  test asks `isKept` directly with a date the commitment is not due on. Pinned green.
+- [x] 2.16 `a history answers each date on its own across a week` — a seven-date sweep with two
   ticks; the regression pin against a history that is right about one date and wrong about a run.
-- [ ] 2.17 `adding a tick the history already holds leaves it unchanged` — asserts equality with a
-  history the tick was added to once. Fails an implementation backed by an array.
-- [ ] 2.18 `two histories holding the same ticks are the same history` — added in opposite order;
-  pins that order is not part of the value.
+  Pinned green.
+- [x] 2.17 `adding a tick the history already holds leaves it unchanged` — asserts equality with a
+  history the tick was added to once. Fails an implementation backed by an array. Pinned green
+  (the `Set<Tick>` backing already dedupes).
+- [x] 2.18 `two histories holding the same ticks are the same history` — added in opposite order;
+  pins that order is not part of the value. Pinned green.
 - [ ] 2.19 `a tick taken back leaves the commitment not kept on that date` — the first `remove`;
   expected to run red.
 - [ ] 2.20 `taking back a tick leaves the same commitment's ticks on other dates standing` — two
