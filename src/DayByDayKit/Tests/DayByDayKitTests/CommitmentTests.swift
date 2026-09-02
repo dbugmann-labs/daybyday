@@ -16,8 +16,8 @@ func twoCommitmentsAlikeInNameScheduleAndKeptFromDayAreTheSameCommitment() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
 
-    let first = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)
-    let second = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)
+    let first = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let second = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
 
     #expect(first == second)
 }
@@ -144,8 +144,15 @@ func twoCommitmentsWithDifferentNamesAndTheSameScheduleAreDueOnTheSameDates() {
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
 
-    let dates = (31...31).map { CalendarDate(year: 2026, month: 8, day: $0)! }
-        + (1...6).map { CalendarDate(year: 2026, month: 9, day: $0)! }
+    let dates = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ]
 
     for date in dates {
         #expect(gym.isDue(on: date) == run.isDue(on: date))
@@ -163,8 +170,15 @@ func aCommitmentOnAScheduleThatIsDueOnNoDateIsNeverDue() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
 
-    let dates = (31...31).map { CalendarDate(year: 2026, month: 8, day: $0)! }
-        + (1...6).map { CalendarDate(year: 2026, month: 9, day: $0)! }
+    let dates = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ]
 
     for date in dates {
         #expect(!commitment.isDue(on: date))

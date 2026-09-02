@@ -28,8 +28,9 @@ this file**, the way #9's and #10's `tasks.md` did; a prediction here is not evi
 likely to run red on their own are 2.6 and 2.7, if 2.1 was made green without the name guard, and
 2.15 through 2.19, if it was made green without the floor.
 
-- [x] 2.1 `a commitment reads back the name it was given` — ran red: `fatalError` in the
-  initializer.
+- [x] 2.1 `a commitment reads back the name it was given` — ran red: the `fatalError` in the
+  initializer aborted the whole `swift test` process (signal 5) rather than reporting one failing
+  test; the box was done once the initializer stopped calling it.
 - [x] 2.2 `two commitments alike in name, schedule and kept-from day are the same commitment` —
   ran green immediately: synthesised `Hashable`/`Equatable` over the stored properties already
   answers it, so this pins rather than drives.
