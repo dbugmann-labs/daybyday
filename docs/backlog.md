@@ -153,20 +153,6 @@ shape it lacks, not the quota.
   name; it survives as long as the tick stays a record and never becomes a count.
 - **Open** — is the negation a property of the commitment, or only of how its row is worded?
 
-### B-006 — keep unticked commitments visible into the evening rather than silently missed
-*Captured 2026-08-28, migrated 2026-09-02.*
-
-> "unticked items stay visible into the evening rather than being silently missed"
-
-- **Trigger** — passive; it is what the day screen does when you have not done something yet.
-- **Touches** — `day-screen`.
-- **Principle** — tested against *nothing congratulates you*, read from the other side:
-  passes. A row that is not ticked simply does not go quiet, which is the principle's own
-  mechanic; it fails the moment "visible" becomes a badge or a nudge, which is the nag the
-  Open line names.
-- **Open** — visible how? This is one sentence away from being a nag, which
-  `CONTEXT.md` § *Product principles* rules out.
-
 ### B-007 — look at one commitment on its own, deliberately and rarely
 *Captured 2026-08-28, migrated 2026-09-02.*
 
@@ -278,23 +264,6 @@ than said.*
 - **Open** — "every day" can be said three ways (`docs/open-questions.md` § *Settled*); a picker
   shows one of them.
 
-### B-016 — go to a day other than today, and tick it
-*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
-
-> "Go to a day other than today."
-
-- **Trigger** — the morning after, or a gap a few days old — the failure the product exists to
-  remove.
-- **Touches** — `day-screen` (#27). Its intent is "for a given date", and nothing yet says the
-  owner is the one who gives it.
-- **Principle** — tested against *nothing congratulates you*: passes, and is that principle's
-  precondition. A record that can be filled in late is what makes a missed day a fact rather than
-  a broken streak.
-- **Open** — how far back, which is `docs/open-questions.md`'s open product question, forced by
-  B-012 and met here.
-- **Open** — forward as well? A day not yet arrived has nothing to tick; whether it is reachable
-  at all is the first Story's to say.
-
 ### B-017 — meet a quota over a longer span than a week
 *Captured 2026-09-02.*
 
@@ -345,25 +314,6 @@ than said.*
   done?"* — which is a daily quota described from the other side. Grooming should merge or
   separate these deliberately rather than let both survive by default.
 
-### B-019 — tick a commitment from the day I am looking at
-*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
-
-> "Tick a commitment from its row on the day screen."
-
-- **Trigger** — the daily visit itself, five times over, phone in hand. This is the interaction
-  the product exists for.
-- **Touches** — `day-screen` (#27) and `record` (#53), and it is the seam between them: #27
-  shows the row, #53 holds the fact, and nothing yet says the row writes one. #27's intent is
-  "show"; #53's is the type and the store.
-- **Principle** — tested against *entered where you stand*: passes, and is the want that
-  principle was abstracted from on 2026-09-02. A principle judges wants rather than being one,
-  so it does not put a tap on a row — that has to be said as a want or it is never built.
-- **Open** — which capability owns the tap. A tick made from a row is either a `day-screen`
-  requirement that calls into `record`, or a `record` requirement about where a tick comes from.
-  #27's G2 is the next decision that meets it.
-- **Open** — does the row show that it is already ticked, and does the same tap take it back?
-  `CONTEXT.md` § *Untick* exists at the type level and no surface offers it.
-
 ### B-020 — see every commitment I keep, in one place
 *Captured 2026-09-02, from the sweep. The wording is the sweep's.*
 
@@ -406,6 +356,20 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-02 — tick a commitment from the day I am looking at → Story #71
+  `add-tick-from-row`, under `FEAT: day-screen` (#27). The tap belongs to `day-screen`, settled at
+  the Feature grill: `record` says what a tick is and knows nothing of a row, so #53 stays closed.
+  Its other half — whether the same tap takes the tick back — went into the Story rather than
+  staying a want.
+- 2026-09-02 — go to a day other than today, and tick it → Story #72 `add-day-navigation`, under
+  `FEAT: day-screen` (#27), with the ticking half in #71. A day view answers for every supported
+  date, so the open product question *how far back the past stays writable* is answered in
+  direction: as far back as the calendar goes, bounded by navigation rather than by a rule. It
+  leaves `docs/open-questions.md` when #72 settles it, not before.
+- 2026-09-02 — keep unticked commitments visible into the evening rather than silently missed →
+  Story #70 `add-day-view`, under `FEAT: day-screen` (#27). It needs no requirement of its own: a
+  day view lists what the date asks for and a ticked commitment stays in it and goes quiet, which
+  is the whole of this want.
 - 2026-09-02 — tick a due commitment on a day, and have it kept → `FEAT: record` (#53),
   under `EPIC: Daily commitments` (#1). B-001..B-005 stay wants and reopen it when they come;
   B-009 is now a Story against it rather than a capability of its own.
@@ -471,7 +435,7 @@ most needs to count. Say what the coverage sweep found, including when it found 
   capture and both passes are 2026-09-02, so the forced choice first fires on a later date.
   **Taken forward**: cluster A, the day screen you can use — B-019, B-006, B-016 — grilled and
   taken to `FEAT: day-screen` (#27). #27 is at G2 rather than G1, so no Feature was minted and
-  the three wants stay in *Wants* until its Stories carry numbers. The grill settled three things,
+  the three wants left *Wants* the same day, once its Stories carried numbers: B-006 → #70, B-019 → #71, B-016 → #72. The grill settled three things,
   now in `CONTEXT.md` as **day view** and **row**: ticking belongs to `day-screen` and #53 stays
   closed; a day view answers for every supported date, and a row after today is shown and refuses
   the tick; the day preserves the order it is handed, because a commitment has no identifier to
