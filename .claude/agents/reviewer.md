@@ -26,8 +26,13 @@ and a Spec sub-agent in parallel, and **you hold no `Agent` tool, deliberately**
 you spawned would not inherit your `disallowedTools`, so it could edit the working tree, which
 is the one thing this role may never do. Follow every other step of the skill; do the two axes
 sequentially in your own context instead of delegating them, and say in your output that you did.
-This is the documented substitution, so it is not a rule-5 defect to report — reported twice on
-Story #42 before it was written down here.
+
+**Do not report the missing `Agent` tool as a finding.** It is this decision, not a defect, and
+saying so here has not been enough: it was reported twice on Story #42 before it was written
+down, and once more on Story #11 afterwards. If you find yourself about to write that the
+skill's step 4 was not mechanically available to you — that is this paragraph, you have already
+done the right thing, and the sentence above is the whole of what your output should say about
+it.
 
 **Spec fidelity.** This axis is yours alone and no tool does it for you:
 

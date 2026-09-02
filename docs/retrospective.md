@@ -148,6 +148,10 @@ contained in it. That cost decays as the machinery settles, but it is not zero o
 
 ## 7. Known weak points
 
+The first four and the resolved fifth are from this document's stated scope. The last two were
+found running Story #11 on 2026-09-02, after it, and are recorded here rather than in a second
+document because they are the same kind of thing: a rule the process states and nothing checks.
+
 - **Per-agent write permissions are largely convention.** Path-scoped permissions cannot be
   set per agent, and subagent frontmatter hooks are silently skipped unless the folder is
   explicitly trusted. Three layers enforce what can be enforced; `AGENTS.md` and `ADR-0013`
@@ -159,6 +163,36 @@ contained in it. That cost decays as the machinery settles, but it is not zero o
 - **An agent that holds `Bash` can write any file**, whatever its `disallowedTools` say.
   `orchestrator`, `reviewer` and `janitor` all need `Bash`.
 - **The graph generator does not paginate** past 100 issues. It throws rather than truncating.
+- **An ADR number is claimed at Stage 4 and merged at Stage 9**, so any branch open across
+  another ADR's merge collides with it. Found twice in one day on Story #11, 2026-09-02: its
+  ADR was written as 1010, renumbered to 1014 when the backlog ADR landed under it, and
+  renumbered again to 1015 when `the-question-comes-first` took 1014 during review. The second
+  move touched the signed change folder — the ADR is cross-referenced from `proposal.md`,
+  `design.md` and `tasks.md` — so it cost a second G4 signature for a filename. Nothing checks
+  for the collision; `git rebase` finds it, in `docs/adr/README.md`, at the worst moment. What
+  to do about it is an open technical decision rather than a fix, and it is recorded as one in
+  `docs/open-questions.md`.
+- **A written instruction failed three times in the place it was written.**
+  `.claude/agents/reviewer.md` tells the reviewer that the missing `Agent` tool is a deliberate
+  decision — a sub-agent would not inherit its `disallowedTools` and could edit the working
+  tree — and to run the two `code-review` axes inline instead. That paragraph exists *because*
+  the reviewer reported it twice on Story #42; it reported it a third time on Story #11,
+  2026-09-02, from a session that had read the file. Rewritten on 2026-09-02 to say "do not
+  report this" as its own instruction rather than as a clause at the end of the rationale. The
+  general point is the one worth keeping: an instruction placed after the reasoning that
+  justifies it is read as commentary, and prose the agent must *act* on has to be shaped as an
+  action.
+- **Rule 3 is unenforced, and a batched Story is indistinguishable from a disciplined one after
+  the fact.** Found at Story #11's review, 2026-09-02 (PR #45): nine of ten scenarios were
+  written in two commits — five tests and five ticked boxes in one, four tests and the guard
+  that satisfies them in another — and nine `tasks.md` boxes were ticked as though each had
+  been its own red-green cycle. `pnpm run checks` passed throughout, because CI check 4 counts
+  scenario coverage and never asks in what order coverage arrived. The behaviour was correct
+  and the owner deliberately let it stand; what was lost is the evidence, since `tasks.md` had
+  asked for a report if any predicted-green scenario ran red, and after batching no such
+  observation could have been made. A squash merge then removed the only trace: the commit
+  shapes the finding rests on are not reachable from `main`. This is the first Story where
+  scenario count made the shortcut worth taking, and there will be more.
 - **~~ADRs had no way to correct a false statement.~~ Resolved 2026-08-24.** The rule
   forbade editing an accepted ADR except to add a `Superseded by` line, so `ADR-0002`'s two
   wrong command names had no route out. `docs/adr/README.md` now separates the decision, its
