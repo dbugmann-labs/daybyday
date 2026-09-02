@@ -142,29 +142,27 @@ enum ScheduleRecord: Codable, Equatable, Comparable {
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ]
 
+    /// The one wire name per weekday. `weekday(named:)` is this table's inverse, built from it, so
+    /// the two directions cannot disagree the way two hand-written `switch`es could.
+    private static let wireNames: [Weekday: String] = [
+        .monday: "monday",
+        .tuesday: "tuesday",
+        .wednesday: "wednesday",
+        .thursday: "thursday",
+        .friday: "friday",
+        .saturday: "saturday",
+        .sunday: "sunday",
+    ]
+
+    private static let weekdaysByWireName: [String: Weekday] = Dictionary(
+        uniqueKeysWithValues: wireNames.map { ($0.value, $0.key) })
+
     private static func name(for weekday: Weekday) -> String {
-        switch weekday {
-        case .monday: return "monday"
-        case .tuesday: return "tuesday"
-        case .wednesday: return "wednesday"
-        case .thursday: return "thursday"
-        case .friday: return "friday"
-        case .saturday: return "saturday"
-        case .sunday: return "sunday"
-        }
+        wireNames[weekday]!
     }
 
     private static func weekday(named name: String) -> Weekday? {
-        switch name {
-        case "monday": return .monday
-        case "tuesday": return .tuesday
-        case "wednesday": return .wednesday
-        case "thursday": return .thursday
-        case "friday": return .friday
-        case "saturday": return .saturday
-        case "sunday": return .sunday
-        default: return nil
-        }
+        weekdaysByWireName[name]
     }
 
     init(_ schedule: Schedule) {
