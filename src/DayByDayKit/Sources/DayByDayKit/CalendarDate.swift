@@ -74,4 +74,14 @@ public struct CalendarDate: Hashable, Sendable {
     func days(until other: CalendarDate) -> Int {
         Self.calendar.dateComponents([.day], from: date, to: other.date).day!
     }
+
+    /// The calendar date `days` calendar days from this one, or `nil` when that date falls
+    /// outside the supported range — built on the same private UTC `Calendar` as `weekday`,
+    /// `daysInMonth` and `days(until:)`, and returning through `init?(year:month:day:)` so the
+    /// 1583–9999 guard is not restated here.
+    func adding(days: Int) -> CalendarDate? {
+        let stepped = Self.calendar.date(byAdding: .day, value: days, to: date)!
+        let components = Self.calendar.dateComponents([.year, .month, .day], from: stepped)
+        return CalendarDate(year: components.year!, month: components.month!, day: components.day!)
+    }
 }
