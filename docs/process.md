@@ -251,8 +251,9 @@ approved, and two ADR titles name Stage 4. Renumbering would falsify a record to
 
 Grilling happens twice, and the two ask different questions. Confusing them is how one of them
 becomes expensive. **Both run through one skill, `grill`**, this repository's own, which calls
-`mattpocock-skills:grilling` and `mattpocock-skills:domain-modeling` — the two skills
-`grill-with-docs` calls, and which no agent may invoke. ADR-1009.
+`mattpocock-skills:grilling` and `mattpocock-skills:domain-modeling`. Those two are the same
+calls `grill-with-docs` makes, and both are reachable; `grill-with-docs` itself is not, which is
+why this repository owns a wrapper at all. ADR-1009.
 
 **Both belong to the conductor, and both work in rounds:** ask every question whose prerequisites
 are already settled, hear the answers, work out what those answers just unblocked, ask again,
