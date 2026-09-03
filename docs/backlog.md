@@ -527,3 +527,46 @@ found nothing.
       shape was chosen by ADR-1017 — and promoting it amends Epic #1's exclusion list.
     - **F**, quota spans and standing: B-017 and B-025, both blocked on *Week turnover*
       (`docs/open-questions.md`), which nothing yet forces.
+
+- 2026-09-03 — pass over 15 wants, the fourth.
+  - **Sweep** — two silences, both confirmed and captured before clustering, and both the same
+    lesson as the third pass one Story later: `add-day-screen` (#91) made the app keep a tick and
+    the shell still drew nothing but a row's name, so a tap changed nothing a person could see
+    (B-026); and the one failure a tick reports was swallowed by a `try?` in the shell, sitting
+    in `docs/open-questions.md` as a gap "owed by whichever Story first gives the shell a way to
+    say anything" — a want in disguise (B-027). A third silence, what a person does when the
+    record cannot be read, was folded into B-009's Open lines rather than minted: restoring from
+    a copy is the answer to a corrupt file as much as to a new phone. The day-one week has no
+    line unclaimed. Lifecycle verbs: `commitment` all claimed; `record` has create and untick
+    shipped, other kinds in cluster C and discard now in B-009; `schedule`'s read-back in words is
+    B-021; `day-screen` had create shipped and move in flight, and show-kept was the gap.
+    *Week turnover* stays a question, forced by B-025 and nothing else. One discrepancy found:
+    the third pass logged cluster C as "taken forward in a separate session the same day", and
+    nothing on the tracker or in *Decided* shows it — #53 is closed without comment and
+    B-001..B-005 and B-018 are still here. Treated as not taken.
+  - **Taken forward** — cluster A, the day screen you can read: B-026 and B-027, grilled and
+    taken to `FEAT: day-screen` (#27) at G2, a third round against the same capability. The
+    grill settled three things: drawing a row's kept flag is the app shell's and carries no
+    requirement, so B-026 is a chore under ADR-1019 rather than a Story (PR #105); kept is a
+    dimmed name and a plain checkmark, no colour, no animation; and a refused tick is told on the
+    row that was tapped and lasts until the app is shown again or a tick on any row is kept,
+    the lifetime a screen without its record already has, every refusal told the same way.
+    `CONTEXT.md` § *Day screen* was amended for the last. B-027 → Story #100
+    `add-refused-tick-notice`, appended to the chain after #93 rather than reordering the chain
+    accepted this morning. Left behind on `day-screen`: B-011 until B-007, B-025 until *Week
+    turnover*.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **B**, a record that is not a tick: B-001..B-005 and B-018 reopen `record` (#53), touch
+      `commitment` for the payload kind and `day-screen` for the entry in the row, and rewrite
+      `CONTEXT.md` § *Record*. Epic #1 excludes weight, protein, mood, the journal and negative
+      habits by name, so it is a second Epic or an amended exclusion list — a session of its
+      own. Not started while #26 owes a decomposition and #27 has #92, #93 and #100 waiting.
+      Whoever takes it must merge or separate B-002 and B-018 deliberately.
+    - **C**, looking back: B-007 and B-011, unclaimed. Unblocked for the first time — #91
+      records ticks on a phone — and B-011 still cannot be decided before B-007.
+    - **D**, restore: B-009, now also covering a record that cannot be read. A Story against
+      #53; Epic #1 excludes "export and restore" by name, so promoting it amends the Epic.
+    - **E**, two singletons rather than a cluster: B-014 as a Story against #26 once retiring
+      exists and #26's G2 has happened; B-021 as a Story reopening `schedule` (#6).
+    - **F**, quota spans and standing: B-017 and B-025, blocked on *Week turnover*, which
+      nothing yet forces.
