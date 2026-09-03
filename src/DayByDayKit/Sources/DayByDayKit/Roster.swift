@@ -30,7 +30,7 @@ public struct Roster: Hashable, Sendable {
                 return false
             }
 
-            entries[index] = Entry(commitment: commitment, keptUntil: nil)
+            entries[index] = Entry(commitment: entries[index].commitment, keptUntil: nil)
             return true
         }
 
@@ -50,7 +50,7 @@ public struct Roster: Hashable, Sendable {
             return false
         }
 
-        entries[index] = Entry(commitment: commitment, keptUntil: date)
+        entries[index] = Entry(commitment: entries[index].commitment, keptUntil: date)
         return true
     }
 
