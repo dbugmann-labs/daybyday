@@ -501,3 +501,18 @@ func aRowAlreadySayingTheCommitmentIsKeptOffersTheSameTick() {
     #expect(keptView.rows[0].isKept)
     #expect(notKeptView.rows[0].tick(asOf: monday) == keptView.rows[0].tick(asOf: monday))
 }
+
+@Test("a row for a date later than the day it is asked as of offers no tick")
+func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoTick() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym], on: wednesday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym"])
+    #expect(dayView.rows[0].tick(asOf: monday) == nil)
+}

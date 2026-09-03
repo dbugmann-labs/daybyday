@@ -51,8 +51,10 @@ prediction here is not evidence.
   date, one history empty and one holding the tick; the rows differ in `isKept` and offer an equal
   tick. Pins that the offer does not consult the history. Passed immediately — the current
   implementation never reads the history for `tick(asOf:)`.
-- [ ] 2.5 `a row for a date later than the day it is asked as of offers no tick` — a day view on
-  Wednesday 2 September 2026 asked as of Monday 31 August 2026. The refusal itself.
+- [x] 2.5 `a row for a date later than the day it is asked as of offers no tick` — a day view on
+  Wednesday 2 September 2026 asked as of Monday 31 August 2026. The refusal itself. Confirmed red:
+  `swift test` reported the offered tick equal to a formed one rather than `nil`, because 2.1's
+  implementation always returned a tick.
 - [ ] 2.6 `a row for a date earlier than the day it is asked as of offers the tick` — a day view on
   Monday 31 August 2026 asked as of Saturday 5 September 2026: the past is writable. Fails an
   implementation that compares for equality rather than for "later than".
