@@ -47,7 +47,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `Tick` gives back neither its commitment nor its date. `add-record-store` (#56) was expected
   to widen that and did not need to — the store lives in the same module and reads the internal
   members — so the gap is still the screen's, and the widening is still owed by whichever Story
-  first renders a rule or a tick.
+  first renders a rule or a tick. Grew a fifth case with `add-day-navigation` (#72), 2026-09-03,
+  and this one is the closest to biting: the shell can now move between days and still cannot say
+  which day it is on, because `CalendarDate`'s `year`, `month` and `day` are internal and it is
+  not `Comparable`. Rendering a date is a delta against `openspec/specs/schedule/spec.md` rather
+  than `day-screen`, so it is a Story of its own against a second capability — which is why #72
+  did not widen it in passing.
 - **The store must be opened under `Library/Application Support/`.** Owed by #56's design,
   2026-09-02. `RecordStore` keeps the record at whatever place it is given and cannot enforce
   the choice from where it sits; `Caches/` is purged by the system and `tmp/` is not backed up,
@@ -65,6 +70,17 @@ Things that are built, or deliberately not built, in a state someone will trip o
   holds (it is still refused, and nothing is overwritten); what is missing is a fourth case in
   the seam, which is a `design.md` edit and a second G4. Left deliberately, for the Story that
   first meets it — realistically the app target or `day-screen` (#27) — to add with a delta.
+- **The shell identifies rows by equality, and two rows may be equal.** Surfaced at #71's
+  review, 2026-09-03. `src/DayByDay` draws `List(dayView.rows, id: \.self)`, so a row's
+  `Hashable` conformance is what SwiftUI uses to tell one row from another — but `day-screen`'s
+  spec deliberately permits two rows to be equal, since a commitment handed to a day view twice,
+  or two commitments alike in name, schedule and kept-from day, produce identical rows. SwiftUI
+  given duplicate ids drops or misanimates rows. It cannot bite today: the day-one week has no
+  duplicates, and `add-tick-from-row` (#71) made rows count their date towards equality, which
+  narrows nothing here because every row in one list carries that list's date. The fix is the
+  shell's — a stable identity that is not the value — and it belongs to whichever Story first
+  draws a list the user can add to. Left alone in #71 deliberately: changing it there would have
+  been a silent edit to the app target from a Story scoped to `DayByDayKit`.
 - **No UI smoke layer.** Surfaced at `day-screen`'s G1, 2026-08-31. Acceptance tests for the
   first screen attach at a view-model seam inside `DayByDayKit`, so nothing automated proves
   SwiftUI actually draws: a row left blank by a misspelled binding passes CI. The answer is one
