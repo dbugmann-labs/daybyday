@@ -85,30 +85,36 @@ here is not evidence.
 - [x] 2.10 `stopping a commitment on a copy of a roster leaves the roster it was copied from
   unchanged` — value semantics for the new mutation, the twin of #101's copy scenario for `add`. Ran
   green immediately; `Roster` is a struct and `entries` is a value array.
-- [ ] 2.11 `a roster answers with every commitment it keeps, in the order they were taken on` — the
-  first scenario for `commitments(on:)`; two commitments, nothing stopped, order preserved.
-- [ ] 2.12 `a stopped commitment is in the answer on the day it was kept until and out of it on the
+- [x] 2.11 `a roster answers with every commitment it keeps, in the order they were taken on` — the
+  first scenario for `commitments(on:)`; two commitments, nothing stopped, order preserved. Ran green
+  immediately; already covered by `commitments(on:)`'s implementation in 2.7.
+- [x] 2.12 `a stopped commitment is in the answer on the day it was kept until and out of it on the
   next day` — the boundary the whole Story turns on, and the owner's answer to question 1: the day
   named is the last day kept. Three dates: 31 January 2026 answers with it, 1 February 2026 and
-  1 March 2026 answer with nothing.
-- [ ] 2.13 `a stopped commitment keeps its place in the answer for a date it was still kept on` —
+  1 March 2026 answer with nothing. Ran green immediately; already covered by `commitments(on:)`'s
+  implementation in 2.7.
+- [x] 2.13 `a stopped commitment keeps its place in the answer for a date it was still kept on` —
   three commitments, the middle one stopped; on the kept-until day the answer is all three in
   order with the stopped one still in the middle, and the day after it is the other two. Fails an
-  implementation that appends the stopped ones to the end.
-- [ ] 2.14 `taking a commitment up again puts it back in the answer for the dates between` — stop as
+  implementation that appends the stopped ones to the end. Ran green immediately; `commitments(on:)`
+  filters `entries` in place rather than appending.
+- [x] 2.14 `taking a commitment up again puts it back in the answer for the dates between` — stop as
   of 31 January 2026, offer it again, then ask about 31 January 2026, 1 February 2026 and 1 March
   2026; the commitment is in all three answers. This is the cost the owner accepted on question 2,
   asserted rather than left implied, and it fails an implementation that keeps the old day around.
-- [ ] 2.15 `stopping a commitment leaves every earlier date answering as it did` — the Story's
+  Ran green immediately; `add` clears `keptUntil` on take-up rather than keeping it around.
+- [x] 2.15 `stopping a commitment leaves every earlier date answering as it did` — the Story's
   headline promise, asserted as three answers taken before the stop and compared with the same three
-  taken after it, including 1 January 1583.
-- [ ] 2.16 `a commitment kept from a later date is in the answer for a date before it` — kept from
+  taken after it, including 1 January 1583. Ran green immediately; already covered by
+  `commitments(on:)`'s implementation in 2.7.
+- [x] 2.16 `a commitment kept from a later date is in the answer for a date before it` — kept from
   1 March 2026, asked about 1 January 2026, in the answer. Fails an implementation that applies the
   commitment's own kept-from floor here, which `design.md` § *The roster subtracts only what it
   knows* forbids: the floor is `Commitment.isDue(on:)`'s and stating it twice is two places to be
-  wrong.
-- [ ] 2.17 `a roster that holds nothing answers with nothing on every date` — 1 January 1583,
-  1 January 2026 and 31 December 9999, an answer each time and a refusal on none.
+  wrong. Ran green immediately; `commitments(on:)` never consults `keptFrom`.
+- [x] 2.17 `a roster that holds nothing answers with nothing on every date` — 1 January 1583,
+  1 January 2026 and 31 December 9999, an answer each time and a refusal on none. Ran green
+  immediately; already covered by `commitments(on:)`'s implementation in 2.7.
 
 ## 3. Gates
 
