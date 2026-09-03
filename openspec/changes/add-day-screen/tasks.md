@@ -1,18 +1,18 @@
 ## 1. The public surface
 
-- [ ] 1.1 Add `platforms: [.iOS(.v17), .macOS(.v14)]` to `src/DayByDayKit/Package.swift`, above
+- [x] 1.1 Add `platforms: [.iOS(.v17), .macOS(.v14)]` to `src/DayByDayKit/Package.swift`, above
   `products:`. Nothing else in the manifest changes — same tools version, same language mode, same
   targets. Verify with `cd src/DayByDayKit && swift build` exiting 0 and `swift test` still
   reporting the 164 tests from #8, #9, #10, #11, #42, #55, #56, #70, #71 and #72 passing. If any
   goes red here, stop: a platform floor is not supposed to change behaviour and that is a rule-5
   stop, not a test to edit.
-- [ ] 1.2 Add `Sources/DayByDayKit/DayScreen.swift` with exactly the surface `design.md` § *The
+- [x] 1.2 Add `Sources/DayByDayKit/DayScreen.swift` with exactly the surface `design.md` § *The
   seam* gives — `@MainActor @Observable public final class DayScreen`, the nested
   `RecordState` enum with its three cases, the static `recordPlace`, the three-argument `init` with
   `keeping` defaulted, `dayView`, `recordState`, `tick(_:)` and `shown(asOf:)` — every body being
   `fatalError("not implemented")` except what the stored properties need to compile. Nothing else
   becomes public and no existing source file is touched. Verify with `swift build` exiting 0.
-- [ ] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
+- [x] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports
   `0/28 covered` for this change and names `"a day screen opened where nothing has been kept holds
   the day view of that day with nothing kept"` as next.
 
@@ -41,19 +41,22 @@ not replace the day), 2.24 (if `shown` re-used the store it already held), 2.25 
 re-open the store) and 2.27 (if `shown` re-derived only whether a record was kept and not why not). **Record which ones actually ran
 red as you go, in this file** — a prediction here is not evidence.
 
-- [ ] 2.1 `a day screen opened where nothing has been kept holds the day view of that day with
+- [x] 2.1 `a day screen opened where nothing has been kept holds the day view of that day with
   nothing kept` — the first tick of the seam: one row for "Gym", none for "Run", and the row not
-  kept. Runs red against the `fatalError`.
-- [ ] 2.2 `a day screen opened where a tick was kept holds a day view that says the commitment is
+  kept. Runs red against the `fatalError`. Confirmed red: crashed with `Fatal error: not
+  implemented` at the `init`'s `fatalError`.
+- [x] 2.2 `a day screen opened where a tick was kept holds a day view that says the commitment is
   kept` — a `RecordStore` opened directly at the place and given the tick first, then the screen
-  opened over it. The half of "find the day you left" that reads.
-- [ ] 2.3 `a day screen holds the day it was handed rather than the day it really is` — 3 January
+  opened over it. The half of "find the day you left" that reads. Passed immediately, as
+  `design.md` forecast — not on its list of scenarios expected red.
+- [x] 2.3 `a day screen holds the day it was handed rather than the day it really is` — 3 January
   1583 and 27 December 9999, both Mondays. Any implementation that reaches for `Date()` fails both
   halves; the assertion is against a `DayView` formed directly, so it pins "adds nothing" too.
-- [ ] 2.4 `a day screen holds the same day view as one formed directly from the same commitments,
+  Passed immediately: nothing in `init` reaches for a clock.
+- [x] 2.4 `a day screen holds the same day view as one formed directly from the same commitments,
   day and history` — two commitments, one tick added and one taken back at the place first, then
   the whole day view compared for equality with a directly formed one. The strongest single
-  assertion that the screen delegates rather than recomputes.
+  assertion that the screen delegates rather than recomputes. Passed immediately.
 - [ ] 2.5 `ticking a row that says its commitment is not kept makes the day screen say it is kept` —
   the tap. Takes the screen's own row from `dayView.rows`, not one built by the test.
 - [ ] 2.6 `ticking a row that says its commitment is kept takes the tick back` — the second tap,
