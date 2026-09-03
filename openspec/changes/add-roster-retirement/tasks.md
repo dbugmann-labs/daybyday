@@ -118,12 +118,15 @@ here is not evidence.
 
 ## 3. Gates
 
-- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 222 tests passing and no failures — the
+- [x] 3.1 `cd src/DayByDayKit && swift test` reports 222 tests passing and no failures — the
   seventeen here plus the 205 measured at `ab7ef41`, none of which may change — and
-  `pnpm run verify` exits 0.
-- [ ] 3.2 `pnpm exec openspec validate add-roster-retirement --strict` exits 0 and `pnpm run checks`
+  `pnpm run verify` exits 0. Actual count is 238 (221 baseline + 17 new), not 222: `add-screen-date`
+  (#107) merged onto `main` after `design.md`'s 205 was measured at `ab7ef41`, adding 16 tests before
+  this Story's branch was cut — confirmed by `git log --oneline origin/main` showing #107 between
+  `ab7ef41` and this branch's base. None of the 205 (now 221) changed; `pnpm run verify` exits 0.
+- [x] 3.2 `pnpm exec openspec validate add-roster-retirement --strict` exits 0 and `pnpm run checks`
   reports scenario coverage as 30 of 30.
-- [ ] 3.3 `git diff --stat` names only `Roster.swift` and `RosterTests.swift` under `src/`. The app
+- [x] 3.3 `git diff --stat` names only `Roster.swift` and `RosterTests.swift` under `src/`. The app
   shell is not touched by this Story: `ContentView.swift` still hands `DayScreen` its
   `dayOneCommitments` array, and wiring a roster into a screen is #104's and a second capability's
   delta (rule 5).
