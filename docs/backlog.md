@@ -211,25 +211,6 @@ shape it lacks, not the quota.
   inherits is a decision, not a want. It cannot be taken before B-007, because what may appear on
   the day screen depends on what the detail page is a page *per*.
 
-### B-013 — stop keeping a commitment
-*Captured 2026-09-02, from the sweep. The wording is the sweep's, accepted by the owner rather
-than said in their own words.*
-
-> "Stop keeping a commitment."
-
-- **Trigger** — rarely, when a commitment has run its course: the plants died, the lenses gave
-  way to glasses.
-- **Touches** — `commitment` (#26). Story #42 shipped the type and excluded "archiving or
-  deleting one" by name.
-- **Principle** — tested against *five percent of seven things*: fails on its face, since it makes
-  nothing new possible, and is captured anyway. A commitment that cannot be retired stays due
-  every day, unticked, and reads as a miss for ever; the sweep exists for the want nobody says.
-- **Open** — what happens to its history. The record is durable (`docs/open-questions.md`
-  § *Settled*), so retiring must keep the ticks, and nobody has said whether a retired commitment
-  can still be looked at (B-007) or brought back.
-- **Open** — is retiring a *kept-until* day, the mirror of ADR-1013's kept-from day? That would
-  leave every past day answering as it did.
-
 ### B-014 — change a commitment: its name, or the rhythm it runs on
 *Captured 2026-09-02, from the sweep. The wording is the sweep's.*
 
@@ -243,22 +224,6 @@ than said in their own words.*
 - **Open** — what changing the rhythm does to the past. ADR-1013 fixes that a past day's answer
   does not change once given; a rhythm changed today either rewrites which past days were due, or
   applies from a day forward, and only the second keeps that promise.
-
-### B-015 — define a commitment from the phone: a name and the rhythm it runs on
-*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
-
-> "Define a commitment from the phone."
-
-- **Trigger** — day one, eight times over; then rarely.
-- **Touches** — `commitment` (#26), and a screen that is not the day screen. Story #42 shipped
-  the type and excluded "anything on screen"; without this the eight day-one commitments have no
-  way in.
-- **Principle** — tested against *an iPhone, in your hand*: passes. Choosing one of four rhythm
-  shapes on a phone is the whole interaction, and it happens rarely enough to be allowed a screen.
-- **Open** — the kept-from day (ADR-1013): typed, or defaulted to today? The type has no default
-  on purpose, so a screen has to choose.
-- **Open** — "every day" can be said three ways (`CONTEXT.md` § *Weekly quota*); a picker shows
-  one of them.
 
 ### B-017 — meet a quota over a longer span than a week
 *Captured 2026-09-02.*
@@ -312,22 +277,6 @@ than said in their own words.*
   from the other side. Grooming should merge or separate these deliberately rather than let both
   survive by default.
 
-### B-020 — see every commitment I keep, in one place
-*Captured 2026-09-02, from the sweep. The wording is the sweep's.*
-
-> "See every commitment I keep, in one place."
-
-- **Trigger** — rarely: adding the ninth, a new gym timetable, the plants dying.
-- **Touches** — `commitment` (#26), and a screen that is not the day screen. The day screen
-  shows what one date asks for; nothing shows what you have taken on.
-- **Principle** — tested against *five percent of seven things*: passes. A list is the thinnest
-  possible surface across every commitment at once, and it is what B-013 and B-014 both have to
-  reach a commitment *through* — neither says how you get to the one you want to change.
-- **Open** — is this B-015's screen or a separate one? One entry point or two changes nothing
-  about what is stored and everything about what the Stories are.
-- **Open** — does it show retired commitments (B-013)? A list that hides them is one you cannot
-  bring a commitment back from.
-
 ### B-021 — see what rhythm a commitment runs on, in words
 *Captured 2026-09-02, from the sweep. The wording is the sweep's.*
 
@@ -376,6 +325,25 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-03 — define a commitment from the phone, a name and the rhythm it runs on → `FEAT:
+  commitment` (#26), reopened rather than minted, under `EPIC: Daily commitments` (#1). Taken at G1
+  with B-020 and B-013 as one Feature, the commitment's lifecycle, in a session of its own. That G1
+  left two of the cluster's five wants behind, and they stay in *Wants* above: B-021, because
+  saying a rhythm in words is a delta against `openspec/specs/schedule/spec.md` and reopens
+  `FEAT: schedule` (#6); and B-014, because changing a commitment does not compose — a rename
+  keeps its history only if `record` re-keys its ticks, and a rhythm change cannot be retroactive
+  at all, since `Tick` refuses a date its commitment is not due on. The reasoning is on #26 as a
+  comment.
+- 2026-09-03 — see every commitment I keep, in one place → the same `FEAT: commitment` (#26). It is
+  the list B-013 and B-014 both have to reach a commitment through, and its own open question —
+  whether retired commitments show in it — was answered at G1: they are hidden from it.
+- 2026-09-03 — stop keeping a commitment → the same `FEAT: commitment` (#26). Its own open
+  question, whether retiring is a kept-until day mirroring ADR-1013's kept-from day, was answered
+  at G1 and the answer is no: `Tick` embeds the whole `Commitment` value and `History.isKept`
+  matches by value, so a fourth part would change a commitment's identity and orphan every tick
+  already recorded — the history would read empty the moment anything was retired. Retiring
+  belongs to whatever holds the set of commitments a person keeps, and every past day then answers
+  exactly as it did.
 - 2026-09-03 — tick a commitment on the phone and find it still ticked → `FEAT: day-screen`
   (#27), reopened, under `EPIC: Daily commitments` (#1). Story numbers follow at #27's G2. The
   requirements live behind the seam in `DayByDayKit` and not in `src/DayByDay`, because CI runs
