@@ -42,14 +42,25 @@ public final class DayScreen {
         self.today = today
         self.place = place
 
-        if let store = try? RecordStore(at: place) {
-            self.store = store
-            self.recordState = .kept
-            self.dayView = DayView(of: commitments, on: today, in: store.history)
-        } else {
-            self.store = nil
-            self.recordState = .unreadable
-            self.dayView = DayView(of: commitments, on: today, in: History())
+        let opened = Self.open(at: place)
+        self.store = opened.store
+        self.recordState = opened.state
+        self.dayView = DayView(of: commitments, on: today, in: opened.store?.history ?? History())
+    }
+
+    /// Opens the record at `place`, telling apart the one refusal a person can act on
+    /// differently: `RecordStoreError.laterForm` says the record was written by a later version
+    /// of DayByDay, and every other reason a store can refuse to open — a run of bytes that is
+    /// not a record, a tick that could not be formed, or anything Foundation itself throws — is
+    /// answered alike, as `.unreadable`.
+    private static func open(at place: URL) -> (store: RecordStore?, state: RecordState) {
+        do {
+            let store = try RecordStore(at: place)
+            return (store, .kept)
+        } catch RecordStoreError.laterForm {
+            return (nil, .writtenByALaterVersion)
+        } catch {
+            return (nil, .unreadable)
         }
     }
 

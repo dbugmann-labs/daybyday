@@ -92,29 +92,33 @@ red as you go, in this file** — a prediction here is not evidence.
   immediately.
 - [x] 2.14 `the place a day screen keeps its record is the same place every time it is asked` — two
   reads, equal. Passed immediately.
-- [ ] 2.15 `a day screen opened where the record cannot be read still holds the day view of that
+- [x] 2.15 `a day screen opened where the record cannot be read still holds the day view of that
   day` — a run of bytes that is not a record. The screen opens rather than throwing, and still
-  answers the day. ADR-1021's first half.
-- [ ] 2.16 `a day screen opened where the record cannot be read says it is not keeping one and gives
+  answers the day. ADR-1021's first half. Passed immediately: `init`'s non-throwing, catching
+  shape was already in place from 2.1.
+- [x] 2.16 `a day screen opened where the record cannot be read says it is not keeping one and gives
   no further reason` — `recordState` is `.unreadable`. The negative control for 2.17: without it,
   an implementation could answer `.writtenByALaterVersion` for every refusal and still pass.
-- [ ] 2.17 `a record written in a later form than this app knows makes a day screen that says the
+  Passed immediately.
+- [x] 2.17 `a record written in a later form than this app knows makes a day screen that says the
   record is from a later version` — the one refusal this capability tells apart. Build the bytes the
   same way `RecordStoreTests` builds its later-form case; the screen distinguishes it by catching
-  `RecordStoreError.laterForm` and nothing else changes in `record`.
-- [ ] 2.18 `a day screen opened where the record can be read says it is keeping one` — the positive
+  `RecordStoreError.laterForm` and nothing else changes in `record`. Confirmed red: `recordState`
+  reported `.unreadable` rather than `.writtenByALaterVersion`.
+- [x] 2.18 `a day screen opened where the record can be read says it is keeping one` — the positive
   control, both at an empty place and at one holding a tick. Without it, `recordState` could be a
-  constant.
-- [ ] 2.19 `ticking a row on a day screen that is not keeping a record changes nothing and keeps
+  constant. Passed immediately.
+- [x] 2.19 `ticking a row on a day screen that is not keeping a record changes nothing and keeps
   nothing` — ADR-1021's second half: the tap is silent, `tick` does not throw, the day view does not
-  move and `recordState` stays `.unreadable`.
-- [ ] 2.20 `a day screen opened where the record cannot be read leaves what is at the place as it
+  move and `recordState` stays `.unreadable`. Passed immediately: `tick`'s `guard let store else`
+  (added for 2.5) already covers it.
+- [x] 2.20 `a day screen opened where the record cannot be read leaves what is at the place as it
   was` — read the bytes before, tick, read them after, compare byte for byte. The scenario that
-  makes "keeps nothing" mean something on disk rather than only in memory.
-- [ ] 2.21 `ticking a row on a day screen holding a record from a later version keeps nothing and
+  makes "keeps nothing" mean something on disk rather than only in memory. Passed immediately.
+- [x] 2.21 `ticking a row on a day screen holding a record from a later version keeps nothing and
   leaves the record as it was` — the same three assertions as 2.19 and 2.20 on the branch the
   owner's answer exists to protect: the record a person must not lose is the one they are told not
-  to delete, so the bytes are compared before and after.
+  to delete, so the bytes are compared before and after. Passed immediately.
 - [ ] 2.22 `a day screen shown again on a later day holds that day's day view` — Monday to Tuesday,
   "Gym" out and "Run" in.
 - [ ] 2.23 `a day screen shown again on the day it is already on holds that day's day view` —
