@@ -194,6 +194,11 @@ shape it lacks, not the quota.
   boundary the quote already draws.
 - **Open** — restore is stated as the boundary, so live sync is out. What "restore" means
   concretely — a file, iCloud, a backup you can see — is not decided.
+- **Open** — *folded in 2026-09-03, from the fourth sweep:* what a person does when the record
+  cannot be read. `add-day-screen` (#91) has the day screen draw the day, keep nothing, and leave
+  the file "for a person or a later version of the app to recover" — indefinitely. Nothing says
+  how a person recovers. Restoring from a copy is the answer to a corrupt file as much as to a new
+  phone, so it belongs here rather than as a want of its own.
 
 ### B-011 — see something of a commitment's history on the day screen itself
 *Captured 2026-09-02.*
@@ -325,6 +330,16 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-03 — see, in the row, that today's commitment is kept → a chore on the app shell,
+  `chore/draw-kept`, under ADR-1019: `Row.isKept` is already public and drawing it carries no
+  requirement, so there is nothing for a Story to specify. Kept is a dimmed name and a plain
+  checkmark, no colour, no animation — the row goes quiet. Lands before #100, since there is
+  nothing to say a tick was *not* kept while nothing shows that one was.
+- 2026-09-03 — be told when a tick I made was not kept → Story #100 `add-refused-tick-notice`,
+  under `FEAT: day-screen` (#27), appended to the chain after #93. The refusal is told on the row
+  that was tapped and stays until the app is shown again or a tick on any row is kept — the
+  lifetime a screen without its record already has; every refused tick is told the same way.
+  `CONTEXT.md` § *Day screen* carries it.
 - 2026-09-03 — define a commitment from the phone, a name and the rhythm it runs on → `FEAT:
   commitment` (#26), reopened rather than minted, under `EPIC: Daily commitments` (#1). Taken at G1
   with B-020 and B-013 as one Feature, the commitment's lifecycle, in a session of its own. That G1
@@ -512,3 +527,46 @@ found nothing.
       shape was chosen by ADR-1017 — and promoting it amends Epic #1's exclusion list.
     - **F**, quota spans and standing: B-017 and B-025, both blocked on *Week turnover*
       (`docs/open-questions.md`), which nothing yet forces.
+
+- 2026-09-03 — pass over 15 wants, the fourth.
+  - **Sweep** — two silences, both confirmed and captured before clustering, and both the same
+    lesson as the third pass one Story later: `add-day-screen` (#91) made the app keep a tick and
+    the shell still drew nothing but a row's name, so a tap changed nothing a person could see
+    (B-026); and the one failure a tick reports was swallowed by a `try?` in the shell, sitting
+    in `docs/open-questions.md` as a gap "owed by whichever Story first gives the shell a way to
+    say anything" — a want in disguise (B-027). A third silence, what a person does when the
+    record cannot be read, was folded into B-009's Open lines rather than minted: restoring from
+    a copy is the answer to a corrupt file as much as to a new phone. The day-one week has no
+    line unclaimed. Lifecycle verbs: `commitment` all claimed; `record` has create and untick
+    shipped, other kinds in cluster C and discard now in B-009; `schedule`'s read-back in words is
+    B-021; `day-screen` had create shipped and move in flight, and show-kept was the gap.
+    *Week turnover* stays a question, forced by B-025 and nothing else. One discrepancy found:
+    the third pass logged cluster C as "taken forward in a separate session the same day", and
+    nothing on the tracker or in *Decided* shows it — #53 is closed without comment and
+    B-001..B-005 and B-018 are still here. Treated as not taken.
+  - **Taken forward** — cluster A, the day screen you can read: B-026 and B-027, grilled and
+    taken to `FEAT: day-screen` (#27) at G2, a third round against the same capability. The
+    grill settled three things: drawing a row's kept flag is the app shell's and carries no
+    requirement, so B-026 is a chore under ADR-1019 rather than a Story (PR #105); kept is a
+    dimmed name and a plain checkmark, no colour, no animation; and a refused tick is told on the
+    row that was tapped and lasts until the app is shown again or a tick on any row is kept,
+    the lifetime a screen without its record already has, every refusal told the same way.
+    `CONTEXT.md` § *Day screen* was amended for the last. B-027 → Story #100
+    `add-refused-tick-notice`, appended to the chain after #93 rather than reordering the chain
+    accepted this morning. Left behind on `day-screen`: B-011 until B-007, B-025 until *Week
+    turnover*.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **B**, a record that is not a tick: B-001..B-005 and B-018 reopen `record` (#53), touch
+      `commitment` for the payload kind and `day-screen` for the entry in the row, and rewrite
+      `CONTEXT.md` § *Record*. Epic #1 excludes weight, protein, mood, the journal and negative
+      habits by name, so it is a second Epic or an amended exclusion list — a session of its
+      own. Not started while #26 owes a decomposition and #27 has #92, #93 and #100 waiting.
+      Whoever takes it must merge or separate B-002 and B-018 deliberately.
+    - **C**, looking back: B-007 and B-011, unclaimed. Unblocked for the first time — #91
+      records ticks on a phone — and B-011 still cannot be decided before B-007.
+    - **D**, restore: B-009, now also covering a record that cannot be read. A Story against
+      #53; Epic #1 excludes "export and restore" by name, so promoting it amends the Epic.
+    - **E**, two singletons rather than a cluster: B-014 as a Story against #26 once retiring
+      exists and #26's G2 has happened; B-021 as a Story reopening `schedule` (#6).
+    - **F**, quota spans and standing: B-017 and B-025, blocked on *Week turnover*, which
+      nothing yet forces.

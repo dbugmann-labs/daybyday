@@ -260,7 +260,13 @@ It **keeps a change before it says so**: a tick made on a day screen is kept at 
 first, and only then does the day view say the commitment is kept — the day view is formed again
 from the record as it then stands rather than the one being held being altered. What a person reads
 is therefore never ahead of what is on the disk, and a change that could not be kept is refused,
-reported and left out of the day view entirely. It is not the tick's owner: which tick a tap means
+reported and left out of the day view entirely. **Reported** means told on the row that was
+tapped, under its name, and it stays said until the app is **shown** again or a tick on any row
+is kept — the same lifetime a day screen **without its record** has, so there is one rule for how
+long the screen says something is wrong rather than two. Every refused tick is told the same way:
+a tick refused on a record that could be read has no cause a person can act on differently, which
+is the reasoning ADR-1021 already applied to a record that could not be opened. Agreed 2026-09-03
+at the fourth grooming pass's Feature grill, for B-027. It is not the tick's owner: which tick a tap means
 is the row's answer and what a tick is and where it is held are `record`'s, and a day screen adds
 nothing to either.
 
