@@ -194,6 +194,11 @@ shape it lacks, not the quota.
   boundary the quote already draws.
 - **Open** — restore is stated as the boundary, so live sync is out. What "restore" means
   concretely — a file, iCloud, a backup you can see — is not decided.
+- **Open** — *folded in 2026-09-03, from the fourth sweep:* what a person does when the record
+  cannot be read. `add-day-screen` (#91) has the day screen draw the day, keep nothing, and leave
+  the file "for a person or a later version of the app to recover" — indefinitely. Nothing says
+  how a person recovers. Restoring from a copy is the answer to a corrupt file as much as to a new
+  phone, so it belongs here rather than as a want of its own.
 
 ### B-011 — see something of a commitment's history on the day screen itself
 *Captured 2026-09-02.*
@@ -318,6 +323,47 @@ shape it lacks, not the quota.
   forces it.
 - **Open** — what a met quota's row does: disappear, go quiet, or stay unchanged. `CONTEXT.md`
   § *Day view* records that hiding a met one is "a later Story's" and leaves it there.
+
+### B-026 — see, in the row, that today's commitment is kept
+*Captured 2026-09-03, from the sweep. The wording is the sweep's.*
+
+> "See, in the row, that today's commitment is kept — tap Gym and watch the row change."
+
+- **Trigger** — every daily visit, the moment after a tap; and the glance that decides whether
+  a tap is still owed.
+- **Touches** — `day-screen` (#27). The row already *says* it is kept (`openspec/specs/day-screen/spec.md`,
+  *A row is a commitment's line on a date*); the shell draws its name and nothing else.
+  `add-day-screen` (#91) lists "nothing about `isKept` is drawn" as a non-goal, and neither
+  #92 nor #93 claims it.
+- **Principle** — tested against *nothing congratulates you*: passes, and is the shape that
+  principle exists to leave alone — a ticked row "just goes quiet". The test is that going quiet
+  is all it does: no count, no colour that rewards a run.
+- **Open** — whether this is a requirement on the shell, which `docs/open-questions.md` § *No
+  UI smoke layer* says nothing automated can see, or a requirement behind the seam — what a
+  row *says*, in words, that the shell only echoes. The first Story that draws it decides.
+- **Open** — the same tap takes a tick back (#71). A row that shows kept and is tapped again
+  goes unkept, and it should look like nothing happened rather than like something was lost.
+
+### B-027 — be told when a tick I made was not kept
+*Captured 2026-09-03, from the sweep. The wording is the sweep's.*
+
+> "Be told when a tick was not kept — the tap did nothing, and the app said so."
+
+- **Trigger** — rarely, and exactly when it matters: the place cannot be written, the tap lands,
+  and the row stays as it was.
+- **Touches** — `day-screen` (#27). `DayScreen.tick` throws so that "a person must be told"
+  (#91's `design.md`), and `ContentView` calls it with `try?`, so the refusal reaches nobody.
+  Moved here from `docs/open-questions.md` § *Known gaps* (*The shell swallows the one failure a
+  tick reports*), which had it "owed by whichever Story first gives the shell a way to say
+  anything at all" — a want in disguise, since nothing asked for that Story.
+- **Principle** — tested against *entered where you stand*: passes only if the telling happens
+  in the row or beside it, on the day screen, and never as a screen of its own. A refused tick
+  is a fact about this tap, not a state to navigate to.
+- **Open** — what is said. The day screen already tells one refusal apart, a record from a
+  later version (ADR-1021); a tick refused on a readable record is a different sentence, and
+  whether it is worth telling those apart is the first Story's to decide.
+- **Open** — B-026 first. There is nothing to say a tick was *not* kept while nothing shows
+  that one was.
 
 ## Decided
 
