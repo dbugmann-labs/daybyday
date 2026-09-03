@@ -27,11 +27,6 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   early and add a check that fails the PR when the number is taken. The first two stop the
   collision reaching the change folder at all, which is what made it expensive. Worth an ADR
   when something forces it; nothing does yet, and the workaround is a rename.
-- **The app's bundle identifier.** Opened by ADR-1019, which settled the target's name and
-  deliberately did not settle this. Changing it after even one install orphans the store the
-  previous identifier wrote, and it wants a domain the owner actually controls rather than a
-  placeholder that becomes permanent by being installed once. Forced by the first Story that puts
-  the app on a real phone rather than a simulator.
 
 ## Known gaps
 
@@ -143,6 +138,17 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
 ## Settled
 
+- 2026-09-03 — **the bundle identifier is `com.dbugmann.daybyday`, and it is fixed from the first
+  install on a phone.** Reverse-DNS on the name the `dbugmann-labs` organisation already carries,
+  so the prefix stays true whether or not a domain is ever bought. The trigger this entry named —
+  the first thing that puts the app on a real phone — fired from a direction it did not anticipate:
+  a chore taking a week of real use, not a Story. It could not wait, because on iOS the container
+  holding `DayScreen.recordPlace` is keyed to the identifier, so changing it after an install hands
+  the app an empty container and says nothing. `docs/adr/1023-the-bundle-identifier-is-com-dbugmann-daybyday.md`.
+  **Signing is not settled by it** — `DEVELOPMENT_TEAM` is unset and the machine held no
+  codesigning identity; `docs/running-the-app.md` § *On your own phone* is the step the owner runs
+  in the Xcode GUI.
+
 - 2026-09-03 — **the record is kept at `<Application Support>/DayByDay/record.json`, and the
   day screen is what chooses it.** `RecordStore` keeps the record wherever it is given and cannot
   enforce the choice from where it sits, so the choice had to land somewhere that owes
@@ -160,7 +166,7 @@ Things that are built, or deliberately not built, in a state someone will trip o
   is the part with requirements, and what is left is the product — and `PRODUCT_NAME =
   $(TARGET_NAME)` makes the target name the label under the Home screen icon, so every other
   candidate is a name plus an override putting `DayByDay` back. What it is *not* called, and what
-  it deliberately does not decide, is the bundle identifier, now an open technical decision above.
+  it deliberately does not decide, is the bundle identifier, settled a day later by ADR-1023.
   `docs/adr/1019-the-app-shell-runs-in-the-simulator.md`, and `CONTEXT.md` § *App shell* for the
   guard that keeps the lane honest.
 
