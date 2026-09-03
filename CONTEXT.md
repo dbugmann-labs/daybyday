@@ -248,3 +248,11 @@ undecided: no rule shape consults it yet, so nothing in the engine can settle it
 **Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
 storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by
 `swift test`.
+
+**App shell** — the part of the app that decides nothing: the target, the project file and the
+SwiftUI body that draws what `DayByDayKit` already answers. It is what is left over once
+everything with a requirement is behind the seam, and the test of whether something belongs in it
+is whether that thing could be wrong in a way a test would catch — an order, a formatting rule, a
+refusal, a place a store is opened at, all fail that test and owe a Story. That is why the shell
+is built on a `chore/` branch with no G4, and it is the only part of the app that ever is. Agreed
+2026-09-02 with ADR-1019.

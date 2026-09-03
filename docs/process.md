@@ -366,6 +366,16 @@ need an Epic, and you would abandon the process within a month. Chore branches a
 no behaviour change: tooling, dependency bumps, docs, CI. If you find yourself reaching for
 `chore/` to add behaviour, that is the process telling you to write a Story.
 
+**The one thing that touches `src/` on this lane is the app shell**, which is why the table above
+says a chore branch may. It is not an exception to the sentence before it, because a shell adds no
+behaviour: everything it puts on screen was answered, specified and tested behind the seam
+already. The test is `CONTEXT.md` § *App shell* — **nothing may go in it that could be wrong in a
+way a test would catch** — and anything failing that test is behaviour and owes a Story, however
+small it looks. Read the two together: the prose rules out adding behaviour, the table permits the
+target that draws behaviour someone else added, and the guard is what keeps those from being the
+same thing. ADR-1019, which is also the shape an ADR takes when it stands in for a delta —
+`.claude/agents/implementer.md` works from it exactly as it works from a change folder.
+
 **One PR per Story, open from Stage 4 to merge** — mechanics in §4 and
 `docs/story-mechanics.md`. A `chore/` branch opens its PR whenever it is ready to be read; there
 are no gates on that lane.
