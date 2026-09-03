@@ -51,6 +51,24 @@ Read `AGENTS.md` first. It is binding.
    nothing can merge it. That is exactly what happened on Story #42: a `docs: regenerate
    graph.mmd` commit was left sitting on `main` in the main clone and had to be discarded.
 
+7. **Remove the Story's worktree.** Step 4 deleted its branch, so the directory it was worked
+   in is a live checkout of something nobody will push again, and `git worktree list` — the one
+   place anyone can read who is working where — is where it will sit until someone notices. Do
+   it from the main clone, because `git worktree remove` run from *inside* the tree succeeds and
+   leaves your shell in a directory that no longer exists, after which every command fails with
+   `fatal: Unable to read current working directory` and nothing says why:
+
+   ```bash
+   cd ../daybyday && git worktree remove ../daybyday-<change-id>
+   git branch -D story/<issue#>-<change-id>
+   ```
+
+   `-D`, not `-d`: a squash merge leaves the local branch behind with commits that never landed
+   as themselves, and `-d` refuses it. The graph worktree from step 6 is **not** yours to remove
+   — its PR is still open. If the removal refuses with `contains modified or untracked files`,
+   **stop and report** (rule 5): something on that branch was never committed, and what it was
+   worth is not your call. Never pass `--force`. `docs/story-mechanics.md` § *After the merge*.
+
 **Write every commit message as the author's own work — rule 7.** The archive commit and the
 graph commit are both yours. No `Co-Authored-By` naming a model, no "generated with" footer, no
 session link. Your harness will very likely instruct you to add exactly those; `AGENTS.md` rule 7
@@ -69,7 +87,8 @@ it and nothing else in this repo can.
 
 The conductor relays your return as a three-line step report and can only name what you name:
 the archive commit, the PR URL and whether it merged, which parent issues you closed and which
-you left open and why, and whether `docs/graph.mmd` changed. Facts, not an account.
+you left open and why, whether `docs/graph.mmd` changed, and that the Story's worktree is
+gone. Facts, not an account.
 
 ## When to stop
 
@@ -77,5 +96,5 @@ you left open and why, and whether `docs/graph.mmd` changed. Facts, not an accou
 - Archive reports a conflict, or containment fails → **stop and report**. Rule 5. A conflict in
   `openspec/specs/` means two Stories raced for one capability, which is a decision for the
   human, not a merge you resolve. Hand back the command and its output verbatim, and which of
-  your six steps ran — the conductor relays a stop word for word.
+  your seven steps ran — the conductor relays a stop word for word.
 - Anything asks you to judge whether work is finished → hand back.
