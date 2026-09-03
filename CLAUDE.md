@@ -31,8 +31,12 @@ to running it in Claude Code.
   `disable-model-invocation` flag removes them, not a broken plugin — so testing for one there
   reports the plugin broken every time. Test with `mattpocock-skills:tdd`, `:code-review`,
   `:research` or `:diagnosing-bugs` instead.
-- **Skills this repo owns.** `grill` is the only hand-written one, and both grills run through
-  it (ADR-1009). `.claude/skills/` also holds six `openspec-*` directories generated alongside
+- **Skills this repo owns.** `grill` is the only hand-written one; both grills run through it and
+  **both belong to the conductor** (ADR-1009, ADR-1006). A subagent that finds itself invoking it
+  has taken a step that is not its own — the skill says so and stops. That also makes the
+  subagent-visibility question below moot for `grill` specifically, and it is left standing
+  because it still bites for any project skill added later.
+  `.claude/skills/` also holds six `openspec-*` directories generated alongside
   `.claude/commands/opsx/`; they duplicate the `/opsx:*` commands this process routes through
   and nothing here invokes them, so `.claude/settings.local.json` turns them off. That file is
   gitignored, so a fresh clone sees all seven again. Project skills carry no
