@@ -31,12 +31,16 @@ to running it in Claude Code.
   `disable-model-invocation` flag removes them, not a broken plugin — so testing for one there
   reports the plugin broken every time. Test with `mattpocock-skills:tdd`, `:code-review`,
   `:research` or `:diagnosing-bugs` instead.
-- **Skills this repo owns.** `.claude/skills/` holds `grill`, which both grills run through
-  (ADR-1009). Project skills carry no `disable-model-invocation` flag and load without a
-  restart; whether a **subagent** sees one is unverified. Plugin reachability is a frontmatter
-  flag an update can move, and nothing in CI checks it. `docs/process.md` §10 has both the
-  one-liner that prints the real picture and the prompt that settles the subagent question —
-  run them rather than trusting any table, this file included.
+- **Skills this repo owns.** `grill` is the only hand-written one, and both grills run through
+  it (ADR-1009). `.claude/skills/` also holds six `openspec-*` directories generated alongside
+  `.claude/commands/opsx/`; they duplicate the `/opsx:*` commands this process routes through
+  and nothing here invokes them, so `.claude/settings.local.json` turns them off. That file is
+  gitignored, so a fresh clone sees all seven again. Project skills carry no
+  `disable-model-invocation` flag and load without a restart; whether a **subagent** sees one is
+  unverified. Plugin reachability is a frontmatter flag an update can move, and nothing in CI
+  checks it. `docs/process.md` §10 has both the one-liner that prints the real picture and the
+  prompt that settles the subagent question — run them rather than trusting any table, this
+  file included.
 - **OpenSpec commands.** `/opsx:*` are generated into `.claude/commands/opsx/` by
   `openspec update` — do not hand-edit them.
 - **Scratch.** `CLAUDE.local.md` and `.claude/settings.local.json` are gitignored. Anything
