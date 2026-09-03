@@ -27,9 +27,11 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   early and add a check that fails the PR when the number is taken. The first two stop the
   collision reaching the change folder at all, which is what made it expensive. Worth an ADR
   when something forces it; nothing does yet, and the workaround is a rename.
-- **What the app target is called.** Where the package lives is settled — `src/DayByDayKit`, and
-  CI discovers `Package.swift` rather than assuming a path, so a second package needs no CI
-  change. The target that draws the screens does not exist yet and is unnamed.
+- **The app's bundle identifier.** Opened by ADR-1018, which settled the target's name and
+  deliberately did not settle this. Changing it after even one install orphans the store the
+  previous identifier wrote, and it wants a domain the owner actually controls rather than a
+  placeholder that becomes permanent by being installed once. Forced by the first Story that puts
+  the app on a real phone rather than a simulator.
 
 ## Known gaps
 
@@ -49,8 +51,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
 - **The store must be opened under `Library/Application Support/`.** Owed by #56's design,
   2026-09-02. `RecordStore` keeps the record at whatever place it is given and cannot enforce
   the choice from where it sits; `Caches/` is purged by the system and `tmp/` is not backed up,
-  and either would silently lose the one thing the product promises to keep. Whichever Story
-  creates the app target chooses the place, and this is the line that says which.
+  and either would silently lose the one thing the product promises to keep. It was written
+  expecting a Story to create the app target; ADR-1018 made that a chore instead, and a shell may
+  choose nothing — a place a store is opened at is exactly the kind of decision that fails
+  `CONTEXT.md` § *App shell*. So the obligation did not travel with the target: it falls to the
+  first Story that persists a tick from inside the app, realistically `day-screen` (#27), and this
+  is the line that says which.
 - **`RecordStore.init` can throw outside `RecordStoreError`.** Surfaced at #56's review,
   2026-09-02. A place that exists but cannot be read as data — a directory, a file without
   read permission, or on iOS a store protected by data protection when the app is launched
@@ -72,6 +78,16 @@ Things that are built, or deliberately not built, in a state someone will trip o
   native Swift and SwiftUI partly by rejecting the browser-based option outright.
 
 ## Settled
+
+- 2026-09-02 — **the app target is called `DayByDay`, and it is a chore rather than a Feature.**
+  It sits at `src/DayByDay/` beside `src/DayByDayKit/`, is a hand-written `.xcodeproj` needing no
+  Xcode GUI, and runs in the iOS Simulator. The suffix already carries the distinction — the kit
+  is the part with requirements, and what is left is the product — and `PRODUCT_NAME =
+  $(TARGET_NAME)` makes the target name the label under the Home screen icon, so every other
+  candidate is a name plus an override putting `DayByDay` back. What it is *not* called, and what
+  it deliberately does not decide, is the bundle identifier, now an open technical decision above.
+  `docs/adr/1018-the-app-shell-runs-in-the-simulator.md`, and `CONTEXT.md` § *App shell* for the
+  guard that keeps the lane honest.
 
 - 2026-09-02 — **the record is kept in one file, neither SwiftData nor GRDB.** One versioned JSON
   file, written whole and atomically on every tick, at a place the app names. The record is a set

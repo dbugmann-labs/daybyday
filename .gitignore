@@ -5,6 +5,13 @@ coverage/
 # SwiftPM
 .build/
 .swiftpm/
+
+# xcodebuild writes here when it is not given -derivedDataPath, into every
+# directory holding a target — the app's and the package's alike. ADR-1018.
+build/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/configuration/
 .DS_Store
 *.log
 .env
