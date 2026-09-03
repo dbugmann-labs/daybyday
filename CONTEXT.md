@@ -221,6 +221,19 @@ what would let a screen offer a tick for a day that has not happened. It is a fa
 rather than about the record, which is why the record refuses to consult it and the row asks for it
 by name. Agreed 2026-09-03, the same grill.
 
+**Day navigation** — going from one day view to the day view of the day before it or the day after
+it, one calendar day at a time. It is a question about a date and about nothing else: it never asks
+what day it is, so a person moves onto a day that has not arrived as readily as onto one long past,
+and a row on such a day refusing its tick is the row's rule rather than navigation's. It steps
+whatever the day it lands on holds — a day nothing is due on is a day like any other, since a day
+view with no rows is already an answer, and skipping one would be the app deciding which days are
+worth looking at. It carries nothing across: what it gives is the day view that would have been
+formed on that date from the commitments and the history it is handed *at the moment of the move*,
+and it must be handed both because a day view holds neither. There is no day before the first date
+the system supports and none after the last, so moving that way gives nothing at all rather than the
+day it started on — a caller that wanted to stay where it is already has it. Agreed 2026-09-03 at
+the grill of `add-day-navigation` (#72).
+
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
 combination that names no day — 30 February — is not one. Its year runs from 1583 to 9999

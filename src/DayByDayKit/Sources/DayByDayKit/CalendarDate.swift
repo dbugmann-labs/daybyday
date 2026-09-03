@@ -74,4 +74,19 @@ public struct CalendarDate: Hashable, Sendable {
     func days(until other: CalendarDate) -> Int {
         Self.calendar.dateComponents([.day], from: date, to: other.date).day!
     }
+
+    /// The calendar date `days` calendar days from this one, or `nil` when that date falls
+    /// outside the supported range — built on the same private UTC `Calendar` as `weekday`,
+    /// `daysInMonth` and `days(until:)`, and returning through `init?(year:month:day:)` so the
+    /// 1583–9999 guard is not restated here. That holds at the ±1 steps this method is
+    /// actually called with (`DayView.previousDay`/`nextDay`), the only callers today. It does
+    /// not hold in general: `Calendar.date(byAdding:to:)` saturates rather than failing on an
+    /// extreme `days`, so `adding(days: Int.max)` and `adding(days: Int.min)` each read back a
+    /// plausible date inside 1583–9999 rather than `nil` — a large step gives a silently wrong
+    /// answer, not a crash and not a refusal.
+    func adding(days: Int) -> CalendarDate? {
+        let stepped = Self.calendar.date(byAdding: .day, value: days, to: date)!
+        let components = Self.calendar.dateComponents([.year, .month, .day], from: stepped)
+        return CalendarDate(year: components.year!, month: components.month!, day: components.day!)
+    }
 }

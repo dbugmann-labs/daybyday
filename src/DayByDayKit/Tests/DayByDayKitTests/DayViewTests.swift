@@ -664,6 +664,343 @@ func twoRowsForTheSameCommitmentOnDifferentDatesAreDifferentRows() {
     #expect(onMonday.rows[0] != onWednesday.rows[0])
 }
 
+@Test("moving to the day after gives the day view of the next date")
+func movingToTheDayAfterGivesTheDayViewOfTheNextDate() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.monday, .thursday]), keptFrom: keptFrom)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let history = History()
+
+    let onMonday = DayView(of: [gym, run, vitamins], on: monday, in: history)
+    let movedTo = onMonday.nextDay(of: [gym, run, vitamins], in: history)
+
+    let formedDirectly = DayView(of: [gym, run, vitamins], on: tuesday, in: history)
+
+    #expect(movedTo?.rows.count == 1)
+    #expect(movedTo?.rows[0].name == "Vitamins")
+    #expect(movedTo?.rows[0].isKept == false)
+    #expect(movedTo == formedDirectly)
+}
+
+@Test("moving to the day before gives the day view of the previous date")
+func movingToTheDayBeforeGivesTheDayViewOfThePreviousDate() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.monday, .thursday]), keptFrom: keptFrom)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let history = History()
+
+    let onWednesday = DayView(of: [gym, run, vitamins], on: wednesday, in: history)
+    let movedTo = onWednesday.previousDay(of: [gym, run, vitamins], in: history)
+
+    let formedDirectly = DayView(of: [gym, run, vitamins], on: tuesday, in: history)
+
+    #expect(movedTo?.rows.count == 1)
+    #expect(movedTo?.rows[0].name == "Vitamins")
+    #expect(movedTo?.rows[0].isKept == false)
+    #expect(movedTo == formedDirectly)
+}
+
+@Test("the rows of the day moved to are asked again rather than carried across")
+func theRowsOfTheDayMovedToAreAskedAgainRatherThanCarriedAcross() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Tick(vitamins, on: monday)!)
+
+    let movedFrom = DayView(of: [vitamins], on: monday, in: history)
+    let movedTo = movedFrom.nextDay(of: [vitamins], in: history)
+
+    #expect(movedFrom.rows.count == 1)
+    #expect(movedFrom.rows[0].isKept)
+    #expect(movedTo?.rows.count == 1)
+    #expect(movedTo?.rows[0].name == "Vitamins")
+    #expect(movedTo?.rows[0].isKept == false)
+}
+
+@Test("a move uses the commitments and history it is handed rather than the ones the day view came from")
+func aMoveUsesTheCommitmentsAndHistoryItIsHandedRatherThanTheOnesTheDayViewCameFrom() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let noTicks = History()
+    var vitaminsTicked = History()
+    vitaminsTicked.add(Tick(vitamins, on: tuesday)!)
+
+    let movedFrom = DayView(of: [gym], on: monday, in: noTicks)
+    let movedTo = movedFrom.nextDay(of: [vitamins], in: vitaminsTicked)
+
+    #expect(movedTo?.rows.count == 1)
+    #expect(movedTo?.rows[0].name == "Vitamins")
+    #expect(movedTo?.rows[0].isKept == true)
+    #expect(movedTo?.rows.map(\.name).contains("Gym") == false)
+}
+
+@Test("a day view moves onto a date that has not arrived, and its rows offer no tick")
+func aDayViewMovesOntoADateThatHasNotArrivedAndItsRowsOfferNoTick() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let history = History()
+
+    let movedFrom = DayView(of: [vitamins], on: monday, in: history)
+    let movedTo = movedFrom.nextDay(of: [vitamins], in: history)
+
+    #expect(movedTo?.rows.count == 1)
+    #expect(movedTo?.rows[0].name == "Vitamins")
+    #expect(movedTo?.rows[0].tick(asOf: monday) == nil)
+    #expect(movedTo?.rows[0].tick(asOf: tuesday) == Tick(vitamins, on: tuesday))
+}
+
+@Test("moving to the day after and back again gives the day view it started from")
+func movingToTheDayAfterAndBackAgainGivesTheDayViewItStartedFrom() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+
+    let start = DayView(of: [gym, vitamins], on: monday, in: history)
+    let there = start.nextDay(of: [gym, vitamins], in: history)
+    let back = there?.previousDay(of: [gym, vitamins], in: history)
+
+    #expect(back == start)
+
+    let otherWayThere = start.previousDay(of: [gym, vitamins], in: history)
+    let otherWayBack = otherWayThere?.nextDay(of: [gym, vitamins], in: history)
+
+    #expect(otherWayBack == start)
+}
+
+@Test("moving does not skip a date on which nothing is due")
+func movingDoesNotSkipADateOnWhichNothingIsDue() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let onMonday = DayView(of: [gym], on: monday, in: history)
+    let onTuesday = onMonday.nextDay(of: [gym], in: history)
+    let onWednesday = onTuesday?.nextDay(of: [gym], in: history)
+
+    #expect(onTuesday?.rows.isEmpty == true)
+    #expect(onWednesday?.rows.map(\.name) == ["Gym"])
+}
+
+@Test("moving across the end of a month")
+func movingAcrossTheEndOfAMonth() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let september30 = CalendarDate(year: 2026, month: 9, day: 30)!
+    let october1 = CalendarDate(year: 2026, month: 10, day: 1)!
+    let history = History()
+
+    let onSeptember30 = DayView(of: [vitamins], on: september30, in: history)
+    let movedTo = onSeptember30.nextDay(of: [vitamins], in: history)
+    let formedDirectly = DayView(of: [vitamins], on: october1, in: history)
+
+    #expect(movedTo == formedDirectly)
+    #expect(movedTo?.previousDay(of: [vitamins], in: history) == onSeptember30)
+}
+
+@Test("moving across the turn of a year")
+func movingAcrossTheTurnOfAYear() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let december31 = CalendarDate(year: 2026, month: 12, day: 31)!
+    let january1 = CalendarDate(year: 2027, month: 1, day: 1)!
+    let history = History()
+
+    let onDecember31 = DayView(of: [vitamins], on: december31, in: history)
+    let movedTo = onDecember31.nextDay(of: [vitamins], in: history)
+    let formedDirectly = DayView(of: [vitamins], on: january1, in: history)
+
+    #expect(movedTo == formedDirectly)
+    #expect(movedTo?.previousDay(of: [vitamins], in: history) == onDecember31)
+}
+
+@Test("moving across the leap day of a leap year")
+func movingAcrossTheLeapDayOfALeapYear() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let february28 = CalendarDate(year: 2028, month: 2, day: 28)!
+    let february29 = CalendarDate(year: 2028, month: 2, day: 29)!
+    let march1 = CalendarDate(year: 2028, month: 3, day: 1)!
+    let history = History()
+
+    let onFebruary28 = DayView(of: [vitamins], on: february28, in: history)
+    let onFebruary29 = onFebruary28.nextDay(of: [vitamins], in: history)
+    let onMarch1 = onFebruary29?.nextDay(of: [vitamins], in: history)
+
+    #expect(onFebruary29 == DayView(of: [vitamins], on: february29, in: history))
+    #expect(onMarch1 == DayView(of: [vitamins], on: march1, in: history))
+}
+
+@Test("moving across the end of February in a year that is not a leap year")
+func movingAcrossTheEndOfFebruaryInAYearThatIsNotALeapYear() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let february28 = CalendarDate(year: 2100, month: 2, day: 28)!
+    let march1 = CalendarDate(year: 2100, month: 3, day: 1)!
+    let history = History()
+
+    let onFebruary28 = DayView(of: [vitamins], on: february28, in: history)
+    let movedTo = onFebruary28.nextDay(of: [vitamins], in: history)
+    let formedDirectly = DayView(of: [vitamins], on: march1, in: history)
+
+    #expect(movedTo == formedDirectly)
+    #expect(movedTo?.previousDay(of: [vitamins], in: history) == onFebruary28)
+}
+
+@Test("the first supported date has no day before it")
+func theFirstSupportedDateHasNoDayBeforeIt() {
+    let keptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let january1 = CalendarDate(year: 1583, month: 1, day: 1)!
+    let january2 = CalendarDate(year: 1583, month: 1, day: 2)!
+    let history = History()
+
+    let onJanuary1 = DayView(of: [gym], on: january1, in: history)
+    let movedBack = onJanuary1.previousDay(of: [gym], in: history)
+    let movedForward = onJanuary1.nextDay(of: [gym], in: history)
+
+    #expect(movedBack == nil)
+    #expect(movedForward == DayView(of: [gym], on: january2, in: history))
+    #expect(movedForward?.rows.isEmpty == true)
+}
+
+@Test("the last supported date has no day after it")
+func theLastSupportedDateHasNoDayAfterIt() {
+    let keptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let december31 = CalendarDate(year: 9999, month: 12, day: 31)!
+    let december30 = CalendarDate(year: 9999, month: 12, day: 30)!
+    let history = History()
+
+    let onDecember31 = DayView(of: [vitamins], on: december31, in: history)
+    let movedForward = onDecember31.nextDay(of: [vitamins], in: history)
+    let movedBack = onDecember31.previousDay(of: [vitamins], in: history)
+
+    #expect(movedForward == nil)
+    #expect(movedBack == DayView(of: [vitamins], on: december30, in: history))
+    #expect(movedBack?.rows.map(\.name) == ["Vitamins"])
+}
+
+@Test("the date one day inside each end of the supported dates moves onto that end")
+func theDateOneDayInsideEachEndOfTheSupportedDatesMovesOntoThatEnd() {
+    let keptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let january2 = CalendarDate(year: 1583, month: 1, day: 2)!
+    let january1 = CalendarDate(year: 1583, month: 1, day: 1)!
+    let december30 = CalendarDate(year: 9999, month: 12, day: 30)!
+    let december31 = CalendarDate(year: 9999, month: 12, day: 31)!
+    let history = History()
+
+    let onJanuary2 = DayView(of: [gym], on: january2, in: history)
+    let movedToStart = onJanuary2.previousDay(of: [gym], in: history)
+
+    #expect(movedToStart == DayView(of: [gym], on: january1, in: history))
+
+    let onDecember30 = DayView(of: [vitamins], on: december30, in: history)
+    let movedToEnd = onDecember30.nextDay(of: [vitamins], in: history)
+
+    #expect(movedToEnd == DayView(of: [vitamins], on: december31, in: history))
+}
+
+@Test("the refusal at either end does not depend on what the day view holds")
+func theRefusalAtEitherEndDoesNotDependOnWhatTheDayViewHolds() {
+    let keptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.monday, .thursday]), keptFrom: keptFrom)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let january1 = CalendarDate(year: 1583, month: 1, day: 1)!
+    let december31 = CalendarDate(year: 9999, month: 12, day: 31)!
+    let noTicks = History()
+    var vitaminsTicked = History()
+    vitaminsTicked.add(Tick(vitamins, on: december31)!)
+
+    let first = DayView(of: [run], on: january1, in: noTicks)
+    let second = DayView(of: [vitamins], on: december31, in: vitaminsTicked)
+
+    #expect(first.rows.isEmpty)
+    #expect(first.previousDay(of: [run], in: noTicks) == nil)
+    #expect(second.rows.count == 1)
+    #expect(second.rows[0].isKept)
+    #expect(second.nextDay(of: [vitamins], in: vitaminsTicked) == nil)
+}
+
 @Test("two rows for the same commitment and date differing in whether it is kept are different rows")
 func twoRowsForTheSameCommitmentAndDateDifferingInWhetherItIsKeptAreDifferentRows() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!

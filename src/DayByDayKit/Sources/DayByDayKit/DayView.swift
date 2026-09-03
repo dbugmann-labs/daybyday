@@ -25,4 +25,24 @@ public struct DayView: Hashable, Sendable {
             .filter { $0.isDue(on: date) }
             .map { Row(commitment: $0, date: date, isKept: history.isKept($0, on: date)) }
     }
+
+    /// The day view of the calendar date one day before this one's, or `nil` when this day view
+    /// is of 1 January 1583.
+    public func previousDay(of commitments: [Commitment], in history: History) -> DayView? {
+        guard let previousDate = date.adding(days: -1) else {
+            return nil
+        }
+
+        return DayView(of: commitments, on: previousDate, in: history)
+    }
+
+    /// The day view of the calendar date one day after this one's, or `nil` when this day view
+    /// is of 31 December 9999.
+    public func nextDay(of commitments: [Commitment], in history: History) -> DayView? {
+        guard let nextDate = date.adding(days: 1) else {
+            return nil
+        }
+
+        return DayView(of: commitments, on: nextDate, in: history)
+    }
 }
