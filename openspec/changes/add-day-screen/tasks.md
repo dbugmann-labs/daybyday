@@ -119,25 +119,29 @@ red as you go, in this file** — a prediction here is not evidence.
   leaves the record as it was` — the same three assertions as 2.19 and 2.20 on the branch the
   owner's answer exists to protect: the record a person must not lose is the one they are told not
   to delete, so the bytes are compared before and after. Passed immediately.
-- [ ] 2.22 `a day screen shown again on a later day holds that day's day view` — Monday to Tuesday,
-  "Gym" out and "Run" in.
-- [ ] 2.23 `a day screen shown again on the day it is already on holds that day's day view` —
-  equality against the day view it held at opening.
-- [ ] 2.24 `a day screen shown again reads the record again` — a tick written at the place by a
+- [x] 2.22 `a day screen shown again on a later day holds that day's day view` — Monday to Tuesday,
+  "Gym" out and "Run" in. Confirmed red: crashed with `Fatal error: not implemented` at
+  `shown(asOf:)`'s `fatalError`.
+- [x] 2.23 `a day screen shown again on the day it is already on holds that day's day view` —
+  equality against the day view it held at opening. Passed immediately.
+- [x] 2.24 `a day screen shown again reads the record again` — a tick written at the place by a
   separate `RecordStore` between the two, then `shown`. Fails an implementation that re-uses the
-  store it already holds.
-- [ ] 2.25 `a day screen that could not read its record starts keeping one when it is shown again
+  store it already holds. Passed immediately: `shown(asOf:)` already re-opens via `open(at:)`
+  rather than reusing `store`.
+- [x] 2.25 `a day screen that could not read its record starts keeping one when it is shown again
   and the record can be read` — the recovery case `design.md` § *Showing the app again* exists for.
-  Replace the unreadable bytes with a real record holding the tick, then `shown`.
-- [ ] 2.26 `a day screen that was keeping a record stops when it is shown again and the record
-  cannot be read` — the same axis in reverse, so `recordState` is not one-way.
-- [ ] 2.27 `a day screen shown again where the record is from a later version says so` — the reason
+  Replace the unreadable bytes with a real record holding the tick, then `shown`. Passed
+  immediately.
+- [x] 2.26 `a day screen that was keeping a record stops when it is shown again and the record
+  cannot be read` — the same axis in reverse, so `recordState` is not one-way. Passed
+  immediately.
+- [x] 2.27 `a day screen shown again where the record is from a later version says so` — the reason
   is formed again on every showing rather than carried. Fails an implementation that recomputes
   `recordState` on `shown` but collapses every failure to `.unreadable` there, which 2.25 and 2.26
-  alone would not catch.
-- [ ] 2.28 `a day screen does not change day when a tick is made on it` — tick, then compare the
+  alone would not catch. Passed immediately: `shown(asOf:)` shares `open(at:)` with `init`.
+- [x] 2.28 `a day screen does not change day when a tick is made on it` — tick, then compare the
   whole day view with one formed directly on the same date from a history holding that one tick.
-  The last pin on "only being shown again changes the day".
+  The last pin on "only being shown again changes the day". Passed immediately.
 
 ## 3. The shell
 

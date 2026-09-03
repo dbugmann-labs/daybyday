@@ -423,3 +423,147 @@ func tickingARowOnADayScreenHoldingARecordFromALaterVersionKeepsNothingAndLeaves
     #expect(screen.recordState == .writtenByALaterVersion)
     #expect(try Data(contentsOf: place) == bytes)
 }
+
+@MainActor
+@Test("a day screen shown again on a later day holds that day's day view")
+func aDayScreenShownAgainOnALaterDayHoldsThatDaysDayView() {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.tuesday, .thursday, .sunday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let screen = DayScreen(of: [gym, run], asOf: monday, keeping: place)
+    screen.shown(asOf: tuesday)
+
+    #expect(screen.dayView.rows.map(\.name) == ["Run"])
+}
+
+@MainActor
+@Test("a day screen shown again on the day it is already on holds that day's day view")
+func aDayScreenShownAgainOnTheDayItIsAlreadyOnHoldsThatDaysDayView() {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym], asOf: monday, keeping: place)
+    let opened = screen.dayView
+    screen.shown(asOf: monday)
+
+    #expect(screen.dayView == opened)
+}
+
+@MainActor
+@Test("a day screen shown again reads the record again")
+func aDayScreenShownAgainReadsTheRecordAgain() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym], asOf: monday, keeping: place)
+    let other = try RecordStore(at: place)
+    try other.add(Tick(gym, on: monday)!)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test(
+    "a day screen that could not read its record starts keeping one when it is shown again and the record can be read"
+)
+func aDayScreenThatCouldNotReadItsRecordStartsKeepingOneWhenItIsShownAgainAndTheRecordCanBeRead()
+    throws
+{
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a record".utf8).write(to: place)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym], asOf: monday, keeping: place)
+
+    try FileManager.default.removeItem(at: place)
+    let recovered = try RecordStore(at: place)
+    try recovered.add(Tick(gym, on: monday)!)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.recordState == .kept)
+    #expect(screen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test(
+    "a day screen that was keeping a record stops when it is shown again and the record cannot be read"
+)
+func aDayScreenThatWasKeepingARecordStopsWhenItIsShownAgainAndTheRecordCannotBeRead() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym], asOf: monday, keeping: place)
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a record".utf8).write(to: place)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.recordState == .unreadable)
+    #expect(!screen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a day screen shown again where the record is from a later version says so")
+func aDayScreenShownAgainWhereTheRecordIsFromALaterVersionSaysSo() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym], asOf: monday, keeping: place)
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(#"{"version": 2, "ticks": []}"#.utf8).write(to: place)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.recordState == .writtenByALaterVersion)
+    #expect(!screen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a day screen does not change day when a tick is made on it")
+func aDayScreenDoesNotChangeDayWhenATickIsMadeOnIt() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.tuesday, .thursday, .sunday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym, run], asOf: monday, keeping: place)
+    try screen.tick(screen.dayView.rows[0])
+
+    var expectedHistory = History()
+    expectedHistory.add(Tick(gym, on: monday)!)
+    let expected = DayView(of: [gym, run], on: monday, in: expectedHistory)
+
+    #expect(screen.dayView == expected)
+}

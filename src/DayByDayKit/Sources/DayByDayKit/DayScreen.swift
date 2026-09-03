@@ -96,6 +96,11 @@ public final class DayScreen {
 
     /// The app has been shown on `today`: the day view and the record are read again.
     public func shown(asOf today: CalendarDate) {
-        fatalError("not implemented")
+        self.today = today
+
+        let opened = Self.open(at: place)
+        self.store = opened.store
+        self.recordState = opened.state
+        self.dayView = DayView(of: commitments, on: today, in: opened.store?.history ?? History())
     }
 }
