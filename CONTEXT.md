@@ -109,6 +109,21 @@ rather than a rhythm: it need not be a day the schedule is due on, and it does n
 schedule to begin there. Distinct from a **start date**, which an every-N-days schedule carries
 for a different job; a commitment can hold both, and they can disagree. ADR-1013.
 
+**Kept until** — the last day a commitment was kept: the other end of the window ADR-1013 opened and
+deliberately left half-open. A commitment kept from one day and kept until another was kept on every
+date from the first through the second, that second day included, and on no date after it. It is
+inclusive because the day a person stops is a day they have already lived — a tick made that morning
+has to stay visible on the day it was made, and only the next day is clear.
+
+It is held by the **roster** and never by the commitment, which stays three things. A fourth part
+would change a commitment's identity the moment it was stopped, and a tick embeds the whole
+commitment by value — so every tick already recorded would be orphaned and the history would read
+empty for that commitment on every day it was ever kept. Held one level up, stopping costs the
+record nothing and every past day answers exactly as it did. A day once given does not move: a
+commitment already stopped is not stopped again. **Retiring** is the verb the code uses and
+**stopping keeping** is the verb a person uses; they are one act, and the day it names is this one.
+ADR-1023, agreed 2026-09-03 at the grill of `add-roster-retirement` (#102).
+
 **Roster** — the commitments a person keeps, held as one ordered set: every commitment that has been
 taken on, in the order it was taken on, and never two of the same one. It is the answer to "what do
 I keep", the thing a day is drawn from, and the thing a commitment is eventually retired out of. It
@@ -125,6 +140,18 @@ schedule and no day — anything that is a commitment at all was already accepte
 was formed — it sets no limit on how many it holds, and it never asks what day it is. Saying so
 matters because doing nothing silently is what a person cannot tell apart from having made a second
 commitment.
+
+**Amended 2026-09-03**, at the grill of `add-roster-retirement` (#102). A roster also holds, for each
+commitment it has **stopped keeping**, the day that commitment was **kept until** — and so it does
+two things it did not do before. It **reads back only what it has not stopped keeping**, because
+"what do I keep" is what its list of commitments answers and a stopped commitment is hidden from
+that; it still *holds* the stopped one, which is why an addition equal to it is still refused and
+why it still has the place it was taken on in. And it **answers about a date**: asked what it had not
+stopped keeping on a calendar date, it gives, in the order they were taken on, everything it has not
+stopped and everything whose kept-until day is that date or later. It judges that date against a
+kept-until day and against nothing else — never against a commitment's own day it is kept from,
+never against a schedule — so the refusal on a duplicate is no longer the only one it makes, but the
+rule that it never asks what day it is, and adds nothing to a commitment's own answer, is unchanged.
 
 The order is **the order they were taken on** and nothing the system worked out: not alphabetical,
 which would be a rule about the owner's own words, and not by the day each is kept from, since day
