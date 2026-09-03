@@ -68,9 +68,10 @@ prediction here is not evidence.
   formed` — one row, asked twice, either side of its own date. The midnight pin, and the test that
   fails an implementation that took the day at construction. Passed immediately — `tick(asOf:)` takes
   its argument at call time, never at construction.
-- [ ] 2.9 `a row offers the tick in the first supported year and in the last` — 3 January 1583 and
+- [x] 2.9 `a row offers the tick in the first supported year and in the last` — 3 January 1583 and
   27 December 9999, both Mondays; three assertions, the third being the 9999 row asked as of 1583,
-  which offers nothing. Any implementation that reaches for `Date()` fails one of the three.
+  which offers nothing. Any implementation that reaches for `Date()` fails one of the three. Passed
+  immediately.
 - [ ] 2.10 `every row of a day view whose date has not arrived offers no tick` — three commitments
   on three different schedule shapes, all due on Wednesday 2 September 2026, none offering a tick as
   of Monday 31 August 2026. Pins that the refusal is the day view's date and not something per-row.

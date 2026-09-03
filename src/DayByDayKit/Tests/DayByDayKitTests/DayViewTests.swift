@@ -565,3 +565,20 @@ func aRowsAnswerFollowsTheDayItIsAskedAsOfRatherThanTheDayTheDayViewWasFormed() 
     #expect(row.tick(asOf: tuesday) == nil)
     #expect(row.tick(asOf: wednesday) == Tick(gym, on: wednesday))
 }
+
+@Test("a row offers the tick in the first supported year and in the last")
+func aRowOffersTheTickInTheFirstSupportedYearAndInTheLast() {
+    let keptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let firstYear = CalendarDate(year: 1583, month: 1, day: 3)!
+    let lastYear = CalendarDate(year: 9999, month: 12, day: 27)!
+    let history = History()
+
+    let onFirstYear = DayView(of: [gym], on: firstYear, in: history)
+    let onLastYear = DayView(of: [gym], on: lastYear, in: history)
+
+    #expect(onFirstYear.rows[0].tick(asOf: firstYear) == Tick(gym, on: firstYear))
+    #expect(onLastYear.rows[0].tick(asOf: lastYear) == Tick(gym, on: lastYear))
+    #expect(onLastYear.rows[0].tick(asOf: firstYear) == nil)
+}
