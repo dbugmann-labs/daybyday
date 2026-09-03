@@ -119,7 +119,7 @@ figcaption b{color:var(--ink);font-weight:500}
 .stage .ou{color:var(--ink)}
 .stage .dr b{color:var(--signal);font-weight:500}
 .stage code{background:var(--sunk);font-size:.78rem}
-.who{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.who{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;display:flex;align-items:center;gap:6px;white-space:normal;min-width:0}
 .who .dot{width:7px;height:7px;border-radius:50%;flex:none}
 .op{background:var(--signal)}.so{background:var(--machine)}.ha{background:var(--muted)}
 
@@ -184,7 +184,7 @@ footer code{background:none;padding:0;color:var(--ink)}
 <div class="wrap">
 
 <header class="mast">
-  <div class="eyebrow">DayByDay &nbsp;/&nbsp; docs/process.md &nbsp;/&nbsp; in force, 1 September 2026</div>
+  <div class="eyebrow">DayByDay &nbsp;/&nbsp; docs/process.md &nbsp;/&nbsp; in force, 4 September 2026</div>
   <h1>From backlog<br><em>to main</em></h1>
   <p class="thesis">DayByDay is an iPhone app for the commitments you owe yourself and the rhythm each one runs on. It is built with <strong>Atlas</strong>, the development system this repository was started from — signed off on 24 August 2026 and inherited here rather than invented. The product half is what is new: <strong>an idea is not agreed until it has passed G4 as a requirement in a change folder</strong>, and everything before that is a want in the backlog, however confident anyone sounded when they said it.</p>
 </header>
@@ -266,14 +266,14 @@ footer code{background:none;padding:0;color:var(--ink)}
   <p class="lede">Nine stages, five gates — numbered 0 to 9 with no Stage 3, where the grill used to be. A gate is a place where work stops until a named condition holds; colour says who clears it — <span style="color:var(--signal)">a human</span>, or <span style="color:var(--machine)">the machine</span>.</p>
   <figure>
     <div class="scroll">
-      <svg class="dia" viewBox="0 0 1235 320" style="min-width:980px" role="img" aria-label="The pipeline as a rail. Product definition feeds Stage 0, Epic intake. Nine stages run from Epic to merge, numbered 0 to 9 with no Stage 3, interrupted by five gates: G1 and G2 human, G4 human plus CI, G7 human, G8 CI. G4 is a hard vertical line dividing the specification half from the implementation half. The conductor spans the whole rail; each span of stages names the agent and model that runs it.">
+      <svg class="dia" viewBox="0 0 1235 330" style="min-width:980px" role="img" aria-label="The pipeline as a rail. Product definition feeds Stage 0, Epic intake. Nine stages run from Epic to merge, numbered 0 to 9 with no Stage 3, interrupted by five gates: G1 and G2 human, G4 human plus CI, G7 human, G8 CI. G4 is a hard vertical line dividing the specification half from the implementation half. The conductor spans the whole rail; each span of stages names the agent and model that runs it. Stage 1 and Stage 4 name the conductor as well, because it runs the grill at both, in rounds, before the agent under that span writes anything.">
         <defs>
           <marker id="r-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
         </defs>
 
         <!-- conductor band -->
         <path d="M178 40 V34 H1062 V40" class="s-ink f-none" stroke-width="1.2"/>
-        <text x="620" y="26" text-anchor="middle" class="cap f-mut">THE CONDUCTOR — /atlas · ENTERS EVERY STAGE, STOPS AT EVERY GATE</text>
+        <text x="620" y="26" text-anchor="middle" class="cap f-mut">THE CONDUCTOR — /atlas · ENTERS EVERY STAGE, RUNS THE GRILL, STOPS AT EVERY GATE</text>
 
         <!-- G4 hard line -->
         <line x1="567" y1="64" x2="567" y2="300" class="s-sig" stroke-width="1" stroke-dasharray="3 4" opacity=".7"/>
@@ -347,14 +347,16 @@ footer code{background:none;padding:0;color:var(--ink)}
           <path d="M913 256 V250 H1062 V256"/>
         </g>
         <g class="mono f-mut" text-anchor="middle">
-          <text x="305" y="274">orchestrator · Opus</text>
-          <text x="515" y="274">spec-author · Opus</text>
+          <text x="305" y="274">conductor grills</text>
+          <text x="305" y="288">orchestrator · Opus</text>
+          <text x="515" y="274">conductor grills</text>
+          <text x="515" y="288">spec-author · Opus</text>
           <text x="672" y="274">implementer · Sonnet</text>
           <text x="830" y="274">reviewer · Opus</text>
           <text x="987" y="274">janitor · Haiku</text>
         </g>
 
-        <text x="10" y="300" class="f-mut">Thin rail: documentation. Thick rail: code.</text>
+        <text x="10" y="312" class="f-mut">Thin rail: documentation. Thick rail: code. The grill runs in rounds, at Stage 1 and again at the top of Stage 4.</text>
       </svg>
     </div>
     <figcaption><b>The model tier under each span is not chosen per session.</b> It follows one rule: creating or judging requirements is Opus, executing an approved written-down plan is Sonnet, mechanical work whose correctness is visible in the diff is Haiku. Written once in <code>AGENTS.md</code> and in each agent's frontmatter — never decided in the moment.</figcaption>
@@ -364,10 +366,10 @@ footer code{background:none;padding:0;color:var(--ink)}
 <!-- ============ THE CONDUCTOR ============ -->
 <section>
   <h2>Who drives</h2>
-  <p class="lede">The session talking to you is the conductor, and <code>/atlas</code> is how it runs. It reads status, spawns the agent whose turn it is, and stops at every gate that needs you. It holds no work context of its own: no delta, no test, no <code>src/</code>.</p>
+  <p class="lede">The session talking to you is the conductor, and <code>/atlas</code> is how it runs. It reads status, spawns the agent whose turn it is, and stops at every gate that needs you. It holds no work context of its own: no delta, no test, no <code>src/</code>. The two grills are the one exception, and the line is drawn by object — it holds the question tree, never the delta.</p>
   <figure>
     <div class="scroll">
-      <svg class="dia" viewBox="0 0 1060 310" style="min-width:820px" role="img" aria-label="The conductor sits between you and five worker agents. It reads pnpm run status, which returns the stage, the owner and the next action. When the owner is an agent it spawns that agent with the Story number and nothing else, and gets one report back. When the owner is you it presents a gate stop and waits for your reply.">
+      <svg class="dia" viewBox="0 0 1060 310" style="min-width:820px" role="img" aria-label="The conductor sits between you and five worker agents. It reads pnpm run status, which returns the stage, the owner and the next action. When the owner is an agent it spawns that agent with the Story number and nothing else, and gets one report back. When the owner is you it presents a gate stop and waits for your reply. It runs unattended between gates, three interruptions per Story rather than sixteen, and the grill is the one step it runs itself rather than spawning.">
         <defs>
           <marker id="c-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker>
         </defs>
@@ -375,7 +377,7 @@ footer code{background:none;padding:0;color:var(--ink)}
         <!-- you -->
         <rect x="30" y="104" width="170" height="64" rx="3" class="box"/>
         <text x="46" y="130" class="hd">You</text>
-        <text x="46" y="150" class="mono f-mut">4 stops per Story</text>
+        <text x="46" y="150" class="mono f-mut">3 stops per Story</text>
 
         <line x1="296" y1="124" x2="208" y2="124" class="s-sig" stroke-width="1.4" marker-end="url(#c-a)" color="var(--signal)"/>
         <line x1="208" y1="152" x2="296" y2="152" class="s-sig" stroke-width="1.4" marker-end="url(#c-a)" color="var(--signal)"/>
@@ -432,14 +434,14 @@ footer code{background:none;padding:0;color:var(--ink)}
         <text x="30" y="252" class="f-mut">never pasted into a</text>
         <text x="30" y="268" class="f-mut">prompt.</text>
 
-        <text x="30" y="300" class="f-mut">Between gates it runs unattended — four interruptions per Story, not sixteen.</text>
+        <text x="30" y="300" class="f-mut">Between gates it runs unattended — three interruptions per Story, not sixteen. The grill is the one step it runs rather than spawns.</text>
       </svg>
     </div>
     <figcaption><b>A subagent could spawn the workers, and still could not conduct.</b> Nesting is allowed; what a subagent cannot do is stop mid-run and ask, because <code>AskUserQuestion</code> is withheld from every subagent. It runs to completion and returns one report — and a conductor that cannot ask is not a conductor, since every gate is a question. That is the same reason configuration stays in this session: gate decisions are authorization, and authorization relayed through another agent is worth less. Recorded in <code>docs/adr/1002-the-conductor-is-the-main-session.md</code>.</figcaption>
   </figure>
 
   <h3>Every gate stop takes one shape, and it asks before it explains</h3>
-  <p>Five parts, in this order, and nothing else — no praise, no recap of the pipeline, no options you did not ask for. The question comes first, so the ask, the lean and the reply vocabulary fit on one screen; the supporting <i>Detail</i> is read second, or not at all. A gate whose presentation is improvised each time is a gate that quietly becomes a rubber stamp, and G4 is the one the whole requirement set rests on.</p>
+  <p>Five parts, in this order, and nothing else — no praise, no recap of the pipeline, no options you did not ask for. The question comes first, so the ask, the lean and the reply vocabulary fit on one screen; the supporting <i>Detail</i> is read second, or not at all. A gate whose presentation is improvised each time is a gate that quietly becomes a rubber stamp, and G4 is the one the whole requirement set rests on. Between gates the conductor prints only two other shapes — the three-line step report, and the round the grill asks in, printed unwrapped — because <b>a five-part block asks for a decision, a round asks for answers, and a <code>▸</code> line tells</b>.</p>
   <div class="specimen"><pre><b>G4 — Spec approved</b>                                     <i>Story #8 add-weekday-set-schedule</i>
 
 <b>The question</b>
@@ -544,7 +546,7 @@ footer code{background:none;padding:0;color:var(--ink)}
   <div class="ladder">
 
     <div class="stage"><span class="n">0</span><span class="nm">Epic intake</span><span class="dr"><b>you</b></span><span class="who"><i class="dot op"></i>orchestrator</span><span class="ou">Epic issue</span></div>
-    <div class="stage"><span class="n">1</span><span class="nm">Feature definition</span><span class="dr"><b>you</b></span><span class="who"><i class="dot op"></i>conductor grills; orchestrator writes</span><span class="ou">Feature issue, sub-issue of an Epic, plus any new <code>CONTEXT.md</code> terms</span></div>
+    <div class="stage"><span class="n">1</span><span class="nm">Feature definition</span><span class="dr"><b>you</b></span><span class="who"><i class="dot op"></i>conductor grills in rounds; orchestrator writes</span><span class="ou">Feature issue, sub-issue of an Epic, plus any new <code>CONTEXT.md</code> terms</span></div>
 
     <div class="gate"><span class="g">G1</span>
       <div class="gt"><span class="gh">Feature ready</span>
@@ -558,7 +560,7 @@ footer code{background:none;padding:0;color:var(--ink)}
         <p>Every Story states one sentence of intent. Blocking edges are declared and acyclic. You have said yes to the breakdown — <code>to-tickets</code> iterates until you do, and then you <b>stop it at the numbered quiz</b>, before its step 5. That step publishes straight to GitHub in a shape this repo forbids three times over — an acceptance-criteria block, the <code>ready-for-agent</code> label, and its own issue template — and the template is inline in the plugin, so it cannot be overridden. It proposes the slices; <code>orchestrator</code> writes the issues. Only you can type it at all: it declares <code>disable-model-invocation</code>, so no agent can run it a step too far on your behalf. This is also where two Stories on the same capability get serialised, rather than at merge time.</p></div>
       <span class="chip h">human</span></div>
 
-    <div class="stage"><span class="n">4</span><span class="nm">Propose</span><span class="dr">agent writes; <b>you</b> answer any question round, and approve</span><span class="who"><i class="dot op"></i>spec-author</span><span class="ou"><b>The grill first</b>, through this repo’s own <code>grill</code> skill — <code>design.md</code> Open Questions filled in, “None” being valid and required, plus any new <code>CONTEXT.md</code> terms, plus a <code>## Questions for you</code> round if the grill hit something that is yours. Then the change folder: proposal, delta specs, design, tasks. <b>Cut the branch or worktree here</b>, commit as <code>docs(&lt;capability&gt;): propose &lt;change-id&gt;</code>, push, and open the <b>draft PR</b> G4 is read on</span></div>
+    <div class="stage"><span class="n">4</span><span class="nm">Propose</span><span class="dr"><b>you</b> grill, then the agent writes and <b>you</b> approve</span><span class="who"><i class="dot op"></i>conductor grills in rounds; spec-author writes</span><span class="ou"><b>The grill first</b>, run by the conductor through this repo’s own <code>grill</code> skill, in rounds, until the frontier is empty — <code>grill.md</code> in the change folder, its <code>## Left open</code> section required and “None” a valid answer, plus any new <code>CONTEXT.md</code> terms. Then the change folder written on those answers: proposal, delta specs, design, tasks, with <code>design.md</code> Open Questions filled in and a <code>## Questions for you</code> residual round only if writing the delta turned one up. <b>The worktree is cut before the grill</b>; commit as <code>docs(&lt;capability&gt;): propose &lt;change-id&gt;</code>, push, and open the <b>draft PR</b> G4 is read on</span></div>
 
     <div class="gate"><span class="g">G4</span>
       <div class="gt"><span class="gh">Spec approved — the hard gate</span>
@@ -593,9 +595,9 @@ footer code{background:none;padding:0;color:var(--ink)}
       <span class="chip m">machine</span></div>
 
   </div>
-  <p>Read the bold entries down the driver column and you have the whole obligation: four stops — G1, G2, G4, G7 — plus answering, inside Stage 4, any round the grill raises because it could not settle it on its own. Stages 5, 6, 8 and 9 never wait for you.</p>
+  <p>Read the bold entries down the driver column and you have the whole obligation. <b>G1 and G2 are once per Feature; per Story it is three — the grill at the top of Stage 4, then G4, then G7</b>, where it used to be two plus an occasional question round. That is the trade, and it is worth naming honestly: one guaranteed interruption gained, one occasional one lost, and the one gained is the more expensive of the two. G4 and G7 are answered in a word; the grill is a contiguous 15–30 minutes of your attention, in rounds, and not a thing you answer from a phone between other things. What it buys is a delta written on your answers rather than on an agent’s recommendations. Nothing after it moves: from the <code>spec-author</code> spawn to G7 the pipeline still runs unattended, and Stages 5, 6, 8 and 9 never wait for you. The walk-away structure starts one step later; it does not shrink.</p>
   <div class="note"><b>Stage and gate numbers are names, not positions.</b> There is no Stage 3 — the grill was one until 30 August 2026, when it was folded into Stage 4, the first cut on <code>docs/process.md</code> §12's list; its obligations moved with it and none of them lapsed. There is no G3, G5 or G6 either, and G8 is the gate on Stage 9. Every number is frozen because something reads it: <code>G4: approved</code> is a literal string in CI check 5, <code>pnpm run check:g4</code>, the issue template and every Story already approved, and two ADR titles name Stage 4. Renumbering would falsify a record to tidy a label. ADR-1005.</div>
-  <div class="note"><b>Two grills, one skill, and a round.</b> Both run through <code>grill</code>, this repository’s own — it makes the two <code>Skill</code> calls that <code>grill-with-docs</code> makes, <code>grilling</code> and <code>domain-modeling</code>, and then splits on the one thing the two grills cannot share: whether the session can wait for your answer. <code>grill-with-docs</code> is human-only, so <code>spec-author</code> could never have run the step it was documented as running. ADR-1009. The <i>Feature</i> grill at Stage 1 is a conversation and belongs to the conductor: one capability or several, the slug, the parent Epic, what it does not cover, which words enter <code>CONTEXT.md</code>. The <i>Story</i> grill inside Stage 4 is <code>spec-author</code> interrogating one Story&rsquo;s edges, which are invisible until someone writes the delta — pulling them up to Stage 1 would settle four Stories&rsquo; worth of edge cases before any is built. But no subagent can ask you anything, so the Story grill writes instead: a question it may not settle goes into <code>design.md</code> under <code>## Questions for you</code>, numbered, each with a recommended answer and what changes in the delta if you say otherwise. The folder is written anyway on those answers, so the round reaches you beside the diff it would change. The conductor relays it in the ordinary gate form. <b>A stop, not a gate</b> — no marker, no check, and only when there is a real question. ADR-1006.</div>
+  <div class="note"><b>Two grills, one skill, both in rounds.</b> Both run through <code>grill</code>, this repository’s own — it makes the two <code>Skill</code> calls that <code>grill-with-docs</code> makes, <code>grilling</code> and <code>domain-modeling</code>, and adds what this repo requires on top; <code>grill-with-docs</code> itself is human-only, so <code>spec-author</code> could never have run the step it was documented as running. ADR-1009. <b>Both belong to the conductor, and both work in rounds</b>: ask every question whose prerequisites are already settled, hear the answers, work out what those answers just unblocked, ask again, until the frontier is empty. They used to split on whether the session could wait for your answer — and <b>that split was the defect</b>. A subagent runs to completion and returns one report, so a grill inside one collapses to a single non-blocking pass and every question your answers would have unblocked is never asked. What separates them now is <b>scope</b>, and that is what keeps both cheap. The <i>Feature</i> grill at Stage 1 settles the capability&rsquo;s boundary and vocabulary: one capability or several, the slug, the parent Epic, what it does not cover, which words enter <code>CONTEXT.md</code>. The <i>Story</i> grill at the top of Stage 4 settles one Story&rsquo;s edges, which are invisible until someone tries to phrase the requirement — pulling them up to Stage 1 would settle four Stories&rsquo; worth of edge cases before any is built. It ends in <code>grill.md</code> in the change folder: the answers with a clause of why each, the terms it landed, and a required <code>## Left open</code> where “None.” with the reason is valid. <code>spec-author</code> is then spawned with the issue number and nothing else, reads that file, and writes the delta on those answers. <b>What is left over is the residual round</b> — the question that only becomes visible while the delta is being written. <code>spec-author</code> writes it into <code>design.md</code> under <code>## Questions for you</code>, numbered, each with a recommended answer and what changes if you say otherwise, and writes the folder anyway on those answers so the round reaches you beside the diff it would change; the conductor relays it in the five-part form. <b>A stop, not a gate</b> — no marker, no check — and it should now be rare: one that could have been asked at the grill is a finding about the grill. ADR-1006.</div>
 </section>
 
 <!-- ============ THE LOOP ============ -->
