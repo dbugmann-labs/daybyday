@@ -47,9 +47,10 @@ prediction here is not evidence.
 - [x] 2.3 `taking back the tick a row offers makes a day view formed again say the commitment is not
   kept` — the same tick handed to `History.remove(_:)`. The Story's second half; two assertions, the
   original row kept and the re-formed one not. Passed immediately, same reason as 2.2.
-- [ ] 2.4 `a row already saying the commitment is kept offers the same tick` — two day views on one
+- [x] 2.4 `a row already saying the commitment is kept offers the same tick` — two day views on one
   date, one history empty and one holding the tick; the rows differ in `isKept` and offer an equal
-  tick. Pins that the offer does not consult the history.
+  tick. Pins that the offer does not consult the history. Passed immediately — the current
+  implementation never reads the history for `tick(asOf:)`.
 - [ ] 2.5 `a row for a date later than the day it is asked as of offers no tick` — a day view on
   Wednesday 2 September 2026 asked as of Monday 31 August 2026. The refusal itself.
 - [ ] 2.6 `a row for a date earlier than the day it is asked as of offers the tick` — a day view on
