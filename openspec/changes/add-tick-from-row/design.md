@@ -300,4 +300,7 @@ sources, or a decision made above with its alternatives:
   2026-09-03 and **answered the same day: refuse whole.** A row whose day has not arrived does
   nothing at all, whether or not something already says the commitment is kept; the refusal is about
   the day and not about the record. The delta had been written on that recommendation, so folding
-  the answer in changed no requirement and no scenario — the round is closed and `
+  the answer in changed no requirement and no scenario — the round is closed and `## Questions
+  for you` is gone. Argued at § *A future row that says it is kept refuses too*, and pinned by the
+  scenario *"a row for a date later than the day it is asked as of offers no tick even where it
+  says the commitment is kept"*.
