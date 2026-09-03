@@ -330,6 +330,21 @@ its record** start keeping one without the app being force-quit. Deliberately a 
 rather than about the clock: being shown does not tell a day screen what day it is, it is the moment
 at which a day screen is *told*. Agreed 2026-09-03, the same grill.
 
+**Day title** — what a day view says its day is, and so what a day screen says the day it is showing
+is: the day said as a weekday, a day of the month, a month and a year — "Monday 31 August 2026" —
+with *Today* said in front of it on the one day the question is asked as of. Like every other
+question here it is asked *of a date*, and the day it is asked as of decides that one word and
+nothing else, so no other day is named in words and a past day's title reads tomorrow exactly as it
+does now. It is read off the date and off nothing a day view holds — not the rows, not whether any
+of them says its commitment is kept, not how many there are — so a day view with no rows says its
+day exactly as one with seven does, and a day screen that can keep no record says its day exactly as
+one that can. The words are the app's own and fixed: they are not the device's language, region or
+locale, because a day title that changed with the phone would be a sentence no scenario could state,
+and the day title is nothing but its words. ADR-1022. Agreed 2026-09-03 at the grill of
+`add-screen-date` (#92); the two halves of the form that were preferences rather than facts —
+*Today* in front of the date rather than in place of it, and the year said whatever year it is asked
+in — were put to the owner as that grill's question round and answered by him the same day.
+
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
 combination that names no day — 30 February — is not one. Its year runs from 1583 to 9999
