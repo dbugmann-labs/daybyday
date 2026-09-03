@@ -49,11 +49,32 @@ private func today() -> CalendarDate {
 }
 
 struct ContentView: View {
-    private let dayView = DayView(of: dayOneCommitments, on: today(), in: History())
+    @State private var screen = DayScreen(of: dayOneCommitments, asOf: today())
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        List(dayView.rows, id: \.self) { row in
-            Text(row.name)
+        List {
+            switch screen.recordState {
+            case .kept:
+                EmptyView()
+            case .unreadable:
+                Text("The record could not be read.")
+            case .writtenByALaterVersion:
+                Text("The record was written by a newer version of DayByDay and must not be deleted.")
+            }
+
+            ForEach(screen.dayView.rows, id: \.self) { row in
+                Button {
+                    try? screen.tick(row)
+                } label: {
+                    Text(row.name)
+                }
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                screen.shown(asOf: today())
+            }
         }
     }
 }

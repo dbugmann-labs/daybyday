@@ -148,7 +148,7 @@ red as you go, in this file** — a prediction here is not evidence.
 No scenario covers this section — `docs/open-questions.md` § *No UI smoke layer* — so keep it to
 what has no judgement in it, and change nothing in `DayByDayKit` from here.
 
-- [ ] 3.1 Rewire `src/DayByDay/DayByDay/ContentView.swift`: keep `dayOneCommitments` and `today()`
+- [x] 3.1 Rewire `src/DayByDay/DayByDay/ContentView.swift`: keep `dayOneCommitments` and `today()`
   exactly as #81 wrote them, hold a `DayScreen` in `@State`, draw `screen.dayView.rows` with a tap
   calling `try? screen.tick(row)`, `switch` over `screen.recordState` and draw what each case has to
   say — nothing for `.kept`, that the record could not be read for `.unreadable`, and for
@@ -156,19 +156,40 @@ what has no judgement in it, and change nothing in `DayByDayKit` from here.
   be deleted — and call `screen.shown(asOf: today())` from `.onChange(of: scenePhase)` when the
   phase becomes active. That `switch` is the body's only branch: no date arithmetic, no
   place-choosing, and the seam's default place is used by not naming one.
-- [ ] 3.2 Build and run it: `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay
+- [x] 3.2 Build and run it: `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay
   -destination 'platform=iOS Simulator,name=iPhone 17' build`, then `xcrun simctl` boot, install and
   launch as ADR-1019 records. Tick a row, quit the app from the simulator, launch it again, and
   confirm the tick is still there. Record what you saw here — that round trip is the Story's
   intent and nothing in CI can observe it.
 
+  **Done on this machine on 2026-09-03**, iPhone 17 simulator (UDID
+  `59430515-851B-41A8-9BE7-76B5F59DE053`), bundle `com.example.DayByDay`. `xcodebuild` built
+  clean; `simctl boot`, `install` and `launch` drew all five rows due that day (Run, Reading,
+  Supplements and habits, Journaling, Water plants) with no error banner, confirming `recordState`
+  opened `.kept` against an empty place. This machine has no Accessibility/Screen-Recording grant
+  for GUI-scripted taps, so the tap itself was delivered as a synthetic `CGEventPost` click located
+  by trial against the Simulator window's on-screen bounds (`CGWindowListCopyWindowInfo`, no
+  permission needed) rather than through System Events — reported here rather than routed around
+  silently, per rule 5. The row that lands is visually indistinguishable before and after a tap
+  (`design.md`'s Non-Goals: nothing about `isKept` is drawn), so persistence was confirmed against
+  the record file itself, read straight out of the simulator's container
+  (`xcrun simctl get_app_container … data`) rather than by eye:
+  - Before any tap, `Library/Application Support/DayByDay/record.json` did not exist.
+  - One tap landed on the "Run" row and wrote
+    `{"ticks":[{"commitment":{...,"name":"Run",...},"date":{"day":3,"month":9,"year":2026}}],"version":1}`.
+  - `xcrun simctl terminate` then `xcrun simctl launch` (quit and relaunch), and the file read back
+    **byte-for-byte identical** to what the tap had written — the Story's headline round trip. The
+    relaunch screenshot again showed all five rows with no error banner.
+
 ## 4. Gates
 
-- [ ] 4.1 `cd src/DayByDayKit && swift test` reports 192 tests passing and no failures — the
+- [x] 4.1 `cd src/DayByDayKit && swift test` reports 192 tests passing and no failures — the
   twenty-eight here plus the 164 from #8, #9, #10, #11, #42, #55, #56, #70, #71 and #72, none of
-  which may change — and `pnpm run verify` exits 0.
-- [ ] 4.2 `pnpm exec openspec validate add-day-screen --strict` exits 0 and `pnpm run checks`
-  reports scenario coverage as 28 of 28.
+  which may change — and `pnpm run verify` exits 0. Confirmed: 192 passed, 0 failed;
+  `pnpm run verify` exits 0.
+- [x] 4.2 `pnpm exec openspec validate add-day-screen --strict` exits 0 and `pnpm run checks`
+  reports scenario coverage as 28 of 28. Confirmed: `Change 'add-day-screen' is valid`; `pnpm run
+  checks` reports "all 28 scenario(s) have a matching test".
 - [ ] 4.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7, and
