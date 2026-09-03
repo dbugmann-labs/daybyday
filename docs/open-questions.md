@@ -95,6 +95,40 @@ Things that are built, or deliberately not built, in a state someone will trip o
   person or an agent grepping issue text, and the rule itself. The fix is one line in the
   template, which is a chore; it is written down here rather than done because nothing was
   asked for it.
+- **A day screen's `today` is both the day it is on and the day it is asked on.** Surfaced at
+  #91's review, 2026-09-03. `DayScreen` keeps one `today`, and `tick(_:)` passes it to
+  `Row.tick(asOf:)` — but `CONTEXT.md` § *Today* separates those deliberately, saying that
+  "confusing the two is what would let a screen offer a tick for a day that has not happened".
+  The two coincide while a day screen can only ever be on today, so the guard is correct and
+  unreachable, and #91's delta approves exactly this shape. It stops being correct in
+  `add-screen-navigation` (#93): moving the screen's day by writing the same field would leave
+  the tick asked as of the *displayed* date, so navigating forward two days and tapping a row
+  would write a tick for a day that has not arrived — the refusal `add-tick-from-row` (#71)
+  exists to enforce. #91's `design.md` claims the guard "becomes reachable with #93", which is
+  true only if #93 splits the field; splitting it is the finding. **Owed by #93's grill**, and
+  written down here because #93 is two Stories away and nobody who has not read that review
+  would rediscover it.
+- **The shell swallows the one failure a tick reports.** Surfaced at #91's review, 2026-09-03.
+  `DayScreen.tick(_:)` throws so that a record which cannot be written is not silently
+  forgotten — `design.md` justifies the `throws` on the grounds that "a person must be told" —
+  and `ContentView.swift` calls it as `try? screen.tick(row)`. So on a place that cannot be
+  written the tap does nothing, the row does not change, and nothing is said. This is approved
+  as written: #91's `tasks.md` and its `design.md` shell snippet both specify `try?`, and no
+  scenario covers the shell. The second half of the `throws` rationale is therefore unrealised,
+  and it sits in the layer *No UI smoke layer* below already flags. Owed by whichever Story
+  first gives the shell a way to say anything at all.
+- **The tasks template puts G7 inside the implementer's own checklist.** Surfaced at #91's
+  review, 2026-09-03. A change's `tasks.md` carries a box reading "`mattpocock-skills:code-review`
+  reports nothing unresolved on either axis (**G7**)", and `openspec validate --archived`
+  requires every box ticked — so the box asserting G7 is satisfied is necessarily ticked by the
+  implementer before the reviewer has run, and the archived record shows a ticked G7 no reviewer
+  produced. It is four Stories deep: `2026-09-02-add-day-view/tasks.md:123`,
+  `2026-09-03-add-tick-from-row/tasks.md:101`,
+  `2026-09-03-add-day-navigation/tasks.md:112`, and #91's own. It is not merely cosmetic: on
+  #91 the implementer read that box as instructing it to perform G7 and reported having done
+  so, which is the one thing `AGENTS.md`'s routing table gives to a separate agent that may
+  write nothing. The fix is to the template the change folder is generated from, which is a
+  chore; it is recorded rather than done because nothing has asked for it.
 - **No UI smoke layer.** Surfaced at `day-screen`'s G1, 2026-08-31. Acceptance tests for the
   first screen attach at a view-model seam inside `DayByDayKit`, so nothing automated proves
   SwiftUI actually draws: a row left blank by a misspelled binding passes CI. The answer is one
