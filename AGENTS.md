@@ -95,8 +95,10 @@ is a preference rather than a fact; finding facts is the agent's job. ADR-1006.
    a checkout by one moves the other's working tree underneath it mid-task and neither is told;
    `git worktree list` showing a single entry is not proof you are alone, and a worktree costs a
    directory. Commands in `docs/story-mechanics.md` — including the `pnpm install` a fresh
-   worktree needs, because `node_modules` is gitignored and does not come with you.
-   `pnpm run status` prints the exact command for each open Story.
+   worktree needs, because `node_modules` is gitignored and does not come with you. **A worktree
+   ends when its branch merges** — `git worktree remove` is the janitor's last step at Stage 9,
+   and every stale tree left behind makes `git worktree list` less readable as the answer to
+   "who is working where". `pnpm run status` prints the exact command for each open Story.
 
 ## Naming
 

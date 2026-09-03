@@ -216,7 +216,7 @@ when you are asking whether you can walk away: `you` means the pipeline stops un
 | 6 | Green + next | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` and `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes | A |
 | 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `mattpocock-skills:code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity | **G7 (H)** |
 | 8 | Archive | agent | `janitor` / Haiku, via `/opsx:archive` | delta merged into `openspec/specs/`, change moved to `changes/archive/`, PR taken out of draft with `gh pr ready` | — |
-| 9 | Merge | agent | `janitor` / Haiku | issue auto-closed, parents settled, `docs/graph.mmd` regenerated | **G8 (CI)** |
+| 9 | Merge | agent | `janitor` / Haiku | issue auto-closed, parents settled, `docs/graph.mmd` regenerated, the Story's worktree removed | **G8 (CI)** |
 
 Read the bold entries down *Who decides* and you have your whole obligation: four stops — G1, G2,
 G4, G7 — plus answering, inside Stage 4, whatever the grill cannot settle. Stages 5, 6, 8 and 9
@@ -441,6 +441,13 @@ branch takes a worktree — Story or chore, unconditionally, because "is anyone 
 cannot be answered from inside a session (hard rule 8). Commands in `docs/story-mechanics.md`. Note what this does *not* fix: a worktree isolates `HEAD`, the
 index and the files, and does nothing about two Stories racing for one file in
 `openspec/specs/`. Separate problems, separate answers.
+
+**And the worktree ends with the merge that deletes its branch** — the janitor's last step, not a
+tidying pass someone gets to later. A tree left behind is a live checkout of a branch nobody will
+push again, and it is `git worktree list` that pays: that list is the only place anyone can read
+who is working where, so stale entries cost the very signal rule 8 exists to protect. The
+long-lived `chore/backlog` tree and any chore tree whose PR is still open are the exceptions.
+`docs/story-mechanics.md` § *After the merge*.
 
 **The switch-back trigger.** In-PR archiving is safe while concurrent Stories target *different*
 capabilities — different capabilities are different files, so git never sees a conflict. If two

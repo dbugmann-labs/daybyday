@@ -23,8 +23,8 @@ pnpm install                         # a worktree starts with no node_modules
 
 A chore is the same four commands with `../daybyday-<slug>` and `chore/<slug>`.
 
-Work there, push and open the PR from there, and remove it from the main clone after the merge
-with `git worktree remove ../daybyday-<change-id>`. `pnpm run status` prints the exact command
+Work there, push and open the PR from there, and remove it once the PR has merged — § *After
+the merge* below has that command and its one trap. `pnpm run status` prints the exact command
 for every open Story, so you rarely have to assemble one by hand.
 
 A worktree gets its own `HEAD` and index, which is the point. `.git/config` and tracked files are
@@ -90,6 +90,37 @@ bulk transcription rule 3 forbids. In CI the same checks bind.
 tick is G4: that is the human's decision, recorded as a comment rather than a checkbox.
 
 ## After the merge
+
+### The worktree
+
+**A merged branch's worktree goes with it.** The squash merge closes the Story and deletes the
+branch on the remote, so the directory it was worked in is a live checkout of something nobody
+will push again — and it still answers `git worktree list`, the one place you can read who is
+working where. Left alone they accumulate, and that list stops meaning anything: two trees
+survived their merges by 2026-09-03, from Stories #101 and #102.
+
+Run it **from the main clone**, not from inside the tree:
+
+```bash
+cd ../daybyday                             # the main clone — a sibling of every worktree
+git worktree remove ../daybyday-<change-id>
+git branch -D story/<issue#>-<change-id>   # a squash merge leaves the local ref behind, and
+                                           # `-d` refuses it: the commits themselves never landed
+```
+
+`git worktree remove .` from *inside* the tree also works — and leaves your shell in a directory
+that no longer exists, so every command after it fails with `fatal: Unable to read current
+working directory` and nothing says why. Leave first; it costs one `cd`.
+
+**A refusal is a stop, not a `--force`.** `fatal: '<path>' contains modified or untracked files,
+use --force to delete it` means something on that branch was never committed, and what it was
+worth is not the removing agent's call (rule 5). Report it. If a tree was deleted with `rm -rf`
+rather than removed, `git worktree list` marks it `prunable` and `git worktree prune` clears the
+record.
+
+Two worktrees outlive a merge on purpose. `chore/backlog` is long-lived and reused across
+grooming passes (ADR-1010, and `/atlas backlog` reuses it rather than cutting a new one), and any
+chore tree whose own PR is still open is still in use — "the Story merged" says nothing about it.
 
 ### Closing
 
