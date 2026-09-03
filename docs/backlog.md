@@ -324,53 +324,22 @@ shape it lacks, not the quota.
 - **Open** — what a met quota's row does: disappear, go quiet, or stay unchanged. `CONTEXT.md`
   § *Day view* records that hiding a met one is "a later Story's" and leaves it there.
 
-### B-026 — see, in the row, that today's commitment is kept
-*Captured 2026-09-03, from the sweep. The wording is the sweep's.*
-
-> "See, in the row, that today's commitment is kept — tap Gym and watch the row change."
-
-- **Trigger** — every daily visit, the moment after a tap; and the glance that decides whether
-  a tap is still owed.
-- **Touches** — `day-screen` (#27). The row already *says* it is kept (`openspec/specs/day-screen/spec.md`,
-  *A row is a commitment's line on a date*); the shell draws its name and nothing else.
-  `add-day-screen` (#91) lists "nothing about `isKept` is drawn" as a non-goal, and neither
-  #92 nor #93 claims it.
-- **Principle** — tested against *nothing congratulates you*: passes, and is the shape that
-  principle exists to leave alone — a ticked row "just goes quiet". The test is that going quiet
-  is all it does: no count, no colour that rewards a run.
-- **Open** — whether this is a requirement on the shell, which `docs/open-questions.md` § *No
-  UI smoke layer* says nothing automated can see, or a requirement behind the seam — what a
-  row *says*, in words, that the shell only echoes. The first Story that draws it decides.
-- **Open** — the same tap takes a tick back (#71). A row that shows kept and is tapped again
-  goes unkept, and it should look like nothing happened rather than like something was lost.
-
-### B-027 — be told when a tick I made was not kept
-*Captured 2026-09-03, from the sweep. The wording is the sweep's.*
-
-> "Be told when a tick was not kept — the tap did nothing, and the app said so."
-
-- **Trigger** — rarely, and exactly when it matters: the place cannot be written, the tap lands,
-  and the row stays as it was.
-- **Touches** — `day-screen` (#27). `DayScreen.tick` throws so that "a person must be told"
-  (#91's `design.md`), and `ContentView` calls it with `try?`, so the refusal reaches nobody.
-  Moved here from `docs/open-questions.md` § *Known gaps* (*The shell swallows the one failure a
-  tick reports*), which had it "owed by whichever Story first gives the shell a way to say
-  anything at all" — a want in disguise, since nothing asked for that Story.
-- **Principle** — tested against *entered where you stand*: passes only if the telling happens
-  in the row or beside it, on the day screen, and never as a screen of its own. A refused tick
-  is a fact about this tap, not a state to navigate to.
-- **Open** — what is said. The day screen already tells one refusal apart, a record from a
-  later version (ADR-1021); a tick refused on a readable record is a different sentence, and
-  whether it is worth telling those apart is the first Story's to decide.
-- **Open** — B-026 first. There is nothing to say a tick was *not* kept while nothing shows
-  that one was.
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-03 — see, in the row, that today's commitment is kept → a chore on the app shell,
+  `chore/draw-kept`, under ADR-1019: `Row.isKept` is already public and drawing it carries no
+  requirement, so there is nothing for a Story to specify. Kept is a dimmed name and a plain
+  checkmark, no colour, no animation — the row goes quiet. Lands before #100, since there is
+  nothing to say a tick was *not* kept while nothing shows that one was.
+- 2026-09-03 — be told when a tick I made was not kept → Story #100 `add-refused-tick-notice`,
+  under `FEAT: day-screen` (#27), appended to the chain after #93. The refusal is told on the row
+  that was tapped and stays until the app is shown again or a tick on any row is kept — the
+  lifetime a screen without its record already has; every refused tick is told the same way.
+  `CONTEXT.md` § *Day screen* carries it.
 - 2026-09-03 — define a commitment from the phone, a name and the rhythm it runs on → `FEAT:
   commitment` (#26), reopened rather than minted, under `EPIC: Daily commitments` (#1). Taken at G1
   with B-020 and B-013 as one Feature, the commitment's lifecycle, in a session of its own. That G1
