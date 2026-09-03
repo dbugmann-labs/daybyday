@@ -119,9 +119,12 @@ It is held by the **roster** and never by the commitment, which stays three thin
 would change a commitment's identity the moment it was stopped, and a tick embeds the whole
 commitment by value — so every tick already recorded would be orphaned and the history would read
 empty for that commitment on every day it was ever kept. Held one level up, stopping costs the
-record nothing and every past day answers exactly as it did. A day once given does not move: a
-commitment already stopped is not stopped again. **Retiring** is the verb the code uses and
-**stopping keeping** is the verb a person uses; they are one act, and the day it names is this one.
+record nothing and every past day answers exactly as it did. A day once given does not move while
+the commitment stays stopped: a commitment already stopped is not stopped again. What clears it is
+the person **taking the commitment up again** — offering the roster the same commitment, which puts
+it back in the place it was taken on in with its history intact, at the price of the days between
+reading as kept once more. **Retiring** is the verb the code uses and **stopping keeping** is the
+verb a person uses; they are one act, and the day it names is this one.
 ADR-1023, agreed 2026-09-03 at the grill of `add-roster-retirement` (#102).
 
 **Roster** — the commitments a person keeps, held as one ordered set: every commitment that has been
@@ -145,10 +148,12 @@ commitment.
 commitment it has **stopped keeping**, the day that commitment was **kept until** — and so it does
 two things it did not do before. It **reads back only what it has not stopped keeping**, because
 "what do I keep" is what its list of commitments answers and a stopped commitment is hidden from
-that; it still *holds* the stopped one, which is why an addition equal to it is still refused and
-why it still has the place it was taken on in. And it **answers about a date**: asked what it had not
-stopped keeping on a calendar date, it gives, in the order they were taken on, everything it has not
-stopped and everything whose kept-until day is that date or later. It judges that date against a
+that; it still *holds* the stopped one, which is why it still has the place it was taken on in and
+why offering that same commitment again **takes it up again** rather than adding a second copy or
+being refused — so the refusal it makes on a duplicate is scoped to a commitment it is *keeping*.
+And it **answers about a date**: asked what it had not stopped keeping on a calendar date, it gives,
+in the order they were taken on, everything it has not stopped and everything whose kept-until day
+is that date or later. It judges that date against a
 kept-until day and against nothing else — never against a commitment's own day it is kept from,
 never against a schedule — so the refusal on a duplicate is no longer the only one it makes, but the
 rule that it never asks what day it is, and adds nothing to a commitment's own answer, is unchanged.

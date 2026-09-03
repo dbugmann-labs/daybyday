@@ -59,8 +59,10 @@ Facts read out of the shipped sources rather than assumed:
 
 **Non-Goals:**
 
-- **Taking a commitment up again where it left off.** There is no un-stop and no resume. See
-  § *Stopping is not reversible in this Story*, and question 2 below.
+- **Holding a span, or several of them.** A roster holds at most one kept-until day per commitment.
+  Taking a commitment up again clears that day rather than opening a second window, so a roster
+  cannot say "kept January to March and again from June". Nothing has asked for that, and it is a
+  much larger model. See § *Offering a stopped commitment again takes it up where it left off*.
 - **Changing a commitment's name or rhythm.** B-014, out of this Feature by #26's G1.
 - **Keeping a roster across the app being closed.** #103. Nothing here is encoded or given a place,
   and no version number is written. #103 will need to read the kept-until day back out of a roster;
@@ -95,8 +97,10 @@ public struct Roster: Hashable, Sendable {
     /// stopped keeping is not among them.
     public var commitments: [Commitment] { get }
 
-    /// Adds `commitment` after every commitment already held, and answers `true`. Answers `false`
-    /// and changes nothing when this roster already holds it — including when it holds it stopped.
+    /// Adds `commitment` after every commitment already held, and answers `true`. When this roster
+    /// holds it stopped, takes it up again in the place it has — clearing the day it was kept
+    /// until — and answers `true`. Answers `false` and changes nothing when this roster is already
+    /// keeping it.
     public mutating func add(_ commitment: Commitment) -> Bool
 
     /// Stops keeping `commitment` as of `date`, the last day it was kept, and answers `true`.
@@ -111,7 +115,7 @@ public struct Roster: Hashable, Sendable {
 }
 ```
 
-Twenty-seven scenarios observe those four members and roster equality; fourteen of them are new and
+Thirty scenarios observe those four members and roster equality; seventeen of them are new and
 thirteen are #101's, restated by two MODIFIED requirements and expected to go on passing unedited.
 No process is spawned and no global stream is captured. Nothing else in the package is touched and
 nothing existing becomes public.
@@ -160,10 +164,14 @@ kept is a day whose row and tick both stand, and only tomorrow is clear.
 The cost of inclusive is a person who quits in the morning: today keeps an unticked row for a
 commitment they have already stopped, and an unticked due day is what a miss looks like (ADR-1013).
 That is a real miss on a day they had committed to, rather than a fabricated one, which is the
-distinction ADR-1013 turns on — but it is a preference about their own record, so it is
-**question 1** below and the delta is written on the recommendation.
+distinction ADR-1013 turns on — but it is a preference about their own record, so it was put to the
+owner as question 1 of the round raised at this grill. **Answered on 2026-09-03: the last day kept, as
+recommended.** Nothing in the delta moved; the boundary sentence, the parameter's name and the three
+scenarios that name dates stand as written, and the owner accepts that quitting on a Monday morning
+leaves Monday showing an unticked row.
 
-Either answer is one word of arithmetic apart at the seam; nothing else in the design moves.
+Either answer would have been one word of arithmetic apart at the seam; nothing else in the design
+would have moved.
 
 ### `commitments` answers "what do I keep", so a stopped commitment leaves it
 
@@ -208,10 +216,12 @@ The requirement says this out loud rather than leaving the name to imply it, and
 **Chosen: `retire` refuses a commitment the roster does not hold, and one it has already stopped;
 it refuses on no date at all.**
 
-Refusing a second stop keeps every date's answer fixed the moment it is given, which is ADR-1013's
-promise that a past day's answer does not change once given. Letting the second stop overwrite the
-day would silently move a boundary a person cannot see, and no screen in this Feature offers to pick
-a date anyway: #104 passes the day the person tapped on.
+Refusing a second stop keeps every date's answer about a stopped commitment fixed for as long as it
+stays stopped, which is ADR-1013's promise that a past day's answer does not change once given.
+Letting the second stop overwrite the day would silently move a boundary a person cannot see, and no
+screen in this Feature offers to pick a date anyway: #104 passes the day the person tapped on. The
+one thing that clears a kept-until day is taking the commitment up again, which is the owner's
+answer to question 2 — an act the person performs and is told about, not a day moving by itself.
 
 Refusing on no date is #101's rule kept: *"it MUST NOT refuse on a date"*. It matters concretely
 rather than for symmetry — a commitment kept from next month, stopped today, is a person changing
@@ -221,22 +231,34 @@ date at all, which is the honest answer and not an error.
 Both refusals are reported, for the reason #101 already settled: doing nothing silently is
 indistinguishable from having done the thing.
 
-### Stopping is not reversible in this Story
+### Offering a stopped commitment again takes it up where it left off
 
-**Chosen: no un-stop, and `add` refuses a commitment equal to a stopped one.**
+**Chosen: `add` takes up a commitment the roster had stopped, in the place it already has, and
+reports it as kept. Decided by the owner on 2026-09-03, against this Story's recommendation** —
+question 2 of the round raised at this grill, and the reason this section is written the way round
+it is. Both answers are recorded under § *Open Questions*.
 
-The roster still holds a stopped commitment, and two commitments a person would call identical
-cannot both be held — that is the whole reason #101's refusal exists. So an addition equal to a
-stopped commitment is refused, and taking the same thing up again means a commitment kept from the
-day you started again, which is a different commitment and is added.
+Offering a commitment the roster holds stopped drops the kept-until day, so the commitment is back
+among what the roster reads back, in the position it was taken on in, with the same history and no
+second copy of it. Nothing new is added to the seam: `add` is the way, and its report keeps one
+meaning — *the roster now keeps this commitment*.
 
-*Alternative — an addition equal to a stopped commitment resumes it.* It removes a dead end (see the
-risk below) at no new surface. Rejected because it silently rewrites the past this Story exists to
-protect: resuming drops the kept-until day, so every date between the stop and the resume goes back
-to answering that the commitment was being kept. Holding a *span* per commitment instead — several
-starts and stops — is a much larger model that no want has asked for. This is **question 2** below,
-because a person recovering from a mis-tap is the case that makes it a preference rather than a
-derivation.
+The cost, which is real and was put to the owner as the reason to refuse instead: every date between
+the stop and the taking-up goes back to answering that the commitment was being kept, because a
+roster holds one kept-until day and no span. The delta says so out loud in both requirements rather
+than leaving it to be discovered. What makes it acceptable is what does *not* change with it — every
+tick already recorded stands, so what a person actually did on those days is exactly as it was, and
+the gap shows up where a gap belongs, as days that were never ticked.
+
+*Alternative — refuse, so that starting again is a commitment kept from the day you restart.* It
+keeps every past date's answer fixed forever, which is the promise the rest of this Story is built
+on. Rejected by the owner because it leaves a mis-tapped stop with no way back at all until a screen
+offers one, and because the commitment that came back would be a different commitment: a new place
+at the end of the order, and a fresh history beside the old one that nothing would ever join up.
+
+*Alternative — hold a span per commitment, so a lapse is remembered.* It is the only shape that
+answers both dates correctly. Rejected as much more model than any want asks for, and it is not
+foreclosed: the days between are answerable from the ticks if a want ever appears.
 
 ### ADR-1023, and no second ADR
 
@@ -249,17 +271,26 @@ so it is a new record rather than an amendment: nothing in ADR-1013 changes, and
 
 The others fail a bar. *Inclusive kept-until* is one word of arithmetic to reverse. *`commitments`
 hiding stopped commitments* follows from a sentence already in `CONTEXT.md`. *Refusing a second
-stop* is derived from ADR-1013 rather than deciding anything new.
+stop* is derived from ADR-1013 rather than deciding anything new. *Taking a commitment up again by
+offering it* is a consequence of the roster holding the day rather than a decision of its own, so it
+is a bullet under ADR-1023's *Consequences* — amended when the owner answered question 2 — and not a
+record of its own.
 
 The vocabulary this Story settles lands in `CONTEXT.md` as **Kept until**, with § *Roster* amended.
 
 ## Risks / Trade-offs
 
-- **A mis-tapped stop cannot be undone.** → Real, and accepted for this Story. The commitment
-  vanishes from the list, an identical addition is refused, and nothing shows the person why. The
-  recovery is a commitment kept from today, which is not the same commitment and loses the old one's
-  place in the order. Mitigated where it belongs — #104 can confirm before stopping — and put to the
-  owner as question 2, since the alternative costs the past its fixedness.
+- **Taking a commitment up again rewrites what the days between answer.** → Real, and the owner's
+  decision on question 2 with the trade in front of them. A roster holds one kept-until day, so a
+  commitment taken up again reads as kept throughout, including the days it was stopped for. It
+  reaches no further than `commitments(on:)`: every tick stands, so a day inside that gap still
+  shows exactly what was done on it, and an unticked due day still looks like the miss it was. Two
+  requirements state it and two scenarios pin it, so no later reader meets it as a surprise.
+- **A mis-tapped stop is undone by offering the commitment again, and only by that.** → Nothing on a
+  screen says so until #104, and a person who has lost the row has nothing to tap. Mitigated where
+  it belongs: #104 owns whether stopping confirms first and how something stopped is taken up again.
+  What this Story guarantees is that the way back exists and costs the commitment neither its place
+  in the order nor its history.
 - **After this Story "holds" means two things.** → A roster *holds* a stopped commitment and does
   not *read it back*. Both MODIFIED requirements say which reading they carry, at the price of
   restating thirteen signed scenarios that do not change. Left implicit it would be a reviewer's
@@ -267,8 +298,10 @@ The vocabulary this Story settles lands in `CONTEXT.md` as **Kept until**, with 
 - **Two MODIFIED requirements are read as a diff of a delta file, not of the spec.** → G4 sees the
   whole requirement as added text and has to compare it against `openspec/specs/commitment/spec.md`
   by hand. Mitigated by changing only what had to change, and measured rather than claimed:
-  `git diff --no-index` between the requirement as it stands and the requirement as restated is six
-  paragraphs and one new scenario, and all thirteen restated scenarios are byte-identical.
+  `git diff --no-index` between the two requirements as they stand in
+  `openspec/specs/commitment/spec.md` and as they are restated here is **nine changed or added
+  paragraphs and two new scenarios** across the pair, and all thirteen restated scenarios are
+  byte-identical. Re-measured on 2026-09-03 after the owner's answers were folded in.
 - **Thirteen existing tests must keep passing unedited.** → They are the evidence that this delta
   modifies wording and not behaviour. One of them going red is a rule-5 stop, not a test to fix, and
   `tasks.md` says so.
@@ -286,46 +319,31 @@ The vocabulary this Story settles lands in `CONTEXT.md` as **Kept until**, with 
   ADR-1013 says the end date is not decided there, so nothing in it becomes wrong. A reader who
   finds only ADR-1013 finds a sentence pointing at the open half; ADR-1023 names ADR-1013 in return.
 
-## Questions for you
-
-1. **The day you stop — does it still count?** A roster is told the day a commitment was *kept
-   until*, and this delta reads that day as the **last day it was kept**: the row is still on that
-   day's screen, a tick made that morning stays visible, and the commitment is gone from the next
-   day onwards. The other reading is "stopped **from** this day": you tap stop, and it goes from
-   today immediately.
-   - *Recommended:* the last day it was kept. It is the only reading under which a tick you had
-     already made today cannot stop being visible on the day you made it, and losing sight of a real
-     tick is the failure `CONTEXT.md` § *Record* is written against.
-   - *If you say stopped from that day:* the parameter is named for the first day it is not kept,
-     the fourth requirement's boundary sentence flips, and three scenarios change their dates —
-     "in the answer on the day it was kept until and out of it on the next day" becomes "out of the
-     answer on the day it was stopped from". Nothing else in the delta moves, and no other
-     requirement changes. The cost you are accepting is that stopping on a day you already ticked
-     hides that tick from that day's view.
-   - The trade the other way, which is what makes this yours rather than mine: under the
-     recommendation, quitting on a Monday morning leaves Monday showing an unticked row you will
-     never tick, and an unticked due day is what a miss looks like.
-
-2. **You stop keeping the gym, then add it back exactly as it was. Refused, or taken up again?**
-   Adding a commitment with the same name, the same rhythm and the same day you had been keeping it
-   from is refused by this delta — the roster still holds it — so restarting means a commitment kept
-   from the day you restart, which is a different commitment with its own fresh history.
-   - *Recommended:* refused. Resuming would drop the day it was kept until, so every day between the
-     stop and the restart would go back to answering that you were keeping it — the past changing
-     under you, which is the one thing this Story promises not to do.
-   - *If you say taken up again:* the second MODIFIED requirement's new paragraph is rewritten and
-     its new scenario inverts, and the fourth requirement gains a sentence saying what the days
-     between now answer. It also decides, implicitly, that a mis-tapped stop is undone by re-adding
-     — which is the case worth weighing, because under the recommendation there is no way back at
-     all until a screen offers one.
-
 ## Open Questions
 
-**None.** Two questions in this grill were preferences whose answers change the delta, so they are
-the question round above rather than decisions made here; the delta is written on the recommended
-answers and the conductor relays them before G4. Every other question was a fact read out of the
-shipped sources, measured on this machine, or a decision made in § *Decisions* with its alternatives
-written down. The ones that were asked and answered:
+**None.** Two questions in this grill were preferences whose answers change the delta, so they went
+to the owner as a question round rather than being decided here. **Both were answered on 2026-09-03
+and are folded into the delta**; the round itself is gone from this document, and the two answers
+are the first two entries below. Every other question was a fact read out of the shipped sources,
+measured on this machine, or a decision made in § *Decisions* with its alternatives written down.
+The ones that were asked and answered:
+
+- *Does the day you stop still count as a day you kept it?* — **yes, it is the last day kept.**
+  Asked as question 1 and answered as recommended, so nothing in the delta moved. A roster answers
+  with a commitment on the day it was kept until and with nothing from the next day on; a tick made
+  that morning stays visible on the day it was made, which is what `CONTEXT.md` § *Record* is
+  written against. The accepted cost is that quitting in the morning leaves that day showing an
+  unticked row that will never be ticked.
+- *Is a stopped commitment, offered again exactly as it was, refused or taken up again?* — **taken
+  up again**, answered as question 2 **against this Story's recommendation**. `add` clears the
+  kept-until day, the commitment returns in the place it was taken on in with its history intact,
+  and the report says the roster now keeps it. The price the owner accepted is that the dates
+  between the stop and the taking-up go back to answering that the commitment was kept, because a
+  roster holds one kept-until day and no span — stated in both requirements, pinned by two new
+  scenarios, and reaching no further than `commitments(on:)`, since every tick stands. What it buys
+  is a way back from a mis-tapped stop that keeps the commitment's place in the order and its
+  history rather than starting a second one beside it. § *Offering a stopped commitment again takes
+  it up where it left off*, and ADR-1023's *Consequences*, both record it.
 
 - *Is stopping a fourth part of a commitment or a thing the roster holds?* — the roster's, decided at
   #26's G1 and recorded here as ADR-1023. Read out of `Tick.swift` and `History.swift`: a tick
@@ -355,6 +373,10 @@ written down. The ones that were asked and answered:
   other date. A roster holds no record of the day a commitment was added — #101 forbids one — so
   there is nothing to answer differently with, and a commitment's own floor is what keeps it from
   being *due* then. A scenario pins it.
+- *Does taking a commitment up again need a member of its own — an `unretire` or a `resume`?* — no.
+  Offering the commitment is the act, and `add` already takes a commitment and answers whether the
+  roster now keeps it. A second member would be a second way to say the same thing, and a screen
+  that could reach only one of them would be able to get it wrong.
 - *Should a stopped commitment be readable back — its day, or a list of what you used to keep?* — not
   in this Story. #26's G1 answered that retired commitments are hidden, no want asks to browse them,
   and a member no scenario observes is surface for its own sake. #103 needs the day to persist it and

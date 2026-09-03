@@ -17,10 +17,11 @@
   this delta's two MODIFIED requirements and are the evidence that this change modifies wording and
   not behaviour. **If one goes red, stop** — that is a behaviour change the delta does not carry, and
   it is a rule-5 stop rather than a test to edit (`design.md` § *Risks*).
-- [ ] 1.3 Confirm the starting point before writing a test: `pnpm run checks` reports scenario
-  coverage as `13/27 covered` for this change — the thirteen already carried by `RosterTests.swift`
-  — and names `"adding a commitment the roster has stopped keeping says it was not added"` as next.
-  A different number here means something else moved; report it rather than working around it.
+- [ ] 1.3 Confirm the starting point before writing a test: `pnpm run checks` reports
+  `scenario coverage — 13/30 scenario(s) covered` for this change — the thirteen already carried by
+  `RosterTests.swift` — and names `"offering a commitment the roster has stopped keeping takes it up
+  again"` as next. A different number here means something else moved; report it rather than working
+  around it.
 
 ## 2. Scenarios — one acceptance test each, in delta order
 
@@ -28,7 +29,7 @@ Each task takes exactly one `#### Scenario:` from `specs/commitment/spec.md` and
 acceptance test whose `@Test("...")` display name is that scenario title verbatim, then makes it pass
 with the smallest change that does. Never write two before the first is green (`AGENTS.md` rule 3).
 They go at the end of the existing `Tests/DayByDayKitTests/RosterTests.swift`, in the style already
-there. The fourteen tasks below are the fourteen scenarios this delta adds; the other thirteen
+there. The seventeen tasks below are the seventeen scenarios this delta adds; the other thirteen
 scenarios in the delta are #101's, already covered, and **no test for them may be rewritten**.
 
 Verify each with `cd src/DayByDayKit && swift test`: the named test green, every earlier test still
@@ -39,58 +40,71 @@ do not add one, and do not substitute a date the delta does not name.
 task says otherwise. **Record which ones actually ran red as you go, in this file** — a prediction
 here is not evidence.
 
-- [ ] 2.1 `adding a commitment the roster has stopped keeping says it was not added` — needs `retire`
-  to work, so implement `retire`'s happy path here and let 2.2–2.7 pin the rest of it. Three
-  assertions: the equal addition is refused, the roster still reads back nothing, and a commitment
-  alike but kept from 1 March 2026 *is* added. The third is the half that stops the refusal being
-  read as "you may never take this up again".
-- [ ] 2.2 `stopping a commitment a roster keeps says so and takes it out of the commitments read
+- [ ] 2.1 `offering a commitment the roster has stopped keeping takes it up again` — needs `retire`
+  to work, so implement `retire`'s happy path here and let 2.4–2.10 pin the rest of it. Three
+  assertions: the offer reports that the roster now keeps the commitment, the roster reads back that
+  one commitment and no second copy, and it equals a roster given that commitment once and never
+  asked to stop. The equality assertion is the one that pins that the kept-until day is genuinely
+  dropped rather than kept as a tombstone.
+- [ ] 2.2 `a commitment taken up again keeps the place it was taken on in` — "Water plants", "Gym",
+  "Journaling"; stop "Gym", offer it again, and it reads back in the middle. Fails an implementation
+  that removes and re-appends, which is the obvious way to write the take-up.
+- [ ] 2.3 `stopping a commitment a roster keeps says so and takes it out of the commitments read
   back` — the report and the empty read-back.
-- [ ] 2.3 `stopping one commitment leaves the others where they were` — "Water plants", "Gym",
+- [ ] 2.4 `stopping one commitment leaves the others where they were` — "Water plants", "Gym",
   "Journaling", stop "Gym"; the other two read back in that order. Fails an implementation that
   removes and re-appends, or that reads back in storage order without filtering.
-- [ ] 2.4 `stopping a commitment a roster does not hold says it was not stopped and leaves the roster
+- [ ] 2.5 `stopping a commitment a roster does not hold says it was not stopped and leaves the roster
   as it was` — the report is false and the roster equals one never asked. The equality assertion is
   the one that catches a stub that records a kept-until day against nothing.
-- [ ] 2.5 `stopping a commitment already stopped says it was not stopped and keeps the day first
+- [ ] 2.6 `stopping a commitment already stopped says it was not stopped and keeps the day first
   given` — stop as of 31 January 2026, stop again as of 28 February 2026; the report is false and the
   roster equals one asked only the first time. Fails any implementation that overwrites the day.
-- [ ] 2.6 `a commitment kept until a day before the day it is kept from is accepted` — kept from
+- [ ] 2.7 `a commitment taken up again can be stopped again, on a new day` — stop as of 31 January
+  2026, offer it again, stop as of 28 February 2026; reported as stopped, in the answer on
+  28 February 2026 and out of it on 1 March 2026. This is the pair to 2.6: the refusal there holds
+  only while the commitment is stopped, and taking it up again is what clears the day.
+- [ ] 2.8 `a commitment kept until a day before the day it is kept from is accepted` — kept from
   1 March 2026, stopped as of 1 January 2026, reported as stopped. Fails an implementation that
   judges the date against the commitment's own floor, which `design.md` § *A day once given does not
   move* forbids.
-- [ ] 2.7 `two rosters differing only in the day one commitment was kept until are different rosters`
+- [ ] 2.9 `two rosters differing only in the day one commitment was kept until are different rosters`
   — 31 January against 28 February, different; a third stopped on 31 January, equal to the first.
   Fails an implementation whose equality does not see the kept-until day.
-- [ ] 2.8 `stopping a commitment on a copy of a roster leaves the roster it was copied from
+- [ ] 2.10 `stopping a commitment on a copy of a roster leaves the roster it was copied from
   unchanged` — value semantics for the new mutation, the twin of #101's copy scenario for `add`.
-- [ ] 2.9 `a roster answers with every commitment it keeps, in the order they were taken on` — the
+- [ ] 2.11 `a roster answers with every commitment it keeps, in the order they were taken on` — the
   first scenario for `commitments(on:)`; two commitments, nothing stopped, order preserved.
-- [ ] 2.10 `a stopped commitment is in the answer on the day it was kept until and out of it on the
-  next day` — the boundary the whole Story turns on, and the one that changes if question 1 comes
-  back the other way. Three dates: 31 January 2026 answers with it, 1 February 2026 and 1 March 2026
-  answer with nothing.
-- [ ] 2.11 `a stopped commitment keeps its place in the answer for a date it was still kept on` —
+- [ ] 2.12 `a stopped commitment is in the answer on the day it was kept until and out of it on the
+  next day` — the boundary the whole Story turns on, and the owner's answer to question 1: the day
+  named is the last day kept. Three dates: 31 January 2026 answers with it, 1 February 2026 and
+  1 March 2026 answer with nothing.
+- [ ] 2.13 `a stopped commitment keeps its place in the answer for a date it was still kept on` —
   three commitments, the middle one stopped; on the kept-until day the answer is all three in
   order with the stopped one still in the middle, and the day after it is the other two. Fails an
   implementation that appends the stopped ones to the end.
-- [ ] 2.12 `stopping a commitment leaves every earlier date answering as it did` — the Story's
+- [ ] 2.14 `taking a commitment up again puts it back in the answer for the dates between` — stop as
+  of 31 January 2026, offer it again, then ask about 31 January 2026, 1 February 2026 and 1 March
+  2026; the commitment is in all three answers. This is the cost the owner accepted on question 2,
+  asserted rather than left implied, and it fails an implementation that keeps the old day around.
+- [ ] 2.15 `stopping a commitment leaves every earlier date answering as it did` — the Story's
   headline promise, asserted as three answers taken before the stop and compared with the same three
   taken after it, including 1 January 1583.
-- [ ] 2.13 `a commitment kept from a later date is in the answer for a date before it` — kept from
+- [ ] 2.16 `a commitment kept from a later date is in the answer for a date before it` — kept from
   1 March 2026, asked about 1 January 2026, in the answer. Fails an implementation that applies the
   commitment's own kept-from floor here, which `design.md` § *The roster subtracts only what it
   knows* forbids: the floor is `Commitment.isDue(on:)`'s and stating it twice is two places to be
   wrong.
-- [ ] 2.14 `a roster that holds nothing answers with nothing on every date` — 1 January 1583,
+- [ ] 2.17 `a roster that holds nothing answers with nothing on every date` — 1 January 1583,
   1 January 2026 and 31 December 9999, an answer each time and a refusal on none.
 
 ## 3. Gates
 
-- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 219 tests passing and no failures — the fourteen
-  here plus the 205 measured at `ab7ef41`, none of which may change — and `pnpm run verify` exits 0.
+- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 222 tests passing and no failures — the
+  seventeen here plus the 205 measured at `ab7ef41`, none of which may change — and
+  `pnpm run verify` exits 0.
 - [ ] 3.2 `pnpm exec openspec validate add-roster-retirement --strict` exits 0 and `pnpm run checks`
-  reports scenario coverage as 27 of 27.
+  reports scenario coverage as 30 of 30.
 - [ ] 3.3 `git diff --stat` names only `Roster.swift` and `RosterTests.swift` under `src/`. The app
   shell is not touched by this Story: `ContentView.swift` still hands `DayScreen` its
   `dayOneCommitments` array, and wiring a roster into a screen is #104's and a second capability's

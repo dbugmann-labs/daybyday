@@ -51,9 +51,10 @@ Four things are part of the decision rather than incidental to it:
   commitment's own kept-from day and not its schedule, which stay ADR-1013's and `schedule`'s. One
   rule lives in one place, which is the property ADR-1013's own *Alternatives considered* refused to
   give up.
-- **A day once given does not move.** A roster refuses to stop a commitment it has already stopped,
-  and reports the refusal, so every date's answer about that commitment is fixed the moment it is
-  given — the same promise ADR-1013 makes about a past day's answer.
+- **A day once given does not move while the commitment stays stopped.** A roster refuses to stop a
+  commitment it has already stopped, and reports the refusal, so no second stop can slide a boundary
+  a person cannot see — the same promise ADR-1013 makes about a past day's answer. One thing clears
+  a kept-until day, and it is the person taking the commitment up again, below.
 
 ## Consequences
 
@@ -67,10 +68,16 @@ Four things are part of the decision rather than incidental to it:
 - **Retiring needs something that holds commitments**, which is why `add-commitment-roster` (#101)
   had to land first, and why a roster must refuse a commitment it already holds: two commitments a
   person would call identical could not be told apart to stop one of them.
-- **Taking something up again is a new commitment**, kept from the day you started again, with its
-  own history. Resuming the old one is not offered, because dropping a kept-until day would change
-  what the days since answer, and holding several spans per commitment is a model nothing has asked
-  for.
+- **Taking something up again is the same commitment**, offered to the roster exactly as it was. The
+  roster drops the kept-until day, the commitment returns in the place it was taken on in, and its
+  history is the one it always had. There is no separate un-stop: offering it is the act, and the
+  roster reports that it now keeps it. The price is that the dates between the stop and the
+  taking-up go back to answering that the commitment was being kept, because a roster holds one
+  kept-until day per commitment and no span of them — a model nothing has asked for. Weighed against
+  the alternative, where a mis-tapped stop has no way back and starting again means a different
+  commitment with a fresh history at the end of the order, the owner chose this on 2026-09-03 at the
+  grill of #102. Nothing here touches the record: every tick stands, so what was actually done on
+  those days is unchanged and a gap still shows as days that were never ticked.
 - **Storage has one more thing to keep.** `add-roster-store` (#103) persists the kept-until day
   beside the commitment. It is one optional date per commitment and needs no change to what a tick
   is.

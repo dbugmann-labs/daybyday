@@ -37,9 +37,13 @@ as it did" costs.
   a commitment it has already stopped — whose day, once given, does not move. It refuses on no date
   at all, so a commitment stopped on a day before the day it is kept from is accepted and is one the
   roster was never keeping on any date, which is what changing your mind before starting looks like.
-- Adding a commitment equal to one the roster has stopped keeping is still refused, because the
-  roster still holds it. Taking the same thing up again is a commitment kept from a different day,
-  which is a different commitment, and it is added.
+- Offering the roster a commitment equal to one it has stopped keeping **takes that one up again**:
+  the day it was kept until is dropped, the commitment is back among what the roster reads back in
+  the place it was taken on in, and the roster reports that it now keeps it. Adding is still refused
+  only for a commitment the roster is already keeping. The price, which is the decision rather than
+  an oversight, is that the dates between the stop and the taking-up go back to answering that the
+  commitment was kept: a roster holds one kept-until day per commitment and no span. Every tick
+  already recorded stands, so what was actually done on those days does not move.
 - **Not breaking, but not purely additive.** Two of #101's requirements are MODIFIED: what a roster
   reads back is now what it has not stopped keeping, and the word "holds" is made to say which of
   the two readings it carries. Every scenario signed at #101 is restated unchanged and none of them
@@ -56,10 +60,11 @@ None.
 - `commitment`: two MODIFIED requirements — *A roster holds the commitments a person keeps, in the
   order they were taken on* (it now also holds the day a stopped commitment was kept until, reads
   back only what it has not stopped keeping, and is asked about dates) and *A roster refuses a
-  commitment it already holds* (a stopped commitment is still held, and what "refuses nothing else"
-  covers is scoped to what it is offered to add). Two ADDED requirements — a roster stops keeping a
-  commitment from the day it was kept until, and a roster answers which commitments it had not
-  stopped keeping on a calendar date.
+  commitment it already holds* (the refusal is scoped to a commitment the roster is *keeping*, a
+  stopped one offered again is taken up again instead, and what "refuses nothing else" covers is
+  scoped to what it is offered to add). Two ADDED requirements — a roster stops keeping a commitment
+  from the day it was kept until, and a roster answers which commitments it had not stopped keeping
+  on a calendar date.
 
 ## Impact
 
@@ -69,8 +74,9 @@ None.
   existing becomes public: `Commitment.keptFrom` and `Commitment.schedule` stay internal, and the
   known gap about a schedule's payload not reading back is untouched.
 - `src/DayByDayKit/Tests/DayByDayKitTests/RosterTests.swift` — widened. One acceptance test per new
-  scenario, added to the 205 passing at `ab7ef41`. The thirteen tests #101 wrote are restated by two
-  MODIFIED requirements and must go on passing unedited; one of them going red is a rule-5 stop.
+  scenario — seventeen of them — added to the 205 passing at `ab7ef41`, for 222. The thirteen tests
+  #101 wrote are restated by two MODIFIED requirements and must go on passing unedited; one of them
+  going red is a rule-5 stop.
 - `src/DayByDay` — untouched. The shell still hands `DayScreen` a hand-written `dayOneCommitments`
   array and has never held a roster; `Roster` has no caller outside its tests. Feeding a day screen
   from a roster is #104's and is a `day-screen` delta, so a second Story (rule 5).
