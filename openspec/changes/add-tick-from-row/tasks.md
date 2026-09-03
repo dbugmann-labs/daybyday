@@ -55,9 +55,10 @@ prediction here is not evidence.
   Wednesday 2 September 2026 asked as of Monday 31 August 2026. The refusal itself. Confirmed red:
   `swift test` reported the offered tick equal to a formed one rather than `nil`, because 2.1's
   implementation always returned a tick.
-- [ ] 2.6 `a row for a date earlier than the day it is asked as of offers the tick` — a day view on
+- [x] 2.6 `a row for a date earlier than the day it is asked as of offers the tick` — a day view on
   Monday 31 August 2026 asked as of Saturday 5 September 2026: the past is writable. Fails an
-  implementation that compares for equality rather than for "later than".
+  implementation that compares for equality rather than for "later than". Passed immediately: 2.5's
+  fix already compares `> 0`, not equality.
 - [ ] 2.7 `a row for a date later than the day it is asked as of offers no tick even where it says
   the commitment is kept` — the future row that is already ticked. Two assertions: it says kept, and
   it offers nothing. This is the scenario the question round turned on; the owner answered *refuse
