@@ -109,6 +109,31 @@ rather than a rhythm: it need not be a day the schedule is due on, and it does n
 schedule to begin there. Distinct from a **start date**, which an every-N-days schedule carries
 for a different job; a commitment can hold both, and they can disagree. ADR-1013.
 
+**Roster** — the commitments a person keeps, held as one ordered set: every commitment that has been
+taken on, in the order it was taken on, and never two of the same one. It is the answer to "what do
+I keep", the thing a day is drawn from, and the thing a commitment is eventually retired out of. It
+is a **value**, like a history and unlike a store — but unlike a history it is not the same whatever
+order things arrived in: two rosters holding the same commitments in the same order are the same
+roster, and two holding them in a different order are not, because the order is one of the things a
+roster holds.
+
+It **refuses a commitment it already holds**, and says so rather than quietly doing nothing. A
+commitment carries no identifier, so two alike in name, schedule and the day they are kept from are
+the same commitment, and a roster holding both could not be told which of them to stop keeping or
+which of them a screen was pointing at. That refusal is the only one it makes: it judges no name, no
+schedule and no day — anything that is a commitment at all was already accepted when the commitment
+was formed — it sets no limit on how many it holds, and it never asks what day it is. Saying so
+matters because doing nothing silently is what a person cannot tell apart from having made a second
+commitment.
+
+The order is **the order they were taken on** and nothing the system worked out: not alphabetical,
+which would be a rule about the owner's own words, and not by the day each is kept from, since day
+one's commitments are all kept from one day and that order would leave them tied with the roster
+choosing between them — the same reason a day view orders nothing of its own. Deliberately not the
+**store** that keeps a roster across the app being closed, in the way a history is not the store
+that keeps it, and deliberately not a **list on a screen**, which may draw a roster in whatever
+order it likes. Agreed 2026-09-03 at the grill of `add-commitment-roster` (#101).
+
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
 times within a week on any days.
