@@ -44,9 +44,9 @@ prediction here is not evidence.
   now stands. The first half of the round trip, and the scenario that makes "tick from the row" more
   than a getter. Passed immediately on 2.1's implementation — it composes existing `record` behaviour
   rather than driving new logic, so no red run for the right reason was available here.
-- [ ] 2.3 `taking back the tick a row offers makes a day view formed again say the commitment is not
+- [x] 2.3 `taking back the tick a row offers makes a day view formed again say the commitment is not
   kept` — the same tick handed to `History.remove(_:)`. The Story's second half; two assertions, the
-  original row kept and the re-formed one not.
+  original row kept and the re-formed one not. Passed immediately, same reason as 2.2.
 - [ ] 2.4 `a row already saying the commitment is kept offers the same tick` — two day views on one
   date, one history empty and one holding the tick; the rows differ in `isKept` and offer an equal
   tick. Pins that the offer does not consult the history.

@@ -463,3 +463,23 @@ func addingTheTickARowOffersMakesADayViewFormedAgainSayTheCommitmentIsKept() {
     #expect(dayViewAgain.rows[0].name == "Gym")
     #expect(dayViewAgain.rows[0].isKept)
 }
+
+@Test("taking back the tick a row offers makes a day view formed again say the commitment is not kept")
+func takingBackTheTickARowOffersMakesADayViewFormedAgainSayTheCommitmentIsNotKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    let dayView = DayView(of: [gym], on: monday, in: history)
+
+    let tick = dayView.rows[0].tick(asOf: monday)!
+    history.remove(tick)
+
+    #expect(dayView.rows[0].isKept)
+    let dayViewAgain = DayView(of: [gym], on: monday, in: history)
+    #expect(dayViewAgain.rows.count == 1)
+    #expect(dayViewAgain.rows[0].name == "Gym")
+    #expect(!dayViewAgain.rows[0].isKept)
+}
