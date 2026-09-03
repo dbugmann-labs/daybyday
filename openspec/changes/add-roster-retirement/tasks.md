@@ -48,24 +48,32 @@ here is not evidence.
   dropped rather than kept as a tombstone. Ran red on the `fatalError` stub (`DayByDayKit/Roster.swift:40:
   Fatal error: not implemented`), then green after `retire`'s happy path and `add`'s take-up-again
   branch were implemented.
-- [ ] 2.2 `a commitment taken up again keeps the place it was taken on in` — "Water plants", "Gym",
+- [x] 2.2 `a commitment taken up again keeps the place it was taken on in` — "Water plants", "Gym",
   "Journaling"; stop "Gym", offer it again, and it reads back in the middle. Fails an implementation
-  that removes and re-appends, which is the obvious way to write the take-up.
-- [ ] 2.3 `stopping a commitment a roster keeps says so and takes it out of the commitments read
-  back` — the report and the empty read-back.
-- [ ] 2.4 `stopping one commitment leaves the others where they were` — "Water plants", "Gym",
+  that removes and re-appends, which is the obvious way to write the take-up. Ran green immediately:
+  2.1's `add` already updates the entry in place rather than removing and re-appending, so this
+  scenario needed no further code change — only the test.
+- [x] 2.3 `stopping a commitment a roster keeps says so and takes it out of the commitments read
+  back` — the report and the empty read-back. Ran green immediately on `retire`'s happy path from
+  2.1; no further code change.
+- [x] 2.4 `stopping one commitment leaves the others where they were` — "Water plants", "Gym",
   "Journaling", stop "Gym"; the other two read back in that order. Fails an implementation that
-  removes and re-appends, or that reads back in storage order without filtering.
-- [ ] 2.5 `stopping a commitment a roster does not hold says it was not stopped and leaves the roster
+  removes and re-appends, or that reads back in storage order without filtering. Ran green
+  immediately on 2.1's implementation; no further code change.
+- [x] 2.5 `stopping a commitment a roster does not hold says it was not stopped and leaves the roster
   as it was` — the report is false and the roster equals one never asked. The equality assertion is
-  the one that catches a stub that records a kept-until day against nothing.
-- [ ] 2.6 `stopping a commitment already stopped says it was not stopped and keeps the day first
+  the one that catches a stub that records a kept-until day against nothing. Ran green immediately;
+  2.1's `retire` already refuses when `firstIndex` finds nothing.
+- [x] 2.6 `stopping a commitment already stopped says it was not stopped and keeps the day first
   given` — stop as of 31 January 2026, stop again as of 28 February 2026; the report is false and the
-  roster equals one asked only the first time. Fails any implementation that overwrites the day.
-- [ ] 2.7 `a commitment taken up again can be stopped again, on a new day` — stop as of 31 January
+  roster equals one asked only the first time. Fails any implementation that overwrites the day. Ran
+  green immediately; 2.1's `retire` already refuses when `keptUntil` is already set.
+- [x] 2.7 `a commitment taken up again can be stopped again, on a new day` — stop as of 31 January
   2026, offer it again, stop as of 28 February 2026; reported as stopped, in the answer on
   28 February 2026 and out of it on 1 March 2026. This is the pair to 2.6: the refusal there holds
-  only while the commitment is stopped, and taking it up again is what clears the day.
+  only while the commitment is stopped, and taking it up again is what clears the day. Ran red on the
+  `fatalError` stub (`DayByDayKit/Roster.swift:61: Fatal error: not implemented`), then green after
+  `commitments(on:)` was implemented, filtering on the kept-until day and nothing else.
 - [ ] 2.8 `a commitment kept until a day before the day it is kept from is accepted` — kept from
   1 March 2026, stopped as of 1 January 2026, reported as stopped. Fails an implementation that
   judges the date against the commitment's own floor, which `design.md` § *A day once given does not

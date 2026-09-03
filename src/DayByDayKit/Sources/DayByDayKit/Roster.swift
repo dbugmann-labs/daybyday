@@ -58,6 +58,12 @@ public struct Roster: Hashable, Sendable {
     /// taken on. It applies no other rule: a commitment's own day it is kept from and its
     /// schedule are the commitment's answer, not the roster's.
     public func commitments(on date: CalendarDate) -> [Commitment] {
-        fatalError("not implemented")
+        entries.compactMap { entry in
+            guard let keptUntil = entry.keptUntil else {
+                return entry.commitment
+            }
+
+            return date.days(until: keptUntil) >= 0 ? entry.commitment : nil
+        }
     }
 }
