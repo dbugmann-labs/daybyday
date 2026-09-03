@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-02
 - Deciders: Diego Bugmann
+- Amended: 2026-09-03 — the five-part block asks first and details last, *What is in front of
+  you* becomes `Detail` under a ten-line budget, and G7's findings are its one exemption. The two
+  shapes, the step report, the labels and the reply vocabulary are unchanged.
 
 ## Context
 
@@ -35,9 +38,38 @@ that did not admit to being one.
 
 Two smaller defects shared the cause. The gate form's pair, *what yes commits you to* against
 *what no costs*, fit G4 and had to be bent to fit the question round and the cluster pick, whose
-replies are choices rather than approvals. And at G7 the form's instruction to keep *what is in
-front of you* short collided with ADR-1002's requirement that the reviewer's findings reach the
-human unmediated, with nothing saying which wins.
+replies are choices rather than approvals. And at G7 the form's instruction to keep the context
+section short collided with ADR-1002's requirement that the reviewer's findings reach the human
+unmediated, with nothing saying which wins.
+
+### And the block's first form had no size discipline
+
+The two shapes were first fixed on 2026-09-02, and the sessions run under them were measured the
+same day. The step report worked: across four sessions the conductor printed seven of them,
+averaging four lines. The five-part block did not. Twelve were printed across the same four
+sessions, at **34 to 78 lines each** — so roughly six sevenths of everything the human read
+between steps was gate and stop blocks, and the owner's report was that the conductor "states a
+lot of things to me."
+
+The cause was that the context section was both first and unbounded. Three failures followed from
+that, all of them visible in the transcripts.
+
+**The ask was buried.** In the question round on Story #55, *The question* began on line 12 and
+the reply vocabulary on line 30. The human read eleven lines of context before learning what they
+were being asked, and forty-five at the G2 on Feature #53.
+
+**The block absorbed the agent's report.** That G2 reproduced both proposed Stories with their
+rationale paragraphs, the three things deliberately not sliced with a reason each, and the
+decisions — nearly all of it also on the tracker or in the draft PR, one click away.
+
+**Findings that were not the question rode along.** The stop that asked whether to drive #42 to
+the finish also carried three unrelated repo edits the `orchestrator` had noticed. The form had
+no slot for *by the way*, so they went into the gate, and the human had to hold them while
+answering something else.
+
+The trail had been given a budget and the block none, on the assumption that the trail was the
+thing that would sprawl. It was the other way round, and what follows is written against the
+measurement rather than the assumption.
 
 ## Decision
 
@@ -61,20 +93,33 @@ ticked scenarios and rebase state; `janitor` the archive commit, the merge, the 
 and whether the graph changed. This is ADR-1002's *the conductor holds no work context* made
 operational: the conductor can only relay what the agent named.
 
-**The five-part form is used for three kinds of stop and its labels change so that it fits all
-three.** Gates carry a G-number; stops without a marker — the question round, the sweep, the
-cluster pick, the braindump split — carry a `Stop —` header instead. The pair becomes *if you
-take the recommendation* against *if you don't*, which reads the same at a binary gate and holds
-a choice without strain. And the first line of *what is in front of you* is what ran since the
-human last replied, present only when something did, so that a gate reached after an unattended
-run is complete on its own.
+**The five-part block asks, and the question is its first part.** The parts, in order: the
+question; *if you take the recommendation* against *if you don't*; the recommendation; the exact
+reply; then `Detail`. The ask, the lean and the reply vocabulary fit on one screen, and what
+supports them is read second or not at all.
+
+**The same form is used for three kinds of stop, and its labels fit all three.** Gates carry a
+G-number; stops without a marker — the question round, the sweep, the cluster pick, the braindump
+split — carry a `Stop —` header instead. The pair is *if you take the recommendation* against
+*if you don't* rather than yes against no, which reads the same at a binary gate and holds a
+choice without strain.
+
+**`Detail` carries three things and nothing else** — the trail since the human last replied, the
+links, and the one or two decisions the thing turns on. Its first line is what ran since the human
+last replied, present only when something did, so that a gate reached after an unattended run is
+complete on its own. **The test is mechanical: anything the human could read by opening a link is
+a link, not a paste.** Ten lines is the working budget, and a block that runs longer has relayed
+an agent's report instead of the artifact that agent wrote. An agent's self-description, and
+findings that are not the question being asked, are the two things `Detail` is not.
+
+**At G7 the reviewer's findings go in verbatim**, grouped under the conductor's triage, and the
+triage is the recommendation. They sit under `Detail` like everything else, at whatever length the
+reviewer wrote them: ADR-1002's *unmediated* outranks the budget, and this is the budget's single
+exemption.
 
 **The braindump split and the sweep's gaps are stops, and say so.** The reasoning `atlas.md`
 already gave for the split — the one judgement the human can correct in a sentence and nobody
 else can, cheap to get wrong silently — is the definition of a stop, and a stop ends the turn.
-
-**At G7 the findings go in verbatim**, grouped under the conductor's triage, and the triage is
-the recommendation. ADR-1002's *unmediated* outranks the form's *keep it short*.
 
 **Status is echoed once, on entry, and not inside the loop.** It answers "where am I?", which is
 asked once; inside the loop the step report's `next` line carries the one thing that changed.
@@ -82,10 +127,20 @@ asked once; inside the loop the step report's `next` line carries the one thing 
 ## Consequences
 
 - **The human learns two shapes and reads the header.** A `G` header or a `Stop —` header means
-  a reply is wanted and the last part says what to type; a `▸` line means nothing is. The
+  a reply is wanted and the fourth part says what to type; a `▸` line means nothing is. The
   question "am I being asked something?" is answered before the first sentence.
+- **The human answers the question they were asked, not the one they can still remember.** The
+  ordering is what makes that true; the parts, the labels and the reply vocabulary would work in
+  any order and the ask would still be buried under an unbounded context section.
+- **The rubber stamp is reachable from two sides, and the form guards both.** ADR-1002 put the
+  recommendation in the form because without a stated lean the cheapest reply is yes. A block
+  whose ask you must scroll to find produces the same reply for the opposite reason — the human
+  reads the recommendation because it is the only part they can find. Question-first closes that.
 - **Every gate is self-standing**, which is the same principle as *start every session from
   durable files* applied to the moment of decision.
+- **A gate that will not fit the budget is a signal, not a formatting problem.** It means the
+  conductor is holding work context, which is the failure ADR-1002's *the conductor holds no work
+  context* exists to catch. The budget makes that visible at the moment it happens.
 - **The walk-away line is a promise the conductor can break.** If an agent stops early, the
   human is needed sooner than the line said; the *stopped* form is what tells them, and it is
   why that form exists rather than free prose.
@@ -93,11 +148,16 @@ asked once; inside the loop the step report's `next` line carries the one thing 
   exit codes or its commit; a return that says "done, all green" produces a `left` line the
   conductor cannot fill, and the right move is to say so in it rather than to go and look — the
   same trade as ADR-1005 and ADR-1006: the artifact is checkable, the judgement is not.
+- **Side findings have nowhere to go inside the block**, which is deliberate and incomplete: they
+  are forbidden there without this record saying where they land. `docs/open-questions.md`,
+  `docs/backlog.md` and an issue are the three existing homes, and choosing between them is a
+  follow-on.
 - **One more stop on the capture path**, for a braindump only. A single want still has none.
   This is the honest version of a stop that was already there.
 - **This adds shapes, not gates**, and ADR-1002's test still applies: nothing blocks on a step
-  report, nothing reads one, and if either shape ever grows a marker or a check it has become
-  the sixth gate that ADR was written to avoid.
+  report and nothing blocks on a block's length, nothing reads either, and if a shape or the
+  budget ever grows a marker or a check it has become the sixth gate that ADR was written to
+  avoid.
 
 ## Alternatives considered
 
@@ -112,8 +172,22 @@ projection of the systems of record and cannot say what *just ran*, which is the
 trail is for; and because a transcript that is the same tree repeated is one the human stops
 reading, which is the failure the step report is shaped against.
 
+**Shorten the step report rather than the block.** The obvious move once the transcripts were
+long, and the measurement is what ruled it out: seven reports at four lines against twelve blocks
+at fifty. Trimming the shape that was already working would have bought nothing and cost the
+trail.
+
+**Write the trail to a file and print only the walk-away line.** Rejected as a mechanism invented
+to solve a problem the block was causing. The trail is four lines and cheap; the fix belongs where
+the cost is.
+
 **Keep yes/no and add a variant form for choices.** Rejected: the whole value of one shape is
 that the human learns one, and two labels that fit every stop cost nothing.
+
+**Drop the *if you take the recommendation* pair, which duplicates the recommendation.** At many
+stops one half is contentless — "the delta as it stands; G4 is the next stop" says nothing. Left
+open deliberately rather than rejected: question-first may be the whole of the problem, and this
+is to be judged after the shape has been lived with.
 
 **A `Report —` header for things the human may object to but need not answer.** This is the
 "proceed if they say nothing" tier, given a name. Rejected because it does not exist: a printed

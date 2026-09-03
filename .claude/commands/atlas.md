@@ -450,7 +450,7 @@ clusters:
   number where there was a tick. Reopen that Feature rather than minting a second one against
   the same spec (`docs/agents/issue-tracker.md` § *Closing the hierarchy*).
 - **Nothing expires, so never argue from a want's age.** A pass carries one cluster, so every
-  other want survives it by construction and waiting is the normal state (ADR-1018). What is
+  other want survives it by construction and waiting is the normal state (ADR-1010). What is
   worth saying is *why* a cluster is not taken — blocked on a named issue, or nothing asks for
   it — and a want you have declined twice for the second reason is a drop worth proposing on its
   merits.

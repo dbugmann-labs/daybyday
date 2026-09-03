@@ -45,8 +45,8 @@ proportionate. `docs/process-overview.html` is the same process drawn on one pag
 a browser first if you would rather see the shape than read it. `docs/retrospective.md` says
 what actually happened when it was first run.
 
-**If you want to know why something is the way it is:** `docs/adr/`, MADR format, immutable
-once accepted. The register is `docs/adr/README.md`.
+**If you want to know why something is the way it is:** `docs/adr/`, MADR format, edited in
+place when a decision changes and stamped with the date. The register is `docs/adr/README.md`.
 
 ## Make the machine work first
 

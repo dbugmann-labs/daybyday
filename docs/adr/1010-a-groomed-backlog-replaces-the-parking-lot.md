@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-09-02
 - Deciders: Diego Bugmann
+- Amended: 2026-09-03 — the staleness rule inherited from the parking lot is withdrawn: a want
+  waits without going bad, nothing counts the passes it has survived, and `pnpm run status` never
+  calls one overdue. The diagnosis, the split, the admission rule and the two commands are
+  unchanged.
 
 ## Context
 
@@ -29,6 +33,34 @@ The file's *content* was never the problem. Five archived `design.md` files and 
 it as evidence of what the owner actually said, and the every-N-days change turned on an anchor
 question the parking lot had been holding open since 2026-08-28. That is the thing worth keeping.
 
+### And the staleness rule was carried over, made enforceable, and withdrawn
+
+The parking lot's staleness rule came across into the first form of this decision, where it became
+enforceable for the first time: `scripts/lib/backlog.ts` counted the grooming passes dated after a
+want's capture, and `pnpm run status` put anything at two or more in `▸ WAITING ON YOU`.
+
+It fired for the first time on 2026-09-03, on seven of fifteen wants at once, and the count was
+measuring the wrong thing.
+
+**A pass takes exactly one cluster forward.** That is `/atlas backlog`'s design and it is right
+for a four-to-eight-hour week: sweep, cluster, propose a disposition for each, grill the one
+cluster the human picks, stop at G1. Every want outside that cluster therefore survives the pass
+by construction. The counter was reading a throughput limit as neglect, and it read it the same
+way whether the want was blocked on a dependency — B-007 and B-011 both wait on a store that did
+not exist until #56 — or genuinely unasked-for, which in this backlog was true of exactly one
+entry. Both grooming passes had already written down which, in prose, in their *Not taken*
+dispositions; the counter ignored all of it and counted days.
+
+The wording had drifted from the code as well. The rule said "survived two grooming passes
+**untouched**", and the seven entries it fired on were precisely the ones the first pass had
+touched — Principle lines written, braindump quotes folded in, the same day. The parser had no
+notion of touched at all.
+
+What follows from firing on seven wants at once is not seven decisions. It is one of two
+outcomes: good wants dropped to satisfy a counter, or — far more likely — the line kept and the
+banner ignored, and after two rounds of that `▸ WAITING ON YOU` is noise. That is the parking
+lot's own failure, reproduced one level up, which is the thing this record exists to prevent.
+
 ## Decision
 
 **Split the file by what a line is, and give each half a command that reads it.**
@@ -49,9 +81,27 @@ Two conductor commands read them:
   already a shipped requirement or already an entry. It asks **at most one** question, and only
   about which want it is — never about how it should work.
 - **`/atlas backlog`** grooms. It clusters the wants by the capability they would land in,
-  proposes a promotion, a merge, a split or a drop for each, forces a choice on any entry that
-  has survived two passes, then grills the cluster taken forward with the existing `grill` skill
-  and stops at **G1**.
+  proposes a promotion, a merge, a split or a drop for each, then grills the cluster taken
+  forward with the existing `grill` skill and stops at **G1**.
+
+**There is no staleness rule.** A want sits in `docs/backlog.md` until a grooming pass promotes,
+merges or drops it, and sitting there costs it nothing. No count of passes survived, no forced
+choice, no promote-or-drop.
+
+**`pnpm run status` never puts a want in `▸ WAITING ON YOU`.** It reports how many wants there
+are, how many have been decided, when the last pass ran and what has been captured since, and
+then prints `/atlas backlog`. What is *owed* is a gate, and gates come from the tracker above.
+The backlog is a queue the human draws from at their own rate.
+
+**The *Grooming passes* log stays, and so does the rule that every pass appends a line.** It is
+not a counter: it is where a pass records what its sweep found and which clusters it declined,
+with reasons, and both `/atlas backlog` and `/to-tickets` read that to start from the last pass's
+reasoning rather than from the wants alone.
+
+**The judgement a staleness rule reaches for stays with the human, in prose.** A pass that
+declines a cluster says why — blocked on a named issue, or nothing asks for it — and a want
+declined twice for the second reason is a drop worth proposing. That is a recommendation a pass
+makes, not a threshold a script computes.
 
 **Grooming adds one stop in front of Stage 1 and nothing else.** No new stage, no new gate, no
 new number, and no second grill: `/atlas backlog` hands to the Stage 1 machinery that already
@@ -59,9 +109,17 @@ exists — G1, then `orchestrator`, then the `/to-tickets` breakdown and G2.
 
 ## Consequences
 
-- **The staleness rule becomes enforceable for the first time.** A grooming pass is a thing that
-  happens and can be counted, so "survived two passes" is observable where "two rounds of Epic
-  intake" never was.
+- **Nothing in the repo computes a want's age.** There is no `Want.survived` and no
+  `Backlog.stale` in `scripts/lib/backlog.ts`, and `renderBacklog` takes no `waiting` array, so
+  no code path exists for the backlog to write into one.
+- **The graveyard risk the parking lot died of comes back, and is accepted knowingly.** The
+  protection is that `pnpm run status` prints the backlog on every session that starts off a
+  story branch, and that the sweep opens the file every pass. Both were what actually fixed the
+  parking lot; a counter never got the chance to.
+- **The reversal trigger is a real graveyard, not a number.** If a pass finds itself carrying
+  wants it can neither promote nor argue against, the answer to reach for is a rule that counts
+  *declined for the same reason twice*, using the dispositions the pass already writes — not a
+  count of passes survived, which has been tried here and measured the wrong thing.
 - **Capture is cheap on purpose, and grilling stays where it was.** Interrogating an idea at
   capture would spend rounds on wants that are about to be dropped, and would make the entry
   point one you avoid. The Feature grill at Stage 1 is still the first place a want is argued
@@ -102,3 +160,9 @@ component in a setup like this and the one that fails silently. Rejected on that
 **A grooming gate, G0 or similar.** Grooming is a conversation whose output is a Feature the
 human already approves at G1. A second gate over the same decision buys a number and costs a
 stop. Rejected; it is a stop, exactly like the question round of ADR-1006.
+
+**Keep the staleness rule and fix the counter — count *untouched* passes, as the wording said,
+or exclude wants blocked on a named issue.** The version that was actually tried counted days and
+called them neglect. A better counter is buildable, and it was rejected because the thing it would
+compute is already written down in prose by every pass, in the *Not taken* dispositions, with the
+reason attached. A threshold that agrees with the prose adds nothing; one that disagrees is wrong.
