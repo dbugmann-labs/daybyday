@@ -602,7 +602,7 @@ export function renderTree(
 
   if (open.length === 0) {
     out.push('  No open Epic, Feature or Story. The next step is an Epic, and it starts with you.', '')
-    out.push(...renderBacklog(backlog, waiting))
+    out.push(...renderBacklog(backlog))
     out.push(...renderWaiting(waiting))
     return out.join('\n')
   }
@@ -654,7 +654,7 @@ export function renderTree(
     out.push('')
   }
 
-  out.push(...renderBacklog(backlog, waiting))
+  out.push(...renderBacklog(backlog))
   out.push(...renderWaiting(waiting))
   return out.join('\n')
 }
@@ -670,16 +670,16 @@ function renderWaiting(waiting: readonly string[]): string[] {
  * It is here rather than on a story branch because it answers the same question the tree does
  * — what is outstanding, and which of it is mine — for the half of the work that has no issue
  * yet. Printing it beside an open Story would be noise: a Story in flight is not the moment to
- * be told a want has gone stale.
+ * be reading the backlog.
  *
- * **A stale want is put in WAITING ON YOU deliberately.** ADR-1010's whole finding was that the
- * parking lot's staleness rule never ran because nothing surfaced it. A count that appears only
- * when you remember to run `/atlas backlog` reproduces exactly that failure one level up.
+ * **It never puts a want in WAITING ON YOU.** A want waiting to be groomed is not a thing that
+ * is owed: the backlog is a queue the human draws from, and one cluster a pass is the intended
+ * throughput. What is owed is a gate, and gates come from the tracker above.
  */
-function renderBacklog(backlog: Backlog | null, waiting: string[]): string[] {
+function renderBacklog(backlog: Backlog | null): string[] {
   if (backlog === null) return []
 
-  const { wants, decided, passes, lastPass, fresh, stale } = backlog
+  const { wants, decided, passes, lastPass, fresh } = backlog
   const groomed = passes.length === 0 ? 'never groomed' : `${passes.length} pass(es), last ${lastPass}`
 
   if (wants.length === 0) {
@@ -690,10 +690,6 @@ function renderBacklog(backlog: Backlog | null, waiting: string[]): string[] {
   // With no pass behind it every want is "fresh", which the count above has already said.
   if (lastPass !== null && fresh.length > 0) {
     out.push(`      ${fresh.length} captured since ${lastPass}: ${ids(fresh)}`)
-  }
-  if (stale.length > 0) {
-    out.push(`      ${stale.length} survived two passes — promote or drop: ${ids(stale)}`)
-    waiting.push(`groom the backlog — ${stale.length} want(s) have survived two passes: ${ids(stale)}`)
   }
   out.push('', '      /atlas backlog', '')
   return out

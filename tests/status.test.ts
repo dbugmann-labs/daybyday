@@ -370,11 +370,12 @@ describe('renderTree', () => {
     expect(out).toContain('/atlas backlog')
   })
 
-  it('puts a want that has survived two passes in WAITING ON YOU', () => {
+  // A want waiting to be groomed is a queue entry, not a debt: one cluster a pass is the
+  // intended throughput, so an ungroomed want must never read as something owed.
+  it('never puts a want in WAITING ON YOU, however long it has sat there', () => {
     const out = renderTree(WITH_STORY, new Set(), new Map(), parseBacklog(WANTS))
-    expect(out).toContain('1 survived two passes — promote or drop: B-001')
-    expect(out).toContain('WAITING ON YOU')
-    expect(out).toContain('groom the backlog — 1 want(s) have survived two passes: B-001')
+    expect(out).toContain('Backlog — 2 want(s)')
+    expect(out).not.toContain('groom the backlog')
   })
 
   it('names what has been captured since the last pass', () => {
@@ -382,10 +383,9 @@ describe('renderTree', () => {
     expect(out).toContain('1 captured since 2026-09-10: B-002')
   })
 
-  it('reports an ungroomed backlog without claiming anything is stale', () => {
+  it('reports an ungroomed backlog as never groomed', () => {
     const out = renderTree(WITH_STORY, new Set(), new Map(), parseBacklog(WANTS.split('## Grooming passes')[0]!))
     expect(out).toContain('never groomed')
-    expect(out).not.toContain('survived two passes')
   })
 
   it('points an empty backlog at the capture command, not the grooming one', () => {

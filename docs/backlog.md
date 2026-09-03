@@ -15,10 +15,10 @@ one are `CONTEXT.md` § *Product principles*.
 **An entry leaves in exactly three directions, all of them through `/atlas backlog`:** promoted
 into a Feature or a Story against an existing one, dropped with the reason, or merged into
 another entry. Whichever it is, the entry is deleted from *Wants* and one line lands in
-*Decided* below. **An entry that has survived two grooming passes untouched is presented as a
-forced choice — promote it or drop it**, and enforcing that is `/atlas backlog`'s job rather
-than your memory's. *Grooming passes* is a dated log for that reason: a pass an entry sat
-through counts only if it was written down, and `pnpm run status` reads the count off it unasked.
+*Decided* below. **Nothing expires.** A want sits here until a pass takes it, and sitting costs
+it nothing: a pass carries one cluster forward, so waiting is the normal state and not a debt.
+Nothing counts how long an entry has been here and `pnpm run status` never asks you to answer
+for one. ADR-1018.
 
 **Each entry carries a *Principle* line** naming which of `CONTEXT.md` § *Product principles* the
 want was tested against and what the test returned — one principle, not all four. A want that
@@ -394,10 +394,11 @@ months later.
 
 ## Grooming passes
 
-One dated line per `/atlas backlog` pass, appended by the pass itself, oldest first. This is
-what "survived two passes" is counted against; an entry captured after a pass did not sit
-through it. A pass that promoted nothing still gets a line — it is the pass the staleness rule
-most needs to count. Say what the coverage sweep found, including when it found nothing.
+One dated line per `/atlas backlog` pass, appended by the pass itself, oldest first. A pass that
+promoted nothing still gets a line: this log is where a pass records what its sweep found and
+which clusters it declined and why, and the next pass — and `/to-tickets` — start from that
+reasoning rather than from the wants alone. Say what the coverage sweep found, including when it
+found nothing.
 
 - 2026-09-02 — pass over 11 wants, the first.
   - **Sweep** — every rhythm on the day-one week is shipped or in flight (#11), and not one of
@@ -437,7 +438,9 @@ most needs to count. Say what the coverage sweep found, including when it found 
     day-one week has no rhythm left uncovered: all four shapes shipped when #45 merged mid-pass,
     closing Story #11 and `FEAT: schedule` (#6). Nothing was stale — the counter counts passes
     dated strictly after a capture and both passes are 2026-09-02, so the forced choice first
-    fires on a later date.
+    fires on a later date. *(Left as the pass wrote it. The claim was wrong — B-001..B-009 were
+    captured 2026-08-28 and both passes counted against them — and the counter it describes was
+    withdrawn on 2026-09-03, ADR-1018.)*
   - **Taken forward** — cluster A, the day screen you can use: B-019, B-006, B-016, grilled and
     taken to `FEAT: day-screen` (#27). #27 is at G2 rather than G1, so no Feature was minted and
     the three wants left *Wants* the same day, once its Stories carried numbers: B-006 → #70,

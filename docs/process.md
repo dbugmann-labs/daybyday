@@ -130,9 +130,10 @@ sounds. The artifact is **`docs/backlog.md`**, which holds *wants* — one thing
 you do, in your own words, quoted rather than paraphrased — and nothing else.
 
 **Two commands read it, and that is the point.** Its predecessor, `docs/parking-lot.md`, carried
-the same exit rule and the same staleness rule, and neither ever ran, because no command opened
-the file: the rules were sentences and the file was append-only in practice. ADR-1010 has the
-post-mortem.
+the same exit rule and it never ran, because no command opened the file: the rule was a sentence
+and the file was append-only in practice. ADR-1010 has the post-mortem. It also carried a
+staleness rule, which this repo inherited, tried and withdrew — a want waits without going bad,
+and nothing counts how long it has been there (ADR-1018).
 
 - **`/atlas idea <want>`** captures a want, or a braindump of several in one invocation — one
   dedup read across all of them, the split into entries reported back before it commits, and one
@@ -146,11 +147,11 @@ post-mortem.
   capability and open Feature against the lifecycle verbs *create, change, retire*, and
   `docs/open-questions.md` — and reports what has no want against it at all, capturing the gaps
   the human confirms before it goes on. Then it clusters the wants **by the capability they would
-  land in**, proposes a promotion, a merge, a split or a drop for each, forces a choice on any
-  entry that has survived two passes, grills the cluster taken forward and stops at **G1**. It
-  adds one stop in front of Stage 1 and nothing else — no new stage, no new gate, no second
-  grill. Every pass appends a dated line to the backlog's *Grooming passes* log, promotion or
-  not, because that log is the only thing "survived two passes" can be counted against.
+  land in**, proposes a promotion, a merge, a split or a drop for each, grills the cluster taken
+  forward and stops at **G1**. It adds one stop in front of Stage 1 and nothing else — no new
+  stage, no new gate, no second grill. Every pass appends a dated line to the backlog's
+  *Grooming passes* log, promotion or not, because that log is where the next pass reads what
+  this one declined, and why.
 
 **The sweep is there because every other check in the chain is a duplication or a coherence
 check.** The four outcomes at capture ask whether a want is already recorded; the clustering
