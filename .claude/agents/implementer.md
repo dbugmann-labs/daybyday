@@ -21,7 +21,7 @@ Read `AGENTS.md` first. It is binding.
 | `chore/<slug>` | an **accepted ADR** under `docs/adr/` | the human, at the stop that authorised the chore |
 
 The chore lane exists for exactly one thing: the **app shell** — `CONTEXT.md` § *App shell*,
-ADR-1018. It is the part of the app that decides nothing, and its whole guard is that test:
+ADR-1019. It is the part of the app that decides nothing, and its whole guard is that test:
 **nothing may go in it that could be wrong in a way a test would catch.** An order, a formatting
 rule, a refusal, the place a store is opened at — each fails that test and owes a Story. If the
 work in front of you fails it, **stop and say so**; that is not a chore and you are not the one

@@ -373,7 +373,7 @@ already. The test is `CONTEXT.md` § *App shell* — **nothing may go in it that
 way a test would catch** — and anything failing that test is behaviour and owes a Story, however
 small it looks. Read the two together: the prose rules out adding behaviour, the table permits the
 target that draws behaviour someone else added, and the guard is what keeps those from being the
-same thing. ADR-1018, which is also the shape an ADR takes when it stands in for a delta —
+same thing. ADR-1019, which is also the shape an ADR takes when it stands in for a delta —
 `.claude/agents/implementer.md` works from it exactly as it works from a change folder.
 
 **One PR per Story, open from Stage 4 to merge** — mechanics in §4 and

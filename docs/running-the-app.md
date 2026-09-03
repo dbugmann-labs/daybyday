@@ -6,7 +6,7 @@ a Story's git; this one is for looking at the thing. Everything here was run on 
 §5 is the four documented commands that could never have worked, every one of them recalled.
 
 **What you are looking at is the app shell**, and it decides nothing: `CONTEXT.md` § *App shell*,
-ADR-1018. It draws what `DayByDayKit` already answers, from a hardcoded copy of the day-one week,
+ADR-1019. It draws what `DayByDayKit` already answers, from a hardcoded copy of the day-one week,
 and it persists nothing. There is no ticking, no navigation and no store behind it yet — those are
 Stories #71 and #72 and the open question about where a store is opened.
 
@@ -87,11 +87,11 @@ missing, not the project file. `xcodebuild -showdestinations` says so in as many
 "it compiles" and "it runs" are separate questions here.
 
 **`build/` appearing in `src/DayByDay/` and `src/DayByDayKit/`.** `xcodebuild` writes there when it
-is not given `-derivedDataPath`. It is gitignored (ADR-1018), so this is noise rather than damage.
+is not given `-derivedDataPath`. It is gitignored (ADR-1019), so this is noise rather than damage.
 
 ## What CI does with all this
 
 Nothing. CI's `swift` job discovers `Package.swift` files and runs `swift test`; an `.xcodeproj`
-adds no manifest, so the app target is not built by CI at all. That is deliberate and ADR-1018
+adds no manifest, so the app target is not built by CI at all. That is deliberate and ADR-1019
 names the step that would change it — a compile-only step proves nothing about drawing, which is
 the gap `docs/open-questions.md` § *No UI smoke layer* already records and defers.
