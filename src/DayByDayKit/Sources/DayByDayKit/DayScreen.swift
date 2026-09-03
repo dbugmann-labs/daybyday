@@ -59,7 +59,23 @@ public final class DayScreen {
     /// day view holds, or when this screen is not keeping a record. Throws when the change could
     /// not be kept, leaving `dayView` as it was.
     public func tick(_ row: DayView.Row) throws {
-        fatalError("not implemented")
+        guard dayView.rows.contains(row) else {
+            return
+        }
+        guard let store else {
+            return
+        }
+        guard let tick = row.tick(asOf: today) else {
+            return
+        }
+
+        if row.isKept {
+            try store.remove(tick)
+        } else {
+            try store.add(tick)
+        }
+
+        dayView = DayView(of: commitments, on: today, in: store.history)
     }
 
     /// The app has been shown on `today`: the day view and the record are read again.

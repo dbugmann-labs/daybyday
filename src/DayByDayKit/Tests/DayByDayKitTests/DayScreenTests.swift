@@ -99,3 +99,144 @@ func aDayScreenHoldsTheSameDayViewAsOneFormedDirectlyFromTheSameCommitmentsDayAn
 
     #expect(screen.dayView == expected)
 }
+
+@MainActor
+@Test("ticking a row that says its commitment is not kept makes the day screen say it is kept")
+func tickingARowThatSaysItsCommitmentIsNotKeptMakesTheDayScreenSayItIsKept() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym], asOf: monday, keeping: place)
+    let row = screen.dayView.rows[0]
+
+    try screen.tick(row)
+
+    #expect(screen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("ticking a row that says its commitment is kept takes the tick back")
+func tickingARowThatSaysItsCommitmentIsKeptTakesTheTickBack() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym], asOf: monday, keeping: place)
+    let opened = screen.dayView
+    try screen.tick(screen.dayView.rows[0])
+    try screen.tick(screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView == opened)
+}
+
+@MainActor
+@Test("a tick made on a day screen is held by a day screen opened afterwards at the same place")
+func aTickMadeOnADayScreenIsHeldByADayScreenOpenedAfterwardsAtTheSamePlace() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let first = DayScreen(of: [gym], asOf: monday, keeping: place)
+    try first.tick(first.dayView.rows[0])
+
+    let second = DayScreen(of: [gym], asOf: monday, keeping: place)
+
+    #expect(second.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test(
+    "a tick taken back on a day screen is not held by a day screen opened afterwards at the same place"
+)
+func aTickTakenBackOnADayScreenIsNotHeldByADayScreenOpenedAfterwardsAtTheSamePlace() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let first = DayScreen(of: [gym], asOf: monday, keeping: place)
+    try first.tick(first.dayView.rows[0])
+    try first.tick(first.dayView.rows[0])
+
+    let second = DayScreen(of: [gym], asOf: monday, keeping: place)
+
+    #expect(!second.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("ticking one row leaves the other rows of the day as they were")
+func tickingOneRowLeavesTheOtherRowsOfTheDayAsTheyWere() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let supplements = Commitment(
+        name: "Supplements and habits", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym, journaling, supplements], asOf: monday, keeping: place)
+    try screen.tick(screen.dayView.rows[1])
+
+    #expect(screen.dayView.rows.map(\.name) == ["Gym", "Journaling", "Supplements and habits"])
+    #expect(screen.dayView.rows.map(\.isKept) == [false, true, false])
+}
+
+@MainActor
+@Test("a change that cannot be kept is refused and leaves the day view as it was")
+func aChangeThatCannotBeKeptIsRefusedAndLeavesTheDayViewAsItWas() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym], asOf: monday, keeping: place)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+    #expect(!screen.dayView.rows[0].isKept)
+
+    let later = DayScreen(of: [gym], asOf: monday, keeping: place)
+    #expect(!later.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a row the day screen's day view does not hold changes nothing")
+func aRowTheDayScreensDayViewDoesNotHoldChangesNothing() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let mondayScreen = DayScreen(of: [gym], asOf: monday, keeping: place)
+    let wednesdayScreen = DayScreen(of: [gym], asOf: wednesday, keeping: place)
+
+    try mondayScreen.tick(wednesdayScreen.dayView.rows[0])
+
+    #expect(!mondayScreen.dayView.rows[0].isKept)
+
+    let laterOnWednesday = DayScreen(of: [gym], asOf: wednesday, keeping: place)
+    #expect(!laterOnWednesday.dayView.rows[0].isKept)
+}

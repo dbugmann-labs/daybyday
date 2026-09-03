@@ -57,25 +57,31 @@ red as you go, in this file** — a prediction here is not evidence.
   day and history` — two commitments, one tick added and one taken back at the place first, then
   the whole day view compared for equality with a directly formed one. The strongest single
   assertion that the screen delegates rather than recomputes. Passed immediately.
-- [ ] 2.5 `ticking a row that says its commitment is not kept makes the day screen say it is kept` —
-  the tap. Takes the screen's own row from `dayView.rows`, not one built by the test.
-- [ ] 2.6 `ticking a row that says its commitment is kept takes the tick back` — the second tap,
+- [x] 2.5 `ticking a row that says its commitment is not kept makes the day screen say it is kept` —
+  the tap. Takes the screen's own row from `dayView.rows`, not one built by the test. Confirmed
+  red: crashed with `Fatal error: not implemented` at `tick(_:)`'s `fatalError`.
+- [x] 2.6 `ticking a row that says its commitment is kept takes the tick back` — the second tap,
   taking the row from the day view *as it then stands*, which is the row `isKept` is read off.
   Second assertion: the day view is equal to the one held at opening, so the untick left nothing.
-- [ ] 2.7 `a tick made on a day screen is held by a day screen opened afterwards at the same place` —
+  Passed immediately.
+- [x] 2.7 `a tick made on a day screen is held by a day screen opened afterwards at the same place` —
   **the Story's headline**: the tick survives a quit. A second `DayScreen` at the same place.
-- [ ] 2.8 `a tick taken back on a day screen is not held by a day screen opened afterwards at the
-  same place` — the same round trip in the other direction.
-- [ ] 2.9 `ticking one row leaves the other rows of the day as they were` — three commitments, the
-  middle one ticked; assert three rows, the order unchanged, and only the middle kept.
-- [ ] 2.10 `a change that cannot be kept is refused and leaves the day view as it was` — a place
+  Passed immediately.
+- [x] 2.8 `a tick taken back on a day screen is not held by a day screen opened afterwards at the
+  same place` — the same round trip in the other direction. Passed immediately: `tick` already
+  re-forms `dayView` from `store.history` rather than altering it in place.
+- [x] 2.9 `ticking one row leaves the other rows of the day as they were` — three commitments, the
+  middle one ticked; assert three rows, the order unchanged, and only the middle kept. Passed
+  immediately.
+- [x] 2.10 `a change that cannot be kept is refused and leaves the day view as it was` — a place
   beneath an existing ordinary file, which opens empty (`fileExists` is false) and then refuses the
   write. Three assertions: `tick` throws, the day view is unchanged, and a screen opened afterwards
-  agrees. This is `RecordStoreError.cannotWrite` reaching the caller.
-- [ ] 2.11 `a row the day screen's day view does not hold changes nothing` — a row taken from a
+  agrees. This is `RecordStoreError.cannotWrite` reaching the caller. Passed immediately.
+- [x] 2.11 `a row the day screen's day view does not hold changes nothing` — a row taken from a
   screen on Wednesday 2 September 2026 and handed to a screen on Monday 31 August 2026. Fails an
   implementation with no `contains` guard, in both assertions: the Monday screen would be unchanged
-  but a tick for the Wednesday would have been written.
+  but a tick for the Wednesday would have been written. Passed immediately: the `contains` guard
+  in `tick(_:)` (added for 2.5) already covers it.
 - [ ] 2.12 `the place a day screen keeps its record is under Application Support, in a directory of
   the app's own` — ask `DayScreen.recordPlace`; assert the path contains the platform's
   application-support directory, and that the file sits inside a directory within it rather than
