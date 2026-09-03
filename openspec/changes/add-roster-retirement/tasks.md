@@ -74,15 +74,17 @@ here is not evidence.
   only while the commitment is stopped, and taking it up again is what clears the day. Ran red on the
   `fatalError` stub (`DayByDayKit/Roster.swift:61: Fatal error: not implemented`), then green after
   `commitments(on:)` was implemented, filtering on the kept-until day and nothing else.
-- [ ] 2.8 `a commitment kept until a day before the day it is kept from is accepted` — kept from
+- [x] 2.8 `a commitment kept until a day before the day it is kept from is accepted` — kept from
   1 March 2026, stopped as of 1 January 2026, reported as stopped. Fails an implementation that
   judges the date against the commitment's own floor, which `design.md` § *A day once given does not
-  move* forbids.
-- [ ] 2.9 `two rosters differing only in the day one commitment was kept until are different rosters`
+  move* forbids. Ran green immediately; `retire` never consults `keptFrom`.
+- [x] 2.9 `two rosters differing only in the day one commitment was kept until are different rosters`
   — 31 January against 28 February, different; a third stopped on 31 January, equal to the first.
-  Fails an implementation whose equality does not see the kept-until day.
-- [ ] 2.10 `stopping a commitment on a copy of a roster leaves the roster it was copied from
-  unchanged` — value semantics for the new mutation, the twin of #101's copy scenario for `add`.
+  Fails an implementation whose equality does not see the kept-until day. Ran green immediately;
+  `Entry`'s synthesised `Hashable` already sees `keptUntil`.
+- [x] 2.10 `stopping a commitment on a copy of a roster leaves the roster it was copied from
+  unchanged` — value semantics for the new mutation, the twin of #101's copy scenario for `add`. Ran
+  green immediately; `Roster` is a struct and `entries` is a value array.
 - [ ] 2.11 `a roster answers with every commitment it keeps, in the order they were taken on` — the
   first scenario for `commitments(on:)`; two commitments, nothing stopped, order preserved.
 - [ ] 2.12 `a stopped commitment is in the answer on the day it was kept until and out of it on the

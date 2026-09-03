@@ -348,3 +348,59 @@ func aCommitmentTakenUpAgainCanBeStoppedAgainOnANewDay() {
     #expect(roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 28)!) == [gymAgain])
     #expect(roster.commitments(on: CalendarDate(year: 2026, month: 3, day: 1)!).isEmpty)
 }
+
+@Test("a commitment kept until a day before the day it is kept from is accepted")
+func aCommitmentKeptUntilADayBeforeTheDayItIsKeptFromIsAccepted() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(
+        name: "Gym", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+
+    let stopped = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 1)!)
+
+    #expect(stopped)
+    #expect(roster.commitments.isEmpty)
+}
+
+@Test("two rosters differing only in the day one commitment was kept until are different rosters")
+func twoRostersDifferingOnlyInTheDayOneCommitmentWasKeptUntilAreDifferentRosters() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var stoppedInJanuary = Roster()
+    _ = stoppedInJanuary.add(gym)
+    _ = stoppedInJanuary.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    var stoppedInFebruary = Roster()
+    _ = stoppedInFebruary.add(gym)
+    _ = stoppedInFebruary.retire(gym, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!)
+
+    #expect(stoppedInJanuary != stoppedInFebruary)
+
+    var stoppedInJanuaryAgain = Roster()
+    _ = stoppedInJanuaryAgain.add(gym)
+    _ = stoppedInJanuaryAgain.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(stoppedInJanuaryAgain == stoppedInJanuary)
+}
+
+@Test("stopping a commitment on a copy of a roster leaves the roster it was copied from unchanged")
+func stoppingACommitmentOnACopyOfARosterLeavesTheRosterItWasCopiedFromUnchanged() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var original = Roster()
+    _ = original.add(gym)
+
+    var copy = original
+    _ = copy.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(copy.commitments.isEmpty)
+    #expect(original.commitments == [gym])
+    #expect(original != copy)
+}
