@@ -53,15 +53,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   not `Comparable`. Rendering a date is a delta against `openspec/specs/schedule/spec.md` rather
   than `day-screen`, so it is a Story of its own against a second capability — which is why #72
   did not widen it in passing.
-- **The store must be opened under `Library/Application Support/`.** Owed by #56's design,
-  2026-09-02. `RecordStore` keeps the record at whatever place it is given and cannot enforce
-  the choice from where it sits; `Caches/` is purged by the system and `tmp/` is not backed up,
-  and either would silently lose the one thing the product promises to keep. It was written
-  expecting a Story to create the app target; ADR-1019 made that a chore instead, and a shell may
-  choose nothing — a place a store is opened at is exactly the kind of decision that fails
-  `CONTEXT.md` § *App shell*. So the obligation did not travel with the target: it falls to the
-  first Story that persists a tick from inside the app, realistically `day-screen` (#27), and this
-  is the line that says which.
 - **`RecordStore.init` can throw outside `RecordStoreError`.** Surfaced at #56's review,
   2026-09-02. A place that exists but cannot be read as data — a directory, a file without
   read permission, or on iOS a store protected by data protection when the app is launched
@@ -70,6 +61,15 @@ Things that are built, or deliberately not built, in a state someone will trip o
   holds (it is still refused, and nothing is overwritten); what is missing is a fourth case in
   the seam, which is a `design.md` edit and a second G4. Left deliberately, for the Story that
   first meets it — realistically the app target or `day-screen` (#27) — to add with a delta.
+  **Met and deliberately left open by `add-day-screen` (#91), 2026-09-03.** That Story is the
+  first thing that opens a store from inside the app, so it is the caller with nothing to match
+  on — and it chose not to widen the seam. Its `DayScreen` collapses every refusal it cannot act
+  on differently into one `RecordState.unreadable`, and names only the one where a person's
+  correct action differs: a record written by a later version of DayByDay, which
+  `RecordStoreError.laterForm` already distinguishes. So the fourth case buys nothing on the
+  screen, and the owner's answer at #91's question round said so in as many words. It is still
+  owed by whatever first needs to tell a locked store apart from a corrupt one — a message
+  saying "try again in a moment" rather than "something is wrong with your record".
 - **The shell identifies rows by equality, and two rows may be equal.** Surfaced at #71's
   review, 2026-09-03. `src/DayByDay` draws `List(dayView.rows, id: \.self)`, so a row's
   `Hashable` conformance is what SwiftUI uses to tell one row from another — but `day-screen`'s
@@ -142,6 +142,17 @@ Things that are built, or deliberately not built, in a state someone will trip o
   native Swift and SwiftUI partly by rejecting the browser-based option outright.
 
 ## Settled
+
+- 2026-09-03 — **the record is kept at `<Application Support>/DayByDay/record.json`, and the
+  day screen is what chooses it.** `RecordStore` keeps the record wherever it is given and cannot
+  enforce the choice from where it sits, so the choice had to land somewhere that owes
+  requirements; `Caches/` is purged by the system and `tmp/` is not backed up, and either would
+  silently lose the one thing the product promises to keep. #56's design expected a Story
+  creating the app target to decide it, ADR-1019 made that target a chore instead, and a shell
+  that decides nothing could not — so the obligation waited for the first Story that persists a
+  tick from inside the app. That is `add-day-screen` (#91): `DayScreen.recordPlace` is the
+  decision, it is a requirement in `openspec/specs/day-screen/spec.md`, and a scenario pins it.
+  Settled by #91.
 
 - 2026-09-02 — **the app target is called `DayByDay`, and it is a chore rather than a Feature.**
   It sits at `src/DayByDay/` beside `src/DayByDayKit/`, is a hand-written `.xcodeproj` needing no
