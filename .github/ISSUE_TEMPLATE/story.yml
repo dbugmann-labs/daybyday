@@ -48,7 +48,7 @@ body:
         - label: Sub-issue of exactly one Feature, which is a sub-issue of exactly one Epic
         - label: Intent stated in one sentence
         - label: Every blocking Story closed
-        - label: No open questions left by the grill
+        - label: No open questions left by the grill, and no residual round outstanding
         - label: "Change folder exists; `openspec validate <change-id> --strict` exits 0"
         - label: "Seam(s) named in `design.md`"
         - label: "Draft PR open on the story branch, rebased onto current `main`"

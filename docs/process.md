@@ -283,7 +283,8 @@ two reasons: a conversation is not a durable file (§6), and pasting requirement
 how the spec and what the agent believes come apart.
 
 **What is left over is the residual round.** Most of what used to arrive under
-`## Questions for you` is settled before the change folder exists. What survives is the question
+`## Questions for you` is settled before a line of the delta is written. What survives is the
+question
 that only becomes visible *while the delta is being written* — an edge nobody could see until
 someone tried to phrase the requirement. `spec-author` cannot ask you anything, so it writes that
 into `design.md` under `## Questions for you`, numbered, each with the answer it recommends and
@@ -597,7 +598,7 @@ finished — never per-commit — so it can never push you into writing tests in
 - [ ] Sub-issue of exactly one Feature, which is a sub-issue of exactly one Epic
 - [ ] Intent stated in one sentence
 - [ ] Every blocking Story closed
-- [ ] No open questions left by the grill, and no `## Questions for you` round outstanding
+- [ ] No open questions left by the grill, and no residual round outstanding
 - [ ] Change folder exists; `openspec validate <change-id> --strict` exits 0
 - [ ] The delta uses ADDED / MODIFIED / REMOVED correctly against current specs, and every
       requirement has scenarios covering its error and edge cases, not just the happy path
