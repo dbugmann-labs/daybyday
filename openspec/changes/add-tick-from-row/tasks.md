@@ -93,10 +93,10 @@ prediction here is not evidence.
 
 ## 3. Gates
 
-- [ ] 3.1 `cd src/DayByDayKit && swift test` reports 149 tests passing and no failures — the
+- [x] 3.1 `cd src/DayByDayKit && swift test` reports 149 tests passing and no failures — the
   fourteen here plus the 135 from #8, #9, #10, #11, #42, #55, #56 and #70, none of which may change
   — and `pnpm run verify` exits 0.
-- [ ] 3.2 `pnpm exec openspec validate add-tick-from-row --strict` exits 0 and `pnpm run checks`
+- [x] 3.2 `pnpm exec openspec validate add-tick-from-row --strict` exits 0 and `pnpm run checks`
   reports scenario coverage as 14 of 14.
 - [ ] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
 
