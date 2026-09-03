@@ -185,7 +185,19 @@ better silent than convincing.
 It SHALL leave what is at the place exactly as it was — not overwritten, not moved, not emptied —
 so that a later version of the app, or the person, can still recover it. That is the `record`
 capability's own refusal carried through rather than a second rule, and every way a store can refuse
-to open SHALL be treated here in that one way: this capability does not tell them apart.
+to open SHALL be answered in that one way — the day drawn, no tick taken, what is at the place left
+exactly as it was — whatever the reason was.
+
+A day screen that is not keeping a record SHALL say which of two things is so: that the record at
+its place was **written by a later version of DayByDay**, or only that the record could not be read.
+It MUST NOT tell any other reason apart, and MUST NOT say a record was written by a later version
+when it was refused for any other reason. The two are separated because a person can act on them
+differently and only differently: a record written by a later version is whole, and what is behind
+is the app, so the answer is to update the app and on no account to delete or replace what is at the
+place — while a screen that says only that something is wrong with the record invites exactly the
+one action that loses it, which is the loss this product exists to prevent. Every other reason a
+store can refuse to open leaves a person the same single thing to do, so telling those apart buys
+nothing and this capability does not.
 
 A day screen that could read its record SHALL say that it is keeping one.
 
@@ -198,19 +210,21 @@ A day screen that could read its record SHALL say that it is keeping one.
 - **THEN** its day view holds one row, for "Gym"
 - **AND** that row says the commitment is not kept
 
-#### Scenario: a day screen opened where the record cannot be read says it is not keeping one
+#### Scenario: a day screen opened where the record cannot be read says it is not keeping one and gives no further reason
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a run of bytes
   that is not what a record is written as, of a commitment named "Gym" on a schedule listing Monday,
   Wednesday and Saturday, kept from 1 January 2026
 - **THEN** it says it is not keeping a record
+- **AND** it does not say the record was written by a later version of DayByDay
 
-#### Scenario: a record written in a later form than this app knows makes a day screen that is not keeping one
+#### Scenario: a record written in a later form than this app knows makes a day screen that says the record is from a later version
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a record written
   in a form one later than the form this app writes, holding no ticks, of a commitment named "Gym"
   on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026
 - **THEN** it says it is not keeping a record
+- **AND** it says the record was written by a later version of DayByDay
 - **AND** its day view holds one row, for "Gym", saying the commitment is not kept
 
 #### Scenario: a day screen opened where the record can be read says it is keeping one
@@ -236,6 +250,16 @@ A day screen that could read its record SHALL say that it is keeping one.
   Wednesday and Saturday, kept from 1 January 2026, and its one row is ticked
 - **THEN** the content at that place is byte-for-byte what it was before the screen was opened
 
+#### Scenario: ticking a row on a day screen holding a record from a later version keeps nothing and leaves the record as it was
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a record written
+  in a form one later than the form this app writes, holding no ticks, of a commitment named "Gym"
+  on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, and its one row is
+  ticked
+- **THEN** its day view still says the commitment is not kept on that date
+- **AND** it still says the record was written by a later version of DayByDay
+- **AND** the content at that place is byte-for-byte what it was before the screen was opened
+
 ### Requirement: A day screen re-reads its day and its record when the app is shown again
 
 A day screen SHALL be told when the app has been shown — opened from nothing, or brought back in
@@ -251,8 +275,11 @@ Reading the record again SHALL be a fresh opening at the place rather than a re-
 already held, so a change made at that place since SHALL be seen. A day screen that could not read
 its record when it opened SHALL say it is keeping one after being shown again where the record can
 then be read, and one that could SHALL say it is not after being shown again where it then cannot.
-Nothing else of a day screen SHALL survive being shown again: the commitments it was handed and the
-place it keeps its record at are all it carries across.
+What it says about the record SHALL be formed again from what is at the place as it then stands and
+never carried over, the reason included: a screen that said only that the record could not be read
+SHALL say the record was written by a later version of DayByDay when that is what is then at the
+place. Nothing else of a day screen SHALL survive being shown again: the commitments it was handed
+and the place it keeps its record at are all it carries across.
 
 #### Scenario: a day screen shown again on a later day holds that day's day view
 
@@ -294,6 +321,17 @@ place it keeps its record at are all it carries across.
   1 January 2026; what is at that place is then replaced by a run of bytes that is not what a record
   is written as; and the day screen is shown as of Monday 31 August 2026
 - **THEN** it says it is not keeping a record
+- **AND** its day view says the commitment is not kept on that date
+
+#### Scenario: a day screen shown again where the record is from a later version says so
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026; what is at that place is then replaced by a record written in a form one later
+  than the form this app writes, holding no ticks; and the day screen is shown as of Monday 31
+  August 2026
+- **THEN** it says it is not keeping a record
+- **AND** it says the record was written by a later version of DayByDay
 - **AND** its day view says the commitment is not kept on that date
 
 #### Scenario: a day screen does not change day when a tick is made on it

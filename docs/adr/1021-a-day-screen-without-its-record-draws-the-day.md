@@ -4,6 +4,9 @@
   2026-09-03; this record is written by `add-day-screen` (#91), the change that first implements it
 - Date: 2026-09-03
 - Deciders: Diego Bugmann
+- Amended: 2026-09-03 — one refusal is now named rather than none: a record written by a later
+  version of DayByDay. Every other refusal is still one refusal. Decided by the owner on
+  `add-day-screen`'s question round, the same day.
 
 ## Context
 
@@ -49,8 +52,15 @@ day, formed from a history that has taken no tick, and it says separately that i
 record. Every tick made on it changes nothing, is kept nowhere, and is not held in memory to be
 written later. What is at the place is left byte for byte as it was.
 
-Every way a store can refuse to open is treated in this one way. The screen does not tell them
-apart.
+Every way a store can refuse to open is answered in this one way. **One of them is named.** A record
+written by a later version of DayByDay is whole — `record` refuses it because the app is behind, not
+because the file is damaged — and the person's correct response is to update the app and leave the
+file completely alone. A screen that says only "something is wrong with your record" invites the one
+action that loses it: delete it and start again. So that reason is carried and said, and it is the
+only one. Every other way a store can refuse to open — content that is not a record, a tick that
+could not be formed, a directory at the place, a file with no read permission, a store still
+protected before first unlock — leaves a person the same single thing to do, so the screen does not
+tell those apart.
 
 **The condition is not permanent.** Showing the app again re-opens the store, so a screen that
 opened before first unlock starts keeping a record as soon as the person unlocks the phone and
@@ -72,10 +82,19 @@ returns to the app — without a force-quit, which is the recovery step nobody t
   the product has asked for. The screen carries the missing information beside the day view instead.
   This is the surprising part, and it is why this record exists: a reader meeting a screen full of
   unticked rows over an unreadable record should find the reason here rather than assume a bug.
-- **The reason a record could not be read is not carried, for now.** The screen says only that it
-  could not. Adding the reason later takes nothing back — a flag becomes something richer — and it
-  would also close `docs/open-questions.md` § *Known gaps*, "`RecordStore.init` can throw outside
-  `RecordStoreError`", which this decision leaves open deliberately.
+- **The screen carries one reason and not four.** What it is doing with the record is one value
+  with three cases — keeping one, unable to read one, or holding one from a later version — rather
+  than a flag or a caught error. That costs nothing in `record`: `RecordStoreError.laterForm` is a
+  declared case already, so the distinction is one `catch`. `docs/open-questions.md` § *Known gaps*,
+  "`RecordStore.init` can throw outside `RecordStoreError`", stays open deliberately — everything it
+  describes lands in the one unreadable case, so a fourth error case would still buy this screen
+  nothing.
+- **The shell has to say two different things, and nothing automated checks that it does.** The
+  seam makes the case impossible to skip — a `switch` over three cases does not compile with one
+  missing — but the sentence a person reads is a string in a SwiftUI body, which
+  `docs/open-questions.md` § *No UI smoke layer* means no test sees. The later-version sentence is
+  the one that must not be got wrong, because it is the one telling a person **not** to delete the
+  file.
 - **Reversal trigger.** If a person is ever observed losing work to a store that would not open
   transiently — ticking into a refusing screen for a whole session — the answer is not to accept
   ticks in memory but to make the refusal harder to miss. Accepting them is the one answer this

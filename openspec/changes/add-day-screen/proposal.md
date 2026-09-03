@@ -43,14 +43,23 @@ SwiftUI body.
   cannot keep. Settled by the owner at the Feature grill on 2026-09-03 and recorded here as
   `docs/adr/1021-a-day-screen-without-its-record-draws-the-day.md`, because a future reader will
   otherwise ask why the app draws a record it does not have.
+- **It says the reason for one refusal and no other: a record written by a later version of
+  DayByDay.** Settled by the owner on 2026-09-03 on this change's question round. The refusals are
+  answered identically — the day is drawn, no tick is taken, the file is left byte for byte as it
+  was — but they are not alike to the person holding the phone. A record from a later version is
+  whole and the app is what is behind, so the right response is to update the app and leave the file
+  alone; a screen that says only "something is wrong with your record" invites the one action that
+  loses it. No other reason carries an action of its own, so no other reason is told apart.
+  `RecordStoreError.laterForm` already exists, so this needs nothing from `record`.
 - **The day is re-read when the app is shown, and at no other moment.** A day screen is handed a
   today when the app comes in front of a person and holds it until the app is shown again, so the
   morning visit lands on the morning and a screen someone is reading cannot move onto a different
   day underneath them. Showing the app again also opens the store again, which is what lets a screen
   that opened before the device was first unlocked start keeping a record without being restarted.
 - **`CONTEXT.md`** gains **record place** and **shown**, and § *Day screen* is sharpened with the
-  three things this Story settles about it: where it keeps its record, that it keeps a change before
-  its day view says so, and what it is when it has no record at all.
+  four things this Story settles about it: where it keeps its record, that it keeps a change before
+  its day view says so, what it is when it has no record at all, and which single reason for having
+  none it names.
 
 Nothing is drawn by this delta. `src/DayByDay` is rewired to hold a `DayScreen` and draw its rows
 with a tap, but that is a SwiftUI body and a clock reading with no judgement left in it — the
@@ -73,9 +82,9 @@ None. `day-screen` already exists, anchored by `openspec/specs/day-screen/spec.m
 
 `record` and `schedule` are **not** modified. Everything this Story needs is public already —
 `RecordStore.init(at:)`, `RecordStore.history`, `RecordStore.add(_:)`, `RecordStore.remove(_:)`,
-`RecordStoreError`, `History`, `DayView.init(of:on:in:)`, `DayView.Row.isKept` and
-`DayView.Row.tick(asOf:)` — and this delta adds no requirement to either capability and takes none
-away. Reading a date back out of a `CalendarDate` is `add-screen-date`'s (#92) and is a `schedule`
+`RecordStoreError` and its `laterForm` case, `History`, `DayView.init(of:on:in:)`,
+`DayView.Row.isKept` and `DayView.Row.tick(asOf:)` — and this delta adds no requirement to either
+capability and takes none away. Reading a date back out of a `CalendarDate` is `add-screen-date`'s (#92) and is a `schedule`
 delta, which is why this Story does not touch one.
 
 ## Impact
@@ -84,7 +93,7 @@ delta, which is why this Story does not touch one.
   file added, `Tests/DayByDayKitTests/DayScreenTests.swift`. No existing source file is edited.
   Measured on this machine on 2026-09-03, on Apple Swift 6.3.3 (swiftlang-6.3.3.1.3), target
   `arm64-apple-macosx26.0`: `cd src/DayByDayKit && swift test` reports **164 tests passing** at
-  `c05e500`; this change takes it to 190. `openspec` is 1.10.0 and `node --version` is v24.19.0.
+  `c05e500`; this change takes it to 192. `openspec` is 1.10.0 and `node --version` is v24.19.0.
 - **`Package.swift` gains a platform floor**, `platforms: [.iOS(.v17), .macOS(.v14)]`. `DayScreen`
   is `@Observable` so that SwiftUI redraws when its day view changes without the shell holding a
   copy and re-reading it, and `Observation` is unavailable below those versions. Measured rather
@@ -95,8 +104,8 @@ delta, which is why this Story does not touch one.
   crosses the seam, and the platform floor comes with it* argues the alternative that avoids it.
 - **`src/DayByDay`** — `ContentView.swift` is rewired: `dayOneCommitments` and `today()` stay
   exactly where ADR-1019 put them, and the body becomes a `DayScreen` in `@State`, a `List` of rows
-  with a tap calling `tick(_:)`, something drawn when the screen is not keeping a record, and a
-  `.onChange(of: scenePhase)` that calls `shown(asOf: today())`. No requirement lives there and no
+  with a tap calling `tick(_:)`, a `switch` over the screen's three record states drawing what each
+  one has to say, and a `.onChange(of: scenePhase)` that calls `shown(asOf: today())`. No requirement lives there and no
   scenario covers it — `docs/open-questions.md` § *No UI smoke layer* is unchanged and still open.
   This Story makes it matter more than it did, because the shell now writes to disk; the mitigation
   is that every judgement is inside the seam and the body has none.
@@ -106,11 +115,14 @@ delta, which is why this Story does not touch one.
   and model routing*) — so the move is a chore commit alongside the merge, exactly as `d1f99dc` was
   for #71 and #72.
 - **`docs/open-questions.md` § *Known gaps*: "`RecordStore.init` can throw outside
-  `RecordStoreError`" is met by this change and deliberately not closed.** A day screen treats every
-  way a store can refuse to open alike, so it needs no fourth case to behave correctly, and catching
-  every error is the honest reading of "refused rather than emptied". What it costs is that the
-  screen cannot say *why*, which is `design.md` § *Questions for you* Q1 — if that comes back the
-  other way, the gap closes here instead and this delta grows a `record` requirement.
+  `RecordStoreError`" is met by this change and deliberately not closed.** It survived the question
+  round: the one refusal the screen tells apart is `laterForm`, which is a declared case already, and
+  everything the gap describes — a directory at the place, a file with no read permission, a store
+  still protected before first unlock — lands in the same one case as content that is not a record,
+  because a person can do nothing different about any of them. So the screen needs no fourth case to
+  behave correctly, catching every error is the honest reading of "refused rather than emptied", and
+  the gap stays owed to whichever Story first wants to tell those apart. A line saying so is one of
+  the two documentation moves `tasks.md` names.
 - **`docs/open-questions.md` § *Known gaps*: "The shell identifies rows by equality, and two rows
   may be equal" is unchanged and still cannot bite.** The day-one week holds no duplicate, and this
   Story adds no way to create one. It gets closer to biting, because a duplicate row would now also

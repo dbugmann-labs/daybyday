@@ -268,10 +268,17 @@ A day screen **without its record** is one whose store would not open. It is sti
 draws the day, because what a date asks of a person needs no record to answer, and it says that it
 is keeping none. It takes no tick at all — not into memory, not to be kept later — because a tick
 shown as made and not kept is exactly the record this product exists not to lose, and it leaves what
-is at the place untouched for a person or a later version of the app to recover. Every way a store
-can refuse to open is one refusal here; the screen does not tell them apart, and the condition lasts
-only until the app is shown again, since being shown opens the store afresh. ADR-1021, settled by
-the owner at the same Feature grill and recorded by `add-day-screen` (#91).
+is at the place untouched for a person or a later version of the app to recover. The condition lasts
+only until the app is shown again, since being shown opens the store afresh.
+
+Every way a store can refuse to open is answered the same way here, but one of them is **named**: a
+record **written by a later version of DayByDay**. That record is whole and it is the app that is
+behind, so the person's answer is to update the app and leave the file completely alone — where a
+screen saying only that something is wrong with the record invites deleting it, which is the loss
+this product exists to prevent. No other reason leaves a person anything different to do, so no
+other reason is told apart. ADR-1021, settled by the owner at the Feature grill on 2026-09-03 and
+sharpened by them on the same day on `add-day-screen`'s question round; recorded by
+`add-day-screen` (#91).
 
 **Record place** — the one place a day screen keeps its record at, and the only thing about the
 record that is a day screen's to choose. It is a file inside the directory the platform reserves for

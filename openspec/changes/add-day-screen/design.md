@@ -45,7 +45,9 @@ lets one scenario pin both ends of the supported range against the same weekday 
 **Five facts about the shipped code that this design stands on, read out of the sources:**
 
 - `RecordStore.init(at:)`, `.history`, `.add(_:)` and `.remove(_:)` are public, as are
-  `RecordStoreError`'s three cases. Everything this Story needs to read and keep a record exists.
+  `RecordStoreError`'s three cases — `notAStore(at:)`, `laterForm(at:version:)` and
+  `cannotWrite(at:)`. Everything this Story needs to read a record, keep one, and tell the
+  later-version refusal apart from the rest exists already.
 - `RecordStore.history` is `public private(set)`. A store cannot be handed a replacement history, so
   a day screen must re-read the store's own history after every change rather than compose one.
 - `RecordStore.write` calls `createDirectory(at:withIntermediateDirectories: true)` on the place's
@@ -90,8 +92,9 @@ lets one scenario pin both ends of the supported range against the same weekday 
 - **Backup, restore or migration.** B-009's, and there is no record on any device to migrate: this
   Story is the first thing that ever writes one.
 - **Widening `record`, `commitment` or `schedule`.** Nothing in those capabilities changes. The
-  fourth `RecordStoreError` case the known gap describes is deliberately not added; § *Every refusal
-  is one refusal* says why, and Q1 is the one thing that could change it.
+  fourth `RecordStoreError` case the known gap describes is deliberately not added: the one refusal
+  this screen tells apart is `RecordStoreError.laterForm`, which is public already, and everything
+  the gap describes stays one refusal. § *One refusal is told apart* says why.
 - **Retrying a change that could not be kept.** A refused tick is refused; nothing queues it. That
   is the same trade `record` already took and the whole point of ADR-1021.
 
@@ -107,6 +110,17 @@ nothing here to widen: `DayView` is a value and this is deliberately not one. `C
 @MainActor
 @Observable
 public final class DayScreen {
+    /// What a day screen is doing with the record at its place.
+    public enum RecordState: Equatable, Sendable {
+        /// The record was read, and a tick made on this screen is kept.
+        case kept
+        /// The record could not be read, for a reason a person cannot act on differently.
+        case unreadable
+        /// The record was written by a later version of DayByDay. It is whole; the app is what is
+        /// behind, and what is at the place must not be replaced.
+        case writtenByALaterVersion
+    }
+
     /// The place a day screen keeps its record when it is not told another.
     public static var recordPlace: URL { get }
 
@@ -120,9 +134,8 @@ public final class DayScreen {
     /// The day view the person is looking at, as the record stood when it was last read.
     public private(set) var dayView: DayView
 
-    /// False when the record at this screen's place could not be read: the day is drawn from no
-    /// record at all and no tick is taken.
-    public private(set) var keepsRecord: Bool
+    /// Anything but `.kept` means the day is drawn from no record at all and no tick is taken.
+    public private(set) var recordState: RecordState
 
     /// Makes the tick `row` offers, or takes it back where `row` says its commitment is kept, and
     /// keeps the change before `dayView` says so. Does nothing when `row` is not one this screen's
@@ -136,9 +149,9 @@ public final class DayScreen {
 ```
 
 Internally it holds the commitments, the place, the day, and a `RecordStore?` that is `nil` exactly
-when `keepsRecord` is false. Twenty-six scenarios drive that surface. No process is spawned and no
-global stream is captured; the only thing outside the seam's own arguments is the file at `place`,
-which every test points at a directory of its own.
+when `recordState` is not `.kept`. Twenty-eight scenarios drive that surface. No process is spawned
+and no global stream is captured; the only thing outside the seam's own arguments is the file at
+`place`, which every test points at a directory of its own.
 
 The shell's whole use of it is four things, and there is no fifth:
 
@@ -152,6 +165,10 @@ List(screen.dayView.rows, id: \.self) { row in
     if phase == .active { screen.shown(asOf: today()) }
 }
 ```
+
+The shell's one branch is over `recordState`, and it is a `switch` with no judgement in it: `.kept`
+draws nothing extra, `.unreadable` says the record could not be read, and `.writtenByALaterVersion`
+says the record was written by a newer version of DayByDay and must not be deleted.
 
 ### Where the day comes from, and how long it is held
 
@@ -212,11 +229,11 @@ caller could have known:
 | Why nothing happened | Reported how |
 |---|---|
 | the row is not one this screen holds | silent — the screen's day view is what a shell draws, so it cannot happen without a bug the shell can see |
-| the screen is not keeping a record | silent — `keepsRecord` already said so, before the tap |
+| the screen is not keeping a record | silent — `recordState` already said so, before the tap |
 | the store refused the write | **thrown** — nothing said it would fail, and a person must be told |
 
 *Alternative — a result enum with a case per outcome.* Rejected as the same shape #71 already
-rejected on this capability: its content is `(keepsRecord, dayView.rows.contains(row), didWrite)`,
+rejected on this capability: its content is `(recordState, dayView.rows.contains(row), didWrite)`,
 all of which the caller already has, so it buys one public type and a `switch` where an `if` would
 do. Nothing in the delta becomes unassertable without it.
 
@@ -255,13 +272,13 @@ and every other scenario passes a temporary directory.
 
 ### A day screen without its record draws the day and keeps nothing
 
-**Chosen: opening never fails. A store that will not open leaves `keepsRecord` false, the day view
-formed from a history that has taken no tick, and every tick refused.**
+**Chosen: opening never fails. A store that will not open leaves `recordState` at something other
+than `.kept`, the day view formed from a history that has taken no tick, and every tick refused.**
 
 This is the owner's decision at the Feature grill on 2026-09-03, and it is recorded as **ADR-1021**
 because a future reader meeting a screen whose rows all say "not kept" against a record nobody could
 read will otherwise assume it is a bug. The three alternatives and the reasoning are in the ADR;
-what belongs here is the consequence for the seam. `keepsRecord` is a `var` and not a `let`,
+what belongs here is the consequence for the seam. `recordState` is a `var` and not a `let`,
 because the condition is not always permanent — a store protected by data protection before first
 unlock is the case `docs/open-questions.md` names — so § *Showing the app again* re-opens it.
 
@@ -271,23 +288,49 @@ would be copied forward to add a case nothing else in the product has asked for.
 the missing information beside the day view instead, which is enough for the shell to draw the
 difference. If a third row state is ever wanted, it is its own Story.
 
-### Every refusal is one refusal
+### One refusal is told apart, and exactly one
 
-**Chosen: `DayScreen` catches every error `RecordStore.init` can throw and treats them alike.**
+**Chosen: `DayScreen` catches every error `RecordStore.init` can throw. It answers all of them the
+same way — the day drawn, no tick taken, the file left alone — and it *says* which it was for one:
+a record written by a later version of DayByDay.** Settled by the owner on 2026-09-03, on the
+question round below.
 
-`docs/open-questions.md` § *Known gaps* records that `RecordStore.init` can throw outside
-`RecordStoreError` — a directory at the place, a file it cannot read, an iOS store still protected
-before first unlock — and leaves a fourth case owed to "the Story that first meets it". This is that
-Story, and it meets it and deliberately does not close it: the day screen's behaviour is identical
-for all four, so a fourth case would buy nothing here, and catching everything is the honest reading
-of `record`'s own requirement that a store which cannot be read is refused rather than emptied.
-Catching only `RecordStoreError` would let a raw Foundation error escape an initializer that cannot
-throw, which means trapping.
+The behaviour is one behaviour, so `recordState` is one value with three cases rather than a flag
+plus an error. The split falls where a person's correct next action differs, and it differs in
+exactly one place. A record written by a later version is **whole** — `record` refuses it because
+the *app* is behind, not because the file is damaged — and the right response is to update the app
+and leave the file completely alone. A screen that says only "something is wrong with your record"
+invites the one action that loses it: delete it and start again. That is the loss ADR-1001 says the
+product exists to remove, so this reason is worth a case of its own. Every other reason — bytes that
+are not a record, a tick that could not be formed, a directory at the place, a file with no read
+permission, an iOS store still protected before first unlock — leaves a person the same single
+thing to do, and telling those apart buys a case the shell would have nothing different to say
+about.
 
-What it costs is that the screen cannot say *why*, and that is Q1 below — the one thing in this
-Story that is a preference rather than a fact. If the answer comes back the other way, the gap
-closes here, the delta grows a `record` requirement for the fourth case, and `keepsRecord` becomes
-something richer than a flag.
+**This still needs no change to `record`, and the fourth-case gap stays open.**
+`RecordStoreError.laterForm(at:version:)` already exists and is public — read out of
+`RecordStore.swift`, not recalled — so the one distinction is a `catch RecordStoreError.laterForm`
+and nothing more. `docs/open-questions.md` § *Known gaps*, "`RecordStore.init` can throw outside
+`RecordStoreError`", is met by this Story and deliberately left open: everything that escapes as a
+raw Foundation error lands in `.unreadable` alongside `notAStore`, so a fourth case would still buy
+this capability nothing, and catching only `RecordStoreError` would let a raw error escape an
+initializer that cannot throw, which means trapping. `record` is untouched by this delta, and the
+change stays inside `day-screen`.
+
+*Alternative — say the reason for all four.* Rejected on the owner's answer, and worth recording
+why it is not merely "less work": the other three reasons are indistinguishable *to the person*.
+Three shell strings that all mean "your record could not be read, and there is nothing you can
+usefully do about it" are three chances to word one of them into sounding like an instruction to
+delete the file.
+
+*Alternative — expose the caught error itself, `Error?` or `RecordStoreError?`.* Rejected. It
+cannot be `RecordStoreError?` while raw Foundation errors escape (the gap above), so it would have
+to be `Error?` — which the shell cannot switch over, and which a test can only assert against by
+matching a message. It also re-exposes every refusal the owner just said to treat alike.
+
+*Alternative — keep `keepsRecord: Bool` and add a second flag.* Rejected: two booleans make four
+combinations, one of which — keeping a record *and* it being from a later version — is nonsense that
+nothing in the type prevents.
 
 ### Showing the app again re-reads both the day and the record
 
@@ -334,7 +377,7 @@ thread; it is also what satisfies Swift 6 strict concurrency around the non-`Sen
 
 ### One Story, five requirements
 
-This is the largest delta in the repository — twenty-six scenarios against #71's fourteen — and it
+This is the largest delta in the repository — twenty-eight scenarios against #71's fourteen — and it
 was checked for a seam down the middle rather than assumed indivisible. There is not one. A screen
 that reads a record but cannot write is not a thing anybody wanted; a screen that writes but does not
 survive a quit is the bug this Story exists to fix; and a screen that survives a quit but keeps its
@@ -348,6 +391,12 @@ saying the date is #92 and moving between days is #93 — and what is left is on
   and the shell has everything it needs to draw the difference. The residual risk is that the shell
   draws nothing and a person reads an empty day as a real one — and that risk lives in the layer
   `docs/open-questions.md` § *No UI smoke layer* already flags.
+- **The one refusal that must not be misread is the one nothing automated draws.** → A record from
+  a later version is told apart in the seam and two scenarios pin it, but what a person actually
+  reads is a string in the SwiftUI body, which nothing tests (`docs/open-questions.md` § *No UI
+  smoke layer* again). The mitigation is that the seam makes the case impossible to miss — a
+  `switch` over three cases will not compile with one forgotten — where a boolean would have let the
+  shell silently draw the wrong sentence.
 - **The shell can pass any day as `today`, including a wrong one.** → The same trade #71 took, and
   the same mitigation: there is exactly one caller, one line, and `ContentView.today()` is already
   the right conversion. A wrong day cannot corrupt the record; it shows the wrong day's rows.
@@ -371,32 +420,27 @@ saying the date is #92 and moving between days is #93 — and what is left is on
   already does; the delta's three `recordPlace` scenarios ask for a path and never write to it, so
   no test touches the real `Application Support`.
 
-## Questions for you
-
-1. **When the record on the phone cannot be read, does the screen say *why*, or only that it
-   could not?** The screen has to say something either way — otherwise a person taps for ever and
-   nothing happens. The question is whether it carries the reason. `record` distinguishes three
-   (this is not a record at all; it was written by a later version of DayByDay; it holds something
-   that could not be a tick), plus a fourth the app can meet and does not yet name — a file it
-   cannot read at all, which on a phone is what a store still locked before the first unlock looks
-   like. Nothing you can *do* in the app differs by reason today; what differs is whether the app
-   tells you "something is wrong with your record" or "this record was written by a newer version of
-   DayByDay — do not delete it".
-   - *Recommended:* only that it could not. `keepsRecord` is a flag, the screen treats every refusal
-     alike, and the reason can be added later without taking anything back.
-   - *If you say the reason matters:* the fourth requirement gains a clause and two or three
-     scenarios; the delta grows a **`record`** requirement adding the fourth `RecordStoreError` case,
-     which closes `docs/open-questions.md` § *Known gaps*, "`RecordStore.init` can throw outside
-     `RecordStoreError`", in this Story instead of leaving it open; and the seam exposes an error
-     rather than a flag. Nothing else in the delta moves — the day is still drawn, every tick is
-     still refused, and the record at the place is still left exactly as it was.
-
 ## Open Questions
 
-**None.** Everything else the grill raised was a fact that was measured or read out of the shipped
+**None.** Everything the grill raised was a fact that was measured or read out of the shipped
 sources, or a decision made above with its alternatives beside it. The one thing that was a
-preference rather than a fact is the round above, which is written down rather than guessed, and the
-delta is written on its recommended answer.
+preference rather than a fact went to the owner as a question round, and it has been answered and
+folded in — it is the first entry below.
+
+- *When the record cannot be read, does the screen say why, or only that it could not?* — **asked
+  and settled by the owner on 2026-09-03, and the answer was neither of the two this design
+  offered.** Not "only that it could not" (this design's recommendation) and not "the reason for
+  all four": **the reason for exactly one — a record written by a later version of DayByDay — and
+  every other refusal alike.** The reasons are not alike, which is what both offered answers
+  missed. For a later-version record the correct human response is *do not touch this file, update
+  the app*, and a screen saying only "something is wrong with your record" invites the one action
+  that loses the record, which is the failure this product exists to remove. The other reasons carry
+  no distinct action, so distinguishing them buys nothing. What moved: the fourth requirement gained
+  a paragraph and one scenario, the fifth gained a clause and one scenario, and `keepsRecord: Bool`
+  became `recordState: RecordState` with three cases. What did not move: `record` is untouched —
+  `RecordStoreError.laterForm` already exists — the fourth `RecordStoreError` case stays a known gap
+  in `docs/open-questions.md` and not this Story's to close, and the delta stays inside
+  `day-screen`. § *One refusal is told apart, and exactly one*.
 
 - *Where does the day come from, and does a screen keep one?* — settled at the Feature grill on
   2026-09-03 and already landed in `CONTEXT.md` § *Today*: handed in when the app is shown, held
@@ -408,8 +452,12 @@ delta is written on its recommended answer.
   `CONTEXT.md` § *App shell*: not `record`, which cannot enforce a place from where it sits, and not
   the shell, which decides nothing. This Story, which is what that gap entry says.
 - *Can `RecordStore` throw something that is not a `RecordStoreError`?* — read: yes, and it is a
-  documented gap. Settled by catching everything, § *Every refusal is one refusal*, and it is the
-  only thing Q1 could change.
+  documented gap. Settled by catching everything and landing all of it in one case,
+  § *One refusal is told apart, and exactly one*. The gap stays open on purpose.
+- *Does telling the later-version case apart need a new `RecordStoreError`?* — read out of
+  `RecordStore.swift` rather than assumed: no. `laterForm(at:version:)` is already one of the three
+  public cases and is thrown from `init` exactly where the envelope's version is greater than the
+  form this app writes. So the owner's answer costs a `catch` clause and no `record` delta.
 - *Does the place need creating before the first tick?* — read: no. `RecordStore.write` creates
   intermediate directories before writing, so the delta owes no requirement for it.
 - *Does `@Observable` need a platform floor?* — probed on this machine, both ways. It does, the
