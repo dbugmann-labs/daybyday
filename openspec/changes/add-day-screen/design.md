@@ -416,9 +416,11 @@ saying the date is #92 and moving between days is #93 — and what is left is on
   no duplicate and this Story adds no way to make one — and the fix remains the shell's, for
   whichever Story first draws a list a person can add to.
 - **Every test in the delta writes to the file system.** → Each one gets a directory of its own
-  under the system temporary directory and removes it afterwards, exactly as `RecordStoreTests`
-  already does; the delta's three `recordPlace` scenarios ask for a path and never write to it, so
-  no test touches the real `Application Support`.
+  under the system temporary directory, named with a fresh UUID so tests cannot collide, exactly
+  as `RecordStoreTests` already does — and, like `RecordStoreTests`, nothing removes it afterwards:
+  neither file calls `removeItem`, so each run leaks its directories under the OS's own temporary
+  directory for the OS to reclaim. The delta's three `recordPlace` scenarios ask for a path and
+  never write to it, so no test touches the real `Application Support`.
 
 ## Open Questions
 
