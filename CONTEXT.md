@@ -215,11 +215,19 @@ same day.
 **Today** — the day a screen is being looked at on, and the only thing in the system that does not
 come from the calendar. It is always handed in and never asked for: nothing in the rule engine reads
 a clock, a time zone or a locale (ADR-1004), so *today* arrives as an argument at the moment a
-question needs it and is not kept afterwards. Deliberately not the **date a day view is of** — that
+question needs it and is not kept by anything that answers a question. Deliberately not the **date a
+day view is of** — that
 is what a person is looking at, and it may be any day the system supports — and confusing the two is
 what would let a screen offer a tick for a day that has not happened. It is a fact about the device
 rather than about the record, which is why the record refuses to consult it and the row asks for it
 by name. Agreed 2026-09-03, the same grill.
+
+**Amended 2026-09-03**, at the third grooming pass's Feature grill. A **day screen** does keep one:
+it is handed a *today* when the app is shown and holds it until the app is shown again, so that a
+screen a person is looking at cannot move onto a different day underneath them. What has not changed
+is that nothing ever *asks* for it — the day screen is handed its today by the shell that read the
+device's clock, exactly as every other question is, and no clock is read while a day is being looked
+at.
 
 **Day navigation** — going from one day view to the day view of the day before it or the day after
 it, one calendar day at a time. It is a question about a date and about nothing else: it never asks
@@ -233,6 +241,20 @@ and it must be handed both because a day view holds neither. There is no day bef
 the system supports and none after the last, so moving that way gives nothing at all rather than the
 day it started on — a caller that wanted to stay where it is already has it. Agreed 2026-09-03 at
 the grill of `add-day-navigation` (#72).
+
+**Day screen** — the day view a person is actually looking at, together with what it takes to answer
+and to keep an answer: the **store** it reads a history from and writes a tick back to, and the
+**today** it was handed when the app was shown. It is what `day-screen` is the capability of, and it
+is the first thing in the product that is not a value — a day view is what it holds, and holding one
+is what a day screen does.
+
+Deliberately not the **day view**, which is an answer and holds neither a store nor a today, and
+deliberately not the **app shell**, which draws a day screen and decides nothing. The line between
+the last two is the one that matters: everything a day screen does could be wrong in a way a test
+would catch — which day it opened on, whether a tick was kept, what it does when the store will not
+open — so it lives behind the seam in `DayByDayKit` with the rest of the requirements, and what is
+left in `src/DayByDay` is a SwiftUI body and the clock reading that hands it a today. Agreed
+2026-09-03 at the third grooming pass's Feature grill.
 
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
