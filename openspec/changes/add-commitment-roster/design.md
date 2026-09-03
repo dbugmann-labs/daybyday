@@ -70,8 +70,8 @@ assumed:
   Changing either signature is a delta against `openspec/specs/day-screen/spec.md` — a second
   capability, so a second Story (rule 5), and it is #104's, where there is finally a screen that
   holds a roster to feed them from.
-- **Answering which commitments apply on a date.** See § *A roster judges no date* and
-  § *Questions for you*, question 1.
+- **Answering which commitments apply on a date.** Deferred to #102 by the owner on 2026-09-03.
+  See § *A roster judges no date*.
 - **Telling two identical commitments apart.** The roster's answer is that there are never two. If
   the product ever wants two commitments a person would call identical, that is a want, and it is
   the want that would force an identifier onto `Commitment` — which ADR-1013's reasoning says costs
@@ -185,16 +185,17 @@ field's in #104.
 #26's G1 comment sketched this Story as *"the commitments a person keeps, in the order they were
 taken on, answering which of them apply on a given date"*, and the Story issue #26's G2 accepted
 drops the date clause: *"hold the commitments a person keeps as one ordered set, in the order they
-were taken on, which refuses a commitment it already holds"*. Those are the same owner in two
-documents, so it is put back to him as § *Questions for you*, question 1, rather than settled here
-by picking the one that suits.
+were taken on, which refuses a commitment it already holds"*. Those were the same owner in two
+documents a day apart, scoping this Story differently, so it was not settled here by picking the one
+that suited — it was put back to him as this change's question round.
 
-The delta is written on the recommendation, which is that the date clause waits for #102. Its whole
-content today would be *every commitment this roster holds*: nothing is retired yet, and a
-commitment's own kept-from floor already answers whether it is due before it was taken on
-(`Commitment.isDue(on:)`, signed at #42). So the requirement would say nothing a reader could not
-derive, the method's body would be `return commitments`, and #102 would have to MODIFY a
-requirement signed a day earlier rather than ADD one.
+**He answered on 2026-09-03: defer.** The date clause waits for #102, and the roster in this Story
+takes no date at all. The reason is what the round recommended on: its whole content today would be
+*every commitment this roster holds*, because nothing is retired yet and a commitment's own
+kept-from floor already answers whether it was owed before it was taken on (`Commitment.isDue(on:)`,
+signed at #42). The requirement would say nothing a reader could not derive, the method's body would
+be `return commitments`, and #102 would then have to MODIFY a requirement signed a day earlier
+rather than ADD one of its own.
 
 ### No ADR
 
@@ -248,28 +249,23 @@ required to put it.
 - **Nothing proves a roster is what the app uses.** → `docs/open-questions.md` § *No UI smoke
   layer*, unchanged. Not this Story's to fix; there is no UI here at all.
 
-## Questions for you
-
-1. **Should the roster answer "which commitments apply on this date" in this Story, or when
-   retirement arrives?** Your G1 comment on #26 describes the first Story as *"the commitments a
-   person keeps, in the order they were taken on, answering which of them apply on a given date"*.
-   The Story you accepted at G2, #101, says *"hold the commitments a person keeps as one ordered
-   set, in the order they were taken on, which refuses a commitment it already holds"* — no date.
-   Both are yours, a day apart, and they scope this Story differently.
-   - *Recommended:* **when retirement arrives (#102).** Until something can be retired, "which apply
-     on this date" is every commitment the roster holds — a commitment's own kept-from day already
-     answers whether it was owed before it was taken on — so the requirement would assert nothing
-     and the answer would be the whole list.
-   - *If you say now:* a third ADDED requirement here with about three scenarios, a
-     `commitments(on:)` on the seam whose body is `return commitments`, and #102 then MODIFIES that
-     requirement instead of adding its own — a second signature on a requirement one Story old. The
-     other two requirements and all thirteen scenarios are unaffected either way.
-
 ## Open Questions
 
-**None.** Every other question this grill raised was a fact read out of the shipped sources or
-measured on this machine, or a decision made above with its alternatives. The one that was a
-preference is § *Questions for you* above rather than buried here.
+**None.** One question in this grill was a preference rather than a fact, so it was put to the owner
+as a question round; he answered it on 2026-09-03 and it is recorded as settled below. Every other
+question was a fact read out of the shipped sources or measured on this machine, or a decision made
+above with its alternatives.
+
+- *Should the roster answer which commitments apply on a given date in this Story, or when
+  retirement arrives?* — **settled by the owner on 2026-09-03: defer to #102.** It was his to
+  answer because his own two documents disagreed: #26's G1 comment scoped the first Story as
+  "answering which of them apply on a given date", and the Story he accepted at G2, #101, drops the
+  date clause. The reason for deferring is that the requirement would assert nothing today — with
+  nothing yet retired, "which apply on this date" is every commitment the roster holds, and a
+  commitment's own kept-from floor already answers whether it was owed before it was taken on — so
+  #102 ADDs that requirement against a roster that can retire, rather than MODIFYing one signed a
+  day earlier. The delta was written on that answer and needed no change when it came back;
+  § *A roster judges no date* carries the reasoning.
 
 - *Is there an existing seam a roster could be a widening of?* — read: nothing in the package holds
   a set of commitments; `DayView` and `DayScreen` both take `[Commitment]` and keep neither. A new
