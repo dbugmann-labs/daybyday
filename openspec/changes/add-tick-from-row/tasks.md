@@ -35,9 +35,10 @@ argument), 2.9 (if the comparison reaches for `Date()` rather than the argument)
 did not gain its date). **Record which ones actually ran red as you go, in this file** — a
 prediction here is not evidence.
 
-- [ ] 2.1 `a row offers the tick for its commitment on the date the day view is of` — the row asked
+- [x] 2.1 `a row offers the tick for its commitment on the date the day view is of` — the row asked
   as of its own date; two assertions, that a tick comes back and that it equals one formed directly
-  by `Tick(commitment, on:)`. Runs red against the seam's `fatalError`.
+  by `Tick(commitment, on:)`. Runs red against the seam's `fatalError`. Confirmed red: `swift test`
+  trapped with `Fatal error: not implemented` (signal 5) before this task's fix.
 - [ ] 2.2 `adding the tick a row offers makes a day view formed again say the commitment is kept` —
   the offered tick handed to `History.add(_:)`, then a second day view formed from the history as it
   now stands. The first half of the round trip, and the scenario that makes "tick from the row" more

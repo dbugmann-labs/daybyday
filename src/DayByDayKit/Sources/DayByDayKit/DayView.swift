@@ -8,7 +8,7 @@ public struct DayView: Hashable, Sendable {
 
         /// The tick this row makes, or `nil` when the row's date is later than `today`.
         public func tick(asOf today: CalendarDate) -> Tick? {
-            fatalError("not implemented")
+            Tick(commitment, on: date)
         }
     }
 
