@@ -240,3 +240,35 @@ func aRowTheDayScreensDayViewDoesNotHoldChangesNothing() throws {
     let laterOnWednesday = DayScreen(of: [gym], asOf: wednesday, keeping: place)
     #expect(!laterOnWednesday.dayView.rows[0].isKept)
 }
+
+@MainActor
+@Test("the place a day screen keeps its record is under Application Support, in a directory of the app's own")
+func thePlaceADayScreenKeepsItsRecordIsUnderApplicationSupportInADirectoryOfTheAppsOwn() {
+    let applicationSupport = FileManager.default.urls(
+        for: .applicationSupportDirectory, in: .userDomainMask)[0]
+
+    let place = DayScreen.recordPlace
+
+    #expect(place.path.hasPrefix(applicationSupport.path))
+    let containingDirectory = place.deletingLastPathComponent()
+    #expect(containingDirectory != applicationSupport)
+    #expect(containingDirectory.path.hasPrefix(applicationSupport.path))
+}
+
+@MainActor
+@Test("the place a day screen keeps its record is neither the caches directory nor the temporary directory")
+func thePlaceADayScreenKeepsItsRecordIsNeitherTheCachesDirectoryNorTheTemporaryDirectory() {
+    let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+    let temporary = FileManager.default.temporaryDirectory
+
+    let place = DayScreen.recordPlace
+
+    #expect(!place.path.hasPrefix(caches.path))
+    #expect(!place.path.hasPrefix(temporary.path))
+}
+
+@MainActor
+@Test("the place a day screen keeps its record is the same place every time it is asked")
+func thePlaceADayScreenKeepsItsRecordIsTheSamePlaceEveryTimeItIsAsked() {
+    #expect(DayScreen.recordPlace == DayScreen.recordPlace)
+}

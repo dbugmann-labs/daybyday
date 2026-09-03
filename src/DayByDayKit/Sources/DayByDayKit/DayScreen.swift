@@ -22,9 +22,14 @@ public final class DayScreen {
     private var today: CalendarDate
     private var store: RecordStore?
 
-    /// The place a day screen keeps its record when it is not told another.
+    /// The place a day screen keeps its record when it is not told another: one file, in a
+    /// directory of this app's own, under the platform's application-support directory.
     public static var recordPlace: URL {
-        fatalError("not implemented")
+        let applicationSupport = FileManager.default.urls(
+            for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return applicationSupport
+            .appendingPathComponent("DayByDay", isDirectory: true)
+            .appendingPathComponent("record.json")
     }
 
     /// Opens on `today`, reading the record kept at `place`.

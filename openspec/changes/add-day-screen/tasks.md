@@ -82,14 +82,16 @@ red as you go, in this file** — a prediction here is not evidence.
   implementation with no `contains` guard, in both assertions: the Monday screen would be unchanged
   but a tick for the Wednesday would have been written. Passed immediately: the `contains` guard
   in `tick(_:)` (added for 2.5) already covers it.
-- [ ] 2.12 `the place a day screen keeps its record is under Application Support, in a directory of
+- [x] 2.12 `the place a day screen keeps its record is under Application Support, in a directory of
   the app's own` — ask `DayScreen.recordPlace`; assert the path contains the platform's
   application-support directory, and that the file sits inside a directory within it rather than
-  directly in it. Read only; nothing is written.
-- [ ] 2.13 `the place a day screen keeps its record is neither the caches directory nor the
-  temporary directory` — the two places `design.md` § *The place* rules out by name.
-- [ ] 2.14 `the place a day screen keeps its record is the same place every time it is asked` — two
-  reads, equal.
+  directly in it. Read only; nothing is written. Confirmed red: crashed with `Fatal error: not
+  implemented` at `recordPlace`'s `fatalError`.
+- [x] 2.13 `the place a day screen keeps its record is neither the caches directory nor the
+  temporary directory` — the two places `design.md` § *The place* rules out by name. Passed
+  immediately.
+- [x] 2.14 `the place a day screen keeps its record is the same place every time it is asked` — two
+  reads, equal. Passed immediately.
 - [ ] 2.15 `a day screen opened where the record cannot be read still holds the day view of that
   day` — a run of bytes that is not a record. The screen opens rather than throwing, and still
   answers the day. ADR-1021's first half.
