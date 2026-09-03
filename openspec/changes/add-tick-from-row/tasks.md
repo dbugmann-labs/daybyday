@@ -39,10 +39,11 @@ prediction here is not evidence.
   as of its own date; two assertions, that a tick comes back and that it equals one formed directly
   by `Tick(commitment, on:)`. Runs red against the seam's `fatalError`. Confirmed red: `swift test`
   trapped with `Fatal error: not implemented` (signal 5) before this task's fix.
-- [ ] 2.2 `adding the tick a row offers makes a day view formed again say the commitment is kept` —
+- [x] 2.2 `adding the tick a row offers makes a day view formed again say the commitment is kept` —
   the offered tick handed to `History.add(_:)`, then a second day view formed from the history as it
   now stands. The first half of the round trip, and the scenario that makes "tick from the row" more
-  than a getter.
+  than a getter. Passed immediately on 2.1's implementation — it composes existing `record` behaviour
+  rather than driving new logic, so no red run for the right reason was available here.
 - [ ] 2.3 `taking back the tick a row offers makes a day view formed again say the commitment is not
   kept` — the same tick handed to `History.remove(_:)`. The Story's second half; two assertions, the
   original row kept and the re-formed one not.
