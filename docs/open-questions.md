@@ -53,15 +53,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   not `Comparable`. Rendering a date is a delta against `openspec/specs/schedule/spec.md` rather
   than `day-screen`, so it is a Story of its own against a second capability — which is why #72
   did not widen it in passing.
-- **The store must be opened under `Library/Application Support/`.** Owed by #56's design,
-  2026-09-02. `RecordStore` keeps the record at whatever place it is given and cannot enforce
-  the choice from where it sits; `Caches/` is purged by the system and `tmp/` is not backed up,
-  and either would silently lose the one thing the product promises to keep. It was written
-  expecting a Story to create the app target; ADR-1019 made that a chore instead, and a shell may
-  choose nothing — a place a store is opened at is exactly the kind of decision that fails
-  `CONTEXT.md` § *App shell*. So the obligation did not travel with the target: it falls to the
-  first Story that persists a tick from inside the app, realistically `day-screen` (#27), and this
-  is the line that says which.
 - **`RecordStore.init` can throw outside `RecordStoreError`.** Surfaced at #56's review,
   2026-09-02. A place that exists but cannot be read as data — a directory, a file without
   read permission, or on iOS a store protected by data protection when the app is launched
@@ -70,6 +61,15 @@ Things that are built, or deliberately not built, in a state someone will trip o
   holds (it is still refused, and nothing is overwritten); what is missing is a fourth case in
   the seam, which is a `design.md` edit and a second G4. Left deliberately, for the Story that
   first meets it — realistically the app target or `day-screen` (#27) — to add with a delta.
+  **Met and deliberately left open by `add-day-screen` (#91), 2026-09-03.** That Story is the
+  first thing that opens a store from inside the app, so it is the caller with nothing to match
+  on — and it chose not to widen the seam. Its `DayScreen` collapses every refusal it cannot act
+  on differently into one `RecordState.unreadable`, and names only the one where a person's
+  correct action differs: a record written by a later version of DayByDay, which
+  `RecordStoreError.laterForm` already distinguishes. So the fourth case buys nothing on the
+  screen, and the owner's answer at #91's question round said so in as many words. It is still
+  owed by whatever first needs to tell a locked store apart from a corrupt one — a message
+  saying "try again in a moment" rather than "something is wrong with your record".
 - **The shell identifies rows by equality, and two rows may be equal.** Surfaced at #71's
   review, 2026-09-03. `src/DayByDay` draws `List(dayView.rows, id: \.self)`, so a row's
   `Hashable` conformance is what SwiftUI uses to tell one row from another — but `day-screen`'s
@@ -95,6 +95,40 @@ Things that are built, or deliberately not built, in a state someone will trip o
   person or an agent grepping issue text, and the rule itself. The fix is one line in the
   template, which is a chore; it is written down here rather than done because nothing was
   asked for it.
+- **A day screen's `today` is both the day it is on and the day it is asked on.** Surfaced at
+  #91's review, 2026-09-03. `DayScreen` keeps one `today`, and `tick(_:)` passes it to
+  `Row.tick(asOf:)` — but `CONTEXT.md` § *Today* separates those deliberately, saying that
+  "confusing the two is what would let a screen offer a tick for a day that has not happened".
+  The two coincide while a day screen can only ever be on today, so the guard is correct and
+  unreachable, and #91's delta approves exactly this shape. It stops being correct in
+  `add-screen-navigation` (#93): moving the screen's day by writing the same field would leave
+  the tick asked as of the *displayed* date, so navigating forward two days and tapping a row
+  would write a tick for a day that has not arrived — the refusal `add-tick-from-row` (#71)
+  exists to enforce. #91's `design.md` claims the guard "becomes reachable with #93", which is
+  true only if #93 splits the field; splitting it is the finding. **Owed by #93's grill**, and
+  written down here because #93 is two Stories away and nobody who has not read that review
+  would rediscover it.
+- **The shell swallows the one failure a tick reports.** Surfaced at #91's review, 2026-09-03.
+  `DayScreen.tick(_:)` throws so that a record which cannot be written is not silently
+  forgotten — `design.md` justifies the `throws` on the grounds that "a person must be told" —
+  and `ContentView.swift` calls it as `try? screen.tick(row)`. So on a place that cannot be
+  written the tap does nothing, the row does not change, and nothing is said. This is approved
+  as written: #91's `tasks.md` and its `design.md` shell snippet both specify `try?`, and no
+  scenario covers the shell. The second half of the `throws` rationale is therefore unrealised,
+  and it sits in the layer *No UI smoke layer* below already flags. Owed by whichever Story
+  first gives the shell a way to say anything at all.
+- **The tasks template puts G7 inside the implementer's own checklist.** Surfaced at #91's
+  review, 2026-09-03. A change's `tasks.md` carries a box reading "`mattpocock-skills:code-review`
+  reports nothing unresolved on either axis (**G7**)", and `openspec validate --archived`
+  requires every box ticked — so the box asserting G7 is satisfied is necessarily ticked by the
+  implementer before the reviewer has run, and the archived record shows a ticked G7 no reviewer
+  produced. It is four Stories deep: `2026-09-02-add-day-view/tasks.md:123`,
+  `2026-09-03-add-tick-from-row/tasks.md:101`,
+  `2026-09-03-add-day-navigation/tasks.md:112`, and #91's own. It is not merely cosmetic: on
+  #91 the implementer read that box as instructing it to perform G7 and reported having done
+  so, which is the one thing `AGENTS.md`'s routing table gives to a separate agent that may
+  write nothing. The fix is to the template the change folder is generated from, which is a
+  chore; it is recorded rather than done because nothing has asked for it.
 - **No UI smoke layer.** Surfaced at `day-screen`'s G1, 2026-08-31. Acceptance tests for the
   first screen attach at a view-model seam inside `DayByDayKit`, so nothing automated proves
   SwiftUI actually draws: a row left blank by a misspelled binding passes CI. The answer is one
@@ -108,6 +142,17 @@ Things that are built, or deliberately not built, in a state someone will trip o
   native Swift and SwiftUI partly by rejecting the browser-based option outright.
 
 ## Settled
+
+- 2026-09-03 — **the record is kept at `<Application Support>/DayByDay/record.json`, and the
+  day screen is what chooses it.** `RecordStore` keeps the record wherever it is given and cannot
+  enforce the choice from where it sits, so the choice had to land somewhere that owes
+  requirements; `Caches/` is purged by the system and `tmp/` is not backed up, and either would
+  silently lose the one thing the product promises to keep. #56's design expected a Story
+  creating the app target to decide it, ADR-1019 made that target a chore instead, and a shell
+  that decides nothing could not — so the obligation waited for the first Story that persists a
+  tick from inside the app. That is `add-day-screen` (#91): `DayScreen.recordPlace` is the
+  decision, it is a requirement in `openspec/specs/day-screen/spec.md`, and a scenario pins it.
+  Settled by #91.
 
 - 2026-09-02 — **the app target is called `DayByDay`, and it is a chore rather than a Feature.**
   It sits at `src/DayByDay/` beside `src/DayByDayKit/`, is a hand-written `.xcodeproj` needing no
