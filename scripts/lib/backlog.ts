@@ -2,10 +2,9 @@
  * `docs/backlog.md` as data, for `pnpm run status`.
  *
  * ADR-1010's diagnosis of the parking lot was that nothing ever opened the file: its exit rule
- * and its staleness rule were sentences, and no command could observe that an entry had gone
- * stale because nothing recorded that a round had happened. `/atlas backlog` fixes half of
- * that — a grooming pass is now a thing that happens. This fixes the other half: the pass
- * count is written down, so status can surface a stale want without being asked.
+ * was a sentence and no command ever surfaced what was sitting in there. `/atlas backlog` opens
+ * it; this is what lets `pnpm run status` say how much is waiting, when it was last groomed,
+ * and what has been captured since.
  *
  * **A projection, like the rest of `status.ts`.** Nothing consumes this and no check reads it.
  * A backlog file that does not parse is reported as unreadable rather than throwing, because
@@ -21,8 +20,6 @@ export type Want = {
   heading: string
   /** ISO date from the entry's italic line — the first one, so "captured X, migrated Y" is X. */
   captured: string
-  /** Grooming passes dated after `captured`. Two is the forced choice. */
-  survived: number
 }
 
 export type Backlog = {
@@ -34,8 +31,6 @@ export type Backlog = {
   lastPass: string | null
   /** Captured since the last pass — new since you last looked. */
   fresh: Want[]
-  /** Survived two passes or more. `/atlas backlog` presents these as promote-or-drop. */
-  stale: Want[]
 }
 
 const ISO = /\d{4}-\d{2}-\d{2}/
@@ -65,12 +60,7 @@ export function parseBacklog(md: string): Backlog {
   for (const [, id, heading, meta] of entries) {
     const captured = meta!.match(ISO)?.[0]
     if (captured === undefined) continue
-    wants.push({
-      id: id!,
-      heading: heading!,
-      captured,
-      survived: passes.filter((p) => p > captured).length,
-    })
+    wants.push({ id: id!, heading: heading!, captured })
   }
 
   const decided = [...section(md, 'Decided').matchAll(/^-\s+\S/gm)].length
@@ -81,7 +71,6 @@ export function parseBacklog(md: string): Backlog {
     passes,
     lastPass,
     fresh: lastPass === null ? wants : wants.filter((w) => w.captured > lastPass),
-    stale: wants.filter((w) => w.survived >= 2),
   }
 }
 

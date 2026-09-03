@@ -3,10 +3,9 @@ import { describe, expect, it } from 'vitest'
 
 import { parseBacklog } from '../scripts/lib/backlog.ts'
 
-// ADR-1010's finding was that the parking lot's staleness rule never ran, because nothing
-// recorded that a round had happened and so nothing could count one. These tests are about
-// that count and nothing else: a want's `survived` is the number of grooming passes dated
-// after it was captured, and two is the forced choice.
+// The backlog is a projection for `pnpm run status`: what is waiting, when it was last
+// groomed, and what has been captured since. It counts no want as overdue — a want waiting to
+// be groomed is a queue entry, not a debt (`docs/adr/1010-*` § Amended 2026-09-03).
 
 function backlog(wants: string, passes = '', decided = ''): string {
   return `# Backlog\n\n## Wants\n\n${wants}\n\n## Decided\n\n${decided}\n\n## Grooming passes\n\n${passes}\n`
@@ -18,33 +17,27 @@ const B2 = `### B-002 — add to a running total\n*Captured 2026-09-20.*\n\n- **
 describe('parseBacklog', () => {
   it('reads a want, its id and the date it was captured', () => {
     const { wants } = parseBacklog(backlog(B1))
-    expect(wants).toEqual([{ id: 'B-001', heading: 'see my weight as a line over months', captured: '2026-08-28', survived: 0 }])
+    expect(wants).toEqual([{ id: 'B-001', heading: 'see my weight as a line over months', captured: '2026-08-28' }])
   })
 
   // "Captured 2026-08-28, migrated 2026-09-02" is the shape every entry inherited from the
-  // parking lot carries. The first date is the honest one: it is how long the want has been
-  // sitting there, which is what the staleness rule is about.
+  // parking lot carries. The first date is the honest one: it is when the want was actually
+  // said, and the migration is bookkeeping.
   it('takes the first date on the meta line, so a migrated entry keeps its original age', () => {
     const migrated = `### B-003 — carry my history to a new phone\n*Captured 2026-08-28, migrated 2026-09-02.*\n`
     expect(parseBacklog(backlog(migrated)).wants[0]?.captured).toBe('2026-08-28')
   })
 
-  it('counts only the passes a want actually sat through', () => {
-    const { wants } = parseBacklog(backlog(`${B1}\n${B2}`, '- 2026-09-10 — pass one.\n- 2026-09-30 — pass two.\n'))
-    expect(wants.find((w) => w.id === 'B-001')?.survived).toBe(2)
-    expect(wants.find((w) => w.id === 'B-002')?.survived).toBe(1)
-  })
-
-  it('makes two passes the forced choice, and one not', () => {
-    const { stale } = parseBacklog(backlog(`${B1}\n${B2}`, '- 2026-09-10 — pass one.\n- 2026-09-30 — pass two.\n'))
-    expect(stale.map((w) => w.id)).toEqual(['B-001'])
+  it('reads every pass date, oldest first', () => {
+    const { passes, lastPass } = parseBacklog(backlog(B1, '- 2026-09-10 — pass one.\n- 2026-09-30 — pass two.\n'))
+    expect(passes).toEqual(['2026-09-10', '2026-09-30'])
+    expect(lastPass).toBe('2026-09-30')
   })
 
   it('calls everything fresh while the backlog has never been groomed', () => {
-    const { fresh, lastPass, stale } = parseBacklog(backlog(`${B1}\n${B2}`))
+    const { fresh, lastPass } = parseBacklog(backlog(`${B1}\n${B2}`))
     expect(lastPass).toBeNull()
     expect(fresh).toHaveLength(2)
-    expect(stale).toHaveLength(0)
   })
 
   it('counts as fresh only what was captured after the last pass', () => {

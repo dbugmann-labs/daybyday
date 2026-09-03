@@ -449,10 +449,11 @@ clusters:
 - **A want that is a payload variation of something that exists is a Story, not a Feature** — a
   number where there was a tick. Reopen that Feature rather than minting a second one against
   the same spec (`docs/agents/issue-tracker.md` § *Closing the hierarchy*).
-- **An entry that has survived two grooming passes untouched is a forced choice** — promote it or
-  drop it, and say which you would do. There is no third option and no deferring it again. This
-  is the rule the parking lot stated and never enforced. **Do not count the passes by eye:**
-  `pnpm run status` off a story branch prints the ids, read out of the *Grooming passes* log.
+- **Nothing expires, so never argue from a want's age.** A pass carries one cluster, so every
+  other want survives it by construction and waiting is the normal state (ADR-1018). What is
+  worth saying is *why* a cluster is not taken — blocked on a named issue, or nothing asks for
+  it — and a want you have declined twice for the second reason is a drop worth proposing on its
+  merits.
 
 Present that as `Stop — which cluster`, in the five-part form: the clusters and their
 dispositions, the question *which cluster do we take forward*, and a recommendation naming one.
@@ -478,10 +479,10 @@ the issue number, and commit that with the same message the issues went out unde
 backlog PR.
 
 **Append the pass to `## Grooming passes` before you commit, whatever the outcome** — one dated
-line, and a promotion is not what makes it one. A pass that promoted nothing is exactly the pass
-the staleness rule is counting, so an unrecorded pass resets every want's age to zero and quietly
-restores the parking lot. `pnpm run status` reads that log and nothing else — only the date at
-the head of the line, so the rest is yours to fill:
+line, and a promotion is not what makes it one. A pass that promoted nothing still found
+something out, and that log is where the next pass and `/to-tickets` read what was declined and
+why; an unrecorded pass throws that away and quietly restores the parking lot. `pnpm run status`
+reads only the date at the head of the line, so the rest is yours to fill:
 
 ```
 - 2026-09-10 — pass over 9 wants. Promoted B-001, B-007, B-008 → FEAT: measurement (#48).
@@ -551,8 +552,8 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
                                         # the Touches line of every want that names it
    ```
 
-   **`pnpm run status` will not do this for you.** It parses a want as id, heading, capture date
-   and passes-survived, and holds no edge from a want to a Feature (`scripts/lib/backlog.ts`) —
+   **`pnpm run status` will not do this for you.** It parses a want as id, heading and capture
+   date, and holds no edge from a want to a Feature (`scripts/lib/backlog.ts`) —
    it will tell you B-006 exists and never that it belongs to #27's G2. A pass records which
    wants it deliberately did *not* take, and why, precisely so the next step starts from that
    rather than from the wants alone; a decomposition that skips it re-derives the slices from

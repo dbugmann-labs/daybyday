@@ -71,3 +71,4 @@ DayByDay's own records start here.
 | [1015](1015-a-weekly-quota-is-due-every-day.md) | A weekly quota is due every day; whether it has been met is not a schedule question |
 | [1016](1016-the-fourth-model-tier-is-withdrawn.md) | The fourth model tier is withdrawn on price; `spec-author` returns to Opus; supersedes ADR-1011 |
 | [1017](1017-records-are-kept-in-one-file.md) | Records are kept in one JSON file, written whole on every change; SwiftData and GRDB declined, with the reversal trigger named |
+| [1018](1018-the-backlog-has-no-staleness-rule.md) | The backlog has no staleness rule; a want waits without going bad, and status never calls one overdue; supersedes ADR-1010's staleness rule |
