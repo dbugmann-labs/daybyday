@@ -84,3 +84,4 @@ DayByDay's own records start here.
 | [1020](1020-adrs-are-mutable.md) | An accepted ADR is edited in place and stamped; git history is the audit trail, and numbers are never reused |
 | [1021](1021-a-day-screen-without-its-record-draws-the-day.md) | A day screen that cannot read its record still draws the day and refuses every tick; nothing is held in memory |
 | [1022](1022-the-day-is-said-in-the-apps-own-words.md) | A day is said in the app's own English words, fixed in `DayByDayKit`; no `Locale`, no `DateFormatter`, and the shell composes nothing |
+| [1023](1023-a-commitment-is-kept-until-a-day-the-roster-holds.md) | A commitment is kept until a day, and the roster holds that day — a fourth part on the commitment would orphan every tick |
