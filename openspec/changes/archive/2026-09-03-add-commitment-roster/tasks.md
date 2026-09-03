@@ -96,7 +96,7 @@ evidence.
   which may change — and `pnpm run verify` exits 0.
 - [x] 3.2 `pnpm exec openspec validate add-commitment-roster --strict` exits 0 and `pnpm run checks`
   reports scenario coverage as 13 of 13.
-- [ ] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). This
+- [x] 3.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). This
   box records the reviewer's report; it is not an instruction to the implementer to review its own
   work. `AGENTS.md`'s routing table gives G7 to a separate agent that may write nothing, and
   `docs/open-questions.md` § *Known gaps* records that the template's wording has already been read
