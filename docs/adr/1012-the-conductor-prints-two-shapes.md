@@ -135,8 +135,9 @@ exemption.
 **The round is `grilling`'s own format, printed unwrapped.** `❓ **Qn** — **title**`, the
 recommended answer under `➡️`, a rule between questions, and no wrapper of any kind: no five-part
 block, no line budget, no reply vocabulary, because the reply is prose. It carries the whole
-frontier rather than the most important question — `AGENTS.md`'s "do not ask four when one
-decides it" is a rule about gates and does not reach a grill, where the fourth question is the
+frontier rather than the most important question — `AGENTS.md`'s "a gate carries one decision, so
+do not ask four things when one decides it" says in its own next clause that it is a rule about
+gates and only about gates, and it does not reach a grill, where the fourth question is the
 product. Like a gate it ends the conductor's turn; unlike a gate another round usually follows,
 and the loop runs until the frontier is empty. ADR-1006, amended, is where the round belongs to
 the process; this record only fixes its shape.
