@@ -127,12 +127,13 @@ what has no judgement in it, and change nothing in `DayByDayKit` from here.
 
 ## 4. Gates
 
-- [x] 4.1 `cd src/DayByDayKit && swift test` reports 208 tests passing and no failures — the sixteen
-  here plus the 192 from #8, #9, #10, #11, #42, #55, #56, #70, #71, #72 and #91, none of which may
-  change — and `pnpm run verify` exits 0.
+- [x] 4.1 `cd src/DayByDayKit && swift test` reports 221 tests passing and no failures — the sixteen
+  here plus the 205 already on `origin/main` at the branch's last rebase (`ab7ef41
+  add-commitment-roster (#106)` landed thirteen more atop the 192 from #8, #9, #10, #11, #42, #55,
+  #56, #70, #71, #72 and #91), none of which may change — and `pnpm run verify` exits 0.
 - [x] 4.2 `pnpm exec openspec validate add-screen-date --strict` exits 0 and `pnpm run checks`
   reports scenario coverage as 16 of 16.
-- [ ] 4.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
+- [x] 4.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7, and
 `openspec validate --archived` requires every box above to be ticked before it.

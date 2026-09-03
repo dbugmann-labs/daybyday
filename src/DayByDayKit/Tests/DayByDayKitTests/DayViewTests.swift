@@ -1064,7 +1064,7 @@ func aDayOfTheMonthBelowTenIsSaidWithoutALeadingZero() {
 @Test("every weekday is said by its own name")
 func everyWeekdayIsSaidByItsOwnName() {
     let askedAsOf = CalendarDate(year: 2026, month: 1, day: 1)!
-    let days = (31...31).map { CalendarDate(year: 2026, month: 8, day: $0)! }
+    let days = [CalendarDate(year: 2026, month: 8, day: 31)!]
         + (1...6).map { CalendarDate(year: 2026, month: 9, day: $0)! }
 
     let titles = days.map { DayView(of: [], on: $0, in: History()).title(asOf: askedAsOf) }
