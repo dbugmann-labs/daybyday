@@ -9,6 +9,10 @@
 - Amended: 2026-09-03 — the five-part block asks first and details last, *What is in front of
   you* becomes `Detail` under a ten-line budget, and G7's findings are its one exemption. The two
   shapes, the step report, the labels and the reply vocabulary are unchanged.
+- Amended: 2026-09-04 — the **round** joins as a third shape, so this record now describes three
+  shapes across the four things the conductor prints, and wrapping a round in a five-part block
+  is forbidden. The title still says *two* and is kept deliberately: over a hundred
+  cross-references resolve by number, and ADR-1020 is explicit about what renaming costs.
 
 ## Context
 
@@ -76,8 +80,16 @@ measurement rather than the assumption.
 
 ## Decision
 
-**The conductor prints two shapes, and the shape is what tells the human whether a reply is
-wanted.** A five-part block asks. A three-line step report tells. There is no third.
+**The conductor prints four things in three shapes, and the shape is what tells the human
+whether a reply is wanted — and what kind of reply.** A gate block and a stop block, both the
+five-part form; a round; and a three-line step report. **A five-part block asks for a decision, a
+round asks for answers, a `▸` line tells.** There is no fifth.
+
+The count moved because the round was added, not because the reasoning did. In a session that
+takes turns, either the conductor's turn ends and it is asking, or it does not end and it is
+telling. **The round is a species of asking, not a fourth state**: it ends the turn exactly as a
+gate does, and differs only in what comes back. There is still no shape that reports and treats
+silence as consent, and there is still no channel for one.
 
 **The step report** is three lines: what ran, what it left behind, what comes next. It is printed
 before every spawn, after every return, and as the form of a rule-5 stop.
@@ -102,7 +114,7 @@ reply; then `Detail`. The ask, the lean and the reply vocabulary fit on one scre
 supports them is read second or not at all.
 
 **The same form is used for three kinds of stop, and its labels fit all three.** Gates carry a
-G-number; stops without a marker — the question round, the sweep, the cluster pick, the braindump
+G-number; stops without a marker — the residual round, the sweep, the cluster pick, the braindump
 split — carry a `Stop —` header instead. The pair is *if you take the recommendation* against
 *if you don't* rather than yes against no, which reads the same at a binary gate and holds a
 choice without strain.
@@ -120,6 +132,15 @@ triage is the recommendation. They sit under `Detail` like everything else, at w
 reviewer wrote them: ADR-1002's *unmediated* outranks the budget, and this is the budget's single
 exemption.
 
+**The round is `grilling`'s own format, printed unwrapped.** `❓ **Qn** — **title**`, the
+recommended answer under `➡️`, a rule between questions, and no wrapper of any kind: no five-part
+block, no line budget, no reply vocabulary, because the reply is prose. It carries the whole
+frontier rather than the most important question — `AGENTS.md`'s "do not ask four when one
+decides it" is a rule about gates and does not reach a grill, where the fourth question is the
+product. Like a gate it ends the conductor's turn; unlike a gate another round usually follows,
+and the loop runs until the frontier is empty. ADR-1006, amended, is where the round belongs to
+the process; this record only fixes its shape.
+
 **The braindump split and the sweep's gaps are stops, and say so.** The reasoning `atlas.md`
 already gave for the split — the one judgement the human can correct in a sentence and nobody
 else can, cheap to get wrong silently — is the definition of a stop, and a stop ends the turn.
@@ -129,9 +150,10 @@ asked once; inside the loop the step report's `next` line carries the one thing 
 
 ## Consequences
 
-- **The human learns two shapes and reads the header.** A `G` header or a `Stop —` header means
-  a reply is wanted and the fourth part says what to type; a `▸` line means nothing is. The
-  question "am I being asked something?" is answered before the first sentence.
+- **The human learns three shapes and reads the header.** A `G` header or a `Stop —` header
+  means a decision is wanted and the fourth part says what to type; a `❓` means answers are
+  wanted, in prose, and more will be asked; a `▸` line means nothing is wanted. The question "am
+  I being asked something, and what kind of something?" is answered before the first sentence.
 - **The human answers the question they were asked, not the one they can still remember.** The
   ordering is what makes that true; the parts, the labels and the reply vocabulary would work in
   any order and the ask would still be buried under an unbounded context section.
@@ -151,6 +173,14 @@ asked once; inside the loop the step report's `next` line carries the one thing 
   exit codes or its commit; a return that says "done, all green" produces a `left` line the
   conductor cannot fill, and the right move is to say so in it rather than to go and look — the
   same trade as ADR-1005 and ADR-1006: the artifact is checkable, the judgement is not.
+- **Wrapping a round in a five-part block is forbidden, and that is the point of adding the
+  shape.** The block carries one question under a ten-line budget, so putting an interview inside
+  it forces the conductor to drop every question except the most important one — which are
+  exactly the questions a grill exists to reach. That wrapping was this repository's own addition
+  to the `grilling` protocol, it is what made the grill read as a questionnaire, and it is now
+  written down as wrong in `.claude/skills/grill/SKILL.md` so that the next tidy-up does not
+  reinstate it. The general rule it is an instance of: a form built for one question does not
+  become a form for n by being used for n.
 - **Side findings have nowhere to go inside the block**, which is deliberate and incomplete: they
   are forbidden there without this record saying where they land. `docs/open-questions.md`,
   `docs/backlog.md` and an issue are the three existing homes, and choosing between them is a

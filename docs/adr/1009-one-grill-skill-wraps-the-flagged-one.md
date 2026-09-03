@@ -3,6 +3,11 @@
 - Status: accepted
 - Date: 2026-09-01
 - Deciders: Diego Bugmann
+- Amended: 2026-09-04 — the skill no longer branches on who is running it. Both grills are the
+  conductor's, and `grill` now tells a subagent that finds itself invoking it to stop and read
+  the `grill.md` the interview left. The reason for owning the wrapper is unchanged and still
+  load-bearing: `grill-with-docs` is flagged, so no agent can invoke it and no subagent can ask
+  a human to type it. ADR-1006.
 
 ## Context
 
@@ -33,24 +38,37 @@ Add **`grill`**, a skill owned by this repository at `.claude/skills/grill/SKILL
 `grill-with-docs` any more.
 
 It makes the same two Skill calls `grill-with-docs` makes, then adds what neither underlying
-skill knows: this repository's three non-optional outputs (`## Open Questions` filled in, new
-terms in `CONTEXT.md`, an ADR for a hard decision), and a branch on who is running it — the
-conductor asks a round and waits; a subagent writes `## Questions for you` into `design.md` and
-hands back.
+skill knows. That is this repository's three non-optional outputs — the questions and their
+answers written to a durable file, which at Stage 4 is `grill.md` in the change folder; new terms
+in `CONTEXT.md`; an ADR for a decision that was hard, expensive to reverse or surprising — and
+the two rules this repository had previously got wrong, that a round asks the whole frontier
+rather than the most important question, and that it is printed unwrapped.
+
+**It does not branch on who is running it.** Both grills are the conductor's, so the only thing
+the skill has to say to a subagent is *you are in the wrong place, stop*: the interview happened
+before you were spawned, `grill.md` is what it left you, and writing the delta on those answers
+is your job. `.claude/skills/grill/SKILL.md` is the normative text.
 
 This is a third option ADR-0009 did not consider: neither installing whole and living with the
 gap, nor forking. Wrap the flagged skill in one this repo owns.
 
 ## Consequences
 
-- One name for both grills. The human types `/grill`; `spec-author` invokes `Skill("grill")`.
-- **The branch is the real gain.** `grill-with-docs` would have told `spec-author` to block on a
-  human it cannot reach. A skill that cannot express "you are a subagent, write instead of
-  waiting" is the wrong skill for half of this pipeline, flag or no flag.
-- No fork and no vendoring, so ADR-0009's decision stands unchanged: the plugin is still
-  installed whole and updates are still one command. `grill` depends on `grilling` and
-  `domain-modeling` by name; if a plugin update flags or renames either, `grill` breaks loudly
-  at invocation rather than silently doing nothing, which is the failure mode it replaces.
+- One name for both grills, and one caller: the conductor invokes `Skill("grill")` for the
+  Feature grill at Stage 1 and the Story grill at the top of Stage 4. `spec-author` no longer
+  invokes it at all.
+- **The branch was a correct workaround for a boundary that should not have been crossed.** It
+  was right about the immediate problem — `grill-with-docs` would have told `spec-author` to
+  block on a human it cannot reach, and the branch let it do something useful instead of
+  hanging. But the useful thing it did was write a questionnaire. `grilling` is a loop, a
+  subagent cannot wait, so the loop ran exactly once and the design tree never got past depth
+  one. The answer was never a better branch; it was that the interview does not belong inside a
+  subagent at all. ADR-1006 moved it out, and the gain this record claimed here went with it.
+- **The gain that survives is this one.** No fork and no vendoring, so ADR-0009's decision
+  stands unchanged: the plugin is still installed whole and updates are still one command.
+  `grill` depends on `grilling` and `domain-modeling` by name; if a plugin update flags or
+  renames either, `grill` breaks loudly at invocation rather than silently doing nothing, which
+  is the failure mode it replaces.
 - The generalisation is available but not yet taken: any other flagged skill the process needs
   can be wrapped the same way. `to-tickets` is the obvious candidate and is deliberately left
   alone — it produces issue bodies, which is exactly the surface rule 4 governs, so a human
@@ -61,7 +79,8 @@ gap, nor forking. Wrap the flagged skill in one this repo owns.
 ## Alternatives considered
 
 **Vendor `grill-with-docs` with the flag stripped.** Forks the plugin for one line, drifts on
-`claude plugin update`, and still would not carry the subagent branch. Rejected — and ADR-0009
+`claude plugin update`, and still would not carry this repository's outputs or its round rules.
+Rejected — and ADR-0009
 already rejected forking for a stronger reason.
 
 **Name the wrapper `grill-with-docs` so the docs need no change.** A project skill shadowing a
