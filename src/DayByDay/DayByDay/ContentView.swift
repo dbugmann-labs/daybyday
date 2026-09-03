@@ -63,11 +63,23 @@ struct ContentView: View {
                 Text("The record was written by a newer version of DayByDay and must not be deleted.")
             }
 
-            ForEach(screen.dayView.rows, id: \.self) { row in
+            // `Row` carries no identity of its own beyond `isKept` and `name` (`DayView.swift`
+            // keeps `commitment` and `date` internal to the kit), and `isKept` is exactly what a
+            // tap flips — keying `ForEach` on the row's value would make SwiftUI see a tap as one
+            // row removed and another inserted. The array's position is stable across a tap, so
+            // it stands in as the identity instead.
+            ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset) { _, row in
                 Button {
                     try? screen.tick(row)
                 } label: {
-                    Text(row.name)
+                    HStack {
+                        Text(row.name)
+                            .foregroundStyle(row.isKept ? .secondary : .primary)
+                        if row.isKept {
+                            Spacer()
+                            Image(systemName: "checkmark")
+                        }
+                    }
                 }
             }
         }
