@@ -76,11 +76,11 @@ prediction here is not evidence.
   on three different schedule shapes, all due on Wednesday 2 September 2026, none offering a tick as
   of Monday 31 August 2026. Pins that the refusal is the day view's date and not something per-row.
   Passed immediately.
-- [ ] 2.11 `a row for a commitment on a weekly quota offers a tick even where its quota is already
+- [x] 2.11 `a row for a commitment on a weekly quota offers a tick even where its quota is already
   met` — ADR-1015's cost, still unfixed and now visible on the tap as well as in the view: three
   ticks in the seven days up to Sunday 6 September 2026 and the row still offers a fourth.
   Deliberately does not name a week — where a week begins is undecided (`CONTEXT.md` § *Weekly
-  quota*).
+  quota*). Passed immediately.
 - [ ] 2.12 `two rows for the same commitment and date saying the same thing are the same row` —
   expected to pin synthesised `Equatable` rather than drive anything.
 - [ ] 2.13 `two rows for the same commitment on different dates are different rows` — the scenario

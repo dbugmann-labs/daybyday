@@ -604,3 +604,25 @@ func everyRowOfADayViewWhoseDateHasNotArrivedOffersNoTick() {
     #expect(dayView.rows.map(\.name) == ["Gym", "Vitamins", "Reading"])
     #expect(dayView.rows.allSatisfy { $0.tick(asOf: monday) == nil })
 }
+
+@Test("a row for a commitment on a weekly quota offers a tick even where its quota is already met")
+func aRowForACommitmentOnAWeeklyQuotaOffersATickEvenWhereItsQuotaIsAlreadyMet() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let sunday = CalendarDate(year: 2026, month: 9, day: 6)!
+    var history = History()
+    history.add(Tick(reading, on: monday)!)
+    history.add(Tick(reading, on: wednesday)!)
+    history.add(Tick(reading, on: saturday)!)
+
+    let dayView = DayView(of: [reading], on: sunday, in: history)
+
+    #expect(dayView.rows.count == 1)
+    #expect(dayView.rows[0].name == "Reading")
+    #expect(!dayView.rows[0].isKept)
+    #expect(dayView.rows[0].tick(asOf: sunday) != nil)
+}
