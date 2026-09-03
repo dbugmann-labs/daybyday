@@ -84,9 +84,10 @@ prediction here is not evidence.
 - [x] 2.12 `two rows for the same commitment and date saying the same thing are the same row` —
   expected to pin synthesised `Equatable` rather than drive anything. Passed immediately, as
   predicted.
-- [ ] 2.13 `two rows for the same commitment on different dates are different rows` — the scenario
+- [x] 2.13 `two rows for the same commitment on different dates are different rows` — the scenario
   that justifies storing the date on the row. Under #70's `Row` these two were equal; this is the
-  one observable equality change in the delta.
+  one observable equality change in the delta. Passed immediately — `Row` gained its date in 1.1, so
+  the equality change was already in place.
 - [ ] 2.14 `two rows for the same commitment and date differing in whether it is kept are different
   rows` — the other axis of row identity, expected to pin.
 

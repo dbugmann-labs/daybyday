@@ -643,3 +643,22 @@ func twoRowsForTheSameCommitmentAndDateSayingTheSameThingAreTheSameRow() {
     #expect(second.rows[0].isKept)
     #expect(first.rows[0] == second.rows[0])
 }
+
+@Test("two rows for the same commitment on different dates are different rows")
+func twoRowsForTheSameCommitmentOnDifferentDatesAreDifferentRows() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let history = History()
+
+    let onMonday = DayView(of: [gym], on: monday, in: history)
+    let onWednesday = DayView(of: [gym], on: wednesday, in: history)
+
+    #expect(onMonday.rows[0].name == "Gym")
+    #expect(!onMonday.rows[0].isKept)
+    #expect(onWednesday.rows[0].name == "Gym")
+    #expect(!onWednesday.rows[0].isKept)
+    #expect(onMonday.rows[0] != onWednesday.rows[0])
+}
