@@ -64,9 +64,10 @@ prediction here is not evidence.
   it offers nothing. This is the scenario the question round turned on; the owner answered *refuse
   whole* on 2026-09-03, which is what it already said, so write it as it stands. Passed immediately —
   the refusal never consulted `isKept`.
-- [ ] 2.8 `a row's answer follows the day it is asked as of rather than the day the day view was
+- [x] 2.8 `a row's answer follows the day it is asked as of rather than the day the day view was
   formed` — one row, asked twice, either side of its own date. The midnight pin, and the test that
-  fails an implementation that took the day at construction.
+  fails an implementation that took the day at construction. Passed immediately — `tick(asOf:)` takes
+  its argument at call time, never at construction.
 - [ ] 2.9 `a row offers the tick in the first supported year and in the last` — 3 January 1583 and
   27 December 9999, both Mondays; three assertions, the third being the 9999 row asked as of 1583,
   which offers nothing. Any implementation that reaches for `Date()` fails one of the three.

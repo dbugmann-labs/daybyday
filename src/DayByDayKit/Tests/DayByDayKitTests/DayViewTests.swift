@@ -549,3 +549,19 @@ func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoTickEvenWhereItSaysTheCommi
     #expect(dayView.rows[0].isKept)
     #expect(dayView.rows[0].tick(asOf: monday) == nil)
 }
+
+@Test("a row's answer follows the day it is asked as of rather than the day the day view was formed")
+func aRowsAnswerFollowsTheDayItIsAskedAsOfRatherThanTheDayTheDayViewWasFormed() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let history = History()
+
+    let dayView = DayView(of: [gym], on: wednesday, in: history)
+    let row = dayView.rows[0]
+
+    #expect(row.tick(asOf: tuesday) == nil)
+    #expect(row.tick(asOf: wednesday) == Tick(gym, on: wednesday))
+}
