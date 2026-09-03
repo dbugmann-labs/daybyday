@@ -1,6 +1,6 @@
 ## 1. The public surface
 
-- [ ] 1.1 Widen `Sources/DayByDayKit/Roster.swift` to exactly the four members `design.md`
+- [x] 1.1 Widen `Sources/DayByDayKit/Roster.swift` to exactly the four members `design.md`
   § *The seam* gives, and no others: `public init()`, `public var commitments: [Commitment]`
   (computed, reading back only what has not been stopped), `public mutating func add(_:) -> Bool`,
   `public mutating func retire(_ commitment: Commitment, keptUntil date: CalendarDate) -> Bool`, and
@@ -12,12 +12,12 @@
   it applies to `retire` for the same reason. Nothing existing becomes public: `Commitment.schedule`
   and `Commitment.keptFrom` stay internal, and `CalendarDate` stays as it is. Verify with
   `cd src/DayByDayKit && swift build` exiting 0.
-- [ ] 1.2 Confirm the thirteen tests #101 wrote still pass, **unedited**, after 1.1:
+- [x] 1.2 Confirm the thirteen tests #101 wrote still pass, **unedited**, after 1.1:
   `cd src/DayByDayKit && swift test` reports 205 passing. Those thirteen are restated verbatim by
   this delta's two MODIFIED requirements and are the evidence that this change modifies wording and
   not behaviour. **If one goes red, stop** — that is a behaviour change the delta does not carry, and
   it is a rule-5 stop rather than a test to edit (`design.md` § *Risks*).
-- [ ] 1.3 Confirm the starting point before writing a test: `pnpm run checks` reports
+- [x] 1.3 Confirm the starting point before writing a test: `pnpm run checks` reports
   `scenario coverage — 13/30 scenario(s) covered` for this change — the thirteen already carried by
   `RosterTests.swift` — and names `"offering a commitment the roster has stopped keeping takes it up
   again"` as next. A different number here means something else moved; report it rather than working
@@ -40,12 +40,14 @@ do not add one, and do not substitute a date the delta does not name.
 task says otherwise. **Record which ones actually ran red as you go, in this file** — a prediction
 here is not evidence.
 
-- [ ] 2.1 `offering a commitment the roster has stopped keeping takes it up again` — needs `retire`
+- [x] 2.1 `offering a commitment the roster has stopped keeping takes it up again` — needs `retire`
   to work, so implement `retire`'s happy path here and let 2.4–2.10 pin the rest of it. Three
   assertions: the offer reports that the roster now keeps the commitment, the roster reads back that
   one commitment and no second copy, and it equals a roster given that commitment once and never
   asked to stop. The equality assertion is the one that pins that the kept-until day is genuinely
-  dropped rather than kept as a tombstone.
+  dropped rather than kept as a tombstone. Ran red on the `fatalError` stub (`DayByDayKit/Roster.swift:40:
+  Fatal error: not implemented`), then green after `retire`'s happy path and `add`'s take-up-again
+  branch were implemented.
 - [ ] 2.2 `a commitment taken up again keeps the place it was taken on in` — "Water plants", "Gym",
   "Journaling"; stop "Gym", offer it again, and it reads back in the middle. Fails an implementation
   that removes and re-appends, which is the obvious way to write the take-up.

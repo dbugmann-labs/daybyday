@@ -215,3 +215,24 @@ func twoNamesDifferingOnlyByASpaceAtTheEndAreDifferentCommitmentsAndBothAreHeld(
     #expect(added)
     #expect(roster.commitments.map(\.name) == ["Gym", "Gym "])
 }
+
+@Test("offering a commitment the roster has stopped keeping takes it up again")
+func offeringACommitmentTheRosterHasStoppedKeepingTakesItUpAgain() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let takenUp = roster.add(gymAgain)
+
+    #expect(takenUp)
+    #expect(roster.commitments == [gymAgain])
+
+    var neverStopped = Roster()
+    _ = neverStopped.add(gym)
+    #expect(roster == neverStopped)
+}
