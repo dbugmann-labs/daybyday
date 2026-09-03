@@ -348,6 +348,94 @@ than said in their own words.*
   that Feature's requirements rather than a want of its own. It stays separate while the day
   screen row is still a candidate for them.
 
+### B-022 — tick a commitment on the phone, and find it still ticked
+*Captured 2026-09-03, from the sweep. The wording is the sweep's, accepted by the owner rather
+than said in their own words.*
+
+> "Tick something on the phone and find it still ticked next time you open it."
+
+- **Trigger** — five times a day, phone in hand. It is the product's whole daily interaction.
+- **Touches** — `record` (#53) and the **app shell**. Every piece exists behind the seam: #55
+  forms a tick, #56 keeps one at a place, #71 has a row offer one. `src/DayByDay` draws
+  `List(dayView.rows) { Text(row.name) }` — no tap, no store, and it does not even draw
+  `row.isKept`. Nothing joins them, and nothing wants them joined.
+- **Principle** — tested against *entered where you stand*: passes, and is the only actual
+  instance of it. The principle says every daily entry is made on the day screen in the row;
+  today no entry can be made at all. It passes *five percent of seven things* on the same
+  reading — it makes the record possible rather than deepening one.
+- **Open** — which half of this owes a Story and which is shell work. `CONTEXT.md` § *App shell*
+  names "a place a store is opened at" as failing the shell's test by example, and
+  `docs/open-questions.md` § *Known gaps* already owes the choice of
+  `Library/Application Support/` to "the first Story that persists a tick from inside the app".
+  Drawing `isKept` is a formatting rule, which fails the same test.
+- **Open** — `RecordStore.init` can throw outside `RecordStoreError` (`docs/open-questions.md`),
+  and this is the want that first has to answer what the screen does when the store will not open.
+
+### B-023 — see which day the screen is showing
+*Captured 2026-09-03, from the sweep. The wording is the sweep's.*
+
+> "See which day the screen is showing."
+
+- **Trigger** — passive, on every visit; sharply the moment you have moved off today (B-024),
+  because then nothing on screen says where you are.
+- **Touches** — `schedule` (#6) and whatever draws a day view. Saying a date back is not a job any
+  capability does today.
+- **Principle** — tested against *an iPhone, in your hand*: passes. A screen that will not say
+  which day it is answering for is unreadable at a glance, which is the only way it is ever read.
+- **A known gap already points at this.** `docs/open-questions.md` § *Known gaps*, fifth face of
+  the payload read-back gap, recorded from #72 on 2026-09-03: `CalendarDate`'s `year`, `month` and
+  `day` are internal and it is not `Comparable`, so the shell can move between days and cannot
+  name one. The widening is a delta against `openspec/specs/schedule/spec.md` rather than
+  `day-screen`, so this want crosses two capabilities however it is sliced.
+- **Open** — what form. "Wednesday 3 September" is the date; "Today" and "Yesterday" are relative
+  and need *today*, which `CONTEXT.md` says is always handed in and which the screen already
+  holds. The second is friendlier and is one more thing that can be wrong.
+- **Open** — may fold into B-024: if the date only ever appears because you can move off today,
+  it is that Feature's requirement rather than a want of its own.
+
+### B-024 — move between days on the phone
+*Captured 2026-09-03, from the sweep. The wording is the sweep's.*
+
+> "Move between days on the phone."
+
+- **Trigger** — evening or the morning after, to fill in a day that was missed at the time. It is
+  the gap-a-few-days-old failure the product exists to remove.
+- **Touches** — `day-screen` (#27) and the app shell. `DayView.previousDay(of:in:)` and
+  `.nextDay(of:in:)` shipped with #72 and are reachable from nothing; the shell draws `today()`
+  and only `today()`.
+- **Principle** — tested against *five percent of seven things*: passes. It is not depth on the
+  day screen — without it exactly one day of the record is reachable, and the other side of the
+  seam already answers for every date the system supports.
+- **Open** — what the move is on a phone: a swipe, a pair of arrows, a calendar. B-023 is a
+  precondition either way.
+- **Open** — the ends. `previousDay` gives nothing before 1583 and `nextDay` nothing after 9999,
+  and what a screen does with nothing is a refusal, which `CONTEXT.md` § *App shell* says owes a
+  Story rather than shell work.
+- **Open** — a row after today is shown and refuses the tick (`CONTEXT.md` § *Row*). Nothing has
+  said how a row refuses visibly, and this is the want that first makes a person meet one.
+
+### B-025 — know where I stand on a weekly quota, inside its week
+*Captured 2026-09-03, from the sweep. The wording is the sweep's.*
+
+> "Know where you stand on a weekly quota inside its week — reading, two done, one to go."
+
+- **Trigger** — mid-week, looking at the reading row and deciding whether tonight is one of the
+  three.
+- **Touches** — `schedule` (#6) and `day-screen` (#27). ADR-1015 makes a quota commitment due
+  every day of its week, so its row appears all seven days saying exactly the same thing; the day
+  view cannot see the week and says so by design (`CONTEXT.md` § *Day view*).
+- **Principle** — tested against *nothing congratulates you*: **strains harder than any want yet
+  captured, and is captured anyway.** "Two of three" is a count, and a count over a run of days is
+  a streak with the arithmetic hidden. It survives only if what is shown is what the rhythm still
+  *asks* — one more night this week — and never what has been achieved. If that distinction cannot
+  be held in the design, this is a drop, and the next pass should say so rather than build it.
+- **Open** — blocked on *Week turnover* (`docs/open-questions.md` § *Open product questions*):
+  where a week begins and what an unmet third night becomes on Sunday night. Nothing about
+  standing in a week means anything until that is answered, and this want is the thing that
+  forces it.
+- **Open** — what a met quota's row does: disappear, go quiet, or stay unchanged. `CONTEXT.md`
+  § *Day view* records that hiding a met one is "a later Story's" and leaves it there.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
