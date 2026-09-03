@@ -30,12 +30,22 @@ flowchart TD
   I91["Story 91 — add-day-screen"]
   I92["Story 92 — add-screen-date"]
   I93["Story 93 — add-screen-navigation"]
+  I100["Story 100 — add-refused-tick-notice"]
+  I101["Story 101 — add-commitment-roster"]
+  I102["Story 102 — add-roster-retirement"]
+  I103["Story 103 — add-roster-store"]
+  I104["Story 104 — add-commitments-screen"]
 
   I1 --> I26
   I1 --> I27
   I1 --> I53
   I1 --> I6
+  I26 --> I101
+  I26 --> I102
+  I26 --> I103
+  I26 --> I104
   I26 --> I42
+  I27 --> I100
   I27 --> I70
   I27 --> I71
   I27 --> I72
@@ -55,7 +65,7 @@ flowchart TD
   class I9 story,done
   class I10 story,done
   class I11 story,done
-  class I26 feature,settled
+  class I26 feature
   class I27 feature
   class I42 story,done
   class I53 feature,done
@@ -67,3 +77,8 @@ flowchart TD
   class I91 story,done
   class I92 story
   class I93 story
+  class I100 story
+  class I101 story,done
+  class I102 story
+  class I103 story
+  class I104 story
