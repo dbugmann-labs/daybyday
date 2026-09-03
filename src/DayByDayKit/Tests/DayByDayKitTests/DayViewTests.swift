@@ -626,3 +626,20 @@ func aRowForACommitmentOnAWeeklyQuotaOffersATickEvenWhereItsQuotaIsAlreadyMet() 
     #expect(!dayView.rows[0].isKept)
     #expect(dayView.rows[0].tick(asOf: sunday) != nil)
 }
+
+@Test("two rows for the same commitment and date saying the same thing are the same row")
+func twoRowsForTheSameCommitmentAndDateSayingTheSameThingAreTheSameRow() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+
+    let first = DayView(of: [gym], on: monday, in: history)
+    let second = DayView(of: [gym], on: monday, in: history)
+
+    #expect(first.rows[0].isKept)
+    #expect(second.rows[0].isKept)
+    #expect(first.rows[0] == second.rows[0])
+}

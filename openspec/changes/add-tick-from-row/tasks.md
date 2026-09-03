@@ -81,8 +81,9 @@ prediction here is not evidence.
   ticks in the seven days up to Sunday 6 September 2026 and the row still offers a fourth.
   Deliberately does not name a week — where a week begins is undecided (`CONTEXT.md` § *Weekly
   quota*). Passed immediately.
-- [ ] 2.12 `two rows for the same commitment and date saying the same thing are the same row` —
-  expected to pin synthesised `Equatable` rather than drive anything.
+- [x] 2.12 `two rows for the same commitment and date saying the same thing are the same row` —
+  expected to pin synthesised `Equatable` rather than drive anything. Passed immediately, as
+  predicted.
 - [ ] 2.13 `two rows for the same commitment on different dates are different rows` — the scenario
   that justifies storing the date on the row. Under #70's `Row` these two were equal; this is the
   one observable equality change in the delta.
