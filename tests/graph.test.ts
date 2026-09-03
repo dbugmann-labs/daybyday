@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { renderGraph, type GraphIssue } from '../scripts/generate-graph.ts'
+import { assertTypesVisible, renderGraph, type GraphIssue } from '../scripts/generate-graph.ts'
 
-// `docs/graph.mmd` is regenerated at Stage 9 of every Story and committed. Two properties make
-// that safe to do repeatedly: the output is deterministic, so an unchanged tracker produces an
-// empty diff, and a hostile issue title cannot break the diagram for every other issue. Both
-// are easy to lose in a later edit, so they are pinned here rather than left to review.
+// `docs/graph.mmd` is regenerated and committed unattended, on every issue event. Two
+// properties make that safe to do repeatedly: the output is deterministic, so an unchanged
+// tracker produces an empty diff and the workflow commits nothing, and a hostile issue title
+// cannot break the diagram for every other issue. Both are easy to lose in a later edit, so
+// they are pinned here rather than left to review.
 
 function issue(over: Partial<GraphIssue> & Pick<GraphIssue, 'number'>): GraphIssue {
   return { title: `issue ${over.number}`, state: 'OPEN', type: 'Task', parent: null, ...over }
@@ -97,5 +98,34 @@ describe('renderGraph', () => {
 
   it('carries no timestamp, so regeneration of an unchanged tracker is an empty diff', () => {
     expect(renderGraph(TREE)).not.toMatch(/\d{4}-\d{2}-\d{2}|\d{2}:\d{2}/)
+  })
+})
+
+// Since ADR-1024 the generator runs unattended in CI and commits its own output, so the one
+// failure that must never be silent is a token that cannot read organisation issue types: every
+// node filters out, and an empty graph would be written over a full tracker with nobody reading
+// the output line.
+describe('assertTypesVisible', () => {
+  it('throws when the repository has issues and not one of them is typed', () => {
+    const untyped = [issue({ number: 1, type: null }), issue({ number: 2, type: null })]
+    expect(() => assertTypesVisible('owner/repo', untyped)).toThrowError(/cannot read organisation issue types/)
+  })
+
+  it('names the repository and the count, so a red run says what to look at', () => {
+    expect(() => assertTypesVisible('owner/repo', [issue({ number: 1, type: null })])).toThrowError(
+      /owner\/repo has 1 issue\(s\)/,
+    )
+  })
+
+  // One typed issue is enough to prove the field is readable. Untyped issues are ordinary —
+  // a bug report outside the pipeline is exactly that — so they must not trip this.
+  it('passes when at least one issue is typed, however many are not', () => {
+    const mixed = [issue({ number: 1, type: null }), issue({ number: 2, type: 'Task' })]
+    expect(() => assertTypesVisible('owner/repo', mixed)).not.toThrow()
+  })
+
+  // A genuinely empty tracker is not a broken token, and a new repository must not be a red run.
+  it('passes on a repository with no issues at all', () => {
+    expect(() => assertTypesVisible('owner/repo', [])).not.toThrow()
   })
 })

@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-02
 - Deciders: Diego Bugmann
+- Amended: 2026-09-03 — `janitor` no longer hands back whether the graph changed, because it
+  no longer refreshes it (ADR-1024). The two shapes, the step report and the rest of each
+  worker's hand-back list are unchanged.
 - Amended: 2026-09-03 — the five-part block asks first and details last, *What is in front of
   you* becomes `Detail` under a ten-line budget, and G7's findings are its one exemption. The two
   shapes, the step report, the labels and the reply vocabulary are unchanged.
@@ -89,9 +92,9 @@ before every spawn, after every return, and as the form of a rule-5 stop.
 The workers are told what to hand back so that the report can be built from their return without
 the conductor reading their work: `spec-author` the PR URL, the validate exit, the scenario count
 and the decisions the delta turns on; `implementer` the PR, the last commit, the two exit codes,
-ticked scenarios and rebase state; `janitor` the archive commit, the merge, the parents settled
-and whether the graph changed. This is ADR-1002's *the conductor holds no work context* made
-operational: the conductor can only relay what the agent named.
+ticked scenarios and rebase state; `janitor` the archive commit, the merge and the parents
+settled. This is ADR-1002's *the conductor holds no work context* made operational: the
+conductor can only relay what the agent named.
 
 **The five-part block asks, and the question is its first part.** The parts, in order: the
 question; *if you take the recommendation* against *if you don't*; the recommendation; the exact

@@ -246,7 +246,7 @@ pnpm run verify      # lint + typecheck + test — must pass before any PR
 pnpm run checks      # the merge-time checks; advisory locally, binding in CI
 pnpm run check:g4    # is this Story approved? run it before writing any code
 pnpm run test:watch  # TDD loop
-pnpm run graph       # regenerate docs/graph.mmd from GitHub; Stage 9, never checked by CI
+pnpm run graph       # regenerate docs/graph.mmd — CI already does this on every issue event
 openspec validate <change-id> --strict
 openspec validate --all --strict --no-interactive
 openspec validate --archived        # every archived tasks.md box ticked

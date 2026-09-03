@@ -29,6 +29,12 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
+    # `docs/graph.mmd` is pushed straight to main by the graph workflow. That
+    # push goes over a deploy key rather than GITHUB_TOKEN, and a deploy-key
+    # push does trigger workflows — so without this the generated graph would
+    # buy a full run, macOS Swift job included, every time an issue closed.
+    # A commit touching only that file has nothing below to verify.
+    paths-ignore: ['docs/graph.mmd']
 
 permissions:
   contents: read

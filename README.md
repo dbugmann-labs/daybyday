@@ -68,7 +68,7 @@ pnpm run verify      # lint + typecheck + test — must pass before any PR
 | `pnpm run checks` | the four bespoke merge-time checks; advisory locally, binding in CI |
 | `pnpm run check:g4` | is this Story approved? run it before writing any code |
 | `pnpm run test:watch` | the TDD loop |
-| `pnpm run graph` | regenerate `docs/graph.mmd` from the tracker |
+| `pnpm run graph` | regenerate `docs/graph.mmd` from the tracker — CI already does this for you |
 | `openspec validate --all --strict --no-interactive` | every spec and change is well-formed |
 
 `pnpm run checks` is **staged**: mid-Story it reports rather than fails, because a check that
