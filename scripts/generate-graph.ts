@@ -11,9 +11,10 @@
  * file. One GraphQL query returns both, excludes pull requests, and costs a single request.
  *
  * **Deliberately not a CI check.** Issue state changes without any commit, so a staleness
- * check would redden `main` whenever somebody opened an issue. The file is a snapshot, taken
- * on demand at Stage 9. Its output is deterministic and carries no timestamp, so regenerating
- * an unchanged tracker produces an empty diff.
+ * check would redden `main` whenever somebody opened an issue. `.github/workflows/graph.yml`
+ * runs this on every `issues` activity instead and pushes the result straight to `main`, so
+ * nobody has to remember to. Its output is deterministic and carries no timestamp, which is
+ * what lets that workflow decide whether to commit by asking git for an empty diff.
  */
 import { execFileSync } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
@@ -52,6 +53,30 @@ query($owner: String!, $name: String!) {
   }
 }`
 
+/** True for an issue this graph draws: one carrying an Epic, Feature or Task type. */
+export function isPipelineIssue(issue: GraphIssue): boolean {
+  return issue.type !== null && LEVELS.has(issue.type)
+}
+
+/**
+ * Issue types are an organisation-level feature, so a token able to list issues cannot
+ * necessarily read the one field this graph is built out of. Without them every node is
+ * filtered out and the generator would cheerfully overwrite a full tracker with "No Epic,
+ * Feature or Story issues yet". Issues present and not one of them typed is the signature of
+ * that, and it is a stop rather than an empty graph (AGENTS.md rule 5).
+ *
+ * This matters more since ADR-1024: the generator runs unattended in CI, where nobody reads
+ * the output line and an empty graph would simply be committed.
+ */
+export function assertTypesVisible(repo: string, issues: GraphIssue[]): void {
+  if (issues.length === 0 || issues.some(isPipelineIssue)) return
+  throw new Error(
+    `${repo} has ${issues.length} issue(s) and not one carries an Epic, Feature or Task type. ` +
+      'That normally means the token cannot read organisation issue types rather than that the ' +
+      'tracker is empty. Refusing to overwrite docs/graph.mmd with an empty graph.',
+  )
+}
+
 /**
  * Mermaid reads `#` as the start of an entity code and `"` as the end of a label, so both have
  * to be escaped or a single issue title breaks the whole diagram.
@@ -75,9 +100,7 @@ export function renderGraph(issues: GraphIssue[]): string {
     '',
   ]
 
-  const nodes = issues
-    .filter((i) => i.type !== null && LEVELS.has(i.type))
-    .sort((a, b) => a.number - b.number)
+  const nodes = issues.filter(isPipelineIssue).sort((a, b) => a.number - b.number)
 
   if (nodes.length === 0) {
     return [...header, 'flowchart TD', '  none["No Epic, Feature or Story issues yet"]', ''].join('\n')
@@ -171,13 +194,16 @@ export function fetchIssues(repo: string): GraphIssue[] {
     )
   }
 
-  return nodes.map((n) => ({
+  const issues = nodes.map((n) => ({
     number: n.number,
     title: n.title,
     state: n.state,
     type: n.issueType?.name ?? null,
     parent: n.parent?.number ?? null,
   }))
+
+  assertTypesVisible(repo, issues)
+  return issues
 }
 
 if (import.meta.filename === process.argv[1]) {
@@ -185,6 +211,6 @@ if (import.meta.filename === process.argv[1]) {
   const issues = fetchIssues(repo)
   const out = new URL('../docs/graph.mmd', import.meta.url)
   writeFileSync(out, renderGraph(issues), 'utf8')
-  const counted = issues.filter((i) => i.type !== null && LEVELS.has(i.type)).length
+  const counted = issues.filter(isPipelineIssue).length
   console.log(`✓ docs/graph.mmd — ${counted} pipeline issue(s) from ${repo}`)
 }

@@ -1,0 +1,96 @@
+# Keeps `docs/graph.mmd` current without a commit or a PR of its own.
+#
+# The graph is a projection of GitHub issue *state*, so the trigger is issue
+# state — not a merge. A merge-triggered run would be wrong by construction:
+# squashing a Story PR closes the Story, but the janitor closes the Feature and
+# then the Epic afterwards, so a graph taken at merge time misses both. Firing
+# on every `issues` activity means the file converges instead: once on the
+# merge, again on each parent close.
+#
+# No `types:` filter, deliberately. Sub-issue edge changes are the one input to
+# this graph whose activity type is not documented, and an unfiltered `issues`
+# trigger cannot miss one that gets added later. Most runs therefore change
+# nothing and exit without committing, which costs about twenty seconds.
+# `schedule` is the net under all of it, and `workflow_dispatch` is the manual
+# handle.
+#
+# **Why a deploy key and not GITHUB_TOKEN.** The `main` ruleset requires a pull
+# request and holds a single bypass actor, of type DeployKey. GitHub Actions
+# cannot be a bypass actor on this repository at all — the API rejects it with
+# "must be part of the ruleset source or owner organization", and the org has no
+# app installations — so GITHUB_TOKEN cannot push here however it is permissioned.
+# The deploy key is narrower than the alternative anyway: it reaches this one
+# repository, so only this workflow can write to `main`, not every workflow that
+# ever lands in this directory. ADR 1024.
+#
+# Note the consequence: unlike a GITHUB_TOKEN push, a deploy-key push *does*
+# trigger workflows. `ci.yml` ignores `docs/graph.mmd` on push for that reason.
+name: graph
+
+on:
+  issues:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * *'
+
+# Nothing here writes through GITHUB_TOKEN; the push goes over the deploy key.
+# `issues: read` is what the generator's GraphQL query needs.
+permissions:
+  contents: read
+  issues: read
+
+# The janitor closes a Story, its Feature and its Epic in quick succession. All
+# three runs would render the same file, so the last one is the only one worth
+# finishing — and it sees the final state.
+concurrency:
+  group: graph
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    name: refresh docs/graph.mmd
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          ssh-key: ${{ secrets.GRAPH_DEPLOY_KEY }}
+
+      # The generator imports node builtins and scripts/lib/ci.ts, nothing else,
+      # and runs through Node's native type stripping. `gh` is preinstalled on
+      # the runner. So there is no dependency install here on purpose.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: regenerate and push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          for attempt in 1 2 3; do
+            git fetch --quiet origin main
+            git reset --quiet --hard origin/main
+
+            node scripts/generate-graph.ts
+
+            if git diff --quiet -- docs/graph.mmd; then
+              echo "The tracker has not moved since the last run — nothing to commit."
+              exit 0
+            fi
+
+            git add docs/graph.mmd
+            git -c user.name='github-actions[bot]' \
+                -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+                commit --quiet -m 'chore: regenerate the issue graph'
+
+            if git push --quiet origin HEAD:main; then
+              echo "Pushed a refreshed graph on attempt ${attempt}."
+              exit 0
+            fi
+
+            echo "Push rejected — main moved underneath this run. Retrying from it."
+          done
+
+          echo "::error::Three pushes were rejected in a row. Something is holding main."
+          exit 1
