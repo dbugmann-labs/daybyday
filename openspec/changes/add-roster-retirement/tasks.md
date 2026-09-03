@@ -130,7 +130,7 @@ here is not evidence.
   shell is not touched by this Story: `ContentView.swift` still hands `DayScreen` its
   `dayOneCommitments` array, and wiring a roster into a screen is #104's and a second capability's
   delta (rule 5).
-- [ ] 3.4 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). This
+- [x] 3.4 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). This
   box records the reviewer's report; it is not an instruction to the implementer to review its own
   work. `AGENTS.md`'s routing table gives G7 to a separate agent that may write nothing, and
   `docs/open-questions.md` § *Known gaps* records that the template's wording has already been read
