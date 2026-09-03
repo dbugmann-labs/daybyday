@@ -67,7 +67,7 @@ DayByDay's own records start here.
 | ADR | Decision |
 |---|---|
 | [1001](1001-swift-and-swiftui.md) | The app is built in Swift and SwiftUI, native to iPhone |
-| [1002](1002-the-conductor-is-the-main-session.md) | The conductor is the main session; `pnpm run status` is a projection |
+| [1002](1002-the-conductor-is-the-main-session.md) | The conductor is the main session; `pnpm run status` is a projection; it holds no work context but the grill's question tree |
 | [1003](1003-the-pr-is-the-gate-surface.md) | The PR opens at Stage 4 as a draft; both human gates are read through it |
 | [1004](1004-the-rule-engine-speaks-calendar-dates.md) | The rule engine speaks calendar dates, not instants |
 | [1005](1005-the-grill-is-a-step-inside-propose.md) | The grill is a step inside Stage 4, run by the conductor; the stage numbers keep the gap at 3 |

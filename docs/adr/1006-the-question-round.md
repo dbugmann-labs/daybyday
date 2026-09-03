@@ -131,6 +131,17 @@ blocks on either the grill or a residual round mechanically.
   somewhere to live, rule 8 forbids a checkout, and a grill that runs before the worktree exists
   has nowhere to put its answers. Stage 4's first keystroke is therefore `git worktree add`, and
   `pnpm run status` prints it.
+- **The change folder is created by the grill, not by `/opsx:propose`.** `openspec new change`
+  exits 1 against a directory that already exists, so the moment the grill started leaving
+  `grill.md` behind, `spec-author`'s first command would have failed on every Story. The grill
+  runs `openspec new change <change-id>` at its close and `spec-author` enters `/opsx:propose`
+  at the artifact build order instead. Scaffolding with the CLI rather than `mkdir` is what
+  keeps `.openspec.yaml`, which records the schema and is where `skip_specs` would go. Found by
+  audit on 2026-09-04, after this decision had been written down but before it was ever run.
+- **`grill.md` is inside what G4 signs.** The digest covers every file in the change folder but
+  `tasks.md` (ADR-1007), and nothing there is file-specific, so this fell out rather than being
+  designed. It is the right answer: the human approves the answers the delta was written on, and
+  rewriting the grill after approval costs a second one, exactly as rewriting the delta does.
 - **The answers survive a session boundary, because they are a file.** That is why they travel in
   `grill.md` rather than in the spawn prompt: `atlas.md`'s "hand it the issue number and nothing
   else" survives unchanged, `AGENTS.md` § *Context discipline* is honoured on both sides, and a
