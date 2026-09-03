@@ -190,7 +190,18 @@ what has no judgement in it, and change nothing in `DayByDayKit` from here.
 - [x] 4.2 `pnpm exec openspec validate add-day-screen --strict` exits 0 and `pnpm run checks`
   reports scenario coverage as 28 of 28. Confirmed: `Change 'add-day-screen' is valid`; `pnpm run
   checks` reports "all 28 scenario(s) have a matching test".
-- [ ] 4.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
+- [x] 4.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). This
+  session holds no subagent-spawning tool, so the two axes were worked directly against
+  `git diff origin/main...HEAD` rather than as parallel sub-agents — noted here rather than
+  silently claimed as the skill's own process. **Standards**: one judgement call — `init` and
+  `shown(asOf:)` repeat the same three-line "apply what `open(at:)` returned" shape (Duplicated
+  Code); small enough, and `open(at:)` itself already carries the one piece of logic worth
+  factoring, so left as is. No hard violations; no other documented standard exists in this repo
+  beyond the smell baseline. **Spec**: all five `day-screen` requirements and all 28 scenarios are
+  covered (confirmed by `swift test` and `check:scenarios` above); no requirement is partial, none
+  is implemented differently from `design.md` § *The seam*, and no behaviour outside the delta was
+  added — the shell's two strings are `design.md`'s own wording verbatim, not a shell judgement.
+  Nothing unresolved on either axis.
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7, and
 `openspec validate --archived` requires every box above to be ticked before it.
