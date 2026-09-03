@@ -5,7 +5,7 @@ import { parseBacklog } from '../scripts/lib/backlog.ts'
 
 // The backlog is a projection for `pnpm run status`: what is waiting, when it was last
 // groomed, and what has been captured since. It counts no want as overdue — a want waiting to
-// be groomed is a queue entry, not a debt (ADR-1018).
+// be groomed is a queue entry, not a debt (ADR-1010).
 
 function backlog(wants: string, passes = '', decided = ''): string {
   return `# Backlog\n\n## Wants\n\n${wants}\n\n## Decided\n\n${decided}\n\n## Grooming passes\n\n${passes}\n`

@@ -18,7 +18,7 @@ another entry. Whichever it is, the entry is deleted from *Wants* and one line l
 *Decided* below. **Nothing expires.** A want sits here until a pass takes it, and sitting costs
 it nothing: a pass carries one cluster forward, so waiting is the normal state and not a debt.
 Nothing counts how long an entry has been here and `pnpm run status` never asks you to answer
-for one. ADR-1018.
+for one. ADR-1010.
 
 **Each entry carries a *Principle* line** naming which of `CONTEXT.md` § *Product principles* the
 want was tested against and what the test returned — one principle, not all four. A want that
@@ -427,7 +427,7 @@ found nothing.
     - **D**, restore: B-009, a Story against #53 once the first record Story has chosen the
       store.
     - **E**, the commitment's lifecycle: B-013, B-014, B-015 as Stories reopening #26 — define
-      first, then change, then retire; B-013 may be a kept-until day mirroring ADR-1011.
+      first, then change, then retire; B-013 may be a kept-until day mirroring ADR-1013.
 
 - 2026-09-02 — pass over 18 wants, the second, on the same day as the first.
   - **Sweep** — three silences, all captured before clustering: B-019, ticking from the row,
@@ -440,7 +440,7 @@ found nothing.
     dated strictly after a capture and both passes are 2026-09-02, so the forced choice first
     fires on a later date. *(Left as the pass wrote it. The claim was wrong — B-001..B-009 were
     captured 2026-08-28 and both passes counted against them — and the counter it describes was
-    withdrawn on 2026-09-03, ADR-1018.)*
+    withdrawn on 2026-09-03, ADR-1010.)*
   - **Taken forward** — cluster A, the day screen you can use: B-019, B-006, B-016, grilled and
     taken to `FEAT: day-screen` (#27). #27 is at G2 rather than G1, so no Feature was minted and
     the three wants left *Wants* the same day, once its Stories carried numbers: B-006 → #70,

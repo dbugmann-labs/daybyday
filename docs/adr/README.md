@@ -2,23 +2,27 @@
 
 One file per decision, in [MADR](https://adr.github.io/madr/)-style format.
 
-**ADRs are immutable once accepted.** A reversal is a new ADR that supersedes the old one;
-the superseded file stays where it is. Never edit an accepted ADR to change its decision, its
-rationale, or the alternatives it weighed. Those three are the record, and the whole value of
-the register is that a reader can trust they still say what they said on the day.
+**An accepted ADR may be edited.** When a decision changes, change the file that holds it rather
+than writing a new record that supersedes part of the old one. Git history is the audit trail:
+this repository is public, every ADR change arrives as a commit on a pull request, and
+`git log -p docs/adr/<file>.md` answers "what did this say before, and why did it change" better
+than a chain of files each holding a fragment of the answer.
 
-**Incidental detail may be corrected in the open.** A command name, a version, a path or a
-cross-reference that was simply wrong is not the decision — and leaving it wrong turns the
-register from a record into a trap, because these are the files an agent is told to read to
-find out how things work. Correct it in place and make the correction visible:
+Three things go with the edit.
 
-1. Fix the text.
-2. Add a `## Corrections` section at the end of the file, if it has none.
-3. Add one dated line saying what it said before, and why this is not a change of mind.
+1. **Say what changed and why in the PR.** That is where it is read, attached to the diff that
+   carries it.
+2. **Stamp it in the file.** Add a line to the header block, under `Deciders`, newest first:
+   `- Amended: YYYY-MM-DD — <one line>`. A reader sees the file has moved without opening git,
+   and knows to go looking if they care why.
+3. **Leave one coherent decision behind.** Fold the new shape in, so the file reads as the
+   decision as it stands today rather than as a decision with a rebuttal stapled to it. Keep
+   reasoning from the old shape only where it explains why the current one is what it is.
 
-**The test is step 3.** If you cannot write that line without describing a change of mind,
-this is not a correction — supersede the ADR instead. Silent edits are the thing this policy
-exists to prevent; a visible erratum is not one.
+**A trivial fix needs no stamp** — a typo, a dead link, a path that moved. The stamp is for a
+change that someone who has read the decision would want to be told about. `## Corrections` was
+the older name for the same idea; the five ADRs carrying one keep it as the history it is, and
+nothing new goes there.
 
 An ADR should not be the place a command name lives in the first place. It fixes the *shape*
 of a decision; the operative commands belong in `AGENTS.md` or under `docs/`, where they are
@@ -32,6 +36,14 @@ started from, and may merge process fixes down from it. Numbering both from the 
 would sooner or later have each of them writing a different `0015`. So `0001`–`0999` are
 reserved for Atlas, and **DayByDay's own ADRs start at `1001`**. The fourteen records below
 are Atlas ADRs this project inherits; they are real decisions and they still hold.
+
+**A number is never reused, and a gap is normal.** Deleting a file frees nothing. Over a hundred
+`ADR-NNNN` cross-references resolve by number — in `AGENTS.md`, under `docs/`, in `.claude/`, and
+in archived change folders that may not be edited at all — so a reused number silently re-points
+every one of them at a different decision. A new ADR takes the lowest number that no file and no
+open branch has ever used, which is why claiming one means checking the branches and not just
+`main`. `1011`, `1014`, `1016` and `1018` are gaps, left by decisions that were folded into the
+records they had partly superseded; that is what a gap looks like, and it is fine.
 
 | ADR | Decision |
 |---|---|
@@ -63,13 +75,10 @@ DayByDay's own records start here.
 | [1007](1007-g4-signs-a-digest.md) | The G4 marker carries a digest of what was approved; the specs are not merged first |
 | [1008](1008-the-single-change-rule-is-convention.md) | CI check 3 is dropped; one change per PR is convention, and the check numbers keep the gap |
 | [1009](1009-one-grill-skill-wraps-the-flagged-one.md) | One `grill` skill owned by this repo wraps `grill-with-docs`, which no agent can invoke |
-| [1010](1010-a-groomed-backlog-replaces-the-parking-lot.md) | A groomed backlog replaces the parking lot; `/atlas idea` captures, `/atlas backlog` promotes |
-| [1011](1011-fable-is-the-fourth-model-tier.md) | Fable is a fourth model tier, taken by `spec-author` alone; supersedes ADR-0006's routing rule |
-| [1012](1012-the-conductor-prints-two-shapes.md) | The conductor prints two shapes: the five-part stop and the three-line step report; extends ADR-1002 |
+| [1010](1010-a-groomed-backlog-replaces-the-parking-lot.md) | A groomed backlog replaces the parking lot; `/atlas idea` captures, `/atlas backlog` promotes, and a want waits without going bad |
+| [1012](1012-the-conductor-prints-two-shapes.md) | The conductor prints two shapes: the five-part stop, which asks first and details last, and the three-line step report; extends ADR-1002 |
 | [1013](1013-a-commitment-is-kept-from-a-day.md) | A commitment is kept from a day, and is not due before it |
-| [1014](1014-the-question-comes-first.md) | The gate stop asks first and details last, with `Detail` budgeted; supersedes ADR-1012's ordering |
 | [1015](1015-a-weekly-quota-is-due-every-day.md) | A weekly quota is due every day; whether it has been met is not a schedule question |
-| [1016](1016-the-fourth-model-tier-is-withdrawn.md) | The fourth model tier is withdrawn on price; `spec-author` returns to Opus; supersedes ADR-1011 |
 | [1017](1017-records-are-kept-in-one-file.md) | Records are kept in one JSON file, written whole on every change; SwiftData and GRDB declined, with the reversal trigger named |
-| [1018](1018-the-backlog-has-no-staleness-rule.md) | The backlog has no staleness rule; a want waits without going bad, and status never calls one overdue; supersedes ADR-1010's staleness rule |
 | [1019](1019-the-app-shell-runs-in-the-simulator.md) | The app shell is a chore rather than a Feature, runs in the iOS Simulator, and the target is called `DayByDay` |
+| [1020](1020-adrs-are-mutable.md) | An accepted ADR is edited in place and stamped; git history is the audit trail, and numbers are never reused |

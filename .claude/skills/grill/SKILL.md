@@ -60,8 +60,9 @@ Three things, none optional:
 2. **Every new domain term lands in `CONTEXT.md`**, one entry per thing. This is what
    `domain-modeling` is for, and it is why `CONTEXT.md` names this skill as its maintainer.
 3. **A decision that was hard, expensive to reverse, or surprising gets an ADR** under
-   `docs/adr/`, numbered from 1009 up. `docs/adr/README.md` carries the numbering and
-   immutability rules.
+   `docs/adr/`. `docs/adr/README.md` carries the numbering rule — DayByDay's own start at 1001,
+   numbers are never reused and gaps are normal — and the amendment rule: a decision that changes
+   is edited into the file that holds it, not superseded by a new one.
 
 ## Where you stop
 

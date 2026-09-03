@@ -1,7 +1,7 @@
 # 1017. Records are kept in one file, written whole on every change
 
-- Status: proposed — `add-record-store` (#56)'s question round settled on this answer on
-  2026-09-02, so this ADR is accepted by that Story's G4 rather than rewritten
+- Status: accepted — `add-record-store` (#56)'s question round settled on this answer on
+  2026-09-02; that Story's G4 signed it rather than rewriting it, and it merged as PR #64
 - Date: 2026-09-02
 - Deciders: Diego Bugmann
 

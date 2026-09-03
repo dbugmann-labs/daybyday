@@ -195,11 +195,12 @@ document because they are the same kind of thing: a rule the process states and 
   scenario count made the shortcut worth taking, and there will be more.
 - **~~ADRs had no way to correct a false statement.~~ Resolved 2026-08-24.** The rule
   forbade editing an accepted ADR except to add a `Superseded by` line, so `ADR-0002`'s two
-  wrong command names had no route out. `docs/adr/README.md` now separates the decision, its
-  rationale and its alternatives — still immutable — from incidental detail, which is
-  corrected in place and logged in a dated `## Corrections` section. The test is whether you
-  can write that log line without describing a change of mind; if you cannot, supersede
-  instead. An audit of the other thirteen ADRs found no further stale detail.
+  wrong command names had no route out. `docs/adr/README.md` was changed to separate the
+  decision, its rationale and its alternatives — still immutable at that point — from incidental
+  detail, which was corrected in place and logged in a dated `## Corrections` section. An audit
+  of the other thirteen ADRs found no further stale detail. *(The immutable half went too, on
+  2026-09-03: an accepted ADR is now edited in place and stamped, and git history is the audit
+  trail. ADR-1020.)*
 
 ## 8. Open
 

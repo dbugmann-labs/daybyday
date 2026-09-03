@@ -133,7 +133,7 @@ you do, in your own words, quoted rather than paraphrased — and nothing else.
 the same exit rule and it never ran, because no command opened the file: the rule was a sentence
 and the file was append-only in practice. ADR-1010 has the post-mortem. It also carried a
 staleness rule, which this repo inherited, tried and withdrew — a want waits without going bad,
-and nothing counts how long it has been there (ADR-1018).
+and nothing counts how long it has been there (ADR-1010).
 
 - **`/atlas idea <want>`** captures a want, or a braindump of several in one invocation — one
   dedup read across all of them, the split into entries reported back before it commits, and one
@@ -657,9 +657,10 @@ anyway.
 ## 11. ADR register
 
 The live register is **`docs/adr/README.md`**, which also carries the numbering rule (`0001`–
-`0999` reserved for Atlas, DayByDay's own start at `1001`) and the immutability rule: a reversal
-is a new ADR superseding the old one, while incidental detail that was simply wrong is corrected
-in place and logged in a dated `## Corrections` section.
+`0999` reserved for Atlas, DayByDay's own start at `1001`, numbers never reused and gaps normal)
+and the amendment rule: an accepted ADR is edited in place, the change is explained in the PR that
+carries it, and the file gains an `- Amended: YYYY-MM-DD — <one line>` stamp in its header. Git
+history is the audit trail. ADR-1020.
 
 ---
 
