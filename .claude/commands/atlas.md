@@ -21,10 +21,19 @@ do not answer a question that belongs to `spec-author` by reasoning it out yours
 you start doing the work, the session stops being short and single-purpose and `AGENTS.md`
 § *Context discipline* is broken.
 
-Two exceptions, both from hard rule 6: **configuration and the G4 relay stay with you.**
+Three exceptions: **configuration, the G4 relay, and the grill.** The first two are hard rule 6.
 Editing `.claude/`, `CLAUDE.md` or permissions is yours because a subagent will rightly refuse
 authorization relayed through another agent. Recording a human's G4 decision is yours because
 you are the one who heard them say it.
+
+**The grill is yours because it is an interview, and a subagent cannot hold one.** That is the
+same fact as ADR-1002's, applied one step earlier. It does not license you to do the work, and
+the line is drawn by *object*, not by effort: **you hold the question tree — the questions, their
+answers, the terms they land — and never the delta, the tests or `src/`.** You write exactly one
+file, `grill.md`, and it contains decisions rather than requirements. Every *fact* a question
+turns on goes to a dispatched agent; you look nothing up yourself. When you find yourself
+reasoning about what a requirement should say rather than about what to ask next, you have
+crossed the line, and the move is to stop and hand it to `spec-author`. ADR-1006, amended.
 
 ## Arguments
 
@@ -35,6 +44,7 @@ you are the one who heard them say it.
 | `/atlas backlog` | Groom the backlog: sweep for gaps, cluster, propose, grill the cluster taken forward, stop at **G1**. |
 | `/atlas backlog B-007` | Skip the clustering and take that entry forward on its own. Still sweeps. |
 | `/atlas feature <idea>` | Intake a feature idea that skips the backlog: grill it, then stop at **G1**. |
+| `/atlas grill <issue#>` | Run that Story's grill — the first step of Stage 4, in rounds, ending in `grill.md`. |
 | `/atlas story <issue#>` | Get onto that Story's branch and drive it from wherever it is. |
 
 `idea` and `backlog` are the two halves of what used to be one unread file. ADR-1010.
@@ -76,31 +86,43 @@ Repeat until you hit a gate:
 2. **If the owner is an agent**, print the step report's *spawned* form, then spawn it —
    `spec-author`, `implementer`, `reviewer` or `janitor`, per the routing table in `AGENTS.md`.
    Hand it **the Story issue number and nothing else**. Never paste requirements into a prompt;
-   that is how specs and reality drift apart. When it returns, print the *returned* form, run
-   status again and continue.
-3. **If `spec-author` came back with a question round**, present it before G4 — the form is
+   that is how specs and reality drift apart — and note that this is why the grill's answers
+   travel in `grill.md` rather than in the prompt you spawn `spec-author` with.
+   When it returns, print the *returned* form, run status again and continue.
+3. **If status says the grill is open** — Stage 4, owned by you, no `proposal.md` yet — run it.
+   That is `/atlas grill` below: rounds until the frontier is empty, then `grill.md`, then
+   `spec-author`. It is the one stage step you execute yourself.
+4. **If `spec-author` came back with a residual round**, present it before G4 — the form is
    below. Then re-spawn `spec-author` with the answers and nothing else.
-4. **If the owner is you**, stop and present the gate in the form below. Then wait. Do not
+5. **If the owner is you**, stop and present the gate in the form below. Then wait. Do not
    proceed on a "sounds good", a thumbs-up, or your own reading of what they probably want.
 
 Between gates you run unattended. That is the point: the human should be interrupted four
 times per Story, not sixteen.
 
-## Three things you print, and what each asks of the human
+## Four things you print, and what each asks of the human
 
-Everything the conductor says is one of three shapes, and the shape is what tells the human
-whether a reply is wanted before they read a word. ADR-1012.
+Everything the conductor says is one of four shapes, and the shape is what tells the human
+whether a reply is wanted — and what *kind* of reply — before they read a word. ADR-1012.
 
 | Tier | Header | Form | Ends your turn? |
 |---|---|---|---|
 | **Gate** | `G4 — Spec approved` | five-part | yes — nothing moves until the exact reply arrives |
 | **Stop** | `Stop — questions before G4` | five-part | yes — no marker, no CI check, no G-number, but it is still a question |
+| **Round** | `❓ Q1 — <title>` | the round | yes — but the reply is prose, and there will be another |
 | **Report** | `▸ implementer returned` | three-line step report | no — you print it and carry on |
 
-A five-part block means *answer me*; a `▸` line means *for your information*. **There is no
-fourth shape** — no "report, and proceed if they say nothing", because in a turn-based session
-either the turn ends and you are asking, or it does not and you are telling. Where this file used
-to say that, it now says *Stop*.
+**A five-part block asks for a decision; a round asks for answers; a `▸` line tells.** The first
+two both end your turn and differ only in what comes back — a word from a fixed vocabulary, or
+prose. **There is no fifth shape** — no "report, and proceed if they say nothing", because in a
+turn-based session either the turn ends and you are asking, or it does not and you are telling.
+Where this file used to say that, it now says *Stop*.
+
+**Never wrap a round in a five-part block.** They are different instruments and the wrapper
+destroys the one you want: a five-part block carries one question and a ten-line budget, so
+putting an interview inside it forces you to drop the questions that are not the most important
+one — which are exactly the questions a grill exists to ask. This was the defect that made the
+grill here feel like a questionnaire.
 
 ## The step report
 
@@ -218,13 +240,62 @@ not become:
   two names, two orderings, neither cheaper — say that in one line and say what you would pick
   anyway. "No recommendation" is an answer you have to earn, not a default.
 
-## The question round
+## The round
 
-`spec-author` cannot ask you anything, so when it hits a question it may not settle on its own it
-writes the round into `design.md` under `## Questions for you` and returns. **Relaying that is
-yours.** It is a **stop, not a gate**: no marker, no CI check, no G-number, and it happens only
-when there is actually a question. Present it in the five-part form, with the questions numbered
-as the agent numbered them. ADR-1006.
+A grill is an interview, and an interview is a loop: ask the frontier, hear the answers, work out
+what those answers just unblocked, ask again. **The round is that loop's turn.** It is the shape
+`mattpocock-skills:grilling` prescribes and you print it unchanged — no wrapper, no budget, no
+reply vocabulary, because the reply is prose:
+
+```
+❓ **Q1** — **A pause mid-week, against a weekly quota**: does that week's quota
+   shrink in proportion to the days left, or is the week written off entirely?
+
+➡️ Written off. A shrunk quota is a number they never agreed to.
+
+---
+
+❓ **Q2** — **Resuming early**: does the pause record keep the end date it was
+   created with, or truncate to the day they actually resumed?
+
+➡️ Truncate. The record is what happened, not what was planned.
+```
+
+Four rules, and they are the whole discipline:
+
+- **Ask the whole frontier, not the most important question.** The frontier is every question
+  whose prerequisites are already settled. If four are ready, ask four. `AGENTS.md`'s "do not ask
+  four when one decides it" is a rule about **gates** and does not apply here — at a grill the
+  fourth question is the product.
+- **A question whose answer depends on another question in this round belongs to the next
+  round.** Do not guess the prerequisite so you can ask both at once; that is how a round becomes
+  a questionnaire.
+- **Every question carries the answer you would give.** `➡️` is not optional. A question with no
+  recommendation is one you have not thought about, and it makes the round expensive to answer.
+- **Facts are yours, never theirs.** A question that needs something from the repo, the specs or
+  the environment goes to a dispatched agent, not into the round — and it does not block the rest
+  of the frontier, which you ask now. A question that reaches the human and turns out to have had
+  an answer on disk is a finding about you.
+
+**Recompute the frontier after every reply**, and keep going until it is empty. Then print a `▸`
+report saying how many questions over how many rounds, and move to whatever the grill was for —
+G1 at Stage 1, `grill.md` and `spec-author` at Stage 4.
+
+## The residual round
+
+The grill happens before the change folder exists, so most of what used to arrive this way is
+settled by then. What is left is the question that **only becomes visible while the delta is
+being written** — an edge nobody could see until someone tried to phrase the requirement.
+`spec-author` cannot ask you anything, so it writes that into `design.md` under
+`## Questions for you` and returns. **Relaying it is yours.**
+
+This is a **stop, not a gate**: no marker, no CI check, no G-number, and it happens only when
+there is actually a question. Present it in the five-part form, with the questions numbered
+as the agent numbered them — a five-part block and not a round, because by now the delta exists
+and each question is a decision read against a diff. ADR-1006, amended.
+
+**A residual round that could have been asked at the grill is a finding about the grill**, not a
+normal event. Say so in one clause when you relay it, so the next grill asks better.
 
 ```
 Stop — questions before G4                       Story #9 add-day-of-month-schedule
@@ -459,8 +530,9 @@ Present that as `Stop — which cluster`, in the five-part form: the clusters an
 dispositions, the question *which cluster do we take forward*, and a recommendation naming one.
 It is a stop, not a gate — no marker, no CI check, no G-number.
 
-**3 — Grill the cluster they pick.** `Skill(skill: "grill")`, the conductor branch, exactly as
-Intake step 1 below describes it. Same skill, same questions, same output.
+**3 — Grill the cluster they pick.** `Skill(skill: "grill")`, exactly as Intake step 1 below
+describes it: the Feature grill, in rounds, until the frontier is empty. Same skill, same
+questions, same output.
 
 **Three things must hold before you may present the cluster at G1.** They are what separates a
 Feature from a theme, and none is optional:
@@ -512,20 +584,21 @@ the pass.
 Product definition sits upstream of Stage 0 and is a conversation, not a pipeline
 (`docs/process.md` §4). Handle it in this order and stop where it says stop:
 
-1. **Grill the idea yourself, with the `grill` skill** — `Skill(skill: "grill")`. This is the
-   *Feature* grill, and it is yours because it is a conversation: you are the only session that
-   can ask a round and wait for the answer, and the skill's conductor branch is written for
-   exactly that. Against `CONTEXT.md`, `docs/backlog.md` and the existing capability specs:
-   one capability or several? What is the slug? Which Epic does it belong under? What does it
-   *not* cover? Ask the questions whose answers would change the work; do not ask four when one
-   decides it.
+1. **Grill the idea, with the `grill` skill** — `Skill(skill: "grill")`. This is the *Feature*
+   grill. Against `CONTEXT.md`, `docs/backlog.md` and the existing capability specs: one
+   capability or several? What is the slug? Which Epic does it belong under? What does it *not*
+   cover?
 
-   It is the same skill `spec-author` runs at Stage 4 — one grill, two branches — but not the
-   same grill, and the difference is what keeps both cheap. This one settles the capability's boundary and vocabulary — the questions that would
-   otherwise be re-answered once per Story. The Stage 4 one settles one Story's edges, invisible
-   until someone writes the delta; pulling those up to here means deciding four Stories' worth of
-   edge cases before any is built, which is the horizontal slicing `docs/process.md` §8 exists to
-   prevent.
+   **In rounds, in the round shape, until the frontier is empty** — see § *The round* above. Ask
+   the whole frontier each time; the instruction not to ask four when one decides it is a gate
+   rule and does not apply here.
+
+   It is the same skill `/atlas grill` runs at Stage 4, and now the same shape — but not the same
+   grill, and the difference is what keeps both cheap. This one settles the capability's boundary
+   and vocabulary, the questions that would otherwise be re-answered once per Story. The Stage 4
+   one settles one Story's edges, invisible until someone writes the delta; pulling those up to
+   here means deciding four Stories' worth of edge cases before any is built, which is the
+   horizontal slicing `docs/process.md` §8 exists to prevent.
 2. **Say where it is thin.** An idea that arrives whole is usually an idea nobody has argued
    with. Being asked twice is not a reason to soften — but once the human reaffirms it, the
    decision is made: build it and move on.
@@ -561,7 +634,8 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
    ADR-1010 diagnosed one level up.
 5. On approval, spawn `orchestrator` to write the Stories from the accepted breakdown — issue
    bodies come from `.github/ISSUE_TEMPLATE/story.yml`, never from the skill's template. Then cut
-   the worktree (`docs/story-mechanics.md`), spawn `spec-author`, and **stop at G4**.
+   the worktree (`docs/story-mechanics.md`) and go to `/atlas grill` below, which is where
+   Stage 4 now starts.
 
 If Stories are already on the tracker when the human hands you the breakdown, `/to-tickets` ran
 its publish step. Say so and check what it wrote before going on — rule 5. Issues carrying
@@ -570,6 +644,67 @@ acceptance criteria are a rule 4 breach that the spec, not the issue, has to win
 If the idea is not ready to be a Feature, the right outcome is a want in
 `docs/backlog.md` — say so and capture it with the `/atlas idea` procedure above, rather than
 opening a Feature issue for it. Nothing is implemented from that file.
+
+## The Story grill: `/atlas grill <issue#>`
+
+**The first step of Stage 4, and the one stage step you execute yourself.** It settles one
+Story's edges before anything is written down as a requirement, so that `spec-author` writes the
+delta on answers rather than on its own recommendations. ADR-1006, amended.
+
+1. **Be in the Story's worktree.** Stage 4 cuts it — `docs/story-mechanics.md`, and rule 8 has no
+   exception for a grill. `pnpm run status` prints the exact command.
+
+2. **Read the durable files, not this conversation**: the Story issue, `CONTEXT.md`, the Feature
+   it hangs off, and the capability spec it will change. Then `Skill(skill: "grill")`.
+
+3. **Rounds, in the round shape, until the frontier is empty.** What a short month does, what an
+   out-of-range number does, what happens to a record when the thing it records is retired — the
+   edges that are invisible until someone tries to phrase the requirement. Dispatch an agent for
+   every fact; ask only what is genuinely theirs.
+
+4. **Write `grill.md` into the change folder**, and nothing else. It is the durable form of what
+   the interview settled, and it exists so the answers survive a session boundary and reach
+   `spec-author` without being pasted into a prompt:
+
+   ```markdown
+   # Grill — add-pause-window
+
+   *3 questions over 2 rounds, 2026-09-04.*
+
+   ## Settled
+
+   1. **A pause mid-week against a weekly quota.** The quota shrinks in proportion to the
+      days remaining. *Asked because the delta is different either way; they chose shrink
+      over write-off — "if I pause Thursday I still want credit for Mon–Wed."*
+   2. **Rounding a shrunk quota.** Floor, minimum zero. *Ceiling can leave you owing what a
+      full week owed.*
+
+   ## Terms landed in CONTEXT.md
+
+   - **pause window** — the span a commitment is suspended for, open-ended if no end date.
+
+   ## Left open
+
+   None. Every question the frontier raised was answered.
+   ```
+
+   **`## Settled` is answers, not requirements.** One line of decision and one clause of why —
+   phrasing it as a requirement is you writing the delta, which is `spec-author`'s. **`## Left
+   open` is required and `None.` is a valid answer**, with the reason; it is the same obligation
+   `design.md` § *Open Questions* carries, one step earlier, and `spec-author` carries the answer
+   forward into that section.
+
+5. **Print the `▸` report** — questions, rounds, the file, any `CONTEXT.md` terms — then **spawn
+   `spec-author` with the issue number and nothing else**, and say in the report's `next` line
+   that they are not needed until G4. The grill is the interruption; everything after it to G7
+   runs unattended.
+
+**Why this is yours and not `spec-author`'s.** A subagent runs to completion and returns one
+report — it cannot ask a round and wait, so a grill inside one collapses to a single pass and the
+questions that would have been unblocked by the answers are never asked. That is the harness, not
+a fixable defect in the agent. The interview therefore lives with the only participant that can
+hold one, and the line that keeps you thin is drawn in § *The one rule that keeps you honest*:
+the question tree is yours, the delta is not.
 
 ## When to stop rather than improvise
 

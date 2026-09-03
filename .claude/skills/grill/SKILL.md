@@ -1,19 +1,19 @@
 ---
 name: grill
-description: Interrogate a plan, a Feature idea or a Story until nothing is silently assumed, and land the vocabulary that comes out of it. Use for the Feature grill at Stage 1 and the Story grill inside Stage 4.
+description: Interrogate a plan, a Feature idea or a Story until nothing is silently assumed, and land the vocabulary that comes out of it. Use for the Feature grill at Stage 1 and the Story grill at the top of Stage 4.
 ---
 
 # Grill
 
-This repository grills twice and the two ask different questions, but they ask them the same
-way. This is the one skill both use. `docs/process.md` § *The two grills* says which is which;
-`AGENTS.md` is binding over everything here.
+This repository grills twice and the two ask different questions, but they ask them the same way
+and **the conductor runs both**. This is the one skill they use. `docs/process.md` § *The two
+grills* says which is which; `AGENTS.md` is binding over everything here.
 
 **Why this exists rather than `grill-with-docs`.** That skill declares
 `disable-model-invocation: true`, so no agent can invoke it and no subagent can ask a human to
 type it — which made it unreachable at exactly the step that needs it most. Its body is two
-Skill calls, both of them reachable. This skill makes those calls, adds what this repository
-requires on top, and splits the one behaviour a subagent cannot have. ADR-1009.
+Skill calls, both of them reachable. This skill makes those calls and adds what this repository
+requires on top. ADR-1009.
 
 ## Step 1 — invoke both underlying skills
 
@@ -24,39 +24,54 @@ Call the `Skill` tool twice:
 - `mattpocock-skills:domain-modeling` — what turns settled words into `CONTEXT.md` entries and
   hard decisions into ADRs.
 
-Follow `grilling`'s protocol, with one exception, in step 2.
+Then follow `grilling`'s protocol as written. **The rounds are the point of it**, and the two
+places this repository used to bend them are the two failures it now avoids — see step 3.
 
-## Step 2 — the rounds, and who you are
+## Step 2 — check you are the conductor
 
-`grilling` says to ask a round and wait for the user's answers. **Whether you can wait depends
-on which session you are, and getting this wrong is the failure this skill exists to prevent.**
+**A grill is an interview, and only the conductor can hold one.** No subagent holds
+`AskUserQuestion`: it runs to completion and returns one report, so a grill inside one collapses
+to a single non-blocking pass and every question that the human's answers would have unblocked
+goes unasked. That is the harness, not something an agent can work around. ADR-1002, ADR-1006.
 
-**If you are the conductor** — the session talking to the human, running `/atlas` — ask the
-round and wait. That is the Stage 1 Feature grill: one capability or several, what the slug is,
-which Epic it hangs under, what it deliberately does not cover, which words enter `CONTEXT.md`.
-Present it in the standard five-part form from `.claude/commands/atlas.md` § *The question
-round*. Ask the questions whose answers would change the work; do not ask four when one decides
-it.
+So:
 
-**If you are a subagent** — `spec-author` at Stage 4, or anyone else — **you cannot wait, so do
-not try.** No subagent holds `AskUserQuestion`; it runs to completion and returns one report.
-Instead of blocking, write the round into `design.md` under `## Questions for you`, numbered,
-each entry carrying the question, the answer you recommend, and what changes in the delta if it
-goes the other way. Then finish the work on your recommended answers and hand back. The
-conductor relays it. ADR-1006, and `.claude/agents/spec-author.md` step 2 has the format.
+- **If you are the conductor** — the session talking to the human, running `/atlas` — grill.
+  `.claude/commands/atlas.md` § *The Story grill* and § *Intake* carry the two procedures, and
+  § *The round* carries the shape.
+- **If you are a subagent, you are in the wrong place.** Stop and say so rather than writing a
+  round nobody asked for. The Story grill happens at the top of Stage 4, before `spec-author` is
+  spawned, and `grill.md` in the change folder is what it left you: read it, and write the delta
+  on the answers it holds. The one thing that is still yours is the **residual round** — a
+  question that only became visible while you were writing the delta — and that is
+  `.claude/agents/spec-author.md` step 2, not this skill.
 
-Do not raise a round for something you could find out. **Finding facts is your job, never the
-human's** — read the spec, check the environment, measure it. Only a preference they hold, whose
-answer would change the delta, is theirs. A question that reaches the human and turns out to be
-a fact is a finding about the agent.
+## Step 3 — the two rules this repository adds
 
-## Step 3 — what must come out, whoever you are
+**Ask the whole frontier.** `AGENTS.md` and the gate forms say "do not ask four when one decides
+it". **That is a rule about gates and it does not apply here.** A gate carries one decision; a
+grill exists to reach the fourth question, and the round that asks only the most important
+question is the questionnaire this skill was rewritten to stop producing. If four questions are
+ready, ask four.
+
+**Print the round unwrapped.** `grilling`'s format — `❓`, `➡️`, a rule between questions — and
+never a five-part gate block around it. The gate block carries one question under a ten-line
+budget, so wrapping an interview in it forces exactly the questions worth asking to be dropped.
+A five-part block asks for a decision; a round asks for answers. ADR-1012.
+
+Both of these were the repository's own additions and both were wrong. They are written down
+here so the next person to tidy this skill does not reinstate them.
+
+## Step 4 — what must come out
 
 Three things, none optional:
 
-1. **`## Open Questions` in `design.md` is filled in.** `"None."` is a valid and required
-   answer — say why. A question left open becomes a scenario someone invents later. (Stage 4
-   only; a Stage 1 grill has no `design.md` yet, and its output is the Feature issue.)
+1. **The questions and their answers are written to a file**, because a conversation is not a
+   durable file and `AGENTS.md` § *Context discipline* binds here too. At Stage 4 that is
+   `grill.md` in the change folder, whose shape is in `.claude/commands/atlas.md` § *The Story
+   grill*; it carries `## Settled`, any terms landed, and a `## Left open` section where `None.`
+   is valid and required, with the reason. At Stage 1 there is no change folder yet and the
+   output is the Feature issue plus the `CONTEXT.md` terms.
 2. **Every new domain term lands in `CONTEXT.md`**, one entry per thing. This is what
    `domain-modeling` is for, and it is why `CONTEXT.md` names this skill as its maintainer.
 3. **A decision that was hard, expensive to reverse, or surprising gets an ADR** under
@@ -64,10 +79,15 @@ Three things, none optional:
    numbers are never reused and gaps are normal — and the amendment rule: a decision that changes
    is edited into the file that holds it, not superseded by a new one.
 
+**Finding facts is your job, never the human's** — read the spec, check the environment, measure
+it, or dispatch an agent to. Only a preference they hold, whose answer would change the work, is
+theirs. A question that reaches the human and turns out to have had an answer on disk is a
+finding about you, and it does not block the rest of the frontier while you look it up.
+
 ## Where you stop
 
 `grilling` says the session is done when the frontier is empty. Here that means: at Stage 1, you
-have one capability you can name in a sentence and stop at G1; at Stage 4, `design.md` leaves
-nothing open, and any round you raised is written down rather than guessed.
+have one capability you can name in a sentence, and you stop at G1. At Stage 4, `grill.md` leaves
+nothing open, and you hand to `spec-author`.
 
 You do not approve anything. G1 and G4 are the human's.
