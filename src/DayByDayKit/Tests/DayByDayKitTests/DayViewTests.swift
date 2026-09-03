@@ -582,3 +582,25 @@ func aRowOffersTheTickInTheFirstSupportedYearAndInTheLast() {
     #expect(onLastYear.rows[0].tick(asOf: lastYear) == Tick(gym, on: lastYear))
     #expect(onLastYear.rows[0].tick(asOf: firstYear) == nil)
 }
+
+@Test("every row of a day view whose date has not arrived offers no tick")
+func everyRowOfADayViewWhoseDateHasNotArrivedOffersNoTick() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, vitamins, reading], on: wednesday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Vitamins", "Reading"])
+    #expect(dayView.rows.allSatisfy { $0.tick(asOf: monday) == nil })
+}

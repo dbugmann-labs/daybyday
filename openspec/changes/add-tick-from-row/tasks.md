@@ -72,9 +72,10 @@ prediction here is not evidence.
   27 December 9999, both Mondays; three assertions, the third being the 9999 row asked as of 1583,
   which offers nothing. Any implementation that reaches for `Date()` fails one of the three. Passed
   immediately.
-- [ ] 2.10 `every row of a day view whose date has not arrived offers no tick` — three commitments
+- [x] 2.10 `every row of a day view whose date has not arrived offers no tick` — three commitments
   on three different schedule shapes, all due on Wednesday 2 September 2026, none offering a tick as
   of Monday 31 August 2026. Pins that the refusal is the day view's date and not something per-row.
+  Passed immediately.
 - [ ] 2.11 `a row for a commitment on a weekly quota offers a tick even where its quota is already
   met` — ADR-1015's cost, still unfixed and now visible on the tap as well as in the view: three
   ticks in the seven days up to Sunday 6 September 2026 and the row still offers a fourth.
