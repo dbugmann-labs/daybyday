@@ -199,6 +199,28 @@ for a date later than today is shown and refuses the tick — a day that has not
 been kept, and `record` hands that judgement to the screen by name, since it never consults the
 present moment. Agreed 2026-09-02, the same pass.
 
+What it **offers** is one tick, and it is the tick of its own commitment on its own day view's date
+— a row is a commitment on a date and so is a tick, so there is nothing left for anyone to supply
+and nothing for the row to choose. The same tick makes the record and takes it back; which of the
+two a tap means is read off whether the row already says it is kept, and the row itself neither adds
+nor removes anything, because that is `record`'s. It offers nothing at all when its date is later
+than the day it is asked on, whether or not something already says it is kept — the refusal is about
+the day, not about what is recorded on it. A row is therefore **a commitment's line on a date**: two
+rows for the same commitment saying the same thing on two different days are not the same row,
+because they tick different days and neither can stand in for the other. Settled 2026-09-03 at the
+grill of `add-tick-from-row` (#71); the refusal's second half — that a future row refuses whether or
+not it is already kept — was put to the owner as that grill's question round and answered by him the
+same day.
+
+**Today** — the day a screen is being looked at on, and the only thing in the system that does not
+come from the calendar. It is always handed in and never asked for: nothing in the rule engine reads
+a clock, a time zone or a locale (ADR-1004), so *today* arrives as an argument at the moment a
+question needs it and is not kept afterwards. Deliberately not the **date a day view is of** — that
+is what a person is looking at, and it may be any day the system supports — and confusing the two is
+what would let a screen offer a tick for a day that has not happened. It is a fact about the device
+rather than about the record, which is why the record refuses to consult it and the row asks for it
+by name. Agreed 2026-09-03, the same grill.
+
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
 combination that names no day — 30 February — is not one. Its year runs from 1583 to 9999
