@@ -533,3 +533,19 @@ func aRowForADateEarlierThanTheDayItIsAskedAsOfOffersTheTick() {
     #expect(tick != nil)
     #expect(tick == Tick(gym, on: monday))
 }
+
+@Test("a row for a date later than the day it is asked as of offers no tick even where it says the commitment is kept")
+func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoTickEvenWhereItSaysTheCommitmentIsKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Tick(gym, on: saturday)!)
+
+    let dayView = DayView(of: [gym], on: saturday, in: history)
+
+    #expect(dayView.rows[0].isKept)
+    #expect(dayView.rows[0].tick(asOf: monday) == nil)
+}

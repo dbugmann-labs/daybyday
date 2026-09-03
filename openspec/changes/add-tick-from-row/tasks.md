@@ -59,10 +59,11 @@ prediction here is not evidence.
   Monday 31 August 2026 asked as of Saturday 5 September 2026: the past is writable. Fails an
   implementation that compares for equality rather than for "later than". Passed immediately: 2.5's
   fix already compares `> 0`, not equality.
-- [ ] 2.7 `a row for a date later than the day it is asked as of offers no tick even where it says
+- [x] 2.7 `a row for a date later than the day it is asked as of offers no tick even where it says
   the commitment is kept` — the future row that is already ticked. Two assertions: it says kept, and
   it offers nothing. This is the scenario the question round turned on; the owner answered *refuse
-  whole* on 2026-09-03, which is what it already said, so write it as it stands.
+  whole* on 2026-09-03, which is what it already said, so write it as it stands. Passed immediately —
+  the refusal never consulted `isKept`.
 - [ ] 2.8 `a row's answer follows the day it is asked as of rather than the day the day view was
   formed` — one row, asked twice, either side of its own date. The midnight pin, and the test that
   fails an implementation that took the day at construction.
