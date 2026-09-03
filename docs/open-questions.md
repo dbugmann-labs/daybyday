@@ -81,6 +81,20 @@ Things that are built, or deliberately not built, in a state someone will trip o
   shell's — a stable identity that is not the value — and it belongs to whichever Story first
   draws a list the user can add to. Left alone in #71 deliberately: changing it there would have
   been a silent edit to the app target from a Story scoped to `DayByDayKit`.
+- **The Story issue template asks an agent to write the G4 marker string.** Surfaced writing
+  #91..#93, 2026-09-03. `.github/ISSUE_TEMPLATE/story.yml`'s last Definition-of-ready checkbox
+  quotes the marker line literally, so an agent rendering the template faithfully writes that
+  string into the body of a Story that has not been approved — which `AGENTS.md` rule 1 forbids
+  "for any other reason, including while explaining that you are waiting for it". Every Story so
+  far has quietly deviated, saying "records the G4 marker" instead: #70, #71, #72 and now
+  #91, #92, #93. The deviation is right and was undocumented, which is the actual defect — the
+  next agent has no way to know the template is not to be followed here.
+  **It cannot trip the automated gate**, and the first report of this said it could: check 5
+  reads `/issues/<n>/comments` and never the body (`scripts/check-g4-approval.ts:50`), so a
+  marker-shaped string in a template-rendered body is invisible to it. What is at risk is a
+  person or an agent grepping issue text, and the rule itself. The fix is one line in the
+  template, which is a chore; it is written down here rather than done because nothing was
+  asked for it.
 - **No UI smoke layer.** Surfaced at `day-screen`'s G1, 2026-08-31. Acceptance tests for the
   first screen attach at a view-model seam inside `DayByDayKit`, so nothing automated proves
   SwiftUI actually draws: a row left blank by a misspelled binding passes CI. The answer is one
