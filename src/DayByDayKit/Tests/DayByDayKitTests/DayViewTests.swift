@@ -499,6 +499,7 @@ func aRowAlreadySayingTheCommitmentIsKeptOffersTheSameTick() {
 
     #expect(!notKeptView.rows[0].isKept)
     #expect(keptView.rows[0].isKept)
+    #expect(notKeptView.rows[0].tick(asOf: monday) != nil)
     #expect(notKeptView.rows[0].tick(asOf: monday) == keptView.rows[0].tick(asOf: monday))
 }
 
