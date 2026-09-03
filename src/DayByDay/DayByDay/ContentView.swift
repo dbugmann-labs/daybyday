@@ -54,6 +54,8 @@ struct ContentView: View {
 
     var body: some View {
         List {
+            Text(screen.title)
+
             switch screen.recordState {
             case .kept:
                 EmptyView()

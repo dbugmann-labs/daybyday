@@ -83,3 +83,4 @@ DayByDay's own records start here.
 | [1019](1019-the-app-shell-runs-in-the-simulator.md) | The app shell is a chore rather than a Feature, runs in the iOS Simulator, and the target is called `DayByDay` |
 | [1020](1020-adrs-are-mutable.md) | An accepted ADR is edited in place and stamped; git history is the audit trail, and numbers are never reused |
 | [1021](1021-a-day-screen-without-its-record-draws-the-day.md) | A day screen that cannot read its record still draws the day and refuses every tick; nothing is held in memory |
+| [1022](1022-the-day-is-said-in-the-apps-own-words.md) | A day is said in the app's own English words, fixed in `DayByDayKit`; no `Locale`, no `DateFormatter`, and the shell composes nothing |
