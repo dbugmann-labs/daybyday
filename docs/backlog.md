@@ -1,37 +1,30 @@
 # Backlog
 
 **Things I want the application to do, in my own words, before anyone has agreed to build
-them.** One entry per want. `/atlas idea <whatever you say>` writes them — **one want or a
-whole braindump in a single go**, split into entries and the split reported back before it
-commits; `/atlas backlog` grooms them into Features. Nothing here is agreed and nothing is implemented from this file —
-an idea becomes real when it is a requirement in a capability spec that has passed G4, however
-obvious it seems. `docs/process.md` §4.
+them.** One entry per want, and wants only: a want is something the app should let you *do*.
+`/atlas idea <whatever you say>` writes them — one want or a whole braindump in a single go,
+split into entries and the split reported back before it commits; `/atlas backlog` grooms them.
+Nothing here is agreed and nothing is implemented from this file: an idea becomes real when it
+is a requirement in a capability spec that has passed G4, however obvious it seems.
+`docs/process.md` §4, ADR-1010.
 
-**Wants only.** A want is something the app should let you *do*. Anything else that used to live
-in the parking lot — open product questions, open technical decisions, known gaps in what is
-built — is in `docs/open-questions.md`, and the rules that judge a want rather than being one
-are `CONTEXT.md` § *Product principles*. Keeping this file to one kind of thing is what stops it
-becoming the dump it replaced.
+**Everything that is not a want** — open product questions, open technical decisions, known gaps
+in what is built — is `docs/open-questions.md`; the rules that judge a want rather than being
+one are `CONTEXT.md` § *Product principles*.
 
-An entry leaves in exactly three directions, all of them through `/atlas backlog`: **promoted**
-into a Feature or a Story against an existing one, **dropped** with the reason, or **merged**
-into another entry. Whichever it is, the entry is deleted from *Wants* and one line lands in
+**An entry leaves in exactly three directions, all of them through `/atlas backlog`:** promoted
+into a Feature or a Story against an existing one, dropped with the reason, or merged into
+another entry. Whichever it is, the entry is deleted from *Wants* and one line lands in
 *Decided* below. **An entry that has survived two grooming passes untouched is presented as a
-forced choice — promote it or drop it.** That rule is the whole difference between a backlog and
-a graveyard, and it is `/atlas backlog`'s job to enforce it rather than yours to remember.
-
-That is why *Grooming passes* below is a dated log rather than a formality: a pass an entry
-sat through is only countable if the pass was written down. `pnpm run status` reads it off a
-story branch and reports the count without being asked, which is the half of ADR-1010's
-diagnosis that `/atlas backlog` alone does not fix — the parking lot failed because nothing
-ever opened it.
+forced choice — promote it or drop it**, and enforcing that is `/atlas backlog`'s job rather
+than your memory's. *Grooming passes* is a dated log for that reason: a pass an entry sat
+through counts only if it was written down, and `pnpm run status` reads the count off it unasked.
 
 **Each entry carries a *Principle* line** naming which of `CONTEXT.md` § *Product principles* the
 want was tested against and what the test returned — one principle, not all four. A want that
-*fails* one is still captured, with the failure written down, because that is a drop the next
-grooming pass makes deliberately rather than an idea that quietly never came back. Entries
-B-001 to B-009 predated the field; the first grooming pass, on 2026-09-02, filled them in as
-it read them.
+*fails* one is still captured, with the failure written down, so the next pass drops it
+deliberately rather than letting it quietly never come back. B-001 to B-009 predate the field;
+the first pass, on 2026-09-02, filled them in as it read them.
 
 ## What day one looks like
 
@@ -91,6 +84,7 @@ shape it lacks, not the quota.
   as a running total. The number is B-001's new kind of record; accumulating is depth on it,
   and is worth less on its own than the plain number.
 - **Open** — is there a target for the day, and does reaching it make the commitment done?
+  B-018 is the same question asked from the other side.
 - **Open** — the 2026-09-02 braindump groups protein with weight, mood and journal as "daily",
   and says nothing about accumulating. That is not a contradiction of the original words, but
   accumulation is this entry's whole identity, so grooming has to confirm it is still wanted
@@ -115,7 +109,7 @@ shape it lacks, not the quota.
   the braindump states it outright.
 - **Open** — ten values and "a single tap" pull against each other: a ten-point scale is a
   slider or a row of ten targets, neither of which is one tap in a row. This is the same
-  tension B-010 raises for every entry that carries a value.
+  tension B-010 raised for every entry that carries a value, before it became a principle.
 
 ### B-004 — write two or three sentences about a day
 *Captured 2026-08-28, migrated 2026-09-02.*
@@ -192,8 +186,9 @@ shape it lacks, not the quota.
 > "carrying your history to a new phone; restore, not live sync between devices"
 
 - **Trigger** — once every few years, and catastrophically if it does not work.
-- **Touches** — unclaimed. Storage, which is also the open technical decision in
-  `docs/open-questions.md`.
+- **Touches** — unclaimed. Storage, whose shape was settled after this want was captured by
+  `add-record-store` (#56): one versioned JSON file at a place the app names, which is the one
+  thing a backup has to carry. ADR-1017.
 - **Principle** — tested against *restore, not sync*: passes by definition. It is the want
   the principle exists to promise, and the principle's second half — no live sync — is the
   boundary the quote already draws.
@@ -217,21 +212,22 @@ shape it lacks, not the quota.
   the day screen depends on what the detail page is a page *per*.
 
 ### B-013 — stop keeping a commitment
-*Captured 2026-09-02, from the sweep. The wording is the sweep's, accepted with "accept" rather
-than said.*
+*Captured 2026-09-02, from the sweep. The wording is the sweep's, accepted by the owner rather
+than said in their own words.*
 
 > "Stop keeping a commitment."
 
 - **Trigger** — rarely, when a commitment has run its course: the plants died, the lenses gave
   way to glasses.
-- **Touches** — `commitment` (#26). Story #42 excludes "archiving or deleting one" by name.
+- **Touches** — `commitment` (#26). Story #42 shipped the type and excluded "archiving or
+  deleting one" by name.
 - **Principle** — tested against *five percent of seven things*: fails on its face, since it makes
   nothing new possible, and is captured anyway. A commitment that cannot be retired stays due
   every day, unticked, and reads as a miss for ever; the sweep exists for the want nobody says.
 - **Open** — what happens to its history. The record is durable (`docs/open-questions.md`
   § *Settled*), so retiring must keep the ticks, and nobody has said whether a retired commitment
   can still be looked at (B-007) or brought back.
-- **Open** — is retiring a *kept-until* day, the mirror of ADR-1011's kept-from day? That would
+- **Open** — is retiring a *kept-until* day, the mirror of ADR-1013's kept-from day? That would
   leave every past day answering as it did.
 
 ### B-014 — change a commitment: its name, or the rhythm it runs on
@@ -240,11 +236,11 @@ than said.*
 > "Change a commitment — rename it, move the gym to Tue/Thu."
 
 - **Trigger** — rarely; a new gym timetable, a typo in a name.
-- **Touches** — `commitment` (#26). Story #42 excludes editing and renaming by name.
+- **Touches** — `commitment` (#26). Story #42 excluded editing and renaming by name.
 - **Principle** — tested against *five percent of seven things*: fails on its face and is captured
   anyway, because the alternative — retire it and define it again — splits one commitment's
   history in two.
-- **Open** — what changing the rhythm does to the past. ADR-1011 fixes that a past day's answer
+- **Open** — what changing the rhythm does to the past. ADR-1013 fixes that a past day's answer
   does not change once given; a rhythm changed today either rewrites which past days were due, or
   applies from a day forward, and only the second keeps that promise.
 
@@ -254,15 +250,15 @@ than said.*
 > "Define a commitment from the phone."
 
 - **Trigger** — day one, eight times over; then rarely.
-- **Touches** — `commitment` (#26), and a screen that is not the day screen. Story #42 is the
-  type, and excludes "anything on screen"; without this the eight day-one commitments have no way
-  in.
+- **Touches** — `commitment` (#26), and a screen that is not the day screen. Story #42 shipped
+  the type and excluded "anything on screen"; without this the eight day-one commitments have no
+  way in.
 - **Principle** — tested against *an iPhone, in your hand*: passes. Choosing one of four rhythm
   shapes on a phone is the whole interaction, and it happens rarely enough to be allowed a screen.
-- **Open** — the kept-from day (ADR-1011): typed, or defaulted to today? The type has no default on
-  purpose, so a screen has to choose.
-- **Open** — "every day" can be said three ways (`docs/open-questions.md` § *Settled*); a picker
-  shows one of them.
+- **Open** — the kept-from day (ADR-1013): typed, or defaulted to today? The type has no default
+  on purpose, so a screen has to choose.
+- **Open** — "every day" can be said three ways (`CONTEXT.md` § *Weekly quota*); a picker shows
+  one of them.
 
 ### B-017 — meet a quota over a longer span than a week
 *Captured 2026-09-02.*
@@ -297,22 +293,24 @@ than said.*
 > "maybe I also want daily / biweekly / monthly quotas?"
 
 - **Trigger** — several times within one day: supplements morning and evening, water three times.
-- **Touches** — `commitment` and `record`, **not** `schedule`. This is the half of the want that is
-  not a rhythm at all: a rhythm already says "every day", and what a daily quota adds is a count
-  *within* the day.
-- **Principle** — tested against *entered where you stand*: passes on the interaction — tapping a
-  row three times is still one tap at a time, in the row — and that is the only principle it
-  clearly passes. It fails *five percent of seven things* for the same reason B-017 does.
+- **Touches** — `commitment` and `record`, **not** `schedule`. This is the half of the want that
+  is not a rhythm at all: a rhythm already says "every day", and what a daily quota adds is a
+  count *within* the day.
+- **Principle** — tested against *entered where you stand*: passes on the interaction —
+  tapping a row three times is still one tap at a time, in the row — and that is the only
+  principle it clearly passes. It fails *five percent of seven things* for the same reason
+  B-017 does.
 - **Contradicts agreed vocabulary.** `CONTEXT.md` § *Record* says there is *"at most one per
   commitment per day"*, agreed 2026-09-02 with `FEAT: record` (#53). That sentence is what settled
   the 1–7 ceiling on Story #11's weekly quota at G4 on the same day. So this want is not a Story
-  against `schedule`: taking it means changing **Record** first, and then #55's delta.
+  against `schedule`: taking it means changing **Record** first, and then the shipped `record`
+  spec that #55 and #56 left behind, which carries the same rule in three places.
 - **Open** — is this B-002 (protein: *"a number entered several times a day that accumulates
   rather than overwrites"*) said in other words? Three taps that count up to three and a number
-  that accumulates to a target may be one want with two vocabularies, and B-002 already carries
-  the open question *"is there a target for the day, and does reaching it make the commitment
-  done?"* — which is a daily quota described from the other side. Grooming should merge or
-  separate these deliberately rather than let both survive by default.
+  that accumulates to a target may be one want with two vocabularies, and B-002's own open
+  question — whether the day has a target that finishes the commitment — is this one described
+  from the other side. Grooming should merge or separate these deliberately rather than let both
+  survive by default.
 
 ### B-020 — see every commitment I keep, in one place
 *Captured 2026-09-02, from the sweep. The wording is the sweep's.*
@@ -382,7 +380,8 @@ months later.
   the reading its own Open line suspected.
 - 2026-08-31 — reading 3× a week, any nights, open until the week turns over → Story #11
   `add-weekly-quota-schedule`, under `FEAT: schedule` (#6).
-- 2026-08-31 — a commitment due on the 25th of every month → shipped, `openspec/specs/schedule/`.
+- 2026-08-31 — a commitment due on the 25th of every month → shipped,
+  `openspec/specs/schedule/`.
 - 2026-08-31 — a commitment due every N days, counted from a start date → shipped,
   `openspec/specs/schedule/`.
 - 2026-08-30 — a commitment due on a set of weekdays → shipped, `openspec/specs/schedule/`.
@@ -400,55 +399,65 @@ what "survived two passes" is counted against; an entry captured after a pass di
 through it. A pass that promoted nothing still gets a line — it is the pass the staleness rule
 most needs to count. Say what the coverage sweep found, including when it found nothing.
 
-- 2026-09-02 — pass over 11 wants, the first. Sweep: every rhythm on the day-one week is
-  shipped or in flight (#11), and not one of the eight commitments can yet be defined on the
-  phone, shown for a day, or ticked. Ticking has no Feature, no Story and no want — the Epic
-  absorbed it on 2026-08-28 and no Feature claimed it, and both in-flight Stories say in
-  writing that no tick exists. `commitment` (#42) excludes changing and retiring one by name
-  and nothing wants either; defining one from a screen is unsaid; going to a day other than
-  today is implied by "the past is writable" and said nowhere. `docs/open-questions.md`
-  holds no want in disguise. Principle lines filled in on B-001..B-009. Captured B-012..B-016
-  from the sweep; merged B-008 into B-007; dropped B-010 into `CONTEXT.md` as *Entered where
-  you stand*. Cluster A — the record: B-012, with B-001..B-005 behind it — grilled and
-  promoted at G1: B-012 → `FEAT: record` (#53). Its G1 left behind B-001..B-005, which reopen
-  #53 when they come and mean amending Epic #1's exclusion list then; and for its G2 the pass
-  suggested the pure record shape as Story 1, durability with the storage ADR as Story 2, and
-  a check whether #27's first Story reads records, which decides whether #27 and #53
-  serialise (`docs/process.md` §7). **Not taken**, each with the disposition the pass
-  proposed, so the next pass starts from it rather than from the Touches lines alone —
-  **B**, day-screen: B-006, B-011, B-016 stay wants for #27's G2, which status already lists;
-  B-006 reads as a requirement of #27's first Story rather than a Story of its own, and B-011
-  cannot be decided before B-007. **C**, looking back: B-007, with B-008 now inside it,
-  unclaimed; nothing to look back at until #53 has a Story, so it stays. **D**, restore:
-  B-009, a Story against #53 once the first record Story has chosen the store. **E**, the
-  commitment's lifecycle: B-013, B-014, B-015 as Stories reopening #26 — define first, then
-  change, then retire; B-013 may be a kept-until day mirroring ADR-1011.
+- 2026-09-02 — pass over 11 wants, the first.
+  - **Sweep** — every rhythm on the day-one week is shipped or in flight (#11), and not one of
+    the eight commitments can yet be defined on the phone, shown for a day, or ticked. Ticking
+    has no Feature, no Story and no want — the Epic absorbed it on 2026-08-28 and no Feature
+    claimed it, and both in-flight Stories say in writing that no tick exists. `commitment`
+    (#42) excludes changing and retiring one by name and nothing wants either; defining one
+    from a screen is unsaid; going to a day other than today is implied by "the past is
+    writable" and said nowhere. `docs/open-questions.md` holds no want in disguise.
+  - **Housekeeping** — Principle lines filled in on B-001..B-009. Captured B-012..B-016 from
+    the sweep; merged B-008 into B-007; dropped B-010 into `CONTEXT.md` as *Entered where you
+    stand*.
+  - **Taken forward** — cluster A, the record: B-012, with B-001..B-005 behind it — grilled and
+    promoted at G1: B-012 → `FEAT: record` (#53). Its G1 left behind B-001..B-005, which reopen
+    #53 when they come and mean amending Epic #1's exclusion list then; and for its G2 the pass
+    suggested the pure record shape as Story 1, durability with the storage ADR as Story 2, and
+    a check whether #27's first Story reads records, which decides whether #27 and #53
+    serialise (`docs/process.md` §7).
+  - **Not taken**, each with the disposition the pass proposed, so the next pass starts from it
+    rather than from the Touches lines alone:
+    - **B**, day-screen: B-006, B-011, B-016 stay wants for #27's G2, which status already
+      lists; B-006 reads as a requirement of #27's first Story rather than a Story of its own,
+      and B-011 cannot be decided before B-007.
+    - **C**, looking back: B-007, with B-008 now inside it, unclaimed; nothing to look back at
+      until #53 has a Story, so it stays.
+    - **D**, restore: B-009, a Story against #53 once the first record Story has chosen the
+      store.
+    - **E**, the commitment's lifecycle: B-013, B-014, B-015 as Stories reopening #26 — define
+      first, then change, then retire; B-013 may be a kept-until day mirroring ADR-1011.
 
-- 2026-09-02 — pass over 18 wants, the second, on the same day as the first. **Sweep**: three
-  silences, all captured before clustering — B-019, ticking from the row, which is the seam
-  between `day-screen` (#27) and `record` (#53) that neither Feature's intent claims; B-020,
-  seeing every commitment in one place, which B-013 and B-014 both have to reach a commitment
-  *through*; B-021, a rhythm said in words, whose technical half was already in
-  `docs/open-questions.md` § *Known gaps* before anyone had asked for it. The day-one week has no
-  rhythm left uncovered: all four shapes shipped when #45 merged mid-pass, closing Story #11 and
-  `FEAT: schedule` (#6). Nothing was stale — the counter counts passes dated strictly after a
-  capture and both passes are 2026-09-02, so the forced choice first fires on a later date.
-  **Taken forward**: cluster A, the day screen you can use — B-019, B-006, B-016 — grilled and
-  taken to `FEAT: day-screen` (#27). #27 is at G2 rather than G1, so no Feature was minted and
-  the three wants left *Wants* the same day, once its Stories carried numbers: B-006 → #70, B-019 → #71, B-016 → #72. The grill settled three things,
-  now in `CONTEXT.md` as **day view** and **row**: ticking belongs to `day-screen` and #53 stays
-  closed; a day view answers for every supported date, and a row after today is shown and refuses
-  the tick; the day preserves the order it is handed, because a commitment has no identifier to
-  order by. The open product question *how far back the past stays writable* is answered in
-  direction but stays open in `docs/open-questions.md`, by that file's own rule that an item
-  leaves when the change forcing it settles it — here, #27's first Story. **Not taken**, each with
-  the disposition this pass proposed — **B**, the commitment's lifecycle: B-015, B-020, B-014,
-  B-013, B-021 as Stories reopening `commitment` (#26), plus a screen capability that should not
-  be minted before #27 has proved the seam; recommended next, once #56 has chosen the store.
-  **C**, a record that is not a tick: B-001..B-005 and B-018 reopen #53 and change `CONTEXT.md`
-  § *Record*, agreed the same morning; whoever takes it must merge or separate B-002 and B-018
-  deliberately rather than let both survive by default. **D**, looking back: B-007 and B-011,
-  unclaimed, nothing to look back at until #56 lands a store. **E**, restore: B-009, a Story
-  against #53 once the store is chosen — and Epic #1 excludes "export and restore" by name, so
-  promoting it amends the Epic's exclusion list. **F**, quota spans: B-017 stays; the weekly quota
-  shipped today and nothing on the day-one week asks for a longer span.
+- 2026-09-02 — pass over 18 wants, the second, on the same day as the first.
+  - **Sweep** — three silences, all captured before clustering: B-019, ticking from the row,
+    which is the seam between `day-screen` (#27) and `record` (#53) that neither Feature's
+    intent claims; B-020, seeing every commitment in one place, which B-013 and B-014 both have
+    to reach a commitment *through*; B-021, a rhythm said in words, whose technical half was
+    already in `docs/open-questions.md` § *Known gaps* before anyone had asked for it. The
+    day-one week has no rhythm left uncovered: all four shapes shipped when #45 merged mid-pass,
+    closing Story #11 and `FEAT: schedule` (#6). Nothing was stale — the counter counts passes
+    dated strictly after a capture and both passes are 2026-09-02, so the forced choice first
+    fires on a later date.
+  - **Taken forward** — cluster A, the day screen you can use: B-019, B-006, B-016, grilled and
+    taken to `FEAT: day-screen` (#27). #27 is at G2 rather than G1, so no Feature was minted and
+    the three wants left *Wants* the same day, once its Stories carried numbers: B-006 → #70,
+    B-019 → #71, B-016 → #72. The grill settled three things, now in `CONTEXT.md` as **day
+    view** and **row**: ticking belongs to `day-screen` and #53 stays closed; a day view answers
+    for every supported date, and a row after today is shown and refuses the tick; the day
+    preserves the order it is handed, because a commitment has no identifier to order by. The
+    open product question *how far back the past stays writable* is answered in direction but
+    stays open in `docs/open-questions.md`, by that file's own rule that an item leaves when the
+    change forcing it settles it — here, #27's first Story.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **B**, the commitment's lifecycle: B-015, B-020, B-014, B-013, B-021 as Stories reopening
+      `commitment` (#26), plus a screen capability that should not be minted before #27 has
+      proved the seam; recommended next, once #56 has chosen the store.
+    - **C**, a record that is not a tick: B-001..B-005 and B-018 reopen #53 and change
+      `CONTEXT.md` § *Record*, agreed the same morning; whoever takes it must merge or separate
+      B-002 and B-018 deliberately rather than let both survive by default.
+    - **D**, looking back: B-007 and B-011, unclaimed, nothing to look back at until #56 lands a
+      store.
+    - **E**, restore: B-009, a Story against #53 once the store is chosen — and Epic #1 excludes
+      "export and restore" by name, so promoting it amends the Epic's exclusion list.
+    - **F**, quota spans: B-017 stays; the weekly quota shipped today and nothing on the day-one
+      week asks for a longer span.
