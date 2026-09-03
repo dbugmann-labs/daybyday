@@ -48,11 +48,11 @@ So:
 
 ## Step 3 — the two rules this repository adds
 
-**Ask the whole frontier.** `AGENTS.md` and the gate forms say "do not ask four when one decides
-it". **That is a rule about gates and it does not apply here.** A gate carries one decision; a
-grill exists to reach the fourth question, and the round that asks only the most important
-question is the questionnaire this skill was rewritten to stop producing. If four questions are
-ready, ask four.
+**Ask the whole frontier.** `AGENTS.md` § *The conductor* says **"a gate carries one decision, so
+do not ask four things when one decides it"**, and says in the same breath that this is a rule
+about gates and only about gates. **It does not apply here.** A grill exists to reach the fourth
+question, and the round that asks only the most important one is the questionnaire this skill was
+rewritten to stop producing. If four questions are ready, ask four.
 
 **Print the round unwrapped.** `grilling`'s format — `❓`, `➡️`, a rule between questions — and
 never a five-part gate block around it. The gate block carries one question under a ten-line
@@ -72,6 +72,12 @@ Three things, none optional:
    grill*; it carries `## Settled`, any terms landed, and a `## Left open` section where `None.`
    is valid and required, with the reason. At Stage 1 there is no change folder yet and the
    output is the Feature issue plus the `CONTEXT.md` terms.
+
+   **The asymmetry is deliberate, not an omission.** The Stage 4 grill needs a file because its
+   reader is a subagent that will be spawned cold and can be handed nothing but an issue number.
+   The Stage 1 grill's readers are the human typing `/to-tickets` and `orchestrator` writing the
+   issue, and what it settled lands in two durable places they both read — the Feature issue's
+   scope and `CONTEXT.md`. Do not invent a second file to make the two look alike.
 2. **Every new domain term lands in `CONTEXT.md`**, one entry per thing. This is what
    `domain-modeling` is for, and it is why `CONTEXT.md` names this skill as its maintainer.
 3. **A decision that was hard, expensive to reverse, or surprising gets an ADR** under

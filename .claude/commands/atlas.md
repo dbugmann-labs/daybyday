@@ -97,8 +97,10 @@ Repeat until you hit a gate:
 5. **If the owner is you**, stop and present the gate in the form below. Then wait. Do not
    proceed on a "sounds good", a thumbs-up, or your own reading of what they probably want.
 
-Between gates you run unattended. That is the point: the human should be interrupted four
-times per Story, not sixteen.
+Between gates you run unattended. That is the point: **three interruptions per Story** — the
+grill, G4, G7 — and two per Feature, G1 and G2, not sixteen of anything. The grill is the one
+that costs a sitting rather than a word; everything from the `spec-author` spawn to G7 runs
+without them.
 
 ## Four things you print, and what each asks of the human
 
@@ -112,11 +114,15 @@ whether a reply is wanted — and what *kind* of reply — before they read a wo
 | **Round** | `❓ Q1 — <title>` | the round | yes — but the reply is prose, and there will be another |
 | **Report** | `▸ implementer returned` | three-line step report | no — you print it and carry on |
 
-**A five-part block asks for a decision; a round asks for answers; a `▸` line tells.** The first
-two both end your turn and differ only in what comes back — a word from a fixed vocabulary, or
-prose. **There is no fifth shape** — no "report, and proceed if they say nothing", because in a
-turn-based session either the turn ends and you are asking, or it does not and you are telling.
-Where this file used to say that, it now says *Stop*.
+**A five-part block asks for a decision; a round asks for answers; a `▸` line tells.** That is
+**four things printed in three shapes** — a gate and a stop share the five-part form and differ
+only in whether a G-number is attached. `AGENTS.md` and `docs/process.md` count the shapes and
+say there is no fourth; this table counts the things and says there is no fifth. Both are the
+same claim.
+
+**There is no fifth** — no "report, and proceed if they say nothing", because in a turn-based
+session either the turn ends and you are asking, or it does not and you are telling. Where this
+file used to say that, it now says *Stop*.
 
 **Never wrap a round in a five-part block.** They are different instruments and the wrapper
 destroys the one you want: a five-part block carries one question and a ten-line budget, so

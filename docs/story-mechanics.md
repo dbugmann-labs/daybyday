@@ -39,15 +39,20 @@ tree*, not two Stories racing for one file in `openspec/specs/`, which is decide
 
 ## Cutting the branch
 
-**At Stage 4**, from `origin/main`, once the Story exists — with `git worktree add -b`, per the
-section above. There is no branch-only form: `git checkout -b` in this clone is rule 8's one
-prohibition, and the worktree costs a directory.
+**At Stage 4, before the grill**, from `origin/main`, once the Story exists — with
+`git worktree add -b`, per the section above. The conductor cuts it, and it is cut that early
+because the grill's `grill.md` has to live somewhere and rule 8 has no exception for a grill.
+There is no branch-only form: `git checkout -b` in this clone is rule 8's one prohibition, and
+the worktree costs a directory.
 
 `git branch --unset-upstream` is not optional. Skipping it leaves the branch tracking
 `origin/main`, so a later bare `git push` targets the protected branch and is rejected.
 
-Commit the change folder as `docs(<capability>): propose <change-id>` — it is documentation
-until G4 — then `feat(<capability>): ...` for implementation. The archive at Stage 8 is the one
+**The change folder accumulates in that order**: `grill.md` first, written by the conductor when
+the grill's frontier is empty, then the proposal, the delta specs, `design.md` and `tasks.md`
+from `spec-author`. Commit the lot as `docs(<capability>): propose <change-id>` — all of it is
+documentation until G4, `grill.md` included, so it is not a commit of its own — then
+`feat(<capability>): ...` for implementation. The archive at Stage 8 is the one
 commit that breaks the pattern: `chore(archive): <change-id>`, scoped `archive` because it moves
 the change folder rather than changing behaviour. Do not extrapolate `chore(<capability>): ...`
 from it.

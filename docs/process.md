@@ -150,8 +150,8 @@ and nothing counts how long it has been there (ADR-1010).
   `docs/open-questions.md` — and reports what has no want against it at all, capturing the gaps
   the human confirms before it goes on. Then it clusters the wants **by the capability they would
   land in**, proposes a promotion, a merge, a split or a drop for each, grills the cluster taken
-  forward and stops at **G1**. It adds one stop in front of Stage 1 and nothing else — no new
-  stage, no new gate, no second grill. Every pass appends a dated line to the backlog's
+  forward in rounds and stops at **G1**. It adds one stop in front of Stage 1 and nothing else —
+  no new stage, no new gate, no second grill. Every pass appends a dated line to the backlog's
   *Grooming passes* log, promotion or not, because that log is where the next pass reads what
   this one declined, and why.
 
@@ -194,10 +194,18 @@ question and gate decisions are authorization — the same reason hard rule 6 ke
 in the human-facing session. ADR-1002, which also records that the orchestrator was documented
 for months as delegating work it was never able to delegate.
 
-The intended rhythm is **four interruptions per Story** — G1, G2, G4, G7 — and unattended running
-between them. `/atlas backlog` starts at the top: it picks a cluster of wants, grills it, stops at
-G1, and carries it down to G4 without further prompting. `/atlas feature <idea>` is the same path
-for an idea that skips the backlog because you already know it is a Feature.
+**The two grills are the one exception to holding no work context, and it is drawn by object:**
+the conductor holds the question tree — the questions, their answers, the terms they land — and
+never the delta, the tests or `src/`. It writes one file, `grill.md`, and dispatches an agent for
+every *fact* a question turns on. An interview is the one thing no subagent can run, so it lives
+where the human is; the moment it starts reasoning about what a requirement should say rather
+than about what to ask next, it has crossed the line and the move is to hand over.
+
+The rhythm is **two interruptions per Feature and three per Story** — G1 and G2, then the Story
+grill, G4 and G7 — with unattended running between them. `/atlas backlog` starts at the top: it
+picks a cluster of wants, grills it and stops at G1; from G2 it carries a Story down to its grill
+and then, once that closes, to G4 without further prompting. `/atlas feature <idea>` is the same
+path for an idea that skips the backlog because you already know it is a Feature.
 
 ### The stages
 
@@ -205,24 +213,33 @@ Nine stages, five gates. **Gate** means work stops until a named condition holds
 off, `CI` = machine-checked, `A` = agent-internal.
 
 **Every stage is entered by the conductor**, which reads `pnpm run status` and spawns the agent
-in the *Runs where* column; it executes no stage itself. *Who decides* is the column that matters
-when you are asking whether you can walk away: `you` means the pipeline stops until you answer.
+in the *Runs where* column; it executes no stage's *output* itself. The one thing it runs rather
+than spawns is the grill, which produces decisions — never a delta, never a test, never a line of
+`src/`. *Who decides* is the column that matters when you are asking whether you can walk away:
+`you` means the pipeline stops until you answer.
 
 | # | Stage | Who decides | Runs where | Output | Gate |
 |---|---|---|---|---|---|
 | 0 | Epic intake | **you** | `orchestrator` / Opus | Epic issue | — |
-| 1 | Feature definition | **you** | the conductor grills via `grill`; `orchestrator` / Opus writes the issue | Feature issue, sub-issue of Epic, plus any new `CONTEXT.md` terms | **G1 (H)** |
+| 1 | Feature definition | **you** | the conductor grills via `grill`, **in rounds**; `orchestrator` / Opus writes the issue | Feature issue, sub-issue of Epic, plus any new `CONTEXT.md` terms | **G1 (H)** |
 | 2 | Story decomposition | **you** accept; **you** type `to-tickets`, which proposes | `orchestrator` / Opus writes what you accepted | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
-| 4 | Propose | agent writes; **you** answer any question round, and approve | `spec-author` / Opus, via `grill` then `/opsx:propose` | the grill first — `design.md` **Open Questions** filled in, plus any new `CONTEXT.md` terms, plus a `## Questions for you` round if the grill hit something that is yours — then the change folder: proposal, delta specs, design, tasks. Cut the worktree here, commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
+| 4 | Propose | **you** grill, then the agent writes and you approve | the conductor grills via `grill`; then `spec-author` / Opus via `/opsx:propose` | the grill first — `grill.md`, plus any new `CONTEXT.md` terms — then the change folder written on those answers: proposal, delta specs, design, tasks, with `design.md` **Open Questions** filled in and a `## Questions for you` residual round only if writing the delta turned one up. The worktree is cut before the grill; commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
 | 5 | Red | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` | one failing acceptance test | A |
 | 6 | Green + next | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` and `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes | A |
 | 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `mattpocock-skills:code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity | **G7 (H)** |
 | 8 | Archive | agent | `janitor` / Haiku, via `/opsx:archive` | delta merged into `openspec/specs/`, change moved to `changes/archive/`, PR taken out of draft with `gh pr ready` | — |
 | 9 | Merge | agent | `janitor` / Haiku | issue auto-closed, parents settled, the Story's worktree removed | **G8 (CI)** |
 
-Read the bold entries down *Who decides* and you have your whole obligation: four stops — G1, G2,
-G4, G7 — plus answering, inside Stage 4, whatever the grill cannot settle. Stages 5, 6, 8 and 9
-never wait for you.
+Read the bold entries down *Who decides* and you have your whole obligation. G1 and G2 are once
+per Feature. Per Story it is **three stops — the grill at the top of Stage 4, then G4, then G7**,
+where it used to be two plus an occasional question round. That is the trade, and it is worth
+naming honestly: **one guaranteed interruption gained, one occasional one lost**, and the one
+gained is the more expensive of the two. G4 and G7 are answered in a word; the grill is a
+contiguous 15–30 minutes of your attention, in rounds, and it is not a thing you answer from a
+phone between other things. What it buys is a delta written on your answers rather than on an
+agent's recommendations. Nothing after it moves: from the `spec-author` spawn to G7 the pipeline
+still runs unattended, and Stages 5, 6, 8 and 9 never wait for you. The walk-away structure
+starts one step later; it does not shrink.
 
 **Stage and gate numbers are names, not positions.** There is no Stage 3 — the grill was one
 until 2026-08-30, when ADR-1005 folded it into Stage 4 — and there is no G3, G5 or G6, and G8 is
@@ -230,38 +247,64 @@ the gate on Stage 9. Every number is frozen because something reads it: `G4: app
 literal string in CI check 5, `pnpm run check:g4`, the issue template and every Story already
 approved, and two ADR titles name Stage 4. Renumbering would falsify a record to tidy a label.
 
-### The two grills, and the round that carries what neither can settle
+### The two grills, and the residual round the delta turns up
 
 Grilling happens twice, and the two ask different questions. Confusing them is how one of them
 becomes expensive. **Both run through one skill, `grill`**, this repository's own, which calls
 `mattpocock-skills:grilling` and `mattpocock-skills:domain-modeling` — the two skills
-`grill-with-docs` calls — and then splits on the one thing the two grills cannot share: whether
-the session can wait for your answer. ADR-1009.
+`grill-with-docs` calls, and which no agent may invoke. ADR-1009.
 
-**The Feature grill, at Stage 1, is a conversation and belongs to the conductor:** one capability
-or several, what the slug is, which Epic it hangs under, what it deliberately does not cover, and
-which words enter `CONTEXT.md`. Those would otherwise be re-answered once per Story, and they are
-answered out loud because the session talking to you is the only one that can hold a
-conversation. `/atlas feature <idea>` runs it and stops at G1.
+**Both belong to the conductor, and both work in rounds:** ask every question whose prerequisites
+are already settled, hear the answers, work out what those answers just unblocked, ask again,
+until the frontier is empty. They used to split on whether the session could wait for you — the
+Feature grill was a conversation, the Story grill was `spec-author` writing its questions down
+because it could not hold one. **That split is gone**, and it was the defect: a subagent runs to
+completion and returns one report, so a grill inside one collapses to a single non-blocking pass
+and every question your answers would have unblocked is never asked. The interview now lives with
+the only participant that can hold one.
 
-**The Story grill, inside Stage 4, is `spec-author` interrogating one Story's edges** — what a
-short month does, what an out-of-range number does. Those are invisible until someone writes the
-delta, and pulling them up to Stage 1 would mean settling four Stories' worth of edge cases
-before any is built, which is the horizontal slicing §8 exists to prevent.
+What separates them is **scope**, and that is what keeps both cheap. **The Feature grill, at
+Stage 1**, settles the capability's boundary and vocabulary: one capability or several, what the
+slug is, which Epic it hangs under, what it deliberately does not cover, which words enter
+`CONTEXT.md`. Those would otherwise be re-answered once per Story. `/atlas feature <idea>` runs it
+and stops at G1. **The Story grill, at the top of Stage 4**, settles one Story's edges — what a
+short month does, what an out-of-range number does, what happens to a record when the thing it
+records is retired. Those are invisible until someone tries to phrase the requirement, and pulling
+them up to Stage 1 would mean settling four Stories' worth of edge cases before any is built,
+which is the horizontal slicing §8 exists to prevent.
 
-**The Story grill cannot ask you anything, so it writes instead** — that is the split. A question
-`spec-author` may not settle — one whose answer would change the delta, and which is a preference
-you hold rather than a fact it could look up — goes into `design.md` under
-`## Questions for you`, numbered, each with the answer it recommends and what changes if you
-answer otherwise. It writes the change folder anyway on those answers, so the round reaches you
-next to the diff it would change. `pnpm run status` reports it as Stage 4 owned by you; the
-conductor presents it in the standard form and hands your answers back, and `spec-author` folds
-them in and deletes the section.
+**The Story grill ends in `grill.md`**, written into the change folder when the frontier is empty:
+`## Settled`, which is answers with a clause of why each rather than requirements; any terms it
+landed in `CONTEXT.md`; and a `## Left open` section, where `None.` with the reason is valid and
+required. `spec-author` is then spawned with the issue number and nothing else, reads that file,
+and writes the delta on those answers. The answers travel in a file rather than in a prompt for
+two reasons: a conversation is not a durable file (§6), and pasting requirements into a prompt is
+how the spec and what the agent believes come apart.
 
-**A round is a stop, not a gate:** no marker, no CI check, no G-number, and it happens only when
-there is a real question, so the rhythm stays at four interruptions. Nothing enforces that a
-round was raised when it should have been, and nothing could — `status` sees the section, not the
-question that was never written down. ADR-1006.
+**What is left over is the residual round.** Most of what used to arrive under
+`## Questions for you` is settled before the change folder exists. What survives is the question
+that only becomes visible *while the delta is being written* — an edge nobody could see until
+someone tried to phrase the requirement. `spec-author` cannot ask you anything, so it writes that
+into `design.md` under `## Questions for you`, numbered, each with the answer it recommends and
+what changes if you answer otherwise, and it writes the change folder anyway on those answers so
+the round reaches you next to the diff it would change. `pnpm run status` reports it as Stage 4
+owned by you; the conductor presents it in the five-part form — by now each question is a decision
+read against a diff, not an open interview — and hands your answers back, and `spec-author` folds
+them in, records them under `## Open Questions` as settled, and deletes the section.
+
+**A residual round is a stop, not a gate:** no marker, no CI check, no G-number. It should now be
+rare, and **one that could have been asked at the grill is a finding about the grill** rather than
+a normal event — the conductor says so in a clause when it relays one, so that the next grill asks
+better. ADR-1006.
+
+**Nothing enforces that a grill happened, or that it asked well.** `pnpm run status` can see
+`grill.md` in the change folder; it cannot see the interview, and it cannot tell a file that
+closed an empty frontier from one written after three questions asked badly. Sharper still: **a
+grill in progress is not observable at all**, because `grill.md` is written when the grill closes,
+so a session abandoned mid-round leaves nothing behind and the next one starts over. Nothing
+enforces that a residual round was raised when it should have been either — `status` sees the
+section, not the question nobody wrote down. Same trade as ADR-1005 and ADR-0010: the artifact is
+checkable, the judgement is not.
 
 ### The gates, precisely
 
@@ -335,14 +378,21 @@ exemption is G7, where the reviewer's findings go in verbatim at whatever length
 written. Its first line is what ran since you last replied, so a gate that arrives after an
 unattended run stands on its own.
 
-**Between gates the conductor prints one other shape, and only one.** The step report is three
+**Between gates the conductor prints two other shapes, and only two.** The step report is three
 lines — what ran, what it left behind, what comes next — printed before every spawn, after every
 return, and as the form of a rule-5 stop. Its middle line names only things you can open, run or
 count; its `next` line before a spawn is when you will next be needed, which is the *Who decides*
-column above said at runtime. The distinction the two shapes carry is whether a reply is wanted:
-a five-part block is a question, a `▸` line is not, and there is no "report, and proceed if you
-say nothing" — in a session that takes turns, either the turn ends and you are being asked, or
-it does not and you are being told. ADR-1012.
+column above said at runtime. The round is the grill's turn: the question, the answer the
+conductor would give, one after another, printed unwrapped. It is unwrapped deliberately — a
+five-part block carries one question under a ten-line budget, so an interview inside one forces
+out exactly the questions a grill exists to reach, which is what had quietly turned this
+repository's grill into a questionnaire.
+
+**A five-part block asks for a decision, a round asks for answers, a `▸` line tells.** There is no
+fourth shape, and in particular no "report, and proceed if you say nothing" — in a session that takes
+turns, either the turn ends and you are being asked, or it does not and you are being told. What
+separates the first two is only what comes back: a word from a fixed vocabulary, or prose.
+ADR-1012.
 
 The recommendation is part of the form rather than a courtesy because the gate arrives after an
 agent has spent an hour on the thing being judged, and without a stated lean the cheapest reply
@@ -619,7 +669,8 @@ tool at all. `orchestrator` does not, which is why Stage 2 routes through you. C
 Stage 2 instruction that named `/to-tickets` failed both tests at once.
 
 Neither check covers **project** skills — `.claude/skills/`, where `grill` lives. Those carry no
-flag and load without a restart. Whether a subagent can see one is proved by spawning it:
+flag and load without a restart. Whether a subagent can see one is proved by spawning it — as a
+reachability probe only, since grilling itself is the conductor's:
 
 ```
 Invoke the Skill tool for `grill`, report the first line it returns, then stop. Write nothing.
@@ -650,12 +701,12 @@ anyway.
 
 | Skill | Reachable | Used at |
 |---|---|---|
-| `grill` (**this repo's own**, `.claude/skills/grill/`) | agent + human | both grills — Stage 1 and inside Stage 4; maintains `CONTEXT.md`. ADR-1009 |
-| `grilling`, `domain-modeling` | agent + human | not invoked directly; `grill` calls both |
+| `grill` (**this repo's own**, `.claude/skills/grill/`) | agent + human, **conductor by convention** | both grills, both in rounds — Stage 1, and the top of Stage 4. Maintains `CONTEXT.md`. It carries no flag, so nothing *stops* a subagent invoking it; one that finds itself doing so is in the wrong place, and the skill says so and stops. Same shape as `/atlas`. ADR-1009 |
+| `grilling`, `domain-modeling` | agent + human | not invoked directly; `grill` calls both, so in practice the conductor |
 | `mattpocock-skills:tdd` | agent + human | Stages 5–6. **The implementer invokes it** — `/opsx:apply` does not |
 | `mattpocock-skills:code-review` | agent + human | Stage 7, standards axis. Prefix it: a bare `code-review` is Claude Code's built-in, a different tool that can edit |
 | `codebase-design`, `diagnosing-bugs`, `research`, `resolving-merge-conflicts` | agent + human | narrow, no overlap |
-| `grill-with-docs` | **human only** | nothing. Its body is two Skill calls; `grill` makes them and adds the subagent branch it cannot have |
+| `grill-with-docs` | **human only** | nothing. Its body is two Skill calls; `grill` makes them and adds what this repo requires on top |
 | `to-tickets` | **human only** | Stage 2, **steps 1–4 only**. You type it, stop it at the breakdown quiz, and `orchestrator` writes the issues — see above |
 | `triage` | **human only** | label state machine for inbound work |
 | `handoff` | **human only** | context discipline, §6 |

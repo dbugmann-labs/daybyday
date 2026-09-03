@@ -58,12 +58,16 @@ before each. `docs/story-mechanics.md`, ADR-1003.
 G8 is the gate on Stage 9. Every number is frozen because something reads it. The stage table
 is `docs/process.md` §4.
 
-**Grilling is the first thing Stage 4 does, not a stage** (ADR-1005), and it owes three things:
-`design.md` § Open Questions filled in — "None", with the reason, is valid and required — new
-domain terms in `CONTEXT.md`, and anything it cannot settle put to the human under
-`## Questions for you` with a recommended answer. The conductor relays that round before G4 as a
-**stop, not a gate**. A question is the human's only if its answer would change the delta and it
-is a preference rather than a fact; finding facts is the agent's job. ADR-1006.
+**Grilling is the first thing Stage 4 does, not a stage** (ADR-1005) — but **the conductor runs
+it**, out loud, in rounds, before `spec-author` is spawned, because a subagent cannot hold an
+interview. It owes three things: **`grill.md`** in the change folder, holding what it settled;
+every new domain term in `CONTEXT.md`; and a `## Left open` section in that file where "None.",
+with the reason, is valid and required. `spec-author` reads `grill.md` and writes the delta on
+those answers, carrying what is still open into `design.md` § Open Questions. A question that only
+becomes visible while the delta is being written goes to the human under `## Questions for you`
+with a recommended answer, and the conductor relays that **residual round** before G4 as a **stop,
+not a gate**. A question is the human's only if its answer would change the delta and it is a
+preference rather than a fact; finding facts is the agent's job. ADR-1006.
 
 ## Hard rules
 
@@ -126,14 +130,27 @@ context of its own — no delta, no test, no `src/`. **No subagent can conduct:*
 allowed, but `AskUserQuestion` is withheld from every subagent and every gate is a question.
 Same reason rule 6 keeps configuration here. ADR-1002.
 
+**The two grills are the bounded exception, drawn by object:** the conductor holds the question
+tree — the questions, their answers, and the terms they land — and never the delta, the tests or
+`src/`. It writes exactly one file, `grill.md`, and dispatches an agent for every *fact* a
+question turns on. Reasoning about what a requirement should say, rather than about what to ask
+next, is the line; on the far side of it the work belongs to `spec-author`.
+
 **Every gate stop takes one form, and the question comes first** — the question, *if you take
 the recommendation* against *if you don't*, **the recommendation**, the exact reply, and only
 then `Detail`: the trail since the human last replied, the links, and the decisions it turns on,
 in about ten lines and never a relayed agent report. The recommendation is never omitted, and
-G7's reviewer findings are the one exemption from that budget. **Everything between gates takes
-a second form**, the three-line step report — what ran, what it left behind,
-what comes next — printed before every spawn, after every return, and as the shape of a rule-5
-stop. A five-part block asks; a `▸` line tells; there is no third. Worked examples in
+G7's reviewer findings are the one exemption from that budget. **A gate carries one decision, so
+do not ask four things when one decides it** — that is a rule about gates, and only about gates.
+
+**Everything between gates takes one of two other forms.** The three-line step report — what ran,
+what it left behind, what comes next — printed before every spawn, after every return, and as the
+shape of a rule-5 stop. And the round, which is a grill's turn: each question with the answer the
+conductor would give, printed unwrapped, never inside a five-part block, because that block's one
+question and ten-line budget force out exactly the questions a grill exists to ask. At a grill the
+opposite of the gate rule applies: **ask the whole frontier** — if four questions are ready, ask
+four, because the fourth is the product. **A five-part block asks for a decision, a round asks for
+answers, a `▸` line tells; there is no fourth shape.** Worked examples in
 `.claude/commands/atlas.md`, ADR-1012.
 
 ## Agent roles and model routing
@@ -150,7 +167,9 @@ stop. A five-part block asks; a `▸` line tells; there is no third. Worked exam
 | `reviewer` | Opus | nothing — reports findings only |
 | `janitor` | Haiku | archive moves, generated files, issue state |
 
-Nothing writes `openspec/specs/` except `/opsx:archive`. Definitions are in `.claude/agents/`.
+Nothing writes `openspec/specs/` except `/opsx:archive`, and **`grill.md` is the conductor's** —
+the one file in a change folder `spec-author` reads rather than writes, because the grill that
+produced it happens before `spec-author` is spawned. Definitions are in `.claude/agents/`.
 A `via /command` step is reachable only by an agent holding the `Skill` tool: the four pipeline
 workers have it, `orchestrator` does not and needs none.
 
@@ -180,14 +199,16 @@ ask. A session that has drifted onto a second Story is a bug: stop and start a f
 
 ## Skills
 
-**The conductor's, and no one else's:** `/atlas`. Every worker holds `Skill` and could fire it,
-so this is convention rather than a flag — a subagent that invokes `/atlas` has started
-conducting, which ADR-1002 forbids because it cannot ask a question.
+**The conductor's, and no one else's:** `/atlas` and `grill`. Every worker holds `Skill` and
+could fire either, so this is convention rather than a flag — a subagent that invokes `/atlas` has
+started conducting, which ADR-1002 forbids because it cannot ask a question, and **both grills are
+the conductor's for the same reason**: a subagent runs to completion and returns one report, so an
+interview inside one collapses to a single pass. A subagent that finds itself invoking `grill`
+should stop and say so rather than write a round nobody can answer.
 
-**Any agent holding `Skill` may invoke:** `grill` (this repo's own — both grills run through
-it), `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:explore`, `mattpocock-skills:tdd`,
-`mattpocock-skills:code-review`, `mattpocock-skills:diagnosing-bugs`,
-`mattpocock-skills:research`.
+**Any agent holding `Skill` may invoke:** `/opsx:propose`, `/opsx:apply`, `/opsx:archive`,
+`/opsx:explore`, `mattpocock-skills:tdd`, `mattpocock-skills:code-review`,
+`mattpocock-skills:diagnosing-bugs`, `mattpocock-skills:research`.
 
 **Name every plugin skill with its `mattpocock-skills:` prefix.** A bare name resolves only where
 nothing else claims it. `tdd`, `research` and `diagnosing-bugs` do reach the plugin's today —
