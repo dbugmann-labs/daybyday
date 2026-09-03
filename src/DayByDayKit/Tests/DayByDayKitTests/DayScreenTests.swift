@@ -548,6 +548,118 @@ func aDayScreenShownAgainWhereTheRecordIsFromALaterVersionSaysSo() throws {
 }
 
 @MainActor
+@Test("a day screen says the day it is showing")
+func aDayScreenSaysTheDayItIsShowing() {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+
+    let screen = DayScreen(of: [journaling], asOf: thursday, keeping: place)
+
+    #expect(screen.title == "Today · Thursday 3 September 2026")
+}
+
+@MainActor
+@Test("a day screen says the day it was handed rather than the day it really is")
+func aDayScreenSaysTheDayItWasHandedRatherThanTheDayItReallyIs() {
+    let firstKeptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let firstJournaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: firstKeptFrom)!
+    let firstSupported = CalendarDate(year: 1583, month: 1, day: 3)!
+
+    let onFirstSupported = DayScreen(of: [firstJournaling], asOf: firstSupported, keeping: freshPlace())
+
+    #expect(onFirstSupported.title == "Today · Monday 3 January 1583")
+
+    let lastJournaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: firstKeptFrom)!
+    let lastSupported = CalendarDate(year: 9999, month: 12, day: 27)!
+
+    let onLastSupported = DayScreen(of: [lastJournaling], asOf: lastSupported, keeping: freshPlace())
+
+    #expect(onLastSupported.title == "Today · Monday 27 December 9999")
+}
+
+@MainActor
+@Test("a day screen says the day its own day view says, asked as of the day it was handed")
+func aDayScreenSaysTheDayItsOwnDayViewSaysAskedAsOfTheDayItWasHanded() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym], asOf: monday, keeping: freshPlace())
+
+    #expect(screen.title == screen.dayView.title(asOf: monday))
+}
+
+@MainActor
+@Test("a day screen shown again on a later day says that day")
+func aDayScreenShownAgainOnALaterDaySaysThatDay() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let screen = DayScreen(of: [journaling], asOf: monday, keeping: freshPlace())
+    screen.shown(asOf: tuesday)
+
+    #expect(screen.title == "Today · Tuesday 1 September 2026")
+}
+
+@MainActor
+@Test("a day screen that cannot read its record still says the day")
+func aDayScreenThatCannotReadItsRecordStillSaysTheDay() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a record".utf8).write(to: place)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [journaling], asOf: monday, keeping: place)
+
+    #expect(screen.recordState == .unreadable)
+    #expect(screen.title == "Today · Monday 31 August 2026")
+}
+
+@MainActor
+@Test("a day screen says the same day after a tick is made on it")
+func aDayScreenSaysTheSameDayAfterATickIsMadeOnIt() throws {
+    let place = freshPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(of: [gym], asOf: monday, keeping: place)
+    try screen.tick(screen.dayView.rows[0])
+
+    #expect(screen.title == "Today · Monday 31 August 2026")
+}
+
+@MainActor
 @Test("a day screen does not change day when a tick is made on it")
 func aDayScreenDoesNotChangeDayWhenATickIsMadeOnIt() throws {
     let place = freshPlace()

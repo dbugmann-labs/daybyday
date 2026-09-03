@@ -67,6 +67,12 @@ public final class DayScreen {
     /// The day view the person is looking at, as the record stood when it was last read.
     public private(set) var dayView: DayView
 
+    /// The day this screen is showing, said in words: its day view's title, asked as of the day
+    /// the screen was handed. Reads no clock.
+    public var title: String {
+        dayView.title(asOf: today)
+    }
+
     /// Anything but `.kept` means the day is drawn from no record at all and no tick is taken.
     public private(set) var recordState: RecordState
 
