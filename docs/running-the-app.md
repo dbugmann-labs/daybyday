@@ -79,20 +79,37 @@ bundle identifier is `com.dbugmann.daybyday` (ADR-1023), and it must not change 
 installed even once: the record is kept under a directory the identifier names, so renaming it
 orphans everything you have ticked.
 
-**Signing is yours, once, in the Xcode GUI**, and no `xcodebuild` flag substitutes for it. This
-machine had no codesigning identity at all when this section was written — `security find-identity
--v -p codesigning` printed `0 valid identities found`:
+**Signing was done once, in the Xcode GUI, and is committed.** `DEVELOPMENT_TEAM = 4QZ29N6GN2`
+sits in both build configurations, and the Apple Development certificate for
+`diego.bugmann@hotmail.com` is in this machine's keychain. `security find-identity -v -p
+codesigning` should print one valid identity; if it prints `0 valid identities found` you are on a
+different machine, and the steps that produced it were:
 
-1. **Xcode → Settings → Accounts → +** and sign in with your Apple ID. A free one is enough.
-2. Open `src/DayByDay/DayByDay.xcodeproj`, select the **DayByDay** target → **Signing &
-   Capabilities**, tick *Automatically manage signing*, and pick your team.
-3. That writes `DEVELOPMENT_TEAM` into `project.pbxproj`. **Commit it** — it is how the next
-   build on this machine signs without the GUI.
+1. **Xcode → Settings → Accounts → +** and sign in with the Apple ID. A free one is enough.
+2. Open `src/DayByDay/DayByDay.xcodeproj` **from the worktree you are working in**, select the
+   **DayByDay** target → **Signing & Capabilities**, tick *Automatically manage signing*, and pick
+   the team.
+
+**Signing in does not create the certificate**; step 2 does, as a side effect of being asked to
+sign. Doing only step 1 leaves `find-identity` at zero, which reads as the sign-in having failed
+and has not.
+
+**Step 2 also rewrites `project.pbxproj`** — `objectVersion` 77 down to 70 and three sections
+reordered, about twenty lines. That is Xcode normalising a hand-written file to the form it
+round-trips, it is committed as such, and reverting it only reproduces the diff on the next GUI
+open.
 
 **A free Apple ID expires the build after seven days.** The app stops launching and needs the
 install run again; the record survives, because it lives in the app's container rather than in the
 build. Nothing warns you first. A paid Apple Developer account is what removes the weekly step,
 and it is not needed to run the trial.
+
+**A personal team needs a device before it can make a provisioning profile.** With none
+registered, Xcode reports *"Your team has no devices from which to generate a provisioning
+profile"* and *"No profiles for 'com.dbugmann.daybyday' were found"*. Both are the same missing
+phone rather than two problems, and neither blocks a **simulator** build — that needs no profile,
+which is why the app still builds and runs with the errors on screen. Plug the phone in, unlock it,
+answer *Trust This Computer*, and Xcode registers the device and issues the profile by itself.
 
 Then, with the phone plugged in and unlocked:
 
