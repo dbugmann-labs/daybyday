@@ -215,3 +215,312 @@ func twoNamesDifferingOnlyByASpaceAtTheEndAreDifferentCommitmentsAndBothAreHeld(
     #expect(added)
     #expect(roster.commitments.map(\.name) == ["Gym", "Gym "])
 }
+
+@Test("offering a commitment the roster has stopped keeping takes it up again")
+func offeringACommitmentTheRosterHasStoppedKeepingTakesItUpAgain() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let takenUp = roster.add(gymAgain)
+
+    #expect(takenUp)
+    #expect(roster.commitments == [gymAgain])
+
+    var neverStopped = Roster()
+    _ = neverStopped.add(gym)
+    #expect(roster == neverStopped)
+}
+
+@Test("a commitment taken up again keeps the place it was taken on in")
+func aCommitmentTakenUpAgainKeepsThePlaceItWasTakenOnIn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let takenUp = roster.add(gymAgain)
+
+    #expect(takenUp)
+    #expect(roster.commitments == [waterPlants, gymAgain, journaling])
+}
+
+@Test("stopping a commitment a roster keeps says so and takes it out of the commitments read back")
+func stoppingACommitmentARosterKeepsSaysSoAndTakesItOutOfTheCommitmentsReadBack() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+
+    let stopped = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(stopped)
+    #expect(roster.commitments.isEmpty)
+}
+
+@Test("stopping one commitment leaves the others where they were")
+func stoppingOneCommitmentLeavesTheOthersWhereTheyWere() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(roster.commitments == [waterPlants, journaling])
+}
+
+@Test("stopping a commitment a roster does not hold says it was not stopped and leaves the roster as it was")
+func stoppingACommitmentARosterDoesNotHoldSaysItWasNotStoppedAndLeavesTheRosterAsItWas() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+
+    let stopped = roster.retire(run, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(!stopped)
+
+    var neverAsked = Roster()
+    _ = neverAsked.add(gym)
+    #expect(roster == neverAsked)
+}
+
+@Test("stopping a commitment already stopped says it was not stopped and keeps the day first given")
+func stoppingACommitmentAlreadyStoppedSaysItWasNotStoppedAndKeepsTheDayFirstGiven() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let stoppedAgain = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!)
+
+    #expect(!stoppedAgain)
+
+    var askedOnce = Roster()
+    _ = askedOnce.add(gym)
+    _ = askedOnce.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    #expect(roster == askedOnce)
+}
+
+@Test("a commitment taken up again can be stopped again, on a new day")
+func aCommitmentTakenUpAgainCanBeStoppedAgainOnANewDay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    _ = roster.add(gymAgain)
+
+    let stopped = roster.retire(gymAgain, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!)
+
+    #expect(stopped)
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 28)!) == [gymAgain])
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 3, day: 1)!).isEmpty)
+}
+
+@Test("a commitment kept until a day before the day it is kept from is accepted")
+func aCommitmentKeptUntilADayBeforeTheDayItIsKeptFromIsAccepted() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(
+        name: "Gym", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+
+    let stopped = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 1)!)
+
+    #expect(stopped)
+    #expect(roster.commitments.isEmpty)
+}
+
+@Test("two rosters differing only in the day one commitment was kept until are different rosters")
+func twoRostersDifferingOnlyInTheDayOneCommitmentWasKeptUntilAreDifferentRosters() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var stoppedInJanuary = Roster()
+    _ = stoppedInJanuary.add(gym)
+    _ = stoppedInJanuary.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    var stoppedInFebruary = Roster()
+    _ = stoppedInFebruary.add(gym)
+    _ = stoppedInFebruary.retire(gym, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!)
+
+    #expect(stoppedInJanuary != stoppedInFebruary)
+
+    var stoppedInJanuaryAgain = Roster()
+    _ = stoppedInJanuaryAgain.add(gym)
+    _ = stoppedInJanuaryAgain.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(stoppedInJanuaryAgain == stoppedInJanuary)
+}
+
+@Test("stopping a commitment on a copy of a roster leaves the roster it was copied from unchanged")
+func stoppingACommitmentOnACopyOfARosterLeavesTheRosterItWasCopiedFromUnchanged() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var original = Roster()
+    _ = original.add(gym)
+
+    var copy = original
+    _ = copy.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(copy.commitments.isEmpty)
+    #expect(original.commitments == [gym])
+    #expect(original != copy)
+}
+
+@Test("a roster answers with every commitment it keeps, in the order they were taken on")
+func aRosterAnswersWithEveryCommitmentItKeepsInTheOrderTheyWereTakenOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+
+    let answer = roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(answer == [waterPlants, gym])
+}
+
+@Test("a stopped commitment is in the answer on the day it was kept until and out of it on the next day")
+func aStoppedCommitmentIsInTheAnswerOnTheDayItWasKeptUntilAndOutOfItOnTheNextDay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!) == [gym])
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!).isEmpty)
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 3, day: 1)!).isEmpty)
+}
+
+@Test("a stopped commitment keeps its place in the answer for a date it was still kept on")
+func aStoppedCommitmentKeepsItsPlaceInTheAnswerForADateItWasStillKeptOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let onKeptUntilDay = roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+    let onTheNextDay = roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!)
+
+    #expect(onKeptUntilDay == [waterPlants, gym, journaling])
+    #expect(onTheNextDay == [waterPlants, journaling])
+}
+
+@Test("taking a commitment up again puts it back in the answer for the dates between")
+func takingACommitmentUpAgainPutsItBackInTheAnswerForTheDatesBetween() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    _ = roster.add(gymAgain)
+
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!) == [gymAgain])
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!) == [gymAgain])
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 3, day: 1)!) == [gymAgain])
+}
+
+@Test("stopping a commitment leaves every earlier date answering as it did")
+func stoppingACommitmentLeavesEveryEarlierDateAnsweringAsItDid() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let dates = [
+        CalendarDate(year: 2026, month: 1, day: 1)!,
+        CalendarDate(year: 2026, month: 1, day: 2)!,
+        CalendarDate(year: 1583, month: 1, day: 1)!,
+    ]
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    let before = dates.map { roster.commitments(on: $0) }
+
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    let after = dates.map { roster.commitments(on: $0) }
+
+    #expect(before == after)
+    #expect(after.allSatisfy { $0 == [gym] })
+}
+
+@Test("a commitment kept from a later date is in the answer for a date before it")
+func aCommitmentKeptFromALaterDateIsInTheAnswerForADateBeforeIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(
+        name: "Gym", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+
+    let answer = roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 1)!)
+
+    #expect(answer == [gym])
+}
+
+@Test("a roster that holds nothing answers with nothing on every date")
+func aRosterThatHoldsNothingAnswersWithNothingOnEveryDate() {
+    let roster = Roster()
+    let dates = [
+        CalendarDate(year: 1583, month: 1, day: 1)!,
+        CalendarDate(year: 2026, month: 1, day: 1)!,
+        CalendarDate(year: 9999, month: 12, day: 31)!,
+    ]
+
+    let answers = dates.map { roster.commitments(on: $0) }
+
+    #expect(answers.allSatisfy { $0.isEmpty })
+}
