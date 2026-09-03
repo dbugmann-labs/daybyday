@@ -1,18 +1,18 @@
 ## 1. The public surface
 
-- [ ] 1.1 Widen `Sources/DayByDayKit/DayView.swift` exactly as `design.md` § *The seam* gives it:
+- [x] 1.1 Widen `Sources/DayByDayKit/DayView.swift` exactly as `design.md` § *The seam* gives it:
   add an internal stored `let date: CalendarDate` to `DayView.Row`, passed down from `DayView`'s own
   date in the initializer, and one new public member `func tick(asOf today: CalendarDate) -> Tick?`
   with a body of `fatalError("not implemented")`. Nothing else becomes public — `commitment` and
   `date` stay internal, `DayView`'s own `date` is not exposed, and no other file in the package is
   touched. Verify with `cd src/DayByDayKit && swift build` exiting 0.
-- [ ] 1.2 Confirm nothing else moved: `git diff --stat` names only `DayView.swift`, and `cd
+- [x] 1.2 Confirm nothing else moved: `git diff --stat` names only `DayView.swift`, and `cd
   src/DayByDayKit && swift test` still reports the 135 tests from #8, #9, #10, #11, #42, #55, #56
   and #70 passing. Adding `date` to `Row` changes row equality (`design.md` § *Row equality gains
   the date*) and is expected to change **no** existing test; if one goes red here, stop — that is a
   MODIFIED requirement this delta does not carry, and it is a rule-5 stop rather than a test to
   edit.
-- [ ] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports `0/14
+- [x] 1.3 Confirm the starting point before writing a test: `pnpm run check:scenarios` reports `0/14
   covered` for this change and names `"a row offers the tick for its commitment on the date the day
   view is of"` as next.
 
