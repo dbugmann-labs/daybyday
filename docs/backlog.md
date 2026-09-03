@@ -348,72 +348,6 @@ than said in their own words.*
   that Feature's requirements rather than a want of its own. It stays separate while the day
   screen row is still a candidate for them.
 
-### B-022 — tick a commitment on the phone, and find it still ticked
-*Captured 2026-09-03, from the sweep. The wording is the sweep's, accepted by the owner rather
-than said in their own words.*
-
-> "Tick something on the phone and find it still ticked next time you open it."
-
-- **Trigger** — five times a day, phone in hand. It is the product's whole daily interaction.
-- **Touches** — `record` (#53) and the **app shell**. Every piece exists behind the seam: #55
-  forms a tick, #56 keeps one at a place, #71 has a row offer one. `src/DayByDay` draws
-  `List(dayView.rows) { Text(row.name) }` — no tap, no store, and it does not even draw
-  `row.isKept`. Nothing joins them, and nothing wants them joined.
-- **Principle** — tested against *entered where you stand*: passes, and is the only actual
-  instance of it. The principle says every daily entry is made on the day screen in the row;
-  today no entry can be made at all. It passes *five percent of seven things* on the same
-  reading — it makes the record possible rather than deepening one.
-- **Open** — which half of this owes a Story and which is shell work. `CONTEXT.md` § *App shell*
-  names "a place a store is opened at" as failing the shell's test by example, and
-  `docs/open-questions.md` § *Known gaps* already owes the choice of
-  `Library/Application Support/` to "the first Story that persists a tick from inside the app".
-  Drawing `isKept` is a formatting rule, which fails the same test.
-- **Open** — `RecordStore.init` can throw outside `RecordStoreError` (`docs/open-questions.md`),
-  and this is the want that first has to answer what the screen does when the store will not open.
-
-### B-023 — see which day the screen is showing
-*Captured 2026-09-03, from the sweep. The wording is the sweep's.*
-
-> "See which day the screen is showing."
-
-- **Trigger** — passive, on every visit; sharply the moment you have moved off today (B-024),
-  because then nothing on screen says where you are.
-- **Touches** — `schedule` (#6) and whatever draws a day view. Saying a date back is not a job any
-  capability does today.
-- **Principle** — tested against *an iPhone, in your hand*: passes. A screen that will not say
-  which day it is answering for is unreadable at a glance, which is the only way it is ever read.
-- **A known gap already points at this.** `docs/open-questions.md` § *Known gaps*, fifth face of
-  the payload read-back gap, recorded from #72 on 2026-09-03: `CalendarDate`'s `year`, `month` and
-  `day` are internal and it is not `Comparable`, so the shell can move between days and cannot
-  name one. The widening is a delta against `openspec/specs/schedule/spec.md` rather than
-  `day-screen`, so this want crosses two capabilities however it is sliced.
-- **Open** — what form. "Wednesday 3 September" is the date; "Today" and "Yesterday" are relative
-  and need *today*, which `CONTEXT.md` says is always handed in and which the screen already
-  holds. The second is friendlier and is one more thing that can be wrong.
-- **Open** — may fold into B-024: if the date only ever appears because you can move off today,
-  it is that Feature's requirement rather than a want of its own.
-
-### B-024 — move between days on the phone
-*Captured 2026-09-03, from the sweep. The wording is the sweep's.*
-
-> "Move between days on the phone."
-
-- **Trigger** — evening or the morning after, to fill in a day that was missed at the time. It is
-  the gap-a-few-days-old failure the product exists to remove.
-- **Touches** — `day-screen` (#27) and the app shell. `DayView.previousDay(of:in:)` and
-  `.nextDay(of:in:)` shipped with #72 and are reachable from nothing; the shell draws `today()`
-  and only `today()`.
-- **Principle** — tested against *five percent of seven things*: passes. It is not depth on the
-  day screen — without it exactly one day of the record is reachable, and the other side of the
-  seam already answers for every date the system supports.
-- **Open** — what the move is on a phone: a swipe, a pair of arrows, a calendar. B-023 is a
-  precondition either way.
-- **Open** — the ends. `previousDay` gives nothing before 1583 and `nextDay` nothing after 9999,
-  and what a screen does with nothing is a refusal, which `CONTEXT.md` § *App shell* says owes a
-  Story rather than shell work.
-- **Open** — a row after today is shown and refuses the tick (`CONTEXT.md` § *Row*). Nothing has
-  said how a row refuses visibly, and this is the want that first makes a person meet one.
-
 ### B-025 — know where I stand on a weekly quota, inside its week
 *Captured 2026-09-03, from the sweep. The wording is the sweep's.*
 
@@ -442,6 +376,23 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-03 — tick a commitment on the phone and find it still ticked → `FEAT: day-screen`
+  (#27), reopened, under `EPIC: Daily commitments` (#1). Story numbers follow at #27's G2. The
+  requirements live behind the seam in `DayByDayKit` and not in `src/DayByDay`, because CI runs
+  `swift test` only where a `Package.swift` is while check 4 walks every `.swift` in the tree —
+  a test in the app target would match its scenario and never run. It consumes two known gaps:
+  the store's place under `Library/Application Support/`, and the fourth error case
+  `RecordStore.init` can throw.
+- 2026-09-03 — see which day the screen is showing → `FEAT: day-screen` (#27), same cluster. Its
+  Story carries a delta against `openspec/specs/schedule/spec.md` as well, to read a
+  `CalendarDate` back; that is the fifth face of the payload read-back gap, and the first change
+  in this repo to delta two capabilities at once. The date is said as a weekday and a date, with
+  "Today" added only on today.
+- 2026-09-03 — move between days on the phone → `FEAT: day-screen` (#27), same cluster. `DayView`
+  already answers for every supported date and shipped `previousDay`/`nextDay` with #72; what was
+  missing was any way to reach them. A day screen holds the today it was handed when the app was
+  shown and does not follow the clock while it is being looked at, so a screen never moves onto a
+  different day underneath the person reading it.
 - 2026-09-02 — tick a commitment from the day I am looking at → Story #71
   `add-tick-from-row`, under `FEAT: day-screen` (#27). The tap belongs to `day-screen`, settled at
   the Feature grill: `record` says what a tick is and knows nothing of a row, so #53 stays closed.
@@ -552,3 +503,44 @@ found nothing.
       "export and restore" by name, so promoting it amends the Epic's exclusion list.
     - **F**, quota spans: B-017 stays; the weekly quota shipped today and nothing on the day-one
       week asks for a longer span.
+
+- 2026-09-03 — pass over 19 wants, the third.
+  - **Sweep** — four silences, all confirmed and captured before clustering, and three of them
+    one discovery: `schedule`, `commitment`, `record` and `day-screen` had all shipped and
+    closed, and the app on a phone still recorded nothing, because every Story stopped at the
+    `DayByDayKit` seam. B-022 tick and keep it on the phone, B-024 move between days, B-023 name
+    the day you are on — the shell drew row names and neither ticked, persisted, moved nor said
+    which day it was. B-025 is the weekly quota's missing half, a row that appears all seven days
+    saying the same thing, captured with its failure written down: it strains *nothing
+    congratulates you* harder than anything yet captured and is blocked on *Week turnover*
+    besides. The day-one week has no rhythm uncovered. The lifecycle verbs on `commitment` are
+    all claimed (B-015, B-014, B-013); on `record`, create and untick shipped and nothing in the
+    app used either. `docs/open-questions.md` held no other want in disguise.
+  - **Taken forward** — cluster A, the app that records anything at all: B-022, B-023, B-024,
+    grilled and taken to `FEAT: day-screen` (#27), reopened rather than minted. It is Epic #1's
+    own outcome sentence, which had closed undelivered. The grill ran two rounds and settled
+    five things: the requirements land in `day-screen` with deltas into `schedule` and `record`
+    rather than in a new capability; a store that will not open draws the day and refuses every
+    tick rather than losing one in memory; a day screen does not follow the clock while it is
+    being looked at; the date is said as a weekday and a date with "Today" only on today; and
+    the day is re-read when the app is shown, so the morning visit lands on the morning. Two
+    `CONTEXT.md` edits came out of it — **day screen** as a new term, and **today** amended,
+    because it had claimed a today is never kept and a day screen keeps one. Proposed for its
+    G2: the running day first, then reading a date back, then moving between days, with the
+    store's refusal folded into the first unless the breakdown disagrees.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **B**, the commitment's lifecycle: B-015, B-020, B-014, B-013, B-021 as Stories reopening
+      `commitment` (#26), plus a screen that is not the day screen. Recommended by both earlier
+      passes as next and overturned here — the eight day-one commitments are hard-coded in the
+      shell, so defining them from the phone buys nothing that cannot already be seen while the
+      app cannot record a tick. The owner took it forward in a separate session the same day.
+    - **C**, a record that is not a tick: B-001..B-005 and B-018 reopen `record` (#53) and
+      rewrite `CONTEXT.md` § *Record*, whose "at most one per commitment per day" B-018
+      contradicts. Whoever takes it must merge or separate B-002 and B-018 deliberately. Also
+      taken forward in a separate session the same day.
+    - **D**, looking back: B-007 and B-011, unclaimed. There is now a store to look back at, but
+      nothing has been recorded on a phone until cluster A lands, so it stays.
+    - **E**, restore: B-009, a Story against #53. Unblocked for the first time — the store's
+      shape was chosen by ADR-1017 — and promoting it amends Epic #1's exclusion list.
+    - **F**, quota spans and standing: B-017 and B-025, both blocked on *Week turnover*
+      (`docs/open-questions.md`), which nothing yet forces.
