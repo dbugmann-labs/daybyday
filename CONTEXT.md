@@ -256,6 +256,49 @@ open — so it lives behind the seam in `DayByDayKit` with the rest of the requi
 left in `src/DayByDay` is a SwiftUI body and the clock reading that hands it a today. Agreed
 2026-09-03 at the third grooming pass's Feature grill.
 
+It **keeps a change before it says so**: a tick made on a day screen is kept at the record's place
+first, and only then does the day view say the commitment is kept — the day view is formed again
+from the record as it then stands rather than the one being held being altered. What a person reads
+is therefore never ahead of what is on the disk, and a change that could not be kept is refused,
+reported and left out of the day view entirely. It is not the tick's owner: which tick a tap means
+is the row's answer and what a tick is and where it is held are `record`'s, and a day screen adds
+nothing to either.
+
+A day screen **without its record** is one whose store would not open. It is still a day screen: it
+draws the day, because what a date asks of a person needs no record to answer, and it says that it
+is keeping none. It takes no tick at all — not into memory, not to be kept later — because a tick
+shown as made and not kept is exactly the record this product exists not to lose, and it leaves what
+is at the place untouched for a person or a later version of the app to recover. The condition lasts
+only until the app is shown again, since being shown opens the store afresh.
+
+Every way a store can refuse to open is answered the same way here, but one of them is **named**: a
+record **written by a later version of DayByDay**. That record is whole and it is the app that is
+behind, so the person's answer is to update the app and leave the file completely alone — where a
+screen saying only that something is wrong with the record invites deleting it, which is the loss
+this product exists to prevent. No other reason leaves a person anything different to do, so no
+other reason is told apart. ADR-1021, settled by the owner at the Feature grill on 2026-09-03 and
+sharpened by them on the same day on `add-day-screen`'s question round; recorded by
+`add-day-screen` (#91).
+
+**Record place** — the one place a day screen keeps its record at, and the only thing about the
+record that is a day screen's to choose. It is a file inside the directory the platform reserves for
+an application's own supporting data, in a directory of this app's own, and it is the same place
+every time it is asked for, because the app opened again has to read what the app before it wrote.
+It is deliberately not the caches directory, which the system empties when it is short of space, nor
+the temporary directory, which no backup carries. The choice lands here because it lands nowhere
+else: a **store** keeps a history at whatever place it is given and cannot refuse a bad one from
+where it sits, and the **app shell** decides nothing. Agreed 2026-09-03 at the grill of
+`add-day-screen` (#91).
+
+**Shown** — the moment the app comes in front of a person: opened from nothing, or brought back from
+behind whatever was in front of it. It is the only moment a day screen is handed a **today**, and so
+the only moment the day it holds can change — nothing else moves a day screen onto another day, and
+in particular time passing does not, so a screen someone is reading cannot turn over underneath
+them. It is also when the record is read again, which is what lets a screen that opened **without
+its record** start keeping one without the app being force-quit. Deliberately a fact about the app
+rather than about the clock: being shown does not tell a day screen what day it is, it is the moment
+at which a day screen is *told*. Agreed 2026-09-03, the same grill.
+
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
 combination that names no day — 30 February — is not one. Its year runs from 1583 to 9999
