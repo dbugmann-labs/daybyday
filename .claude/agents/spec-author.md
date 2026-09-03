@@ -78,8 +78,16 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
    than spoken. The conductor relays it, as a five-part stop rather than as a round: by now the
    delta exists, so each question is a decision read against a diff. ADR-1006, amended.
 
-3. **Propose.** `/opsx:propose <change-id>`. Use ADDED / MODIFIED / REMOVED correctly against
-   the *current* specs — read them before you write a delta against them.
+3. **Propose.** `/opsx:propose <change-id>`, **skipping its *Create the change directory*
+   step.** The folder already exists — the grill scaffolded it and left `grill.md` in it — and
+   the `openspec new change` that step runs exits 1 against a directory that is already there
+   (`Change '<id>' already exists at …`). Begin at *Get the artifact build order*,
+   `openspec status --change <change-id> --json`, which reads the folder the grill left. Do not
+   delete the folder to make the step run, and do not create a second change id: report it under
+   rule 5 if the folder is missing, because that means no grill happened.
+
+   Then use ADDED / MODIFIED / REMOVED correctly against the *current* specs — read them before
+   you write a delta against them.
 4. **Cover the edges.** Every requirement needs at least one `#### Scenario:`, and the error
    and edge cases need scenarios too, not just the happy path. This is the most common way a
    change passes G4 and still ships the wrong thing.
@@ -87,9 +95,9 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
    an existing seam beats a new one.
 6. **Validate.** `openspec validate <change-id> --strict` must exit 0 before you hand back.
 7. **Open the draft PR.** G4 is read as a diff, so leave one behind. Commit the change folder
-   as `docs(<capability>): propose <change-id>` — `grill.md` is uncommitted when you arrive and
-   goes in with the rest of the folder, not as a commit of its own; it is documentation until G4
-   like everything else there. Make sure the branch sits on current `main`, push, and open it:
+   as `docs(<capability>): propose <change-id>` — `grill.md` and `.openspec.yaml` are both
+   uncommitted when you arrive, and both go in with the rest of the folder rather than as a
+   commit of their own; they are documentation until G4 like everything else there. Make sure the branch sits on current `main`, push, and open it:
 
    ```bash
    git fetch origin && git rebase origin/main

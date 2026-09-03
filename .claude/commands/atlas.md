@@ -289,8 +289,8 @@ G1 at Stage 1, `grill.md` and `spec-author` at Stage 4.
 
 ## The residual round
 
-The grill happens before the change folder exists, so most of what used to arrive this way is
-settled by then. What is left is the question that **only becomes visible while the delta is
+The grill happens before a line of the delta is written, so most of what used to arrive this way
+is settled by then. What is left is the question that **only becomes visible while the delta is
 being written** — an edge nobody could see until someone tried to phrase the requirement.
 `spec-author` cannot ask you anything, so it writes that into `design.md` under
 `## Questions for you` and returns. **Relaying it is yours.**
@@ -668,9 +668,21 @@ delta on answers rather than on its own recommendations. ADR-1006, amended.
    edges that are invisible until someone tries to phrase the requirement. Dispatch an agent for
    every fact; ask only what is genuinely theirs.
 
-4. **Write `grill.md` into the change folder**, and nothing else. It is the durable form of what
-   the interview settled, and it exists so the answers survive a session boundary and reach
-   `spec-author` without being pasted into a prompt:
+4. **Create the change folder and write `grill.md` into it**, and nothing else. Both at the
+   close, in that order — a grill in progress leaves nothing on disk, deliberately:
+
+   ```bash
+   openspec new change <change-id>     # the Story issue title, verbatim
+   ```
+
+   **Scaffold it with the CLI rather than `mkdir`.** That command writes the folder's
+   `.openspec.yaml`, which records the schema and is where `skip_specs` would go; thirteen of
+   the fourteen archived changes carry one. It also refuses to run against a directory that
+   already exists, which is why the folder is yours to create and `spec-author` is told not to
+   — `.claude/agents/spec-author.md` step 3.
+
+   `grill.md` is the durable form of what the interview settled, and it exists so the answers
+   survive a session boundary and reach `spec-author` without being pasted into a prompt:
 
    ```markdown
    # Grill — add-pause-window
