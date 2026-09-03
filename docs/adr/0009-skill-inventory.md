@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-08-22
 - Deciders: Diego Bugmann
+- Amended: 2026-09-04 — the process no longer depends on `grill-with-docs`. ADR-1009 gave this
+  repo its own `grill`, which makes the same two `Skill` calls; nothing routes to the flagged
+  skill today. The kill list and the reasoning for installing the plugin whole are unchanged.
 
 ## Context
 
@@ -28,8 +31,10 @@ the four skills in `AGENTS.md` as **never invoke**.
 - The four skills carry `disable-model-invocation: true` in their own frontmatter, so they
   cannot fire on their own; only an explicit invocation by name reaches them. `tdd` and
   `code-review`, the two we want firing automatically, are the model-invocable ones. The split
-  covers the kill list, but it is not exactly right: `grill-with-docs` carries the flag too, and
-  the process depends on it. See ADR-1009.
+  covers the kill list, but it was not exactly right: `grill-with-docs` carries the flag too, and
+  the process depended on it. ADR-1009 closed that a day later with `grill`, this repo's own,
+  which calls `grilling` and `domain-modeling` directly. `grill-with-docs` is still installed,
+  still flagged, still typable by the human, and now unreached.
 - Enforcement is therefore documentation plus a mechanical guarantee against accidental
   triggering, which is sufficient. It is not a guarantee against deliberate misuse.
 - Verified from the plugin manifest: it declares 25 skills and **no hooks, no MCP servers and

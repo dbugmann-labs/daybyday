@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-08-29
 - Deciders: Diego Bugmann
+- Amended: 2026-09-04 — *holds no work context* is redrawn by object rather than by effort: the
+  conductor runs both grills itself and holds the question tree, and still writes no delta, no
+  test and no `src/`. The interruption count and the claim that every interruption arrives in
+  the same shape are corrected with it. ADR-1006, ADR-1012.
 
 ## Context
 
@@ -61,10 +65,18 @@ the tracker: issue types, bodies that carry no requirements, and sub-issue edges
 both ends. Its delegation claim is removed from the agent file, from `AGENTS.md` and from
 `docs/process.md`.
 
-**The conductor holds no work context.** It reads status, presents gates, spawns the agent
-whose turn it is, and reports what came back. It writes no delta, no test and no `src/`. This
-is what keeps `AGENTS.md` § *Context discipline* intact: a conductor that starts doing the work
-becomes a long session drifting across several Stories, which that section calls a bug.
+**The conductor holds no work context.** It reads status, presents gates, runs the two grills,
+spawns the agent whose turn it is, and reports what came back. It writes no delta, no test and
+no `src/`. This is what keeps `AGENTS.md` § *Context discipline* intact: a conductor that starts
+doing the work becomes a long session drifting across several Stories, which that section calls
+a bug.
+
+**The line is drawn by object, not by effort** — amended 2026-09-04, when the Story grill moved
+here. An open-ended interview *is* work context by any measure of effort, so the rule survives
+only if it names things rather than exertion: the conductor holds the question tree — the
+questions, their answers, and the terms they land — and never the delta, the tests or `src/`.
+`grill.md` is the one file it writes, and it holds decisions rather than requirements, which is
+why writing it is not authoring the spec. ADR-1006 carries the reasoning.
 
 **`pnpm run status` derives the stage from the systems of record and names whose turn it is.**
 It is a projection in exactly the sense `docs/graph.mmd` is one: read-only, derived on demand,
@@ -78,8 +90,11 @@ what a no costs, and the exact reply.
 
 ## Consequences
 
-The human is interrupted roughly four times per Story instead of at every stage boundary, and
-each interruption arrives in the same shape. A session that opens on `main` can ask what is
+The human is interrupted three times per Story instead of at every stage boundary — the grill,
+G4, G7 — and twice per Feature, at G1 and G2. Each interruption arrives in one of two asking
+shapes: the grill prints as a round, and every gate as a five-part block. *Amended 2026-09-04;
+this read "roughly four times per Story" and "the same shape", both written before the grill
+became an interview. ADR-1006, ADR-1012.* A session that opens on `main` can ask what is
 outstanding and get an answer rather than reconstructing one.
 
 **Status can be wrong, and nothing breaks when it is.** That is the point of making it a
