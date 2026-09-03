@@ -69,8 +69,8 @@ Three things, none optional:
 1. **The questions and their answers are written to a file**, because a conversation is not a
    durable file and `AGENTS.md` § *Context discipline* binds here too. At Stage 4 that is
    `grill.md` in the change folder, whose shape is in `.claude/commands/atlas.md` § *The Story
-   grill*; it carries `## Settled`, any terms landed, and a `## Left open` section where `None.`
-   is valid and required, with the reason. At Stage 1 there is no change folder yet and the
+   grill*; it carries `## Settled`, `## Terms landed in CONTEXT.md`, and a `## Left open` section
+   where `None.` is valid and required, with the reason. At Stage 1 there is no change folder yet and the
    output is the Feature issue plus the `CONTEXT.md` terms.
 
    **The asymmetry is deliberate, not an omission.** The Stage 4 grill needs a file because its

@@ -38,7 +38,8 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
      **filled in**: "None." is a valid and required answer — say why, never leave it empty. A
      question left open becomes a scenario someone invents later.
    - **Any new domain term lands in `CONTEXT.md`**, one term per thing. The grill lands the terms
-     it settled; you land the ones writing the delta turns up.
+     it settled and lists them under `## Terms landed in CONTEXT.md`; you land the ones writing
+     the delta turns up.
 
    **Do not invoke `grill`.** It is the conductor's, both grills, and the skill will tell you to
    stop. If `grill.md` is missing, that is a stop under rule 5 — say so and hand back; do not
