@@ -48,24 +48,28 @@ So:
 
 ## Step 3 — the two rules this repository adds
 
-**Ask the whole frontier.** `AGENTS.md` § *The conductor* says **"a gate carries one decision, so
-do not ask four things when one decides it"**, and says in the same breath that this is a rule
-about gates and only about gates. **It does not apply here.** A grill exists to reach the fourth
-question, and the round that asks only the most important one is the questionnaire this skill was
-rewritten to stop producing. If four questions are ready, ask four.
+**Ask every question in the frontier.** `AGENTS.md` § *The conductor* says **"a gate carries one
+decision, so do not ask four things when one decides it"**, and says in the same breath that this
+is a rule about gates and only about gates. **It does not apply here.** A grill exists to reach
+the sixth question, and the round that asks only the most important one is the questionnaire this
+skill was rewritten to stop producing. If six are ready, six get asked — **one after another, not
+six at once.** The rule is about never dropping a question; it was never about delivering them
+together.
 
-**Print the round unwrapped, then ask it with `AskUserQuestion`.** `grilling`'s format — `❓`,
-`➡️`, a rule between questions — and never a five-part gate block around it. The gate block
-carries one question under a ten-line budget, so wrapping an interview in it forces exactly the
-questions worth asking to be dropped. A five-part block asks for a decision; a round asks for
-answers. **Printing is not asking**: the printed round carries the bodies and the reasoning, and
-the picker that follows carries the answering — same questions, same order, the `➡️`
-recommendation as the first option marked `(Recommended)`, and the tool's four-question cap split
-across consecutive calls rather than allowed to shrink the frontier. `.claude/commands/atlas.md`
-§ *The round* has the rules. ADR-1012.
+**Ask with `AskUserQuestion`, one question per call, and never inside a five-part block.** That
+block carries one question under a ten-line budget, so wrapping an interview in it forces exactly
+the questions worth asking to be dropped; a five-part block asks for a decision, a round asks for
+answers. The picker is what makes a round answerable from the keyboard, and it is the tool that
+made the grill the conductor's in the first place — no subagent holds it. The recommendation is
+the first option, marked `(Recommended)`; the options after it are the answers you actually
+considered; *Other* comes from the harness. `.claude/commands/atlas.md` § *The round* has the
+rest. ADR-1012.
 
 Both of these were the repository's own additions and both were wrong. They are written down
-here so the next person to tidy this skill does not reinstate them.
+here so the next person to tidy this skill does not reinstate them. The underlying `grilling`
+skill says to ask the whole frontier **in one round**; this repository asks the same questions one
+at a time and recomputes after each, which is strictly finer and is the one place it knowingly
+departs from that protocol. ADR-1012.
 
 ## Step 4 — what must come out
 

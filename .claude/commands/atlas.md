@@ -111,7 +111,7 @@ whether a reply is wanted — and what *kind* of reply — before they read a wo
 |---|---|---|---|
 | **Gate** | `G4 — Spec approved` | five-part | yes — nothing moves until the exact reply arrives |
 | **Stop** | `Stop — questions before G4` | five-part | yes — no marker, no CI check, no G-number, but it is still a question |
-| **Round** | `❓ Q1 — <title>` | the round | yes — but the reply is prose, and there will be another |
+| **Round** | the question itself | one question, asked with `AskUserQuestion` | yes — but there will be another, and another, until the frontier is empty |
 | **Report** | `▸ implementer returned` | three-line step report | no — you print it and carry on |
 
 **A five-part block asks for a decision; a round asks for answers; a `▸` line tells.** That is
@@ -248,71 +248,51 @@ not become:
 
 ## The round
 
-A grill is an interview, and an interview is a loop: ask the frontier, hear the answers, work out
-what those answers just unblocked, ask again. **The round is that loop's turn.** It is the shape
-`mattpocock-skills:grilling` prescribes and you print it unchanged — no wrapper, no budget, and
-never a five-part block around it:
+A grill is an interview, and an interview is a loop: ask, hear the answer, work out what that
+answer just unblocked, ask the next. **The round is that loop's turn — one question, asked and
+answered.** It is the third of the three shapes, and the only one that asks for answers rather
+than a decision.
 
-```
-❓ **Q1** — **A pause mid-week, against a weekly quota**: does that week's quota
-   shrink in proportion to the days left, or is the week written off entirely?
+**Ask it with `AskUserQuestion`, one question per call.** That tool is withheld from every
+subagent, which is the entire reason the grill is yours rather than `spec-author`'s (ADR-1002).
+Holding it and printing markdown instead was the first thing the new grill got wrong, and asking
+four at a time was the second: a human answering a grill is thinking, and thinking happens one
+question at a time. Four things about the call itself:
 
-➡️ Written off. A shrunk quota is a number they never agreed to.
+- **The recommendation is the first option, labelled `(Recommended)`.** The options after it
+  are the answers you actually considered, not filler to reach the minimum of two. *Other* is
+  added by the harness and is where a written answer goes — never author your own.
+- **A question you cannot name two answers for is one you have not thought about.** Work out what
+  the alternative actually is, or the question is not ready to ask.
+- **End the question body with where you are** — *Question 4; two more ready after this* — because
+  the human cannot see the frontier and has no other way to tell whether they are two minutes from
+  the end or twenty. This replaces the overview a printed round used to give.
+- **Never batch, and never truncate.** Both are the same failure wearing different clothes: one
+  makes the human hold six questions in their head, the other drops five of them.
 
----
+And four rules that are the whole discipline of the interview:
 
-❓ **Q2** — **Resuming early**: does the pause record keep the end date it was
-   created with, or truncate to the day they actually resumed?
-
-➡️ Truncate. The record is what happened, not what was planned.
-```
-
-Four rules, and they are the whole discipline:
-
-- **Ask the whole frontier, not the most important question.** The frontier is every question
-  whose prerequisites are already settled. If four are ready, ask four. `AGENTS.md`'s "do not ask
-  four when one decides it" is a rule about **gates** and does not apply here — at a grill the
-  fourth question is the product.
-- **A question whose answer depends on another question in this round belongs to the next
-  round.** Do not guess the prerequisite so you can ask both at once; that is how a round becomes
-  a questionnaire.
-- **Every question carries the answer you would give.** `➡️` is not optional. A question with no
-  recommendation is one you have not thought about, and it makes the round expensive to answer.
+- **Ask every question in the frontier, one after another.** The frontier is every question whose
+  prerequisites are already settled. If six are ready, six get asked. `AGENTS.md`'s "do not ask
+  four things when one decides it" is a rule about **gates** and does not apply here — at a grill
+  the sixth question is the product. **This rule is about not dropping questions and never was
+  about delivering them together.**
+- **A question whose answer depends on another question still open belongs later.** Do not guess
+  the prerequisite so you can ask sooner; that is how a grill becomes a questionnaire.
+- **Every question carries the answer you would give.** The recommendation is not optional. A
+  question with none is one you have not thought about, and it makes the grill expensive to sit
+  through.
 - **Facts are yours, never theirs.** A question that needs something from the repo, the specs or
-  the environment goes to a dispatched agent, not into the round — and it does not block the rest
-  of the frontier, which you ask now. A question that reaches the human and turns out to have had
-  an answer on disk is a finding about you.
+  the environment goes to a dispatched agent, not to the human — and it does not block the rest of
+  the frontier, which you keep asking while the agent runs. A question that reaches the human and
+  turns out to have had an answer on disk is a finding about you.
 
-### Print it, then ask it
-
-**A printed round is not yet a question.** After printing it, put the same questions through
-`AskUserQuestion`, so they arrive as something the human can answer from the keyboard rather than
-by composing a reply that tracks six numbers by hand. Both halves are required and the order is
-fixed: the printed round carries the full bodies, the reasoning and the whole frontier at once,
-which is what makes the shape of what is being decided visible; the picker carries the answering.
-
-- **Same questions, same order, same numbers.** The picker restates; it never adds a question the
-  printed round did not carry, and never drops one.
-- **The `➡️` recommendation is the first option, labelled `(Recommended)`.** The alternatives
-  after it are the answers you actually considered — not filler to reach the minimum of two. The
-  harness adds *Other* on its own, which is where a prose answer goes; do not write your own.
-- **A question you cannot name two answers for is one you have not thought about.** That is the
-  same rule as `➡️` being mandatory, one step further on. Do not invent a second option to get a
-  real question into the picker — work out what the alternative actually is, or the question is
-  not ready to ask.
-- **`AskUserQuestion` takes four questions at a time, and that cap must never shrink a round.**
-  A six-wide frontier is one printed round and two calls back to back, not four questions and two
-  dropped. Truncating the frontier to fit a tool is the exact failure this whole shape was
-  written to stop.
-
-**This is also why the grill is yours.** `AskUserQuestion` is withheld from every subagent —
-that fact is the whole argument in ADR-1002 for the conductor existing, and in ADR-1006 for the
-interview living here. Holding the tool and then not using it was an inconsistency; the round is
-now asked with the thing that made it the conductor's in the first place.
-
-**Recompute the frontier after every reply**, and keep going until it is empty. Then print a `▸`
-report saying how many questions over how many rounds, and move to whatever the grill was for —
-G1 at Stage 1, `grill.md` and `spec-author` at Stage 4.
+**Recompute the frontier after every answer** — not after every batch, because there are no
+batches. That is strictly finer than the round-at-a-time protocol the underlying skill describes:
+no question is ever put to the human against a tree that an answer has already moved. Keep going
+until the frontier is empty, then print a `▸` report saying how many questions it took and how
+long it ran, and move to whatever the grill was for — G1 at Stage 1, `grill.md` and `spec-author`
+at Stage 4.
 
 ## The residual round
 
@@ -622,9 +602,10 @@ Product definition sits upstream of Stage 0 and is a conversation, not a pipelin
    capability or several? What is the slug? Which Epic does it belong under? What does it *not*
    cover?
 
-   **In rounds, in the round shape, until the frontier is empty** — see § *The round* above. Ask
-   the whole frontier each time; the instruction not to ask four when one decides it is a gate
-   rule and does not apply here.
+   **In rounds, in the round shape, until the frontier is empty** — see § *The round* above. One
+   question per `AskUserQuestion` call, every question in the frontier asked, none batched and
+   none dropped; the instruction not to ask four when one decides it is a gate rule and does not
+   apply here.
 
    It is the same skill `/atlas grill` runs at Stage 4, and now the same shape — but not the same
    grill, and the difference is what keeps both cheap. This one settles the capability's boundary
