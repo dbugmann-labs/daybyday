@@ -117,10 +117,13 @@ public final class DayScreen {
     /// Day one: when the roster this opens holds nothing at all, `dayOne` is taken on and kept at
     /// `place` before this returns, in the order it was handed. A roster already holding anything
     /// — including one every one of whose commitments has been stopped — is left exactly as it
-    /// is. A failure keeping `dayOne` leaves `.notKept` and a roster holding nothing: whatever of
-    /// `dayOne` had already been kept at `place` before the failure is removed again, so nothing
-    /// it takes on survives and a later `shown(asOf:)` finds `place` holding nothing and retries
-    /// day one, exactly as it would have found it after a failure on the very first commitment.
+    /// is. A failure keeping `dayOne` leaves `.notKept` and, ordinarily, a roster holding nothing:
+    /// whatever of `dayOne` had already been kept at `place` before the failure is removed again
+    /// on a best-effort basis, so nothing it takes on survives and a later `shown(asOf:)` finds
+    /// `place` holding nothing and retries day one, exactly as it would have found it after a
+    /// failure on the very first commitment. That removal can itself fail; when it does, `place`
+    /// is left holding a partial day one instead, which reads back as a legitimate non-empty
+    /// roster, and day one is not retried.
     private static func openRoster(
         at place: URL, takingOnIfEmpty dayOne: [Commitment]
     ) -> (store: RosterStore?, state: RosterState, roster: Roster) {
@@ -142,20 +145,28 @@ public final class DayScreen {
                 try store.add(commitment)
             }
         } catch {
-            do {
-                try FileManager.default.removeItem(at: place)
-            } catch let removalError {
-                // The write that just failed may have left day one partly kept at `place`; this
-                // removal is what stops a later open from reading that partial write back as a
-                // legitimate roster. A failure here — a sticky bit this process may write but not
-                // unlink in, a `uchg` flag on the file — must not be swallowed the way `try?`
-                // swallows it: logged rather than thrown, because the screen's answer is `.notKept`
-                // either way — design.md's own reading of `RosterState` — and rule 5 forbids
-                // inventing a state the delta does not carry to say more than that.
-                Logger(subsystem: "DayByDayKit", category: "RosterStore")
-                    .error(
-                        "could not remove the partial roster left at \(place.path, privacy: .public) after day one failed to write: \(String(describing: removalError), privacy: .public)"
-                    )
+            // The write that just failed may have left day one partly kept at `place` — but it
+            // may equally have failed before any byte reached `place` at all (the spec'd case is
+            // a path beneath an existing ordinary file, where `createDirectory` throws first).
+            // Only attempt removal, and only log, when something is actually there to remove;
+            // otherwise this is an ordinary refusal to write, not a partial roster left behind.
+            if FileManager.default.fileExists(atPath: place.path) {
+                do {
+                    try FileManager.default.removeItem(at: place)
+                } catch let removalError {
+                    // This removal is what stops a later open from reading that partial write
+                    // back as a legitimate roster. A failure here — a sticky bit this process may
+                    // write but not unlink in, a `uchg` flag on the file — must not be swallowed
+                    // the way `try?` swallows it: logged rather than thrown, because the screen's
+                    // answer is `.notKept` either way — design.md's own reading of `RosterState`
+                    // — and rule 5 forbids inventing a state the delta does not carry to say more
+                    // than that.
+                    let message =
+                        "could not remove the partial roster left at \(place.path) after day one "
+                        + "failed to write: \(String(describing: removalError))"
+                    Logger(subsystem: "DayByDayKit", category: "RosterStore")
+                        .error("\(message, privacy: .public)")
+                }
             }
             return (nil, .notKept, Roster())
         }
