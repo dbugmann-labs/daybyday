@@ -2,40 +2,43 @@ import Foundation
 import SwiftUI
 import DayByDayKit
 
-/// The owner's day-one week, quoted verbatim in `docs/backlog.md` § *What day one looks like*:
+/// The owner's week, as stated on 2026-09-04:
 ///
-/// > gym Mon/Wed/Sat · run Tue/Thu/Sun · finances every 25th · reading 3× a week ·
-/// > supplements and habits daily · journaling daily · contact lenses every 14 days ·
-/// > water plants every 3rd day
+/// > creatine daily · magnesium daily · nails every 4 days from Sunday 6 September ·
+/// > gym Mon/Wed/Sat · run Tue/Thu/Sun · public pool Fri ·
+/// > contact lenses every 14 days from Saturday 5 September
 ///
-/// `keptFrom`, and the `from` of every interval-based schedule, is 2026-08-28 — the date
-/// `docs/backlog.md` itself records this list as having been stated on. This is display data
-/// handed to `DayByDayKit`, not a rule of its own: every answer still comes from
-/// `Commitment.isDue(on:)` and `Schedule.isDue(on:)`.
+/// `keptFrom` is 2026-09-04, the day the list was stated and the first day any of it can show a
+/// row. The two interval schedules count from their own stated day instead, which is why each
+/// carries its own `from`. This is display data handed to `DayByDayKit`, not a rule of its own:
+/// every answer still comes from `Commitment.isDue(on:)` and `Schedule.isDue(on:)`.
+///
+/// It is a **seed, not the roster**. `DayScreen.init(startingFrom:)` takes it on only where the
+/// roster kept at `DayScreen.rosterPlace` holds nothing at all; against a roster holding anything
+/// this list is ignored. Editing it therefore changes nothing on an install that has already run
+/// once — delete the app first, or the change is invisible.
 private let dayOneCommitments: [Commitment] = {
-    let keptFrom = CalendarDate(year: 2026, month: 8, day: 28)!
+    let keptFrom = CalendarDate(year: 2026, month: 9, day: 4)!
     let daily: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
+    let nailsFrom = CalendarDate(year: 2026, month: 9, day: 6)!
+    let lensesFrom = CalendarDate(year: 2026, month: 9, day: 5)!
 
     return [
+        Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom),
+        Commitment(name: "Magnesium", schedule: daily, keptFrom: keptFrom),
+        Commitment(
+            name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: nailsFrom),
+            keptFrom: keptFrom),
         Commitment(
             name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom),
         Commitment(
             name: "Run", schedule: .weekdays([.tuesday, .thursday, .sunday]), keptFrom: keptFrom),
+        Commitment(name: "Public Pool", schedule: .weekdays([.friday]), keptFrom: keptFrom),
         Commitment(
-            name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom),
-        Commitment(
-            name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!),
-            keptFrom: keptFrom),
-        Commitment(name: "Supplements and habits", schedule: daily, keptFrom: keptFrom),
-        Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom),
-        Commitment(
-            name: "Contact lenses", schedule: .everyNDays(DayInterval(days: 14)!, from: keptFrom),
-            keptFrom: keptFrom),
-        Commitment(
-            name: "Water plants", schedule: .everyNDays(DayInterval(days: 3)!, from: keptFrom),
-            keptFrom: keptFrom),
+            name: "Contact Lenses",
+            schedule: .everyNDays(DayInterval(days: 14)!, from: lensesFrom), keptFrom: keptFrom),
     ].compactMap { $0 }
 }()
 
