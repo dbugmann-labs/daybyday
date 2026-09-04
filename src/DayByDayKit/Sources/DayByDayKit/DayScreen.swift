@@ -70,16 +70,22 @@ public final class DayScreen {
         self.shownDay = today
         self.place = recordPlace
         self.rosterPlace = rosterPlace
-        self.roster = Roster()
-        self.rosterState = .kept
 
         let opened = Self.open(at: recordPlace)
         self.store = opened.store
         self.recordState = opened.state
+
+        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: dayOne)
+        self.rosterStore = openedRoster.store
+        self.rosterState = openedRoster.state
+        self.roster = openedRoster.roster
+
         // `today` here is the parameter above, not `self.today`: `self` is not yet fully
         // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
         // back. The parameter holds the same value `shownDay` was just set to, two lines up.
-        self.dayView = DayView(of: dayOne, on: today, in: opened.store?.history ?? History())
+        self.dayView = DayView(
+            of: openedRoster.roster.commitments(on: today), on: today,
+            in: opened.store?.history ?? History())
     }
 
     /// Opens the record at `place`, telling apart the one refusal a person can act on
@@ -96,6 +102,42 @@ public final class DayScreen {
         } catch {
             return (nil, .unreadable)
         }
+    }
+
+    /// Opens the roster at `place`. A place written by a later version of DayByDay is told apart
+    /// as `.writtenByALaterVersion`; every other reason the store can refuse to open is answered
+    /// as `.notKept`, exactly as `open(at:)` answers the record's own refusals.
+    ///
+    /// Day one: when the roster this opens holds nothing at all, `dayOne` is taken on and kept at
+    /// `place` before this returns, in the order it was handed. A roster already holding anything
+    /// — including one every one of whose commitments has been stopped — is left exactly as it
+    /// is. A failure keeping `dayOne` leaves `.notKept` and a roster holding nothing, never a
+    /// roster taken on halfway.
+    private static func openRoster(
+        at place: URL, takingOnIfEmpty dayOne: [Commitment]
+    ) -> (store: RosterStore?, state: RosterState, roster: Roster) {
+        let store: RosterStore
+        do {
+            store = try RosterStore(at: place)
+        } catch RosterStoreError.laterForm {
+            return (nil, .writtenByALaterVersion, Roster())
+        } catch {
+            return (nil, .notKept, Roster())
+        }
+
+        guard store.roster == Roster() else {
+            return (store, .kept, store.roster)
+        }
+
+        do {
+            for commitment in dayOne {
+                try store.add(commitment)
+            }
+        } catch {
+            return (store, .notKept, store.roster)
+        }
+
+        return (store, .kept, store.roster)
     }
 
     /// The day view the person is looking at, as the record stood when it was last read.
@@ -134,37 +176,40 @@ public final class DayScreen {
             try store.add(tick)
         }
 
-        dayView = DayView(of: commitments, on: shownDay, in: store.history)
+        dayView = DayView(of: roster.commitments(on: shownDay), on: shownDay, in: store.history)
     }
 
     /// Shows the calendar day before the one being shown. Leaves the screen exactly as it is when
-    /// it is showing 1 January 1583. Does not move the today, and does not read the record again.
+    /// it is showing 1 January 1583. Does not move the today, and does not read the roster or the
+    /// record again — the commitments to hand over cannot be known until the date is, so the date
+    /// is stepped first and the roster already held is asked about it.
     public func showPreviousDay() {
-        guard let moved = dayView.previousDay(of: commitments, in: store?.history ?? History())
-        else {
+        guard let previousDate = shownDay.adding(days: -1) else {
             return
         }
-        dayView = moved
-        shownDay = moved.date
+        shownDay = previousDate
+        dayView = DayView(
+            of: roster.commitments(on: shownDay), on: shownDay, in: store?.history ?? History())
     }
 
     /// Shows the calendar day after the one being shown. Leaves the screen exactly as it is when
-    /// it is showing 31 December 9999. Does not move the today, and does not read the record
-    /// again.
+    /// it is showing 31 December 9999. Does not move the today, and does not read the roster or
+    /// the record again.
     public func showNextDay() {
-        guard let moved = dayView.nextDay(of: commitments, in: store?.history ?? History())
-        else {
+        guard let nextDate = shownDay.adding(days: 1) else {
             return
         }
-        dayView = moved
-        shownDay = moved.date
+        shownDay = nextDate
+        dayView = DayView(
+            of: roster.commitments(on: shownDay), on: shownDay, in: store?.history ?? History())
     }
 
     /// Shows the today this screen was last handed, from whatever day it is showing. Always has
-    /// somewhere to go; does not read the record again.
+    /// somewhere to go; does not read the roster or the record again.
     public func showToday() {
         shownDay = today
-        dayView = DayView(of: commitments, on: shownDay, in: store?.history ?? History())
+        dayView = DayView(
+            of: roster.commitments(on: shownDay), on: shownDay, in: store?.history ?? History())
     }
 
     /// The app has been shown on `today`: the day view and the record are read again. A screen
@@ -179,6 +224,14 @@ public final class DayScreen {
         let opened = Self.open(at: place)
         self.store = opened.store
         self.recordState = opened.state
-        self.dayView = DayView(of: commitments, on: shownDay, in: opened.store?.history ?? History())
+
+        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
+        self.rosterStore = openedRoster.store
+        self.rosterState = openedRoster.state
+        self.roster = openedRoster.roster
+
+        self.dayView = DayView(
+            of: openedRoster.roster.commitments(on: shownDay), on: shownDay,
+            in: opened.store?.history ?? History())
     }
 }

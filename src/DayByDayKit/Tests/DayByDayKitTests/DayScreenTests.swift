@@ -1306,3 +1306,267 @@ func aDayScreenSentBackOntoTodaySaysTodayAgain() {
 
     #expect(screen.title == "Today · Thursday 3 September 2026")
 }
+
+@MainActor
+@Test("a day screen draws the commitments its roster keeps, in the order they were taken on")
+func aDayScreenDrawsTheCommitmentsItsRosterKeepsInTheOrderTheyWereTakenOn() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let supplements = Commitment(
+        name: "Supplements and habits", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+    try rosterStore.add(supplements)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.rows.map(\.name) == ["Journaling", "Supplements and habits"])
+    #expect(screen.rosterState == .kept)
+}
+
+@MainActor
+@Test("a day screen draws a commitment on the day it was kept until and not on the day after it")
+func aDayScreenDrawsACommitmentOnTheDayItWasKeptUntilAndNotOnTheDayAfterIt() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+    try rosterStore.retire(journaling, keptUntil: sunday)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.rows.isEmpty)
+
+    screen.showPreviousDay()
+
+    #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
+}
+
+@MainActor
+@Test("moving a day screen does not read its roster again")
+func movingADayScreenDoesNotReadItsRosterAgain() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let other = try RosterStore(at: rosterPlace)
+    try other.add(gym)
+
+    screen.showPreviousDay()
+    screen.showNextDay()
+
+    #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
+    #expect(screen.rosterState == .kept)
+}
+
+@MainActor
+@Test("a tick made on a day screen leaves what is kept at its roster place as it was")
+func aTickMadeOnADayScreenLeavesWhatIsKeptAtItsRosterPlaceAsItWas() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    let bytesAfterOpen = try Data(contentsOf: rosterPlace)
+
+    try screen.tick(screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
+}
+
+@MainActor
+@Test("a day screen opened where no roster has been kept takes on the commitments it was handed")
+func aDayScreenOpenedWhereNoRosterHasBeenKeptTakesOnTheCommitmentsItWasHanded() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym, journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.rows.map(\.name) == ["Gym", "Journaling"])
+
+    let later = try RosterStore(at: rosterPlace)
+    #expect(later.roster.commitments == [gym, journaling])
+}
+
+@MainActor
+@Test("a day screen opened a second time does not take the commitments on again")
+func aDayScreenOpenedASecondTimeDoesNotTakeTheCommitmentsOnAgain() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+
+    _ = DayScreen(
+        startingFrom: [gym, journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    let other = try RosterStore(at: rosterPlace)
+    try other.retire(gym, keptUntil: sunday)
+
+    let second = DayScreen(
+        startingFrom: [gym, journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    #expect(second.dayView.rows.map(\.name) == ["Journaling"])
+
+    let later = try RosterStore(at: rosterPlace)
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.add(journaling)
+    _ = expected.retire(gym, keptUntil: sunday)
+    #expect(later.roster == expected)
+}
+
+@MainActor
+@Test("a day screen opened on a roster whose commitments have all been stopped takes nothing on")
+func aDayScreenOpenedOnARosterWhoseCommitmentsHaveAllBeenStoppedTakesNothingOn() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+    try rosterStore.retire(journaling, keptUntil: sunday)
+
+    let screen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.rows.isEmpty)
+
+    let later = try RosterStore(at: rosterPlace)
+    var expected = Roster()
+    _ = expected.add(journaling)
+    _ = expected.retire(journaling, keptUntil: sunday)
+    #expect(later.roster == expected)
+}
+
+@MainActor
+@Test(
+    "a day screen that cannot read its roster takes nothing on and leaves what is at the place as it was"
+)
+func aDayScreenThatCannotReadItsRosterTakesNothingOnAndLeavesWhatIsAtThePlaceAsItWas() throws {
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data("not what a roster is written as".utf8)
+    try bytes.write(to: rosterPlace)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(try Data(contentsOf: rosterPlace) == bytes)
+    #expect(screen.dayView.rows.isEmpty)
+}
+
+@MainActor
+@Test("a day screen that could not keep the commitments it was handed says it is not keeping a roster")
+func aDayScreenThatCouldNotKeepTheCommitmentsItWasHandedSaysItIsNotKeepingARoster() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let rosterPlace = blocker.appendingPathComponent("roster.json")
+    let place = directory.appendingPathComponent("record.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    #expect(screen.rosterState == .notKept)
+    #expect(screen.dayView.rows.isEmpty)
+    #expect(screen.recordState == .kept)
+}
+
+@MainActor
+@Test("a day screen shown again on a roster that holds nothing takes the commitments on again")
+func aDayScreenShownAgainOnARosterThatHoldsNothingTakesTheCommitmentsOnAgain() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    try Data(#"{"version": 1, "commitments": []}"#.utf8).write(to: rosterPlace)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
+
+    let later = try RosterStore(at: rosterPlace)
+    #expect(later.roster.commitments == [journaling])
+}

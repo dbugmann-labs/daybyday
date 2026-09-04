@@ -139,29 +139,29 @@ actually ran red as you go, in § 5.**
 
 ### The roster the screen draws from
 
-- [ ] 3.1 `a day screen draws the commitments its roster keeps, in the order they were taken on` —
+- [x] 3.1 `a day screen draws the commitments its roster keeps, in the order they were taken on` —
   the screen is handed **no commitments at all**, so this fails any implementation still drawing its
   argument.
-- [ ] 3.2 `a day screen draws a commitment on the day it was kept until and not on the day after it`
+- [x] 3.2 `a day screen draws a commitment on the day it was kept until and not on the day after it`
   — the whole reason the roster is asked per day; assert both days in one test, as the scenario says.
-- [ ] 3.3 `moving a day screen does not read its roster again`
-- [ ] 3.4 `a tick made on a day screen leaves what is kept at its roster place as it was` —
+- [x] 3.3 `moving a day screen does not read its roster again`
+- [x] 3.4 `a tick made on a day screen leaves what is kept at its roster place as it was` —
   byte-for-byte, read with `Data(contentsOf:)` immediately after opening and again after the tick.
 
 ### Day one
 
-- [ ] 3.5 `a day screen opened where no roster has been kept takes on the commitments it was handed`
+- [x] 3.5 `a day screen opened where no roster has been kept takes on the commitments it was handed`
   — assert both the day view **and** what a `RosterStore` opened afterwards at that place reads back.
-- [ ] 3.6 `a day screen opened a second time does not take the commitments on again`
-- [ ] 3.7 `a day screen opened on a roster whose commitments have all been stopped takes nothing on`
+- [x] 3.6 `a day screen opened a second time does not take the commitments on again`
+- [x] 3.7 `a day screen opened on a roster whose commitments have all been stopped takes nothing on`
   — the test that fails an implementation whose trigger is `roster.commitments.isEmpty` rather than
   `roster == Roster()`. `design.md` § *Day one is the app's content and the engine's moment* carries
   the standing obligation this test protects.
-- [ ] 3.8 `a day screen that cannot read its roster takes nothing on and leaves what is at the place
+- [x] 3.8 `a day screen that cannot read its roster takes nothing on and leaves what is at the place
   as it was`
-- [ ] 3.9 `a day screen that could not keep the commitments it was handed says it is not keeping a
+- [x] 3.9 `a day screen that could not keep the commitments it was handed says it is not keeping a
   roster` — the blocker-file place again, and the screen must still say it **is** keeping a record.
-- [ ] 3.10 `a day screen shown again on a roster that holds nothing takes the commitments on again`
+- [x] 3.10 `a day screen shown again on a roster that holds nothing takes the commitments on again`
 
 ### The roster's place
 
