@@ -274,10 +274,9 @@ becomes expensive. **Both run through one skill, `grill`**, this repository's ow
 calls `grill-with-docs` makes, and both are reachable; `grill-with-docs` itself is not, which is
 why this repository owns a wrapper at all. ADR-1009.
 
-**Both belong to the conductor, and both work in rounds:** ask a question whose prerequisites are
-already settled, hear the answer, work out what it just unblocked, ask the next, until the
-frontier is empty. **One question at a time, through `AskUserQuestion`** — every question the
-frontier holds gets asked, none dropped and none batched. They used to split on whether the session could wait for you — the
+**Both belong to the conductor, and both work in rounds:** ask every question whose prerequisites
+are already settled, hear the answers, work out what those answers just unblocked, ask again,
+until the frontier is empty. They used to split on whether the session could wait for you — the
 Feature grill was a conversation, the Story grill was `spec-author` writing its questions down
 because it could not hold one. **That split is gone**, and it was the defect: a subagent runs to
 completion and returns one report, so a grill inside one collapses to a single non-blocking pass
@@ -404,13 +403,11 @@ unattended run stands on its own.
 lines — what ran, what it left behind, what comes next — printed before every spawn, after every
 return, and as the form of a rule-5 stop. Its middle line names only things you can open, run or
 count; its `next` line before a spawn is when you will next be needed, which is the *Who decides*
-column above said at runtime. The round is the grill's turn: **one question, asked through
-`AskUserQuestion`**, carrying the answer the conductor would give as its first option, and never
-wrapped in a five-part block. It is unwrapped deliberately — that block carries one question
-under a ten-line budget, so an interview inside one forces out exactly the questions a grill
-exists to reach, which is what had quietly turned this repository's grill into a questionnaire.
-The frontier is drained one question at a time and recomputed after every answer; every question
-it holds gets asked, and none are batched.
+column above said at runtime. The round is the grill's turn: the whole frontier, each question
+carrying the answer the conductor would give, asked with `AskUserQuestion` and never wrapped. It is unwrapped deliberately — a
+five-part block carries one question under a ten-line budget, so an interview inside one forces
+out exactly the questions a grill exists to reach, which is what had quietly turned this
+repository's grill into a questionnaire.
 
 **A five-part block asks for a decision, a round asks for answers, a `▸` line tells.** There is no
 fourth shape, and in particular no "report, and proceed if you say nothing" — in a session that takes

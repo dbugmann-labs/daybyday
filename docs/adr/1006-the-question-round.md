@@ -77,10 +77,9 @@ writes the delta on settled answers rather than on its own recommendations. Stag
 shape — grill, then propose — so ADR-1005 is untouched, and there is no new stage, no new gate
 and no new number.
 
-- **The round is one question, asked through `AskUserQuestion`**, carrying the answer the
-  conductor would give as its first option and never wrapped in a five-part block. A five-part
-  block asks for a decision; a round asks for answers. The frontier is drained one question at a
-  time and recomputed after each. ADR-1012, amended.
+- **The round is `grilling`'s own format, asked with `AskUserQuestion`** — every question
+  carrying the answer the conductor would give as its first option, and never inside a five-part
+  block. A five-part block asks for a decision; a round asks for answers. ADR-1012, amended.
 - **The grill writes one file, `grill.md`, into the change folder.** `## Settled` carries the
   answers — one line of decision and one clause of why — and not requirements; phrasing a settled
   answer as a requirement is the conductor writing the delta. New terms land in `CONTEXT.md`.
@@ -163,13 +162,13 @@ blocks on either the grill or a residual round mechanically.
   checkable, the judgement is not.
 - **The round is asked with `AskUserQuestion`, and that closes an inconsistency in this record.**
   The argument for the interview living with the conductor is that no subagent holds that tool.
-  The first round actually run under this decision printed markdown and never called it — the
-  tool that justifies the whole arrangement sitting unused while the human was asked to compose a
-  reply tracking six numbers. **One question per call**, recommendation first, frontier recomputed
-  after every answer. This is the one place the repository knowingly departs from
-  `mattpocock-skills:grilling`, which says to ask the whole frontier in a single round: the
-  questions asked are identical, the pacing is not, and recomputing after each answer is strictly
-  finer than recomputing after each batch. ADR-1012, amended 2026-09-04.
+  The first round actually run under this decision was printed as markdown and never used it, so
+  the owner was handed six numbered questions and asked to compose a reply tracking all six — the
+  tool that justifies the whole arrangement sitting unused. **The protocol is unchanged by this:**
+  `mattpocock-skills:grilling` prescribes what to ask and when, not what to ask it *with*, so the
+  whole frontier still goes in one round. What the medium adds is one rule of its own — the
+  four-question cap is split across consecutive calls and never allowed to shrink a round.
+  ADR-1012, amended 2026-09-04.
 - **It is one more thing that can turn into a gate.** ADR-1002 named that risk about
   `pnpm run status` and the test applies here unchanged: if the grill or the residual round ever
   grows a marker, a check, or a `G` number, it has become the sixth gate this decision was shaped

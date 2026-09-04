@@ -41,10 +41,9 @@ It makes the same two Skill calls `grill-with-docs` makes, then adds what neithe
 skill knows. That is this repository's three non-optional outputs — the questions and their
 answers written to a durable file, which at Stage 4 is `grill.md` in the change folder; new terms
 in `CONTEXT.md`; an ADR for a decision that was hard, expensive to reverse or surprising — and
-the two rules this repository had previously got wrong, that a grill asks every question in the
-frontier rather than the most important one, and that a round is never wrapped in a five-part
-block. A third was added on 2026-09-04, after both were run in front of the owner: the questions
-go one at a time through `AskUserQuestion`, not as a printed batch. ADR-1012.
+the two rules this repository had previously got wrong, that a round asks the whole frontier
+rather than the most important question, and that it is never wrapped in a five-part block. How
+a round is *put* — `AskUserQuestion`, not markdown — was settled later, on 2026-09-04; ADR-1012.
 
 **It does not branch on who is running it.** Both grills are the conductor's, so the only thing
 the skill has to say to a subagent is *you are in the wrong place, stop*: the interview happened

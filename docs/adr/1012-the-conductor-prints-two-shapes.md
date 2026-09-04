@@ -13,10 +13,10 @@
   shapes across the four things the conductor prints, and wrapping a round in a five-part block
   is forbidden. The title still says *two* and is kept deliberately: over a hundred
   cross-references resolve by number, and ADR-1020 is explicit about what renaming costs.
-- Amended: 2026-09-04 — a round is **one question, asked through `AskUserQuestion`**, not a block
-  of markdown carrying the whole frontier. Settled by running the new grill in front of the owner
-  the day it was written: the markdown round could not be answered from the keyboard, and a
-  four-question batch was still four questions to hold in your head at once.
+- Amended: 2026-09-04 — a round is **asked with `AskUserQuestion`**, not printed as markdown.
+  Found on the first run of the new grill, when the owner's reply to a six-question markdown
+  round was that they could not answer it from the keyboard. The protocol is untouched: the whole
+  frontier still goes in one round, and only the medium is local.
 
 ## Context
 
@@ -136,18 +136,17 @@ triage is the recommendation. They sit under `Detail` like everything else, at w
 reviewer wrote them: ADR-1002's *unmediated* outranks the budget, and this is the budget's single
 exemption.
 
-**The round is one question, asked through `AskUserQuestion`.** The recommended answer is its
-first option, marked `(Recommended)`; the options after it are the answers actually considered;
-*Other* comes from the harness and is where a written answer goes. No wrapper of any kind — no
-five-part block, no line budget, no reply vocabulary. **The frontier is drained, not batched**:
-every question whose prerequisites are settled gets asked, one after another, and the frontier is
-recomputed after each answer rather than after each batch. `AGENTS.md`'s "a gate carries one
-decision, so do not ask four things when one decides it" says in its own next clause that it is a
-rule about gates and only about gates; it does not reach a grill, where the sixth question is the
-product — and the rule it *does* impose here is about never dropping a question, not about
-delivering them together. Like a gate a round ends the conductor's turn; unlike a gate another
-almost always follows, and the loop runs until the frontier is empty. ADR-1006, amended, is where
-the round belongs to the process; this record only fixes its shape.
+**The round is `grilling`'s own format, asked with `AskUserQuestion`.** `❓ **Qn** — **title**`
+with the recommended answer under `➡️` is how a round is composed; the picker is how it is put,
+with the recommendation as the first option and the tool's four-question cap split across
+consecutive calls. No wrapper of any kind: no five-part block, no line budget, no reply
+vocabulary. It carries the whole
+frontier rather than the most important question — `AGENTS.md`'s "a gate carries one decision, so
+do not ask four things when one decides it" says in its own next clause that it is a rule about
+gates and only about gates, and it does not reach a grill, where the fourth question is the
+product. Like a gate it ends the conductor's turn; unlike a gate another round usually follows,
+and the loop runs until the frontier is empty. ADR-1006, amended, is where the round belongs to
+the process; this record only fixes its shape.
 
 **The braindump split and the sweep's gaps are stops, and say so.** The reasoning `atlas.md`
 already gave for the split — the one judgement the human can correct in a sentence and nobody
@@ -159,19 +158,19 @@ asked once; inside the loop the step report's `next` line carries the one thing 
 ## Consequences
 
 - **The human learns three shapes and reads the header.** A `G` header or a `Stop —` header
-  means a decision is wanted and the fourth part says what to type; a bare question with options
-  means an answer is wanted and more will be asked; a `▸` line means nothing is wanted. The
-  question "am I being asked something, and what kind of something?" is answered before the first
-  sentence.
-- **A round is one question, and the shape is the tool rather than the markup.** *Amended
-  2026-09-04.* Two forms were tried in front of the owner on the day this was written and both
-  failed for the same reason: a markdown block of six questions cannot be answered from the
-  keyboard, and a four-question `AskUserQuestion` batch is still four things to hold in your head
-  while answering the first. One question per call, recommendation first, frontier recomputed
-  after every answer. **What must not follow is truncation** — asking one question and dropping
-  the rest of the frontier is the failure ADR-1006 exists to stop, and it now looks superficially
-  like the correct behaviour. The guard is `grill.md` § *Left open*, which is required and must
-  say why anything is still there.
+  means a decision is wanted and the fourth part says what to type; a `❓` means answers are
+  wanted and more will be asked; a `▸` line means nothing is wanted. The question "am I being
+  asked something, and what kind of something?" is answered before the first sentence.
+- **The medium is the picker, and the protocol is untouched.** *Amended 2026-09-04.* A round is
+  asked with `AskUserQuestion`, because a markdown block of six numbered questions is not
+  answerable from a keyboard — which is what the first run of the new grill actually produced.
+  `mattpocock-skills:grilling` says nothing about the medium, so nothing here departs from it: the
+  whole frontier still goes in one round and the frontier is recomputed only once the round is
+  answered. **The new risk is the tool's four-question cap**, which must be split across
+  consecutive calls and never allowed to shrink a round — truncating the frontier to fit a tool is
+  the failure ADR-1006 was written to stop, arriving by a new route and looking, from where the
+  human sits, exactly like correct behaviour. The guard is `grill.md` § *Left open*, which is
+  required and must say why anything is still there.
 - **The human answers the question they were asked, not the one they can still remember.** The
   ordering is what makes that true; the parts, the labels and the reply vocabulary would work in
   any order and the ask would still be buried under an unbounded context section.

@@ -145,12 +145,13 @@ do not ask four things when one decides it** — that is a rule about gates, and
 
 **Everything between gates takes one of two other forms.** The three-line step report — what ran,
 what it left behind, what comes next — printed before every spawn, after every return, and as the
-shape of a rule-5 stop. And the round, which is a grill's turn: **one question, asked through
-`AskUserQuestion` with the answer the conductor would give as its first option**, never inside a
-five-part block, because that block's ten-line budget forces out exactly the questions a grill
-exists to ask. At a grill the opposite of the gate rule applies: **ask every question in the
-frontier** — if six are ready, six get asked, one after another, because the sixth is the
-product. That rule is about never dropping a question; batching them was never what it meant. **A five-part block asks for a decision, a round asks for
+shape of a rule-5 stop. And the round, which is a grill's turn: each question with the answer the
+conductor would give, **asked with `AskUserQuestion`** and never inside a five-part block, because
+that block's one question and ten-line budget force out exactly the questions a grill exists to
+ask. The tool takes four at a time, so a wider frontier is consecutive calls in one round — the
+cap never shrinks a round. At a grill the
+opposite of the gate rule applies: **ask the whole frontier** — if four questions are ready, ask
+four, because the fourth is the product. **A five-part block asks for a decision, a round asks for
 answers, a `▸` line tells; there is no fourth shape.** Worked examples in
 `.claude/commands/atlas.md`, ADR-1012.
 
