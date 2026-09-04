@@ -201,11 +201,11 @@ every *fact* a question turns on. An interview is the one thing no subagent can 
 where the human is; the moment it starts reasoning about what a requirement should say rather
 than about what to ask next, it has crossed the line and the move is to hand over.
 
-The rhythm is **two interruptions per Feature and three per Story** — G1 and G2, then the Story
-grill, G4 and G7 — with unattended running between them. `/atlas backlog` starts at the top: it
-picks a cluster of wants, grills it and stops at G1; from G2 it carries a Story down to its grill
-and then, once that closes, to G4 without further prompting. `/atlas feature <idea>` is the same
-path for an idea that skips the backlog because you already know it is a Feature.
+`/atlas backlog` starts at the top: it picks a cluster of wants, grills it and stops at G1; from
+G2 it carries a Story down to its grill and then, once that closes, to G4 without further
+prompting. `/atlas feature <idea>` is the same path for an idea that skips the backlog because
+you already know it is a Feature. How often that stops you, and what it costs when it does, is
+*The rhythm, and what it costs* below.
 
 ### The stages
 
@@ -230,22 +230,36 @@ than spawns is the grill, which produces decisions — never a delta, never a te
 | 8 | Archive | agent | `janitor` / Haiku, via `/opsx:archive` | delta merged into `openspec/specs/`, change moved to `changes/archive/`, PR taken out of draft with `gh pr ready` | — |
 | 9 | Merge | agent | `janitor` / Haiku | issue auto-closed, parents settled, the Story's worktree removed | **G8 (CI)** |
 
-Read the bold entries down *Who decides* and you have your whole obligation. G1 and G2 are once
-per Feature. Per Story it is **three stops — the grill at the top of Stage 4, then G4, then G7**,
-where it used to be two plus an occasional question round. That is the trade, and it is worth
-naming honestly: **one guaranteed interruption gained, one occasional one lost**, and the one
-gained is the more expensive of the two. G4 and G7 are answered in a word; the grill is a
-contiguous 15–30 minutes of your attention, in rounds, and it is not a thing you answer from a
-phone between other things. What it buys is a delta written on your answers rather than on an
-agent's recommendations. Nothing after it moves: from the `spec-author` spawn to G7 the pipeline
-still runs unattended, and Stages 5, 6, 8 and 9 never wait for you. The walk-away structure
-starts one step later; it does not shrink.
-
 **Stage and gate numbers are names, not positions.** There is no Stage 3 — the grill was one
 until 2026-08-30, when ADR-1005 folded it into Stage 4 — and there is no G3, G5 or G6, and G8 is
 the gate on Stage 9. Every number is frozen because something reads it: `G4: approved` is a
 literal string in CI check 5, `pnpm run check:g4`, the issue template and every Story already
 approved, and two ADR titles name Stage 4. Renumbering would falsify a record to tidy a label.
+
+### The rhythm, and what it costs
+
+Read the bold entries down *Who decides* and you have your whole obligation. G1 and G2 are once
+per Feature. Per Story it is **three stops — the grill at the top of Stage 4, then G4, then G7**,
+where it used to be two plus an occasional question round. That is the trade, and it is worth
+naming honestly: **one guaranteed interruption gained, one occasional one lost**, and the one
+gained is the more expensive of the two. What it buys is a delta written on your answers rather
+than on an agent's recommendations. Nothing after it moves: from the `spec-author` spawn to G7
+the pipeline still runs unattended, and Stages 5, 6, 8 and 9 never wait for you. The walk-away
+structure starts one step later; it does not shrink.
+
+**The price is roughly 45–90 minutes of your own time per Story**, and the three stops do not
+split it evenly. G4 and G7 are answered in a word — reading a proposal and a delta, reading
+review findings. The grill is a contiguous **15–30 minutes** of your attention, in rounds, and it
+is not a thing you answer from a phone between other things. §12 argues about whether that price
+is worth paying; this paragraph is where the figure itself lives.
+
+**This is the one place both numbers are written down.** Five other files restated the count and
+four the price, and a restated number drifts: ADR-1002 read "roughly four times per Story" from
+the day it was accepted to the day it was amended, and the figure was never right in between. So
+the rule is: **the total lives here; everywhere else states a delta or links to this section.**
+A delta — *the grill gained one guaranteed stop and lost an occasional one* — stays true whatever
+the total becomes; a total goes stale the moment a gate moves. `docs/adr/README.md` says the
+same thing about command names, and for the same reason.
 
 ### The two grills, and the residual round the delta turns up
 
@@ -733,9 +747,9 @@ history is the audit trail. ADR-1020.
 Honestly: **it is at the ceiling of what one person at 4–8h/week can carry, and it is only worth
 it because of what you said "done" means.**
 
-The gates cost you roughly 45–90 minutes of *your own* time per Story — reading a proposal and
-delta at G4, accepting a decomposition at G2, reading review findings at G7. If a Story is three
-hours of agent work, that is a 25–50% tax. You are buying specs that stay true, a cold agent that
+The stops cost you 45–90 minutes of *your own* time per Story — the figure and its split are §4
+§ *The rhythm, and what it costs*, which is where it is kept. If a Story is three hours of agent
+work, that is a 25–50% tax. You are buying specs that stay true, a cold agent that
 needs no explanation, and decisions you can still reconstruct in a year. That is a good trade
 *if and only if the tax amortises*, which means:
 

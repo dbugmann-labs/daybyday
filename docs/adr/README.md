@@ -26,7 +26,11 @@ nothing new goes there.
 
 An ADR should not be the place a command name lives in the first place. It fixes the *shape*
 of a decision; the operative commands belong in `AGENTS.md` or under `docs/`, where they are
-expected to move.
+expected to move. **The same holds for a count or a price.** State the delta a decision makes —
+*one guaranteed stop gained, one occasional one lost* — which stays true however the totals move,
+and leave the totals in the one file that keeps them. ADR-1002 carried "roughly four times per
+Story" from the day it was accepted to the day it was amended, and the figure was never right,
+because it had written down a total in a record.
 
 Write an ADR when a decision was hard, is expensive to reverse, or would surprise someone
 reading the code later. Do not write one for choices the code already makes obvious.

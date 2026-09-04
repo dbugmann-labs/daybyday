@@ -5,8 +5,9 @@
 - Deciders: Diego Bugmann
 - Amended: 2026-09-04 — *holds no work context* is redrawn by object rather than by effort: the
   conductor runs both grills itself and holds the question tree, and still writes no delta, no
-  test and no `src/`. The interruption count and the claim that every interruption arrives in
-  the same shape are corrected with it. ADR-1006, ADR-1012.
+  test and no `src/`. The claim that every interruption arrives in the same shape is corrected
+  with it, and the interruption count is dropped rather than corrected: totals belong in
+  `docs/process.md` §4, not in a record. ADR-1006, ADR-1012.
 
 ## Context
 
@@ -40,9 +41,9 @@ what they decided.
 `docs/graph.mmd` draws the issue tree. Neither says *this Story is at Stage 4 and waiting on
 your signature*. Reconstructing that by hand meant correlating eight signals across three
 systems: the branch name, the change folder, `openspec validate`, the `G4: approved` comment,
-scenario coverage, the `tasks.md` boxes, the sub-issue edges and the PR. `docs/process.md` §12
-prices the human's own time at 45–90 minutes per Story and names it as the cost that decides
-whether this process survives a four-to-eight-hour week. Re-deriving position at the start of
+scenario coverage, the `tasks.md` boxes, the sub-issue edges and the PR. `docs/process.md` §4
+prices the human's own time per Story, and §12 names it as the cost that decides whether this
+process survives a four-to-eight-hour week. Re-deriving position at the start of
 every session is part of that bill and buys nothing.
 
 **Gate stops had no defined shape.** G1, G2, G4 and G7 are each "the human says yes", and
@@ -90,12 +91,14 @@ what a no costs, and the exact reply.
 
 ## Consequences
 
-The human is interrupted three times per Story instead of at every stage boundary — the grill,
-G4, G7 — and twice per Feature, at G1 and G2. Each interruption arrives in one of two asking
-shapes: the grill prints as a round, and every gate as a five-part block. *Amended 2026-09-04;
-this read "roughly four times per Story" and "the same shape", both written before the grill
-became an interview. ADR-1006, ADR-1012.* A session that opens on `main` can ask what is
-outstanding and get an answer rather than reconstructing one.
+The human is interrupted at gates rather than at every stage boundary, and each interruption
+arrives in one of two asking shapes: the grill prints as a round, and every gate as a five-part
+block. How many stops that is, and what they cost, is `docs/process.md` §4 § *The rhythm, and
+what it costs* — deliberately not repeated here. *Amended 2026-09-04; this read "roughly four
+times per Story" and "the same shape", both written before the grill became an interview, and
+the count was then dropped rather than corrected a second time. ADR-1006, ADR-1012.* A session
+that opens on `main` can ask what is outstanding and get an answer rather than reconstructing
+one.
 
 **Status can be wrong, and nothing breaks when it is.** That is the point of making it a
 projection. The systems of record remain the change folder, the tracker and the specs; if

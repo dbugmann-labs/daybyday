@@ -112,9 +112,11 @@ blocks on either the grill or a residual round mechanically.
 
 ## Consequences
 
-- **The rhythm gains one guaranteed interruption per Story and loses an occasional one.** Two
-  stops — G4 and G7 — plus a round when the agent happened to raise one becomes three: the grill,
-  G4, G7, with the round now rare. The walk-away structure is preserved exactly where it was:
+- **The rhythm gains one guaranteed interruption per Story and loses an occasional one.** A
+  round the agent happened to raise, at the end of Stage 4, is traded for a grill that always
+  runs, at the top of it; the round survives as the rare residual. That delta is the decision.
+  The resulting count, and its price, are kept in `docs/process.md` §4 § *The rhythm, and what it
+  costs* and not restated here. The walk-away structure is preserved exactly where it was:
   everything from the `spec-author` spawn to G7 still runs unattended, and the step report's
   walk-away line still says so. **Interactivity is bought with the owner's presence** — 15 to 30
   contiguous minutes per Story, on a four-to-eight-hour week, and it cannot be bought any other
