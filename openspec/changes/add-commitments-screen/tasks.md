@@ -5,7 +5,7 @@ red test is written against either, and so that the one mechanical edit in the c
 `RosterState` moving out of `DayScreen` — is done and verified on its own rather than inside a
 scenario.
 
-- [ ] 1.1 Move `RosterState` out of `DayScreen` into a new
+- [x] 1.1 Move `RosterState` out of `DayScreen` into a new
   `Sources/DayByDayKit/RosterState.swift` as a top-level `public enum RosterState: Equatable,
   Sendable`, taking its three cases and their doc comments **verbatim** — `kept`, `notKept`,
   `writtenByALaterVersion`. Delete the nested declaration from `DayScreen.swift` and change
@@ -15,13 +15,13 @@ scenario.
   && swift build` exiting 0 and `swift test` still reporting **300 tests passing**. A compile error
   naming `DayScreen.RosterState` anywhere is a rule-5 stop: report it rather than adding a
   typealias to work around it.
-- [ ] 1.2 Add `Sources/DayByDayKit/Rhythm.swift` declaring `public enum Rhythm: Hashable, Sendable`
+- [x] 1.2 Add `Sources/DayByDayKit/Rhythm.swift` declaring `public enum Rhythm: Hashable, Sendable`
   with the four cases `design.md` § *The seam* gives — `weekdays(Set<Weekday>)`,
   `dayOfMonth(DayOfMonth)`, `everyNDays(DayInterval)`, `weeklyQuota(WeeklyQuota)` — plus an
   **internal** `func schedule(keptFrom: CalendarDate) -> Schedule` bodied
   `fatalError("not implemented")`. `everyNDays` carries an interval and **no date**; nothing here is
   public but the enum and its cases. `swift build` exits 0.
-- [ ] 1.3 Add `Sources/DayByDayKit/CommitmentsScreen.swift` declaring
+- [x] 1.3 Add `Sources/DayByDayKit/CommitmentsScreen.swift` declaring
   `@MainActor @Observable public final class CommitmentsScreen` with exactly the surface
   `design.md` § *The seam* gives — `static var rosterPlace`, `init(asOf:keepingRosterAt:)`, `kept`,
   `stopped`, `rosterState`, `dayToKeepFrom`, `awaitingConfirmation`, the nested
@@ -29,12 +29,12 @@ scenario.
   `askToStopKeeping(_:)`, `cancelStopKeeping()`, `confirmStopKeeping()`, `keepAgain(_:)` and
   `shown(asOf:)` — with every body `fatalError("not implemented")` and every stored property
   assigned whatever makes it compile. Nothing else public. `swift build` exits 0.
-- [ ] 1.4 In `Sources/DayByDayKit/DayScreen.swift`, add `public func returnedTo()` bodied
+- [x] 1.4 In `Sources/DayByDayKit/DayScreen.swift`, add `public func returnedTo()` bodied
   `fatalError("not implemented")` and nothing else. **`private var rosterStore` is left exactly as
   it is** — not deleted, not renamed, not read: `design.md` § *The store `DayScreen` holds is still
   not read* records why this design does not reach it and that removing it is the human's call.
   `swift build` exits 0 and `swift test` still reports **300 tests passing**.
-- [ ] 1.5 Confirm the starting point before writing a test: `pnpm run checks` reports scenario
+- [x] 1.5 Confirm the starting point before writing a test: `pnpm run checks` reports scenario
   coverage as `4/51` for this change — the four restated verbatim by the one MODIFIED requirement,
   already carried by `DayScreenTests.swift` — and names `"a commitments screen lists the commitments
   its roster keeps, in the order they were taken on"` as next. A different number means something
@@ -85,20 +85,20 @@ is not evidence.
 
 ### The two lists
 
-- [ ] 2.1 `a commitments screen lists the commitments its roster keeps, in the order they were taken on`
-- [ ] 2.2 `a commitments screen does not list a commitment its roster has stopped keeping` — a
+- [x] 2.1 `a commitments screen lists the commitments its roster keeps, in the order they were taken on`
+- [x] 2.2 `a commitments screen does not list a commitment its roster has stopped keeping` — a
   stopped commitment leaves the first list whatever day it is; there is no date to hand in, because
   the screen asks its roster none.
-- [ ] 2.3 `two commitments alike in name and not in rhythm are two entries a person cannot tell apart`
+- [x] 2.3 `two commitments alike in name and not in rhythm are two entries a person cannot tell apart`
   — "stopping the first of them" is `askToStopKeeping` on `kept[0]` and then `confirmStopKeeping()`.
-- [ ] 2.4 `a commitments screen opened on a roster that holds nothing lists nothing and takes nothing on`
+- [x] 2.4 `a commitments screen opened on a roster that holds nothing lists nothing and takes nothing on`
   — the assertion that fails a screen which seeded day one: `FileManager.default.fileExists` at the
   place must be `false` afterwards. `design.md` § *A commitments screen never writes day one*.
-- [ ] 2.5 `a commitments screen lists what its roster has stopped keeping, in the order they were taken on`
+- [x] 2.5 `a commitments screen lists what its roster has stopped keeping, in the order they were taken on`
   — the order is the order they were **taken on**, not the order they were stopped in; the scenario
   stops "Journaling" before "Water plants" precisely to fail an implementation that appends.
-- [ ] 2.6 `a commitments screen whose roster has stopped nothing lists nothing as stopped`
-- [ ] 2.7 `a commitment a commitments screen keeps is not among what it has stopped`
+- [x] 2.6 `a commitments screen whose roster has stopped nothing lists nothing as stopped`
+- [x] 2.7 `a commitment a commitments screen keeps is not among what it has stopped`
 
 ### Defining a commitment
 
