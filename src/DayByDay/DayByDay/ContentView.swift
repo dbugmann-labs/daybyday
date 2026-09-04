@@ -71,9 +71,13 @@ struct ContentView: View {
                 }
                 .buttonStyle(.borderless)
             }
-            Button("Today") {
+            Button {
                 screen.showToday()
+            } label: {
+                Text("Today")
+                    .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.borderedProminent)
 
             switch screen.recordState {
             case .kept:
