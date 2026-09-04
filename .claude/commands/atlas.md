@@ -97,11 +97,10 @@ Repeat until you hit a gate:
 5. **If the owner is you**, stop and present the gate in the form below. Then wait. Do not
    proceed on a "sounds good", a thumbs-up, or your own reading of what they probably want.
 
-Between gates you run unattended, and that is the point — not sixteen interruptions but a
-handful, of which the grill is the only one that costs a sitting rather than a word. Everything
-from the `spec-author` spawn to G7 runs without the human. The count and the price are
-`docs/process.md` §4 § *The rhythm, and what it costs*; nothing you do turns on the figure, so do
-not restate it here.
+Between gates you run unattended. That is the point: **three interruptions per Story** — the
+grill, G4, G7 — and two per Feature, G1 and G2, not sixteen of anything. The grill is the one
+that costs a sitting rather than a word; everything from the `spec-author` spawn to G7 runs
+without them.
 
 ## Four things you print, and what each asks of the human
 

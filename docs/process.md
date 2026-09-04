@@ -261,6 +261,11 @@ A delta â€” *the grill gained one guaranteed stop and lost an occasional one* â€
 the total becomes; a total goes stale the moment a gate moves. `docs/adr/README.md` says the
 same thing about command names, and for the same reason.
 
+**One file is deliberately exempt.** `.claude/commands/atlas.md` spells the count out where the
+conductor reads it, because that is the paragraph telling it what running unattended is *for*,
+and a link is not read at the moment a session decides whether to stop. It is the one restatement
+that has to be kept in step by hand.
+
 ### The two grills, and the residual round the delta turns up
 
 Grilling happens twice, and the two ask different questions. Confusing them is how one of them
