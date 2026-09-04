@@ -47,6 +47,7 @@ The question §12 posed. One verdict each, on evidence rather than intent.
 | 4 — scenario coverage | Not as a failure | **Keep.** It paced the work rather than caught it |
 | 5 — G4 approval recorded | No | **Keep.** It converted a convention into a build failure |
 | 6 — commit hygiene | No | **Keep.** Cost is one regex file |
+| 9 — archived before merge | Added 2026-09-04, *after* the merges it would have blocked | **Keep.** The only one written against evidence |
 
 **None of the five has ever blocked a bad merge.** That is worth stating plainly rather than
 dressing up, and it is the least comfortable line in this document. What can be said in their
@@ -65,6 +66,13 @@ defence is narrower and specific:
   and against two changes riding one branch. Neither has happened at one concurrent Story, and
   neither *can* happen much at one concurrent Story. They are priced for the three-Story
   future, not this one.
+- **Check 9 is the exception to this whole section, and was added after it was written.** The
+  five above were designed against imagined failures and none has fired. Check 9 was written on
+  2026-09-04 against two that had already happened — `add-every-n-days-schedule` merged
+  unarchived as `d6506cd`, `add-screen-navigation` as `d40a6f0`, each costing a recovery PR —
+  and was verified by running it against `8062ac3f` and `fb2634a`, the heads that actually
+  merged, where it exits 1. That is the only check here whose keep is evidenced rather than
+  argued, and the reason its verdict is not "provisionally". ADR-1008 § *Amendment*.
 
 **The staging fix was the most valuable change made to them.** As first written, `pnpm run
 checks` could not pass before Stage 8, and check 4's failure text instructed the reader to

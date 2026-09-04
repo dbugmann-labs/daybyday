@@ -68,9 +68,11 @@ gh pr create --draft --base main --title '<change-id>' --body 'Closes #<issue#>'
 ```
 
 `Closes #<issue#>` is what auto-closes the Story on merge, so it is not optional. Draft is not
-decoration either: CI reads it as "this Story is not finished" and skips checks 4, 5 and 8,
+decoration either: CI reads it as "this Story is not finished" and skips checks 4, 5, 8 and 9,
 which bind again when the janitor runs `gh pr ready` at Stage 8. Keep pushing as you go; the PR
-is the Story's one URL from Stage 4 to merge.
+is the Story's one URL from Stage 4 to merge. That includes the archive commit at Stage 8: it
+needs a push like any other, twice it did not get one, and check 9 is why that now fails the build
+rather than merging.
 
 **Refresh it before each of the two gates**, G4 and G7:
 

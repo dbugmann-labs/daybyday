@@ -74,7 +74,7 @@ pnpm run verify      # lint + typecheck + test — must pass before any PR
 `pnpm run checks` is **staged**: mid-Story it reports rather than fails, because a check that
 demanded every acceptance test at once would force exactly the bulk transcription `AGENTS.md`
 rule 3 forbids. In CI the same checks bind, because a PR claims the Story is finished — unless
-it is still a draft, which is how the PR can be open from Stage 4 without three of the seven CI
+it is still a draft, which is how the PR can be open from Stage 4 without four of the eight CI
 checks failing by construction.
 
 ## Where things live
@@ -99,7 +99,7 @@ scripts/                   the merge-time checks and the graph generator
 src/DayByDayKit/           the Swift package: the rule engine and its tests
 .claude/agents/            the five pipeline agents and their model routing
 .claude/commands/atlas.md  the conductor
-.github/workflows/ci.yml   the seven verify checks, plus a Swift job
+.github/workflows/ci.yml   the eight verify checks, plus a Swift job
 ```
 
 ## The two things that are actually load-bearing

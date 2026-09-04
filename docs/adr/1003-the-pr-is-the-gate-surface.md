@@ -34,11 +34,11 @@ rather than a merge, so the PR shows the Story's own commits on top of current `
 nothing else. A conflict landing inside the change folder or `openspec/specs/` is a stop, not a
 merge to resolve: it is §7's spec collision arriving late, and it belongs to the human.
 
-**Draft state is the signal that the Story is unfinished.** Three of the seven merge-time
-checks — 4 scenario coverage, 5 G4 recorded, 8 archive complete — ask whether the Story is
-*finished*, and are skipped while the PR is a draft. Checks 1, 2, 6 and 7 run from the first
-push. The workflow subscribes to `ready_for_review` so the full list actually runs
-when the draft is lifted; it is not one of GitHub's default `pull_request` event types.
+**Draft state is the signal that the Story is unfinished.** The merge-time checks that ask
+whether the Story is *finished* are skipped while the PR is a draft; the rest run from the first
+push. Which checks sit in that set has moved since, and `docs/process.md` §7 is the file that
+keeps the list. The workflow subscribes to `ready_for_review` so the full list actually runs when
+the draft is lifted; it is not one of GitHub's default `pull_request` event types.
 
 `pnpm run status` gained the PR as a fact — whether it exists, whether it is a draft, how many
 commits `main` has moved past it — and refuses to hand a gate to the human until the diff is

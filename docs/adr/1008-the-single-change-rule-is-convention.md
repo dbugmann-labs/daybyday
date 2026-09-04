@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-08-31
 - Deciders: Diego Bugmann
+- Amended: 2026-09-04 — the hole this left is closed by CI check 9, after it cost two recovery PRs
 
 ## Context
 
@@ -68,17 +69,16 @@ source of truth, and this decision leaves it doing strictly more of the work.
   the human. This is the class of rule ADR-0013 describes: path-scoped permissions cannot be set
   per agent, so the fine-grained conventions are caught at review and the table must not be read
   as a guarantee. Check 3 was one of the few that had escaped that class; it rejoins it.
-- **An active change folder can now merge to `main`.** Check 3 was what failed a PR whose Story
-  was never archived. Check 8, `openspec validate --archived`, still binds at Stage 8 and still
-  requires every `tasks.md` box in a *newly archived* change to be ticked — but it says nothing
-  about a change that was never archived at all. `pnpm run status` reads the change folder's
-  location and is the projection that shows this; a Story stuck before Stage 8 is visible there
-  rather than in a build.
-- **The draft-skip set is now 4, 5 and 8**, three of seven rather than four of eight. ADR-1003
-  stands as written: it decided that the PR opens as a draft at Stage 4 and that the checks
-  asserting a *finished* Story wait for `gh pr ready`. That decision is unchanged; its set is one
-  smaller. Per `docs/adr/README.md` the file is not edited, because narrowing that set is a change
-  of mind about check 3 and not a correction of incidental detail.
+- **An active change folder could then merge to `main` — and twice it did.** Check 3 was what
+  failed a PR whose Story was never archived. Check 8, `openspec validate --archived`, still binds
+  at Stage 8 and still requires every `tasks.md` box in a *newly archived* change to be ticked —
+  but it says nothing about a change that was never archived at all. This ADR accepted that,
+  naming `pnpm run status` as the projection that would show it. **That mitigation was not
+  sufficient, and check 9 now closes the hole** — see *Amendment* below.
+- **The draft-skip set changed with check 3's removal.** ADR-1003 stands as written: it decided
+  that the PR opens as a draft at Stage 4 and that the checks asserting a *finished* Story wait
+  for `gh pr ready`. That decision is unchanged; only which checks are in the set has moved, and
+  `docs/process.md` §7 is the file that keeps the list.
 - **ADR-1007's rejection of the spec-PR-first shape stands, one argument lighter.** It listed
   four costs, one of which was an active change folder sitting on `main` between two PRs that
   check 3 would read as a second Story. That cost is gone; the other three — a second branch kind
@@ -104,3 +104,48 @@ source of truth, and this decision leaves it doing strictly more of the work.
 - Rejected: **demoting check 3 to a warning.** A check that cannot fail is a comment with a CI
   bill attached. If the rule is convention, the honest form is prose in `AGENTS.md`, which is
   where it already is.
+
+## Amendment — 2026-09-04: check 9 closes what this left open
+
+The consequence above was accepted on the strength of one compensating control, `pnpm run status`.
+It was not enough, and the cost was two recovery PRs.
+
+**`add-every-n-days-schedule`** merged as `d6506cd` on 2026-08-31 — the same day this ADR was
+accepted — with its change folder unarchived. `gh pr ready` fired two seconds after the G7 tick
+was pushed and the merge followed sixty seconds later; the archive commit `9a378333` was authored
+ten minutes *after* the merge, parented on the merge itself, and PR #32 recovered it.
+**`add-screen-navigation`** merged as `d40a6f0` on 2026-09-04 the other way: the archive had run,
+and its three close-out commits sat in the worktree and were never pushed, so `gh pr ready` bound
+CI to a head three commits behind them. PR #118 recovered it.
+
+The two have different proximate causes — Stage 8 skipped, and Stage 8 unpushed — and one enabling
+cause: `verify` went green on an unarchived head both times, and green is what the `main` ruleset
+accepts. `pnpm run status` could not have closed the second at all. It reads the change folder off
+local disk, so a branch archived in the worktree and stale on the remote reported as finished work
+waiting to merge, which is exactly what it was not.
+
+**CI check 9 asserts that a non-draft story branch's own change folder is archived.** It is the
+narrow half of what check 3 caught incidentally, and it does not bring back what this ADR removed
+check 3 for. Check 3 asked a question about *the whole diff* — one archived directory added, no
+active folder left anywhere — which is what let a second change riding the branch fail it, and
+what made evading it cost check 2. Check 9 asks one question about one folder, this Story's own,
+and has no opinion about anything else on the branch. The switch-back trigger in `docs/process.md`
+§7 is untouched: if a second concurrent Story is ever started, restoring check 3 is still the
+response, and check 9 neither helps nor hinders that.
+
+What makes it work where `status` did not is *where it runs*. CI checks out the PR head, so the
+property asserted is a property of the commit that will merge rather than of somebody's working
+tree — which is why it catches an unpushed archive without reasoning about pushes at all. Verified
+against both failures: run against `8062ac3f` and `fb2634a`, the heads that actually merged, it
+exits 1; run against `9a378333`, a correctly archived story head, it passes.
+
+Two things go with it, neither of them a guardrail: the janitor's archive push is now a numbered
+step carrying its command rather than a clause inside another step's rationale, and
+`pnpm run status` compares the branch against the PR head so Stage 9 can no longer call a Story finished on
+the strength of local disk alone.
+
+**What is still open.** A story PR merged while it is *still a draft* skips 4, 5, 8 and 9 alike.
+This ADR's original reasoning — "a draft cannot be merged, so nothing they guard can land while
+they are skipped" — is GitHub's UI behaviour, not a rule the `main` ruleset enforces. Neither
+failure took that route, and closing it would mean a check that runs on drafts to assert the PR is
+not one, which is not obviously worth its own red X.
