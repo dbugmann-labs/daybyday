@@ -195,19 +195,38 @@ actually ran red as you go, in § 5.**
 
 ## 4. The shell, and the two files this change cannot write
 
-- [ ] 4.1 `src/DayByDay/DayByDay/ContentView.swift` draws what a day screen says about its roster:
+- [x] 4.1 `src/DayByDay/DayByDay/ContentView.swift` draws what a day screen says about its roster:
   two more rows beside the record's two, one for a roster that could not be read and one for a roster
   written by a later version, in the kit's own words and with no branch of its own. Nothing else in
   the file changes — `dayOneCommitments` stays exactly where it is, verbatim, and stays the thing
   handed to `startingFrom:`.
-- [ ] 4.2 Run the app in the simulator and record here what was seen, since
+- [x] 4.2 Run the app in the simulator and record here what was seen, since
   `docs/open-questions.md` § *No UI smoke layer* is still open and this is the only way this repo has:
   a first launch drawing the eight commitments; the app force-quit and reopened still drawing them;
   and the roster file present under `Application Support/DayByDay/` beside the record's. Say which
   simulator and which iOS version.
-- [ ] 4.3 `docs/adr/1027-day-one-is-written-into-an-empty-roster.md` is written with this folder and
+
+  Ran on the **iPhone 17 Pro simulator, iOS 26.5** (Xcode 26.6, `xcodebuild build` for
+  `-destination 'id=565F31F7-F253-46A8-B744-8A3F3BB07685'`, then `simctl install` + `simctl launch`
+  of `com.example.DayByDay`). First launch drew "Today · Friday 4 September 2026" with three rows —
+  Reading, Supplements and habits, Journaling — which is every commitment of the eight actually due
+  that Friday under its own schedule, not all eight; `roster.json` in the app's container, read
+  directly, holds all eight commitments in the order `ContentView.dayOneCommitments` lists them (Gym,
+  Run, Finances, Reading, Supplements and habits, Journaling, Contact lenses, Water plants). The app
+  was then force-quit (`simctl terminate`) and relaunched (`simctl launch`): the same three rows drew
+  again, and `roster.json` was unchanged — 8 commitments, same bytes, no duplicate write. No
+  `record.json` exists at any point, because nothing has been ticked yet; that matches `RecordStore`'s
+  existing behaviour from before this Story and is not a regression this task introduces. The roster
+  file sits at `Library/Application Support/DayByDay/roster.json`, the same directory `record.json`
+  would land in beside it.
+- [x] 4.3 `docs/adr/1027-day-one-is-written-into-an-empty-roster.md` is written with this folder and
   `docs/adr/README.md` gains its row. Confirm before the PR opens that 1027 is still the lowest free
   number — `git log --all --name-only -- docs/adr` — and report rather than renumber if it is not.
+
+  Both already present, written by `spec-author` in the propose commit (`05112da`). Confirmed 1027 is
+  still the lowest free number: `git log --all --name-only -- docs/adr` shows the highest number on
+  any ref is 1027, claimed only here; `chore/on-the-phone` tops out at 1025 (`72068b7`, the renumbered
+  bundle-identifier record) and `main` at 1026. No renumbering needed.
 - [ ] 4.4 `docs/open-questions.md` is not this change's to write (`AGENTS.md` § *Agent roles*). Its
   *Known gaps* entry about opening the store under `Library/Application Support/` now has a second
   file under it. Land that as a chore commit alongside the merge, exactly as #92 and #93 handled their
@@ -215,10 +234,18 @@ actually ran red as you go, in § 5.**
 
 ## 5. Gates, and things that moved while this Story was open
 
-- [ ] 5.1 `cd src/DayByDayKit && swift test` reports **300 tests passing** and no failures — the
+- [x] 5.1 `cd src/DayByDayKit && swift test` reports **300 tests passing** and no failures — the
   thirty-seven here plus the 263 from before, none of which may change — and `pnpm run verify` exits 0.
-- [ ] 5.2 `pnpm exec openspec validate add-roster-store --strict` exits 0 and `pnpm run checks`
+
+  Confirmed: `swift test` reports "Test run with 300 tests in 0 suites passed", and `pnpm run verify`
+  (lint, typecheck, vitest — 118 passing) exits 0.
+- [x] 5.2 `pnpm exec openspec validate add-roster-store --strict` exits 0 and `pnpm run checks`
   reports scenario coverage as 70 of 70.
+
+  Confirmed: `openspec validate add-roster-store --strict` reports "Change 'add-roster-store' is
+  valid" and exits 0; `pnpm run checks` reports "scenario coverage — all 70 scenario(s) have a
+  matching test (118 TypeScript, 300 Swift across 33 .swift file(s))", spec-diff containment,
+  G4 approval and commit hygiene all green, and correctly reports the change not yet archived.
 - [ ] 5.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Four
   things the reviewer is asked to look for by name: that `roster` is assigned only **after** the file
   write returns, in both `add` and `retire`; that a refusal by `Roster` itself neither throws nor
@@ -231,11 +258,27 @@ actually ran red as you go, in § 5.**
   in `openspec/specs/day-screen/spec.md` against `specs/day-screen/spec.md` in this folder. Any drift
   is a **stop** and a report, never a hand-edit: rule 2 says that file is written by `/opsx:archive`
   and nothing else.
-- [ ] 5.5 Record here anything the implementation had to absorb that `design.md` did not foresee — a
+- [x] 5.5 Record here anything the implementation had to absorb that `design.md` did not foresee — a
   fifth `Schedule` case, a changed test count on `main`, a scenario that turned out to be untestable at
   the seam — so the reviewer and the archive read the folder against what was actually true.
   "Nothing." is a valid entry. Record too which of the scenarios § 2 and § 3 predicted red actually ran
   red; a prediction is not evidence.
+
+  "Nothing." — the shipped `RosterStore`, `RosterDocument` and `DayScreen` match `design.md` § *The
+  seam* and § *The form on disk* member for member; no fifth `Schedule` case, no change to the 263
+  baseline `main` already carried, and no scenario proved untestable at either seam.
+
+  Which of § 2 and § 3's red predictions actually ran red, as reported by the implementers who did
+  that work (not re-derived here):
+
+  - § 2: 2.1 and 2.4 ran genuinely red first; the other thirteen — including 2.2, 2.3, 2.6, 2.7,
+    2.12, 2.13, 2.14 and 2.15, all of which `design.md` predicted red — passed on the first run once
+    the store and document logic was already in place from an earlier scenario's implementation.
+  - § 3: 3.1, 3.2, 3.5, 3.8, 3.9 and 3.10 ran red first; 3.3, 3.4, 3.6 and 3.7 passed immediately.
+    None of 3.11–3.22 ran red at all, against `design.md` predicting red for 3.11, 3.15, 3.20 and
+    3.22 — that commit (`243b8e6`, "pin the roster place and re-read behaviour") is test-only, which
+    is the evidence: the behaviour those twelve scenarios pin was already correct from § 3's earlier,
+    genuinely-red scenarios landing the roster-reading logic in `DayScreen` before them.
 - [ ] 5.6 Two things `main` carries that this Story does **not** fix, left for the human to decide
   about: the five scenarios belonging to *A day screen re-reads its day and its record when the app is
   shown again* that #93's archive appended under *A day view says its day as a weekday and a date…*
