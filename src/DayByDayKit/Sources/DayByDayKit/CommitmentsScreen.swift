@@ -145,12 +145,33 @@ public final class CommitmentsScreen {
     /// Takes `commitment` up again, in the place it was taken on in. Answers `nil` and does
     /// nothing when `stopped` does not hold it.
     @discardableResult public func keepAgain(_ commitment: Commitment) -> Refusal? {
-        fatalError("not implemented")
+        guard stopped.contains(commitment) else {
+            return nil
+        }
+        guard let rosterStore else {
+            return .notKept
+        }
+
+        do {
+            try rosterStore.add(commitment)
+        } catch {
+            return .notKept
+        }
+
+        kept = rosterStore.roster.commitments
+        stopped = Self.stopped(in: rosterStore.roster)
+        return nil
     }
 
     /// The app has been shown on `today`: the day this screen holds is replaced and the roster is
     /// read again.
     public func shown(asOf today: CalendarDate) {
-        fatalError("not implemented")
+        dayToKeepFrom = today
+
+        let opened = Self.open(at: place)
+        rosterStore = opened.store
+        rosterState = opened.state
+        kept = opened.store?.roster.commitments ?? []
+        stopped = opened.store.map { Self.stopped(in: $0.roster) } ?? []
     }
 }
