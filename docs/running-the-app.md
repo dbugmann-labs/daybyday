@@ -111,17 +111,41 @@ phone rather than two problems, and neither blocks a **simulator** build — tha
 which is why the app still builds and runs with the errors on screen. Plug the phone in, unlock it,
 answer *Trust This Computer*, and Xcode registers the device and issues the profile by itself.
 
-Then, with the phone plugged in and unlocked:
+## Putting a new version on it
+
+Then, with the phone plugged in and unlocked, one command builds, installs and launches:
+
+```bash
+pnpm run phone
+```
+
+It picks the phone when exactly one is paired, and names them when more than one is:
+
+```bash
+pnpm run phone -- 'Diego's iPhone'
+```
+
+**This is the only way a new version ever reaches the phone.** There is no App Store here and no
+TestFlight — TestFlight needs a paid membership. **Merging a PR changes nothing on the device.** If
+a week of use starts feeling stale, check that you reinstalled before concluding anything about the
+work.
+
+**Run it again within seven days even if nothing shipped.** A free personal team's signature
+expires and the app stops opening; this is the fix, and it resets the clock.
+
+**It installs over the top, and that is what keeps your ticks.** The record lives at
+`<Application Support>/DayByDay/record.json`, inside a container iOS keys to the bundle identifier,
+so reinstalling the same identifier keeps every tick. **Deleting the app from the Home screen
+deletes the container and the entire record**, silently and with no undo. Never delete and
+reinstall as a fix for anything.
+
+`scripts/install-on-phone.ts` is the script, and it is deliberately not a CI check: it needs a
+paired phone and a signing identity, neither of which a runner has. If the script is itself what is
+broken, this is what it runs, longhand:
 
 ```bash
 xcrun devicectl list devices
-```
 
-That prints the identifier to use below; `No devices found.` means the phone is not paired, not
-that anything is broken — unlock it and answer *Trust This Computer*. Build against the device
-rather than the simulator, then install and launch:
-
-```bash
 xcodebuild -project src/DayByDay/DayByDay.xcodeproj \
   -scheme DayByDay \
   -destination 'generic/platform=iOS' \
@@ -140,7 +164,7 @@ on the phone, **Settings → General → VPN & Device Management → Developer A
 certificate, and launch again.
 
 **The `devicectl` subcommands and flags above were checked against `--help` on 2026-09-03; the
-sequence has never been run end to end.** No device was paired and the machine held no signing
+sequence, and `pnpm run phone` past its no-device refusal, have never been run end to end.** No device was paired and the machine held no signing
 identity, so `xcrun devicectl list devices` printed `No devices found.` and no build was ever
 signed. `AGENTS.md` says to verify rather than remember, and this is the honest state of it: the
 first person to plug a phone in should correct whatever is wrong here and delete this paragraph.

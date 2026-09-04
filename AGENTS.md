@@ -246,6 +246,7 @@ pnpm run verify      # lint + typecheck + test — must pass before any PR
 pnpm run checks      # the merge-time checks; advisory locally, binding in CI
 pnpm run check:g4    # is this Story approved? run it before writing any code
 pnpm run test:watch  # TDD loop
+pnpm run phone       # build, install and launch on a paired iPhone; the only way a new version gets there
 pnpm run graph       # regenerate docs/graph.mmd — CI already does this on every issue event
 openspec validate <change-id> --strict
 openspec validate --all --strict --no-interactive
