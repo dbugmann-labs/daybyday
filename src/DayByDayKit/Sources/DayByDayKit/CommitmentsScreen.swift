@@ -78,6 +78,10 @@ public final class CommitmentsScreen {
     /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`, and
     /// `keptFrom`, and takes it on. Takes a commitment the roster has stopped up again.
     public func define(name: String, on rhythm: Rhythm, keptFrom: CalendarDate) -> Refusal? {
+        if case .weekdays(let weekdays) = rhythm, weekdays.isEmpty {
+            return .dueOnNoDay
+        }
+
         let schedule = rhythm.schedule(keptFrom: keptFrom)
 
         guard let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom) else {
