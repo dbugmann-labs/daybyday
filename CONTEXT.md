@@ -178,9 +178,9 @@ The order is **the order they were taken on** and nothing the system worked out:
 which would be a rule about the owner's own words, and not by the day each is kept from, since day
 one's commitments are all kept from one day and that order would leave them tied with the roster
 choosing between them — the same reason a day view orders nothing of its own. Deliberately not the
-**store** that keeps a roster across the app being closed, in the way a history is not the store
-that keeps it, and deliberately not a **list on a screen**, which may draw a roster in whatever
-order it likes. Agreed 2026-09-03 at the grill of `add-commitment-roster` (#101).
+**roster store** that keeps a roster across the app being closed, in the way a history is not the
+record store that keeps it, and deliberately not a **list on a screen**, which may draw a roster in
+whatever order it likes. Agreed 2026-09-03 at the grill of `add-commitment-roster` (#101).
 
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
@@ -214,7 +214,7 @@ commitment is not due on is answered *not kept* rather than refused, because tel
 from *missed* is the asker's job with the commitment's own answer beside it. It holds at most one
 tick per commitment per day, so ticking a day twice is one tick, and it is a value: two histories
 holding the same ticks are the same history, whatever order they were ticked in. Deliberately not
-the **store**, which is where a history survives the app being closed and is #56's to define.
+the **record store**, which is where a history survives the app being closed and is #56's to define.
 Agreed 2026-09-02 at the grill of `add-tick-record` (#55).
 
 **Untick** — to take a tick back, leaving the history as though that tick had never been: the
@@ -224,16 +224,42 @@ nothing rather than an error. It exists because a tick is one tap on a phone, an
 be undone turns every mis-tap into a permanent false record. Proposed 2026-09-02 at the grill of
 `add-tick-record` (#55) and settled by the owner the same day, in answer to its question round.
 
-**Store** — where a history survives the app being closed and opened again: the ticks, kept at a
-*place* the app names, so that whatever opens the store at that place next holds the same history. A
-tick is kept the moment it is added and an untick the moment it is taken back — there is no separate
-moment at which a store is saved, because the app can be stopped without warning and a tick waiting
-to be saved is the record the product promises not to lose. A store never holds more than is kept at
-its place, and never answers with less than is there: what it cannot read it refuses whole, rather
-than opening empty over the top of it. It persists exactly what a tick is and nothing it invented,
-keyed to the calendar date and never to the moment of entry. Deliberately not a backup and not a
-sync: carrying a store to a new phone is B-009's, and the store's only part in it is to be one thing
-at one place that a backup can carry. Agreed 2026-09-02 at the grill of `add-record-store` (#56).
+**Store** — where a value survives the app being closed and opened again: kept at a *place* the app
+names, so that whatever opens a store at that place next holds the same value. A change is kept the
+moment it is made — there is no separate moment at which a store is saved, because the app can be
+stopped without warning and a change waiting to be saved is exactly what the product promises not to
+lose. A store never holds more than is kept at its place, and never answers with less than is there:
+what it cannot read it refuses whole, rather than opening empty over the top of it, and it persists
+exactly what the value is and nothing it invented. A store is the one thing here that is not itself
+a value: two handles on one place are two views of one file. Deliberately not a backup and not a
+sync: carrying a store to a new phone is B-009's, and a store's only part in it is to be one thing at
+one place that a backup can carry.
+
+**Amended 2026-09-04**, at the grill of `add-roster-store` (#103). A store was the record's alone
+until there were two; what is written above is what both have in common, and the two below are what
+each keeps. They are independent of each other, at places of their own, so that taking on a
+commitment does not rewrite a history.
+
+**Record store** — the store that keeps a **history**: every tick added and not since taken back,
+keyed to the calendar date and never to the moment of entry. Agreed 2026-09-02 at the grill of
+`add-record-store` (#56), where this was the whole of **Store**.
+
+**Roster store** — the store that keeps a **roster**: every commitment taken on, in the order it was
+taken on, and against each one the roster has stopped keeping, the day it was **kept until**. It
+keeps the stopped ones because a roster does — they are what makes taking a commitment up again
+different from adding a second one, and what lets a past day answer about a commitment no longer
+kept. Order is one of the things a roster is, so a roster store keeps the order it was given rather
+than one of its own — unlike a record store, which is free to write ticks in whatever order makes
+its file stable, because a history is the same history whatever order its ticks arrived in. Agreed
+2026-09-04 at the grill of `add-roster-store` (#103).
+
+**Day one** — the commitments a fresh install begins with, before anyone has defined one: the
+owner's own week, quoted in `docs/backlog.md` § *What day one looks like*. It is written into a
+roster that holds nothing at all, and only then — a roster emptied by stopping every commitment
+still holds them, so it is not day one again and is never written over. Day one is the app's, not
+the engine's: it is content the product ships with rather than something a store could invent, and
+what a **roster store** holds is only ever what it was given. Agreed 2026-09-04 at the grill of
+`add-roster-store` (#103).
 
 **Day** — the unit the product is organised around. The landing screen is one day, and every
 record is keyed to a date rather than to the time it was entered.
@@ -333,7 +359,8 @@ staying put is an answer it can give. A day screen also moves **straight back to
 day view has no way to do: it holds no today to go back to.
 
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
-and to keep an answer: the **store** it reads a history from and writes a tick back to, and the
+and to keep an answer: the **record store** it reads a history from and writes a tick back to, the
+**roster store** it reads its commitments from, and the
 **today** it was handed when the app was shown. It is what `day-screen` is the capability of, and it
 is the first thing in the product that is not a value — a day view is what it holds, and holding one
 is what a day screen does.
@@ -370,6 +397,16 @@ at the fourth grooming pass's Feature grill, for B-027. It is not the tick's own
 is the row's answer and what a tick is and where it is held are `record`'s, and a day screen adds
 nothing to either.
 
+**Amended 2026-09-04**, at the grill of `add-roster-store` (#103). A day screen holds **two stores**,
+at two places, and reports on each separately. It holds **no list of commitments**: it asks its roster
+what it had not stopped keeping **on the day it is showing**, every time it forms a day view, which is
+the only way the day a commitment was **kept until** can be seen at all — without it a past day would
+draw today's list. The commitments it is *handed* are **day one**, and they are what it takes on when
+the roster it read holds nothing at all; from then on what it draws is the roster's answer. A day
+screen **without its roster** is the sibling of the one below and is not the same thing: it draws its
+day and no rows, because what a date asks of a person is exactly what a roster answers, and it writes
+nothing over what it could not read.
+
 A day screen **without its record** is one whose store would not open. It is still a day screen: it
 draws the day, because what a date asks of a person needs no record to answer, and it says that it
 is keeping none. It takes no tick at all — not into memory, not to be kept later — because a tick
@@ -395,6 +432,16 @@ the temporary directory, which no backup carries. The choice lands here because 
 else: a **store** keeps a history at whatever place it is given and cannot refuse a bad one from
 where it sits, and the **app shell** decides nothing. Agreed 2026-09-03 at the grill of
 `add-day-screen` (#91).
+
+**Roster place** — the one place a day screen keeps its roster at, chosen exactly as the **record
+place** is and for the same reasons: a file in a directory of this app's own inside the platform's
+application-support directory, the same place every time it is asked for, and never the caches
+directory the system empties nor the temporary directory no backup carries. It is deliberately **not
+the record place**: two values kept independently need two files, so that taking on a commitment
+never rewrites a history and one file that will not open never takes the other down with it. The
+choice lands on the day screen because it lands nowhere else — a **roster store** keeps a roster at
+whatever place it is given and cannot refuse a bad one from where it sits, and the **app shell**
+decides nothing. Agreed 2026-09-04 at the grill of `add-roster-store` (#103).
 
 **Shown** — the moment the app comes in front of a person: opened from nothing, or brought back from
 behind whatever was in front of it. It is the only moment a day screen is handed a **today**, and so
