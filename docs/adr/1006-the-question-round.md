@@ -160,6 +160,14 @@ blocks on either the grill or a residual round mechanically.
   exactly what `AGENTS.md` § *Context discipline* says is not a durable file. This is the same
   trade ADR-1005 and ADR-0010 make and it is worth stating rather than implying: the artifact is
   checkable, the judgement is not.
+- **The round is asked with `AskUserQuestion`, and that closes an inconsistency in this record.**
+  The argument for the interview living with the conductor is that no subagent holds that tool.
+  The first round actually run under this decision was printed as text and never used it, so the
+  human was handed six numbered questions and asked to compose a reply tracking all six — the
+  tool that justifies the whole arrangement sitting unused. A round is now printed *and* asked:
+  the print carries the bodies, the picker carries the answering, and the tool's four-question
+  cap is split across calls rather than allowed to shrink a frontier. ADR-1012, amended
+  2026-09-04.
 - **It is one more thing that can turn into a gate.** ADR-1002 named that risk about
   `pnpm run status` and the test applies here unchanged: if the grill or the residual round ever
   grows a marker, a check, or a `G` number, it has become the sixth gate this decision was shaped

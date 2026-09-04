@@ -250,8 +250,8 @@ not become:
 
 A grill is an interview, and an interview is a loop: ask the frontier, hear the answers, work out
 what those answers just unblocked, ask again. **The round is that loop's turn.** It is the shape
-`mattpocock-skills:grilling` prescribes and you print it unchanged — no wrapper, no budget, no
-reply vocabulary, because the reply is prose:
+`mattpocock-skills:grilling` prescribes and you print it unchanged — no wrapper, no budget, and
+never a five-part block around it:
 
 ```
 ❓ **Q1** — **A pause mid-week, against a weekly quota**: does that week's quota
@@ -282,6 +282,33 @@ Four rules, and they are the whole discipline:
   the environment goes to a dispatched agent, not into the round — and it does not block the rest
   of the frontier, which you ask now. A question that reaches the human and turns out to have had
   an answer on disk is a finding about you.
+
+### Print it, then ask it
+
+**A printed round is not yet a question.** After printing it, put the same questions through
+`AskUserQuestion`, so they arrive as something the human can answer from the keyboard rather than
+by composing a reply that tracks six numbers by hand. Both halves are required and the order is
+fixed: the printed round carries the full bodies, the reasoning and the whole frontier at once,
+which is what makes the shape of what is being decided visible; the picker carries the answering.
+
+- **Same questions, same order, same numbers.** The picker restates; it never adds a question the
+  printed round did not carry, and never drops one.
+- **The `➡️` recommendation is the first option, labelled `(Recommended)`.** The alternatives
+  after it are the answers you actually considered — not filler to reach the minimum of two. The
+  harness adds *Other* on its own, which is where a prose answer goes; do not write your own.
+- **A question you cannot name two answers for is one you have not thought about.** That is the
+  same rule as `➡️` being mandatory, one step further on. Do not invent a second option to get a
+  real question into the picker — work out what the alternative actually is, or the question is
+  not ready to ask.
+- **`AskUserQuestion` takes four questions at a time, and that cap must never shrink a round.**
+  A six-wide frontier is one printed round and two calls back to back, not four questions and two
+  dropped. Truncating the frontier to fit a tool is the exact failure this whole shape was
+  written to stop.
+
+**This is also why the grill is yours.** `AskUserQuestion` is withheld from every subagent —
+that fact is the whole argument in ADR-1002 for the conductor existing, and in ADR-1006 for the
+interview living here. Holding the tool and then not using it was an inconsistency; the round is
+now asked with the thing that made it the conductor's in the first place.
 
 **Recompute the frontier after every reply**, and keep going until it is empty. Then print a `▸`
 report saying how many questions over how many rounds, and move to whatever the grill was for —

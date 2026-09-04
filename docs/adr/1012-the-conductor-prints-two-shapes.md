@@ -13,6 +13,10 @@
   shapes across the four things the conductor prints, and wrapping a round in a five-part block
   is forbidden. The title still says *two* and is kept deliberately: over a hundred
   cross-references resolve by number, and ADR-1020 is explicit about what renaming costs.
+- Amended: 2026-09-04 — a round is **printed and then asked**: the printed `❓` block carries the
+  bodies and the reasoning, and `AskUserQuestion` carries the answering. Found on the first run
+  of the new grill, when the human's reply to a six-question round was that they could not answer
+  it from the keyboard.
 
 ## Context
 
@@ -153,8 +157,16 @@ asked once; inside the loop the step report's `next` line carries the one thing 
 
 - **The human learns three shapes and reads the header.** A `G` header or a `Stop —` header
   means a decision is wanted and the fourth part says what to type; a `❓` means answers are
-  wanted, in prose, and more will be asked; a `▸` line means nothing is wanted. The question "am
-  I being asked something, and what kind of something?" is answered before the first sentence.
+  wanted and more will be asked; a `▸` line means nothing is wanted. The question "am I being
+  asked something, and what kind of something?" is answered before the first sentence.
+- **A round is printed and then asked, and both halves are load-bearing.** *Amended 2026-09-04.*
+  The print makes the whole frontier visible at once, which is what tells the human how big the
+  decision in front of them is; the `AskUserQuestion` pass that follows makes it answerable from
+  the keyboard, with the `➡️` recommendation as the first option. Printing alone asks the human to
+  compose a reply tracking six numbers by hand, which is what the first run of the new grill
+  actually produced. The tool's four-question cap is split across consecutive calls and **never**
+  allowed to shrink a round — truncating the frontier to fit a tool is the failure ADR-1006 was
+  written to stop, arriving by a new route.
 - **The human answers the question they were asked, not the one they can still remember.** The
   ordering is what makes that true; the parts, the labels and the reply vocabulary would work in
   any order and the ask would still be buried under an unbounded context section.
