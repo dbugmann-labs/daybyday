@@ -75,7 +75,7 @@ fine, and `|| true` is the right way to write it into a script.
 
 The Simulator is not the product — `CONTEXT.md` § *Product principles* says **an iPhone, in your
 hand**, and a week of real use is the only thing that tells you which want matters next. The app's
-bundle identifier is `com.dbugmann.daybyday` (ADR-1023), and it must not change once you have
+bundle identifier is `com.dbugmann.daybyday` (ADR-1025), and it must not change once you have
 installed even once: the record is kept under a directory the identifier names, so renaming it
 orphans everything you have ticked.
 

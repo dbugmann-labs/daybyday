@@ -144,7 +144,7 @@ Things that are built, or deliberately not built, in a state someone will trip o
   the first thing that puts the app on a real phone — fired from a direction it did not anticipate:
   a chore taking a week of real use, not a Story. It could not wait, because on iOS the container
   holding `DayScreen.recordPlace` is keyed to the identifier, so changing it after an install hands
-  the app an empty container and says nothing. `docs/adr/1023-the-bundle-identifier-is-com-dbugmann-daybyday.md`.
+  the app an empty container and says nothing. `docs/adr/1025-the-bundle-identifier-is-com-dbugmann-daybyday.md`.
   **Signing is not settled by it** — `DEVELOPMENT_TEAM` is unset and the machine held no
   codesigning identity; `docs/running-the-app.md` § *On your own phone* is the step the owner runs
   in the Xcode GUI.
@@ -166,7 +166,7 @@ Things that are built, or deliberately not built, in a state someone will trip o
   is the part with requirements, and what is left is the product — and `PRODUCT_NAME =
   $(TARGET_NAME)` makes the target name the label under the Home screen icon, so every other
   candidate is a name plus an override putting `DayByDay` back. What it is *not* called, and what
-  it deliberately does not decide, is the bundle identifier, settled a day later by ADR-1023.
+  it deliberately does not decide, is the bundle identifier, settled a day later by ADR-1025.
   `docs/adr/1019-the-app-shell-runs-in-the-simulator.md`, and `CONTEXT.md` § *App shell* for the
   guard that keeps the lane honest.
 

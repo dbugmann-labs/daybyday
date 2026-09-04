@@ -1,4 +1,4 @@
-# 1023. The app's bundle identifier is `com.dbugmann.daybyday`
+# 1025. The app's bundle identifier is `com.dbugmann.daybyday`
 
 - Status: accepted — the owner's decision on 2026-09-03, taken by the chore that first puts the app
   on a physical phone, and accepted by the chore PR that carries this record
