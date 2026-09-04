@@ -353,6 +353,60 @@ shape it lacks, not the quota.
   argument does not carry across — but whoever grills this should say so out loud rather than
   letting the two look alike.
 
+### B-029 — tell supplements and habits apart as kinds of commitment
+*Captured 2026-09-04. Said under the heading "Categories:", with B-030.*
+
+> "A supplement is nothing other than a committment, but I want supplements to be categorized"
+
+*Folded in on capture, the same want said of the other thing:*
+
+> "Same for a habit, is a committment that is categorized"
+
+- **Trigger** — once, when a commitment is defined; and again whenever a list of them is read.
+- **Touches** — `commitment` (#26). It is a **fourth part** on a thing the shipped spec says is
+  exactly three: *"A commitment SHALL be exactly three things … It SHALL carry nothing else."*
+  Taking it means changing `CONTEXT.md` § *Commitment* first, then that spec.
+- **Principle** — tested against *five percent of seven things*: **fails**, and is captured anyway.
+  A category deepens the commitment that already exists rather than making a new kind of record
+  possible, and nothing on the day-one week is impossible without it. What it makes possible is
+  B-030, so a pass that takes one should look at both.
+- **Open** — a fourth part of a commitment, or held one level up by the **roster**? A tick embeds
+  the whole commitment by value and `History.isKept` matches by value, so a category *on* the
+  commitment re-keys every tick already recorded the moment one is changed. That is the exact
+  argument ADR-1023 used to put *kept until* on the roster instead, and it applies here unchanged.
+- **Open** — a fixed set the app names — supplement, habit, sport — or words the person invents,
+  like a commitment name? Invented words need their own refusal rule for a name of blank space;
+  a fixed menu has to hold every line of the day-one week, including finances and the plants.
+- **Open** — exactly one category per commitment, or none, or several? "Categorized" says nothing
+  about a commitment that is neither a supplement nor a habit, and the day-one week has four.
+- **Open** — *habit* here is not B-005's habit. There, ticking records that the thing was **not**
+  done, which is a property of the record; here it is a label over a group of rows. Two axes
+  wearing one word, and grooming should keep them apart rather than let the word carry both.
+
+### B-030 — see the day's commitments in separated groups rather than one list
+*Captured 2026-09-04. Said under the heading "Categories:", with B-029.*
+
+> "Categories should be separated on the screen"
+
+- **Trigger** — every daily visit, on the screen the app opens on.
+- **Touches** — `day-screen` (#27), and B-029 for the key it would group by. `CONTEXT.md` § *Day
+  view* says a day view *"orders nothing of its own … in the order it was handed them"*, so
+  grouping is either a second ordering it is newly allowed to make, or something the caller does
+  before handing the rows over — and the roster's own order is the order things were taken on.
+- **Principle** — tested against *an iPhone, in your hand*: **passes**, and it is the want the
+  phone judges most sharply. "supplements and habits daily" is one line of the day-one week and a
+  dozen rows on a small screen; separation is what stops that scroll reading as one undifferentiated
+  list. It adds no screen and no navigation.
+- **Open** — which screen? The braindump says "the screen". The day screen (#27) is where the five
+  daily visits happen; `add-commitments-screen` (#104) is the list a person manages commitments
+  through. Both are candidates, only one is a capability that orders anything today, and wanting it
+  in both is a plausible answer.
+- **Open** — what order do the groups come in, and where does a commitment in no category go?
+- **Open** — does a group with nothing due today appear at all, appear empty, or vanish? A day view
+  already shows only what is due, so an empty group is a claim about the day rather than about the
+  commitments a person keeps.
+- **Open** — cannot be taken before B-029: without it there is no key to group by.
+
 
 ## Decided
 
