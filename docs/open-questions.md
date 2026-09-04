@@ -140,6 +140,20 @@ Things that are built, or deliberately not built, in a state someone will trip o
   drives browser engines only, ships no `_ios` counterpart to its experimental `_android`, and
   cannot launch Apple's Simulator. It is unreachable without reversing ADR-1001, which chose
   native Swift and SwiftUI partly by rejecting the browser-based option outright.
+- **`DayByDayKit` logs now, and nobody chose how.** Surfaced at #103's review, 2026-09-04.
+  `DayScreen.swift` carries `import os` — the module's first non-Foundation import — and a
+  `Logger` on the one path where a failure cannot be reported through the seam: the day-one
+  rollback whose `removeItem` itself fails, leaving a partial roster at the place that a later
+  open reads back as a legitimate one. Recording it is the honest option and the reviewer agreed
+  it should not go back to `try?`. What is unresolved is that it arrived inside a review fix
+  rather than through a design, so three things were set by default rather than decided. The
+  `subsystem: "DayByDayKit"` / `category: "RosterStore"` naming is not Apple's reverse-DNS
+  convention and wants the real bundle identifier, which is still `com.example.DayByDay` on
+  `main` because the rename lives on PR #111. `privacy: .public` on the file path is a deliberate
+  override of `Logger`'s safe default: harmless on iOS, where the path is a container UUID, but on
+  macOS it un-redacts the account short name. And the whole facility is a side effect no test at
+  either seam can observe, so nothing regresses it. The next Story that wants to log will copy
+  this shape; whichever one that is owes the decision, or a chore does it first.
 
 ## Settled
 
@@ -152,7 +166,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
   that decides nothing could not — so the obligation waited for the first Story that persists a
   tick from inside the app. That is `add-day-screen` (#91): `DayScreen.recordPlace` is the
   decision, it is a requirement in `openspec/specs/day-screen/spec.md`, and a scenario pins it.
-  Settled by #91.
+  Settled by #91. **Extended 2026-09-04 by `add-roster-store` (#103)**: the same directory now
+  holds a second file, `roster.json`, chosen the same way and for the same reasons —
+  `DayScreen.rosterPlace` is a requirement in the same spec with its own scenario, and the two
+  stores are independent, at places of their own, so taking on a commitment does not rewrite a
+  history. B-009 therefore carries a directory rather than a file, which is what "one thing at
+  one place that a backup can carry" now means.
 
 - 2026-09-02 — **the app target is called `DayByDay`, and it is a chore rather than a Feature.**
   It sits at `src/DayByDay/` beside `src/DayByDayKit/`, is a hand-written `.xcodeproj` needing no
