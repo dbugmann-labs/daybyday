@@ -189,7 +189,10 @@ what has no judgement in it, and change nothing in `DayByDayKit` from here.
   `pnpm run verify` exits 0.
 - [x] 4.2 `pnpm exec openspec validate add-screen-navigation --strict` exits 0 and `pnpm run checks`
   reports scenario coverage as 49 of 49.
-- [ ] 4.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
+- [x] 4.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**).
+
+  **G7 findings:** The review at merge-base `3a17fa9` reported six findings. Finding 1 (the branch carrying open PR #112's commits) was resolved by #112 merging (squashed as `3045c83`) and this branch being replayed onto `main`; PR #116 now carries 6 commits and 12 files. Finding 2 (two `Button`s in one `List` row with no `buttonStyle`, in `ContentView.swift`) was a real defect and was fixed in commit `0373393`. Finding 3 (box 3.2) was closed by the repo owner running the Simulator step-through himself. Findings 4 and 5 (duplicated `showPreviousDay`/`showNextDay` bodies, and a repeated `store?.history ?? History()`) were triaged as leave, both judgement calls. Finding 6 (no accessibility labels on the chevrons) was triaged as a heads-up with no standard in this repo to breach. Spec fidelity was reported clean.
+
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7, and
 `openspec validate --archived` requires every box above to be ticked before it.
