@@ -423,6 +423,24 @@ other reason is told apart. ADR-1021, settled by the owner at the Feature grill 
 sharpened by them on the same day on `add-day-screen`'s question round; recorded by
 `add-day-screen` (#91).
 
+**Commitments screen** — where a person manages what they keep, rather than what a day asks of
+them: the list of the commitments the roster is keeping, the form that defines a new one from a
+name, a rhythm and the day it is kept from, and the way to stop keeping one. Beside that list it
+shows **what they have stopped**, which is the only way the roster's rule that offering a stopped
+commitment again *takes it up* can be reached from a phone — a person who had to retype a name,
+rebuild a rhythm and match a kept-from day exactly would in practice be making a different
+commitment. Both lists are in the order the roster took its commitments on, and a row is a name
+and nothing else: saying a rhythm in words is a rule about how a **schedule** is said and belongs
+to that capability, whichever screen would read it.
+
+It is the second thing in the product that is not a value, and the first that **refuses something
+the engine accepts**: a weekday set with no days in it is a legal schedule, due on nothing, and a
+commitment made on one is a commitment a person would never see again. That refusal is the
+screen's own and not the rule engine's, which goes on accepting the value. Deliberately not the
+**day screen**, which is one day and what it asks of you; the two share a **roster place** and are
+each other's only writer, which is why a day screen returned to reads its roster again rather than
+drawing the list it opened with. Agreed 2026-09-04 at the grill of `add-commitments-screen` (#104).
+
 **Record place** — the one place a day screen keeps its record at, and the only thing about the
 record that is a day screen's to choose. It is a file inside the directory the platform reserves for
 an application's own supporting data, in a directory of this app's own, and it is the same place
