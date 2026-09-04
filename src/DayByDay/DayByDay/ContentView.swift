@@ -6,7 +6,8 @@ import DayByDayKit
 ///
 /// > creatine daily · magnesium daily · nails every 4 days from Sunday 6 September ·
 /// > gym Mon/Wed/Sat · run Tue/Thu/Sun · public pool Fri ·
-/// > contact lenses every 14 days from Saturday 5 September
+/// > contact lenses every 14 days from Saturday 5 September · finances every 25th ·
+/// > yuno 5x a week
 ///
 /// `keptFrom` is 2026-09-04, the day the list was stated and the first day any of it can show a
 /// row. The two interval schedules count from their own stated day instead, which is why each
@@ -39,6 +40,11 @@ private let dayOneCommitments: [Commitment] = {
         Commitment(
             name: "Contact Lenses",
             schedule: .everyNDays(DayInterval(days: 14)!, from: lensesFrom), keptFrom: keptFrom),
+        Commitment(
+            name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom),
+        Commitment(
+            name: "Yuno", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 5)!),
+            keptFrom: keptFrom),
     ].compactMap { $0 }
 }()
 

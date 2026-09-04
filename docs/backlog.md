@@ -28,14 +28,33 @@ the first pass, on 2026-09-02, filled them in as it read them.
 
 ## What day one looks like
 
-The owner's actual week, as stated on 2026-08-28. Every cluster `/atlas backlog` proposes is
+The owner's actual week, as stated on 2026-09-04. Every cluster `/atlas backlog` proposes is
 judged against this rather than against a category of app — **and every grooming pass walks it
 line by line to find the commitments that have no want, no spec and no open Story at all.** That
 sweep is the only step in the whole process that asks what is *missing* rather than whether what
 is here is coherent, which is why it runs before any clustering:
 
-> gym Mon/Wed/Sat · run Tue/Thu/Sun · finances every 25th · reading 3× a week · supplements and
-> habits daily · journaling daily · contact lenses every 14 days · water plants every 3rd day
+> creatine daily · magnesium daily · nails every 4 days · gym Mon/Wed/Sat · run Tue/Thu/Sun ·
+> public pool Fri · contact lenses every 14 days · finances every 25th · yuno 5× a week
+
+**This replaced an earlier week, and the wants argued against that one have not been re-judged.**
+Until 2026-09-04 the week here was the one stated on 2026-08-28: *gym Mon/Wed/Sat · run
+Tue/Thu/Sun · finances every 25th · reading 3× a week · supplements and habits daily · journaling
+daily · contact lenses every 14 days · water plants every 3rd day*. Gym, run, finances and contact
+lenses carried over unchanged; reading, supplements and habits, journaling and water plants are no
+longer kept; creatine, magnesium, nails, public pool and yuno are new. Four wants argue from a
+commitment that has left — B-017 and B-025 both ground the weekly quota in reading, B-018 in
+supplements morning and evening, B-029 in telling supplements and habits apart — and B-004's Open
+line reads journaling as a tick rather than as written text.
+
+**A rhythm leaving the week is not evidence the want was wrong**, so none of those is dropped by
+this. Every schedule *shape* the old week asked for is still asked for: yuno 5× a week wants the
+weekly quota exactly as reading did, so B-017's and B-025's arguments carry across with the name
+substituted. B-018 and B-029 are the ones genuinely weakened — nothing in the week is now a
+supplement taken twice a day, and creatine and magnesium are two supplements where there was one
+line reading "supplements and habits", which is a different question about categories than the one
+B-029 was capturing. Re-judging all five is the next grooming pass's first job, ahead of the sweep
+for what is missing. Nothing cited water plants.
 
 **Whether to build any of this at all is settled and is not to be re-argued.** Checked against
 what already exists on 2026-08-29: nothing found does all four rule shapes without streak
