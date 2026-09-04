@@ -1719,6 +1719,7 @@ func aDayScreenThatCannotReadItsRecordStillDrawsTheCommitmentsItsRosterKeeps() t
     #expect(!screen.dayView.rows[0].isKept)
     #expect(!screen.dayView.rows[1].isKept)
     #expect(screen.recordState == .unreadable)
+    #expect(screen.rosterState == .kept)
 }
 
 @MainActor

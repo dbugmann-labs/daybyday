@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 /// The day view a person is looking at, and the record it is read from and kept at. See
 /// `openspec/specs/day-screen/spec.md` for the behaviour contract and this change's `design.md`
@@ -141,8 +142,22 @@ public final class DayScreen {
                 try store.add(commitment)
             }
         } catch {
-            try? FileManager.default.removeItem(at: place)
-            return (store, .notKept, Roster())
+            do {
+                try FileManager.default.removeItem(at: place)
+            } catch let removalError {
+                // The write that just failed may have left day one partly kept at `place`; this
+                // removal is what stops a later open from reading that partial write back as a
+                // legitimate roster. A failure here — a sticky bit this process may write but not
+                // unlink in, a `uchg` flag on the file — must not be swallowed the way `try?`
+                // swallows it: logged rather than thrown, because the screen's answer is `.notKept`
+                // either way — design.md's own reading of `RosterState` — and rule 5 forbids
+                // inventing a state the delta does not carry to say more than that.
+                Logger(subsystem: "DayByDayKit", category: "RosterStore")
+                    .error(
+                        "could not remove the partial roster left at \(place.path, privacy: .public) after day one failed to write: \(String(describing: removalError), privacy: .public)"
+                    )
+            }
+            return (nil, .notKept, Roster())
         }
 
         return (store, .kept, store.roster)
