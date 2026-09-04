@@ -5,8 +5,8 @@ nobody has had to make yet, and gaps in what is built that were left open on pur
 `docs/backlog.md` holds the wants and only the wants, which is what keeps it groomable.
 
 Nothing here is a backlog entry and nothing here is groomed. An item leaves by being **answered
-by the change that finally forces it** — a `## Questions for you` round inside Stage 4, or an
-ADR — and moves to *Settled* below with the pointer. If an item turns out to be something you
+by the change that finally forces it** — the grill's rounds at the top of Stage 4, the residual
+round after them, or an ADR — and moves to *Settled* below with the pointer. If an item turns out to be something you
 want the app to *do*, it was in the wrong file: capture it with `/atlas idea` and delete it here.
 
 ## Open product questions

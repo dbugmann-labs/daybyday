@@ -56,6 +56,8 @@ export type ChangeFacts = {
   digest: string
   scenarios: { total: number; covered: number; next: string | null }
   tasks: { total: number; done: number }
+  /** `grill.md` exists — the conductor's grill has run and left its answers for spec-author. */
+  grillDone: boolean
 }
 
 /**
@@ -168,6 +170,12 @@ export function prNotReady(f: StoryFacts, stage: number, stageName: string, acto
  * There is no Stage 3. The grill is the first step of Stage 4 rather than a stage, so a Story
  * with unanswered questions is a Stage 4 that is not finished, not a stage of its own — whether
  * the questions are the agent's, waiting on a relay, or the section it left empty.
+ *
+ * The grill is now the conductor's, and it runs before the change folder exists — so the
+ * first Stage 4 state, no folder at all, is owned by the human rather than by spec-author, and
+ * a folder holding only `grill.md` is handed to spec-author rather than reported as broken. The
+ * order below carries that: the no-folder rule comes first because it is the earliest state,
+ * and the grill-only rule sits ahead of the validation check it would otherwise trip.
  */
 export function deriveStoryStatus(f: StoryFacts): StoryStatus {
   const c = f.change
@@ -175,16 +183,19 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
   if (c === null) {
     return {
       stage: 4,
-      stageName: 'Propose',
-      owner: 'agent',
-      actor: 'spec-author',
-      blocker: `No change folder for "${f.changeId}". There is nothing written down to approve.`,
+      stageName: 'Propose — the grill',
+      owner: 'you',
+      actor: null,
+      blocker:
+        'No change folder, and the grill has not run. Stage 4 starts with it: the questions ' +
+        "one Story's edges turn on are settled before anything is written down as a requirement.",
       actions: [
-        { label: 'Run', command: `run the spec-author subagent on Story #${f.issue}` },
-        { label: 'It writes', command: `openspec/changes/${f.changeId}/{proposal,design,tasks}.md + specs/` },
+        { label: 'Run', command: `/atlas grill ${f.issue} — rounds, until the frontier is empty` },
+        { label: 'Read', command: 'CONTEXT.md, the Feature it hangs off, and the capability spec it will change' },
+        { label: 'Leaves', command: `openspec/changes/${f.changeId}/grill.md — the answers spec-author writes the delta on` },
       ],
-      next: 'G4 — you read the proposal and the delta, and sign it.',
-      unobservable: null,
+      next: 'spec-author, once the grill closes. Then G4.',
+      unobservable: 'whether the grill has started. `grill.md` is written when it closes, so a grill in progress looks exactly like one that has not begun.',
     }
   }
 
@@ -202,6 +213,23 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
         { label: 'Then', command: 'settle the parent Feature and Epic, and `pnpm run graph`' },
       ],
       next: 'The PR closes the Story. Nothing else is outstanding.',
+      unobservable: null,
+    }
+  }
+
+  if (c.grillDone && !c.validates) {
+    return {
+      stage: 4,
+      stageName: 'Propose',
+      owner: 'agent',
+      actor: 'spec-author',
+      blocker: 'The grill has closed and `grill.md` carries its answers; the change folder itself is not written yet, so the folder does not validate.',
+      actions: [
+        { label: 'Run', command: `run the spec-author subagent on Story #${f.issue} — hand it the issue number and nothing else` },
+        { label: 'It reads', command: `${path.join(c.dir, 'grill.md')} — the settled answers; it writes the delta on those, not on its own` },
+        { label: 'It writes', command: `openspec/changes/${f.changeId}/{proposal,design,tasks}.md + specs/` },
+      ],
+      next: 'G4 — you read the proposal and the delta, and sign it.',
       unobservable: null,
     }
   }
@@ -225,10 +253,10 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
   if (c.questionRoundOpen) {
     return {
       stage: 4,
-      stageName: 'Propose — question round',
+      stageName: 'Propose — residual round',
       owner: 'you',
       actor: null,
-      blocker: '`design.md` carries a `## Questions for you` section. spec-author could not settle something and cannot ask you itself, so the questions are waiting on a relay.',
+      blocker: '`design.md` carries a `## Questions for you` section. Writing the delta turned up a question the grill did not reach, and spec-author cannot ask you itself, so it is waiting on a relay.',
       actions: [
         { label: 'Read', command: `${path.join(c.dir, 'design.md')} — the round, and the delta it was written against` },
         ...(f.pr === null ? [] : [{ label: 'Diff', command: `${f.pr.url} — the folder was written on the recommended answers` }]),
@@ -448,6 +476,7 @@ export function gatherChange(loc: ChangeLocation): ChangeFacts {
     capabilities: deltaCapabilities(loc),
     scenarios: { total: cov.total, covered: cov.covered, next: cov.missing[0]?.title ?? null },
     tasks: { total: boxes.length, done: boxes.filter((b) => b[1] !== ' ').length },
+    grillDone: existsSync(path.join(loc.dir, 'grill.md')),
   }
 }
 

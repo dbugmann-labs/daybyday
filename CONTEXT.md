@@ -35,8 +35,24 @@ take forward, and stop at G1. The sweep comes first and is the only step in the 
 asks what is *missing* rather than whether what is present is coherent. It is a stop, not a gate — no marker, no CI check,
 no G-number — and it adds exactly one stop in front of Stage 1 rather than a stage of its own.
 
+**Grill** — the interview that settles a thing's edges before anything is written down as a
+requirement. It runs twice, both times held by the conductor: over a cluster at Stage 1, and
+over one Story at the top of Stage 4, where it closes by writing `grill.md` into the change
+folder. It is not a stage and not a gate. `docs/process.md` § *The two grills*.
+
+**Round** — one pass of a grill: the whole frontier asked at once through `AskUserQuestion`, each
+question carrying the answer it recommends as its first option, then the frontier recomputed from
+what comes back. A grill is rounds until
+the frontier is empty. It is one of the three shapes the conductor prints, and the only one that
+asks for answers rather than a decision. ADR-1012.
+
+**Residual round** — the question that only becomes visible while the delta is being written,
+raised by `spec-author` in `design.md` under `## Questions for you` and relayed as a stop. Named
+for what it is: the leftover after the grill, not the grill itself.
+
 **Change** — OpenSpec's unit of work: the folder `openspec/changes/<change-id>/` holding a
-proposal, delta specs, a design and a task list. One change is one Story.
+proposal, delta specs, a design and a task list, plus the `grill.md` the grill left. One change
+is one Story.
 
 **Delta spec** — the part of a change describing only what is changing, as `ADDED`, `MODIFIED`
 or `REMOVED` requirements, rather than restating a whole spec.

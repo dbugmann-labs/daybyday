@@ -26,7 +26,11 @@ nothing new goes there.
 
 An ADR should not be the place a command name lives in the first place. It fixes the *shape*
 of a decision; the operative commands belong in `AGENTS.md` or under `docs/`, where they are
-expected to move.
+expected to move. **The same holds for a count or a price.** State the delta a decision makes —
+*one guaranteed stop gained, one occasional one lost* — which stays true however the totals move,
+and leave the totals in the one file that keeps them. ADR-1002 carried "roughly four times per
+Story" from the day it was accepted to the day it was amended, and the figure was never right,
+because it had written down a total in a record.
 
 Write an ADR when a decision was hard, is expensive to reverse, or would surprise someone
 reading the code later. Do not write one for choices the code already makes obvious.
@@ -67,16 +71,16 @@ DayByDay's own records start here.
 | ADR | Decision |
 |---|---|
 | [1001](1001-swift-and-swiftui.md) | The app is built in Swift and SwiftUI, native to iPhone |
-| [1002](1002-the-conductor-is-the-main-session.md) | The conductor is the main session; `pnpm run status` is a projection |
+| [1002](1002-the-conductor-is-the-main-session.md) | The conductor is the main session; `pnpm run status` is a projection; it holds no work context but the grill's question tree |
 | [1003](1003-the-pr-is-the-gate-surface.md) | The PR opens at Stage 4 as a draft; both human gates are read through it |
 | [1004](1004-the-rule-engine-speaks-calendar-dates.md) | The rule engine speaks calendar dates, not instants |
-| [1005](1005-the-grill-is-a-step-inside-propose.md) | The grill is a step inside Stage 4; the stage numbers keep the gap at 3 |
-| [1006](1006-the-question-round.md) | A question the grill cannot settle is relayed by the conductor as a round, not a gate |
+| [1005](1005-the-grill-is-a-step-inside-propose.md) | The grill is a step inside Stage 4, run by the conductor; the stage numbers keep the gap at 3 |
+| [1006](1006-the-question-round.md) | The conductor holds the Story grill, in rounds, before the change folder is written; a written round is what is left over, and it is a stop rather than a gate |
 | [1007](1007-g4-signs-a-digest.md) | The G4 marker carries a digest of what was approved; the specs are not merged first |
 | [1008](1008-the-single-change-rule-is-convention.md) | CI check 3 is dropped; one change per PR is convention, and the check numbers keep the gap |
-| [1009](1009-one-grill-skill-wraps-the-flagged-one.md) | One `grill` skill owned by this repo wraps `grill-with-docs`, which no agent can invoke |
+| [1009](1009-one-grill-skill-wraps-the-flagged-one.md) | One `grill` skill owned by this repo wraps `grill-with-docs`, which no agent can invoke; both grills run through it |
 | [1010](1010-a-groomed-backlog-replaces-the-parking-lot.md) | A groomed backlog replaces the parking lot; `/atlas idea` captures, `/atlas backlog` promotes, and a want waits without going bad |
-| [1012](1012-the-conductor-prints-two-shapes.md) | The conductor prints two shapes: the five-part stop, which asks first and details last, and the three-line step report; extends ADR-1002 |
+| [1012](1012-the-conductor-prints-two-shapes.md) | The conductor prints three shapes across four things: the five-part gate and stop, which ask first and detail last, the round, and the three-line step report; extends ADR-1002 |
 | [1013](1013-a-commitment-is-kept-from-a-day.md) | A commitment is kept from a day, and is not due before it |
 | [1015](1015-a-weekly-quota-is-due-every-day.md) | A weekly quota is due every day; whether it has been met is not a schedule question |
 | [1017](1017-records-are-kept-in-one-file.md) | Records are kept in one JSON file, written whole on every change; SwiftData and GRDB declined, with the reversal trigger named |

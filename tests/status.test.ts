@@ -22,6 +22,7 @@ function change(over: Partial<ChangeFacts> = {}): ChangeFacts {
     digest: 'c0ffee123456',
     scenarios: { total: 4, covered: 0, next: 'a commitment every 3 days is due on the anchor day' },
     tasks: { total: 6, done: 0 },
+    grillDone: false,
     ...over,
   }
 }
@@ -102,7 +103,7 @@ describe('deriveStoryStatus', () => {
 
   // A round is spec-author asking, and no subagent can ask. If this ever reports an agent as
   // the owner, the questions sit in design.md unread and G4 gets signed over the top of them.
-  it('hands an open question round back to you, inside Stage 4', () => {
+  it('hands an open residual round back to you, inside Stage 4', () => {
     const s = deriveStoryStatus(facts({ change: change({ questionRoundOpen: true }) }))
     expect(s.stage).toBe(4)
     expect(s.owner).toBe('you')
@@ -123,10 +124,33 @@ describe('deriveStoryStatus', () => {
     expect(s.blocker).toContain('seam')
   })
 
-  it('reports a missing change folder as the propose step, not as an error', () => {
+  // Stage 4 now starts with the grill, and the grill is the conductor's — a subagent cannot
+  // hold an interview. So a Story with no change folder at all is not yet spec-author's turn.
+  it('reports a missing change folder as the grill, and hands it to you', () => {
     const s = deriveStoryStatus(facts({ change: null }))
     expect(s.stage).toBe(4)
+    expect(s.owner).toBe('you')
+    expect(s.actions.some((a) => a.command.includes('/atlas grill'))).toBe(true)
+  })
+
+  // A folder holding only grill.md fails `openspec validate` because it has no delta yet — that
+  // is expected, not broken, so it must not be reported as a validation failure to be fixed.
+  it('hands a folder holding only the grill to spec-author, not back as a broken folder', () => {
+    const s = deriveStoryStatus(
+      facts({ change: change({ grillDone: true, validates: false, validationError: 'Change must have at least one delta' }) }),
+    )
+    expect(s.owner).toBe('agent')
     expect(s.actor).toBe('spec-author')
+    expect(s.blocker).not.toContain('Change must have at least one delta')
+  })
+
+  // The one ordering a later edit could silently break: a grill-only folder legitimately fails
+  // `openspec validate` (no delta yet), so if the validation rule ever moved ahead of this one,
+  // status would send the human to fix a delta that spec-author has not written yet.
+  it('checks the grill-only folder before the validation failure it would otherwise trip', () => {
+    const s = deriveStoryStatus(facts({ change: change({ grillDone: true, validates: false }) }))
+    expect(s.actor).toBe('spec-author')
+    expect(s.blocker).toContain('grill')
   })
 
   it('names exactly one next scenario, never the whole delta', () => {

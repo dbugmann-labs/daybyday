@@ -88,7 +88,7 @@ openspec/changes/          proposals in flight, and archive/YYYY-MM-DD-<change-i
 docs/process.md            the full process and its reasoning
 docs/story-mechanics.md    working a Story from Stage 4 to merge, keystroke by keystroke
 docs/process-overview.html the same process on one page, for a browser
-docs/atlas-commands.html  the five /atlas forms, and when each is right
+docs/atlas-commands.html  the six /atlas forms, and when each is right
 docs/retrospective.md      what the first end-to-end run actually cost and caught
 docs/adr/                  why each hard decision was made; README.md is the register
 docs/agents/               issue tracker, triage labels, domain docs
