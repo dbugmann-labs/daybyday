@@ -268,6 +268,13 @@ public final class DayScreen {
     /// again and the day view is formed again for the day being shown. Takes no today, moves no
     /// day, and does not read the record.
     public func returnedTo() {
-        fatalError("not implemented")
+        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
+        self.rosterStore = openedRoster.store
+        self.rosterState = openedRoster.state
+        self.roster = openedRoster.roster
+
+        self.dayView = DayView(
+            of: openedRoster.roster.commitments(on: shownDay), on: shownDay,
+            in: recordStore?.history ?? History())
     }
 }
