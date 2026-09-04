@@ -120,43 +120,43 @@ is not evidence.
 
 ### What the form refuses
 
-- [ ] 2.14 `a commitments screen refuses a commitment named with nothing but blank space` — assert
+- [x] 2.14 `a commitments screen refuses a commitment named with nothing but blank space` — assert
   the exact `Refusal` case, and that nothing is at the place.
-- [ ] 2.15 `a commitments screen refuses a weekday set with no days in it` — assert the exact
+- [x] 2.15 `a commitments screen refuses a weekday set with no days in it` — assert the exact
   `Refusal` case **and** that it is not the same case as 2.14's; "told apart" is the requirement.
-- [ ] 2.16 `a weekday set with no days in it is still a schedule the rule engine accepts` — no
+- [x] 2.16 `a weekday set with no days in it is still a schedule the rule engine accepts` — no
   screen in this test at all. It forms a `Commitment` directly on `Schedule.weekdays([])` and
   asserts it is formed and due on none of eight consecutive dates. This is the scenario that pins
   ADR-1028's asymmetry; an implementation that "fixed" the engine instead of the screen fails here.
-- [ ] 2.17 `a commitments screen refuses nothing else about a name` — `"x"`, `" Gym "` and
+- [x] 2.17 `a commitments screen refuses nothing else about a name` — `"x"`, `" Gym "` and
   `"Gym 🏋️"`; the spaces around `" Gym "` are asserted present in the read-back name, which fails
   any implementation that trims.
 
 ### Telling the refusals apart
 
-- [ ] 2.18 `a commitments screen refuses a commitment its roster is already keeping` — byte-for-byte
+- [x] 2.18 `a commitments screen refuses a commitment its roster is already keeping` — byte-for-byte
   on the place, so an implementation that rewrites an unchanged document fails.
-- [ ] 2.19 `a commitments screen that could not keep a new commitment says the roster could not be written`
+- [x] 2.19 `a commitments screen that could not keep a new commitment says the roster could not be written`
   — the blocker-file place; assert the case is `.notKept` and not `.alreadyKept`.
-- [ ] 2.20 `defining a commitment a commitments screen has stopped keeping takes it up again in the place it was taken on in`
+- [x] 2.20 `defining a commitment a commitments screen has stopped keeping takes it up again in the place it was taken on in`
   — the three parts given to `define` must equal the stopped commitment exactly; "Gym" is second of
   three, so an implementation that appends fails.
-- [ ] 2.21 `a commitment a commitments screen refuses as already kept is not taken on a second time`
+- [x] 2.21 `a commitment a commitments screen refuses as already kept is not taken on a second time`
 
 ### Stopping, with a confirmation first
 
-- [ ] 2.22 `asking a commitments screen to stop keeping a commitment changes nothing until it is confirmed`
-- [ ] 2.23 `a stop a commitments screen has been asked for and then cancelled changes nothing`
-- [ ] 2.24 `a commitments screen asked to stop a second commitment awaits confirmation of that one only`
-- [ ] 2.25 `a commitment stopped through a commitments screen is kept until the day the screen was handed`
+- [x] 2.22 `asking a commitments screen to stop keeping a commitment changes nothing until it is confirmed`
+- [x] 2.23 `a stop a commitments screen has been asked for and then cancelled changes nothing`
+- [x] 2.24 `a commitments screen asked to stop a second commitment awaits confirmation of that one only`
+- [x] 2.25 `a commitment stopped through a commitments screen is kept until the day the screen was handed`
   — observed through `Roster.commitments(on:)` on the two dates, since a kept-until day has no
   public read-back of its own.
-- [ ] 2.26 `a commitment stopped through a commitments screen moves from what it keeps to what it has stopped`
-- [ ] 2.27 `a commitments screen asked to stop keeping a commitment it does not keep does nothing` —
+- [x] 2.26 `a commitment stopped through a commitments screen moves from what it keeps to what it has stopped`
+- [x] 2.27 `a commitments screen asked to stop keeping a commitment it does not keep does nothing` —
   the commitment is one the roster has **already** stopped, so the assertion is that the day it was
   kept until has not moved to the screen's today. A day once given does not move
   (`CONTEXT.md` § *Kept until*).
-- [ ] 2.28 `a stop a commitments screen could not keep leaves both its lists as they were` — the
+- [x] 2.28 `a stop a commitments screen could not keep leaves both its lists as they were` — the
   file-replaced-by-a-directory place described above.
 
 ### Taking one up again
