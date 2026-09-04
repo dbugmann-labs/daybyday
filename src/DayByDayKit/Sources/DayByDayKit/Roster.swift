@@ -2,12 +2,12 @@ public struct Roster: Hashable, Sendable {
     /// A commitment this roster holds, and the day it was kept until when this roster has
     /// stopped keeping it. `keptUntil` is `nil` for a commitment this roster has not stopped
     /// keeping.
-    private struct Entry: Hashable, Sendable {
+    struct Entry: Hashable, Sendable {
         let commitment: Commitment
         let keptUntil: CalendarDate?
     }
 
-    private var entries: [Entry]
+    var entries: [Entry]
 
     /// A roster holding no commitments.
     public init() {

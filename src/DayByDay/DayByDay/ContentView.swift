@@ -49,7 +49,7 @@ private func today() -> CalendarDate {
 }
 
 struct ContentView: View {
-    @State private var screen = DayScreen(of: dayOneCommitments, asOf: today())
+    @State private var screen = DayScreen(startingFrom: dayOneCommitments, asOf: today())
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -86,6 +86,15 @@ struct ContentView: View {
                 Text("The record could not be read.")
             case .writtenByALaterVersion:
                 Text("The record was written by a newer version of DayByDay and must not be deleted.")
+            }
+
+            switch screen.rosterState {
+            case .kept:
+                EmptyView()
+            case .notKept:
+                Text("The roster could not be read or could not be written.")
+            case .writtenByALaterVersion:
+                Text("The roster was written by a newer version of DayByDay and must not be deleted.")
             }
 
             // `Row` carries no identity of its own beyond `isKept` and `name` (`DayView.swift`
