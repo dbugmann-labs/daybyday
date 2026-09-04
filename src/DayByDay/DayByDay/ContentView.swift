@@ -88,6 +88,15 @@ struct ContentView: View {
                 Text("The record was written by a newer version of DayByDay and must not be deleted.")
             }
 
+            switch screen.rosterState {
+            case .kept:
+                EmptyView()
+            case .notKept:
+                Text("The roster could not be read.")
+            case .writtenByALaterVersion:
+                Text("The roster was written by a newer version of DayByDay and must not be deleted.")
+            }
+
             // `Row` carries no identity of its own beyond `isKept` and `name` (`DayView.swift`
             // keeps `commitment` and `date` internal to the kit), and `isKept` is exactly what a
             // tap flips — keying `ForEach` on the row's value would make SwiftUI see a tap as one
