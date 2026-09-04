@@ -30,32 +30,37 @@ public final class DayScreen {
     }
 
     private let commitments: [Commitment]
-    private let place: URL
+    private let recordPlace: URL
     private let rosterPlace: URL
     private var today: CalendarDate
     private var shownDay: CalendarDate
-    private var store: RecordStore?
+    private var recordStore: RecordStore?
+    /// The open roster store at `rosterPlace`, held rather than reopened: #104
+    /// `add-commitments-screen` needs a live store to add and retire commitments through, and
+    /// this is where it will reach one. Unread here — nothing on this screen calls into it yet.
     private var rosterStore: RosterStore?
     private var roster: Roster
 
     /// The place a day screen keeps its record when it is not told another: one file, in a
     /// directory of this app's own, under the platform's application-support directory.
     public static var recordPlace: URL {
-        let applicationSupport = FileManager.default.urls(
-            for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return applicationSupport
-            .appendingPathComponent("DayByDay", isDirectory: true)
-            .appendingPathComponent("record.json")
+        applicationSupportPlace(fileName: "record.json")
     }
 
     /// The place a day screen keeps its roster when it is not told another: one file, in the same
     /// directory as `recordPlace`, but not the same file.
     public static var rosterPlace: URL {
+        applicationSupportPlace(fileName: "roster.json")
+    }
+
+    /// The place named `fileName`, inside a directory of this app's own under the platform's
+    /// application-support directory. `recordPlace` and `rosterPlace` differ only in `fileName`.
+    private static func applicationSupportPlace(fileName: String) -> URL {
         let applicationSupport = FileManager.default.urls(
             for: .applicationSupportDirectory, in: .userDomainMask)[0]
         return applicationSupport
             .appendingPathComponent("DayByDay", isDirectory: true)
-            .appendingPathComponent("roster.json")
+            .appendingPathComponent(fileName)
     }
 
     /// Opens on `today`, reading the record kept at `recordPlace`.
@@ -68,11 +73,11 @@ public final class DayScreen {
         self.commitments = dayOne
         self.today = today
         self.shownDay = today
-        self.place = recordPlace
+        self.recordPlace = recordPlace
         self.rosterPlace = rosterPlace
 
         let opened = Self.open(at: recordPlace)
-        self.store = opened.store
+        self.recordStore = opened.store
         self.recordState = opened.state
 
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: dayOne)
@@ -111,8 +116,10 @@ public final class DayScreen {
     /// Day one: when the roster this opens holds nothing at all, `dayOne` is taken on and kept at
     /// `place` before this returns, in the order it was handed. A roster already holding anything
     /// — including one every one of whose commitments has been stopped — is left exactly as it
-    /// is. A failure keeping `dayOne` leaves `.notKept` and a roster holding nothing, never a
-    /// roster taken on halfway.
+    /// is. A failure keeping `dayOne` leaves `.notKept` and a roster holding nothing: whatever of
+    /// `dayOne` had already been kept at `place` before the failure is removed again, so nothing
+    /// it takes on survives and a later `shown(asOf:)` finds `place` holding nothing and retries
+    /// day one, exactly as it would have found it after a failure on the very first commitment.
     private static func openRoster(
         at place: URL, takingOnIfEmpty dayOne: [Commitment]
     ) -> (store: RosterStore?, state: RosterState, roster: Roster) {
@@ -134,7 +141,8 @@ public final class DayScreen {
                 try store.add(commitment)
             }
         } catch {
-            return (store, .notKept, store.roster)
+            try? FileManager.default.removeItem(at: place)
+            return (store, .notKept, Roster())
         }
 
         return (store, .kept, store.roster)
@@ -163,7 +171,7 @@ public final class DayScreen {
         guard dayView.rows.contains(row) else {
             return
         }
-        guard let store else {
+        guard let recordStore else {
             return
         }
         guard let tick = row.tick(asOf: today) else {
@@ -171,12 +179,22 @@ public final class DayScreen {
         }
 
         if row.isKept {
-            try store.remove(tick)
+            try recordStore.remove(tick)
         } else {
-            try store.add(tick)
+            try recordStore.add(tick)
         }
 
-        dayView = DayView(of: roster.commitments(on: shownDay), on: shownDay, in: store.history)
+        dayView = DayView(
+            of: roster.commitments(on: shownDay), on: shownDay, in: recordStore.history)
+    }
+
+    /// The day view of `shownDay`, drawn from `roster` and `recordStore`'s history exactly as
+    /// they stand now — asks neither again. Shared by every move that only steps the day already
+    /// held: `showPreviousDay`, `showNextDay` and `showToday`.
+    private func dayViewOfShownDay() -> DayView {
+        DayView(
+            of: roster.commitments(on: shownDay), on: shownDay,
+            in: recordStore?.history ?? History())
     }
 
     /// Shows the calendar day before the one being shown. Leaves the screen exactly as it is when
@@ -188,8 +206,7 @@ public final class DayScreen {
             return
         }
         shownDay = previousDate
-        dayView = DayView(
-            of: roster.commitments(on: shownDay), on: shownDay, in: store?.history ?? History())
+        dayView = dayViewOfShownDay()
     }
 
     /// Shows the calendar day after the one being shown. Leaves the screen exactly as it is when
@@ -200,16 +217,14 @@ public final class DayScreen {
             return
         }
         shownDay = nextDate
-        dayView = DayView(
-            of: roster.commitments(on: shownDay), on: shownDay, in: store?.history ?? History())
+        dayView = dayViewOfShownDay()
     }
 
     /// Shows the today this screen was last handed, from whatever day it is showing. Always has
     /// somewhere to go; does not read the roster or the record again.
     public func showToday() {
         shownDay = today
-        dayView = DayView(
-            of: roster.commitments(on: shownDay), on: shownDay, in: store?.history ?? History())
+        dayView = dayViewOfShownDay()
     }
 
     /// The app has been shown on `today`: the day view and the record are read again. A screen
@@ -221,8 +236,8 @@ public final class DayScreen {
         }
         self.today = today
 
-        let opened = Self.open(at: place)
-        self.store = opened.store
+        let opened = Self.open(at: recordPlace)
+        self.recordStore = opened.store
         self.recordState = opened.state
 
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)

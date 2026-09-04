@@ -92,7 +92,7 @@ struct ContentView: View {
             case .kept:
                 EmptyView()
             case .notKept:
-                Text("The roster could not be read.")
+                Text("The roster could not be read or could not be written.")
             case .writtenByALaterVersion:
                 Text("The roster was written by a newer version of DayByDay and must not be deleted.")
             }
