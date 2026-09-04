@@ -24,6 +24,7 @@
     "check:g4": "node scripts/check-g4-approval.ts",
     "check:hygiene": "node scripts/check-commit-hygiene.ts",
     "graph": "node scripts/generate-graph.ts",
+    "phone": "node scripts/install-on-phone.ts",
     "status": "node scripts/status.ts"
   },
   "devDependencies": {

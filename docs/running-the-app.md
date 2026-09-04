@@ -6,9 +6,20 @@ a Story's git; this one is for looking at the thing. Everything here was run on 
 §5 is the four documented commands that could never have worked, every one of them recalled.
 
 **What you are looking at is the app shell**, and it decides nothing: `CONTEXT.md` § *App shell*,
-ADR-1019. It draws what `DayByDayKit` already answers, from a hardcoded copy of the day-one week,
-and it persists nothing. There is no ticking, no navigation and no store behind it yet — those are
-Stories #71 and #72 and the open question about where a store is opened.
+ADR-1019. It draws what `DayByDayKit` already answers, from a hardcoded copy of the day-one week.
+
+**It ticks, and it keeps what you tick.** `add-tick-from-row` (#71) landed the tap,
+`add-day-screen` (#91) put a record behind it at `DayScreen.recordPlace`, and `add-screen-date`
+(#107) gave the day its own name. Close the app and reopen it and yesterday's ticks are still
+there. What it still cannot do is **move between days**: `DayView.previousDay(of:in:)` and
+`nextDay(of:in:)` exist, but `DayScreen` does not expose them, so the shell only ever draws today.
+That is `add-screen-navigation` (#93), and it is a Story rather than a chore because reaching
+those methods is a delta against `openspec/specs/day-screen/spec.md`.
+
+Everything above the paragraph you are reading was true on 2026-09-03 and stopped being true four
+Stories later. **Re-read this file against `git log` before trusting it**, and fix it in the chore
+you noticed it in — a stale runbook is `docs/retrospective.md` §5's failure wearing a different
+coat.
 
 ## Once, before the first run
 
@@ -45,7 +56,7 @@ APP=$(xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
 xcrun simctl boot 'iPhone 17'
 xcrun simctl bootstatus 'iPhone 17' -b
 xcrun simctl install 'iPhone 17' "$APP"
-xcrun simctl launch 'iPhone 17' com.example.DayByDay
+xcrun simctl launch 'iPhone 17' com.dbugmann.daybyday
 ```
 
 **`simctl` does not open a window.** It drives a simulator that is already running as a service, so
@@ -60,6 +71,104 @@ open -a Simulator
 the device is already up. That is not an error worth reacting to — the rest of the sequence is
 fine, and `|| true` is the right way to write it into a script.
 
+## On your own phone
+
+The Simulator is not the product — `CONTEXT.md` § *Product principles* says **an iPhone, in your
+hand**, and a week of real use is the only thing that tells you which want matters next. The app's
+bundle identifier is `com.dbugmann.daybyday` (ADR-1025), and it must not change once you have
+installed even once: the record is kept under a directory the identifier names, so renaming it
+orphans everything you have ticked.
+
+**Signing was done once, in the Xcode GUI, and is committed.** `DEVELOPMENT_TEAM = 4QZ29N6GN2`
+sits in both build configurations, and the Apple Development certificate for
+`diego.bugmann@hotmail.com` is in this machine's keychain. `security find-identity -v -p
+codesigning` should print one valid identity; if it prints `0 valid identities found` you are on a
+different machine, and the steps that produced it were:
+
+1. **Xcode → Settings → Accounts → +** and sign in with the Apple ID. A free one is enough.
+2. Open `src/DayByDay/DayByDay.xcodeproj` **from the worktree you are working in**, select the
+   **DayByDay** target → **Signing & Capabilities**, tick *Automatically manage signing*, and pick
+   the team.
+
+**Signing in does not create the certificate**; step 2 does, as a side effect of being asked to
+sign. Doing only step 1 leaves `find-identity` at zero, which reads as the sign-in having failed
+and has not.
+
+**Step 2 also rewrites `project.pbxproj`** — `objectVersion` 77 down to 70 and three sections
+reordered, about twenty lines. That is Xcode normalising a hand-written file to the form it
+round-trips, it is committed as such, and reverting it only reproduces the diff on the next GUI
+open.
+
+**A free Apple ID expires the build after seven days.** The app stops launching and needs the
+install run again; the record survives, because it lives in the app's container rather than in the
+build. Nothing warns you first. A paid Apple Developer account is what removes the weekly step,
+and it is not needed to run the trial.
+
+**A personal team needs a device before it can make a provisioning profile.** With none
+registered, Xcode reports *"Your team has no devices from which to generate a provisioning
+profile"* and *"No profiles for 'com.dbugmann.daybyday' were found"*. Both are the same missing
+phone rather than two problems, and neither blocks a **simulator** build — that needs no profile,
+which is why the app still builds and runs with the errors on screen. Plug the phone in, unlock it,
+answer *Trust This Computer*, and Xcode registers the device and issues the profile by itself.
+
+## Putting a new version on it
+
+Then, with the phone plugged in and unlocked, one command builds, installs and launches:
+
+```bash
+pnpm run phone
+```
+
+It picks the phone when exactly one is paired, and names them when more than one is:
+
+```bash
+pnpm run phone -- 'Diego's iPhone'
+```
+
+**This is the only way a new version ever reaches the phone.** There is no App Store here and no
+TestFlight — TestFlight needs a paid membership. **Merging a PR changes nothing on the device.** If
+a week of use starts feeling stale, check that you reinstalled before concluding anything about the
+work.
+
+**Run it again within seven days even if nothing shipped.** A free personal team's signature
+expires and the app stops opening; this is the fix, and it resets the clock.
+
+**It installs over the top, and that is what keeps your ticks.** The record lives at
+`<Application Support>/DayByDay/record.json`, inside a container iOS keys to the bundle identifier,
+so reinstalling the same identifier keeps every tick. **Deleting the app from the Home screen
+deletes the container and the entire record**, silently and with no undo. Never delete and
+reinstall as a fix for anything.
+
+`scripts/install-on-phone.ts` is the script, and it is deliberately not a CI check: it needs a
+paired phone and a signing identity, neither of which a runner has. If the script is itself what is
+broken, this is what it runs, longhand:
+
+```bash
+xcrun devicectl list devices
+
+xcodebuild -project src/DayByDay/DayByDay.xcodeproj \
+  -scheme DayByDay \
+  -destination 'generic/platform=iOS' \
+  build
+
+APP=$(xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
+        -destination 'generic/platform=iOS' -showBuildSettings 2>/dev/null \
+      | awk -F' = ' '/ BUILT_PRODUCTS_DIR/{d=$2} / FULL_PRODUCT_NAME/{n=$2} END{print d"/"n}')
+
+xcrun devicectl device install app --device <identifier> "$APP"
+xcrun devicectl device process launch --device <identifier> com.dbugmann.daybyday
+```
+
+**The first launch fails on an untrusted developer**, which is the free account and not a defect:
+on the phone, **Settings → General → VPN & Device Management → Developer App**, trust the
+certificate, and launch again.
+
+**The `devicectl` subcommands and flags above were checked against `--help` on 2026-09-03; the
+sequence, and `pnpm run phone` past its no-device refusal, have never been run end to end.** No device was paired and the machine held no signing
+identity, so `xcrun devicectl list devices` printed `No devices found.` and no build was ever
+signed. `AGENTS.md` says to verify rather than remember, and this is the honest state of it: the
+first person to plug a phone in should correct whatever is wrong here and delete this paragraph.
+
 ## Looking without looking
 
 A screenshot, which is how an agent proves the thing drew rather than merely built:
@@ -71,7 +180,7 @@ xcrun simctl io 'iPhone 17' screenshot /tmp/day-view.png
 ## Putting it away
 
 ```bash
-xcrun simctl terminate 'iPhone 17' com.example.DayByDay
+xcrun simctl terminate 'iPhone 17' com.dbugmann.daybyday
 xcrun simctl shutdown 'iPhone 17'
 ```
 
