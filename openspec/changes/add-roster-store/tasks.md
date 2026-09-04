@@ -227,10 +227,29 @@ actually ran red as you go, in § 5.**
   still the lowest free number: `git log --all --name-only -- docs/adr` shows the highest number on
   any ref is 1027, claimed only here; `chore/on-the-phone` tops out at 1025 (`72068b7`, the renumbered
   bundle-identifier record) and `main` at 1026. No renumbering needed.
-- [ ] 4.4 `docs/open-questions.md` is not this change's to write (`AGENTS.md` § *Agent roles*). Its
+- [x] 4.4 `docs/open-questions.md` is not this change's to write (`AGENTS.md` § *Agent roles*). Its
   *Known gaps* entry about opening the store under `Library/Application Support/` now has a second
   file under it. Land that as a chore commit alongside the merge, exactly as #92 and #93 handled their
   own entries.
+
+  Not landed on this branch — exactly as #92 and #93 left their own entries for a chore commit
+  alongside the merge rather than touching `docs/open-questions.md` from inside their own Story
+  commits (their `tasks.md`, both archived, name the move without making it; `d1f99dc` did it for
+  #71/#72, `4cd02d2` for #91). Two things are owed this time, both named here rather than done here:
+
+  1. The *Settled* entry dated 2026-09-03 — "the record is kept at
+     `<Application Support>/DayByDay/record.json`, and the day screen is what chooses it" — owes a
+     line saying the roster is now kept beside it, at `<Application Support>/DayByDay/roster.json`,
+     opened by the new `DayScreen.rosterPlace`: the second file this Story adds under that directory.
+  2. A new *Known gaps* entry: `DayByDayKit` now logs. `import os` and a
+     `Logger(subsystem: "DayByDayKit", category: "RosterStore")` at `DayScreen.swift` — the module's
+     first non-Foundation import — arrived inside a review fix (`fa1da4e`, folded into `20bd3ea`)
+     rather than through a design. Its `subsystem`/`category` naming was not chosen by anyone and
+     wants the real reverse-DNS bundle id: this branch still carries `com.example.DayByDay`
+     (`src/DayByDay/DayByDay.xcodeproj/project.pbxproj`), because the rename to
+     `com.dbugmann.daybyday` lives on unmerged PR #111 (`chore/on-the-phone`). And
+     `privacy: .public` on the logged roster-place path is a deliberate override of `Logger`'s safe
+     default, which un-redacts the account short name in that path on macOS.
 
 ## 5. Gates, and things that moved while this Story was open
 
@@ -246,12 +265,44 @@ actually ran red as you go, in § 5.**
   valid" and exits 0; `pnpm run checks` reports "scenario coverage — all 70 scenario(s) have a
   matching test (118 TypeScript, 300 Swift across 33 .swift file(s))", spec-diff containment,
   G4 approval and commit hygiene all green, and correctly reports the change not yet archived.
-- [ ] 5.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Four
+- [x] 5.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Four
   things the reviewer is asked to look for by name: that `roster` is assigned only **after** the file
   write returns, in both `add` and `retire`; that a refusal by `Roster` itself neither throws nor
   writes; that `RosterDocument`'s replay checks what `Roster.add` and `Roster.retire` answer rather
   than trusting the document; and that no `@Test` display name in `DayScreenTests.swift` changed in
   § 1.6's edit — `git diff` on that file should show construction lines and nothing else.
+
+  Three review passes ran; the repo owner judged G7 clean after the third. All four named checks
+  hold, read out of the shipped sources: `RosterStore.swift` assigns `roster = nextRoster` only
+  after `try write(nextRoster)` returns, in both `add` and `retire`; `Roster.add`/`Roster.retire`
+  refuse and answer `false` before either method ever calls `write`; `RosterDocument.formRoster()`
+  replays through `roster.add(commitment)` and, where `keptUntil` is present,
+  `roster.retire(commitment, keptUntil:)`, returning `nil` on a `false` from either rather than
+  trusting the document; and `git diff` on `DayScreenTests.swift` for § 1.6 shows construction
+  lines only, no `@Test` name changed.
+
+  Findings A and B, from the third pass, were real defects in the day-one rollback and were fixed
+  in `20bd3ea`: the rollback's removal was firing its error log even when `createDirectory` had
+  failed before any byte reached `place`, where `removeItem` always fails because there was nothing
+  to remove (guarded now with a `fileExists` check); and `openRoster`'s doc comment overstated the
+  rollback as a guarantee it cannot make (corrected to say the removal is best-effort and can
+  itself fail).
+
+  Findings 2, 7, 9-as-logging and C were decided rather than fixed, and nothing is unresolved on
+  either axis for any of them:
+  - **9-as-logging** — the rollback removal's own failure was being swallowed by `try?`, so a
+    removal that fails would leave a partial file a later open reads back as a legitimate roster
+    with no retry. Decided to log it rather than retry or propagate it, via
+    `Logger(subsystem: "DayByDayKit", category: "RosterStore")` in `DayScreen.swift`, without
+    changing the `.notKept` answer `design.md` already specifies (`fa1da4e`).
+  - **2 and 7** — the two things `main` already carries that this Story has no business fixing: the
+    five scenarios #93's archive appended under the wrong requirement, and the two requirement
+    headers glued to the preceding line at `openspec/specs/day-screen/spec.md:949` and `:1050`.
+    Shown to the owner at this gate and carried forward as § 5.6, where the decision to leave both
+    is recorded.
+  - **C** — the `Logger` call's `subsystem`/`category` naming was chosen by nobody, and its
+    `privacy: .public` override of `Logger`'s safe default un-redacts the roster place's account
+    short name on macOS. Recorded in `docs/open-questions.md` rather than fixed here — § 4.4.
 - [ ] 5.4 **The archive is checked requirement by requirement before its commit.** `/opsx:archive`
   dropped the prose of two MODIFIED requirements when it archived #93 (`design.md` § *A defect found
   in `openspec/specs/day-screen/spec.md` on `main`*). After running it, diff the five MODIFIED blocks
@@ -279,12 +330,17 @@ actually ran red as you go, in § 5.**
     3.22 — that commit (`243b8e6`, "pin the roster place and re-read behaviour") is test-only, which
     is the evidence: the behaviour those twelve scenarios pin was already correct from § 3's earlier,
     genuinely-red scenarios landing the roster-reading logic in `DayScreen` before them.
-- [ ] 5.6 Two things `main` carries that this Story does **not** fix, left for the human to decide
+- [x] 5.6 Two things `main` carries that this Story does **not** fix, left for the human to decide
   about: the five scenarios belonging to *A day screen re-reads its day and its record when the app is
   shown again* that #93's archive appended under *A day view says its day as a weekday and a date…*
   instead, and the two requirement headers glued to the preceding line at
   `openspec/specs/day-screen/spec.md:949` and `:1050`. Moving the first would need a MODIFIED block on
   a requirement this Story has no business in; the second cannot be hand-edited under rule 2.
+
+  Both shown to the owner at G7, as findings 2 and 7 of the third `mattpocock-skills:code-review`
+  pass (§ 5.3) — and he chose to leave both exactly as they stand. Neither is this Story's to fix,
+  and nothing further follows from this Story: both remain open on `main` for whichever Story or
+  chore next has business in `openspec/specs/day-screen/spec.md`.
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7, and
 `openspec validate --archived` requires every box above to be ticked before it.
