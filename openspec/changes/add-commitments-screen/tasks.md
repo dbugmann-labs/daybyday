@@ -203,19 +203,19 @@ red is a rule-5 stop.
 `shown(asOf:)`) and 3.7 (day one on the way back) to run red on their own. **Record which ones
 actually ran red as you go, in § 5.**
 
-- [ ] 3.1 `a commitment taken on at a day screen's roster place is drawn when the screen is returned to`
-- [ ] 3.2 `a commitment stopped at a day screen's roster place is not drawn when the screen is returned to`
-- [ ] 3.3 `a day screen returned to goes on showing the day it was showing` — quote the expected
+- [x] 3.1 `a commitment taken on at a day screen's roster place is drawn when the screen is returned to`
+- [x] 3.2 `a commitment stopped at a day screen's roster place is not drawn when the screen is returned to`
+- [x] 3.3 `a day screen returned to goes on showing the day it was showing` — quote the expected
   title in full, `"Sunday 30 August 2026"`; an expectation assembled from the same pieces the code
   uses proves nothing.
-- [ ] 3.4 `a day screen returned to keeps the today it was handed` — `"Today · Monday 31 August
+- [x] 3.4 `a day screen returned to keeps the today it was handed` — `"Today · Monday 31 August
   2026"`, quoted in full for the same reason.
-- [ ] 3.5 `a day screen returned to does not read its record again` — the test that fails any
+- [x] 3.5 `a day screen returned to does not read its record again` — the test that fails any
   implementation of `returnedTo()` that delegates to `shown(asOf:)`. The record place holds bytes
   that are not a record store when the screen is opened, and the file is **removed** before the
   return, so the place would read clean if it were read at all.
-- [ ] 3.6 `a day screen that could not read its roster starts keeping one when it is returned to and the roster can be read`
-- [ ] 3.7 `a day screen returned to on a roster that holds nothing takes the commitments it was handed on again`
+- [x] 3.6 `a day screen that could not read its roster starts keeping one when it is returned to and the roster can be read`
+- [x] 3.7 `a day screen returned to on a roster that holds nothing takes the commitments it was handed on again`
   — "everything kept at the roster place is removed" is `FileManager.removeItem` on the file day one
   wrote at open.
 
