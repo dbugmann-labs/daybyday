@@ -60,6 +60,7 @@ struct ContentView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                 }
+                .buttonStyle(.borderless)
                 Spacer()
                 Text(screen.title)
                 Spacer()
@@ -68,6 +69,7 @@ struct ContentView: View {
                 } label: {
                     Image(systemName: "chevron.right")
                 }
+                .buttonStyle(.borderless)
             }
             Button("Today") {
                 screen.showToday()
