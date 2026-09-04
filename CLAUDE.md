@@ -31,22 +31,34 @@ to running it in Claude Code.
   `disable-model-invocation` flag removes them, not a broken plugin — so testing for one there
   reports the plugin broken every time. Test with `mattpocock-skills:tdd`, `:code-review`,
   `:research` or `:diagnosing-bugs` instead.
-- **Skills this repo owns.** `grill` is the only hand-written one; both grills run through it and
-  **both belong to the conductor** (ADR-1009, ADR-1006). A subagent that finds itself invoking it
-  has taken a step that is not its own — the skill says so and stops. That also makes the
-  subagent-visibility question below moot for `grill` specifically, and it is left standing
-  because it still bites for any project skill added later.
-  `.claude/skills/` also holds six `openspec-*` directories generated alongside
-  `.claude/commands/opsx/`; they duplicate the `/opsx:*` commands this process routes through
-  and nothing here invokes them, so `.claude/settings.local.json` turns them off. That file is
-  gitignored, so a fresh clone sees all seven again. Project skills carry no
+- **Skills this repo owns.** `grill` is the only one, and it is hand-written; both grills run
+  through it and **both belong to the conductor** (ADR-1009, ADR-1006). A subagent that finds
+  itself invoking it has taken a step that is not its own — the skill says so and stops. That
+  makes the subagent-visibility question moot for `grill` specifically, and it is left standing
+  because it still bites for any project skill added later: project skills carry no
   `disable-model-invocation` flag and load without a restart; whether a **subagent** sees one is
   unverified. Plugin reachability is a frontmatter flag an update can move, and nothing in CI
   checks it. `docs/process.md` §10 has both the one-liner that prints the real picture and the
   prompt that settles the subagent question — run them rather than trusting any table, this
   file included.
 - **OpenSpec commands.** `/opsx:*` are generated into `.claude/commands/opsx/` by
-  `openspec update` — do not hand-edit them.
+  `openspec update` — do not hand-edit them. **That generator has a second surface, and what
+  holds it off does not live in this repo.** OpenSpec's `delivery` defaults to `both`, which
+  renders each workflow twice: once as `/opsx:*`, once as a model-invocable
+  `.claude/skills/openspec-*` skill. Nothing here routes to those, they had already drifted from
+  the commands they duplicate, and `openspec-apply-change` sat in every worker's roster as an
+  ungated twin of `/opsx:apply` — so they were deleted and delivery pinned:
+
+  ```bash
+  openspec config get delivery            # must print: commands
+  openspec config set delivery commands   # ~/.config/openspec/config.json — global, per machine
+  ```
+
+  **It is a machine setting, not a repo one**, and there is no project scope for it. A new machine
+  starts at `both`, and the next `openspec update` run there re-creates all six. Check before
+  running `openspec update` anywhere. A gitignored `settings.local.json` cannot cover this — a
+  worktree never gets that file, which is how the duplicates stayed live on every chore and Story
+  branch until 2026-09-04 while looking disabled from the repo root.
 - **Scratch.** `CLAUDE.local.md` and `.claude/settings.local.json` are gitignored. Anything
   another agent must know goes in a tracked file, never in local settings.
 - **Rule 6 applies here.** Editing this file, `.claude/settings.json`, or the plugin set is
