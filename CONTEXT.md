@@ -407,6 +407,17 @@ screen **without its roster** is the sibling of the one below and is not the sam
 day and no rows, because what a date asks of a person is exactly what a roster answers, and it writes
 nothing over what it could not read.
 
+**Amended 2026-09-04**, at `add-commitments-screen` (#104). Being **shown** is no longer the only
+moment a day screen opens its **roster place**: being **returned to** is the other, and it is the
+person walking back from the **commitments screen** rather than the app coming in front of them.
+The two are not the same moment and being returned to does three things fewer — it takes no new
+today, it moves no day, and it does not read the record, so what a screen says about a record it
+could not read goes on being said for exactly as long as it did before, until the app is shown
+again. It exists because the roster place has a second writer; without it a commitment defined on
+the other screen would not be drawn until the app had been backgrounded and brought back. Day one
+and an unreadable roster behave on the way back exactly as they do at either other moment: being
+returned to adds no rule of its own.
+
 A day screen **without its record** is one whose store would not open. It is still a day screen: it
 draws the day, because what a date asks of a person needs no record to answer, and it says that it
 is keeping none. It takes no tick at all — not into memory, not to be kept later — because a tick
@@ -537,6 +548,17 @@ the same effect is not a contradiction. Whether a week's quota has been met is n
 schedule knows, because it is a fact about ticks rather than about a date; a quota of seven and a
 quota of one are the same answer to `isDue(on:)`. Where a week begins is deliberately still
 undecided: no rule shape consults it yet, so nothing in the engine can settle it.
+
+**Rhythm** — a person's word for the schedule a commitment runs on, and the shape a **commitments
+screen** offers them to build one from: one of the four schedule shapes carrying nothing the
+calendar does not supply. It is deliberately not a **schedule**, and the difference is one thing: an
+every-N-days rhythm holds an interval and no **start date**, because the day the commitment is
+**kept from** is that start date whenever a commitments screen forms it. That keeps a phone form to
+one date field and makes it impossible to write the screen so that the two dates disagree; the model
+goes on holding them apart, so anything that forms a commitment another way can still give them
+different days. A rhythm is not stored, not read back and never held by a commitment: it exists
+between a person's taps and the commitment they make, and what is kept is the schedule it named.
+Agreed 2026-09-04 while writing the delta of `add-commitments-screen` (#104).
 
 **Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
 storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by
