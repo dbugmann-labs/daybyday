@@ -78,7 +78,27 @@ public final class CommitmentsScreen {
     /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`, and
     /// `keptFrom`, and takes it on. Takes a commitment the roster has stopped up again.
     public func define(name: String, on rhythm: Rhythm, keptFrom: CalendarDate) -> Refusal? {
-        fatalError("not implemented")
+        let schedule = rhythm.schedule(keptFrom: keptFrom)
+
+        guard let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom) else {
+            return .namesNothing
+        }
+
+        guard let rosterStore else {
+            return .notKept
+        }
+
+        do {
+            guard try rosterStore.add(commitment) else {
+                return .alreadyKept
+            }
+        } catch {
+            return .notKept
+        }
+
+        kept = rosterStore.roster.commitments
+        stopped = Self.stopped(in: rosterStore.roster)
+        return nil
     }
 
     /// Puts `commitment` up for confirmation, replacing whatever was there. Does nothing when
