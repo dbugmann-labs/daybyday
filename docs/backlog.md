@@ -324,6 +324,36 @@ shape it lacks, not the quota.
 - **Open** — what a met quota's row does: disappear, go quiet, or stay unchanged. `CONTEXT.md`
   § *Day view* records that hiding a met one is "a later Story's" and leaves it there.
 
+### B-028 — not be offered a way back to a day I am already on
+
+*Captured 2026-09-04, from the repo owner running #93's shell on the Simulator.*
+
+> "the "Today" button should not exist when I am looking at today, because there is nowhere to
+> route to."
+
+- **Trigger** — every time the app opens, which is the common case: a day screen lands on today
+  and the control that returns it there has nothing to do.
+- **Touches** — `day-screen` (#27). It needs a **new answer from `DayScreen`** — whether the day
+  it is showing is the today it was handed — which `add-screen-navigation` (#93) deliberately does
+  not give. That is what makes it a Story rather than a chore, and it is the exact opposite of the
+  kept-flag entry at the head of *Decided*, which became `chore/draw-kept` precisely because
+  `Row.isKept` was already public and drawing it carried no requirement. Nothing public here can
+  be drawn from, and the shell may not work it out for itself (`CONTEXT.md` § *App shell*).
+- **Principle** — tested against *Entered where you stand*: passes, and unusually it passes by
+  subtraction. The day screen is where every daily visit happens, so a control that does nothing
+  on the day you land on is clutter in the one place the principle protects. It removes
+  interaction rather than adding a screen.
+- **Open** — hidden, or present but disabled? Hiding removes a target; disabling keeps the layout
+  from moving under a thumb as the day changes. The want says "should not exist", which reads as
+  hidden, but it was said about a button that also looked tickable, and that half was fixed
+  separately under #93's task 3.1.
+- **Open** — this does **not** reopen why #93 left the calendar's ends silent. `design.md` §
+  *Why the ends are silent* refused `canShowPreviousDay` on the grounds that it would answer
+  `true` on every day anyone will ever look at. *Am I showing my today?* genuinely varies, so the
+  argument does not carry across — but whoever grills this should say so out loud rather than
+  letting the two look alike.
+
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
