@@ -69,7 +69,7 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
         rewritten; nothing else in the delta moves.
    ```
 
-   Then **write the change folder anyway**, on your recommended answers, and finish steps 3–7
+   Then **write the change folder anyway**, on your recommended answers, and finish steps 3–8
    as normal. The round is read next to the diff it would change, which is the whole reason it
    is worth more than an interview. The section exists only while the round is outstanding: when
    the answers come back, fold each into the delta, record it under `## Open Questions` as
