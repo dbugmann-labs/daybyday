@@ -165,32 +165,32 @@ actually ran red as you go, in § 5.**
 
 ### The roster's place
 
-- [ ] 3.11 `the place a day screen keeps its roster is under Application Support, in a directory of
+- [x] 3.11 `the place a day screen keeps its roster is under Application Support, in a directory of
   the app's own`
-- [ ] 3.12 `the place a day screen keeps its roster is neither the caches directory nor the temporary
+- [x] 3.12 `the place a day screen keeps its roster is neither the caches directory nor the temporary
   directory`
-- [ ] 3.13 `the place a day screen keeps its roster is the same place every time it is asked`
-- [ ] 3.14 `the place a day screen keeps its roster is not the place it keeps its record`
+- [x] 3.13 `the place a day screen keeps its roster is the same place every time it is asked`
+- [x] 3.14 `the place a day screen keeps its roster is not the place it keeps its record`
 
 ### A screen without its roster
 
-- [ ] 3.15 `a day screen opened where the roster cannot be read holds no rows and says it is not
+- [x] 3.15 `a day screen opened where the roster cannot be read holds no rows and says it is not
   keeping one`
-- [ ] 3.16 `a roster written in a later form than this app knows makes a day screen that says the
+- [x] 3.16 `a roster written in a later form than this app knows makes a day screen that says the
   roster is from a later version` — write `{"version": 2, "commitments": []}` by hand.
-- [ ] 3.17 `a day screen opened where the roster can be read says it is keeping one`
-- [ ] 3.18 `a day screen that cannot read its roster still says the day and goes on keeping its
+- [x] 3.17 `a day screen opened where the roster can be read says it is keeping one`
+- [x] 3.18 `a day screen that cannot read its roster still says the day and goes on keeping its
   record` — quote the expected title in full; an expectation assembled from the same pieces the code
   uses proves nothing.
-- [ ] 3.19 `a day screen that cannot read its record still draws the commitments its roster keeps` —
+- [x] 3.19 `a day screen that cannot read its record still draws the commitments its roster keeps` —
   the other half of the independence, and the one a single "something is wrong" state would fail.
 
 ### Being shown again
 
-- [ ] 3.20 `a day screen shown again reads its roster again`
-- [ ] 3.21 `a day screen that could not read its roster starts keeping one when it is shown again and
+- [x] 3.20 `a day screen shown again reads its roster again`
+- [x] 3.21 `a day screen that could not read its roster starts keeping one when it is shown again and
   the roster can be read`
-- [ ] 3.22 `a day screen that was keeping a roster stops when it is shown again and the roster cannot
+- [x] 3.22 `a day screen that was keeping a roster stops when it is shown again and the roster cannot
   be read`
 
 ## 4. The shell, and the two files this change cannot write

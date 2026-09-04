@@ -1570,3 +1570,236 @@ func aDayScreenShownAgainOnARosterThatHoldsNothingTakesTheCommitmentsOnAgain() t
     let later = try RosterStore(at: rosterPlace)
     #expect(later.roster.commitments == [journaling])
 }
+
+@MainActor
+@Test("the place a day screen keeps its roster is under Application Support, in a directory of the app's own")
+func thePlaceADayScreenKeepsItsRosterIsUnderApplicationSupportInADirectoryOfTheAppsOwn() {
+    let applicationSupport = FileManager.default.urls(
+        for: .applicationSupportDirectory, in: .userDomainMask)[0]
+
+    let place = DayScreen.rosterPlace
+
+    #expect(place.path.hasPrefix(applicationSupport.path))
+    let containingDirectory = place.deletingLastPathComponent()
+    #expect(containingDirectory != applicationSupport)
+    #expect(containingDirectory.path.hasPrefix(applicationSupport.path))
+}
+
+@MainActor
+@Test("the place a day screen keeps its roster is neither the caches directory nor the temporary directory")
+func thePlaceADayScreenKeepsItsRosterIsNeitherTheCachesDirectoryNorTheTemporaryDirectory() {
+    let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+    let temporary = FileManager.default.temporaryDirectory
+
+    let place = DayScreen.rosterPlace
+
+    #expect(!place.path.hasPrefix(caches.path))
+    #expect(!place.path.hasPrefix(temporary.path))
+}
+
+@MainActor
+@Test("the place a day screen keeps its roster is the same place every time it is asked")
+func thePlaceADayScreenKeepsItsRosterIsTheSamePlaceEveryTimeItIsAsked() {
+    #expect(DayScreen.rosterPlace == DayScreen.rosterPlace)
+}
+
+@MainActor
+@Test("the place a day screen keeps its roster is not the place it keeps its record")
+func thePlaceADayScreenKeepsItsRosterIsNotThePlaceItKeepsItsRecord() {
+    #expect(DayScreen.rosterPlace != DayScreen.recordPlace)
+}
+
+@MainActor
+@Test("a day screen opened where the roster cannot be read holds no rows and says it is not keeping one")
+func aDayScreenOpenedWhereTheRosterCannotBeReadHoldsNoRowsAndSaysItIsNotKeepingOne() throws {
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a roster is written as".utf8).write(to: rosterPlace)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.rows.isEmpty)
+    #expect(screen.rosterState == .notKept)
+    #expect(screen.rosterState != .writtenByALaterVersion)
+}
+
+@MainActor
+@Test(
+    "a roster written in a later form than this app knows makes a day screen that says the roster is from a later version"
+)
+func aRosterWrittenInALaterFormThanThisAppKnowsMakesADayScreenThatSaysTheRosterIsFromALaterVersion()
+    throws
+{
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(#"{"version": 2, "commitments": []}"#.utf8).write(to: rosterPlace)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.rosterState == .writtenByALaterVersion)
+    #expect(screen.dayView.rows.isEmpty)
+}
+
+@MainActor
+@Test("a day screen opened where the roster can be read says it is keeping one")
+func aDayScreenOpenedWhereTheRosterCanBeReadSaysItIsKeepingOne() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let (emptyPlace, emptyRosterPlace) = freshPlaces()
+    let empty = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: emptyPlace, keepingRosterAt: emptyRosterPlace)
+    #expect(empty.rosterState == .kept)
+
+    let (takenOnPlace, takenOnRosterPlace) = freshPlaces()
+    let rosterStore = try RosterStore(at: takenOnRosterPlace)
+    try rosterStore.add(gym)
+    let takenOn = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: takenOnPlace, keepingRosterAt: takenOnRosterPlace)
+    #expect(takenOn.rosterState == .kept)
+}
+
+@MainActor
+@Test("a day screen that cannot read its roster still says the day and goes on keeping its record")
+func aDayScreenThatCannotReadItsRosterStillSaysTheDayAndGoesOnKeepingItsRecord() throws {
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a roster is written as".utf8).write(to: rosterPlace)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.title == "Today · Monday 31 August 2026")
+    #expect(screen.recordState == .kept)
+    #expect(screen.rosterState == .notKept)
+}
+
+@MainActor
+@Test("a day screen that cannot read its record still draws the commitments its roster keeps")
+func aDayScreenThatCannotReadItsRecordStillDrawsTheCommitmentsItsRosterKeeps() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(journaling)
+
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: place)
+
+    let screen = DayScreen(startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.rows.map(\.name) == ["Gym", "Journaling"])
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(!screen.dayView.rows[1].isKept)
+    #expect(screen.recordState == .unreadable)
+}
+
+@MainActor
+@Test("a day screen shown again reads its roster again")
+func aDayScreenShownAgainReadsItsRosterAgain() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+
+    let screen = DayScreen(startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    let other = try RosterStore(at: rosterPlace)
+    try other.add(gym)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.dayView.rows.map(\.name) == ["Journaling", "Gym"])
+}
+
+@MainActor
+@Test(
+    "a day screen that could not read its roster starts keeping one when it is shown again and the roster can be read"
+)
+func aDayScreenThatCouldNotReadItsRosterStartsKeepingOneWhenItIsShownAgainAndTheRosterCanBeRead()
+    throws
+{
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a roster is written as".utf8).write(to: rosterPlace)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    try FileManager.default.removeItem(at: rosterPlace)
+    let recovered = try RosterStore(at: rosterPlace)
+    try recovered.add(journaling)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.rosterState == .kept)
+    #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
+}
+
+@MainActor
+@Test(
+    "a day screen that was keeping a roster stops when it is shown again and the roster cannot be read"
+)
+func aDayScreenThatWasKeepingARosterStopsWhenItIsShownAgainAndTheRosterCannotBeRead() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(#"{"version": 2, "commitments": []}"#.utf8).write(to: rosterPlace)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.rosterState == .writtenByALaterVersion)
+    #expect(screen.dayView.rows.isEmpty)
+}
