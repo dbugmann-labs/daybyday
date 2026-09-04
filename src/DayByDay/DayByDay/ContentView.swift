@@ -49,7 +49,7 @@ private func today() -> CalendarDate {
 }
 
 struct ContentView: View {
-    @State private var screen = DayScreen(of: dayOneCommitments, asOf: today())
+    @State private var screen = DayScreen(startingFrom: dayOneCommitments, asOf: today())
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {

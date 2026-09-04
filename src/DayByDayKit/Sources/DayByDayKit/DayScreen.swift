@@ -17,11 +17,26 @@ public final class DayScreen {
         case writtenByALaterVersion
     }
 
+    /// What a day screen is doing with the roster at its place.
+    public enum RosterState: Equatable, Sendable {
+        /// The roster was read, and this screen draws what it keeps.
+        case kept
+        /// The roster could not be read or could not be written, for a reason a person cannot act
+        /// on differently.
+        case notKept
+        /// The roster was written by a later version of DayByDay. It is whole; the app is what is
+        /// behind, and what is at the place must not be replaced.
+        case writtenByALaterVersion
+    }
+
     private let commitments: [Commitment]
     private let place: URL
+    private let rosterPlace: URL
     private var today: CalendarDate
     private var shownDay: CalendarDate
     private var store: RecordStore?
+    private var rosterStore: RosterStore?
+    private var roster: Roster
 
     /// The place a day screen keeps its record when it is not told another: one file, in a
     /// directory of this app's own, under the platform's application-support directory.
@@ -33,24 +48,38 @@ public final class DayScreen {
             .appendingPathComponent("record.json")
     }
 
-    /// Opens on `today`, reading the record kept at `place`.
+    /// The place a day screen keeps its roster when it is not told another: one file, in the same
+    /// directory as `recordPlace`, but not the same file.
+    public static var rosterPlace: URL {
+        let applicationSupport = FileManager.default.urls(
+            for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return applicationSupport
+            .appendingPathComponent("DayByDay", isDirectory: true)
+            .appendingPathComponent("roster.json")
+    }
+
+    /// Opens on `today`, reading the record kept at `recordPlace`.
     public init(
-        of commitments: [Commitment],
+        startingFrom dayOne: [Commitment],
         asOf today: CalendarDate,
-        keeping place: URL = DayScreen.recordPlace
+        keepingRecordAt recordPlace: URL = DayScreen.recordPlace,
+        keepingRosterAt rosterPlace: URL = DayScreen.rosterPlace
     ) {
-        self.commitments = commitments
+        self.commitments = dayOne
         self.today = today
         self.shownDay = today
-        self.place = place
+        self.place = recordPlace
+        self.rosterPlace = rosterPlace
+        self.roster = Roster()
+        self.rosterState = .kept
 
-        let opened = Self.open(at: place)
+        let opened = Self.open(at: recordPlace)
         self.store = opened.store
         self.recordState = opened.state
         // `today` here is the parameter above, not `self.today`: `self` is not yet fully
         // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
         // back. The parameter holds the same value `shownDay` was just set to, two lines up.
-        self.dayView = DayView(of: commitments, on: today, in: opened.store?.history ?? History())
+        self.dayView = DayView(of: dayOne, on: today, in: opened.store?.history ?? History())
     }
 
     /// Opens the record at `place`, telling apart the one refusal a person can act on
@@ -80,6 +109,9 @@ public final class DayScreen {
 
     /// Anything but `.kept` means the day is drawn from no record at all and no tick is taken.
     public private(set) var recordState: RecordState
+
+    /// Anything but `.kept` means this screen draws no rows and takes nothing on.
+    public private(set) var rosterState: RosterState
 
     /// Makes the tick `row` offers, or takes it back where `row` says its commitment is kept, and
     /// keeps the change before `dayView` says so. Does nothing when `row` is not one this screen's

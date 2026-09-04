@@ -5,36 +5,36 @@ place, so every existing construction of one has to name it — 68 sites in
 `Tests/DayByDayKitTests/DayScreenTests.swift`, in the file whose 59 tests are the evidence that this
 change moves *where* a day screen gets its commitments and not what it does with them.
 
-- [ ] 1.1 In `Sources/DayByDayKit/Roster.swift`, widen `Entry` and `entries` from `private` to
+- [x] 1.1 In `Sources/DayByDayKit/Roster.swift`, widen `Entry` and `entries` from `private` to
   module-internal, and nothing else — no member added, no member renamed, no body changed. Verify with
   `cd src/DayByDayKit && swift build` exiting 0 and `swift test` still reporting **263 tests
   passing**. A behaviour change here is a rule-5 stop.
-- [ ] 1.2 Add `Sources/DayByDayKit/CommitmentCoding.swift` and move `CommitmentRecord`, `DateRecord`
+- [x] 1.2 Add `Sources/DayByDayKit/CommitmentCoding.swift` and move `CommitmentRecord`, `DateRecord`
   and `ScheduleRecord` into it **verbatim** from `RecordDocument.swift`, including their doc comments.
   `RecordDocument.swift` keeps `RecordDocument`, `RecordDocumentEnvelope` and `TickRecord` and loses
   nothing else; `RecordDocument.currentVersion` stays `1`. Verify with `swift test` reporting 263
   passing and `git diff` showing no line of the three types altered.
-- [ ] 1.3 Add `Sources/DayByDayKit/RosterStore.swift` declaring `public final class RosterStore` and
+- [x] 1.3 Add `Sources/DayByDayKit/RosterStore.swift` declaring `public final class RosterStore` and
   `public enum RosterStoreError: Error, Equatable, Sendable` exactly as `design.md` § *The seam* gives
   them — `public init(at place: URL) throws`, `public private(set) var roster: Roster`,
   `@discardableResult public func add(_:) throws -> Bool`,
   `@discardableResult public func retire(_:keptUntil:) throws -> Bool`; the three cases
   `notAStore(at:)`, `laterForm(at:version:)`, `cannotWrite(at:)` — with the initializer and both
   methods bodied `fatalError("not implemented")`. Nothing else public. `swift build` exits 0.
-- [ ] 1.4 Add `Sources/DayByDayKit/RosterDocument.swift` declaring the `internal` document type for
+- [x] 1.4 Add `Sources/DayByDayKit/RosterDocument.swift` declaring the `internal` document type for
   version 1 as `design.md` § *The form on disk* fixes it — `version`, `commitments`, each entry a
   `commitment` (the shared `CommitmentRecord`) and an optional `keptUntil` (a `DateRecord`) — plus a
   `RosterDocumentEnvelope` reading `version` alone, with `init(_ roster: Roster)` and
   `func formRoster() -> Roster?` bodied `fatalError("not implemented")`. The array is in the roster's
   own order; it is **not** sorted. `swift build` exits 0.
-- [ ] 1.5 In `Sources/DayByDayKit/DayScreen.swift`, change the initializer to
+- [x] 1.5 In `Sources/DayByDayKit/DayScreen.swift`, change the initializer to
   `init(startingFrom dayOne: [Commitment], asOf today: CalendarDate, keepingRecordAt recordPlace: URL
   = DayScreen.recordPlace, keepingRosterAt rosterPlace: URL = DayScreen.rosterPlace)`, add
   `public static var rosterPlace: URL`, `public enum RosterState`, `public private(set) var
   rosterState: RosterState`, and the private roster store and roster it needs. **Behaviour stays
   exactly as it is in this task:** the day view is still formed from `dayOne` directly, `rosterPlace`
   is unread, and `rosterState` is `.kept`. `swift build` exits 0 once 1.6 is done with it.
-- [ ] 1.6 Edit the two callers. In `Tests/DayByDayKitTests/DayScreenTests.swift`, add a helper
+- [x] 1.6 Edit the two callers. In `Tests/DayByDayKitTests/DayScreenTests.swift`, add a helper
   returning both places under one fresh temporary directory — a record file and a roster file beside
   it — and change all 68 construction sites to the new labels, passing both. Where a test opens a
   second screen "at the same place", it passes the **same pair**. In
@@ -42,7 +42,7 @@ change moves *where* a day screen gets its commitments and not what it does with
   **No `@Test` display name, no assertion, no date, no commitment and no ordering may change**, and no
   test may be added or deleted. Verify with `swift test` reporting **263 tests passing**; a red test
   here is a rule-5 stop, because nothing in this section was supposed to change an answer.
-- [ ] 1.7 Confirm the starting point before writing a test: `pnpm run checks` reports
+- [x] 1.7 Confirm the starting point before writing a test: `pnpm run checks` reports
   `scenario coverage — 33/70 scenario(s) covered` for this change — the thirty-three restated verbatim
   by the five MODIFIED requirements, already carried by `DayScreenTests.swift` — and names
   `"a roster store opened where nothing has been kept holds a roster holding nothing"` as next. A
@@ -73,46 +73,46 @@ before it and fails here), 2.13 (the first refusal), 2.14 (the version read on i
 body) and 2.15 (if the replay does not check what `add` and `retire` answer). **Record which ones
 actually ran red as you go, in § 5**; a prediction here is not evidence.
 
-- [ ] 2.1 `a roster store opened where nothing has been kept holds a roster holding nothing` — opens
+- [x] 2.1 `a roster store opened where nothing has been kept holds a roster holding nothing` — opens
   at a place under a directory that does not exist yet; asserts no throw and `roster == Roster()`.
-- [ ] 2.2 `a commitment taken on through a roster store is held by a second store opened at the same
+- [x] 2.2 `a commitment taken on through a roster store is held by a second store opened at the same
   place while the first is still open` — the write-through: the first store is a live local, the
   second is opened without any save or close on the first.
-- [ ] 2.3 `a roster store opened again holds its commitments in the order they were taken on` —
+- [x] 2.3 `a roster store opened again holds its commitments in the order they were taken on` —
   "Water plants", "Gym", "Journaling"; assert the read-back array **and** `Roster` equality. Fails a
   document that sorted by name.
-- [ ] 2.4 `a commitment stopped through a roster store is read back stopped, on the day it was kept
+- [x] 2.4 `a commitment stopped through a roster store is read back stopped, on the day it was kept
   until` — observed through `commitments(on:)` on 31 January and 1 February 2026, since a stopped
   commitment has no public read-back of its own.
-- [ ] 2.5 `a commitment taken up again through a roster store is read back kept, in the place it was
+- [x] 2.5 `a commitment taken up again through a roster store is read back kept, in the place it was
   taken on in` — the kept-until day must be **cleared** on disk, not merely on the roster in memory.
-- [ ] 2.6 `a commitment a roster store is already keeping is refused and nothing at its place changes`
+- [x] 2.6 `a commitment a roster store is already keeping is refused and nothing at its place changes`
   — `add` answers `false` and does **not** throw; a store opened afterwards agrees.
-- [ ] 2.7 `a stop a roster store refuses is reported and nothing at its place changes` — both
+- [x] 2.7 `a stop a roster store refuses is reported and nothing at its place changes` — both
   refusals in one test: a second stop of an already-stopped commitment, and a stop of one the roster
   does not hold. Neither throws, neither writes, and the day first given stands.
-- [ ] 2.8 `commitments on every schedule shape are read back as the same commitments` — one
+- [x] 2.8 `commitments on every schedule shape are read back as the same commitments` — one
   commitment per `Schedule` case, in the order the scenario names. This is the test that proves each
   payload round-trips through the shared `CommitmentRecord`, since no payload is public.
-- [ ] 2.9 `a commitment name is read back out of a roster store exactly, whatever it contains` — the name in the scenario,
+- [x] 2.9 `a commitment name is read back out of a roster store exactly, whatever it contains` — the name in the scenario,
   with the line break written as `\n` in the Swift literal. Observed through `Roster` equality and the
   read-back name (Swift `String ==`, not byte-for-byte).
-- [ ] 2.10 `a roster kept from the first supported date and stopped on the last is read back
+- [x] 2.10 `a roster kept from the first supported date and stopped on the last is read back
   unchanged` — the ADR-1004 pin for this document: 1 January 1583 and 31 December 9999 both survive
   the round trip, in a `keptFrom` and in a `keptUntil`. An implementation that encoded through `Date`
   or a `DateFormatter` fails one of them.
-- [ ] 2.11 `roster stores at different places hold different rosters` — two places; the second opens
+- [x] 2.11 `roster stores at different places hold different rosters` — two places; the second opens
   holding nothing and the first still holds its commitment.
-- [ ] 2.12 `a change that cannot be kept is refused and not held` — the place is
+- [x] 2.12 `a change that cannot be kept is refused and not held` — the place is
   `<temporaryDirectory>/<uuid>/blocker/roster.json` where `blocker` is an ordinary file written by the
   test. Opening succeeds holding nothing, `add` throws `RosterStoreError.cannotWrite(at:)` (use
   `#expect(throws:)` with the exact case), `roster` is still `Roster()`, and a store opened afterwards
   is empty too.
-- [ ] 2.13 `content that is not a roster store is refused and left as it was` — a run of bytes that is
+- [x] 2.13 `content that is not a roster store is refused and left as it was` — a run of bytes that is
   not JSON; `.notAStore(at:)`; the bytes read back equal what was written.
-- [ ] 2.14 `a roster store written in a later form than this app knows is refused` — write
+- [x] 2.14 `a roster store written in a later form than this app knows is refused` — write
   `{"version": 2, "commitments": []}`; `.laterForm(at:version: 2)`; the bytes are unchanged.
-- [ ] 2.15 `a roster store holding what could not be a roster is refused` — three places, each
+- [x] 2.15 `a roster store holding what could not be a roster is refused` — three places, each
   written by hand in the test in the form `design.md` fixes and never through the store: a commitment
   named `"   "`, a commitment whose `keptFrom` is `{2026, 2, 30}`, and a document listing the same
   commitment twice. Each throws `.notAStore(at:)` and each file is byte-for-byte unchanged.
