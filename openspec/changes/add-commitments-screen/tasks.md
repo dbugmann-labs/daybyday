@@ -161,34 +161,34 @@ is not evidence.
 
 ### Taking one up again
 
-- [ ] 2.29 `a commitment taken up again through a commitments screen moves from what it has stopped to what it keeps`
-- [ ] 2.30 `a commitment taken up again through a commitments screen is in the place it was taken on in`
+- [x] 2.29 `a commitment taken up again through a commitments screen moves from what it has stopped to what it keeps`
+- [x] 2.30 `a commitment taken up again through a commitments screen is in the place it was taken on in`
   — "Water plants" is first of three, so an implementation that appends on take-up-again fails.
-- [ ] 2.31 `taking a commitment up again through a commitments screen asks for no confirmation` —
+- [x] 2.31 `taking a commitment up again through a commitments screen asks for no confirmation` —
   `awaitingConfirmation` is `nil` before and after, and `keepAgain` alone did the work.
-- [ ] 2.32 `a commitments screen asked to take up again a commitment it has not stopped does nothing`
+- [x] 2.32 `a commitments screen asked to take up again a commitment it has not stopped does nothing`
 
 ### The place, and being shown again
 
-- [ ] 2.33 `a commitments screen keeps its roster at the place a day screen keeps its` — asserts
+- [x] 2.33 `a commitments screen keeps its roster at the place a day screen keeps its` — asserts
   `CommitmentsScreen.rosterPlace == DayScreen.rosterPlace` and **constructs no screen**, so nothing
   in this file ever opens the real Application Support directory.
-- [ ] 2.34 `a commitment defined through a commitments screen is held by a day screen opened afterwards at the same place`
+- [x] 2.34 `a commitment defined through a commitments screen is held by a day screen opened afterwards at the same place`
   — the one test in § 2 that builds a `DayScreen`; it needs a record place too, and it must be a
   fresh temporary one.
-- [ ] 2.35 `a commitments screen shown again reads its roster again`
-- [ ] 2.36 `a commitments screen shown again on a later day stops a commitment as of that later day`
+- [x] 2.35 `a commitments screen shown again reads its roster again`
+- [x] 2.36 `a commitments screen shown again on a later day stops a commitment as of that later day`
   — the test that fails a `shown(asOf:)` which re-reads the roster and does not replace the day.
 
 ### A screen without its roster
 
-- [ ] 2.37 `a commitments screen that cannot read its roster lists nothing and says it is not keeping one`
-- [ ] 2.38 `a roster written in a later form than this app knows makes a commitments screen that says the roster is from a later version`
+- [x] 2.37 `a commitments screen that cannot read its roster lists nothing and says it is not keeping one`
+- [x] 2.38 `a roster written in a later form than this app knows makes a commitments screen that says the roster is from a later version`
   — write `{"version": 2, "commitments": []}` by hand, as #103's own tests do.
-- [ ] 2.39 `a commitments screen that cannot read its roster refuses a new commitment and leaves what is at the place as it was`
+- [x] 2.39 `a commitments screen that cannot read its roster refuses a new commitment and leaves what is at the place as it was`
   — three assertions: `define` answers `.notKept`; the stop answers nothing and leaves
   `awaitingConfirmation` nil; the bytes are unchanged.
-- [ ] 2.40 `a commitments screen that could not read its roster starts keeping one when it is shown again and the roster can be read`
+- [x] 2.40 `a commitments screen that could not read its roster starts keeping one when it is shown again and the roster can be read`
 
 ## 3. `day-screen` — one acceptance test each, in delta order
 
