@@ -22,6 +22,22 @@ Read `AGENTS.md` first. It is binding.
 2. **Verify the archive.** `openspec validate --archived` — every `tasks.md` box ticked — and
    `pnpm run checks`, which asserts spec-diff containment and scenario coverage. Check 9 there is
    informational: it reads the disk you just archived, so only CI can tell you the *PR* is archived.
+
+   Then **check what `/opsx:archive` actually wrote, requirement by requirement, before you
+   commit it.** It has dropped prose before: archiving `add-screen-navigation` (#93) silently lost
+   the wording of two MODIFIED requirements, and nothing caught it until the next Story read the
+   spec. Diff every `## MODIFIED` block in the change folder's delta against the same requirement
+   in `openspec/specs/<capability>/spec.md`, and confirm each `## ADDED` requirement landed in the
+   capability the delta filed it under. **Any drift is a stop and a report — never a hand-edit:**
+   rule 2 says `openspec/specs/` is written by `/opsx:archive` and nothing else.
+
+   **You never tick a box to record this, and you must never try.** By the time you can run the
+   check, `tasks.md` has moved under `openspec/changes/archive/`, which `.claude/settings.json`
+   denies to `Edit` and `Write` — deny beats allow, so no tool of yours reaches it and no widening
+   of your tools would. The check belongs in your report. If you find a `tasks.md` whose last
+   unticked box asks you to tick it *after* archiving, that box is unsatisfiable as written: stop,
+   say so, and name it. `.claude/agents/spec-author.md` step 6 is where that is supposed to be
+   prevented, and #103 is the Story that proved it was not.
 3. **Push the archive commit.** It is on your branch and not on the PR until you do:
 
    ```bash

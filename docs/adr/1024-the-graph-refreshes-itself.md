@@ -3,6 +3,12 @@
 - Status: accepted
 - Date: 2026-09-03
 - Deciders: Diego Bugmann
+- Amended: 2026-09-04 — this ADR referred to `janitor`'s steps by number, and `janitor` was
+  renumbered when a *Push the archive commit* step was added after `add-screen-navigation` (#93)
+  merged with three commits never pushed. "`janitor` has no step 6" had become false — it has
+  one, *Settle the parents* — while the decision it was making was untouched. Both references are
+  now by name, so the next renumbering cannot make this file lie again. The decision itself does
+  not change.
 
 ## Context
 
@@ -10,8 +16,8 @@
 GitHub Issues (ADR-0002, ADR-0012). Nothing reads it back. It exists so a human can see the
 shape of the tracker without clicking through it.
 
-Keeping it current cost a **second pull request per Story**. `janitor` step 6 regenerated it
-after the merge — and by then the Story branch was gone, so the commit needed a branch of its
+Keeping it current cost a **second pull request per Story**. `janitor`'s graph step regenerated
+it after the merge — and by then the Story branch was gone, so the commit needed a branch of its
 own, which under hard rule 8 needed a worktree of its own. Twelve of the first 102 commits on
 `main` were `chore: regenerate the issue graph`, each one a branch, a worktree, a PR, a CI run
 and a merge, for a generated file nobody reads.
@@ -21,10 +27,10 @@ worth writing down why, because it is the first thing anyone will propose. The g
 projection of issue **state**, and the Story issue does not close until its PR merges. A graph
 committed on the Story branch would show that Story open. Making it correct would mean teaching
 the generator to *predict* the merge: mark the Story closed, then cascade closure to any parent
-whose children are then all closed, mirroring what `janitor` step 5 does afterwards. That is
-real logic, with a real divergence — a Feature deliberately held open because more Stories are
-queued but not yet cut, which no generator can know — and it buys a file that is stale again the
-moment anyone opens an issue.
+whose children are then all closed, mirroring what `janitor`'s *Settle the parents* step does
+afterwards. That is real logic, with a real divergence — a Feature deliberately held open
+because more Stories are queued but not yet cut, which no generator can know — and it buys a
+file that is stale again the moment anyone opens an issue.
 
 The trigger was never the merge. It is the issue event.
 
@@ -32,7 +38,7 @@ The trigger was never the merge. It is the issue event.
 
 **`.github/workflows/graph.yml` regenerates `docs/graph.mmd` on every `issues` activity and
 pushes it straight to `main`.** No Story branch carries it, no chore PR exists for it, and
-`janitor` has no step 6.
+`janitor` has no graph step.
 
 Firing on issue activity rather than on merge is what makes it correct without predicting
 anything. Squashing a Story PR closes the Story; `janitor` then closes its Feature and its

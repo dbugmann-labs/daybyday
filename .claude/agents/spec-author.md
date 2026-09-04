@@ -69,7 +69,7 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
         rewritten; nothing else in the delta moves.
    ```
 
-   Then **write the change folder anyway**, on your recommended answers, and finish steps 3–7
+   Then **write the change folder anyway**, on your recommended answers, and finish steps 3–8
    as normal. The round is read next to the diff it would change, which is the whole reason it
    is worth more than an interview. The section exists only while the round is outstanding: when
    the answers come back, fold each into the delta, record it under `## Open Questions` as
@@ -94,8 +94,23 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
    change passes G4 and still ships the wrong thing.
 5. **Name the seam** in `design.md`. Acceptance tests attach there. Fewer seams are better and
    an existing seam beats a new one.
-6. **Validate.** `openspec validate <change-id> --strict` must exit 0 before you hand back.
-7. **Open the draft PR.** G4 is read as a diff, so leave one behind. Commit the change folder
+6. **Every `tasks.md` box must be tickable before the archive runs.** `openspec validate
+   --archived` refuses until all of them are ticked, and the janitor that runs `/opsx:archive`
+   cannot tick one afterwards: `/opsx:archive` moves the folder under
+   `openspec/changes/archive/`, and `.claude/settings.json` denies
+   `Edit(/openspec/changes/archive/**)`. Deny beats allow, so this is not fixable by widening the
+   janitor's tools — the box simply has to be tickable while the folder still sits at
+   `openspec/changes/<change-id>/`. **So never write a task whose tick depends on the archive
+   having already run.** `add-roster-store` (#103) shipped one — "check the archive requirement
+   by requirement, then tick this" — and the Story stalled between review and merge; unpicking it
+   meant resetting an uncommitted archive by hand so the box could be reached.
+
+   A check that genuinely can only happen *after* the archive is **a janitor instruction, not a
+   checkbox**: write the box as the thing the janitor must *do*, tickable beforehand, and put the
+   after-the-fact verification in the task's prose as a stop — "any drift is a stop and a report,
+   never a hand-edit". The janitor's own step 2 already carries that shape.
+7. **Validate.** `openspec validate <change-id> --strict` must exit 0 before you hand back.
+8. **Open the draft PR.** G4 is read as a diff, so leave one behind. Commit the change folder
    as `docs(<capability>): propose <change-id>` — `grill.md` and `.openspec.yaml` are both
    uncommitted when you arrive, and both go in with the rest of the folder rather than as a
    commit of their own; they are documentation until G4 like everything else there. Make sure the branch sits on current `main`, push, and open it:
