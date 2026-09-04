@@ -48,20 +48,58 @@ private let dayOneCommitments: [Commitment] = {
     ].compactMap { $0 }
 }()
 
-/// Turns the device's current instant into the calendar date `DayByDayKit` speaks — the
-/// conversion ADR-1004 keeps out of the engine and puts at the edge, which is here. Reads
-/// `Calendar.current`, the device's own calendar and time zone, because "today" is a question
-/// asked of wherever the phone is.
-private func today() -> CalendarDate {
-    let components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+/// Turns an instant into the calendar date `DayByDayKit` speaks — the conversion ADR-1004 keeps
+/// out of the engine and puts at the edge, which is here. Reads `Calendar.current`, the device's
+/// own calendar and time zone, because "today" is a question asked of wherever the phone is.
+/// Defaults to the device's current instant; a caller that also needs the raw `Date` this came
+/// from — to seed a SwiftUI `DatePicker`, which speaks `Date` and not `CalendarDate` — passes it
+/// in, so the two agree rather than each reading the clock separately.
+private func today(_ now: Date = Date()) -> CalendarDate {
+    let components = Calendar.current.dateComponents([.year, .month, .day], from: now)
     return CalendarDate(year: components.year!, month: components.month!, day: components.day!)!
 }
 
 struct ContentView: View {
     @State private var screen = DayScreen(startingFrom: dayOneCommitments, asOf: today())
     @Environment(\.scenePhase) private var scenePhase
+    @State private var showingCommitments = false
+    @State private var commitmentsScreen: CommitmentsScreen?
+    @State private var commitmentsOpenedOn = Date()
 
     var body: some View {
+        NavigationStack {
+            dayList
+                .navigationDestination(isPresented: $showingCommitments) {
+                    if let commitmentsScreen {
+                        CommitmentsView(screen: commitmentsScreen, keptFromDate: commitmentsOpenedOn)
+                    }
+                }
+                .toolbar {
+                    ToolbarItem {
+                        Button("Commitments") {
+                            let now = Date()
+                            commitmentsOpenedOn = now
+                            commitmentsScreen = CommitmentsScreen(asOf: today(now))
+                            showingCommitments = true
+                        }
+                    }
+                }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                screen.shown(asOf: today())
+                commitmentsScreen?.shown(asOf: today())
+            }
+        }
+        .onChange(of: showingCommitments) { _, isShowing in
+            if !isShowing {
+                screen.returnedTo()
+                commitmentsScreen = nil
+            }
+        }
+    }
+
+    private var dayList: some View {
         List {
             HStack {
                 Button {
@@ -124,11 +162,6 @@ struct ContentView: View {
                         }
                     }
                 }
-            }
-        }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
-                screen.shown(asOf: today())
             }
         }
     }
