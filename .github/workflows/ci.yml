@@ -56,12 +56,43 @@ jobs:
           # full history has to be present.
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v6
-
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: pnpm
+
+      # Corepack rather than pnpm/action-setup@v6. That action's self-installer
+      # `rm -rf`s its own dest and then runs `npm ci` to fetch the pnpm version
+      # baked into the action — 11.19.0 — before self-updating to the 11.22.0
+      # this repo pins, so it paid for two downloads on every run and cached
+      # neither. On 2026-09-03 the npm half of that started stalling: the step
+      # went from 4-6s to 5-7m and stayed there, with npm reporting `added 1
+      # package in 7m` while pnpm's own fetch of a *different* pnpm tarball, one
+      # second later on the same runner, took under a second. So the tarball
+      # path was healthy and npm's metadata round-trips were not, and there was
+      # no way to cache around it — hence no npm here at all.
+      #
+      # Corepack reads `packageManager` from package.json, which means the
+      # version stays pinned in exactly one place and the 11.19.0 detour is gone.
+      # The prompt variable matters because corepack asks before downloading a
+      # version it has not seen; a non-TTY run answers no and fails.
+      - name: pnpm
+        env:
+          COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+        run: corepack enable pnpm && corepack install
+
+      # `setup-node`'s own `cache: pnpm` did this until now, but it needs pnpm
+      # on PATH when it runs, which is the ordering corepack just took away.
+      # Same cache, written out: ask pnpm where its store is rather than guess,
+      # since the default moves with PNPM_HOME.
+      - name: pnpm store path
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-${{ runner.os }}-
 
       - run: pnpm install --frozen-lockfile
 
