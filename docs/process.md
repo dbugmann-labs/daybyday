@@ -370,7 +370,7 @@ and one place where CI's verdict sits next to the thing you are judging. Three m
 consequences, all in ADR-1003:
 
 - **Draft is a signal.** A draft asserts the Story is *not* finished, which is the opposite of
-  what three of §7's seven checks test. Those three skip while it is a draft and bind at
+  what four of §7's eight checks test. Those four skip while it is a draft and bind at
   `gh pr ready`; the other four run throughout, so a draft still proves the branch lints,
   typechecks, tests, validates and stays inside its capabilities.
 - **The branch is rebased onto `origin/main` before each gate**, force-pushed with
@@ -528,7 +528,7 @@ concurrent Stories ever target the **same** capability, either serialise them or
 separate `archive/<change-id>` PRs landing after each story merges. Do not discover this at merge
 time: it is decided when the second Story is started, at Stage 2.
 
-**The merge-time check.** CI runs two jobs on every PR: `verify`, the seven checks below, and
+**The merge-time check.** CI runs two jobs on every PR: `verify`, the eight checks below, and
 `swift`, which discovers every `Package.swift` and runs `swift test` on it.
 
 **There is no check 3.** The single-change rule was dropped on 2026-08-31 and the remaining
@@ -549,18 +549,22 @@ by the CI step titles and by every document that says "check 4". ADR-1008.
 7. `pnpm run verify` — lint, typecheck, test.
 8. `openspec validate --archived` — every `tasks.md` checkbox in the newly archived change is
    ticked.
+9. **Archived before merge** — a non-draft story branch's own change folder is under
+   `openspec/changes/archive/`. Check 8 looks like the check that does this and does not: it
+   validates what is *in* the archive directory, so a change never archived is absent from it and
+   passes. ADR-1008.
 
-Checks 2, 4, 5 and 6 are bespoke scripts in `scripts/` and are the most likely part of this
+Checks 2, 4, 5, 6 and 9 are bespoke scripts in `scripts/` and are the most likely part of this
 system to rot. `docs/retrospective.md` §3 scores whether they earned their keep, and its §6 is
 where a check that stops earning it gets recorded — check 3 was cut there.
 
-**Three of the seven are skipped while the PR is a draft** — 4, 5 and 8, the ones that ask
+**Four of the eight are skipped while the PR is a draft** — 4, 5, 8 and 9, the ones that ask
 whether the Story is finished. The PR opens at Stage 4, before any code exists, so on that day
-all three would fail by construction; skipping them is what makes an early PR usable rather than
+all four would fail by construction; skipping them is what makes an early PR usable rather than
 a permanent red X you learn to ignore. `gh pr ready` at Stage 8 restores the full list, and the
 workflow subscribes to `ready_for_review` so it actually runs then — not one of GitHub's default
 `pull_request` event types. What it gives up (ADR-1003): a draft cannot be merged, so nothing
-those three guard can land while they are skipped, but a Story learns about a coverage failure
+those four guard can land while they are skipped, but a Story learns about a coverage failure
 when the draft is lifted rather than on every push. `pnpm run checks` locally is the earlier
 warning.
 
@@ -568,6 +572,14 @@ warning.
 naming the next scenario. Failing locally would demand every acceptance test at once, which is
 precisely the bulk transcription §8 forbids. In CI it binds, because a PR asserts the Story is
 finished.
+
+**Check 9 is staged too, and locally it is close to useless.** Run from the worktree it reads the
+same disk `/opsx:archive` just wrote, so it passes exactly when the janitor would want it to and
+tells you nothing about the PR. Its whole value is the CI run, which checks out the **PR head** —
+so what it asserts is a property of the commit that will merge rather than of somebody's working
+tree, and that is what lets it catch an archive commit that was written but never pushed without
+ever reasoning about pushes. It was added on 2026-09-04 after that happened twice; the history is
+in ADR-1008 and the two occurrences are named in the check's own failure text.
 
 **What check 5 can and cannot prove.** Agents act through the repository owner's token, so no
 check can prove a human rather than an agent wrote a comment. Check 5 proves the decision was

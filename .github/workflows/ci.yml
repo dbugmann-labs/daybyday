@@ -4,14 +4,14 @@
 # the numbers below keep the gap, because renumbering would silently move what
 # every other document means by "check 4". ADR 1008.
 #
-# Checks 2, 4, 5 and 6 are bespoke scripts in scripts/. They are the most likely
+# Checks 2, 4, 5, 6 and 9 are bespoke scripts in scripts/. They are the most likely
 # part of this system to rot; docs/retrospective.md section 3 scores whether each
 # one has earned its keep, and is the place to record it when one stops doing so.
 #
 # The PR opens as a draft at Stage 4, before a line of `src/` exists, so that
 # G4 and G7 are both read as a diff. A draft therefore asserts the opposite of
-# what checks 4, 5 and 8 test — they ask whether the Story is finished — and
-# those three are skipped while it is one. They run in full the moment the
+# what checks 4, 5, 8 and 9 test — they ask whether the Story is finished — and
+# those four are skipped while it is one. They run in full the moment the
 # janitor takes it out of draft at Stage 8, which is why `ready_for_review` is
 # in the trigger list: it is not one of the default pull_request types, and
 # without it the first full run would be whatever push happened to follow.
@@ -121,6 +121,10 @@ jobs:
       - name: 8 · openspec validate --archived
         if: github.event.pull_request.draft != true
         run: pnpm run spec:validate:archived
+
+      - name: 9 · archived before merge
+        if: github.event.pull_request.draft != true
+        run: pnpm run check:archived
 
   # Standard GitHub-hosted runners, macOS included, are free and unlimited on
   # public repositories, which ADR 0007 is the reason this repo is. Larger

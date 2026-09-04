@@ -71,6 +71,11 @@ export type PrFacts = {
   draft: boolean
   /** Commits on `origin/main` that the branch does not have. `null` when origin/main is unknown. */
   behindMain: number | null
+  /**
+   * Commits on this branch that the PR's head does not have — work that exists only here.
+   * `null` when the PR head is not an object this clone holds, so the two cannot be compared.
+   */
+  aheadOfPr: number | null
 }
 
 export type StoryFacts = {
@@ -200,12 +205,37 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
   }
 
   if (c.archived) {
+    // Archived on this disk is not archived on the PR, and Stage 9 is exactly where the two come
+    // apart: the archive is the last commit on the branch, so it is the one most likely to be
+    // sitting in a worktree unpushed. `add-screen-navigation` merged as d40a6f0 that way, and this
+    // projection called it finished work waiting to merge, because that was true of the disk it
+    // was reading. The head that will merge is the one the claim has to be about.
+    if (f.pr !== null && (f.pr.aheadOfPr === null || f.pr.aheadOfPr > 0)) {
+      const gap =
+        f.pr.aheadOfPr === null
+          ? 'The change is archived here, but this branch cannot be compared with the PR head, so whether the archive reached the PR is unknown.'
+          : `The change is archived here, but ${f.pr.aheadOfPr} commit(s) on this branch have never reached the PR — at Stage 8 that is the archive itself.`
+      return {
+        stage: 9,
+        stageName: 'Merge',
+        owner: 'agent',
+        actor: 'janitor',
+        blocker: `${gap} Merging now lands the Story with its change folder unarchived and needs a recovery PR.`,
+        actions: [
+          { label: 'Push', command: `git push origin story/${f.issue}-${f.changeId}` },
+          { label: 'Confirm', command: '`git status -sb` must not say `ahead` — CI check 9 fails the build if it does' },
+          ...(f.pr.draft ? [{ label: 'Then', command: `gh pr ready ${f.pr.number} — after the push, so the run that binds sees the archive` }] : []),
+        ],
+        next: 'Stage 9 — merge, once the PR head is the branch you archived.',
+        unobservable: null,
+      }
+    }
     return {
       stage: 9,
       stageName: 'Merge',
       owner: 'agent',
       actor: 'janitor',
-      blocker: 'The change is archived. The branch is finished and waiting to merge.',
+      blocker: 'The change is archived and the PR head carries it. The branch is finished and waiting to merge.',
       actions: [
         { label: 'Verify', command: 'pnpm run verify && pnpm run checks' },
         ...(f.pr?.draft === true ? [{ label: 'Ready', command: `gh pr ready ${f.pr.number} — the full check list only binds once it is out of draft` }] : []),
@@ -213,7 +243,7 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
         { label: 'Then', command: 'settle the parent Feature and Epic, and `pnpm run graph`' },
       ],
       next: 'The PR closes the Story. Nothing else is outstanding.',
-      unobservable: null,
+      unobservable: f.pr === null ? 'whether the archive has reached a PR: there is no open PR for this branch to compare against.' : null,
     }
   }
 
@@ -481,20 +511,29 @@ export function gatherChange(loc: ChangeLocation): ChangeFacts {
 }
 
 /**
- * The PR for this branch, and how far `main` has moved since it was last rebased. The
- * behind-count is measured locally against `origin/main` after a fetch rather than read from
- * GitHub, because `gh` reports mergeability as a lazily computed field that is frequently
- * `UNKNOWN` on the first read. No PR, no token or no network all read as "no PR": the failure
- * mode of guessing otherwise is a gate presented on a diff nobody can open.
+ * The PR for this branch, how far `main` has moved since it was last rebased, and how far the
+ * branch has moved since it was last pushed. The behind-count is measured locally against
+ * `origin/main` after a fetch rather than read from GitHub, because `gh` reports mergeability as
+ * a lazily computed field that is frequently `UNKNOWN` on the first read. No PR, no token or no
+ * network all read as "no PR": the failure mode of guessing otherwise is a gate presented on a
+ * diff nobody can open.
+ *
+ * `headRefOid` is what the PR actually points at, and it costs nothing — it is one more field on
+ * a call already being made. Without it this projection reads the working tree and calls that the
+ * Story's state, which is how `add-screen-navigation` was reported as finished work waiting to
+ * merge while its archive commit had never left the worktree.
+ *
+ * This runs only on a story branch, so `HEAD` is that branch's tip — the same assumption
+ * `behindMain` above makes.
  */
 export function gatherPr(branch: string): PrFacts | null {
-  let pr: { number: number; url: string; isDraft: boolean }
+  let pr: { number: number; url: string; isDraft: boolean; headRefOid: string }
   try {
-    const raw = execFileSync('gh', ['pr', 'view', branch, '--json', 'number,url,isDraft,state'], {
+    const raw = execFileSync('gh', ['pr', 'view', branch, '--json', 'number,url,isDraft,state,headRefOid'], {
       encoding: 'utf8',
       stdio: 'pipe',
     })
-    const parsed = JSON.parse(raw) as { number: number; url: string; isDraft: boolean; state: string }
+    const parsed = JSON.parse(raw) as { number: number; url: string; isDraft: boolean; state: string; headRefOid: string }
     if (parsed.state !== 'OPEN') return null
     pr = parsed
   } catch {
@@ -510,7 +549,17 @@ export function gatherPr(branch: string): PrFacts | null {
     behindMain = null
   }
 
-  return { number: pr.number, url: pr.url, draft: pr.isDraft, behindMain }
+  // Throws when the PR head is not an object this clone holds — someone pushed from elsewhere and
+  // it was never fetched. That is genuinely unknown rather than zero, and is reported as such.
+  let aheadOfPr: number | null
+  try {
+    const count = Number(git(['rev-list', '--count', `${pr.headRefOid}..HEAD`]))
+    aheadOfPr = Number.isNaN(count) ? null : count
+  } catch {
+    aheadOfPr = null
+  }
+
+  return { number: pr.number, url: pr.url, draft: pr.isDraft, behindMain, aheadOfPr }
 }
 
 /**
@@ -570,7 +619,7 @@ export function renderStory(branchName: string, f: StoryFacts, s: StoryStatus): 
   out.push(`  Derived from: change folder ${f.change === null ? 'absent' : f.change.dir}` +
     (f.change === null ? '' : `, validates=${f.change.validates}, scenarios ${f.change.scenarios.covered}/${f.change.scenarios.total}, tasks ${f.change.tasks.done}/${f.change.tasks.total}`) +
     `, G4 ${f.approval === null ? 'absent' : `by ${f.approval.by}${f.approval.signsCurrent ? '' : ' (stale)'}`}` +
-    `, PR ${f.pr === null ? 'none' : `#${f.pr.number}${f.pr.draft ? ' (draft)' : ''}${f.pr.behindMain === null ? '' : `, ${f.pr.behindMain} behind main`}`}`)
+    `, PR ${f.pr === null ? 'none' : `#${f.pr.number}${f.pr.draft ? ' (draft)' : ''}${f.pr.behindMain === null ? '' : `, ${f.pr.behindMain} behind main`}${f.pr.aheadOfPr !== null && f.pr.aheadOfPr > 0 ? `, ${f.pr.aheadOfPr} unpushed` : ''}`}`)
   out.push('')
   return out.join('\n')
 }

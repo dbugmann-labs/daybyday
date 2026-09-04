@@ -33,7 +33,7 @@ function facts(over: Partial<StoryFacts> = {}): StoryFacts {
     changeId: 'add-schedule-rules',
     change: change(),
     approval: { by: 'diegobugmann', at: '2026-08-29T10:00:00Z', digest: 'c0ffee123456', signsCurrent: true },
-    pr: { number: 21, url: 'https://github.com/dbugmann-labs/daybyday/pull/21', draft: true, behindMain: 0 },
+    pr: { number: 21, url: 'https://github.com/dbugmann-labs/daybyday/pull/21', draft: true, behindMain: 0, aheadOfPr: 0 },
     ...over,
   }
 }
@@ -194,6 +194,38 @@ describe('deriveStoryStatus', () => {
     const s = deriveStoryStatus(facts({ change: change({ archived: true }) }))
     expect(s.stage).toBe(9)
     expect(s.actor).toBe('janitor')
+    expect(s.actions.some((a) => a.command.includes('gh pr merge --squash'))).toBe(true)
+  })
+
+  // Twice a Story has merged with its change folder unarchived, and on `add-screen-navigation`
+  // the archive commit existed — in a worktree, never pushed. This projection reported the branch
+  // finished, because the disk it reads was archived. What Stage 9 turns on is whether the head
+  // that will merge carries the archive, so an unpushed commit is a stop, not a footnote.
+  it('does not call an archived change finished while its archive is unpushed', () => {
+    const unpushed = { number: 21, url: 'https://example.invalid/21', draft: true, behindMain: 0, aheadOfPr: 3 }
+    const s = deriveStoryStatus(facts({ change: change({ archived: true }), pr: unpushed }))
+    expect(s.stage).toBe(9)
+    expect(s.blocker).toContain('never reached the PR')
+    expect(s.actions[0]?.command).toContain('git push origin story/12-add-schedule-rules')
+    expect(s.actions.some((a) => a.command.includes('gh pr merge --squash'))).toBe(false)
+  })
+
+  // Same philosophy as the behind-main count: unknown is not zero. A branch that cannot be
+  // compared with its PR head is one nobody has checked, and pushing a branch already pushed
+  // costs nothing next to merging a Story whose archive never left the worktree.
+  it('stops rather than guesses when the branch cannot be compared with the PR head', () => {
+    const unknown = { number: 21, url: 'https://example.invalid/21', draft: false, behindMain: 0, aheadOfPr: null }
+    const s = deriveStoryStatus(facts({ change: change({ archived: true }), pr: unknown }))
+    expect(s.blocker).toContain('cannot be compared with the PR head')
+    expect(s.actions.some((a) => a.command.startsWith('git push origin'))).toBe(true)
+  })
+
+  // With no PR there is nothing to compare against, so the claim narrows rather than inflating:
+  // the branch is archived, and whether that reached a PR is stated as unobservable.
+  it('says so rather than claiming the archive reached a PR that does not exist', () => {
+    const s = deriveStoryStatus(facts({ change: change({ archived: true }), pr: null }))
+    expect(s.stage).toBe(9)
+    expect(s.unobservable).toContain('no open PR')
   })
 
   it('sends an invalid change folder back to spec-author rather than to the human', () => {
@@ -213,7 +245,7 @@ describe('deriveStoryStatus', () => {
   })
 
   it('refreshes a PR that main has moved past before either gate', () => {
-    const behind = { number: 21, url: 'https://example.invalid/21', draft: true, behindMain: 3 }
+    const behind = { number: 21, url: 'https://example.invalid/21', draft: true, behindMain: 3, aheadOfPr: 0 }
     const atG4 = deriveStoryStatus(facts({ approval: null, pr: behind }))
     expect(atG4.owner).toBe('agent')
     expect(atG4.blocker).toContain('3 commit(s) behind')
@@ -229,7 +261,7 @@ describe('deriveStoryStatus', () => {
   // Offline, the count is unknown. Rebasing a branch that is already current costs nothing;
   // presenting a gate on a diff nobody has compared with main costs the gate.
   it('refreshes rather than guesses when main cannot be compared', () => {
-    const s = deriveStoryStatus(facts({ approval: null, pr: { number: 21, url: 'https://example.invalid/21', draft: true, behindMain: null } }))
+    const s = deriveStoryStatus(facts({ approval: null, pr: { number: 21, url: 'https://example.invalid/21', draft: true, behindMain: null, aheadOfPr: 0 } }))
     expect(s.owner).toBe('agent')
     expect(s.blocker).toContain('not fetched')
   })

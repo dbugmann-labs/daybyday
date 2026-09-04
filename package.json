@@ -18,11 +18,12 @@
     "verify": "pnpm run lint && pnpm run typecheck && pnpm run test",
     "check:specs": "node scripts/check-spec-containment.ts",
     "check:scenarios": "node scripts/check-scenario-coverage.ts",
-    "checks": "pnpm run check:specs && pnpm run check:scenarios && pnpm run check:g4 && pnpm run check:hygiene",
+    "checks": "pnpm run check:specs && pnpm run check:scenarios && pnpm run check:g4 && pnpm run check:hygiene && pnpm run check:archived",
     "spec:validate": "openspec validate --all --strict --no-interactive",
     "spec:validate:archived": "openspec validate --archived",
     "check:g4": "node scripts/check-g4-approval.ts",
     "check:hygiene": "node scripts/check-commit-hygiene.ts",
+    "check:archived": "node scripts/check-archived.ts",
     "graph": "node scripts/generate-graph.ts",
     "status": "node scripts/status.ts"
   },
