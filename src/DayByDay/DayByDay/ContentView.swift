@@ -54,7 +54,30 @@ struct ContentView: View {
 
     var body: some View {
         List {
-            Text(screen.title)
+            HStack {
+                Button {
+                    screen.showPreviousDay()
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+                .buttonStyle(.borderless)
+                Spacer()
+                Text(screen.title)
+                Spacer()
+                Button {
+                    screen.showNextDay()
+                } label: {
+                    Image(systemName: "chevron.right")
+                }
+                .buttonStyle(.borderless)
+            }
+            Button {
+                screen.showToday()
+            } label: {
+                Text("Today")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
 
             switch screen.recordState {
             case .kept:

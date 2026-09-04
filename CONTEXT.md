@@ -302,6 +302,14 @@ is that nothing ever *asks* for it — the day screen is handed its today by the
 device's clock, exactly as every other question is, and no clock is read while a day is being looked
 at.
 
+**Amended 2026-09-04**, at the grill of `add-screen-navigation` (#93). A day screen keeps a *today*
+**and** a day it is showing, and they are two things. They coincided only while a screen could be on
+no day but today; once it can be moved, the day being looked at is one the person chose and the
+today is still the fact about the device the shell handed over. Every question the screen asks *as
+of* a day — whether a row offers its tick, whether the day title says *Today* — is asked as of the
+today, and never as of the day being shown, which is the whole of what § *Today* above warned
+about.
+
 **Day navigation** — going from one day view to the day view of the day before it or the day after
 it, one calendar day at a time. It is a question about a date and about nothing else: it never asks
 what day it is, so a person moves onto a day that has not arrived as readily as onto one long past,
@@ -314,6 +322,15 @@ and it must be handed both because a day view holds neither. There is no day bef
 the system supports and none after the last, so moving that way gives nothing at all rather than the
 day it started on — a caller that wanted to stay where it is already has it. Agreed 2026-09-03 at
 the grill of `add-day-navigation` (#72).
+
+**Amended 2026-09-04**, at the grill of `add-screen-navigation` (#93). A **day screen** navigates
+too, and the same sentence describes it: one calendar day at a time, onto a day that has not arrived
+as readily as onto one long past, as far back and as far forward as the calendar goes, with the
+screen adding no bound of its own. The two differences are that a day screen is handed nothing —
+it already holds the commitments and the store — and that where a day view *gives nothing* at the
+ends of the calendar, a day screen **stays exactly as it is**, because a screen is not a value and
+staying put is an answer it can give. A day screen also moves **straight back to today**, which a
+day view has no way to do: it holds no today to go back to.
 
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **store** it reads a history from and writes a tick back to, and the
@@ -328,6 +345,16 @@ would catch — which day it opened on, whether a tick was kept, what it does wh
 open — so it lives behind the seam in `DayByDayKit` with the rest of the requirements, and what is
 left in `src/DayByDay` is a SwiftUI body and the clock reading that hands it a today. Agreed
 2026-09-03 at the third grooming pass's Feature grill.
+
+**Amended 2026-09-04**, at the grill of `add-screen-navigation` (#93). A day screen holds **two**
+days, not one: the **today** it was handed, and the **day it is showing**, which starts as the today
+and is what navigation moves. It steps one calendar day either way and straight back to today, and a
+step with nowhere to go leaves it as it was rather than saying so. It **keeps the day it is showing
+when the app is shown again**, so a day being filled in is not lost to a glance at another app —
+except where it is showing today, in which case it follows onto the new day, which is what a morning
+visit landing on the morning rather than on the night before requires. That exception needs no state
+of its own: it is a comparison of the two days the screen already holds, and stepping back onto
+today re-arms it.
 
 It **keeps a change before it says so**: a tick made on a day screen is kept at the record's place
 first, and only then does the day view say the commitment is kept — the day view is formed again
@@ -377,6 +404,13 @@ them. It is also when the record is read again, which is what lets a screen that
 its record** start keeping one without the app being force-quit. Deliberately a fact about the app
 rather than about the clock: being shown does not tell a day screen what day it is, it is the moment
 at which a day screen is *told*. Agreed 2026-09-03, the same grill.
+
+**Amended 2026-09-04**, at the grill of `add-screen-navigation` (#93). Being shown is no longer the
+only moment the day a screen shows can change — navigation is the other, and it is the person's
+rather than the app's. What being shown still does unconditionally is hand over a new **today** and
+read the record again. Whether it also moves the day being shown depends on where the screen is: on
+today it follows, and on any other day it stays, because the day a person navigated to is one they
+chose and time passing is not a reason to take it away.
 
 **Day title** — what a day view says its day is, and so what a day screen says the day it is showing
 is: the day said as a weekday, a day of the month, a month and a year — "Monday 31 August 2026" —

@@ -20,6 +20,7 @@ public final class DayScreen {
     private let commitments: [Commitment]
     private let place: URL
     private var today: CalendarDate
+    private var shownDay: CalendarDate
     private var store: RecordStore?
 
     /// The place a day screen keeps its record when it is not told another: one file, in a
@@ -40,11 +41,15 @@ public final class DayScreen {
     ) {
         self.commitments = commitments
         self.today = today
+        self.shownDay = today
         self.place = place
 
         let opened = Self.open(at: place)
         self.store = opened.store
         self.recordState = opened.state
+        // `today` here is the parameter above, not `self.today`: `self` is not yet fully
+        // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
+        // back. The parameter holds the same value `shownDay` was just set to, two lines up.
         self.dayView = DayView(of: commitments, on: today, in: opened.store?.history ?? History())
     }
 
@@ -97,16 +102,51 @@ public final class DayScreen {
             try store.add(tick)
         }
 
-        dayView = DayView(of: commitments, on: today, in: store.history)
+        dayView = DayView(of: commitments, on: shownDay, in: store.history)
     }
 
-    /// The app has been shown on `today`: the day view and the record are read again.
+    /// Shows the calendar day before the one being shown. Leaves the screen exactly as it is when
+    /// it is showing 1 January 1583. Does not move the today, and does not read the record again.
+    public func showPreviousDay() {
+        guard let moved = dayView.previousDay(of: commitments, in: store?.history ?? History())
+        else {
+            return
+        }
+        dayView = moved
+        shownDay = moved.date
+    }
+
+    /// Shows the calendar day after the one being shown. Leaves the screen exactly as it is when
+    /// it is showing 31 December 9999. Does not move the today, and does not read the record
+    /// again.
+    public func showNextDay() {
+        guard let moved = dayView.nextDay(of: commitments, in: store?.history ?? History())
+        else {
+            return
+        }
+        dayView = moved
+        shownDay = moved.date
+    }
+
+    /// Shows the today this screen was last handed, from whatever day it is showing. Always has
+    /// somewhere to go; does not read the record again.
+    public func showToday() {
+        shownDay = today
+        dayView = DayView(of: commitments, on: shownDay, in: store?.history ?? History())
+    }
+
+    /// The app has been shown on `today`: the day view and the record are read again. A screen
+    /// showing its today follows onto the new one; a screen showing any other day goes on
+    /// showing that day. The comparison is against the today the screen held before this call.
     public func shown(asOf today: CalendarDate) {
+        if shownDay == self.today {
+            shownDay = today
+        }
         self.today = today
 
         let opened = Self.open(at: place)
         self.store = opened.store
         self.recordState = opened.state
-        self.dayView = DayView(of: commitments, on: today, in: opened.store?.history ?? History())
+        self.dayView = DayView(of: commitments, on: shownDay, in: opened.store?.history ?? History())
     }
 }
