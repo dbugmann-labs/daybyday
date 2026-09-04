@@ -102,20 +102,20 @@ is not evidence.
 
 ### Defining a commitment
 
-- [ ] 2.8 `a commitment defined through a commitments screen is kept at the roster place before either list says so`
+- [x] 2.8 `a commitment defined through a commitments screen is kept at the roster place before either list says so`
   — assert through a `RosterStore` opened afterwards at that place, **and** that `define` answered
   `nil`.
-- [ ] 2.9 `a commitment defined through a commitments screen is last in what it keeps`
-- [ ] 2.10 `a commitment defined on each of the four rhythms is read back on the schedule that rhythm names`
+- [x] 2.9 `a commitment defined through a commitments screen is last in what it keeps`
+- [x] 2.10 `a commitment defined on each of the four rhythms is read back on the schedule that rhythm names`
   — one commitment per `Rhythm` case, in the order the scenario names, compared by `Commitment`
   equality against commitments formed directly with `Schedule`. This is the test that proves the
   conversion, since `Rhythm.schedule(keptFrom:)` is internal and `Commitment.schedule` is not
   public.
-- [ ] 2.11 `a commitment defined on an interval rhythm counts from the day it is kept from` — the
+- [x] 2.11 `a commitment defined on an interval rhythm counts from the day it is kept from` — the
   kept-from day is 1 July 2026 and the screen's today is 31 August 2026, so an implementation using
   the today as the start date fails.
-- [ ] 2.12 `a commitments screen offers the day it was handed as the day to keep a commitment from`
-- [ ] 2.13 `a commitments screen accepts a day to keep from that has not arrived and one long past`
+- [x] 2.12 `a commitments screen offers the day it was handed as the day to keep a commitment from`
+- [x] 2.13 `a commitments screen accepts a day to keep from that has not arrived and one long past`
   — 31 December 9999 and 1 January 1583, the two ends of what `CalendarDate` supports.
 
 ### What the form refuses
