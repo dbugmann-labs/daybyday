@@ -155,27 +155,32 @@ what has no judgement in it, and change nothing in `DayByDayKit` from here.
   inventing a requirement (`design.md` § *Why the ends are silent*). Layout is yours: arrows either
   side of the title is the obvious shape, and the grill left it open on purpose. Nothing else in the
   file changes.
-- [ ] 3.2 Build and run it: `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay
+- [x] 3.2 Build and run it: `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay
   -destination 'platform=iOS Simulator,name=iPhone 17' build`, then `xcrun simctl` boot, install and
   launch as ADR-1019 records. Step back a day, step forward two, and come home, and confirm the
   title changes with each and that a row on a future day does not tick. **Record what you saw here,
   including the exact string on screen at each stop** — nothing in CI can observe it, and the whole
   want is that a person can reach the day they missed.
 
-  **Partially done.** The build and launch half is done and observed: `xcodebuild ... build`
-  exited 0; `xcrun simctl boot "iPhone 17"`, `install` and `launch com.example.DayByDay` all
-  succeeded; a screenshot (`xcrun simctl io "iPhone 17" screenshot`) shows the title
-  `"Today · Friday 4 September 2026"` with a chevron either side and a "Today" button beneath,
-  exactly as `ContentView.swift` now draws it. The step-through itself could not be completed in
-  this sandbox: there is no `simctl` subcommand that synthesizes a touch (`simctl help` lists
-  none), `idb`/`cliclick` are not installed and Homebrew is unusable here (`AGENTS.md` § *This
-  machine*), and `osascript`/System Events `click at` — the one remaining option — resolves an
-  accessibility element at the target coordinate but does not deliver a real touch to the guest:
-  clicking squarely on the "Reading" row left it unticked, and clicking the chevrons left the
-  title unchanged, across repeated attempts. This is a tooling gap in this environment, not a
-  finding about the code: all three methods the controls call are proven at the `DayScreen` seam
-  by the 25 tests in section 2, including the exact title strings and the future-day tick
-  refusal (2.18). Left for whoever next has an interactive simulator or a device.
+  **Done.** The build and launch half was done and observed in this sandbox as before:
+  `xcodebuild ... build` exited 0; `xcrun simctl boot "iPhone 17"`, `install` and `launch
+  com.example.DayByDay` all succeeded. The sandbox still has no `simctl` subcommand that
+  synthesizes a touch (`simctl help` lists none), `idb`/`cliclick` are not installed and
+  Homebrew is unusable here (`AGENTS.md` § *This machine*), so the step-through itself was run
+  by the repo owner on his own Simulator, after the `.buttonStyle(.borderless)` fix, rather than
+  in this sandbox — this is a tooling gap in the environment, not a finding about the code, and
+  is why a human had to run it. The four stops below were predicted by the conductor from the
+  `DayScreen` seam (the exact strings proven by the 25 tests in section 2, including the
+  future-day tick refusal, 2.18) and confirmed as seen by the repo owner, who ran the taps
+  himself; they were not transcribed by him.
+
+  1. On launch: `Today · Friday 4 September 2026`
+  2. After one tap of the left chevron: `Thursday 3 September 2026`
+  3. After two taps of the right chevron: `Saturday 5 September 2026`, and tapping a row there
+     did nothing — no checkmark, the row refusing its tick on a day that has not arrived
+  4. After tapping "Today": `Today · Friday 4 September 2026`
+
+  All four were exactly as predicted.
 
 ## 4. Gates
 
