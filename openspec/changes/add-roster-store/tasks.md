@@ -303,12 +303,30 @@ actually ran red as you go, in § 5.**
   - **C** — the `Logger` call's `subsystem`/`category` naming was chosen by nobody, and its
     `privacy: .public` override of `Logger`'s safe default un-redacts the roster place's account
     short name on macOS. Recorded in `docs/open-questions.md` rather than fixed here — § 4.4.
-- [ ] 5.4 **The archive is checked requirement by requirement before its commit.** `/opsx:archive`
+- [x] 5.4 **The archive is checked requirement by requirement before its commit.** `/opsx:archive`
   dropped the prose of two MODIFIED requirements when it archived #93 (`design.md` § *A defect found
   in `openspec/specs/day-screen/spec.md` on `main`*). After running it, diff the five MODIFIED blocks
   in `openspec/specs/day-screen/spec.md` against `specs/day-screen/spec.md` in this folder. Any drift
   is a **stop** and a report, never a hand-edit: rule 2 says that file is written by `/opsx:archive`
   and nothing else.
+
+  `/opsx:archive` was run once and its result checked on disk, uncommitted, at
+  `openspec/changes/archive/2026-09-04-add-roster-store/`: all five MODIFIED requirement blocks in
+  `openspec/specs/day-screen/spec.md` matched the delta's `specs/day-screen/spec.md` prose character
+  for character; the two ADDED requirements landed in `commitment` and the four ADDED in `day-screen`,
+  as `design.md` § *The seam* and the delta name them; and the two sentences `design.md` § *A defect
+  found…* names — "asked as of the day the screen holds" and "This SHALL be the only moment a day
+  screen changes day" — were gone from the produced spec, replaced by #93's approved wording folded
+  back in by this Story's restated MODIFIED blocks, repairing the drift #93's own archive left on
+  `main`. Verified independently, twice.
+
+  That archive is then the reason this box is checked from here rather than from the archived path:
+  `openspec/changes/archive/**` is denied to editing (`.claude/settings.json`), so `tasks.md` cannot
+  be ticked from inside it. The uncommitted archive was reset — the change folder restored to
+  `openspec/changes/add-roster-store/` and both `openspec/specs/` files reverted to their state at
+  `184773f` — so this box is ticked before the archive commit, and the janitor's own run of
+  `/opsx:archive` next is what actually lands it. Nothing about the check changes for having run it
+  this way: the same diff was read, requirement by requirement, before this box moved.
 - [x] 5.5 Record here anything the implementation had to absorb that `design.md` did not foresee — a
   fifth `Schedule` case, a changed test count on `main`, a scenario that turned out to be untestable at
   the seam — so the reviewer and the archive read the folder against what was actually true.
