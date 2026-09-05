@@ -10,9 +10,13 @@ public struct CalendarDate: Hashable, Sendable {
         return calendar
     }()
 
-    let year: Int
-    let month: Int
-    let day: Int
+    /// The three components a validating initializer already checked. Public so that the edge —
+    /// where an instant becomes a calendar date and back, per ADR-1004 — can rebuild a `Date` in
+    /// whatever calendar it is asking on, the reverse of `ContentView.today()`'s own conversion.
+    /// Read-only: the only way to change one is to form a new `CalendarDate`.
+    public let year: Int
+    public let month: Int
+    public let day: Int
 
     public init?(year: Int, month: Int, day: Int) {
         // `DateComponents` reads back `nil` for any component assigned exactly `Int.max`

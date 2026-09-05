@@ -51,11 +51,10 @@ private let dayOneCommitments: [Commitment] = {
 /// Turns an instant into the calendar date `DayByDayKit` speaks — the conversion ADR-1004 keeps
 /// out of the engine and puts at the edge, which is here. Reads `Calendar.current`, the device's
 /// own calendar and time zone, because "today" is a question asked of wherever the phone is.
-/// Defaults to the device's current instant; a caller that also needs the raw `Date` this came
-/// from — to seed a SwiftUI `DatePicker`, which speaks `Date` and not `CalendarDate` — passes it
-/// in, so the two agree rather than each reading the clock separately.
-private func today(_ now: Date = Date()) -> CalendarDate {
-    let components = Calendar.current.dateComponents([.year, .month, .day], from: now)
+/// `CommitmentsView`'s own `date(from:)` is this conversion run in reverse, so a form's default
+/// date is read from the seam rather than from a second clock read of its own.
+private func today() -> CalendarDate {
+    let components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
     return CalendarDate(year: components.year!, month: components.month!, day: components.day!)!
 }
 
@@ -64,22 +63,19 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var showingCommitments = false
     @State private var commitmentsScreen: CommitmentsScreen?
-    @State private var commitmentsOpenedOn = Date()
 
     var body: some View {
         NavigationStack {
             dayList
                 .navigationDestination(isPresented: $showingCommitments) {
                     if let commitmentsScreen {
-                        CommitmentsView(screen: commitmentsScreen, keptFromDate: commitmentsOpenedOn)
+                        CommitmentsView(screen: commitmentsScreen)
                     }
                 }
                 .toolbar {
                     ToolbarItem {
                         Button("Commitments") {
-                            let now = Date()
-                            commitmentsOpenedOn = now
-                            commitmentsScreen = CommitmentsScreen(asOf: today(now))
+                            commitmentsScreen = CommitmentsScreen(asOf: today())
                             showingCommitments = true
                         }
                     }

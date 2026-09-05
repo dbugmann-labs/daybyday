@@ -29,6 +29,17 @@ private func weekdayName(_ weekday: Weekday) -> String {
     }
 }
 
+/// Turns the calendar date `screen` hands back into the instant a SwiftUI `DatePicker` needs —
+/// the reverse of `ContentView.today()`, and, like it, edge code per ADR-1004: both read
+/// `Calendar.current`, the device's own calendar, so the two conversions agree.
+private func date(from calendarDate: CalendarDate) -> Date {
+    var components = DateComponents()
+    components.year = calendarDate.year
+    components.month = calendarDate.month
+    components.day = calendarDate.day
+    return Calendar.current.date(from: components)!
+}
+
 /// The roster's own management surface: what it keeps, what it has stopped, and a form that
 /// defines a new commitment on one of the four rhythms `CommitmentsScreen` offers.
 struct CommitmentsView: View {
@@ -43,9 +54,9 @@ struct CommitmentsView: View {
     @State private var keptFromDate: Date
     @State private var refusal: CommitmentsScreen.Refusal?
 
-    init(screen: CommitmentsScreen, keptFromDate: Date) {
+    init(screen: CommitmentsScreen) {
         self.screen = screen
-        _keptFromDate = State(initialValue: keptFromDate)
+        _keptFromDate = State(initialValue: date(from: screen.dayToKeepFrom))
     }
 
     var body: some View {
@@ -69,7 +80,7 @@ struct CommitmentsView: View {
                 }
                 ForEach(screen.stopped, id: \.self) { commitment in
                     Button {
-                        screen.keepAgain(commitment)
+                        refusal = screen.keepAgain(commitment)
                     } label: {
                         Text(commitment.name)
                     }
@@ -114,8 +125,14 @@ struct CommitmentsView: View {
                     Stepper("Day \(dayOfMonth)", value: $dayOfMonth, in: 1...31)
                 case .everyNDays:
                     LabeledContent("Every") {
-                        TextField("Days", value: $intervalDays, format: .number)
-                            .keyboardType(.numberPad)
+                        TextField(
+                            "Days",
+                            value: Binding(
+                                get: { intervalDays },
+                                set: { intervalDays = max(1, $0) }
+                            ), format: .number
+                        )
+                        .keyboardType(.numberPad)
                         Text("day(s)")
                     }
                 case .weeklyQuota:
@@ -143,6 +160,9 @@ struct CommitmentsView: View {
             }
         }
         .navigationTitle("Commitments")
+        .onChange(of: screen.dayToKeepFrom) { _, newValue in
+            keptFromDate = date(from: newValue)
+        }
         .confirmationDialog(
             "Stop keeping this commitment?",
             isPresented: Binding(
@@ -156,7 +176,7 @@ struct CommitmentsView: View {
             presenting: screen.awaitingConfirmation
         ) { commitment in
             Button("Stop keeping \(commitment.name)", role: .destructive) {
-                screen.confirmStopKeeping()
+                refusal = screen.confirmStopKeeping()
             }
             Button("Cancel", role: .cancel) {
                 screen.cancelStopKeeping()
