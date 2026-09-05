@@ -644,6 +644,7 @@ func aCommitmentsScreenAskedToStopKeepingACommitmentItDoesNotKeepDoesNothing() t
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
 
     screen.askToStopKeeping(gym)
+    #expect(screen.awaitingConfirmation == nil)
     let refusal = screen.confirmStopKeeping()
 
     #expect(refusal == nil)
@@ -782,6 +783,38 @@ func aCommitmentsScreenAskedToTakeUpAgainACommitmentItHasNotStoppedDoesNothing()
     let bytesAfterOpen = try Data(contentsOf: rosterPlace)
 
     let refusal = screen.keepAgain(gym)
+
+    #expect(refusal == nil)
+    #expect(screen.kept.map(\.name) == ["Gym"])
+    #expect(screen.stopped.isEmpty)
+    #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
+}
+
+/// Not a delta scenario — a unit test below the seam, added at G7 review because the scenario
+/// above cannot tell `keepAgain`'s own guard apart from `RosterStore.add`'s: "Gym" there is
+/// already kept, so `add` would refuse it as a duplicate whether or not the guard exists. A
+/// commitment the roster has never held at all is refused only by the guard, so this is the input
+/// that actually exercises it — without it, `keepAgain` would reach `rosterStore.add` and take on
+/// a commitment nobody asked for.
+@MainActor
+@Test("a commitments screen asked to take up again a commitment it has never held does nothing")
+func aCommitmentsScreenAskedToTakeUpAgainACommitmentItHasNeverHeldDoesNothing() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let bytesAfterOpen = try Data(contentsOf: rosterPlace)
+
+    let refusal = screen.keepAgain(journaling)
 
     #expect(refusal == nil)
     #expect(screen.kept.map(\.name) == ["Gym"])
