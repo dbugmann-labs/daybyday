@@ -4,6 +4,9 @@
   the third, what the target is called, is this record's own recommendation and is accepted by the
   chore PR that carries it
 - Date: 2026-09-02
+- Amended: 2026-09-04 — a bounded exception: shell work that exists only to make a Story usable
+  may ride that Story's branch instead of a `chore/` one. The guard on what the shell may contain
+  is unchanged.
 - Deciders: Diego Bugmann
 
 ## Context
@@ -97,6 +100,31 @@ Concretely, the shell is dataless. It builds a `DayView` in memory and draws `ro
 not open a `RecordStore`, does not choose the directory that store lives in, does not tick and does
 not navigate between dates. Ticking belongs to the row and therefore to `day-screen` (#27), which
 `CONTEXT.md` already says; so does the date being displayed.
+
+**Amended 2026-09-04, at the grill of `add-commitments-screen` (#104), question 12.** Shell work
+whose *only* purpose is to make a Story usable may ride that Story's branch rather than a `chore/`
+one. Decided against the grill's own recommendation and taken as the owner's preference: they want
+the Story working at G7, rather than reviewing a screen nothing can navigate to and then opening a
+second branch to reach it.
+
+**The guard above does not move an inch.** The exception is about which branch the SwiftUI arrives
+on, and about nothing else. The shell still may contain no line that could be wrong in a way a test
+would catch; every refusal, order, default and place in #104 is behind the `DayByDayKit` seam with
+its own requirement and its own scenario, which is why the exception costs so little. What it does
+cost is real and is stated so that it is not repeated by habit: the G4 marker signs a change folder
+whose branch will also carry a `CommitmentsView.swift` that no gate reads as a requirement, and the
+digest cannot tell the two apart.
+
+**The conditions, all three of which must hold.** The shell change is the immediate consumer of the
+Story landing in the same PR; it introduces no behaviour the kit does not already specify; and it
+is named in that change's `tasks.md` as its own section, so a reviewer sees it as a distinct thing
+rather than as part of the delta.
+
+**The return to the rule** is the next shell change that fails any of those three — anything the
+shell wants that is not the direct consumer of a Story in the same PR goes back on a `chore/`
+branch, and this amendment is not a general licence to put SwiftUI in Story PRs. If a second Story
+claims the exception, that is the signal that the rule has quietly changed and this record should
+be revisited rather than stretched again.
 
 **2. It runs in the iOS Simulator.** Not as a macOS window, and not as both. `CONTEXT.md`
 § *An iPhone, in your hand* is the reason: a phone product looked at on a laptop acquires
