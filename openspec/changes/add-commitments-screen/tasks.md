@@ -300,13 +300,13 @@ place. If one appears to be needed, that is a requirement this delta is missing 
 
 ## 5. Gates, and the files this change is and is not allowed to write
 
-- [ ] 5.1 `cd src/DayByDayKit && swift test` reports **357 tests passing** and no failures, and
+- [x] 5.1 `cd src/DayByDayKit && swift test` reports **357 tests passing** and no failures, and
   `pnpm run verify` exits 0. The 357 is the 300 that were on `main` at `566297e`, plus the 47 the
   first implementation pass wrote, plus the 1 unit test `d364a25` added for a guard no scenario
   reached, plus the 9 § 6 writes. **The first version of this box said 347 and was ticked; the
   count on the branch was already 348** — measured on 2026-09-06 — so a box asserting a number was
   ticked against a different number. None of the 348 may change.
-- [ ] 5.2 `pnpm exec openspec validate add-commitments-screen --strict` exits 0 and `pnpm run
+- [x] 5.2 `pnpm exec openspec validate add-commitments-screen --strict` exits 0 and `pnpm run
   checks` reports scenario coverage as 60 of 60 — the 51 of the first version, plus the 5 rhythm
   scenarios and the 4 calendar-date scenarios § 6 adds.
 - [ ] 5.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Five
@@ -373,7 +373,7 @@ place. If one appears to be needed, that is a requirement this delta is missing 
      "not a general licence." This Story is the one Story the amendment was written for; the
      record wants a line saying it has now been used once, so the next shell change is read
      against "has a second Story claimed the exception yet" rather than a clean slate.
-- [ ] 5.6 Record here anything the implementation had to absorb that `design.md` did not foresee —
+- [x] 5.6 Record here anything the implementation had to absorb that `design.md` did not foresee —
   a mechanism that did not work as § 2 describes, a scenario that turned out to be untestable at
   either seam, a changed test count on `main`. "Nothing." is a valid entry. Record too which of the
   scenarios § 2 and § 3 predicted red actually ran red; a prediction is not evidence.
@@ -430,11 +430,49 @@ place. If one appears to be needed, that is a requirement this delta is missing 
   gives back its three numbers* carries the decision, and `specs/schedule/spec.md` in this folder
   carries the requirement that authorises it.
 
-  **Still to be recorded, when § 6 is worked:** which of the nine new scenarios ran red on their
-  own. Four of them — the calendar-date read-backs — are written against behaviour that already
-  ships, so they are expected green on first write and that is worth stating rather than glossing;
-  the five rhythm-number scenarios are written against a `Refusal` case that does not exist yet and
-  are expected red. A prediction is not evidence either way.
+  **§ 6, worked 2026-09-06, against the same method: every one of the nine new scenarios was
+  written and run individually, in task order.** 6.1–6.4, the calendar-date read-backs, all passed
+  on first write — expected, since `4e92da5` already ships the behaviour they assert. 6.5 wrote no
+  test, as instructed, and left the `nil`-conversion branch of `define` a `fatalError`. **6.6 ran
+  genuinely red**, against that `fatalError` — confirmed by the process exiting with signal 5 and
+  `DayByDayKit/CommitmentsScreen.swift:89: Fatal error: not implemented` before the one-line fix
+  (`return .rhythmOutOfRange`). 6.7 and 6.8 passed on first write, both covered by that same line,
+  exactly as `design.md` allowed for. **6.9 and 6.10 also passed on first write** — `design.md`
+  flagged them as likely red against a reused `Refusal` case or an off-by-one in one of the three
+  ranges, and neither defect was present: `.rhythmOutOfRange` was already its own case and
+  `DayOfMonth`/`DayInterval`/`WeeklyQuota`'s existing ranges (`1...31`, `days >= 1`, `1...7`) were
+  already right at both ends. So **2 of 9 ran red (6.6 alone counts, since 6.5 wrote none); 7 of 9
+  passed on first write** — a prediction proven wrong twice over is still not a defect, and nothing
+  in § 6 was untestable at the seam. `swift test` reported 352 after 6.1–6.5 and 357 after 6.6–6.10,
+  matching `design.md` exactly, and `xcodebuild -scheme DayByDay -destination 'generic/platform=iOS
+  Simulator' build` exited 0 after 6.11.
+
+  **Four more findings from the second review pass were fixed on this branch, outside § 6: they
+  carry no scenario and no box, per this file's own § 6 preamble.** All four are shell or seam
+  fixes, not new behaviour:
+
+  - **Finding 8** (`CommitmentsScreen.swift`): the five repeated `kept = …; stopped = …` pairs are
+    now one `private func refreshLists(from: RosterStore?)`, called from `init`, `define`,
+    `confirmStopKeeping`, `keepAgain` and `shown(asOf:)`, in that order, with no change to when
+    each is called relative to its `RosterStore` call. A pure reshaping: `swift test` still reports
+    357 with no test added, removed or changed.
+  - **Finding 4** (`CommitmentsView.swift`): `.confirmationDialog` is now `.alert`. An alert always
+    draws every button it is given, on every size class; there is no presentation style left in
+    which the destructive button can appear without "Cancel" beside it, and no tap-outside dismissal
+    to fail to announce.
+  - **Finding 5**: the `isPresented` setter now reads `if !isPresented && screen.awaitingConfirmation
+    != nil` before calling `cancelStopKeeping()`, so a dismissal that has already been resolved by
+    the destructive button (which clears `awaitingConfirmation` itself, through
+    `confirmStopKeeping()`) does not call it a second time.
+  - **Finding 6**: the confirm-stop and take-up-again refusals no longer share the `Define a
+    commitment` section's message slot. `stopRefusal` is drawn directly under `Section("Kept")`,
+    `keepAgainRefusal` directly under `Section("Stopped")`, and the form's own `refusal` stays where
+    it was — each shown beside the row or button that produced it, through one shared
+    `refusalText(_:)` so the five sentences are written once.
+
+  None of the four needed a requirement: each is a drawing or a reshaping, not a rule, and § 6's
+  preamble in this file says as much. `xcodebuild -scheme DayByDay -destination 'generic/platform=iOS
+  Simulator' build` was re-run after all four and exited 0.
 - [ ] 5.7 **Tell the human what became of `DayScreen`'s unread roster store.** `design.md` § *The
   store `DayScreen` holds is still not read* records that the reason #103's G7 kept
   `private var rosterStore` — that #104 would read it — did not survive this design, and that this
