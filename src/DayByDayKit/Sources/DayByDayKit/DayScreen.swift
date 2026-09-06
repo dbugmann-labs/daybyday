@@ -24,10 +24,6 @@ public final class DayScreen {
     private var today: CalendarDate
     private var shownDay: CalendarDate
     private var recordStore: RecordStore?
-    /// The open roster store at `rosterPlace`, held rather than reopened: #104
-    /// `add-commitments-screen` needs a live store to add and retire commitments through, and
-    /// this is where it will reach one. Unread here — nothing on this screen calls into it yet.
-    private var rosterStore: RosterStore?
     private var roster: Roster
 
     /// The place a day screen keeps its record when it is not told another: one file, in a
@@ -70,7 +66,6 @@ public final class DayScreen {
         self.recordState = opened.state
 
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: dayOne)
-        self.rosterStore = openedRoster.store
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
 
@@ -114,18 +109,18 @@ public final class DayScreen {
     /// roster, and day one is not retried.
     private static func openRoster(
         at place: URL, takingOnIfEmpty dayOne: [Commitment]
-    ) -> (store: RosterStore?, state: RosterState, roster: Roster) {
+    ) -> (state: RosterState, roster: Roster) {
         let store: RosterStore
         do {
             store = try RosterStore(at: place)
         } catch RosterStoreError.laterForm {
-            return (nil, .writtenByALaterVersion, Roster())
+            return (.writtenByALaterVersion, Roster())
         } catch {
-            return (nil, .notKept, Roster())
+            return (.notKept, Roster())
         }
 
         guard store.roster == Roster() else {
-            return (store, .kept, store.roster)
+            return (.kept, store.roster)
         }
 
         do {
@@ -156,10 +151,10 @@ public final class DayScreen {
                         .error("\(message, privacy: .public)")
                 }
             }
-            return (nil, .notKept, Roster())
+            return (.notKept, Roster())
         }
 
-        return (store, .kept, store.roster)
+        return (.kept, store.roster)
     }
 
     /// The day view the person is looking at, as the record stood when it was last read.
@@ -274,7 +269,6 @@ public final class DayScreen {
         self.recordState = opened.state
 
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
-        self.rosterStore = openedRoster.store
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
 
@@ -288,7 +282,6 @@ public final class DayScreen {
     /// day, and does not read the record.
     public func returnedTo() {
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
-        self.rosterStore = openedRoster.store
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
 

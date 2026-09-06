@@ -799,7 +799,7 @@ place. If one appears to be needed, that is a requirement this delta is missing 
      and it is the kind of thing ADR-1019 puts on a `chore/` branch. It is recorded here rather than
      done here because § 7's shell box is scoped to a lifetime and widening it to a refactor of
      `ContentView.swift` is how a reopened folder grows a third reopening.
-- [ ] 5.7 **Delete `DayScreen`'s unread roster store.** The first two versions of this box asked
+- [x] 5.7 **Delete `DayScreen`'s unread roster store.** The first two versions of this box asked
   the human what should become of it and forbade the deletion. **They answered on 2026-09-06, when
   this folder was reopened for its third G4: delete it.** The reason #103's G7 kept
   `private var rosterStore` was that this Story would read it, and this design disproves that rather
