@@ -196,7 +196,7 @@ has no judgement in it, and change nothing in `DayByDayKit` from here.
   branch on the error, and nothing that distinguishes a refused tick from a refused take-back. The
   exact words, the styling and the placement under the name are yours; the grill left them open on
   purpose. Nothing else in the file changes.
-- [ ] 3.2 Build and run it: `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay
+- [x] 3.2 Build and run it: `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay
   -destination 'platform=iOS Simulator,name=iPhone 17' build`, then `xcrun simctl` boot, install and
   launch as ADR-1019 records. To reach a refusal on a real device you must make the app's own record
   place unwritable — `xcrun simctl get_app_container booted com.example.DayByDay data` gives the
@@ -228,6 +228,31 @@ has no judgement in it, and change nothing in `DayByDayKit` from here.
   cannot finish anyway. The repo owner needs to run the four taps himself, on his own Simulator,
   exactly as he did for #93's 3.2: tap a row, tap a second row, step to the day before, and
   confirm the message text and its placement under the row's name.
+
+  **Done — the repo owner ran it, 2026-09-06.** The conductor booted `iPhone 17`, built the branch
+  head `760a87a` (`xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay -destination
+  'platform=iOS Simulator,name=iPhone 17' build` → **BUILD SUCCEEDED**), installed and launched
+  `com.example.DayByDay`; a screenshot confirmed the day screen on "Today · Sunday 6 September 2026"
+  drawing the owner's own roster — Creatine, Magnesium, Nails, Run, Yuno, Stretching. The owner then
+  ran the four taps himself with the record place at `0500`, and reports every one as specified:
+
+  1. Tapping **Creatine** left it unticked and drew `Not saved. Try again.` — that exact string —
+     small and red, on its own line directly under the row's name rather than beside it.
+  2. Tapping **Run** moved the message off Creatine and under Run. Never two rows at once.
+  3. Stepping back a day, to Saturday 5 September, cleared it.
+  4. Stepping forward to Sunday again did not bring it back.
+
+  The record place was restored to `0700` afterwards, confirmed as `drwx------`, and no `record.json`
+  exists in the live container: every tap was refused, so nothing was written — the requirement's
+  other half, observed from outside the app.
+
+  **Two corrections to the handback note above, read off the filesystem rather than recalled.** The
+  real container's record directory *was* left at `0500` by that session — `ctime` 14:26:42 on
+  2026-09-06 — despite the note saying it was not chmod-ed; it has since been restored. And no
+  `record.json` dated 2026-09-04 exists on this Simulator: the only one anywhere beneath its data
+  containers is `{"ticks":[],"version":1}`, 24 bytes, in an orphaned container. No kept tick was ever
+  at risk, but the note's premise was wrong, and it is corrected here rather than left to be read as
+  fact by whoever writes the next 3.2.
 
 ## 4. Gates
 
