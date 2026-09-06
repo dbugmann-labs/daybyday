@@ -254,7 +254,7 @@ place. If one appears to be needed, that is a requirement this delta is missing 
   `dayOneCommitments` stays exactly where it is, verbatim, and stays the thing handed to
   `startingFrom:`. The `.onChange(of: scenePhase)` that calls `shown(asOf: today())` stays as it
   is, and a `CommitmentsScreen` that is up gets the same treatment.
-- [ ] 4.3 Run the app in the simulator and record here what was seen, since
+- [x] 4.3 Run the app in the simulator and record here what was seen, since
   `docs/open-questions.md` § *No UI smoke layer* is still open and this is the only way this repo
   has. Say which simulator and which iOS version, and cover all six: the day screen drawing day
   one; navigating to the commitments screen and seeing the same nine; defining a tenth on each of
@@ -297,6 +297,278 @@ place. If one appears to be needed, that is a requirement this delta is missing 
   is a project-file edit well past the bounded shell exception § 5.4 records — and a committed,
   CI-run UI test is exactly the *No UI smoke layer* gap, which is a Story of its own and not a
   paragraph inside this one. 5.5 below names what that costs.
+
+  **Driven again on 2026-09-06, against the shell as it now stands.** The evidence above is from a
+  shell that no longer exists on this branch — `.confirmationDialog`, the `max(1, $0)` clamp and
+  the three swallowed `guard let … else { return }` are gone, `Refusal.rhythmOutOfRange` is new,
+  and the stop/keep-again refusals now draw beside `Section("Kept")`/`Section("Stopped")` rather
+  than in the form — so it is superseded rather than reused, and all eight checks (the six above,
+  the force-quit-and-reopen check, and § 6's eighth) were re-driven end to end.
+
+  **Simulator and iOS:** iPhone 17, iOS 26.5 (build 23F77), under Xcode 26.6 (build 17F113).
+
+  **The recipe, from nothing but this repo.** The harness is not committed (previous paragraph), so
+  it is rebuilt as an ordinary Xcode project plus a UI test target, both left as
+  `PBXFileSystemSynchronizedRootGroup`s so no further project-file edit is needed once they exist
+  (ADR-1019):
+
+  1. `File > New > Project… > iOS > App` — product name `DayByDay`, interface SwiftUI, bundle id
+     `com.example.DayByDay`.
+  2. `File > New > Target… > UI Testing Bundle` — product name `DayByDayUITests`, hosted by
+     `DayByDay`.
+  3. `File > Add Package Dependencies… > Add Local…`, pointing at a sibling directory holding a
+     copy of this repo's `src/DayByDayKit` (`Package.swift` and `Sources/`), linked against the
+     `DayByDay` target. This records as an `XCLocalSwiftPackageReference` with
+     `relativePath = "../DayByDayKit"`.
+  4. Replace the wizard's placeholder files under `DayByDay/` with this repo's
+     `src/DayByDay/DayByDay`, and the package's `Sources/DayByDayKit` with this repo's
+     `src/DayByDayKit/Sources/DayByDayKit` — plain file copies, safe to re-run:
+     ```
+     rsync -a --delete <repo>/src/DayByDay/DayByDay/       <harness>/DayByDay/DayByDay/
+     rsync -a --delete <repo>/src/DayByDayKit/Sources/     <harness>/DayByDayKit/Sources/
+     rsync -a --delete <repo>/src/DayByDayKit/Package.swift <harness>/DayByDayKit/Package.swift
+     ```
+  5. Write `DayByDayUITests/WalkthroughUITests.swift` with the text below, verbatim — the file
+     that drives all eight checks and is not committed anywhere:
+     ```swift
+     import XCTest
+
+     final class WalkthroughUITests: XCTestCase {
+         var app: XCUIApplication!
+         override func setUp() { continueAfterFailure = false; app = XCUIApplication() }
+
+         private func shot(_ name: String) {
+             let a = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+             a.name = name; a.lifetime = .keepAlways; add(a)
+         }
+         @discardableResult
+         private func reveal(_ e: XCUIElement, tries: Int = 14) -> Bool {
+             for _ in 0..<tries {
+                 if e.exists && e.isHittable { return true }
+                 app.swipeUp()
+             }
+             return e.exists && e.isHittable
+         }
+         private func toTop() { for _ in 0..<8 { app.swipeDown() } }
+         private func names() -> [String] {
+             app.buttons.allElementsBoundByIndex.map { $0.label }
+         }
+         private func report(_ tag: String) {
+             print(">>> \(tag) BUTTONS: " + names().joined(separator: " | "))
+             print(">>> \(tag) TEXTS: " + app.staticTexts.allElementsBoundByIndex.map { $0.label }.joined(separator: " | "))
+         }
+
+         func testWalkthrough() throws {
+             app.launch()
+             XCTAssertTrue(app.wait(for: .runningForeground, timeout: 30))
+
+             // ===== CHECK 1: the day screen draws day one =====
+             // Today is Sunday 6 September 2026.
+             let title = app.staticTexts["Today · Sunday 6 September 2026"]
+             XCTAssertTrue(title.waitForExistence(timeout: 10), "day screen title")
+             for due in ["Creatine", "Magnesium", "Nails", "Run", "Yuno"] {
+                 XCTAssertTrue(app.buttons[due].exists, "\(due) is due today")
+             }
+             for notDue in ["Gym", "Public Pool", "Contact Lenses", "Finances"] {
+                 XCTAssertFalse(app.buttons[notDue].exists, "\(notDue) is not due today")
+             }
+             shot("check1-day-screen"); report("CHECK1")
+
+             // ===== CHECK 2: navigate to the commitments screen, see the same nine =====
+             app.buttons["Commitments"].tap()
+             XCTAssertTrue(app.staticTexts["Kept"].waitForExistence(timeout: 10))
+             let nine = ["Creatine", "Magnesium", "Nails", "Gym", "Run",
+                         "Public Pool", "Contact Lenses", "Finances", "Yuno"]
+             var ys: [CGFloat] = []
+             for n in nine {
+                 XCTAssertTrue(app.buttons[n].exists, "\(n) is in Kept")
+                 ys.append(app.buttons[n].frame.minY)
+             }
+             XCTAssertEqual(ys, ys.sorted(), "the nine are in taken-on order")
+             XCTAssertEqual(names().filter { nine.contains($0) }.count, 9, "exactly the nine")
+             XCTAssertTrue(app.staticTexts["Nothing has been stopped."].exists)
+             shot("check2-commitments-nine"); report("CHECK2")
+
+             // ===== CHECK 3a: a tenth, on the weekdays rhythm (today's weekday, Sunday) =====
+             let nameField = app.textFields["Name"]
+             XCTAssertTrue(reveal(nameField)); nameField.tap(); nameField.typeText("Stretching")
+             XCTAssertEqual(nameField.value as? String, "Stretching")
+             let sunday = app.switches["Sunday"]
+             XCTAssertTrue(reveal(sunday))
+             sunday.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+             sleep(1)
+             XCTAssertEqual(sunday.value as? String, "1", "Sunday is on")
+             shot("check3a-form-weekdays-sunday")
+             let add = app.buttons["Add"]
+             XCTAssertTrue(reveal(add)); add.tap(); sleep(2)
+             toTop()
+             let stretching = app.buttons["Stretching"]
+             XCTAssertTrue(stretching.waitForExistence(timeout: 10), "Stretching is listed")
+             XCTAssertTrue(stretching.frame.minY > app.staticTexts["Kept"].frame.minY
+                           && stretching.frame.minY < app.staticTexts["Stopped"].frame.minY,
+                           "Stretching is under Kept")
+             XCTAssertEqual(names().filter { $0 == "Yuno" || $0 == "Stretching" }.count, 2)
+             XCTAssertTrue(app.buttons["Yuno"].frame.minY < stretching.frame.minY, "last in Kept")
+             shot("check3a-stretching-kept"); report("CHECK3A")
+
+             // ===== CHECK 3b: an eleventh, on the day-of-month rhythm =====
+             XCTAssertTrue(reveal(nameField)); nameField.tap(); nameField.typeText("Budget")
+             XCTAssertEqual(nameField.value as? String, "Budget")
+             let rhythmPicker = app.buttons["Rhythm, Weekdays"]
+             XCTAssertTrue(reveal(rhythmPicker)); rhythmPicker.tap()
+             let dayOfMonth = app.buttons["Day of month"]
+             if !dayOfMonth.waitForExistence(timeout: 6) {
+                 print(">>> PICKER TREE\n\(app.debugDescription)"); XCTFail("no 'Day of month' option")
+             }
+             dayOfMonth.tap(); sleep(1)
+             XCTAssertTrue(app.buttons["Rhythm, Day of month"].waitForExistence(timeout: 6),
+                           "the picker now reads Day of month")
+             shot("check3b-form-dayofmonth")
+             XCTAssertTrue(reveal(add)); add.tap(); sleep(2)
+             toTop()
+             let budget = app.buttons["Budget"]
+             XCTAssertTrue(budget.waitForExistence(timeout: 10), "Budget is listed")
+             XCTAssertTrue(budget.frame.minY > app.buttons["Stretching"].frame.minY, "last in Kept")
+             shot("check3b-budget-kept"); report("CHECK3B")
+
+             // ===== CHECK 4: back, without backgrounding, and it is drawn =====
+             app.buttons["BackButton"].tap()
+             XCTAssertTrue(title.waitForExistence(timeout: 10), "back on the day screen")
+             XCTAssertTrue(app.buttons["Stretching"].waitForExistence(timeout: 10),
+                           "Stretching (Sundays) is drawn without the app being backgrounded")
+             XCTAssertFalse(app.buttons["Budget"].exists, "Budget (day 1) is not drawn on the 6th")
+             shot("check4-day-screen-after-return"); report("CHECK4")
+
+             // ===== CHECK 5: stop one, with a confirmation =====
+             app.buttons["Commitments"].tap()
+             XCTAssertTrue(app.staticTexts["Kept"].waitForExistence(timeout: 10))
+             XCTAssertTrue(app.buttons["Stretching"].frame.minY < app.staticTexts["Stopped"].frame.minY,
+                           "Stretching starts above the Stopped header")
+             app.buttons["Stretching"].tap()
+             let confirm = app.buttons["Stop keeping Stretching"]
+             XCTAssertTrue(confirm.waitForExistence(timeout: 6), "a confirmation is asked for")
+             shot("check5-confirmation-alert")
+             confirm.tap(); sleep(2)
+             toTop()
+             XCTAssertTrue(app.buttons["Stretching"].waitForExistence(timeout: 10))
+             XCTAssertTrue(app.buttons["Stretching"].frame.minY > app.staticTexts["Stopped"].frame.minY,
+                           "Stretching has moved below the Stopped header")
+             XCTAssertFalse(app.staticTexts["Nothing has been stopped."].exists)
+             shot("check5-stretching-stopped"); report("CHECK5")
+
+             // ===== CHECK 6: take it up again in one tap =====
+             app.buttons["Stretching"].tap(); sleep(2)
+             XCTAssertFalse(app.buttons["Stop keeping Stretching"].exists,
+                            "taking up again asks for no confirmation")
+             toTop()
+             XCTAssertTrue(app.buttons["Stretching"].frame.minY < app.staticTexts["Stopped"].frame.minY,
+                           "Stretching is back above the Stopped header")
+             XCTAssertTrue(app.staticTexts["Nothing has been stopped."].exists)
+             shot("check6-stretching-kept-again"); report("CHECK6")
+
+             // ===== CHECK 7: force-quit, reopen, the roster still holds it =====
+             app.terminate()
+             XCTAssertTrue(app.wait(for: .notRunning, timeout: 20))
+             app.launch()
+             XCTAssertTrue(app.wait(for: .runningForeground, timeout: 30))
+             XCTAssertTrue(app.buttons["Commitments"].waitForExistence(timeout: 10))
+             shot("check7-day-screen-after-relaunch")
+             app.buttons["Commitments"].tap()
+             XCTAssertTrue(app.staticTexts["Kept"].waitForExistence(timeout: 10))
+             for n in nine + ["Stretching", "Budget"] {
+                 XCTAssertTrue(app.buttons[n].exists, "\(n) survived the relaunch")
+             }
+             XCTAssertTrue(app.staticTexts["Nothing has been stopped."].exists)
+             shot("check7-commitments-after-relaunch"); report("CHECK7")
+
+             // ===== CHECK 8: a rhythm number the calendar will not take is refused, in the =====
+             // ===== form's own words — not rewritten, and not silently ignored. =====
+             XCTAssertTrue(reveal(nameField)); nameField.tap(); nameField.typeText("ZeroDays")
+             XCTAssertEqual(nameField.value as? String, "ZeroDays")
+             XCTAssertTrue(reveal(rhythmPicker)); rhythmPicker.tap()
+             let everyNDaysOption = app.buttons["Every N days"]
+             XCTAssertTrue(everyNDaysOption.waitForExistence(timeout: 6), "an 'Every N days' option exists")
+             everyNDaysOption.tap(); sleep(1)
+             XCTAssertTrue(app.buttons["Rhythm, Every N days"].waitForExistence(timeout: 6),
+                           "the picker now reads Every N days")
+             let daysField = app.textFields["Days"]
+             XCTAssertTrue(reveal(daysField))
+             daysField.tap()
+             if let current = daysField.value as? String, !current.isEmpty {
+                 daysField.typeText(String(repeating: "\u{8}", count: current.count))
+             }
+             daysField.typeText("0")
+             shot("check8-form-zero-days")
+             XCTAssertTrue(reveal(add)); add.tap(); sleep(1)
+             let rhythmRefusal = app.staticTexts["That number isn't one this rhythm accepts."]
+             XCTAssertTrue(rhythmRefusal.waitForExistence(timeout: 6),
+                           "the form refuses the number in its own words")
+             XCTAssertEqual(daysField.value as? String, "0", "the 0 is not silently rewritten")
+             XCTAssertEqual(nameField.value as? String, "ZeroDays", "a refusal does not clear the typed name")
+             XCTAssertFalse(app.buttons["ZeroDays"].exists, "nothing was taken on")
+             shot("check8-refused"); report("CHECK8")
+         }
+     }
+     ```
+  6. Before running, remove any earlier install so day one is seeded fresh — this machine's
+     simulator already held one from the first pass:
+     ```
+     xcrun simctl uninstall <udid> com.example.DayByDay
+     xcrun simctl uninstall <udid> com.example.DayByDayUITests.xctrunner
+     ```
+  7. `xcodebuild test`, not `build`, is what actually compiles and runs `DayByDayUITests`:
+     ```
+     xcodebuild test -project DayByDay.xcodeproj -scheme UITests \
+       -destination "platform=iOS Simulator,name=iPhone 17" \
+       -derivedDataPath <derived-data-path> -resultBundlePath <result-bundle-path>
+     ```
+     This run's exact invocation, from the `xcodebuild` log:
+     ```
+     /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project DayByDay.xcodeproj -scheme UITests -destination "platform=iOS Simulator,name=iPhone 17" -derivedDataPath <scratch>/uitest/dd -resultBundlePath <scratch>/uitest/walk2.xcresult
+     ```
+     against simulator UDID `59430515-851B-41A8-9BE7-76B5F59DE053`.
+
+  **The passing line and the result:**
+  ```
+  Test Case '-[DayByDayUITests.WalkthroughUITests testWalkthrough]' passed (121.049 seconds).
+  Test Suite 'WalkthroughUITests' passed at 2026-09-06 2:19:21.233 PM.
+  Test Suite 'DayByDayUITests.xctest' passed at 2026-09-06 2:19:21.234 PM.
+  Test Suite 'All tests' passed at 2026-09-06 2:19:21.235 PM.
+  	 Executed 1 test, with 0 failures (0 unexpected) in 121.049 (121.054) seconds
+
+  ** TEST SUCCEEDED **
+  ```
+
+  **What was observed at each check**, from the run's own `>>> CHECK…` attachments and screenshots:
+
+  - **Check 1 — day one.** Title `Today · Sunday 6 September 2026`; the five commitments due
+    that day drawn (`Creatine, Magnesium, Nails, Run, Yuno`) and the four not due (`Gym, Public
+    Pool, Contact Lenses, Finances`) absent.
+  - **Check 2 — the same nine.** `Kept` held all nine seeded commitments, in taken-on order;
+    `Stopped` read "Nothing has been stopped."
+  - **Check 3 — a tenth and an eleventh.** `Stretching` (weekdays: Sunday) and `Budget` (day of
+    month 1) were each defined through the form and appeared last in `Kept`, in that order.
+  - **Check 4 — back, without backgrounding.** Returning to the day screen drew `Stretching`
+    (due, since today is Sunday) and not `Budget` (day of month 1, not the 6th).
+  - **Check 5 — stop, with a confirmation.** Tapping `Stretching` raised an `.alert` reading
+    "Stop keeping this commitment?" with a destructive "Stop keeping Stretching" beside a
+    "Cancel"; confirming moved it under `Stopped`.
+  - **Check 6 — take up again.** Tapping the stopped `Stretching` row moved it back to `Kept`
+    with no confirmation asked.
+  - **Check 7 — force-quit and reopen.** After `terminate()`/relaunch, all eleven commitments
+    were present under `Kept` and `Stopped` still read "Nothing has been stopped." The roster
+    file was then pulled straight from the app's container
+    (`xcrun simctl get_app_container <udid> com.example.DayByDay data`) and
+    `Library/Application Support/DayByDay/roster.json` holds exactly the eleven commitments —
+    Creatine, Magnesium, Nails, Gym, Run, Public Pool, Contact Lenses, Finances, Yuno,
+    Stretching, Budget — none carrying a `keptUntil`, confirming the disk state independently of
+    what the UI reports.
+  - **Check 8 — a rhythm number the calendar will not take.** With `Every N days` selected and
+    the day-count field driven to `0`, tapping `Add` left the field reading `0` (not rewritten),
+    left the typed name `ZeroDays` untouched, added nothing to `Kept`, and drew "That number
+    isn't one this rhythm accepts." beside the form — the shell's own words for
+    `.rhythmOutOfRange`, confirmed present in the run's `CHECK8 TEXTS` attachment, not a system
+    message.
 
 ## 5. Gates, and the files this change is and is not allowed to write
 
