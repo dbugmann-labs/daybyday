@@ -80,15 +80,6 @@ public final class CommitmentsScreen {
         case defining(Refusal)
         case stopping(Commitment, Refusal)
         case keepingAgain(Commitment, Refusal)
-
-        /// Why it was refused, whichever change it was.
-        public var refusal: Refusal {
-            switch self {
-            case .defining(let refusal): refusal
-            case .stopping(_, let refusal): refusal
-            case .keepingAgain(_, let refusal): refusal
-            }
-        }
     }
 
     /// Why a change was refused. `nil` from any of the four below means it was kept at the place

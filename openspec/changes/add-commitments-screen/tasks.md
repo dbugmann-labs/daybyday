@@ -680,7 +680,7 @@ place. If one appears to be needed, that is a requirement this delta is missing 
   1 day-screen scenario § 7 adds. Unlike 5.1, this count does not move on rebase: #100 lands no
   scenario in this delta's own specs, and `pnpm run checks` reports "all 74 scenario(s) have a
   matching test" against the rebased tree.
-- [ ] 5.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Five
+- [x] 5.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Five
   things the reviewer is asked to look for by name: that every one of `define`, `confirmStopKeeping`
   and `keepAgain` assigns `kept` and `stopped` only **after** the `RosterStore` call returns, so
   neither list is ever ahead of the disk; that `Rhythm.everyNDays` reaches `Schedule.everyNDays`
@@ -705,6 +705,22 @@ place. If one appears to be needed, that is a requirement this delta is missing 
   saying something a caller was not told; and that `refusalText(_:)`'s five sentences are unchanged
   in `git diff origin/main` and that `git diff` on `src/DayByDayKit` adds no string literal a person
   reads.
+
+  **Granted 2026-09-06, after a fourth pass.** The review ran four passes in total. The fourth
+  found five items, and the owner's triage was: fix the one this branch's own commit fixes —
+  `RefusedChange.refusal`, public API with no reader anywhere in `src/DayByDay`, `src/DayByDayKit`
+  or the 391 tests, the three shell sites at `CommitmentsView.swift:76, 93, 149` destructuring the
+  case directly instead — deleted here, with `swift test` still reporting 391 and `xcodebuild
+  -scheme DayByDay -destination 'generic/platform=iOS Simulator' build` exiting 0 afterwards;
+  cancel § 5.5 item 1 in the handoff to the janitor, because the `docs/open-questions.md` line it
+  points at moved when #131 landed and rewording § 5.5 to chase it would pay a second G4 for a
+  sentence that changes no behaviour, so § 5.5 is left exactly as it stands; and carry the
+  remaining three into `docs/open-questions.md` at the archive, for the janitor to name there
+  rather than here. **G7 is granted on that triage, not on all five items being fixed on this
+  branch** — this box is ticked because the repo owner granted G7 on it, not to clear the box
+  ahead of a reviewer, which is the known template defect `docs/open-questions.md` § *Known gaps*
+  names under "The tasks template puts G7 inside the implementer's own checklist"; this is the
+  case that defect does not describe.
 - [x] 5.4 `docs/adr/1028-a-screen-may-refuse-what-the-engine-accepts.md` is written with this folder,
   `docs/adr/1019-the-app-shell-runs-in-the-simulator.md` carries an `- Amended:` stamp and the
   bounded exception § 4 works under, and `docs/adr/README.md` gains 1028's row. Confirm before the
