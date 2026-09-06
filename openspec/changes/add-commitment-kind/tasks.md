@@ -86,7 +86,7 @@ Two scenarios from `specs/record/spec.md`, both in `Tests/DayByDayKitTests/Recor
 
 ## 5. `day-screen` — the row that offers nothing
 
-- [ ] 5.1 `a row for a commitment whose kind is not a tick offers nothing` — one test at the end of
+- [x] 5.1 `a row for a commitment whose kind is not a tick offers nothing` — one test at the end of
   `Tests/DayByDayKitTests/DayViewTests.swift`, from `specs/day-screen/spec.md`. **No line of
   `Sources/DayByDayKit/DayView.swift` changes:** `Row.tick(asOf:)` already returns whatever
   `Tick.init?` gives it, so § 4.1's guard reaches the row for free, and this test is what pins that
