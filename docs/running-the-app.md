@@ -108,6 +108,18 @@ type-checks — which had no answer before, because nothing in CI had ever built
 ADR-1019 named both the command and its own trigger for adding it, and left it out while the shell
 held nothing the kit did not; it now holds four such things.
 
-What it still does not answer is whether SwiftUI *draws*. That is
-`docs/open-questions.md` § *No UI smoke layer*, it needs XCUITest and a change to CI check 4, and
-it is still open.
+**Whether SwiftUI *draws* is answered too, since 2026-09-06.** A third step runs the
+`DayByDayUITests` bundle against a simulator the step discovers from `simctl` rather than names.
+It is deliberately thin — it asserts the shell drew, never what it drew — and ADR-1029 carries the
+reasoning. Run it yourself with:
+
+```bash
+device=$(xcrun simctl list devices available --json \
+  | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next(d['udid'] for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')))")
+
+xcodebuild test -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
+  -destination "platform=iOS Simulator,id=${device}" -only-testing:DayByDayUITests
+```
+
+That takes about 50 seconds cold and ends in `** TEST SUCCEEDED **`. It does not replace looking
+at the app: it proves the screen was not blank, and nothing about whether what is on it is right.

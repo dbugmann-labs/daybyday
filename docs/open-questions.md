@@ -143,48 +143,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   so, which is the one thing `AGENTS.md`'s routing table gives to a separate agent that may
   write nothing. The fix is to the template the change folder is generated from, which is a
   chore; it is recorded rather than done because nothing has asked for it.
-- **No UI smoke layer.** Surfaced at `day-screen`'s G1, 2026-08-31. Acceptance tests for the
-  first screen attach at a view-model seam inside `DayByDayKit`, so nothing automated proves
-  SwiftUI actually draws: a row left blank by a misspelled binding passes CI. The answer is one
-  or two XCUITest cases, and it is deferred because it costs an ADR, an `xcodebuild` job against
-  a simulator, and a change to CI check 4, which reads `@Test("...")` display names out of Swift
-  source and cannot see an XCTest method name. Revisit when there is a second screen to regress
-  against.
-  **Narrowed 2026-09-06, not closed.** The `swift` job now runs
-  `xcodebuild ... -scheme DayByDay build`, so the second of those three costs is paid and the
-  shell no longer reaches `main` without compiling — which had been true of every commit to
-  `src/DayByDay/` since it was created. That answers "a renamed kit symbol broke the shell" and
-  answers nothing about drawing: the misspelled-binding case in the sentence above still passes
-  CI. What is left is a test target in the hand-written `.xcodeproj` and check 4 learning to see
-  a test name that is not a `@Test("...")` literal.
-
-  **XCUITest has been proven on this project, and the proof keeps being thrown away.** Recorded
-  here 2026-09-06 because it is the fact this entry is judged on and it currently lives only
-  inside `add-commitments-screen`'s (#104) change folder, which is one branch away from being
-  archived and was never the place a reader would look. Established there while driving that
-  Story's shell walkthrough:
-
-  - **It runs.** `Test Case '-[DayByDayUITests.WalkthroughUITests testWalkthrough]' passed
-    (121.049 seconds)`, `** TEST SUCCEEDED **`, driving eight checks against the real shell on
-    iPhone 17, iOS 26.5 (23F77), Xcode 26.6 (17F113). Driven twice — an earlier run of the same
-    walkthrough passed in 97.961s against a shell that has since changed.
-  - **It needs no Accessibility grant.** An earlier report that `osascript` answers `-25211`,
-    *not allowed assistive access*, and needs a human in System Settings did not reproduce; the
-    real error was `-1719`, Simulator having no window to address. XCUITest sidesteps that route
-    altogether.
-  - **The hand-written `.xcodeproj` is not the obstacle it looks like.** The recipe adds the app
-    target and a UI Testing Bundle as `PBXFileSystemSynchronizedRootGroup`s, so no further
-    project-file edit is needed once they exist (ADR-1019), and the kit reaches the app as an
-    `XCLocalSwiftPackageReference` exactly as it does today.
-
-  So of the three costs this entry names, the ADR is unwritten, the `xcodebuild` job exists, and
-  the target is a solved problem with a written recipe. **Check 4 is the only real unknown left**:
-  the walkthrough is XCTest, whose method name check 4 cannot see, and whether a UI test can be
-  written under Swift Testing at all is unverified — the next thing to find out, not to assume.
-
-  The standing cost of leaving this open is no longer hypothetical either. The harness is rebuilt
-  by hand, driven, evidenced at length in `tasks.md` and then discarded by every Story that
-  touches the shell; #104 alone did it twice, because the shell moved underneath the first run.
 - **Playwright is ruled out on a fact, not a preference**, recorded so it is not re-proposed. It
   drives browser engines only, ships no `_ios` counterpart to its experimental `_android`, and
   cannot launch Apple's Simulator. It is unreachable without reversing ADR-1001, which chose
@@ -218,6 +176,37 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `.cannotWrite(at:)` — no new case needed.
 
 ## Settled
+
+- 2026-09-06 — **the app is proved to draw, by a committed XCUITest target on the chore lane.**
+  Open since `day-screen`'s G1 on 2026-08-31: acceptance tests attach at a seam inside
+  `DayByDayKit`, so a row left blank by a misspelled binding type-checked, passed every test behind
+  the seam, and shipped. The entry named three costs — an ADR, an `xcodebuild` job, and a change to
+  CI check 4. The job landed with the compile step on 2026-09-06, this is the ADR, and **the third
+  cost turned out not to exist**: it was booked on the assumption that UI tests would satisfy
+  scenarios, and on the chore lane there are none to satisfy, so check 4 never has to read a name
+  that is not a `@Test("...")` literal. Choosing the lane deleted the cost rather than paying it.
+
+  Two facts settled it, both measured rather than recalled. **Swift Testing cannot be used in a UI
+  test bundle** — Xcode compiles one with `-module-alias Testing=_Testing_Unavailable`, so
+  `import Testing` fails with `Unable to resolve module dependency: '_Testing_Unavailable'` — which
+  is why the layer is XCTest and why check 4 could never have seen it. And **the layer goes red for
+  the right reason**: misspelling `Text("Today")` in the shell, a change that compiles and that all
+  300 seam tests pass, ends the run `** TEST FAILED **`.
+
+  What it asserts is deliberately thin, and the rule is worth keeping: **it asserts that the shell
+  drew, never what it drew.** Anything asserting *what* is a requirement, and requirements live
+  behind the seam.
+
+  **It had been proven twice before it was committed, from inside `add-commitments-screen` (#104)**,
+  where a harness was built outside the repository to evidence that Story's shell walkthrough and
+  discarded each time — a new Xcode target being past that Story's shell exception. That is where
+  the recipe and the `-1719`-not-`-25211` correction about Accessibility grants came from. Keeping
+  the harness is what ends the rebuild-and-discard cycle.
+
+  **It is gated so it does not cost five minutes a push**: skipped while a PR is a draft, and
+  skipped unless the diff reaches `src/DayByDay/`, `src/DayByDayKit/Sources/` or the workflow.
+  Nothing merges without it having run.
+  `docs/adr/1029-the-ui-smoke-layer-is-a-chore-and-it-is-xctest.md`.
 
 - 2026-09-06 — **the shell no longer swallows the one failure a tick reports.** `DayScreen` now
   carries `public private(set) var refusedChangeRow: DayView.Row?`, and `ContentView.swift` draws

@@ -8,12 +8,18 @@
 
 /* Begin PBXFileReference section */
 		A498FFB3A04806E02DE9B1D7 /* DayByDay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DayByDay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C1A0FE0100000000000000E1 /* DayByDayUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DayByDayUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		2324E175D00C6C6C873A3484 /* DayByDay */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = DayByDay;
+			sourceTree = "<group>";
+		};
+		C1A0FE0100000000000000E2 /* DayByDayUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DayByDayUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -31,6 +37,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C1A0FE0100000000000000E5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -38,6 +51,7 @@
 			isa = PBXGroup;
 			children = (
 				2324E175D00C6C6C873A3484 /* DayByDay */,
+				C1A0FE0100000000000000E2 /* DayByDayUITests */,
 				6E563298917E2858D1160EAB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,6 +60,7 @@
 			isa = PBXGroup;
 			children = (
 				A498FFB3A04806E02DE9B1D7 /* DayByDay.app */,
+				C1A0FE0100000000000000E1 /* DayByDayUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,7 +91,46 @@
 			productReference = A498FFB3A04806E02DE9B1D7 /* DayByDay.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C1A0FE0100000000000000E3 /* DayByDayUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C1A0FE0100000000000000E9 /* Build configuration list for PBXNativeTarget "DayByDayUITests" */;
+			buildPhases = (
+				C1A0FE0100000000000000E4 /* Sources */,
+				C1A0FE0100000000000000E5 /* Frameworks */,
+				C1A0FE0100000000000000E6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C1A0FE0100000000000000E7 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				C1A0FE0100000000000000E2 /* DayByDayUITests */,
+			);
+			name = DayByDayUITests;
+			productName = DayByDayUITests;
+			productReference = C1A0FE0100000000000000E1 /* DayByDayUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		C1A0FE0100000000000000E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 39D798D4CF6A4F7B10A09C28 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A03BAB25017BDC9DC082DFED;
+			remoteInfo = DayByDay;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		C1A0FE0100000000000000E7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A03BAB25017BDC9DC082DFED /* DayByDay */;
+			targetProxy = C1A0FE0100000000000000E8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXProject section */
 		39D798D4CF6A4F7B10A09C28 /* Project object */ = {
@@ -88,6 +142,10 @@
 				TargetAttributes = {
 					A03BAB25017BDC9DC082DFED = {
 						CreatedOnToolsVersion = 26.6;
+					};
+					C1A0FE0100000000000000E3 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = A03BAB25017BDC9DC082DFED;
 					};
 				};
 			};
@@ -110,6 +168,7 @@
 			projectRoot = "";
 			targets = (
 				A03BAB25017BDC9DC082DFED /* DayByDay */,
+				C1A0FE0100000000000000E3 /* DayByDayUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -122,10 +181,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C1A0FE0100000000000000E6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		207A6D084C0755CD6314A4A0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C1A0FE0100000000000000E4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -252,6 +325,48 @@
 			};
 			name = Release;
 		};
+		C1A0FE0100000000000000EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.DayByDayUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = DayByDay;
+			};
+			name = Debug;
+		};
+		C1A0FE0100000000000000EB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.DayByDayUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = DayByDay;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -269,6 +384,15 @@
 			buildConfigurations = (
 				BFB77DB0F86CF630C01FEAEB /* Debug */,
 				3FF3F6EA6046A12A51568BBD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C1A0FE0100000000000000E9 /* Build configuration list for PBXNativeTarget "DayByDayUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C1A0FE0100000000000000EA /* Debug */,
+				C1A0FE0100000000000000EB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

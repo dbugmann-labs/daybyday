@@ -134,6 +134,11 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The UI smoke step below asks whether this change reaches the app at
+          # all, which is a question about a diff — so it needs history, exactly
+          # as the bespoke checks in `verify` do.
+          fetch-depth: 0
 
       - name: toolchain
         run: swift --version
@@ -196,3 +201,74 @@ jobs:
             -scheme DayByDay \
             -destination 'generic/platform=iOS Simulator' \
             build
+
+      # The UI smoke layer: proof that SwiftUI drew something. The step above proves the
+      # shell compiles, and `swift test` proves the kit's rules; between them sits the
+      # failure neither can see — a binding misspelled so a subtree never renders, which
+      # type-checks, passes all 300 seam tests, and ships a blank row.
+      # `docs/open-questions.md` § *No UI smoke layer* recorded that gap from 2026-08-31;
+      # ADR-1029 is the decision that closed it, and `DayByDayUITests` is deliberately thin.
+      #
+      # **The device is discovered, not named.** A hard-coded `name=iPhone 17` is a bet on
+      # the runner image's device list, which moves with Xcode and is not ours to pin. The
+      # runtimes shipped on `macos-26` create devices at image build time, so this asks
+      # `simctl` which iPhone is actually there and says which one it took — a green run
+      # against a device nobody can identify is the failure mode being avoided.
+      # **Why this step is gated twice, when the two above are not.** It costs
+      # 3m45s against the compile step's 11s, and it takes the job from about 90
+      # seconds to about five minutes. Measured 2026-09-06: only 25s of that is
+      # the test — the rest is building, cloning a simulator and installing. Over
+      # this repository's whole history 8 of 129 commits touched `src/DayByDay/`,
+      # so paid unconditionally it would be waste on roughly every push.
+      #
+      # Neither gate weakens the merge: a Story PR leaves draft at Stage 8 and a
+      # chore PR is never a draft, so the step runs before anything is merged and
+      # again on the push to `main`.
+      - name: does this change reach the app?
+        id: scope
+        run: |
+          set -eu
+          # Listed literally rather than held in a variable: `-- $watched` relies
+          # on the shell splitting one string into three pathspecs, which bash
+          # does and zsh does not, so it works here and silently matches nothing
+          # when anyone tests it from a Mac terminal. Caught doing exactly that.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --quiet origin "${{ github.base_ref }}"
+            base=$(git merge-base "origin/${{ github.base_ref }}" HEAD)
+          else
+            base="${{ github.event.before }}"
+            # A first push to a branch, or a force-push, reports a `before` that
+            # is not in the tree. Nothing to diff against, so do not guess: run.
+            if [ -z "$base" ] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+              echo "No usable base to diff against — running the smoke test."
+              echo "reached=yes" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+
+          changed=$(git diff --name-only "$base" HEAD -- \
+            src/DayByDay/ \
+            src/DayByDayKit/Sources/ \
+            .github/workflows/ci.yml)
+
+          if [ -n "$changed" ]; then
+            echo "Reaches the app:"
+            echo "$changed" | sed 's/^/  /'
+            echo "reached=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "Reaches neither the shell, the kit's sources, nor this workflow."
+            echo "reached=no" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: xcodebuild test — the app shell draws
+        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
+        run: |
+          set -eu
+          device=$(xcrun simctl list devices available --json \
+            | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next(d['udid'] for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')))")
+          echo "Running the UI smoke test on simulator ${device}."
+          xcodebuild test \
+            -project src/DayByDay/DayByDay.xcodeproj \
+            -scheme DayByDay \
+            -destination "platform=iOS Simulator,id=${device}" \
+            -only-testing:DayByDayUITests
