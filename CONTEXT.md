@@ -293,17 +293,24 @@ each keeps. They are independent of each other, at places of their own, so that 
 commitment does not rewrite a history.
 
 **Amended 2026-09-06**, at `add-commitment-kind` (#137), the first change to move a store's shape
-while a file already existed on a phone. A store's file carries the **form** it was written in, and a
-store reads exactly the forms this app has written: the one it writes now and the one before it. A
-later form is refused whole, because its shape is one this build cannot know; a form number no build
-ever wrote is refused as content that is not a store at all. Reading an earlier form changes nothing
-at the place — a store writes when a change is kept and at no other moment, so the file stays in the
-form it was in until the next change is kept there, and is then written whole in the current form.
-ADR-1031.
+while a file already existed on a phone, and again the same day at `add-number-record` (#138), the
+first to leave two earlier forms behind it. A store's file carries the **form** it was written in,
+and a store reads exactly the forms this app has written: the one it writes now and **every** form
+before it. A later form is refused whole, because its shape is one this build cannot know; a form
+number no build ever wrote is refused as content that is not a store at all. Reading an earlier form
+changes nothing at the place — a store writes when a change is kept and at no other moment, so the
+file stays in the form it was in until the next change is kept there, and is then written whole in
+the current form. Each form is read **as the shape that form has** rather than leniently: the file
+says which form it is before anything else is read, so a file carrying what its form has no place
+for, or missing what its form always writes, is content this app never wrote and is refused like any
+other. ADR-1031.
 
-**Record store** — the store that keeps a **history**: every tick added and not since taken back,
+**Record store** — the store that keeps a **history**: every record added and not since taken back,
 keyed to the calendar date and never to the moment of entry. Agreed 2026-09-02 at the grill of
-`add-record-store` (#56), where this was the whole of **Store**.
+`add-record-store` (#56), where this was the whole of **Store**. **Amended 2026-09-06** at
+`add-number-record` (#138): it keeps ticks and numbers, not ticks alone, and a number is kept as its
+commitment, its date and the number itself — read back digit for digit, because a weight shortened on
+the way to disk is a different weight.
 
 **Roster store** — the store that keeps a **roster**: every commitment taken on, in the order it was
 taken on, and against each one the roster has stopped keeping, the day it was **kept until**. It
