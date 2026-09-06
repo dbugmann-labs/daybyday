@@ -52,7 +52,20 @@ Things that are built, or deliberately not built, in a state someone will trip o
   which day it is on, because `CalendarDate`'s `year`, `month` and `day` are internal and it is
   not `Comparable`. Rendering a date is a delta against `openspec/specs/schedule/spec.md` rather
   than `day-screen`, so it is a Story of its own against a second capability — which is why #72
-  did not widen it in passing.
+  did not widen it in passing. **One face of this closed with `add-commitments-screen` (#104),
+  2026-09-06:** that Story's commitments screen has to seed a date picker with the day it offers
+  to keep a commitment from, and a picker speaks instants, so it is the first thing that needed
+  ADR-1004's conversion run backwards. `CalendarDate`'s `year`, `month` and `day` are now `public
+  let`s, authorised by one requirement added to `openspec/specs/schedule/spec.md` — *A calendar
+  date gives back the year, the month and the day it names*. The widening shipped before that
+  requirement existed and was caught at #104's second review; the Story was reopened for a second
+  G4 rather than reverted, on the ground that this entry had named those three members as owed
+  since #72. **Six faces remain, and none of them is closed by that requirement, which says so in
+  its own prose:** `CalendarDate` is still not `Comparable`, and `DayOfMonth`, `DayInterval`,
+  `WeeklyQuota`, `History` and `Tick` still give their payloads back to nothing outside the
+  module. The ranges those three value types accept are unreadable too, which is why
+  `CommitmentsView`'s steppers write `1...31` and `1...7` a second time — a seventh face, added by
+  #104 rather than closed by it.
 - **`RecordStore.init` can throw outside `RecordStoreError`.** Surfaced at #56's review,
   2026-09-02. A place that exists but cannot be read as data — a directory, a file without
   read permission, or on iOS a store protected by data protection when the app is launched
@@ -174,6 +187,44 @@ Things that are built, or deliberately not built, in a state someone will trip o
   one wants the other. Cheaper than that gap to close: moving the one line inside the `do` block
   is enough, because the existing catch-all already wraps everything there as
   `.cannotWrite(at:)` — no new case needed.
+- **The walkthrough harness recipes in § 4.3 and § 7.17 cannot be rebuilt as written.**
+  Found at #104's fourth review, 2026-09-06. Both sections invoke `-scheme UITests`, and their own
+  steps create an Xcode project with a `DayByDayUITests` target but no scheme by that name; the
+  correct invocation is `-scheme DayByDay -only-testing:DayByDayUITests`. The recipes are superseded
+  in practice by #131's committed XCUITest target, which gets the scheme and path right, and neither
+  section is executed by CI since the UI-test target lives outside the repo (ADR-1029). The gap is
+  recorded because the archived change folder now holds instructions that fail at their last step —
+  § 4.3's own standard is that evidence nobody can re-create is a claim rather than a check, and this
+  is how it would be discovered: an agent or a human following the recipe from nothing but the
+  archive would hit the scheme error. Unowned; whoever next needs to rebuild the walkthrough harness
+  should report this rather than working around it.
+
+- **§ 7.17's ninth-check record quotes what was checked but not how.** Found at #104's fourth review,
+  2026-09-06. The record describes check 9 fully — what was tapped, what the screen should show —
+  but omits two setup edits its execution depends on. A rebuild from the section alone drops check 9
+  at its first assertion: a setup step stopping "Budget" between check 7 and check 8, so a stopped
+  commitment is on hand for the ninth check's take-up-again, and a `typeText("\n")` inside check 8
+  to dismiss the keyboard before the rhythm picker is revealed (recorded in that section at lines
+  586–598). The section leaves the full `WalkthroughUITests.swift` code but truncates the setup
+  story. Again, the standard is that evidence nobody can re-create is a claim rather than a check.
+
+- **`RefusedChange` carries a `Commitment` its only consumer discards.** Found at #104's fourth
+  review, 2026-09-06. `CommitmentsScreen.swift` publishes `public enum RefusedChange` with cases
+  `stopping(Commitment, Refusal)` and `keepingAgain(Commitment, Refusal)`, carrying the commitment
+  the person tapped to start the refusal. `CommitmentsView.swift:76` and `:93` destructure the
+  commitment as `_`, discarding it and drawing only the message, so the requirement
+  `design.md` cites — "a person is told beside the row they tapped" — describes placement the shell
+  does not actually do. The requirement is met literally and thirteen scenarios pin it; what the
+  story owes is either the shell placing the message beside the row that produced it (a layout
+  change) or the requirement being narrowed to match what the shell does (a requirement edit by
+  whichever Story next touches this screen). A secondary note: `.stopping` and `.keepingAgain` are
+  typed `(Commitment, Refusal)` but only ever constructed with `.notKept`, so four of the six cases
+  are structurally unreachable, which is defensible but worth knowing. **ADR-1019's bounded
+  exception (its 2026-09-04 amendment) was used by this Story:** it exempts shell edits from the
+  general rule that changes to `src/DayByDay` return to the `chore/` rule when they fail to meet
+  the review's own bar, and only for "the next shell change that fails any of [the three conditions
+  set by the first shell Story]" — meaning add-commitments-screen is the one Story the exception
+  was written for, and the next shell change reads against "has a second Story claimed it yet".
 
 ## Settled
 

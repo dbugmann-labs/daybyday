@@ -421,6 +421,17 @@ screen **without its roster** is the sibling of the one below and is not the sam
 day and no rows, because what a date asks of a person is exactly what a roster answers, and it writes
 nothing over what it could not read.
 
+**Amended 2026-09-04**, at `add-commitments-screen` (#104). Being **shown** is no longer the only
+moment a day screen opens its **roster place**: being **returned to** is the other, and it is the
+person walking back from the **commitments screen** rather than the app coming in front of them.
+The two are not the same moment and being returned to does three things fewer — it takes no new
+today, it moves no day, and it does not read the record, so what a screen says about a record it
+could not read goes on being said for exactly as long as it did before, until the app is shown
+again. It exists because the roster place has a second writer; without it a commitment defined on
+the other screen would not be drawn until the app had been backgrounded and brought back. Day one
+and an unreadable roster behave on the way back exactly as they do at either other moment: being
+returned to adds no rule of its own.
+
 A day screen **without its record** is one whose store would not open. It is still a day screen: it
 draws the day, because what a date asks of a person needs no record to answer, and it says that it
 is keeping none. It takes no tick at all — not into memory, not to be kept later — because a tick
@@ -436,6 +447,47 @@ this product exists to prevent. No other reason leaves a person anything differe
 other reason is told apart. ADR-1021, settled by the owner at the Feature grill on 2026-09-03 and
 sharpened by them on the same day on `add-day-screen`'s question round; recorded by
 `add-day-screen` (#91).
+
+**Commitments screen** — where a person manages what they keep, rather than what a day asks of
+them: the list of the commitments the roster is keeping, the form that defines a new one from a
+name, a rhythm and the day it is kept from, and the way to stop keeping one. Beside that list it
+shows **what they have stopped**, which is the only way the roster's rule that offering a stopped
+commitment again *takes it up* can be reached from a phone — a person who had to retype a name,
+rebuild a rhythm and match a kept-from day exactly would in practice be making a different
+commitment. Both lists are in the order the roster took its commitments on, and a row is a name
+and nothing else: saying a rhythm in words is a rule about how a **schedule** is said and belongs
+to that capability, whichever screen would read it.
+
+It is the second thing in the product that is not a value, and the first that **refuses something
+the engine accepts**: a weekday set with no days in it is a legal schedule, due on nothing, and a
+commitment made on one is a commitment a person would never see again. That refusal is the
+screen's own and not the rule engine's, which goes on accepting the value. Deliberately not the
+**day screen**, which is one day and what it asks of you; the two share a **roster place** and are
+each other's only writer, which is why a day screen returned to reads its roster again rather than
+drawing the list it opened with. Agreed 2026-09-04 at the grill of `add-commitments-screen` (#104).
+
+**Amended 2026-09-06**, at `add-commitments-screen`'s third review pass. A commitments screen also
+keeps a **refused change**, so that how long a person is told about one is this capability's answer
+rather than whatever happens to be drawing the screen.
+
+**Refused change** — the change a screen was asked for last and would not make: which change it was,
+the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
+one, because one refusal is one event and the ask a person is waiting on an answer for is the one
+they just made; asking for another change replaces it. It lasts until the app is **shown** again or
+until a change reaches the place the screen writes at, and nothing else ends it — in particular no
+clock, since nothing here reads one. It is deliberately **not the words a person reads**: a refused
+change is a fact about what happened, and the sentence said for each one is the **app shell**'s, the
+same division the roster state already runs on. Named at `add-commitments-screen` (#104), 2026-09-06,
+where three unwritten lifetimes in a SwiftUI view were what it replaced.
+
+It is the **commitments screen**'s word, and the **day screen** has its own for the neighbouring
+thing: the *notice* `add-refused-tick-notice` (#100) landed, amended onto **Row** above. They share a
+lifetime and differ in what they carry, deliberately. A notice is told **on a row**, names no cause
+because a refused tick leaves a person one thing to do (ADR-1021), and ends on a third condition a
+commitments screen has no equivalent of — the day being shown changing. A refused change names
+**which change and why**, because the commitments screen's five refusals are five different things
+to do. Two words for two things, not one thing twice; if a third screen wants the same shape, that is
+the point at which one word should replace both.
 
 **Record place** — the one place a day screen keeps its record at, and the only thing about the
 record that is a day screen's to choose. It is a file inside the directory the platform reserves for
@@ -533,6 +585,22 @@ the same effect is not a contradiction. Whether a week's quota has been met is n
 schedule knows, because it is a fact about ticks rather than about a date; a quota of seven and a
 quota of one are the same answer to `isDue(on:)`. Where a week begins is deliberately still
 undecided: no rule shape consults it yet, so nothing in the engine can settle it.
+
+**Rhythm** — a person's word for the schedule a commitment runs on, and the shape a **commitments
+screen** offers them to build one from: one of the four schedule shapes carrying nothing the
+calendar does not supply. It is deliberately not a **schedule**, and the difference is one thing: an
+every-N-days rhythm holds an interval and no **start date**, because the day the commitment is
+**kept from** is that start date whenever a commitments screen forms it. That keeps a phone form to
+one date field and makes it impossible to write the screen so that the two dates disagree; the model
+goes on holding them apart, so anything that forms a commitment another way can still give them
+different days. A rhythm is not stored, not read back and never held by a commitment: it exists
+between a person's taps and the commitment they make, and what is kept is the schedule it named.
+Agreed 2026-09-04 while writing the delta of `add-commitments-screen` (#104). **Amended
+2026-09-06:** three of the four shapes are a number, and a rhythm carries that number exactly as
+the person gave it — a day of the month of 32 is a rhythm, and it is refused when the screen is
+asked to define on it. A rhythm is what was *said*, not what the system could make of it, so
+nothing judges it on the way in and one place judges it at the end. That is what lets the screen
+report a refusal the value makes rather than a shell swallowing it in silence.
 
 **Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
 storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by

@@ -18,28 +18,12 @@ public final class DayScreen {
         case writtenByALaterVersion
     }
 
-    /// What a day screen is doing with the roster at its place.
-    public enum RosterState: Equatable, Sendable {
-        /// The roster was read, and this screen draws what it keeps.
-        case kept
-        /// The roster could not be read or could not be written, for a reason a person cannot act
-        /// on differently.
-        case notKept
-        /// The roster was written by a later version of DayByDay. It is whole; the app is what is
-        /// behind, and what is at the place must not be replaced.
-        case writtenByALaterVersion
-    }
-
     private let commitments: [Commitment]
     private let recordPlace: URL
     private let rosterPlace: URL
     private var today: CalendarDate
     private var shownDay: CalendarDate
     private var recordStore: RecordStore?
-    /// The open roster store at `rosterPlace`, held rather than reopened: #104
-    /// `add-commitments-screen` needs a live store to add and retire commitments through, and
-    /// this is where it will reach one. Unread here — nothing on this screen calls into it yet.
-    private var rosterStore: RosterStore?
     private var roster: Roster
 
     /// The place a day screen keeps its record when it is not told another: one file, in a
@@ -82,7 +66,6 @@ public final class DayScreen {
         self.recordState = opened.state
 
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: dayOne)
-        self.rosterStore = openedRoster.store
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
 
@@ -126,18 +109,18 @@ public final class DayScreen {
     /// roster, and day one is not retried.
     private static func openRoster(
         at place: URL, takingOnIfEmpty dayOne: [Commitment]
-    ) -> (store: RosterStore?, state: RosterState, roster: Roster) {
+    ) -> (state: RosterState, roster: Roster) {
         let store: RosterStore
         do {
             store = try RosterStore(at: place)
         } catch RosterStoreError.laterForm {
-            return (nil, .writtenByALaterVersion, Roster())
+            return (.writtenByALaterVersion, Roster())
         } catch {
-            return (nil, .notKept, Roster())
+            return (.notKept, Roster())
         }
 
         guard store.roster == Roster() else {
-            return (store, .kept, store.roster)
+            return (.kept, store.roster)
         }
 
         do {
@@ -168,10 +151,10 @@ public final class DayScreen {
                         .error("\(message, privacy: .public)")
                 }
             }
-            return (nil, .notKept, Roster())
+            return (.notKept, Roster())
         }
 
-        return (store, .kept, store.roster)
+        return (.kept, store.roster)
     }
 
     /// The day view the person is looking at, as the record stood when it was last read.
@@ -286,12 +269,24 @@ public final class DayScreen {
         self.recordState = opened.state
 
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
-        self.rosterStore = openedRoster.store
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
 
         self.dayView = DayView(
             of: openedRoster.roster.commitments(on: shownDay), on: shownDay,
             in: opened.store?.history ?? History())
+    }
+
+    /// The person has come back to this screen from somewhere else in the app: the roster is read
+    /// again and the day view is formed again for the day being shown. Takes no today, moves no
+    /// day, and does not read the record.
+    public func returnedTo() {
+        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
+        self.rosterState = openedRoster.state
+        self.roster = openedRoster.roster
+
+        self.dayView = DayView(
+            of: openedRoster.roster.commitments(on: shownDay), on: shownDay,
+            in: recordStore?.history ?? History())
     }
 }
