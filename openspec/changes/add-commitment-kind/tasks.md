@@ -153,11 +153,11 @@ verify against the baseline before writing a single new test.
 
 ## 7. The shell, and the file that is already on a phone
 
-- [ ] 7.1 `src/DayByDay/DayByDay/ContentView.swift` is **not edited**. Confirm it: `git diff --stat`
+- [x] 7.1 `src/DayByDay/DayByDay/ContentView.swift` is **not edited**. Confirm it: `git diff --stat`
   names no file under `src/DayByDay/`, and the nine day-one commitments are still the nine ticks
   `docs/backlog.md` § *What day one looks like* quotes. Adding a kind to any of them here is #142's
   and would be a behaviour change with no requirement behind it.
-- [ ] 7.2 Build and run the shell in the simulator, the way ADR-1019 and
+- [x] 7.2 Build and run the shell in the simulator, the way ADR-1019 and
   `archive/2026-09-04-add-roster-store/tasks.md` § 4 do, against a **roster and record already
   written by the previous build** — copy the two files out of the simulator's Application Support
   directory before installing the new build, or write them by hand in form 1. Confirm three things
@@ -167,6 +167,41 @@ verify against the baseline before writing a single new test.
   form-1 file it was, because nothing was taken on. That last one is the whole of § *Migration Plan*
   and no unit test can reach it.
 
+  Ran on the **iPhone 17 simulator, iOS 26.5** (Xcode 26.6, build `17F113`):
+
+  ```bash
+  xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
+    -destination 'platform=iOS Simulator,name=iPhone 17' build
+  xcrun simctl boot 'iPhone 17'; xcrun simctl bootstatus 'iPhone 17' -b
+  xcrun simctl install 'iPhone 17' "$APP"
+  ```
+
+  Wrote `roster.json` and `record.json` by hand, in form 1 (no `kind` field, `"version":1`), into
+  the app's container at `Library/Application Support/DayByDay/` *before* the first launch —
+  `roster.json` holding the nine day-one commitments verbatim as `ContentView.dayOneCommitments`
+  defines them, `record.json` holding one prior tick (Creatine, Saturday 5 September 2026).
+  `xcrun simctl launch 'iPhone 17' com.dbugmann.daybyday`, then a screenshot: the day screen drew
+  "Today · Sunday 6 September 2026" with five rows — Creatine, Magnesium, Nails, Run, Yuno, every
+  commitment of the nine actually due that Sunday — matching the hand-written roster read back as
+  the tick kind throughout.
+
+  Tapping is not reachable through `simctl` and this machine's Terminal session has no window on
+  the real display (`osascript`'s System Events reports 0 windows for the Simulator process, and
+  `xcodebuild test`'s default parallel testing clones the destination simulator into a throwaway
+  device whose container cannot be inspected afterward — confirmed by watching `simctl list
+  devices` during a run). `xcodebuild test -parallel-testing-enabled NO` against the same booted
+  device avoids the clone and drives the real one: a scratch `XCTest` case (never committed — added,
+  run, then `git checkout --` reverted) tapped the "Run" row through `XCUIApplication`, the same
+  seam `WalkthroughUITests.swift` already uses.
+
+  After the tap, read directly out of the simulator's container:
+  `record.json` had moved to `"version":2`, carrying both ticks with `"kind":{"tick":{}}` on each
+  commitment — the pre-existing Creatine tick and the new Run tick — while `roster.json` was
+  `diff`ed byte-for-byte against the exact string that was written to it and was identical, because
+  nothing was taken on. A second screenshot after `simctl launch` again (a fresh process, standing
+  in for force-quit and reopen) showed "Run" checked. `simctl terminate` and `simctl shutdown`
+  afterward left no device booted.
+
 ## 8. The documents
 
 `docs/adr/1030-the-kind-is-a-commitments-fourth-part.md`,
@@ -175,24 +210,29 @@ verify against the baseline before writing a single new test.
 2026-09-06 amendment on `CONTEXT.md` § *Store* are **written with this folder** and are in the G4
 diff, so 8.1 and 8.2 confirm rather than write.
 
-- [ ] 8.1 Confirm before the review that 1030, 1031 and 1032 are still the three lowest free ADR
+- [x] 8.1 Confirm before the review that 1030, 1031 and 1032 are still the three lowest free ADR
   numbers — `git log --all --name-only -- docs/adr` — and **report rather than renumber** if another
   branch has taken one (rule 5). 1029 was the highest on any local or remote ref on 2026-09-06.
-- [ ] 8.2 Confirm each of the three ADRs still says what the code does, now that the code exists.
+- [x] 8.2 Confirm each of the three ADRs still says what the code does, now that the code exists.
   1032 in particular carries two measurements taken before a line was written — the ten additions of
   0.1 and the asymmetric not-a-number comparison — and § 2.8 is the test that re-takes the second
   one. An ADR that has drifted from the implementation is edited in place and stamped, per
   `docs/adr/README.md`; a decision that has actually changed is a stop, not an edit.
-- [ ] 8.3 Confirm `CONTEXT.md` gained the one amendment and **no new term**: the Feature grill landed
+- [x] 8.3 Confirm `CONTEXT.md` gained the one amendment and **no new term**: the Feature grill landed
   all six of this Story's terms on `main` before the Story existed, and writing the delta turned up
   none. A seventh term appearing here means something was decided that should have been asked.
-- [ ] 8.4 Two entries are owed in `docs/open-questions.md`, which is not this change's file to write
+- [x] 8.4 Two entries are owed in `docs/open-questions.md`, which is not this change's file to write
   (`AGENTS.md` § *Agent roles*). Write them as a **chore commit alongside the merge**, not here.
   First, under *Known gaps*: a commitment of a kind nothing can yet record draws a row that does
   nothing when tapped — unreachable today, made reachable by #142 and removed by #139, and the two
   are in different lanes so the order they land in decides whether anyone sees it. Second, on the
   read-back gap's list: `Commitment.kind` is public while `schedule` and `keptFrom` stay internal, so
   a commitment now has a fourth part that is readable and two that are not.
+
+  Not landed on this branch — exactly as #92 and #93 (`add-roster-store`, #103's tasks.md § 4.4)
+  left their own entries for a chore commit alongside the merge rather than touching
+  `docs/open-questions.md` from inside a Story's own commits. Both entries are named above,
+  verbatim, for whoever writes that commit.
 
 ## 9. The evidence, before the review
 
