@@ -82,10 +82,10 @@ commitment's day something to hold.
 - **The mood-slider want went to its own branch, not `chore/backlog`.** Capturing it there was
   attempted on 2026-09-06 and failed: another session was rebasing that branch in the shared
   `../daybyday-backlog` worktree, and its checkout discarded the uncommitted entry — rule 8's
-  hazard, live. B-034 was cut onto `chore/backlog-b034` instead (PR #150). That session's PR #149
-  is closed unmerged while the Stories it created (#144–#148) exist on the tracker, so the backlog
-  and the tracker disagree as this Story starts. Neither fact touches this delta: `record` is not
-  a capability any of #144–#148 claims.
+  hazard, live. B-034 was cut onto `chore/backlog-b034` instead and merged as PR #150. That
+  session's own PR #149 was closed unmerged at the moment this was written and merged later the
+  same day as `eb298a2`, so the backlog and the tracker agreed again before this Story left the
+  grill. Neither fact touches this delta: `record` is not a capability any of #144–#148 claims.
 - Measured on this machine on 2026-09-06, Apple Swift 6.3.3 (swiftlang-6.3.3.1.3), target
   `arm64-apple-macosx26.0`: `swift test` reports **418 tests passing** at the branch point.
   `openspec` is 1.10.0.
