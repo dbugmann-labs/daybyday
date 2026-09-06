@@ -22,8 +22,7 @@ public final class CommitmentsScreen {
         let opened = Self.open(at: place)
         self.rosterStore = opened.store
         self.rosterState = opened.state
-        self.kept = opened.store?.roster.commitments ?? []
-        self.stopped = opened.store.map { Self.stopped(in: $0.roster) } ?? []
+        refreshLists(from: opened.store)
     }
 
     /// Opens the roster at `place`. A place written by a later version of DayByDay is told apart
@@ -45,6 +44,14 @@ public final class CommitmentsScreen {
     /// The commitments `roster` has stopped keeping, in the order they were taken on.
     private static func stopped(in roster: Roster) -> [Commitment] {
         roster.entries.compactMap { $0.keptUntil == nil ? nil : $0.commitment }
+    }
+
+    /// Sets `kept` and `stopped` from `store`, or empties both when `store` is `nil`. The one
+    /// site every read of the roster funnels through, so that neither list is ever ahead of what
+    /// is at the place.
+    private func refreshLists(from store: RosterStore?) {
+        kept = store?.roster.commitments ?? []
+        stopped = store.map { Self.stopped(in: $0.roster) } ?? []
     }
 
     /// The commitments the roster is keeping, in the order they were taken on.
@@ -100,8 +107,7 @@ public final class CommitmentsScreen {
             return .notKept
         }
 
-        kept = rosterStore.roster.commitments
-        stopped = Self.stopped(in: rosterStore.roster)
+        refreshLists(from: rosterStore)
         return nil
     }
 
@@ -137,8 +143,7 @@ public final class CommitmentsScreen {
             return .notKept
         }
 
-        kept = rosterStore.roster.commitments
-        stopped = Self.stopped(in: rosterStore.roster)
+        refreshLists(from: rosterStore)
         return nil
     }
 
@@ -158,8 +163,7 @@ public final class CommitmentsScreen {
             return .notKept
         }
 
-        kept = rosterStore.roster.commitments
-        stopped = Self.stopped(in: rosterStore.roster)
+        refreshLists(from: rosterStore)
         return nil
     }
 
@@ -171,7 +175,6 @@ public final class CommitmentsScreen {
         let opened = Self.open(at: place)
         rosterStore = opened.store
         rosterState = opened.state
-        kept = opened.store?.roster.commitments ?? []
-        stopped = opened.store.map { Self.stopped(in: $0.roster) } ?? []
+        refreshLists(from: opened.store)
     }
 }
