@@ -110,6 +110,11 @@ A **rhythm** SHALL be one of four, and all four SHALL be offered: a weekday set,
 month, an interval of a whole number of days, and a weekly quota. A rhythm carries nothing the
 calendar does not supply — in particular an interval rhythm carries no start date.
 
+Three of the four are a number, and a rhythm SHALL carry that number as the person gave it, judged
+by nothing on the way. A rhythm is what a person said, not what the system was able to make of it,
+so the judging happens in one place — the screen, when it is asked to define — and the requirement
+below says what it does there.
+
 **The day a commitment is kept from SHALL also be the start date of an interval rhythm.** The
 commitment is due on the day a person started keeping it and every N days after it. The two remain
 distinct in the model and may disagree where something other than this screen forms the commitment;
@@ -224,6 +229,81 @@ restricted script and no reserved word: the name is the owner's own words rather
 - **THEN** none of the three is refused
 - **AND** what the screen keeps is three entries, named "x", then " Gym ", then "Gym 🏋️", the
   spaces around " Gym " kept exactly as they were given
+
+### Requirement: A commitments screen refuses a rhythm number the calendar will not take
+
+A commitments screen SHALL refuse to define a commitment on a day of the month that is not one of
+the thirty-one, on an interval of fewer than one day, or on a weekly quota outside one to seven a
+week. It SHALL refuse the number rather than change it: a number outside what a rhythm allows MUST
+NOT be moved to the nearest number that is allowed, and MUST NOT be dropped in silence. Nothing
+SHALL be kept at the roster place and neither of the screen's lists SHALL change.
+
+The three refusals are one refusal, told apart from every other the screen makes but not from each
+other. What a person does about any of them is the same thing — put a different number in the field
+they are already looking at — and the form knows which field that is, so a second case would buy a
+distinction nothing could act on. That is ADR-1021's rule, applied where it does hold, in the same
+change that departs from it where it does not.
+
+**This is not the screen disagreeing with the rule engine, and it is the opposite of the
+requirement above.** A weekday set with no days in it is a value the engine accepts and the screen
+refuses (ADR-1028). A day of the month of 32 is a value the engine refuses to form at all: the
+`schedule` capability already says a day of the month is a number from the first to the
+thirty-first, an interval is a whole number of days at least one, and a weekly quota is a number of
+times from one to seven, and the `schedule` capability is unchanged by this requirement. All this
+requirement does is make the screen *say* what the value said, which ADR-1028 records as what every
+screen in this product already did.
+
+The numbers a rhythm allows SHALL be accepted at both ends. The first and the thirty-first of the
+month, an interval of one day, and one and seven times a week are each the last number that is
+allowed rather than the first that is not.
+
+#### Scenario: a commitments screen refuses a day of the month that is not one of the thirty-one
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Finances" on a day-of-the-month rhythm of the 0th,
+  kept from that same day, is defined through it; and then one named "Finances" on a
+  day-of-the-month rhythm of the 32nd, kept from that same day
+- **THEN** both are refused as a rhythm number the calendar will not take
+- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
+
+#### Scenario: a commitments screen refuses an interval of fewer than one day
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Contact lenses" on an interval rhythm of 0 days,
+  kept from that same day, is defined through it; and then one named "Contact lenses" on an
+  interval rhythm of -7 days, kept from that same day
+- **THEN** both are refused as a rhythm number the calendar will not take
+- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
+
+#### Scenario: a commitments screen refuses a weekly quota outside one to seven
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Reading" on a weekly-quota rhythm of 0 times a
+  week, kept from that same day, is defined through it; and then one named "Reading" on a
+  weekly-quota rhythm of 8 times a week, kept from that same day
+- **THEN** both are refused as a rhythm number the calendar will not take
+- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
+
+#### Scenario: a rhythm number a commitments screen refuses is told apart from its other refusals
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and three commitments kept from that same day are defined through it — one
+  named "Finances" on a day-of-the-month rhythm of the 32nd, one named "   " on a weekday-set rhythm
+  of all seven weekdays, and one named "Gym" on a weekday-set rhythm listing no weekdays at all
+- **THEN** the first is refused as a rhythm number the calendar will not take
+- **AND** the second is refused as a name that says nothing, and the third as a rhythm due on no
+  day, each of the three told apart from the other two
+
+#### Scenario: a commitments screen accepts the number at each end of what a rhythm allows
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and five commitments kept from that same day are defined through it —
+  "Rent" on a day-of-the-month rhythm of the 1st, "Finances" on a day-of-the-month rhythm of the
+  31st, "Shave" on an interval rhythm of 1 day, "Long run" on a weekly-quota rhythm of 1 time a
+  week, and "Steps" on a weekly-quota rhythm of 7 times a week
+- **THEN** none of the five is refused
+- **AND** what the screen keeps is five entries, named "Rent", then "Finances", then "Shave", then
+  "Long run", then "Steps"
 
 ### Requirement: A commitments screen tells a commitment it already keeps apart from a roster it could not write
 

@@ -572,7 +572,12 @@ one date field and makes it impossible to write the screen so that the two dates
 goes on holding them apart, so anything that forms a commitment another way can still give them
 different days. A rhythm is not stored, not read back and never held by a commitment: it exists
 between a person's taps and the commitment they make, and what is kept is the schedule it named.
-Agreed 2026-09-04 while writing the delta of `add-commitments-screen` (#104).
+Agreed 2026-09-04 while writing the delta of `add-commitments-screen` (#104). **Amended
+2026-09-06:** three of the four shapes are a number, and a rhythm carries that number exactly as
+the person gave it — a day of the month of 32 is a rhythm, and it is refused when the screen is
+asked to define on it. A rhythm is what was *said*, not what the system could make of it, so
+nothing judges it on the way in and one place judges it at the end. That is what lets the screen
+report a refusal the value makes rather than a shell swallowing it in silence.
 
 **Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
 storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by

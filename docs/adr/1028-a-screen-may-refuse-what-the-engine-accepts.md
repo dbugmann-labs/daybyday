@@ -3,6 +3,10 @@
 - Status: accepted — the decision is the owner's, taken at the grill of `add-commitments-screen`
   (#104) on 2026-09-04, question 4 of twelve
 - Date: 2026-09-04
+- Amended: 2026-09-06 — this record's Context said that for every refusal made by the value
+  itself, "every screen simply reports what the value said". The screen shipped in #104's first
+  implementation pass did not; the amendment at the foot records what was done about it. The
+  decision above is unchanged.
 - Deciders: Diego Bugmann
 
 ## Context
@@ -76,6 +80,27 @@ Two things follow from that wording and are part of this decision:
   where a refusal is made. They meet in `add-commitments-screen`, whose delta deliberately breaks
   ADR-1021's one-message pattern for a different reason — a duplicate and an unwritable roster
   leave a person different actions — and that argument stands on its own.
+
+## Amendment, 2026-09-06 — the half of the Context that was not true yet
+
+The Context above draws its line by contrast: a screen may refuse what the engine accepts,
+*because* every other refusal in the product is made by the value itself and "every screen simply
+reports what the value said". It named that list — "a day of the month outside 1–31, an interval
+below one, a quota outside 1–7" — as the settled case needing no decision.
+
+`add-commitments-screen`'s second review pass found that the screen this record was written for was
+the first thing in the product for which that sentence was false. `CommitmentsView` held the typed
+day count as an `Int` and bound it through `max(1, …)`, so a person typing `0` had it rewritten to
+`1` with nothing said; and where a number did reach the conversion, a `guard let … else { return }`
+turned the value's refusal into the Add button doing nothing. Three refusals the value made, and
+the screen reported none of them.
+
+Nothing about the decision changes. What changes is that the settled case is now built as well as
+described: `Rhythm` carries the number a person gave rather than a value already judged,
+`CommitmentsScreen.Refusal` gains a case that reports what `DayOfMonth`, `DayInterval` and
+`WeeklyQuota` said, and the two deciding lines leave the shell. The `schedule` capability is
+untouched by it — that is the whole point of the distinction this record draws, and the two
+refusals now sit side by side in the same delta as the worked example of each side of the line.
 
 ## Alternatives considered
 

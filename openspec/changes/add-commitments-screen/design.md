@@ -17,10 +17,21 @@ whose answers follow from what is already in the repository: whether the commitm
 a `RosterStore` with the day screen or opens its own, and by what mechanism the day screen re-reads
 on being returned to. § *The seam* and § *Being returned to is not being shown* answer them.
 
+**This folder has been reopened once, and this document is its second version.** The Story passed
+G4 on 2026-09-04, was implemented, and was reviewed twice. The second pass raised eight findings,
+of which three changed the requirements and are worked into the sections below: a public widening
+of `CalendarDate` that shipped with nothing authorising it (§ *A calendar date gives back its three
+numbers*), a form quietly rewriting and quietly swallowing numbers the kit refuses (§ *A rhythm
+carries the number a person gave*), and, in `tasks.md`, a set of signed instructions replaced by a
+report of why they could not be followed, two of whose stated reasons were untrue. Every section
+below that was written before that pass and is still true is left exactly as it was, so the second
+G4 is read as a diff against the first.
+
 Everything measured below was measured on this machine on 2026-09-04, from `566297e`, the `main`
 this branch is rebased onto: Apple Swift
 6.3.3, `cd src/DayByDayKit && swift test` reporting **300 tests passing**, `openspec` 1.10.0, Node
-v24.19.0.
+v24.19.0. Re-measured on 2026-09-06 on the branch as the second review pass left it, `swift test`
+reports **348**, and the nine scenarios this version adds take it to **357**.
 
 ## Goals / Non-Goals
 
@@ -51,10 +62,16 @@ v24.19.0.
 
 ### The seam
 
-**Two seams. One is new — `CommitmentsScreen`, exported from `DayByDayKit` beside `DayScreen` —
-and one is the existing `DayScreen`, which gains one method.** The forty `commitment` scenarios
+**Three seams, and only one of them is new — `CommitmentsScreen`, exported from `DayByDayKit`
+beside `DayScreen`.** The second is the existing `DayScreen`, which gains one method. The third is
+`CalendarDate`, which gains no method at all: it is the seam every `schedule` scenario in this repo
+already attaches at, and the four scenarios this change adds to that capability attach there too,
+alongside the nineteen `ScheduleTests.swift` already carries. The forty-five `commitment` scenarios
 attach at the first and the eleven `day-screen` scenarios at the second — of which four are
-restated verbatim under MODIFIED and already have their tests, so forty-seven tests are written.
+restated verbatim under MODIFIED and already have their tests, so fifty-six tests are written.
+**No fourth seam appears, and the third was already there**: "an existing seam beats a new one" is
+satisfied by putting the read-back on the type the capability is about rather than by threading a
+component accessor through `DayScreen` or `CommitmentsScreen`.
 
 ```swift
 @MainActor
@@ -90,6 +107,9 @@ public final class CommitmentsScreen {
         case namesNothing
         /// A weekday set with no days in it — the one refusal the rule engine does not make.
         case dueOnNoDay
+        /// A day of the month, an interval or a weekly quota outside what that rhythm allows.
+        /// One case for all three: the person changes the number in the field they are on.
+        case rhythmOutOfRange
         /// The roster is already keeping this commitment.
         case alreadyKept
         /// The roster could not be written, or this screen is not keeping one.
@@ -122,12 +142,29 @@ public final class CommitmentsScreen {
 
 /// The four shapes a commitments screen offers, each carrying nothing the calendar does not
 /// supply. Deliberately not a `Schedule`: an interval rhythm has no start date, because the day a
-/// commitment is kept from is it.
+/// commitment is kept from is it. The three numeric shapes carry the number a person gave, not a
+/// value already judged — a rhythm is what was said, and `CommitmentsScreen.define` is the one
+/// place that judges it.
 public enum Rhythm: Hashable, Sendable {
     case weekdays(Set<Weekday>)
-    case dayOfMonth(DayOfMonth)
-    case everyNDays(DayInterval)
-    case weeklyQuota(WeeklyQuota)
+    case dayOfMonth(Int)
+    case everyNDays(Int)
+    case weeklyQuota(Int)
+}
+```
+
+And `CalendarDate` gives its three numbers back. It is the same declaration, with `let` made
+`public let` and nothing else touched:
+
+```swift
+public struct CalendarDate: Hashable, Sendable {
+    /// The three components a validating initializer already checked. Public so that the edge —
+    /// where an instant becomes a calendar date and back, per ADR-1004 — can rebuild a `Date` in
+    /// whatever calendar it is asking on, the reverse of `ContentView.today()`'s own conversion.
+    /// Read-only: the only way to change one is to form a new `CalendarDate`.
+    public let year: Int
+    public let month: Int
+    public let day: Int
 }
 ```
 
@@ -284,12 +321,16 @@ is exactly such a line.
 
 ### The refusals a person can act on differently, and the words they are said in
 
-`Refusal` has four cases and the delta requires three of the four pairs to be told apart. It
-deliberately breaks the day screen's one-message pattern, and the reason is the reason that pattern
-exists: ADR-1021 collapses a record's refusals because "a tick refused on a record that could be
-read has no cause a person can act on differently". Here they can. A name that says nothing, a
-rhythm due on no day and a commitment already kept are each fixed by changing the form; a roster
-that could not be written is fixed by nothing the person can do at that moment.
+`Refusal` has five cases and the delta requires each of the five to be told apart from the others.
+It deliberately breaks the day screen's one-message pattern, and the reason is the reason that
+pattern exists: ADR-1021 collapses a record's refusals because "a tick refused on a record that
+could be read has no cause a person can act on differently". Here they can. A name that says
+nothing, a rhythm due on no day, a rhythm number the calendar will not take and a commitment
+already kept are each fixed by a different change to the form; a roster that could not be written
+is fixed by nothing the person can do at that moment.
+
+The same rule is what keeps `rhythmOutOfRange` a single case rather than three. Five cases is the
+number of *different things to do*, not the number of ways a call can fail.
 
 **The distinction is behind the seam; the wording is the shell's.** That is not new — the three
 cases of `RosterState` already map to three `Text(...)` literals in `ContentView.swift`, and
@@ -317,12 +358,102 @@ same kept-from day. Nothing this screen makes can look like that, and nothing th
 `ContentView.swift` making it.
 
 `Rhythm` is public because the shell builds one from what the person tapped. Its conversion —
-`func schedule(keptFrom:) -> Schedule` — is internal: nothing outside the module has a reason to
+`func schedule(keptFrom:) -> Schedule?` — is internal: nothing outside the module has a reason to
 turn a rhythm into a schedule, and keeping it internal means the only route from a rhythm to a
-commitment is through the screen that refuses an empty weekday set.
+commitment is through the screen that refuses an empty weekday set. It is failable for the reason
+the next section gives.
 
 `CONTEXT.md` gains **Rhythm** as a term. It is the person's word for a schedule — the Story's own
 intent sentence uses it — and now it is also a type, so it needs one definition rather than two.
+
+### A rhythm carries the number a person gave
+
+**Chosen: `Rhythm`'s three numeric cases carry an `Int`, `Rhythm.schedule(keptFrom:)` is failable,
+and `CommitmentsScreen.Refusal` gains `rhythmOutOfRange`.** This is the second review pass's
+finding 7 and it reverses a decision the first version of this document made without arguing it:
+that `Rhythm` should carry `DayOfMonth`, `DayInterval` and `WeeklyQuota` because "a rule is better
+as a type than as a paragraph nobody re-reads".
+
+That reasoning is right about the *start date* — which is the rule `Rhythm` exists for, and which
+is untouched here — and wrong about the three numbers. Carrying already-valid values makes
+`define(name:on:keptFrom:)` unable to be handed a number the calendar refuses, which sounds like a
+guarantee and is in fact a hole: the number a person typed still has to become a `DayInterval`
+somewhere, and the only place left is the shell. `tasks.md` § 4 forbids the shell to decide
+anything and says in as many words that a shell that appears to need a refusal "is a requirement
+this delta is missing and a rule-5 stop". It needed one, twice over, and neither stop was taken:
+
+- `CommitmentsView.swift`'s day-count field bound itself through `max(1, $0)`, so a person typing
+  `0` had it rewritten to `1` with nothing said. That is the shell choosing a value.
+- `define()` guarded each of the three constructions with `else { return }`, so a number that got
+  past the widget made the Add button do nothing and leave whatever message was already on screen.
+  That is the shell choosing a refusal, and choosing silence for it.
+
+ADR-1028 wrote the rule this breaks, in the course of arguing for the empty weekday set: every
+refusal that is made by the value itself — "a day of the month outside 1–31, an interval below one,
+a quota outside 1–7" is its own list — is one where "every screen simply reports what the value
+said". So the fix is not a new principle. It is the existing one, carried out: put the number in
+front of the screen, let the value refuse it, and report that. The `schedule` capability is
+untouched; `DayOfMonth`, `DayInterval` and `WeeklyQuota` go on being the things that refuse.
+
+**One `Refusal` case for all three**, which is ADR-1021's rule applied where it does hold. The
+person's action is identical in the three cases — put a different number in the field they are
+looking at — and the form already knows which field that is, so the wording is as specific as it
+needs to be without the kit carrying three cases nothing distinguishes.
+
+*Alternative — keep `Rhythm` validated and give the shell a message to show.* Rejected: the shell
+would still be the thing that decided a number was bad, and no test at any seam could reach that
+decision. The reviewer would be judging a `guard` in SwiftUI, which is the situation ADR-1019
+exists to prevent.
+
+*Alternative — bound every widget so a refused number cannot be produced.* This is what the two
+`Stepper`s already do, and it is why they are kept (see the trade-off below). It cannot be the
+whole answer, because the interval field is the one shape with no upper bound the kit will name:
+`Stepper(value:in:)` needs a `ClosedRange`, so bounding it means the shell inventing a ceiling the
+`schedule` capability has never stated, and a free-form number field is the right widget for
+"every 14 days" anyway.
+
+*Alternative — make `Rhythm` failable to construct, `Rhythm.everyNDays(days:) -> Rhythm?`.*
+Rejected for the same reason as the first: `nil` arrives in the shell and the shell decides what to
+do with it.
+
+### A calendar date gives back its three numbers
+
+**Chosen: `CalendarDate.year`, `.month` and `.day` are public, and one requirement in the
+`schedule` capability says so.** This is the second review pass's finding 1. The widening itself is
+not new — it shipped in this Story's implementation, in `4e92da5`, fixing a real defect where a
+commitments screen left open overnight went on offering yesterday as the day to keep from — but it
+shipped against a change folder saying three times over that `schedule` was untouched. The owner's
+decision is to keep the code and authorise it, because the members have been recorded as owed since
+`add-day-navigation` (#72) and this is the Story that finally needed them.
+
+**It belongs to `schedule`, not to `commitment`.** `CalendarDate` is specified there — *A calendar
+date names a day that exists* and *A calendar date lies within the years the system supports* are
+both `schedule` requirements — and a rule about what a calendar date gives back sits beside the
+rules about which ones exist. Putting it in `commitment` would make a screen's capability own a
+sentence about a calendar value, which is the same mistake `grill.md`'s answer 1 refused when it
+kept "saying a rhythm in words" out of this Feature.
+
+**It is a read-back and it is bounded.** The requirement gives back the three numbers of a
+`CalendarDate` and nothing else: no ordering (`Comparable` is still owed), no `Date`, and no
+widening of `DayOfMonth`, `DayInterval`, `WeeklyQuota`, `History` or `Tick`, each of which stays
+exactly as unreadable as it was. The requirement's own prose says so, so the next reader of the
+archived spec cannot take it as a precedent for the other five.
+
+**The three stay `let`.** A settable component would let a valid date be walked, one assignment at
+a time, through a combination that names no day — 31 January with its month set to February — and
+the two requirements above would then govern only how a date is first made. This is the one part of
+the read-back that is a rule rather than an access level, which is why it is in the requirement's
+prose and not only in a doc comment.
+
+*Alternative — leave the components internal and hand the shell a `Date`.* That is a `Foundation`
+type crossing the seam in the direction ADR-1004 spent a whole decision keeping it out of, and it
+would need the kit to choose a calendar and a time zone for a conversion whose whole point is that
+the edge chooses them.
+
+*Alternative — revert the widening and let `CommitmentsView` read its own clock.* This is what the
+code did before `4e92da5`, and it is the defect: two clock reads, a screen offering a day nobody
+handed it, and `dayToKeepFrom` — a value this document put behind the seam precisely so that a test
+could catch it being wrong — unreachable by the thing that draws it.
 
 ### The confirmation lives behind the seam
 
@@ -340,11 +471,17 @@ arrange.
 
 ### Where the requirements live
 
-`commitment`, for the screen; `day-screen`, for the one thing a day screen learns to do. The screen
+`commitment`, for the screen; `day-screen`, for the one thing a day screen learns to do;
+`schedule`, for the one thing a calendar date learns to say. The screen
 is the roster's own management surface and `CONTEXT.md` § *Commitments screen* is already written
 as a `commitment` term; a `commitments-screen` capability would put a roster's rules and the only
 thing that exercises them in different files. `add-screen-date` (#92) and `add-roster-store` (#103)
-both set the precedent that one change may claim two existing capabilities.
+both set the precedent that one change may claim two existing capabilities, and three is that same
+precedent rather than a new one: a change claims the capabilities its requirements belong to, and
+the count is a consequence rather than a budget. The `schedule` claim is one requirement wide, and
+the second review pass is what added it — had it been seen at the first G4 it would have been in
+the folder then, which is why the folder is being signed a second time rather than the code
+reverted.
 
 ## Risks / Trade-offs
 
@@ -371,10 +508,27 @@ both set the precedent that one change may claim two existing capabilities.
   still open, and this Story roughly doubles the SwiftUI in the app — a second screen, a navigation
   and a form with four rhythm shapes. `tasks.md` § 5 closes it in the simulator by hand, which is
   the only tool this repo has, and § 5 also names the `docs/open-questions.md` entry this widens.
-- **Forty-seven new tests in one Story.** That is the largest single delta this repo has written and
-  it is the price of a screen with two lists, a form, four rhythms, four refusals and a
+- **Fifty-six new tests in one Story.** That is the largest single delta this repo has written and
+  it is the price of a screen with two lists, a form, four rhythms, five refusals and a
   confirmation. `tasks.md` § 2 is green on its own with no change to `DayScreen` at all, which is
   where to stop if the Story has to be split.
+- **The two `Stepper`s still name a range the `schedule` capability owns.** `CommitmentsView`
+  bounds the day-of-month stepper to `1...31` and the quota stepper to `1...7`, which are the
+  kit's numbers written a second time in a file that may not decide anything. They are kept, and
+  the reason they are not a decision is that nothing they can produce is refused and nothing they
+  refuse to produce would have been accepted: they are drawing the range, not judging it. What the
+  rhythm-number refusal changes is the failure mode if that ever stops being true — a stepper whose
+  ceiling drifted *above* the kit's now produces a refusal a person can read, where before it
+  produced silence. A stepper whose ceiling drifted *below* the kit's would still quietly withhold
+  a legal number, and that residual is real. Closing it means the kit publishing each range, which
+  is a further face of `docs/open-questions.md` § *Known gaps*'s read-back entry and is not
+  authorised here.
+- **`CalendarDate`'s components are public for ever.** A public `let` on a public struct in a
+  library this repo consumes from one app is cheap to widen and awkward to narrow; narrowing it
+  again would break `CommitmentsView`'s date picker and any later screen that renders a date, which
+  is most of them. The bound is the requirement's own prose — three numbers, no ordering, no other
+  type — and the trigger to revisit is a Story that wants `Comparable` or another payload, which
+  should argue for it on its own rather than reading this one as a precedent.
 - **A weekday set with no days in it stays legal in the engine.** Anything that forms a commitment
   without going through this screen can still make one due on nothing, and one scenario in the
   delta exists to say so out loud. ADR-1028 records that as a deliberate asymmetry rather than a
@@ -387,9 +541,12 @@ None for data. `RosterDocument.currentVersion` stays 1, its shape is untouched, 
 change writes is a form an older app could not read: every commitment this screen makes is an
 ordinary `Commitment` on an ordinary `Schedule`. The record's file is not opened by anything here.
 
-For the spec: the delta claims `commitment` and `day-screen`, both existing, so CI check 2 sees two
-claimed capabilities and two touched spec files. `openspec/specs/record/spec.md` and
-`openspec/specs/schedule/spec.md` must not appear in the archive diff at all.
+For the spec: the delta claims `commitment`, `day-screen` and `schedule`, all three existing, so CI
+check 2 sees three claimed capabilities and three touched spec files. `openspec/specs/record/spec.md`
+must not appear in the archive diff at all. `openspec/specs/schedule/spec.md` must appear, and must
+gain exactly one requirement and change nothing else — every rule already in that file, in
+particular the one making `Schedule.weekdays([])` legal, must read afterwards character for
+character as it reads now.
 
 ## Open Questions
 
@@ -402,6 +559,19 @@ rather than the human's, and both are settled above with their alternatives writ
 - *By what mechanism does the day screen re-read on being returned to?* — a new `returnedTo()`,
   a sibling of `shown(asOf:)` rather than a reuse or a rename of it. § *Being returned to is not
   being shown*, which names the two documented lifetimes a reuse would have changed.
+
+**The second review pass added two more, and both were settled by the owner before this version was
+written**, so they are recorded here as answered rather than asked. Neither is a `## Questions for
+you` entry, because a question whose answer is already given is a decision:
+
+- *`CalendarDate`'s components shipped public with nothing authorising it — keep the widening or
+  revert it?* — keep it, and authorise it with a `schedule` delta. The owner's reason is that
+  `docs/open-questions.md` has named those three members as owed since #72 and this is the Story
+  that finally needed them. § *A calendar date gives back its three numbers*.
+- *Does `CommitmentsScreen.Refusal` owe a case for a rhythm number the kit refuses?* — yes. This
+  was the reviewer's finding 7, left explicitly to be judged rather than assumed, and the judgment
+  is that `tasks.md` § 4's own guard fires: two lines in `CommitmentsView.swift` decide, one a
+  value and one a refusal. § *A rhythm carries the number a person gave*.
 
 Writing the delta on the grill's twelve answers turned up **no question that would change what this
 Story does**, so there is no `## Questions for you` section and the Story is at G4 rather than at a
