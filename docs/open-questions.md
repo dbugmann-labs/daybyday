@@ -89,8 +89,21 @@ Things that are built, or deliberately not built, in a state someone will trip o
   change point takes on the identity of its neighbour. Same misanimation, different trigger. It
   cannot bite today because a day's list is fixed once the day is: nothing in the app can add a
   row to the screen you are looking at. The fix is unchanged and still the shell's — a stable
-  identity that is neither the value nor the position — and still belongs to whichever Story
-  first draws a list the user can add to, realistically `add-commitments-screen` (#104).
+  identity that is neither the value nor the position.
+
+  **It is unowned, corrected 2026-09-06.** This entry named `add-commitments-screen` (#104) as the
+  Story that would meet it, on the reasoning that it is the first to draw a list the user can add
+  to. Read against #104 as it actually stands, that is wrong twice over. It draws the *commitments*
+  screen's lists rather than the day screen's, and it leaves `ContentView.swift`'s
+  `id: \.offset` exactly as it found it. Its own lists key on `id: \.self`, which looks like the
+  original failure and is not: `specs/commitment/spec.md` in that folder carries a requirement
+  refusing a commitment the roster already keeps, so value-uniqueness is guaranteed precisely
+  where value-identity is used.
+
+  Which sharpens the rule worth remembering here: **value identity is safe exactly where the model
+  refuses duplicates**, and unsafe on the day screen because `day-screen`'s spec deliberately
+  permits two rows to be equal. So this waits for a day screen whose list can change while someone
+  is looking at it, and no Story on the tracker is that yet.
 - **The Story issue template asks an agent to write the G4 marker string.** Surfaced writing
   #91..#93, 2026-09-03. `.github/ISSUE_TEMPLATE/story.yml`'s last Definition-of-ready checkbox
   quotes the marker line literally, so an agent rendering the template faithfully writes that
@@ -153,6 +166,34 @@ Things that are built, or deliberately not built, in a state someone will trip o
   answers nothing about drawing: the misspelled-binding case in the sentence above still passes
   CI. What is left is a test target in the hand-written `.xcodeproj` and check 4 learning to see
   a test name that is not a `@Test("...")` literal.
+
+  **XCUITest has been proven on this project, and the proof keeps being thrown away.** Recorded
+  here 2026-09-06 because it is the fact this entry is judged on and it currently lives only
+  inside `add-commitments-screen`'s (#104) change folder, which is one branch away from being
+  archived and was never the place a reader would look. Established there while driving that
+  Story's shell walkthrough:
+
+  - **It runs.** `Test Case '-[DayByDayUITests.WalkthroughUITests testWalkthrough]' passed
+    (121.049 seconds)`, `** TEST SUCCEEDED **`, driving eight checks against the real shell on
+    iPhone 17, iOS 26.5 (23F77), Xcode 26.6 (17F113). Driven twice — an earlier run of the same
+    walkthrough passed in 97.961s against a shell that has since changed.
+  - **It needs no Accessibility grant.** An earlier report that `osascript` answers `-25211`,
+    *not allowed assistive access*, and needs a human in System Settings did not reproduce; the
+    real error was `-1719`, Simulator having no window to address. XCUITest sidesteps that route
+    altogether.
+  - **The hand-written `.xcodeproj` is not the obstacle it looks like.** The recipe adds the app
+    target and a UI Testing Bundle as `PBXFileSystemSynchronizedRootGroup`s, so no further
+    project-file edit is needed once they exist (ADR-1019), and the kit reaches the app as an
+    `XCLocalSwiftPackageReference` exactly as it does today.
+
+  So of the three costs this entry names, the ADR is unwritten, the `xcodebuild` job exists, and
+  the target is a solved problem with a written recipe. **Check 4 is the only real unknown left**:
+  the walkthrough is XCTest, whose method name check 4 cannot see, and whether a UI test can be
+  written under Swift Testing at all is unverified — the next thing to find out, not to assume.
+
+  The standing cost of leaving this open is no longer hypothetical either. The harness is rebuilt
+  by hand, driven, evidenced at length in `tasks.md` and then discarded by every Story that
+  touches the shell; #104 alone did it twice, because the shell moved underneath the first run.
 - **Playwright is ruled out on a fact, not a preference**, recorded so it is not re-proposed. It
   drives browser engines only, ships no `_ios` counterpart to its experimental `_android`, and
   cannot launch Apple's Simulator. It is unreachable without reversing ADR-1001, which chose
