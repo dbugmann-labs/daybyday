@@ -529,14 +529,20 @@ func aRosterThatHoldsNothingAnswersWithNothingOnEveryDate() {
 func twoCommitmentsAlikeInEveryWayButTheKindTheirDaysTakeAreBothHeld() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let tick = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
-    let note = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let number = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let note = Commitment(name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .note)!
 
     var roster = Roster()
-    _ = roster.add(tick)
+    _ = roster.add(number)
 
     let added = roster.add(note)
 
     #expect(added)
-    #expect(roster.commitments == [tick, note])
+    #expect(roster.commitments == [number, note])
+
+    let addedAgain = roster.add(number)
+
+    #expect(!addedAgain)
 }

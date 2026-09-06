@@ -322,8 +322,12 @@ func aNumberCommitmentDeclaresARangeAndReadsItBack() {
         name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))
 
     #expect(commitment?.kind == .number(range: range))
-    #expect(range.lowest == 1)
-    #expect(range.highest == 10)
+    guard case .number(range: let readBack?) = commitment?.kind else {
+        Issue.record("expected a number commitment with a range")
+        return
+    }
+    #expect(readBack.lowest == 1)
+    #expect(readBack.highest == 10)
 }
 
 @Test("a range whose lowest is above its highest is not a range")
@@ -366,7 +370,11 @@ func aTotalCommitmentDeclaresATargetAndReadsItBack() {
         name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))
 
     #expect(commitment?.kind == .total(target: target))
-    #expect(target.amount == 120)
+    guard case .total(target: let readBack) = commitment?.kind else {
+        Issue.record("expected a total commitment with a target")
+        return
+    }
+    #expect(readBack.amount == 120)
 }
 
 @Test("a target with a decimal fraction is a target")
