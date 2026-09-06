@@ -397,6 +397,20 @@ at the fourth grooming pass's Feature grill, for B-027. It is not the tick's own
 is the row's answer and what a tick is and where it is held are `record`'s, and a day screen adds
 nothing to either.
 
+**Amended 2026-09-06**, at the grill of `add-refused-tick-notice` (#100). The notice has **three
+ends, not two**: the app being shown again, a change reaching the record's place, and **the day the
+screen is showing changing**. The third is new — a notice is about a tap on a row of the day you
+were on, and a day you have moved away from has no row to say it under; a move with nowhere to go
+is not one of them, because that leaves a day screen exactly as it was and the person has not left
+the day they tapped on. The second is widened from a tick made to **any change that lands**,
+a take-back included, since the notice means the place would not take your change. There is **at
+most one notice on a screen**, on the row tapped last, because one refusal is one event. It is
+silent where there was **no tick to refuse**: a tap on a screen that is not keeping a record, whose
+own statement already says more, and a tap on a row for a day that has **not arrived**, which offers
+no tick at all. And it is **not** what the screen says about **keeping a record** — that answer is
+about whether the store opened at its place and is formed again only on being shown, so a refused
+write does not change it.
+
 **Amended 2026-09-04**, at the grill of `add-roster-store` (#103). A day screen holds **two stores**,
 at two places, and reports on each separately. It holds **no list of commitments**: it asks its roster
 what it had not stopped keeping **on the day it is showing**, every time it forms a day view, which is
