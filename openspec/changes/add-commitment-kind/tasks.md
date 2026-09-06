@@ -99,7 +99,7 @@ This section moves both documents to the next form, teaches both stores to read 
 and is the only section that edits an existing test. Do 6.1 through 6.3 as one mechanical step and
 verify against the baseline before writing a single new test.
 
-- [ ] 6.1 In `Sources/DayByDayKit/CommitmentCoding.swift`, add `KindRecord` and give
+- [x] 6.1 In `Sources/DayByDayKit/CommitmentCoding.swift`, add `KindRecord` and give
   `CommitmentRecord` a fourth field, `var kind: KindRecord?`. The wire shape is fixed by `design.md`
   § *The form on disk*: one key per case, the key's value being that case's payload —
   `{"tick": {}}`, `{"number": {}}`, `{"number": {"lowest": …, "highest": …}}`, `{"note": {}}`,
@@ -107,12 +107,12 @@ verify against the baseline before writing a single new test.
   a fifth kind is a compile error here, exactly as `ScheduleRecord`'s is. `kind` decoded as `nil`
   means the tick kind, and `CommitmentRecord(_:)` always writes one. `KindRecord` needs no
   `Comparable`: `design.md` says why the record document's existing tiebreaker is still total.
-- [ ] 6.2 Move `RosterDocument.currentVersion` and `RecordDocument.currentVersion` from `1` to `2`,
+- [x] 6.2 Move `RosterDocument.currentVersion` and `RecordDocument.currentVersion` from `1` to `2`,
   and in both `RosterStore.init(at:)` and `RecordStore.init(at:)` widen the one guard from
   `envelope.version == currentVersion` to the range `1...currentVersion`, leaving `>` throwing
   `.laterForm` and everything else `.notAStore`. Nothing else in either initializer moves, and
   neither store gains a write on open.
-- [ ] 6.3 Edit the eleven sites that say `2` to mean *a later form*, so they say `3`. Nine JSON
+- [x] 6.3 Edit the eleven sites that say `2` to mean *a later form*, so they say `3`. Nine JSON
   fixtures — `RecordStoreTests.swift:267`, `RosterStoreTests.swift:323`,
   `CommitmentsScreenTests.swift:1024`, and `DayScreenTests.swift:370`, `:454`, `:585`, `:1673`,
   `:1831`, `:2471` — and two assertions, `RecordStoreTests.swift:270` and

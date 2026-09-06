@@ -264,10 +264,10 @@ func aStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 2, "ticks": []}"#.utf8)
+    let bytes = Data(#"{"version": 3, "ticks": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RecordStoreError.laterForm(at: place, version: 2)) {
+    #expect(throws: RecordStoreError.laterForm(at: place, version: 3)) {
         try RecordStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
