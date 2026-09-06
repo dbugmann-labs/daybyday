@@ -272,12 +272,18 @@ enum KindRecord: Codable {
             self = .tick
         } else if container.contains(.number) {
             let payload = try container.nestedContainer(keyedBy: RangeKeys.self, forKey: .number)
-            if let lowest = try payload.decodeIfPresent(Decimal.self, forKey: .lowest),
-                let highest = try payload.decodeIfPresent(Decimal.self, forKey: .highest)
-            {
-                self = .number(range: RangeRecord(lowest: lowest, highest: highest))
-            } else {
+            let lowest = try payload.decodeIfPresent(Decimal.self, forKey: .lowest)
+            let highest = try payload.decodeIfPresent(Decimal.self, forKey: .highest)
+            switch (lowest, highest) {
+            case (nil, nil):
                 self = .number(range: nil)
+            case (let lowest?, let highest?):
+                self = .number(range: RangeRecord(lowest: lowest, highest: highest))
+            default:
+                throw DecodingError.dataCorrupted(
+                    DecodingError.Context(
+                        codingPath: payload.codingPath,
+                        debugDescription: "a range is both ends or neither"))
             }
         } else if container.contains(.note) {
             self = .note

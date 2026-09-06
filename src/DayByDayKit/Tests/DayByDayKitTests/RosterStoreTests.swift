@@ -399,6 +399,27 @@ func aRosterStoreHoldingWhatCouldNotBeARosterIsRefused() throws {
         """.utf8)
     try sameCommitmentTwiceBytes.write(to: sameCommitmentTwicePlace)
 
+    let halfRangePlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: halfRangePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let halfRangeBytes = Data(
+        """
+        {
+          "version": 1,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "number": { "lowest": 40 } }
+              }
+            }
+          ]
+        }
+        """.utf8)
+    try halfRangeBytes.write(to: halfRangePlace)
+
     #expect(throws: RosterStoreError.notAStore(at: blankNamePlace)) {
         try RosterStore(at: blankNamePlace)
     }
@@ -408,9 +429,13 @@ func aRosterStoreHoldingWhatCouldNotBeARosterIsRefused() throws {
     #expect(throws: RosterStoreError.notAStore(at: sameCommitmentTwicePlace)) {
         try RosterStore(at: sameCommitmentTwicePlace)
     }
+    #expect(throws: RosterStoreError.notAStore(at: halfRangePlace)) {
+        try RosterStore(at: halfRangePlace)
+    }
     #expect(try Data(contentsOf: blankNamePlace) == blankNameBytes)
     #expect(try Data(contentsOf: noSuchDayPlace) == noSuchDayBytes)
     #expect(try Data(contentsOf: sameCommitmentTwicePlace) == sameCommitmentTwiceBytes)
+    #expect(try Data(contentsOf: halfRangePlace) == halfRangeBytes)
 }
 
 @Test("a commitment of each kind is read back as the same commitment")
