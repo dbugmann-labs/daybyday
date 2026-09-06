@@ -116,8 +116,15 @@ struct ContentView: View {
                     try? screen.tick(row)
                 } label: {
                     HStack {
-                        Text(row.name)
-                            .foregroundStyle(row.isKept ? .secondary : .primary)
+                        VStack(alignment: .leading) {
+                            Text(row.name)
+                                .foregroundStyle(row.isKept ? .secondary : .primary)
+                            if row == screen.refusedChangeRow {
+                                Text("Not saved. Try again.")
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            }
+                        }
                         if row.isKept {
                             Spacer()
                             Image(systemName: "checkmark")

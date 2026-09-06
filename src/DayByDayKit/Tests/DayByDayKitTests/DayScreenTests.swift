@@ -15,6 +15,20 @@ private func freshPlaces() -> (record: URL, roster: URL) {
     )
 }
 
+/// Makes `directory` read-only: a file inside it still reads, `createDirectory` on it still
+/// succeeds, and a write inside it fails with `NSCocoaErrorDomain 513` — which `RecordStore.write`
+/// turns into `.cannotWrite`. `design.md` § *Context* proves this end to end on this machine.
+/// Every caller must pair this with `makeWritable(_:)` before returning, including on its failure
+/// path, or the directory is left unreadable behind it.
+private func makeReadOnly(_ directory: URL) throws {
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+}
+
+/// Undoes `makeReadOnly(_:)`, restoring `directory` to a place that can be written to again.
+private func makeWritable(_ directory: URL) throws {
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+}
+
 @MainActor
 @Test("a day screen opened where nothing has been kept holds the day view of that day with nothing kept")
 func aDayScreenOpenedWhereNothingHasBeenKeptHoldsTheDayViewOfThatDayWithNothingKept() {
@@ -1803,4 +1817,636 @@ func aDayScreenThatWasKeepingARosterStopsWhenItIsShownAgainAndTheRosterCannotBeR
 
     #expect(screen.rosterState == .writtenByALaterVersion)
     #expect(screen.dayView.rows.isEmpty)
+}
+
+// MARK: - add-refused-tick-notice
+
+@MainActor
+@Test("a refused tick is told on the row that was tapped")
+func aRefusedTickIsToldOnTheRowThatWasTapped() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let row = screen.dayView.rows[0]
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(row)
+    }
+    #expect(screen.refusedChangeRow == row)
+}
+
+@MainActor
+@Test("a refused tick is told on the row that was tapped and on no other row")
+func aRefusedTickIsToldOnTheRowThatWasTappedAndOnNoOtherRow() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let supplements = Commitment(
+        name: "Supplements and habits", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym, journaling, supplements], asOf: monday,
+        keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let secondRow = screen.dayView.rows[1]
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(secondRow)
+    }
+
+    #expect(screen.refusedChangeRow == secondRow)
+    #expect(screen.refusedChangeRow != screen.dayView.rows[0])
+    #expect(screen.refusedChangeRow != screen.dayView.rows[2])
+}
+
+@MainActor
+@Test("a refused take-back is told on the row that was tapped")
+func aRefusedTakeBackIsToldOnTheRowThatWasTapped() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let directory = place.deletingLastPathComponent()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let seedStore = try RecordStore(at: place)
+    try seedStore.add(Tick(gym, on: monday)!)
+    let seedRoster = try RosterStore(at: rosterPlace)
+    try seedRoster.add(gym)
+
+    try makeReadOnly(directory)
+    defer { try? makeWritable(directory) }
+
+    let screen = DayScreen(startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let row = screen.dayView.rows[0]
+    #expect(row.isKept)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(row)
+    }
+
+    #expect(screen.refusedChangeRow == row)
+    #expect(screen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a second refused tap is told on the row tapped last and no longer on the first")
+func aSecondRefusedTapIsToldOnTheRowTappedLastAndNoLongerOnTheFirst() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym, journaling], asOf: monday,
+        keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let firstRow = screen.dayView.rows[0]
+    let secondRow = screen.dayView.rows[1]
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(firstRow)
+    }
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(secondRow)
+    }
+
+    #expect(screen.refusedChangeRow == secondRow)
+    #expect(screen.refusedChangeRow != firstRow)
+}
+
+@MainActor
+@Test("a refused change does not change what a day screen says about keeping a record")
+func aRefusedChangeDoesNotChangeWhatADayScreenSaysAboutKeepingARecord() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let row = screen.dayView.rows[0]
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(row)
+    }
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(row)
+    }
+
+    #expect(screen.recordState == .kept)
+    #expect(screen.refusedChangeRow == row)
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when the app is shown again")
+func whatADayScreenTellsOnARowEndsWhenTheAppIsShownAgain() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.refusedChangeRow == nil)
+    #expect(!screen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when the app is shown again where the record then cannot be read")
+func whatADayScreenTellsOnARowEndsWhenTheAppIsShownAgainWhereTheRecordThenCannotBeRead() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    try FileManager.default.removeItem(at: blocker)
+    try FileManager.default.createDirectory(at: blocker, withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: place)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.recordState == .unreadable)
+    #expect(screen.refusedChangeRow == nil)
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when the same change is made again and is kept")
+func whatADayScreenTellsOnARowEndsWhenTheSameChangeIsMadeAgainAndIsKept() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let directory = place.deletingLastPathComponent()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let seedRoster = try RosterStore(at: rosterPlace)
+    try seedRoster.add(gym)
+
+    try makeReadOnly(directory)
+    defer { try? makeWritable(directory) }
+
+    let screen = DayScreen(startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let row = screen.dayView.rows[0]
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(row)
+    }
+
+    try makeWritable(directory)
+
+    try screen.tick(screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.refusedChangeRow == nil)
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when a change is kept on another row")
+func whatADayScreenTellsOnARowEndsWhenAChangeIsKeptOnAnotherRow() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let directory = place.deletingLastPathComponent()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let seedRoster = try RosterStore(at: rosterPlace)
+    try seedRoster.add(gym)
+    try seedRoster.add(journaling)
+
+    try makeReadOnly(directory)
+    defer { try? makeWritable(directory) }
+
+    let screen = DayScreen(startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let firstRow = screen.dayView.rows[0]
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(firstRow)
+    }
+
+    try makeWritable(directory)
+
+    try screen.tick(screen.dayView.rows[1])
+
+    #expect(screen.dayView.rows.map(\.name) == ["Gym", "Journaling"])
+    #expect(screen.dayView.rows.map(\.isKept) == [false, true])
+    #expect(screen.refusedChangeRow == nil)
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when a take-back is kept")
+func whatADayScreenTellsOnARowEndsWhenATakeBackIsKept() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let directory = place.deletingLastPathComponent()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym, journaling], asOf: monday,
+        keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    try screen.tick(screen.dayView.rows[1])
+    #expect(screen.dayView.rows[1].isKept)
+
+    try makeReadOnly(directory)
+    defer { try? makeWritable(directory) }
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    try makeWritable(directory)
+
+    try screen.tick(screen.dayView.rows[1])
+
+    #expect(!screen.dayView.rows[1].isKept)
+    #expect(screen.refusedChangeRow == nil)
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when the day screen is moved to the day before")
+func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsMovedToTheDayBefore() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    screen.showPreviousDay()
+
+    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.title == "Sunday 30 August 2026")
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when the day screen is moved to the day after")
+func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsMovedToTheDayAfter() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    screen.showNextDay()
+
+    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.title == "Tuesday 1 September 2026")
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when the day screen is sent back to today from another day")
+func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsSentBackToTodayFromAnotherDay() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showPreviousDay()
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    screen.showToday()
+
+    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.title == "Today · Monday 31 August 2026")
+}
+
+@MainActor
+@Test("what a day screen tells on a row stands when a move has nowhere to go")
+func whatADayScreenTellsOnARowStandsWhenAMoveHasNowhereToGo() throws {
+    let keptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let journalingFirst = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let journalingLast = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let firstSupported = CalendarDate(year: 1583, month: 1, day: 1)!
+    let lastSupported = CalendarDate(year: 9999, month: 12, day: 31)!
+
+    func blockerPlaces() throws -> (record: URL, roster: URL) {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let blocker = directory.appendingPathComponent("blocker")
+        try Data().write(to: blocker)
+        return (
+            blocker.appendingPathComponent("record.json"),
+            directory.appendingPathComponent("roster.json")
+        )
+    }
+
+    let firstPlaces = try blockerPlaces()
+    let first = DayScreen(
+        startingFrom: [journalingFirst], asOf: firstSupported,
+        keepingRecordAt: firstPlaces.record, keepingRosterAt: firstPlaces.roster)
+    #expect(throws: RecordStoreError.cannotWrite(at: firstPlaces.record)) {
+        try first.tick(first.dayView.rows[0])
+    }
+
+    let lastPlaces = try blockerPlaces()
+    let last = DayScreen(
+        startingFrom: [journalingLast], asOf: lastSupported,
+        keepingRecordAt: lastPlaces.record, keepingRosterAt: lastPlaces.roster)
+    #expect(throws: RecordStoreError.cannotWrite(at: lastPlaces.record)) {
+        try last.tick(last.dayView.rows[0])
+    }
+
+    first.showPreviousDay()
+    last.showNextDay()
+
+    #expect(first.refusedChangeRow == first.dayView.rows[0])
+    #expect(last.refusedChangeRow == last.dayView.rows[0])
+    #expect(first.title == "Today · Saturday 1 January 1583")
+    #expect(last.title == "Today · Friday 31 December 9999")
+}
+
+@MainActor
+@Test("what a day screen tells on a row stands when a day screen showing today is sent back to today")
+func whatADayScreenTellsOnARowStandsWhenADayScreenShowingTodayIsSentBackToToday() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+    let row = screen.dayView.rows[0]
+
+    screen.showToday()
+
+    #expect(screen.refusedChangeRow == row)
+    #expect(screen.title == "Today · Monday 31 August 2026")
+}
+
+@MainActor
+@Test("a tap on a day screen that is not keeping a record is told nothing on the row")
+func aTapOnADayScreenThatIsNotKeepingARecordIsToldNothingOnTheRow() throws {
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: place)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.tick(screen.dayView.rows[0])
+
+    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.recordState == .unreadable)
+}
+
+@MainActor
+@Test("a tap on a day screen holding a record from a later version is told nothing on the row")
+func aTapOnADayScreenHoldingARecordFromALaterVersionIsToldNothingOnTheRow() throws {
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(#"{"version": 2, "ticks": []}"#.utf8).write(to: place)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.tick(screen.dayView.rows[0])
+
+    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.recordState == .writtenByALaterVersion)
+}
+
+@MainActor
+@Test("a tap on a row for a day that has not arrived is told nothing on the row")
+func aTapOnARowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showNextDay()
+    try screen.tick(screen.dayView.rows[0])
+
+    #expect(screen.refusedChangeRow == nil)
+    #expect(!screen.dayView.rows[0].isKept)
+
+    let laterOnTuesday = DayScreen(
+        startingFrom: [journaling], asOf: tuesday,
+        keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!laterOnTuesday.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a tap on a row a day screen's day view does not hold is told nothing on the row")
+func aTapOnARowADayScreensDayViewDoesNotHoldIsToldNothingOnTheRow() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let mondayScreen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let wednesdayScreen = DayScreen(startingFrom: [journaling], asOf: wednesday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    try mondayScreen.tick(wednesdayScreen.dayView.rows[0])
+
+    #expect(mondayScreen.refusedChangeRow == nil)
+}
+
+@MainActor
+@Test("a tap on a row a day screen's day view does not hold does not end what is already told")
+func aTapOnARowADayScreensDayViewDoesNotHoldDoesNotEndWhatIsAlreadyTold() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("record.json")
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let mondayScreen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let wednesdayScreen = DayScreen(startingFrom: [journaling], asOf: wednesday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    let ownRow = mondayScreen.dayView.rows[0]
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try mondayScreen.tick(ownRow)
+    }
+
+    try mondayScreen.tick(wednesdayScreen.dayView.rows[0])
+
+    #expect(mondayScreen.refusedChangeRow == ownRow)
 }

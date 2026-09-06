@@ -1,12 +1,15 @@
 ## 1. The public surface
 
-- [ ] 1.1 Confirm the starting point before writing anything. `cd src/DayByDayKit && swift test`
+- [x] 1.1 Confirm the starting point before writing anything. `cd src/DayByDayKit && swift test`
   reports **300 tests passing** at `566297e`, and `pnpm run checks` reports
   `scenario coverage — 0/20 scenario(s) covered` for this change, naming
   `"a refused tick is told on the row that was tapped"` as next. A different number for either means
   something else has moved on this branch; report it rather than working around it (`AGENTS.md`
   rule 5).
-- [ ] 1.2 In `Sources/DayByDayKit/DayScreen.swift`, add
+
+  Confirmed 2026-09-06: 300 tests passing, and `pnpm run checks` reported exactly that coverage
+  line and next scenario.
+- [x] 1.2 In `Sources/DayByDayKit/DayScreen.swift`, add
   `public private(set) var refusedChangeRow: DayView.Row?`, initialised to `nil`, with the doc
   comment `design.md` § *The seam* gives it. **Add no other member** — no `RefusalReason`, no message
   string, no count, no `Bool` beside it; their absence is the requirement that every refusal is told
@@ -14,7 +17,7 @@
   all. Verify with `cd src/DayByDayKit && swift build` exiting 0 and `swift test` still reporting
   300 tests passing — adding an unread property must change nothing, and one of those 300 going red
   here is a rule-5 stop rather than a test to edit.
-- [ ] 1.3 Add a test helper to `Tests/DayByDayKitTests/DayScreenTests.swift` beside the existing
+- [x] 1.3 Add a test helper to `Tests/DayByDayKitTests/DayScreenTests.swift` beside the existing
   `freshPlaces()`: one that makes a directory read-only and one that makes it writable again, over
   `FileManager.setAttributes([.posixPermissions:], ofItemAtPath:)` with `0o500` and `0o700`.
   `design.md` § *Context* proves the mechanism end to end on this machine — a file inside a `0o500`
@@ -54,77 +57,137 @@ not evidence.
 
 ### Telling it (five)
 
-- [ ] 2.1 `a refused tick is told on the row that was tapped` — the first tick of the seam. Build the
+- [x] 2.1 `a refused tick is told on the row that was tapped` — the first tick of the seam. Build the
   place the way `DayScreenTests.swift:209` already does: a `blocker` file, with `record.json` beneath
   it. Assert both halves — `#expect(throws: RecordStoreError.cannotWrite(at: place))` **and**
   `refusedChangeRow`. The throw is settled item 7 and is not optional.
-- [ ] 2.2 `a refused tick is told on the row that was tapped and on no other row` — three
+
+  Ran red as predicted: `refusedChangeRow` was `nil`. Green after wrapping the write in a
+  `do`/`catch` that sets `refusedChangeRow = row` and rethrows.
+- [x] 2.2 `a refused tick is told on the row that was tapped and on no other row` — three
   commitments, the second ticked. The three rows differ in name, so they are three distinct values.
-- [ ] 2.3 `a refused take-back is told on the row that was tapped` — the read-only-directory place
+
+  Passed immediately, as `design.md` did not list it among the predicted-red scenarios: the
+  single-`Optional` shape from 2.1 already rules out telling a second row.
+- [x] 2.3 `a refused take-back is told on the row that was tapped` — the read-only-directory place
   from 1.3, seeded with the tick through a `RecordStore` **before** the directory is made read-only.
   Assert the row still says the commitment is kept: a refused take-back must not flip the row.
-- [ ] 2.4 `a second refused tap is told on the row tapped last and no longer on the first` — the "at
+
+  Passed immediately, once the roster was also seeded (via `RosterStore`, `startingFrom: []`)
+  before the directory was made read-only — otherwise `DayScreen.init` itself tries to write day
+  one into the read-only roster and the screen opens with no rows at all.
+- [x] 2.4 `a second refused tap is told on the row tapped last and no longer on the first` — the "at
   most one" requirement. Fails an implementation that appends rather than replaces.
-- [ ] 2.5 `a refused change does not change what a day screen says about keeping a record` — tick
+
+  Passed immediately: the single `Optional<Row>` shape from 2.1 already replaces rather than
+  appends, so there was nothing here to add.
+- [x] 2.5 `a refused change does not change what a day screen says about keeping a record` — tick
   twice at a place that cannot be written and assert `recordState` is still `.kept`. This is the
   guard against a later "improvement" that sets `.unreadable` when a write fails; a full disk refuses
   a write and opens the record perfectly.
 
+  Passed immediately: `tick(_:)` never assigns `recordState`, so there was nothing to add.
+
 ### How long it lasts (ten)
 
-- [ ] 2.6 `what a day screen tells on a row ends when the app is shown again` — shown again as of the
+- [x] 2.6 `what a day screen tells on a row ends when the app is shown again` — shown again as of the
   same day.
-- [ ] 2.7 `what a day screen tells on a row ends when the app is shown again where the record then
+
+  Ran red as predicted: `refusedChangeRow` was still set. Green after adding
+  `refusedChangeRow = nil` at the top of `shown(asOf:)`.
+- [x] 2.7 `what a day screen tells on a row ends when the app is shown again where the record then
   cannot be read` — after the refusal, replace the `blocker` file with a directory and write a run of
   bytes that is not a record at `blocker/record.json`, then show the app again. Assert
   `recordState == .unreadable` **and** that nothing is told: being shown re-forms everything from the
   place, and what is told does not outlive it whatever is then there.
-- [ ] 2.8 `what a day screen tells on a row ends when the same change is made again and is kept` —
+
+  Passed immediately: 2.6's unconditional clear at the top of `shown(asOf:)` already covers this
+  path.
+- [x] 2.8 `what a day screen tells on a row ends when the same change is made again and is kept` —
   the retry. Read-only directory, tick refused, directory made writable, the row the screen then
   holds ticked again. This is the only scenario that pins the clear on the successful path.
-- [ ] 2.9 `what a day screen tells on a row ends when a change is kept on another row` — settled
+
+  Ran red as predicted: `refusedChangeRow` was still set after the successful retry. Green after
+  adding `refusedChangeRow = nil` on the line after the write succeeds in `tick(_:)`.
+- [x] 2.9 `what a day screen tells on a row ends when a change is kept on another row` — settled
   item 4's "a tick on any row", asserted.
-- [ ] 2.10 `what a day screen tells on a row ends when a take-back is kept` — the half settled item 4
+
+  Passed immediately: 2.8's clear on the successful-write path does not name a row, so it already
+  covers a change landing on a different one.
+- [x] 2.10 `what a day screen tells on a row ends when a take-back is kept` — the half settled item 4
   added. Tick "Journaling" and keep it; make the place unwritable; tick "Gym" and be refused; make it
   writable; tick "Journaling" again, which is now a take-back, and it lands.
-- [ ] 2.11 `what a day screen tells on a row ends when the day screen is moved to the day before` —
+
+  Passed immediately: `tick(_:)` takes the same success path whether it made or took back a tick,
+  so 2.8's clear already covers it.
+- [x] 2.11 `what a day screen tells on a row ends when the day screen is moved to the day before` —
   quote `"Sunday 30 August 2026"` in full.
-- [ ] 2.12 `what a day screen tells on a row ends when the day screen is moved to the day after` —
+
+  Ran red as predicted: `refusedChangeRow` was still set. Green after adding
+  `refusedChangeRow = nil` inside `showPreviousDay()`'s `guard let ... else { return }`.
+- [x] 2.12 `what a day screen tells on a row ends when the day screen is moved to the day after` —
   quote `"Tuesday 1 September 2026"` in full.
-- [ ] 2.13 `what a day screen tells on a row ends when the day screen is sent back to today from
+
+  Ran red as predicted: `refusedChangeRow` was still set. Green after adding
+  `refusedChangeRow = nil` inside `showNextDay()`'s `guard let ... else { return }`.
+- [x] 2.13 `what a day screen tells on a row ends when the day screen is sent back to today from
   another day` — move back a day first, tick there, then go home; quote
   `"Today · Monday 31 August 2026"` in full.
-- [ ] 2.14 `what a day screen tells on a row stands when a move has nowhere to go` — both ends in one
+
+  Ran red as predicted: `refusedChangeRow` was still set. Green after clearing in `showToday()`,
+  conditional on `shownDay != today` (checked before the reassignment).
+- [x] 2.14 `what a day screen tells on a row stands when a move has nowhere to go` — both ends in one
   test, as the scenario states it: one screen on Saturday 1 January 1583 moved to the day before, one
   on Friday 31 December 9999 moved to the day after, each at its own place. Both commitments are kept
   from 1 January 1583. Red on any implementation that clears at the top of a move.
-- [ ] 2.15 `what a day screen tells on a row stands when a day screen showing today is sent back to
+
+  Passed immediately: the clears in `showPreviousDay()`/`showNextDay()` sit inside the `guard let
+  ... else { return }`, so a move with nowhere to go returns before either is reached.
+- [x] 2.15 `what a day screen tells on a row stands when a day screen showing today is sent back to
   today` — **the most important test in this change.** `showToday()` has no `guard` and never
   refuses, so the clear there must be conditional on `shownDay != today`; this test is red on the
   unconditional version, which is the one anybody writes first (`design.md` § *The three ends*).
 
+  Passed immediately: 2.13's `if shownDay != today` guard in `showToday()` already leaves the
+  notice standing when the screen was already on today before the call.
+
 ### Where it says nothing (five)
 
-- [ ] 2.16 `a tap on a day screen that is not keeping a record is told nothing on the row` — a place
+- [x] 2.16 `a tap on a day screen that is not keeping a record is told nothing on the row` — a place
   holding a run of bytes that is not a record, built the way `DayScreenTests.swift` already builds
   one.
-- [ ] 2.17 `a tap on a day screen holding a record from a later version is told nothing on the row` —
+
+  Passed immediately: `tick(_:)`'s existing `guard let recordStore else { return }` already returns
+  before `refusedChangeRow` could be set.
+- [x] 2.17 `a tap on a day screen holding a record from a later version is told nothing on the row` —
   the other half of not keeping a record, built the way the shipped later-version tests build it.
-- [ ] 2.18 `a tap on a row for a day that has not arrived is told nothing on the row` — set up at a
+
+  Passed immediately, for the same reason as 2.16: `recordStore` is `nil` either way `open(at:)`
+  refuses.
+- [x] 2.18 `a tap on a row for a day that has not arrived is told nothing on the row` — set up at a
   place that **cannot be written**, deliberately: it fails an implementation that reached the store
   before checking whether the row offers a tick.
-- [ ] 2.19 `a tap on a row a day screen's day view does not hold is told nothing on the row` — the
+
+  Passed immediately: `tick(_:)`'s existing guard order already checks `row.tick(asOf:)` before
+  ever reaching `recordStore.add`/`remove`, so the unwritable place is never touched.
+- [x] 2.19 `a tap on a row a day screen's day view does not hold is told nothing on the row` — the
   two-screen setup the shipped scenario *a row the day screen's day view does not hold changes
   nothing* already uses.
-- [ ] 2.20 `a tap on a row a day screen's day view does not hold does not end what is already told` —
+
+  Passed immediately: `tick(_:)`'s existing `guard dayView.rows.contains(row) else { return }` is
+  the first check, before any store is touched.
+- [x] 2.20 `a tap on a row a day screen's day view does not hold does not end what is already told` —
   the same setup with a refusal first. Red on an implementation that clears at the top of `tick(_:)`.
+
+  Passed immediately: the guard-not-held check returns before the `do`/`catch` block, which is
+  the only place this implementation ever assigns `refusedChangeRow`.
 
 ## 3. The shell
 
 No scenario covers this section — `docs/open-questions.md` § *No UI smoke layer* — so keep it to what
 has no judgement in it, and change nothing in `DayByDayKit` from here.
 
-- [ ] 3.1 In `src/DayByDay/DayByDay/ContentView.swift`, inside the existing
+- [x] 3.1 In `src/DayByDay/DayByDay/ContentView.swift`, inside the existing
   `ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset)`, draw a short message under the
   row's name when `row == screen.refusedChangeRow`, and nothing otherwise. **Keep
   `try? screen.tick(row)` exactly as it is** — the screen is what does the telling now, and a
@@ -146,13 +209,39 @@ has no judgement in it, and change nothing in `DayByDayKit` from here.
   driven from this sandbox, say so plainly and hand that half back rather than reporting it done;
   that is what #93's own 3.2 did.
 
+  **Half done, half handed back.** The build and launch half was run and observed in this sandbox:
+  `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay -destination
+  'platform=iOS Simulator,name=iPhone 17' build` exited 0 (**BUILD SUCCEEDED**); `xcrun simctl
+  boot "iPhone 17"`, `install` and `launch com.example.DayByDay` all succeeded; a screenshot
+  (`xcrun simctl io booted screenshot`) confirmed the built app launched onto the day screen with
+  the owner's real roster ("Creatine", "Magnesium", "Nails", "Run", "Yuno" on 6 September 2026) —
+  the same container the repo owner uses day to day, since this machine has only the one
+  Simulator identity.
+
+  The tap-driven half is handed back, for the same reason #93's own 3.2 gave: `simctl help` lists
+  no subcommand that synthesizes a touch, and `idb`/`cliclick` are not installed and Homebrew is
+  unusable here (`AGENTS.md` § *This machine*). It was **not** attempted by chmod-ing the real
+  container's `Library/Application Support/DayByDay` directory either, on top of that: this
+  container already holds the owner's own kept ticks (`record.json` dated 2026-09-04,
+  `roster.json` dated 2026-09-05), so leaving it read-only on any failure of this session, or
+  forgetting the `chmod 0700` afterwards, would put real data at risk for a check this sandbox
+  cannot finish anyway. The repo owner needs to run the four taps himself, on his own Simulator,
+  exactly as he did for #93's 3.2: tap a row, tap a second row, step to the day before, and
+  confirm the message text and its placement under the row's name.
+
 ## 4. Gates
 
-- [ ] 4.1 `cd src/DayByDayKit && swift test` reports **320 tests passing** and no failures — the
+- [x] 4.1 `cd src/DayByDayKit && swift test` reports **320 tests passing** and no failures — the
   twenty here plus the 300 already on the branch at `566297e`, none of which may change — and
   `pnpm run verify` exits 0.
-- [ ] 4.2 `pnpm exec openspec validate add-refused-tick-notice --strict` exits 0 and `pnpm run
+
+  Confirmed: `swift test` reports 320 tests passing, 0 failures. `pnpm run verify` exits 0
+  (lint, typecheck, 118 TypeScript tests).
+- [x] 4.2 `pnpm exec openspec validate add-refused-tick-notice --strict` exits 0 and `pnpm run
   checks` reports scenario coverage as 20 of 20.
+
+  Confirmed: `openspec validate` prints "Change 'add-refused-tick-notice' is valid" and exits 0.
+  `pnpm run checks` reports "scenario coverage — all 20 scenario(s) have a matching test".
 - [ ] 4.3 Have `mattpocock-skills:code-review` run on both axes and record its findings here with a
   disposition for each (**G7**). This box is the reviewer having been run and its findings written
   down, not a verdict on them: `AGENTS.md`'s routing table gives the review to a separate agent that
