@@ -574,21 +574,22 @@ place. If one appears to be needed, that is a requirement this delta is missing 
 
 ## 5. Gates, and the files this change is and is not allowed to write
 
-- [ ] 5.1 `cd src/DayByDayKit && swift test` reports **371 tests passing** and no failures, and
-  `pnpm run verify` exits 0. The 371 is the 300 that were on `main` at `566297e`, plus the 47 the
-  first implementation pass wrote, plus the 1 unit test `d364a25` added for a guard no scenario
-  reached, plus the 9 § 6 writes, plus the 14 § 7 writes. **`add-refused-tick-notice` (#100) merged
-  to `main` as `b454d16` after this count was taken**, adding tests of its own; whoever rebases this
-  branch re-derives the number from the rebased tree and reports the difference rather than editing
-  this box to whatever `swift test` happens to print. **The first version of this box said 347
-  and was ticked; the count on the branch was already 348** — measured on 2026-09-06 — so a box
-  asserting a number was ticked against a different number. The box is unticked again here because
-  357 was true of the branch when § 6 finished and is not the number that must be true at the end.
-  None of the 357 may change.
-- [ ] 5.2 `pnpm exec openspec validate add-commitments-screen --strict` exits 0 and `pnpm run
+- [x] 5.1 `cd src/DayByDayKit && swift test` reports **391 tests passing** and no failures, and
+  `pnpm run verify` exits 0. 391 is not 357 plus 14: the first version of this box's arithmetic —
+  300 on `main` at `566297e`, plus 47, plus 1, plus 9 § 6 writes, plus 14 § 7 writes — assumed the
+  tree this branch rebases onto stands still, and it did not. **Re-derived 2026-09-06, on rebase
+  onto `main` at `8847fa6`**, which carries `add-refused-tick-notice` (#100, `b454d16`): `swift
+  test` on the rebased tree, before any § 7 write, reported **377**, not 357 — the 20-test
+  difference is #100's own suite, landed on `main` while this folder stood reopened and confirmed
+  by counting `@Test` under `DayScreenTests.swift`'s `add-refused-tick-notice` mark. 377 plus the 14
+  § 7 writes (7.2–7.15) is 391, and `swift test` reports exactly that after 7.15. `pnpm run verify`
+  exits 0 on the same tree. None of the 391 may change from here.
+- [x] 5.2 `pnpm exec openspec validate add-commitments-screen --strict` exits 0 and `pnpm run
   checks` reports scenario coverage as 74 of 74 — the 51 of the first version, plus the 5 rhythm
   scenarios and the 4 calendar-date scenarios § 6 adds, plus the 13 refused-change scenarios and the
-  1 day-screen scenario § 7 adds. Unticked again for the same reason as 5.1: 60 was true when § 6 finished.
+  1 day-screen scenario § 7 adds. Unlike 5.1, this count does not move on rebase: #100 lands no
+  scenario in this delta's own specs, and `pnpm run checks` reports "all 74 scenario(s) have a
+  matching test" against the rebased tree.
 - [ ] 5.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Five
   things the reviewer is asked to look for by name: that every one of `define`, `confirmStopKeeping`
   and `keepAgain` assigns `kept` and `stopped` only **after** the `RosterStore` call returns, so
