@@ -177,3 +177,46 @@ func aYearPastTheUpperBoundIsNotACalendarDate() {
 
     #expect(date == nil)
 }
+
+@Test("a calendar date gives back the three numbers it was formed from")
+func aCalendarDateGivesBackTheThreeNumbersItWasFormedFrom() {
+    let date = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    #expect(date.year == 2026)
+    #expect(date.month == 8)
+    #expect(date.day == 31)
+}
+
+@Test("a calendar date gives back its month and its day the way round they were offered")
+func aCalendarDateGivesBackItsMonthAndItsDayTheWayRoundTheyWereOffered() {
+    let firstOfDecember = CalendarDate(year: 2026, month: 12, day: 1)!
+    let twelfthOfJanuary = CalendarDate(year: 2026, month: 1, day: 12)!
+
+    #expect(firstOfDecember.month == 12)
+    #expect(firstOfDecember.day == 1)
+    #expect(twelfthOfJanuary.month == 1)
+    #expect(twelfthOfJanuary.day == 12)
+}
+
+@Test("a calendar date at each end of the supported years gives back that year")
+func aCalendarDateAtEachEndOfTheSupportedYearsGivesBackThatYear() {
+    let firstSupportedDay = CalendarDate(year: 1583, month: 1, day: 1)!
+    let lastSupportedDay = CalendarDate(year: 9999, month: 12, day: 31)!
+
+    #expect(firstSupportedDay.year == 1583)
+    #expect(firstSupportedDay.month == 1)
+    #expect(firstSupportedDay.day == 1)
+    #expect(lastSupportedDay.year == 9999)
+    #expect(lastSupportedDay.month == 12)
+    #expect(lastSupportedDay.day == 31)
+}
+
+@Test("a calendar date formed again from what it gives back is the same date")
+func aCalendarDateFormedAgainFromWhatItGivesBackIsTheSameDate() {
+    let leapDay = CalendarDate(year: 2028, month: 2, day: 29)!
+
+    let roundTripped = CalendarDate(year: leapDay.year, month: leapDay.month, day: leapDay.day)
+
+    #expect(roundTripped != nil)
+    #expect(roundTripped == leapDay)
+}

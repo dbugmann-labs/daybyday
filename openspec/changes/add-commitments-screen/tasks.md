@@ -494,12 +494,12 @@ and a second would be the only reason anyone had to look for them. The behaviour
 (`4e92da5`), so all four are expected green on first write; **record in § 5.6 whether they were**,
 and treat any red one as a rule-5 stop rather than as a licence to change `CalendarDate`.
 
-- [ ] 6.1 `a calendar date gives back the three numbers it was formed from`
-- [ ] 6.2 `a calendar date gives back its month and its day the way round they were offered` — the
+- [x] 6.1 `a calendar date gives back the three numbers it was formed from`
+- [x] 6.2 `a calendar date gives back its month and its day the way round they were offered` — the
   test that fails a read-back with the month and the day transposed, which the first scenario alone
   cannot catch because 2026-08-31 has no month that could be mistaken for its day.
-- [ ] 6.3 `a calendar date at each end of the supported years gives back that year`
-- [ ] 6.4 `a calendar date formed again from what it gives back is the same date` — the round trip
+- [x] 6.3 `a calendar date at each end of the supported years gives back that year`
+- [x] 6.4 `a calendar date formed again from what it gives back is the same date` — the round trip
   the edge actually performs, on 29 February 2028 so a read-back that lost the leap day fails.
 
 ### The rhythm number a person gave
