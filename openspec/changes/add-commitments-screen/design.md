@@ -17,21 +17,33 @@ whose answers follow from what is already in the repository: whether the commitm
 a `RosterStore` with the day screen or opens its own, and by what mechanism the day screen re-reads
 on being returned to. § *The seam* and § *Being returned to is not being shown* answer them.
 
-**This folder has been reopened once, and this document is its second version.** The Story passed
-G4 on 2026-09-04, was implemented, and was reviewed twice. The second pass raised eight findings,
-of which three changed the requirements and are worked into the sections below: a public widening
-of `CalendarDate` that shipped with nothing authorising it (§ *A calendar date gives back its three
-numbers*), a form quietly rewriting and quietly swallowing numbers the kit refuses (§ *A rhythm
-carries the number a person gave*), and, in `tasks.md`, a set of signed instructions replaced by a
-report of why they could not be followed, two of whose stated reasons were untrue. Every section
-below that was written before that pass and is still true is left exactly as it was, so the second
-G4 is read as a diff against the first.
+**This folder has been reopened twice, and this document is its third version.** The Story passed
+G4 on 2026-09-04, was implemented, and has been reviewed three times. The second pass raised eight
+findings, of which three changed the requirements and are worked into the sections below: a public
+widening of `CalendarDate` that shipped with nothing authorising it (§ *A calendar date gives back
+its three numbers*), a form quietly rewriting and quietly swallowing numbers the kit refuses
+(§ *A rhythm carries the number a person gave*), and, in `tasks.md`, a set of signed instructions
+replaced by a report of why they could not be followed, two of whose stated reasons were untrue.
+Every section below that was written before that pass and is still true is left exactly as it was,
+so the second G4 is read as a diff against the first.
+
+**The third pass raised one finding about the requirements, and it is the reason for this version:
+how long a refusal is told was left to the shell.** `CommitmentsView.swift` held three `@State`
+refusals with three unwritten lifetimes, two of which were already stale in ways nothing could
+catch. § *How long a refusal is told is this capability's, and which change it was is part of it* is
+the decision, two requirements in `specs/commitment/spec.md` are the rule, and the words a person
+reads do not move. The owner settled two further things when they reopened the folder: `DayScreen`'s
+unread roster store is deleted (§ *The store `DayScreen` holds is still not read*), and two
+residuals the third pass turned up are recorded in `tasks.md` § 5.6 rather than fixed here. As
+before, every section still true is left exactly as it was, so the third G4 is read as a diff
+against the second.
 
 Everything measured below was measured on this machine on 2026-09-04, from `566297e`, the `main`
 this branch is rebased onto: Apple Swift
 6.3.3, `cd src/DayByDayKit && swift test` reporting **300 tests passing**, `openspec` 1.10.0, Node
 v24.19.0. Re-measured on 2026-09-06 on the branch as the second review pass left it, `swift test`
-reports **348**, and the nine scenarios this version adds take it to **357**.
+reports **348**; the nine scenarios the second version added take it to **357**, and the thirteen
+this version adds take it to **370**.
 
 ## Goals / Non-Goals
 
@@ -43,6 +55,8 @@ reports **348**, and the nine scenarios this version adds take it to **357**.
 - A commitment defined on one screen visible on the other without the app being backgrounded.
 - Every refusal a person can act on differently told apart from the others, and every refusal that
   leaves them the same single action told alike.
+- **How long a refusal is told decided here, not by whatever draws the screen.** The distinction and
+  the lifetime are this capability's; the words stay the shell's.
 
 **Non-Goals**
 
@@ -66,9 +80,9 @@ reports **348**, and the nine scenarios this version adds take it to **357**.
 beside `DayScreen`.** The second is the existing `DayScreen`, which gains one method. The third is
 `CalendarDate`, which gains no method at all: it is the seam every `schedule` scenario in this repo
 already attaches at, and the four scenarios this change adds to that capability attach there too,
-alongside the nineteen `ScheduleTests.swift` already carries. The forty-five `commitment` scenarios
+alongside the nineteen `ScheduleTests.swift` already carries. The fifty-eight `commitment` scenarios
 attach at the first and the eleven `day-screen` scenarios at the second — of which four are
-restated verbatim under MODIFIED and already have their tests, so fifty-six tests are written.
+restated verbatim under MODIFIED and already have their tests, so sixty-nine tests are written.
 **No fourth seam appears, and the third was already there**: "an existing seam beats a new one" is
 satisfied by putting the read-back on the type the capability is about rather than by threading a
 component accessor through `DayScreen` or `CommitmentsScreen`.
@@ -99,6 +113,22 @@ public final class CommitmentsScreen {
 
     /// The commitment a stop has been asked for and not yet confirmed or cancelled.
     public private(set) var awaitingConfirmation: Commitment?
+
+    /// The change asked for last that was refused, and why — at most one at a time, `nil` when the
+    /// last change asked for was kept and when none has been asked for. Cleared by `shown(asOf:)`.
+    public private(set) var refusedChange: RefusedChange?
+
+    /// A change a commitments screen was asked for and refused: which one, and why. The commitment
+    /// is carried on the two changes that are asked about a commitment already on a list, so that
+    /// a person is told beside the row they tapped rather than in one place for all three.
+    public enum RefusedChange: Equatable, Sendable {
+        case defining(Refusal)
+        case stopping(Commitment, Refusal)
+        case keepingAgain(Commitment, Refusal)
+
+        /// Why it was refused, whichever change it was.
+        public var refusal: Refusal { … }
+    }
 
     /// Why a change was refused. `nil` from any of the four below means it was kept at the place
     /// before that call returned.
@@ -243,18 +273,30 @@ its own `init`, so after the commitments screen has written, it is precisely the
 writes through a local `store` inside `openRoster(at:takingOnIfEmpty:)` and never through the
 field either.
 
-**This change therefore leaves the field exactly as it is, still unread.** Deleting it is a change
-to `src/` that no requirement in this delta asks for, on a line the owner looked at and chose to
-keep; doing it quietly inside a Story would be overturning that decision without saying so. What is
-owed instead is that they are told the reason has expired. Three ways out, none of them this
-Story's to take unasked:
+**The first two versions of this document therefore left the field exactly as it was, still unread**,
+and put the three ways out to the human rather than taking one:
 
-1. **Delete the field** — three lines and its doc comment, in a file § *The seam* already edits.
+1. **Delete the field** — its declaration, its doc comment and the three assignments, in a file
+   § *The seam* already edits.
 2. **Keep it** for a later Story that does share a handle, with the doc comment corrected so it no
    longer names #104 as the consumer that will read it.
 3. **Share the handle after all**, which is the alternative § *The commitments screen opens its own
    store at the same place* rejects on the seam, and which would need `DayScreen` to expose its
    store publicly.
+
+**Decided 2026-09-06, by the owner, when this folder was reopened for its third G4: take the first
+way out and delete the field.** The reason #103's G7 kept it was that this Story would read it, and
+this design disproves that rather than merely failing to use it — sharing the handle is the thing
+§ *The commitments screen opens its own store at the same place* rules out, so no design that keeps
+the two screens apart can reach the field. Way 2 keeps a field alive on a promise no longer made by
+anything, and way 3 reopens a seam decision on the strength of a line nothing reads. `tasks.md`
+§ 5.7 is the box; it is `private`, assigned at three sites — `DayScreen.swift:30` declares it, and
+`:73`, `:258` and `:272` assign it — and read at none, so the deletion changes no behaviour, needs no
+requirement and moves no test. Those three assignments are also the only readers of
+`openRoster(at:takingOnIfEmpty:)`'s `store` member, so the deletion leaves that member read by
+nothing and the tuple narrows to `(state:, roster:)` in the same commit — the handle day one is
+written through is a local inside that function and is unaffected. Any test that moves is a rule-5
+stop, not a licence to change one.
 
 ### Being returned to is not being shown
 
@@ -342,6 +384,69 @@ and putting it in the kit would make the kit own a string per case for no test's
 list does not hold answers `nil` and does nothing — the same shape `DayScreen.tick` already has for
 a row its day view does not hold. There is nothing for a person to act on, because there was
 nothing there.
+
+### How long a refusal is told is this capability's, and which change it was is part of it
+
+**Chosen: `CommitmentsScreen` holds one `refusedChange: RefusedChange?` — which of the three changes
+was asked for last, the commitment it was asked about where there is one, and why it was refused —
+and the shell holds no refusal state at all.** This is the third review pass's finding and it
+reverses the shape the first two versions of this document left implicit: `define`,
+`confirmStopKeeping` and `keepAgain` each answered a `Refusal?` and then forgot it, so
+`CommitmentsView.swift` carried three `@State` refusals and three lifetimes, none of them written
+down anywhere.
+
+**The words are untouched and stay the shell's.** Task 4.1's `refusalText(_:)` keeps its five
+sentences and ADR-1022 is unamended: what moves here is the *lifetime*, not the vocabulary. The kit
+gains no string.
+
+**There is no live defect on this branch, and the reason is a view-lifetime detail rather than a
+rule.** `CommitmentsView` is reached through `navigationDestination(isPresented:)`, so SwiftUI
+destroys it on pop and the `@State` resets. Present the same screen as a sheet, a tab or a detail
+column later and every one of those three lifetimes changes silently with no test failing —
+`docs/open-questions.md` § *No UI smoke layer* is exactly the layer that would not catch it. Two
+things already inside this Story say that is the wrong place for it: `awaitingConfirmation` is a
+transient screen fact of precisely this kind and is held at the seam *with* a requirement, and
+`tasks.md` § 4's own guard says a line in `src/DayByDay` that decides something is a requirement
+this delta is missing.
+
+**Two lifetimes were already wrong rather than merely unwritten.** Held in three independent slots,
+a refused stop went on being drawn under `Section("Kept")` after a later take-up-again succeeded —
+two messages about two different moments, one of them contradicted. And a `rhythmOutOfRange`
+message stayed under the Add button after the person switched the rhythm picker to a shape that
+cannot produce it. The first is closed here by the at-most-one rule; the second is not, and § *Risks
+/ Trade-offs* records why and what closing it would cost.
+
+**Two conditions end the telling, and they are the at-most-one rule read twice.** The screen holds
+the outcome of the last change asked of it, so a change that is asked for and *kept* leaves nothing
+held, and a change that is asked for and refused replaces what was there. Being shown again ends it
+too, because being shown re-reads the place and forms both lists afresh — the same sentence this
+delta already writes for the roster state and for the day the screen offers. Nothing else ends it,
+and in particular no clock does.
+
+**Why `RefusedChange` carries the change and not just the `Refusal`.** A bare `Refusal?` was the
+first shape considered and it does not survive the second review pass's finding 6, which moved each
+message beside the control that produced it: a `.notKept` can come from any of the three calls, so
+the case alone cannot place the message. The shell would then either draw all five sentences in one
+place — and "Give it a name." belongs beside the name field, which on a phone is below two lists
+that may both be nine rows long and off-screen when Add is tapped — or remember which call it last
+made, which is the lifetime coming straight back into the shell under another name. Carrying which
+change is one public enum and it is the same choice `add-refused-tick-notice` (#100) makes on the
+day screen, where `refusedChangeRow` holds *which row* for the same reason.
+
+**Why no fourth condition for the form changing.** Ending a defining refusal when the person edits
+the name, the rhythm or the date would close the second stale case above, and it needs the kit to be
+told the form changed — a public method the shell must call from an `.onChange` on each of six
+`@State` values. A forgotten one is silent staleness that no test at any seam can reach, which is
+the defect this section exists to remove rather than a fix for it. The cheaper honest answer is that
+the message is about the change you asked for last and stands until you ask for another, and the
+next Add replaces it with the right answer.
+
+**Why no ADR.** `add-refused-tick-notice` (#100) states the same rule for the day screen and is an
+open draft that has not merged; writing the pattern down as a decision record while one of its two
+instances is unlanded would fix a shape that has been through review once. The two deltas agree
+today — one refusal at a time, the last change asked for, ended by the app being shown and by a
+change that lands — and whichever merges second should be read against the first. If they diverge,
+that divergence is the ADR, and it belongs to whichever Story causes it.
 
 ### A rhythm is a schedule with the start date taken out
 
@@ -501,9 +606,22 @@ reverted.
   in the same PR. The cost is that the G4 digest signs a folder whose branch will also carry
   SwiftUI, which is exactly what ADR-1019 wanted to avoid; the benefit is that the owner can use
   the Story at G7 rather than after a second branch.
-- **`DayScreen.rosterStore` stays dead.** The reason it was kept at #103's G7 was that #104 would
-  read it, and #104 does not. § *The store `DayScreen` holds is still not read* sets out the three
-  ways out; this delta takes none of them and the field is left byte-for-byte as it is.
+- **`DayScreen.rosterStore` is deleted, and #103's G7 decision is overturned in the open.** The
+  reason it was kept was that #104 would read it, and #104 does not. § *The store `DayScreen` holds
+  is still not read* records the owner's decision at this Story's third G4 and `tasks.md` § 5.7 is
+  the box. The risk is the one #103's G7 named: a later Story that does want a live roster handle on
+  the day screen re-adds it. That is cheap — three lines in a file that will be open anyway — and
+  cheaper than a field kept alive on a promise nothing makes.
+- **A defining refusal outlives an edit to the form.** The screen holds the outcome of the last
+  change asked of it, and editing the name, the rhythm or the date is not a change asked for, so
+  "That number isn't one this rhythm accepts." stays under the Add button after the person switches
+  the rhythm picker to a shape that cannot produce it, until the next Add or until the app is shown.
+  § *How long a refusal is told is this capability's* records why the fix — a public method the
+  shell calls from an `.onChange` on each of six `@State` values — costs more than it buys: a
+  forgotten `.onChange` is silent staleness no test at any seam can reach, which is the same defect
+  in a new place. **The trigger to revisit is a second refusal that is about the form's contents
+  rather than about the roster place**, or a form long enough that a person cannot see the message
+  and the field they changed at once.
 - **Nothing automated proves the form draws.** `docs/open-questions.md` § *No UI smoke layer* is
   still open, and this Story roughly doubles the SwiftUI in the app — a second screen, a navigation
   and a form with four rhythm shapes. `tasks.md` § 5 closes it in the simulator by hand, which is
@@ -572,6 +690,17 @@ you` entry, because a question whose answer is already given is a decision:
   was the reviewer's finding 7, left explicitly to be judged rather than assumed, and the judgment
   is that `tasks.md` § 4's own guard fires: two lines in `CommitmentsView.swift` decide, one a
   value and one a refusal. § *A rhythm carries the number a person gave*.
+
+**The third review pass added two more, and both were settled by the owner before this version was
+written.** Same shape as the two above: recorded as answered, not asked.
+
+- *How long is a refusal told, and who decides it?* — this capability, not the shell. The three
+  `@State` refusals in `CommitmentsView.swift` are replaced by one `refusedChange` at the seam, with
+  two requirements saying what is held and for how long. The words stay the shell's.
+  § *How long a refusal is told is this capability's, and which change it was is part of it*.
+- *What becomes of `DayScreen`'s unread roster store?* — it is deleted. The reason #103's G7 kept it
+  was disproved by this design rather than merely unused by it. § *The store `DayScreen` holds is
+  still not read*, and `tasks.md` § 5.7.
 
 Writing the delta on the grill's twelve answers turned up **no question that would change what this
 Story does**, so there is no `## Questions for you` section and the Story is at G4 rather than at a

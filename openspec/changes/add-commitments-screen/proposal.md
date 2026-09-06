@@ -46,6 +46,15 @@ built.
   a number already judged, `CommitmentsScreen.Refusal` gains the case that reports it, and the
   shell stops both silently rewriting a `0` to a `1` and silently doing nothing when a number it
   cannot use is typed. Found at the second review pass of this Story.
+- **Says how long a refusal is told, and holds it where a test can reach it.** `define`,
+  `confirmStopKeeping` and `keepAgain` each formed a judgement and immediately forgot it, so
+  `CommitmentsView.swift` held three `@State` refusals and three lifetimes nothing wrote down — and
+  two of the three were already stale, one telling a person a stop had failed after a later
+  take-up-again had succeeded. A commitments screen now holds **the change asked for last that was
+  refused**: which of the three it was, the commitment it was asked about, and why. It holds at most
+  one, and it holds it until the app is shown again or until a change reaches the roster place.
+  Two requirements say so; the **words** a person reads do not move and stay the shell's, exactly as
+  the roster state's already are. Found at the third review pass.
 - **Makes a calendar date give back the year, the month and the day it names**, as one requirement
   **ADDED** to `schedule`. ADR-1004 put calendar dates in the rule engine and instants at the
   edge, and an edge converts both ways; the way back was never specified and could not be
@@ -94,12 +103,13 @@ the precedent that one change may claim more than one.
 
 ### Modified Capabilities
 
-- `commitment`: ten requirements **ADDED**, with forty-five scenarios between them — the two
+- `commitment`: twelve requirements **ADDED**, with fifty-eight scenarios between them — the two
   lists, defining a commitment, the two refusals the form makes about its own contents, the
   refusal it reports on behalf of a rhythm's own value, telling a duplicate apart from a roster
   that could not be written, stopping with a confirmation first, taking one up again, the place it
-  keeps its roster and being shown again, and a commitments screen that cannot read its roster at
-  all. **No existing requirement moves.** Nothing here changes what a commitment is, what a roster
+  keeps its roster and being shown again, a commitments screen that cannot read its roster at
+  all, and the two the third review pass added: which change a screen holds as refused, and how long
+  it holds it. **No existing requirement moves.** Nothing here changes what a commitment is, what a roster
   does, or what a roster store keeps: the screen is a caller of all three and adds no rule to any
   of them.
 - `day-screen`: one requirement **ADDED** — *A day screen reads its roster again when it is
@@ -131,9 +141,12 @@ refused by the value the `schedule` capability already defines, not by a new rul
   (public, holding the enum lifted out of `DayScreen`). Two existing files are edited:
   `DayScreen.swift` loses its nested `RosterState` and gains `returnedTo()`; `Roster.swift` is
   untouched — the commitments screen reads `entries` directly, which #103 already widened to
-  module-internal. `DayScreen`'s `private var rosterStore` is **left exactly as it is, still
-  unread**: `design.md` § *The store `DayScreen` holds is still not read* explains why this design
-  does not reach it and why deleting it is the human's call rather than this Story's. A third
+  module-internal. `DayScreen`'s `private var rosterStore` is **deleted**, with the three
+  assignments that fed it and the now-unread `store` member of `openRoster`'s return tuple: the
+  reason #103's G7 kept it was that this Story would read it, and this design disproves that rather
+  than merely failing to use it. The owner decided that at this Story's third G4; `design.md`
+  § *The store `DayScreen` holds is still not read* carries the decision and `tasks.md` § 5.7 is the
+  box. No behaviour changes and no test moves. A third
   existing file is edited, and it is the one the second review pass found had already been edited
   without authority: `CalendarDate.swift`'s `year`, `month` and `day` become `public let`s, which
   is the whole of the `schedule` requirement above and nothing more — no method moves, no
@@ -146,8 +159,11 @@ refused by the value the `schedule` capability already defines, not by a new rul
   layer* stands. Neither file may decide anything, and the second review pass found two lines in
   `CommitmentsView.swift` that did — a `max(1, …)` rewriting a typed day count and three `guard`s
   turning a number the kit refuses into silence. Both go, and the requirement that replaces them
-  is the rhythm-number refusal above.
-- **Tests** — fifty-six new acceptance tests, one per new scenario: forty-five in a new
+  is the rhythm-number refusal above. The third pass found the same guard fired once more, on a
+  lifetime rather than a value: `CommitmentsView.swift`'s three `@State` refusals go too, and the
+  file draws whatever `screen.refusedChange` holds, beside the row or the button the change was
+  asked from.
+- **Tests** — sixty-nine new acceptance tests, one per new scenario: fifty-eight in a new
   `Tests/DayByDayKitTests/CommitmentsScreenTests.swift`, seven at the end of the existing
   `DayScreenTests.swift`, and four at the end of the existing `ScheduleTests.swift`, which is
   where every `CalendarDate` scenario in this repo already lives. Measured on this machine on
@@ -155,7 +171,8 @@ refused by the value the `schedule` capability already defines, not by a new rul
   `cd src/DayByDayKit && swift test` reported **300 tests passing**. Measured again on 2026-09-06,
   on the branch as the second review pass left it, it reports **348** — the 300, plus the 47 the
   first pass wrote, plus one unit test the pass added for a guard no scenario reached. The nine
-  scenarios added here take it to **357**. `openspec` is 1.10.0 and `node --version` is v24.19.0.
+  scenarios the second version added take it to **357**, and the thirteen this version adds take it
+  to **370**. `openspec` is 1.10.0 and `node --version` is v24.19.0.
 - **`openspec/specs/`** — `commitment/spec.md`, `day-screen/spec.md` and `schedule/spec.md` are
   rewritten at archive time by `/opsx:archive` and nothing else. Three capabilities are claimed
   and all three are edited, so CI check 2 stays green.
@@ -172,9 +189,11 @@ refused by the value the `schedule` capability already defines, not by a new rul
   instruction with their decision to authorise the `CalendarDate` widening: § *Known gaps*'s
   read-back entry has assigned `CalendarDate`'s `year`, `month` and `day` to "a Story of its own
   against a second capability" since #72, and that sentence becomes false the moment this delta
-  lands. It is corrected to say which face of the gap this Story closes and which four remain —
+  lands. It is corrected to say which face of the gap this Story closes and which six remain —
   `Comparable`, and the `DayOfMonth`, `DayInterval`, `WeeklyQuota`, `History` and `Tick`
-  read-backs. It rides its own commit on this branch so it can be dropped on its own. The file's
+  read-backs — and, when this folder was reopened a second time, to fix the arithmetic of that
+  correction: it had said "five" over a list of six and then called the ranges the steppers write
+  out "a sixth face", which was already taken. It rides its own commit on this branch so it can be dropped on its own. The file's
   two *other* owed entries stay owed and `tasks.md` § 5.5 still names them for a chore commit
   alongside the merge, exactly as #92, #93 and #103 handled theirs.
 - **`docs/backlog.md`** — untouched, and it needs no edit. The three wants this Story serves —

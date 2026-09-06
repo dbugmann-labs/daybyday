@@ -172,7 +172,9 @@ is not evidence.
 
 - [x] 2.33 `a commitments screen keeps its roster at the place a day screen keeps its` — asserts
   `CommitmentsScreen.rosterPlace == DayScreen.rosterPlace` and **constructs no screen**, so nothing
-  in this file ever opens the real Application Support directory.
+  in this file ever opens the real Application Support directory. That makes it the one test of the
+  seventy-three that cannot go red, since the static is *declared* as `DayScreen.rosterPlace`;
+  § 5.6's first residual records the trade-off, which stands.
 - [x] 2.34 `a commitment defined through a commitments screen is held by a day screen opened afterwards at the same place`
   — the one test in § 2 that builds a `DayScreen`; it needs a record place too, and it must be a
   fresh temporary one.
@@ -572,15 +574,18 @@ place. If one appears to be needed, that is a requirement this delta is missing 
 
 ## 5. Gates, and the files this change is and is not allowed to write
 
-- [x] 5.1 `cd src/DayByDayKit && swift test` reports **357 tests passing** and no failures, and
-  `pnpm run verify` exits 0. The 357 is the 300 that were on `main` at `566297e`, plus the 47 the
+- [ ] 5.1 `cd src/DayByDayKit && swift test` reports **370 tests passing** and no failures, and
+  `pnpm run verify` exits 0. The 370 is the 300 that were on `main` at `566297e`, plus the 47 the
   first implementation pass wrote, plus the 1 unit test `d364a25` added for a guard no scenario
-  reached, plus the 9 § 6 writes. **The first version of this box said 347 and was ticked; the
-  count on the branch was already 348** — measured on 2026-09-06 — so a box asserting a number was
-  ticked against a different number. None of the 348 may change.
-- [x] 5.2 `pnpm exec openspec validate add-commitments-screen --strict` exits 0 and `pnpm run
-  checks` reports scenario coverage as 60 of 60 — the 51 of the first version, plus the 5 rhythm
-  scenarios and the 4 calendar-date scenarios § 6 adds.
+  reached, plus the 9 § 6 writes, plus the 13 § 7 writes. **The first version of this box said 347
+  and was ticked; the count on the branch was already 348** — measured on 2026-09-06 — so a box
+  asserting a number was ticked against a different number. The box is unticked again here because
+  357 was true of the branch when § 6 finished and is not the number that must be true at the end.
+  None of the 357 may change.
+- [ ] 5.2 `pnpm exec openspec validate add-commitments-screen --strict` exits 0 and `pnpm run
+  checks` reports scenario coverage as 73 of 73 — the 51 of the first version, plus the 5 rhythm
+  scenarios and the 4 calendar-date scenarios § 6 adds, plus the 13 refused-change scenarios § 7
+  adds. Unticked again for the same reason as 5.1: 60 was true when § 6 finished.
 - [ ] 5.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Five
   things the reviewer is asked to look for by name: that every one of `define`, `confirmStopKeeping`
   and `keepAgain` assigns `kept` and `stopped` only **after** the `RosterStore` call returns, so
@@ -597,6 +602,15 @@ place. If one appears to be needed, that is a requirement this delta is missing 
   three `let`s becoming `public let` and the doc comment above them; and that
   `openspec/specs/schedule/spec.md` is unchanged in the working tree, since it is `/opsx:archive`'s
   to write and rule 2 admits no exception for a capability this change now claims.
+
+  Three more, added for the third pass: that `src/DayByDay` holds **no state whose lifetime is a
+  rule** — in particular that `CommitmentsView.swift` declares no `@State` refusal of any kind and
+  that `define()`'s answer is kept in a local rather than a property; that `refusedChange` is
+  assigned at every site where one of the three methods answers a `Refusal`, and cleared at every
+  site where one of them reaches the roster place and at `shown(asOf:)`, so that no path leaves it
+  saying something a caller was not told; and that `refusalText(_:)`'s five sentences are unchanged
+  in `git diff origin/main` and that `git diff` on `src/DayByDayKit` adds no string literal a person
+  reads.
 - [x] 5.4 `docs/adr/1028-a-screen-may-refuse-what-the-engine-accepts.md` is written with this folder,
   `docs/adr/1019-the-app-shell-runs-in-the-simulator.md` carries an `- Amended:` stamp and the
   bounded exception § 4 works under, and `docs/adr/README.md` gains 1028's row. Confirm before the
@@ -623,6 +637,13 @@ place. If one appears to be needed, that is a requirement this delta is missing 
   public members makes that entry's assignment of them to "a Story of its own against a second
   capability" false the moment this delta lands. That is a correction of a sentence this change
   invalidates, not a new gap; the two below are new gaps and stay owed.
+
+  **Corrected again 2026-09-06, when this folder was reopened a third time.** That edit counted
+  wrong: it said "Five faces remain" and then listed six — `Comparable`, `DayOfMonth`,
+  `DayInterval`, `WeeklyQuota`, `History` and `Tick` — and then called the ranges
+  `CommitmentsView`'s steppers write out "a sixth face", a number the list had already used. It now
+  reads six and seventh. Nothing else in the entry moves, and it rides the same commit as this
+  folder rather than a chore, because it is arithmetic inside a sentence this branch wrote.
 
   What is owed, named rather than written:
   1. *No UI smoke layer* (line 132) says "Revisit when there is a second screen to regress
@@ -745,12 +766,56 @@ place. If one appears to be needed, that is a requirement this delta is missing 
   None of the four needed a requirement: each is a drawing or a reshaping, not a rule, and § 6's
   preamble in this file says as much. `xcodebuild -scheme DayByDay -destination 'generic/platform=iOS
   Simulator' build` was re-run after all four and exited 0.
-- [ ] 5.7 **Tell the human what became of `DayScreen`'s unread roster store.** `design.md` § *The
-  store `DayScreen` holds is still not read* records that the reason #103's G7 kept
-  `private var rosterStore` — that #104 would read it — did not survive this design, and that this
-  Story leaves the field untouched rather than overturning that decision quietly. Say so at G7 with
-  the three ways out, and record their answer here. **Do not delete the field to tick this box**; a
-  deletion is a separate decision and, if it is taken, its own commit.
+
+  **Two residuals recorded 2026-09-06, at the third review pass, on the owner's instruction. Neither
+  is fixed here and neither is a defect in what this delta requires** — they are written down
+  because a trade-off nobody wrote down is indistinguishable from an oversight the next time
+  somebody reads the file.
+
+  1. **One scenario of the seventy-three has no test that can go red.**
+     `CommitmentsScreenTests.swift`'s test for *a commitments screen keeps its roster at the place a
+     day screen keeps its* is `#expect(CommitmentsScreen.rosterPlace == DayScreen.rosterPlace)`,
+     and `CommitmentsScreen.rosterPlace` is declared as `DayScreen.rosterPlace`, so the assertion is
+     `X == X` and no change to either side can fail it. That was chosen deliberately: § 2.33 and the
+     seam's own doc comment both say the static exists **so that a test can assert the two agree
+     without opening the real Application Support directory**, and any test that could go red would
+     have to name the path itself — writing the answer twice — or open the place. The trade-off is
+     sound and it stands; what was missing is this paragraph. The scenario is still worth its line
+     in the spec, because it is the sentence a later Story would have to argue against before giving
+     the commitments screen a place of its own. **Closing it needs the kit to publish the path it
+     builds**, which is a widening no requirement here asks for.
+  2. **One `RosterState` sentence is written out three times.** "The roster could not be read or
+     could not be written." appears in `CommitmentsView.swift` twice — once in the `rosterState`
+     switch and once as `refusalText(_:)`'s `.notKept` case — and once more in `ContentView.swift`'s
+     own `rosterState` switch. `refusalText(_:)` exists so that each sentence is written once, and
+     the two `rosterState` switches route around it because they answer about a `RosterState` rather
+     than a `Refusal`. Nothing is wrong today: the three copies read the same and § 4.1 authorises
+     the words. But a reworded sentence would now have to be found in two files, and the two screens
+     would drift apart silently. **This is a chore, not a Story**: it is one shared helper for the
+     three `RosterState` cases across both views, it changes no behaviour, it carries no requirement,
+     and it is the kind of thing ADR-1019 puts on a `chore/` branch. It is recorded here rather than
+     done here because § 7's shell box is scoped to a lifetime and widening it to a refactor of
+     `ContentView.swift` is how a reopened folder grows a third reopening.
+- [ ] 5.7 **Delete `DayScreen`'s unread roster store.** The first two versions of this box asked
+  the human what should become of it and forbade the deletion. **They answered on 2026-09-06, when
+  this folder was reopened for its third G4: delete it.** The reason #103's G7 kept
+  `private var rosterStore` was that this Story would read it, and this design disproves that rather
+  than merely failing to use it — sharing the handle is what `design.md` § *The commitments screen
+  opens its own store at the same place* rules out, so no design keeping the two screens apart can
+  reach the field. `design.md` § *The store `DayScreen` holds is still not read* carries the
+  decision and the two ways out it was chosen over.
+
+  In `Sources/DayByDayKit/DayScreen.swift`, in **its own commit** so it can be read and reverted on
+  its own: delete `private var rosterStore: RosterStore?` and the three-line doc comment above it
+  (`:30` at the time of writing), and delete the three `self.rosterStore = openedRoster.store`
+  assignments (`:73`, `:258`, `:272`). Those three are the only readers of
+  `openRoster(at:takingOnIfEmpty:)`'s `store` member, so narrow its return tuple to
+  `(state: RosterState, roster: Roster)` in the same commit — the store day one is written through
+  is a local inside that function and is unaffected. Nothing else in the file changes.
+
+  This deletes no behaviour and satisfies no scenario, so **no test is written and no test may
+  move**: `swift test` reports the same count before and after, and any test that fails is a rule-5
+  stop rather than a licence to change one.
 - [x] 5.8 **Write down here, before the archive runs, exactly what the janitor must check it
   against.** This box is the *writing*, and it is tickable now; the check itself happens after
   `/opsx:archive` and is an instruction rather than a checkbox, because a box under
@@ -765,7 +830,7 @@ place. If one appears to be needed, that is a requirement this delta is missing 
      commitments its roster had not stopped keeping on the day it is showing* — matches
      `specs/day-screen/spec.md` in this folder, prose and all four scenarios, character for
      character.
-  2. The ten ADDED requirements landed in `openspec/specs/commitment/spec.md`; the one ADDED
+  2. The twelve ADDED requirements landed in `openspec/specs/commitment/spec.md`; the one ADDED
      requirement — *A day screen reads its roster again when it is returned to* — in
      `openspec/specs/day-screen/spec.md`; and the one ADDED requirement — *A calendar date gives
      back the year, the month and the day it names* — in `openspec/specs/schedule/spec.md`, each
@@ -856,6 +921,96 @@ a prediction here is not evidence.
   `CalendarDate` the picker's instant does not convert to, which is unreachable from a
   `DatePicker` and stays a `guard`. `swift build` through the scheme exits 0 and § 4.3's eighth
   check is what proves it to a person.
+
+## 7. The third review pass
+
+§§ 1–6 stay ticked on the same terms § 6 states: each box was true when it was ticked and nothing
+here untells it. This section is the work the third review pass added — one finding about the
+requirements, and the owner's decision on the one thing §§ 1–6 deliberately left to them. It is
+written in the same shape: one scenario, one test, one at a time (`AGENTS.md` rule 3).
+
+The finding is that **how long a refusal is told was left to the shell**. `CommitmentsView.swift`
+held three `@State` refusals — `refusal`, `stopRefusal`, `keepAgainRefusal` — so `define`,
+`confirmStopKeeping` and `keepAgain` each formed a judgement and immediately forgot it, and three
+lifetimes lived in the one layer nothing regresses. Two of them were already wrong: a stop refusal
+outlived a later successful take-up-again, and a `rhythmOutOfRange` message outlived a switch to a
+rhythm that cannot produce it. `design.md` § *How long a refusal is told is this capability's, and
+which change it was is part of it* is the decision, and the thirteen scenarios below are the rule.
+
+**The words are not in scope and must not move.** § 4.1's `refusalText(_:)` keeps its five
+sentences and ADR-1022 is unamended: this section moves a *lifetime* out of `src/DayByDay` and
+nothing else. A pull request that adds a string to `DayByDayKit` here has gone past the finding.
+
+### The empty seam, before any test is written
+
+- [ ] 7.1 In `Sources/DayByDayKit/CommitmentsScreen.swift`, add
+  `public enum RefusedChange: Equatable, Sendable` with `case defining(Refusal)`,
+  `case stopping(Commitment, Refusal)` and `case keepingAgain(Commitment, Refusal)`, plus a
+  `public var refusal: Refusal` that answers the associated refusal whichever case it is; and add
+  `public private(set) var refusedChange: RefusedChange?`, declared and **never assigned**. This box
+  writes no test and satisfies no scenario — it is the § 1-shaped step that makes 7.2 run genuinely
+  red rather than green on first write. `swift build` exits 0 and `swift test` still reports 357; a
+  different number is a rule-5 stop.
+
+### What a commitments screen holds as refused
+
+Six scenarios from `specs/commitment/spec.md`, one test each, appended to
+`Tests/DayByDayKitTests/CommitmentsScreenTests.swift` under § 2's own rules — a fresh place per
+test, no clock read, no real Application Support directory. **No `@Test` display name and no
+assertion already in that file may change**: these thirteen tests are added beside the existing
+ones, and every existing test goes on asserting on the `Refusal?` each method answers, because the
+answer to the caller does not move.
+
+- [ ] 7.2 `a commitments screen holds a refused definition against defining a commitment`
+- [ ] 7.3 `a commitments screen holds a refused stop against the commitment it was asked to stop` —
+  the place is made impossible to write in the shape § 2.28's test already uses: remove the roster
+  file and create a directory in its path.
+- [ ] 7.4 `a commitments screen holds a refused take-up-again against the commitment it was asked to take up again`
+- [ ] 7.5 `a commitments screen refused twice holds only the change it was asked for last` — the
+  test that fails an implementation keeping a slot per method rather than one slot. Assert both
+  that the stop is what is held and that nothing about defining is.
+- [ ] 7.6 `a commitments screen that has been asked for no change holds no refused change`
+- [ ] 7.7 `a commitments screen holds nothing against a call that changes nothing at all` — three
+  calls in one test, because it is one rule: asking to stop a commitment the screen does not keep,
+  confirming a stop with nothing awaiting confirmation, and taking up again a commitment that has
+  not been stopped.
+
+### How long it holds it
+
+Seven scenarios, same file, same rules.
+
+- [ ] 7.8 `what a commitments screen holds about a refused change ends when the app is shown again`
+- [ ] 7.9 `what a commitments screen holds about a refused change ends when the app is shown again where the roster then cannot be read` —
+  the test that fails an implementation clearing only on a successful re-open.
+- [ ] 7.10 `what a commitments screen holds about a refused change ends when a commitment is defined and kept`
+- [ ] 7.11 `what a commitments screen holds about a refused change ends when a stop is kept`
+- [ ] 7.12 `what a commitments screen holds about a refused change ends when a commitment is taken up again and kept` —
+  this one and 7.11 are the two the third review found genuinely stale in the shipped shell; an
+  implementation that clears only the slot the change belongs to passes 7.10 and fails these.
+- [ ] 7.13 `what a commitments screen holds about a refused change stands when a call changes nothing at all` —
+  the mirror of 7.7 with something already held. An implementation that clears on entry to
+  `keepAgain` or `confirmStopKeeping`, rather than where the roster place is reached, fails here.
+- [ ] 7.14 `what a commitments screen holds about a refused change stands when a stop is asked for and cancelled`
+
+### The shell, which now holds no lifetime
+
+- [ ] 7.15 In `src/DayByDay/DayByDay/CommitmentsView.swift`: delete the three `@State` refusals —
+  `refusal`, `stopRefusal` and `keepAgainRefusal` — and draw whatever `screen.refusedChange` holds,
+  switching on the case so that a `.defining` is drawn in the `Define a commitment` section where
+  the form's message already sits, a `.stopping` under `Section("Kept")` and a `.keepingAgain` under
+  `Section("Stopped")`. That is the placement § 5.6's finding 6 bought, kept, with the state it was
+  drawn from moved behind the seam. `screen.confirmStopKeeping()` and `screen.keepAgain(_:)` are
+  then called for their effect and their answers dropped; `private func define()` keeps the answer
+  in a **local**, because clearing the typed name and the chosen weekdays when nothing was refused
+  is drawing rather than a lifetime. `refusalText(_:)` keeps its five sentences exactly as they are
+  — no sentence is added, removed or reworded by this box. `swift build` through the scheme exits 0.
+- [ ] 7.16 Re-drive § 4.3's walkthrough against the shell as § 7 leaves it, and add its record
+  there under a dated heading rather than replacing what is written. **A ninth check joins the
+  eight**: with the "that number isn't one this rhythm accepts" message on screen from check eight,
+  tap a stopped commitment to take it up again; the take-up-again must land and the message must go,
+  with nothing left under the Add button. That is the one lifetime rule a person can see without a
+  disk that refuses to be written. Same standard as § 4.3: the simulator and iOS version, the exact
+  commands, the passing line, and what was observed at each of the nine checks.
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7,
 and `openspec validate --archived` requires every box above to be ticked before it.

@@ -607,3 +607,185 @@ afresh.
   from 1 January 2026; and the screen is shown again as of Monday 31 August 2026
 - **THEN** it says it is keeping a roster
 - **AND** what it keeps is one entry, named "Gym"
+
+### Requirement: A commitments screen holds the change it refused and why, one at a time
+
+Where a change asked of a commitments screen is refused, the screen SHALL hold **which change was
+asked for** and **why it was refused**, as well as answering the refusal to the caller. The two are
+not alternatives and neither replaces the other: the refusal answered to the caller is what a test
+asserts on and what stops a shell drawn later from swallowing the failure a second time, and what
+the screen holds is what a person is told from. A screen that only answered would leave how long a
+person is told for to whatever drew it, and that lifetime would then be decided in a layer nothing
+regresses.
+
+The change it holds SHALL be one of the three a person can ask for — defining a commitment,
+stopping keeping one, or taking a stopped one up again — and for the two that are asked about a
+commitment already on one of its lists, it SHALL name that commitment. Which change it was is not
+decoration: a person is told beside the thing they asked for, and the only other way to place the
+message is for whatever draws the screen to remember which call it made.
+
+Why it was refused SHALL be the same refusal that was answered to the caller, and no more. A
+commitments screen SHALL hold **no words a person reads**: the distinction between its refusals is
+this capability's, and the sentence said for each is the drawing's, exactly as it already is for
+whether the screen is keeping a roster. ADR-1022.
+
+It SHALL hold **at most one refused change at a time**, and that change SHALL be the change asked
+for last. Asking for a second change replaces what is held rather than adding to it: one refusal is
+one event, two would tell a person twice about two different moments, and the ask they are waiting
+on an answer for is the one they just made.
+
+A call that asks for **no change at all** SHALL NOT be a refusal. Asking to stop keeping a
+commitment the screen does not keep, confirming a stop when nothing is awaiting confirmation, and
+taking up again a commitment the screen has not stopped each answer nothing and change nothing, so
+each SHALL leave the screen holding no refused change and SHALL leave whatever it is already
+holding exactly as it was. There is nothing to report and nothing has been proved about the roster
+place either way.
+
+Which refusals exist, and which of them are told apart, are the requirements above and are not
+restated here.
+
+#### Scenario: a commitments screen holds a refused definition against defining a commitment
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it
+- **THEN** it is refused as a name that says nothing
+- **AND** the screen holds that refusal, against defining a commitment
+
+#### Scenario: a commitments screen holds a refused stop against the commitment it was asked to stop
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; what is at that place is then made impossible to write; and the
+  screen is asked to stop keeping "Gym" and the stop is confirmed
+- **THEN** it is refused as a roster that could not be written
+- **AND** the screen holds that refusal, against stopping keeping "Gym"
+
+#### Scenario: a commitments screen holds a refused take-up-again against the commitment it was asked to take up again
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place and stopped there as of Sunday 30 August 2026; a
+  commitments screen is opened at that roster place as of Monday 31 August 2026; what is at that
+  place is then made impossible to write; and "Gym" is taken up again through the screen
+- **THEN** it is refused as a roster that could not be written
+- **AND** the screen holds that refusal, against taking "Gym" up again
+
+#### Scenario: a commitments screen refused twice holds only the change it was asked for last
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; what is at that place is then made impossible to write; a commitment
+  named "   " on a weekday-set rhythm of all seven weekdays, kept from that same day, is defined
+  through the screen; and the screen is then asked to stop keeping "Gym" and the stop is confirmed
+- **THEN** the screen holds one refused change, which is a roster that could not be written against
+  stopping keeping "Gym"
+- **AND** it holds nothing against defining a commitment
+
+#### Scenario: a commitments screen that has been asked for no change holds no refused change
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place, and a commitments screen is opened at that roster
+  place as of Monday 31 August 2026
+- **THEN** the screen holds no refused change
+
+#### Scenario: a commitments screen holds nothing against a call that changes nothing at all
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; the screen is asked to stop keeping a commitment named "Journaling"
+  on that same schedule and kept-from day, formed directly and never taken on; a stop is then
+  confirmed with nothing awaiting confirmation; and "Gym", which has not been stopped, is taken up
+  again through the screen
+- **THEN** nothing is refused by any of the three
+- **AND** the screen holds no refused change
+
+### Requirement: What a commitments screen holds about a refused change lasts until the app is shown again or a change is kept
+
+A commitments screen SHALL go on holding a refused change until one of exactly two things happens,
+and SHALL then hold nothing. Nothing else SHALL end it. Time passing in particular SHALL NOT,
+because this capability reads no clock.
+
+**The app being shown again** ends it. That is inherited rather than added: being shown reads the
+roster place afresh and forms both lists again from what is then there, and what was refused is an
+answer about a place that has since been read again. It SHALL end whether or not the roster can then
+be read — a screen that is then not keeping a roster says that instead, and says more than a refused
+change ever could.
+
+**A change reaching the roster place** ends it, whichever of the three it was and whichever change
+was refused before it. Defining a commitment that is taken on, a stop that is kept and a
+take-up-again that is kept all count. This is one rule rather than three because it is the
+at-most-one rule above read the other way round: a commitments screen holds the outcome of the last
+change asked of it, so a change that is asked for and kept leaves nothing to hold. A person who has
+just been told a change landed is not also told that an earlier one did not.
+
+A call that reaches the place with no change to make SHALL NOT end it, by the rule above that such a
+call is not a change asked for at all. Nor SHALL putting a stop up for confirmation, or cancelling
+one: neither reaches the roster place, and nothing has been proved about it either way.
+
+#### Scenario: what a commitments screen holds about a refused change ends when the app is shown again
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it and refused; and the app is then shown again as of
+  that same day
+- **THEN** the screen holds no refused change
+- **AND** it says it is keeping a roster
+
+#### Scenario: what a commitments screen holds about a refused change ends when the app is shown again where the roster then cannot be read
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; what is at that place is then made impossible to write; the screen is
+  asked to stop keeping "Gym" and the stop is confirmed and refused; and the app is then shown again
+  as of that same day
+- **THEN** the screen holds no refused change
+- **AND** it says it is not keeping a roster
+
+#### Scenario: what a commitments screen holds about a refused change ends when a commitment is defined and kept
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it and refused; and a commitment named "Journaling" on
+  that same rhythm and kept-from day is then defined through it
+- **THEN** "Journaling" is not refused
+- **AND** the screen holds no refused change
+
+#### Scenario: what a commitments screen holds about a refused change ends when a stop is kept
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven
+  weekdays, kept from that same day, is defined through it and refused; and the screen is then asked
+  to stop keeping "Gym" and the stop is confirmed
+- **THEN** the stop is not refused
+- **AND** the screen holds no refused change
+
+#### Scenario: what a commitments screen holds about a refused change ends when a commitment is taken up again and kept
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place and stopped there as of Sunday 30 August 2026; a
+  commitments screen is opened at that roster place as of Monday 31 August 2026; a commitment named
+  "   " on a weekday-set rhythm of all seven weekdays, kept from that same day, is defined through
+  it and refused; and "Gym" is then taken up again through the screen
+- **THEN** taking "Gym" up again is not refused
+- **AND** the screen holds no refused change
+
+#### Scenario: what a commitments screen holds about a refused change stands when a call changes nothing at all
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven
+  weekdays, kept from that same day, is defined through it and refused; "Gym", which has not been
+  stopped, is then taken up again through the screen; and a stop is then confirmed with nothing
+  awaiting confirmation
+- **THEN** the screen still holds a name that says nothing, against defining a commitment
+
+#### Scenario: what a commitments screen holds about a refused change stands when a stop is asked for and cancelled
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven
+  weekdays, kept from that same day, is defined through it and refused; and the screen is then asked
+  to stop keeping "Gym" and the stop is cancelled
+- **THEN** the screen still holds a name that says nothing, against defining a commitment
+- **AND** nothing is awaiting confirmation

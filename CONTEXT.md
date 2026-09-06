@@ -466,6 +466,20 @@ screen's own and not the rule engine's, which goes on accepting the value. Delib
 each other's only writer, which is why a day screen returned to reads its roster again rather than
 drawing the list it opened with. Agreed 2026-09-04 at the grill of `add-commitments-screen` (#104).
 
+**Amended 2026-09-06**, at `add-commitments-screen`'s third review pass. A commitments screen also
+keeps a **refused change**, so that how long a person is told about one is this capability's answer
+rather than whatever happens to be drawing the screen.
+
+**Refused change** — the change a screen was asked for last and would not make: which change it was,
+the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
+one, because one refusal is one event and the ask a person is waiting on an answer for is the one
+they just made; asking for another change replaces it. It lasts until the app is **shown** again or
+until a change reaches the place the screen writes at, and nothing else ends it — in particular no
+clock, since nothing here reads one. It is deliberately **not the words a person reads**: a refused
+change is a fact about what happened, and the sentence said for each one is the **app shell**'s, the
+same division the roster state already runs on. Named at `add-commitments-screen` (#104), 2026-09-06,
+where three unwritten lifetimes in a SwiftUI view were what it replaced.
+
 **Record place** — the one place a day screen keeps its record at, and the only thing about the
 record that is a day screen's to choose. It is a file inside the directory the platform reserves for
 an application's own supporting data, in a directory of this app's own, and it is the same place
