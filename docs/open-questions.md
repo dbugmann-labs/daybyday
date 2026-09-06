@@ -131,15 +131,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   true only if #93 splits the field; splitting it is the finding. **Owed by #93's grill**, and
   written down here because #93 is two Stories away and nobody who has not read that review
   would rediscover it.
-- **The shell swallows the one failure a tick reports.** Surfaced at #91's review, 2026-09-03.
-  `DayScreen.tick(_:)` throws so that a record which cannot be written is not silently
-  forgotten — `design.md` justifies the `throws` on the grounds that "a person must be told" —
-  and `ContentView.swift` calls it as `try? screen.tick(row)`. So on a place that cannot be
-  written the tap does nothing, the row does not change, and nothing is said. This is approved
-  as written: #91's `tasks.md` and its `design.md` shell snippet both specify `try?`, and no
-  scenario covers the shell. The second half of the `throws` rationale is therefore unrealised,
-  and it sits in the layer *No UI smoke layer* below already flags. Owed by whichever Story
-  first gives the shell a way to say anything at all.
 - **The tasks template puts G7 inside the implementer's own checklist.** Surfaced at #91's
   review, 2026-09-03. A change's `tasks.md` carries a box reading "`mattpocock-skills:code-review`
   reports nothing unresolved on either axis (**G7**)", and `openspec validate --archived`
@@ -212,8 +203,32 @@ Things that are built, or deliberately not built, in a state someone will trip o
   macOS it un-redacts the account short name. And the whole facility is a side effect no test at
   either seam can observe, so nothing regresses it. The next Story that wants to log will copy
   this shape; whichever one that is owes the decision, or a chore does it first.
+- **`RecordStore.write` can throw outside `RecordStoreError`.** Found during #100, 2026-09-06.
+  `write(_:)`'s `let data = try encoder.encode(document)` (`RecordStore.swift:80`) sits outside
+  the `do` block starting at `RecordStore.swift:82`, so an encoding failure escapes as a raw
+  `EncodingError` rather than being wrapped as `RecordStoreError.cannotWrite(at:)` the way the
+  directory-creation and file-write calls already inside that block are. It does not change
+  #100's delta — the refused-tick notice follows any thrown error, whatever its type, so the
+  shell tells the same thing either way — but a caller that switches on `RecordStoreError` sees
+  nothing for this case, the same shape as the `RecordStore.init` gap above. Unowned; nothing in
+  this repo yet switches on `RecordStoreError`, so it is naturally met by the same Story that
+  finally widens `init`'s case for a caller wanting to tell failures apart, since a caller wanting
+  one wants the other. Cheaper than that gap to close: moving the one line inside the `do` block
+  is enough, because the existing catch-all already wraps everything there as
+  `.cannotWrite(at:)` — no new case needed.
 
 ## Settled
+
+- 2026-09-06 — **the shell no longer swallows the one failure a tick reports.** `DayScreen` now
+  carries `public private(set) var refusedChangeRow: DayView.Row?`, and `ContentView.swift` draws
+  `Text("Not saved. Try again.")` in a red caption under the row's name when a row equals it.
+  `try? screen.tick(row)` was deliberately left as it is — the screen does the telling, not the
+  shell, so the swallow is no longer a silence — and the refusal still reaches the caller as well,
+  which is the half that stayed testable throughout. Three requirements in
+  `openspec/specs/day-screen/spec.md` pin it: *A day screen tells on the row that was tapped that a
+  change could not be kept*, *What a day screen tells on a row lasts until the app is shown again,
+  a change is kept, or the day it is showing changes*, and *A day screen tells nothing on a row
+  where there was no tick to refuse*. Settled by `add-refused-tick-notice` (#100).
 
 - 2026-09-03 — **the record is kept at `<Application Support>/DayByDay/record.json`, and the
   day screen is what chooses it.** `RecordStore` keeps the record wherever it is given and cannot
