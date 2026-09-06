@@ -189,6 +189,12 @@ public final class DayScreen {
     /// Anything but `.kept` means this screen draws no rows and takes nothing on.
     public private(set) var rosterState: RosterState
 
+    /// The row a change was last refused on, or `nil` when there is nothing to tell. Set when
+    /// `tick(_:)` throws; cleared by `shown(asOf:)`, by a change that reaches the record's place,
+    /// and by the day being shown changing. Carries no cause: there is nothing here to read but
+    /// which row, which is the whole of what a person is told.
+    public private(set) var refusedChangeRow: DayView.Row?
+
     /// Makes the tick `row` offers, or takes it back where `row` says its commitment is kept, and
     /// keeps the change before `dayView` says so. Does nothing when `row` is not one this screen's
     /// day view holds, or when this screen is not keeping a record. Throws when the change could
@@ -204,11 +210,17 @@ public final class DayScreen {
             return
         }
 
-        if row.isKept {
-            try recordStore.remove(tick)
-        } else {
-            try recordStore.add(tick)
+        do {
+            if row.isKept {
+                try recordStore.remove(tick)
+            } else {
+                try recordStore.add(tick)
+            }
+        } catch {
+            refusedChangeRow = row
+            throw error
         }
+        refusedChangeRow = nil
 
         dayView = DayView(
             of: roster.commitments(on: shownDay), on: shownDay, in: recordStore.history)
@@ -231,6 +243,7 @@ public final class DayScreen {
         guard let previousDate = shownDay.adding(days: -1) else {
             return
         }
+        refusedChangeRow = nil
         shownDay = previousDate
         dayView = dayViewOfShownDay()
     }
@@ -242,6 +255,7 @@ public final class DayScreen {
         guard let nextDate = shownDay.adding(days: 1) else {
             return
         }
+        refusedChangeRow = nil
         shownDay = nextDate
         dayView = dayViewOfShownDay()
     }
@@ -249,6 +263,9 @@ public final class DayScreen {
     /// Shows the today this screen was last handed, from whatever day it is showing. Always has
     /// somewhere to go; does not read the roster or the record again.
     public func showToday() {
+        if shownDay != today {
+            refusedChangeRow = nil
+        }
         shownDay = today
         dayView = dayViewOfShownDay()
     }
@@ -257,6 +274,8 @@ public final class DayScreen {
     /// showing its today follows onto the new one; a screen showing any other day goes on
     /// showing that day. The comparison is against the today the screen held before this call.
     public func shown(asOf today: CalendarDate) {
+        refusedChangeRow = nil
+
         if shownDay == self.today {
             shownDay = today
         }
