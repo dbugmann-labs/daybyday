@@ -53,8 +53,9 @@ weekly quota exactly as reading did, so B-017's and B-025's arguments carry acro
 substituted. B-018 and B-029 are the ones genuinely weakened — nothing in the week is now a
 supplement taken twice a day, and creatine and magnesium are two supplements where there was one
 line reading "supplements and habits", which is a different question about categories than the one
-B-029 was capturing. Re-judging all five is the next grooming pass's first job, ahead of the sweep
-for what is missing. Nothing cited water plants.
+B-029 was capturing. **Re-judged 2026-09-06, at the fifth pass, ahead of its sweep: all five
+stand**, and each entry carries the result under a *Re-judged* line — B-005 too, which argued from
+the same line without being counted. Nothing cited water plants.
 
 **Whether to build any of this at all is settled and is not to be re-argued.** Checked against
 what already exists on 2026-08-29: nothing found does all four rule shapes without streak
@@ -148,6 +149,9 @@ shape it lacks, not the quota.
   braindump lists journal entries alongside weight, protein and mood — the three things that
   carry a value — and not alongside sports, supplements and habits, which are the ticks. That
   leans to written text, and grooming should say so rather than leave it leaning.
+- **Re-judged 2026-09-06** — journaling left the week on 2026-09-04, so the day-one list no longer
+  says tick or text about it; the lean to written text now rests on the braindump alone. The want
+  stands on its own words, and it is the one entry the new week says nothing about at all.
 
 ### B-005 — tick a habit phrased as a negative, where ticking records that it was *not* done
 *Captured 2026-08-28, migrated 2026-09-02.*
@@ -165,6 +169,10 @@ shape it lacks, not the quota.
   thing was *not* done records an absence, and a run of absences is a streak by another
   name; it survives as long as the tick stays a record and never becomes a count.
 - **Open** — is the negation a property of the commitment, or only of how its row is worded?
+- **Re-judged 2026-09-06** — the week no longer has a line reading "supplements and habits"; what it
+  has is *nails every 4 days*, a positive rhythm on the very thing this want's example phrases as a
+  negative. Whether that is this want said the other way round, or a different commitment about the
+  same nails, only the owner can say — and it is the first question a grill of this entry asks.
 
 ### B-007 — look at one commitment on its own, deliberately and rarely
 *Captured 2026-08-28, migrated 2026-09-02.*
@@ -248,6 +256,9 @@ shape it lacks, not the quota.
 - **Open** — what changing the rhythm does to the past. ADR-1013 fixes that a past day's answer
   does not change once given; a rhythm changed today either rewrites which past days were due, or
   applies from a day forward, and only the second keeps that promise.
+- **Open** — *added 2026-09-06 by the sweep:* the third part, the day it is kept from. #104 seeds it
+  from a date picker, so a slip there is the likeliest thing to want changing, and moving it moves
+  which past days a commitment was due on — the same promise the rhythm question turns on.
 
 ### B-017 — meet a quota over a longer span than a week
 *Captured 2026-09-02.*
@@ -275,6 +286,8 @@ shape it lacks, not the quota.
 - **Open** — the week boundary that Story #11 could not answer (`docs/open-questions.md`
   § *Week turnover*) becomes worse here, not better: a span longer than a week has to say where it
   starts before a quota over it means anything.
+- **Re-judged 2026-09-06** — stands, with yuno 5× a week where reading 3× a week was: the new week
+  asks for the weekly quota exactly as the old one did, and for no longer span.
 
 ### B-018 — meet a quota more than once in a single day
 *Captured 2026-09-02.*
@@ -300,6 +313,11 @@ shape it lacks, not the quota.
   question — whether the day has a target that finishes the commitment — is this one described
   from the other side. Grooming should merge or separate these deliberately rather than let both
   survive by default.
+- **Re-judged 2026-09-06** — the weakest want on the file, and it stays. Nothing in the 2026-09-04
+  week is done more than once in a day: creatine and magnesium are once daily, and there is no water
+  line. The words are the owner's, so it is not the 2026-08-28 drop's case of a rule invented while
+  answering a question — but nothing asks for it now, and a pass that declines it again for that
+  reason should propose the drop on its merits rather than carry it.
 
 ### B-021 — see what rhythm a commitment runs on, in words
 *Captured 2026-09-02, from the sweep. The wording is the sweep's.*
@@ -361,6 +379,9 @@ shape it lacks, not the quota.
   forces it.
 - **Open** — what a met quota's row does: disappear, go quiet, or stay unchanged. `CONTEXT.md`
   § *Day view* records that hiding a met one is "a later Story's" and leaves it there.
+- **Re-judged 2026-09-06** — stands, and sharper: yuno 5× a week leaves two spare days where reading
+  left four, so *is tonight one of them* is asked on more days, and a row that says the same thing
+  all seven is wrong on more of them.
 
 ### B-028 — not be offered a way back to a day I am already on
 
@@ -420,6 +441,10 @@ shape it lacks, not the quota.
 - **Open** — *habit* here is not B-005's habit. There, ticking records that the thing was **not**
   done, which is a property of the record; here it is a label over a group of rows. Two axes
   wearing one word, and grooming should keep them apart rather than let the word carry both.
+- **Re-judged 2026-09-06** — said on the same day as the new week, and it stands. The week now has
+  two supplements where the old one had a line, so the supplement half has two rows to group; the
+  habit half has none, since nothing on the week is a habit in B-005's sense; and the commitments
+  that are neither number six of nine rather than four.
 
 ### B-030 — see the day's commitments in separated groups rather than one list
 *Captured 2026-09-04. Said under the heading "Categories:", with B-029.*
@@ -513,6 +538,31 @@ shape it lacks, not the quota.
 - **Open** — is this weight, or every number? B-002's protein accumulates across a day and B-003's
   mood is a single tap, so neither obviously wants it. If it is weight only, the prefill is a
   property of a kind of payload, which is a thing `record` does not have yet.
+
+### B-033 — put my commitments in the order I want them
+*Captured 2026-09-06, from the sweep. The wording is the sweep's, confirmed by the owner.*
+
+> "Put my commitments in the order I want them."
+
+- **Trigger** — rarely, and once at the start: nine rows land in the order they were seeded or
+  defined, and every daily visit reads them top to bottom in that order.
+- **Touches** — `commitment` (#26), because the roster *is* the order — "the order they were taken
+  on and nothing the system worked out" (`CONTEXT.md` § *Roster*) — and the commitments screen and
+  the day view both draw that order and add none of their own. Changing it changes the roster's
+  value, which `add-commitment-roster` (#101) made deliberate: two rosters holding the same
+  commitments in a different order are different rosters.
+- **Principle** — tested against *five percent of seven things*: **fails**, and is captured anyway.
+  It deepens a roster that already works rather than making anything new recordable. What it
+  answers is narrower: *Entered where you stand* puts every daily entry in the row, and the order
+  decides which rows a thumb reaches without scrolling.
+- **Open** — is this B-030 said differently? Groups are an order the app works out from a
+  category; this is an order the person sets by hand. Either makes the other less needed, and a
+  pass that takes one should say what becomes of the other.
+- **Open** — where it is done. The commitments screen manages what a person keeps and is the
+  natural place; doing it on the day screen would put a management gesture into the daily visit.
+- **Open** — a stopped commitment's place. The roster holds one in its taken-on place so that taking
+  it up again returns it there; a reorder has to say whether a stopped commitment keeps a place at
+  all.
 
 
 ## Decided
