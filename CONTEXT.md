@@ -292,6 +292,15 @@ until there were two; what is written above is what both have in common, and the
 each keeps. They are independent of each other, at places of their own, so that taking on a
 commitment does not rewrite a history.
 
+**Amended 2026-09-06**, at `add-commitment-kind` (#137), the first change to move a store's shape
+while a file already existed on a phone. A store's file carries the **form** it was written in, and a
+store reads exactly the forms this app has written: the one it writes now and the one before it. A
+later form is refused whole, because its shape is one this build cannot know; a form number no build
+ever wrote is refused as content that is not a store at all. Reading an earlier form changes nothing
+at the place — a store writes when a change is kept and at no other moment, so the file stays in the
+form it was in until the next change is kept there, and is then written whole in the current form.
+ADR-1031.
+
 **Record store** — the store that keeps a **history**: every tick added and not since taken back,
 keyed to the calendar date and never to the moment of entry. Agreed 2026-09-02 at the grill of
 `add-record-store` (#56), where this was the whole of **Store**.
