@@ -121,34 +121,34 @@ verify against the baseline before writing a single new test.
   or deleted by this box. Leave `DayScreenTests.swift:1595` exactly as it is: its
   `{"version": 1, "commitments": []}` is a valid earlier-form roster and reads as one. Verify with
   `swift test` reporting **391 tests passing**; a red test here is a rule-5 stop.
-- [ ] 6.4 `a commitment of each kind is read back as the same commitment` — the first new test in
+- [x] 6.4 `a commitment of each kind is read back as the same commitment` — the first new test in
   `Tests/DayByDayKitTests/RosterStoreTests.swift`, and the one that proves 6.1's coding round-trips.
-- [ ] 6.5 `a range and a target are read back exactly, decimal fractions and all` — the test that
+- [x] 6.5 `a range and a target are read back exactly, decimal fractions and all` — the test that
   fails a coding that puts either number through a `Double` on the way to JSON.
-- [ ] 6.6 `a roster kept before a commitment carried a kind is read with every commitment of the
+- [x] 6.6 `a roster kept before a commitment carried a kind is read with every commitment of the
   plain kind` — the fixture is written by hand as form-1 JSON, not by the current encoder; that is
   the whole point, so do not build it from a `RosterDocument`.
-- [ ] 6.7 `reading a roster kept in an earlier form changes nothing at its place` — read the bytes
+- [x] 6.7 `reading a roster kept in an earlier form changes nothing at its place` — read the bytes
   back with `Data(contentsOf:)` and compare, as the other byte-for-byte tests in this file do.
-- [ ] 6.8 `a commitment of another kind taken on over a roster kept in an earlier form is read back
+- [x] 6.8 `a commitment of another kind taken on over a roster kept in an earlier form is read back
   with its kind` — the lazy-upgrade test: an implementation that goes on writing the earlier form
   loses the kind here and passes everything before it.
-- [ ] 6.9 `a roster store written in a form this app has never written is refused` — version 0.
+- [x] 6.9 `a roster store written in a form this app has never written is refused` — version 0.
   Assert the error is `.notAStore` and not `.laterForm`, and that the bytes are untouched.
-- [ ] 6.10 `a history kept before a commitment carried a kind is read with every commitment of the
+- [x] 6.10 `a history kept before a commitment carried a kind is read with every commitment of the
   plain kind` — the first new test in `Tests/DayByDayKitTests/RecordStoreTests.swift`, hand-written
   form-1 JSON as in 6.6.
-- [ ] 6.11 `reading a history kept in an earlier form changes nothing at its place`
-- [ ] 6.12 `a tick added over a history kept in an earlier form is read back beside the ticks already
+- [x] 6.11 `reading a history kept in an earlier form changes nothing at its place`
+- [x] 6.12 `a tick added over a history kept in an earlier form is read back beside the ticks already
   there`
-- [ ] 6.13 `a store written in a form this app has never written is refused` — **this one is a
+- [x] 6.13 `a store written in a form this app has never written is refused` — **this one is a
   rename, not a new test.** `RecordStoreTests.swift` already carries
   `@Test("a store written in an earlier form than version 1 is refused")`, which no scenario in
   `openspec/specs/record/spec.md` claims and whose name says something this change makes false.
   Change its display name and its function name to match the scenario, and **change nothing else in
   its body**: the fixture stays `{"version": 0, "ticks": []}`, the expectation stays
   `.notAStore(at: place)`, the byte comparison stays. `git diff` on that test shows two lines.
-- [ ] 6.14 `cd src/DayByDayKit && swift test` reports **418 tests passing**, and from the repo root
+- [x] 6.14 `cd src/DayByDayKit && swift test` reports **418 tests passing**, and from the repo root
   `pnpm run checks` reports `scenario coverage — 92/92`.
 
 ## 7. The shell, and the file that is already on a phone
