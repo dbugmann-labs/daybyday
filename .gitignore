@@ -9,9 +9,15 @@ coverage/
 # xcodebuild writes here when it is not given -derivedDataPath, into every
 # directory holding a target — the app's and the package's alike. ADR-1019.
 build/
-*.xcodeproj/xcuserdata/
-*.xcodeproj/project.xcworkspace/xcuserdata/
-*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/configuration/
+# Xcode's per-user state, written the moment the project is opened in the GUI. These three
+# patterns were here from ADR-1019 and matched nothing: a pattern containing a slash is anchored
+# to the directory holding .gitignore, so `*.xcodeproj/...` only ever matched an .xcodeproj at
+# the repository root, and this project lives at src/DayByDay/. `git check-ignore -v` reported
+# both files NOT IGNORED on 2026-09-03, the first time anyone opened the project in Xcode. The
+# leading `**/` is what makes them match at any depth.
+**/*.xcodeproj/xcuserdata/
+**/*.xcodeproj/project.xcworkspace/xcuserdata/
+**/*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/configuration/
 .DS_Store
 *.log
 .env
