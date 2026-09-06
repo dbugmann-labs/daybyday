@@ -25,6 +25,7 @@
     "check:hygiene": "node scripts/check-commit-hygiene.ts",
     "check:archived": "node scripts/check-archived.ts",
     "graph": "node scripts/generate-graph.ts",
+    "phone": "node scripts/install-on-phone.ts",
     "status": "node scripts/status.ts"
   },
   "devDependencies": {
