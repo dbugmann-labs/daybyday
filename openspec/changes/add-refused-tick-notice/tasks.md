@@ -242,13 +242,36 @@ has no judgement in it, and change nothing in `DayByDayKit` from here.
 
   Confirmed: `openspec validate` prints "Change 'add-refused-tick-notice' is valid" and exits 0.
   `pnpm run checks` reports "scenario coverage — all 20 scenario(s) have a matching test".
-- [ ] 4.3 Have `mattpocock-skills:code-review` run on both axes and record its findings here with a
+- [x] 4.3 Have `mattpocock-skills:code-review` run on both axes and record its findings here with a
   disposition for each (**G7**). This box is the reviewer having been run and its findings written
   down, not a verdict on them: `AGENTS.md`'s routing table gives the review to a separate agent that
   may write nothing, so ticking this while claiming to have performed the review yourself is the
   defect `docs/open-questions.md` § *The tasks template puts G7 inside the implementer's own
   checklist* records against four earlier Stories. Findings that stay unresolved are a stop and a
   report, never a quiet fix.
+
+  **Standards axis — two observations, one fixed, one left.**
+  1. Thirteen of the tests added by this change inlined the identical six-line construction of an
+     unwritable place (a UUID-named temporary directory, `createDirectory`, a `blocker` ordinary
+     file, `record.json` beneath it, `roster.json` beside it), and a fourteenth test —
+     "…stands when a move has nowhere to go" — declared that same construction as a nested
+     `blockerPlaces()` scoped to its own body and reused by none of the others. **Fixed**: the
+     human accepted the fix. That helper is lifted to file scope in
+     `Tests/DayByDayKitTests/DayScreenTests.swift`, beside `freshPlaces()` and
+     `makeReadOnly`/`makeWritable`, and called from all fourteen sites; each call still produces
+     its own fresh UUID-named directory, so the tests stay independent and the `0o500` window in
+     the one test that also uses `makeReadOnly` is unaffected. `swift test` still reports 320
+     tests passing, and no test's assertions, `@Test` title, or `defer { try? makeWritable(...) }`
+     line changed.
+  2. `journalingFirst`/`journalingLast` in the same "stands when a move has nowhere to go" test are
+     two identically-constructed `Commitment` values that could be one reused value. **Left**: the
+     human triaged this as leave — not acted on by this commit.
+
+  **Spec axis — clean, one item reported without being a finding.** The reviewer reported a
+  surviving mutant in `tick(_:)` — a mutation this change's tests do not kill — noted for
+  visibility rather than raised as a finding, since it names no scenario in
+  `specs/day-screen/spec.md` that goes unverified. Fidelity to the delta's twenty scenarios is
+  otherwise clean: every scenario has a matching test, worded and asserted as the delta states it.
 
 Archiving is not a task here. It is the last commit on this branch, run by the janitor after G7, and
 `openspec validate --archived` requires every box above to be ticked before it — so no box above may

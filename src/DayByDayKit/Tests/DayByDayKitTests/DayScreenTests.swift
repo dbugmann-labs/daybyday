@@ -29,6 +29,23 @@ private func makeWritable(_ directory: URL) throws {
     try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
 }
 
+/// A fresh pair of places under one fresh temporary directory where the record cannot be
+/// written: `blocker` is an ordinary file, not a directory, and the record path sits beneath
+/// it, so any write through it fails and `RecordStore.write` turns that into `.cannotWrite`.
+/// The roster path sits beside the blocker, unaffected. A UUID names the directory each call,
+/// so tests stay independent.
+private func blockerPlaces() throws -> (record: URL, roster: URL) {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    return (
+        blocker.appendingPathComponent("record.json"),
+        directory.appendingPathComponent("roster.json")
+    )
+}
+
 @MainActor
 @Test("a day screen opened where nothing has been kept holds the day view of that day with nothing kept")
 func aDayScreenOpenedWhereNothingHasBeenKeptHoldsTheDayViewOfThatDayWithNothingKept() {
@@ -1824,13 +1841,7 @@ func aDayScreenThatWasKeepingARosterStopsWhenItIsShownAgainAndTheRosterCannotBeR
 @MainActor
 @Test("a refused tick is told on the row that was tapped")
 func aRefusedTickIsToldOnTheRowThatWasTapped() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -1849,13 +1860,7 @@ func aRefusedTickIsToldOnTheRowThatWasTapped() throws {
 @MainActor
 @Test("a refused tick is told on the row that was tapped and on no other row")
 func aRefusedTickIsToldOnTheRowThatWasTappedAndOnNoOtherRow() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let daily: Schedule = .weekdays([
@@ -1915,13 +1920,7 @@ func aRefusedTakeBackIsToldOnTheRowThatWasTapped() throws {
 @MainActor
 @Test("a second refused tap is told on the row tapped last and no longer on the first")
 func aSecondRefusedTapIsToldOnTheRowTappedLastAndNoLongerOnTheFirst() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let daily: Schedule = .weekdays([
@@ -1952,13 +1951,7 @@ func aSecondRefusedTapIsToldOnTheRowTappedLastAndNoLongerOnTheFirst() throws {
 @MainActor
 @Test("a refused change does not change what a day screen says about keeping a record")
 func aRefusedChangeDoesNotChangeWhatADayScreenSaysAboutKeepingARecord() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -1982,13 +1975,7 @@ func aRefusedChangeDoesNotChangeWhatADayScreenSaysAboutKeepingARecord() throws {
 @MainActor
 @Test("what a day screen tells on a row ends when the app is shown again")
 func whatADayScreenTellsOnARowEndsWhenTheAppIsShownAgain() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -2009,13 +1996,8 @@ func whatADayScreenTellsOnARowEndsWhenTheAppIsShownAgain() throws {
 @MainActor
 @Test("what a day screen tells on a row ends when the app is shown again where the record then cannot be read")
 func whatADayScreenTellsOnARowEndsWhenTheAppIsShownAgainWhereTheRecordThenCannotBeRead() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
+    let blocker = place.deletingLastPathComponent()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -2144,13 +2126,7 @@ func whatADayScreenTellsOnARowEndsWhenATakeBackIsKept() throws {
 @MainActor
 @Test("what a day screen tells on a row ends when the day screen is moved to the day before")
 func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsMovedToTheDayBefore() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let journaling = Commitment(
@@ -2174,13 +2150,7 @@ func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsMovedToTheDayBefore() throws
 @MainActor
 @Test("what a day screen tells on a row ends when the day screen is moved to the day after")
 func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsMovedToTheDayAfter() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let journaling = Commitment(
@@ -2204,13 +2174,7 @@ func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsMovedToTheDayAfter() throws 
 @MainActor
 @Test("what a day screen tells on a row ends when the day screen is sent back to today from another day")
 func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsSentBackToTodayFromAnotherDay() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let journaling = Commitment(
@@ -2249,18 +2213,6 @@ func whatADayScreenTellsOnARowStandsWhenAMoveHasNowhereToGo() throws {
     let firstSupported = CalendarDate(year: 1583, month: 1, day: 1)!
     let lastSupported = CalendarDate(year: 9999, month: 12, day: 31)!
 
-    func blockerPlaces() throws -> (record: URL, roster: URL) {
-        let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        let blocker = directory.appendingPathComponent("blocker")
-        try Data().write(to: blocker)
-        return (
-            blocker.appendingPathComponent("record.json"),
-            directory.appendingPathComponent("roster.json")
-        )
-    }
-
     let firstPlaces = try blockerPlaces()
     let first = DayScreen(
         startingFrom: [journalingFirst], asOf: firstSupported,
@@ -2289,13 +2241,7 @@ func whatADayScreenTellsOnARowStandsWhenAMoveHasNowhereToGo() throws {
 @MainActor
 @Test("what a day screen tells on a row stands when a day screen showing today is sent back to today")
 func whatADayScreenTellsOnARowStandsWhenADayScreenShowingTodayIsSentBackToToday() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let journaling = Commitment(
@@ -2360,13 +2306,7 @@ func aTapOnADayScreenHoldingARecordFromALaterVersionIsToldNothingOnTheRow() thro
 @MainActor
 @Test("a tap on a row for a day that has not arrived is told nothing on the row")
 func aTapOnARowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let journaling = Commitment(
@@ -2393,13 +2333,7 @@ func aTapOnARowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
 @MainActor
 @Test("a tap on a row a day screen's day view does not hold is told nothing on the row")
 func aTapOnARowADayScreensDayViewDoesNotHoldIsToldNothingOnTheRow() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let journaling = Commitment(
@@ -2421,13 +2355,7 @@ func aTapOnARowADayScreensDayViewDoesNotHoldIsToldNothingOnTheRow() throws {
 @MainActor
 @Test("a tap on a row a day screen's day view does not hold does not end what is already told")
 func aTapOnARowADayScreensDayViewDoesNotHoldDoesNotEndWhatIsAlreadyTold() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blocker = directory.appendingPathComponent("blocker")
-    try Data().write(to: blocker)
-    let place = blocker.appendingPathComponent("record.json")
-    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let (place, rosterPlace) = try blockerPlaces()
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let journaling = Commitment(
