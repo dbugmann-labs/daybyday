@@ -19,8 +19,8 @@
 # Two jobs, because the repository holds two languages doing unrelated jobs
 # (ADR 1001). `verify` runs the whole numbered check list on Linux — including
 # check 4, which reads Swift test names out of source text and so needs no
-# Swift toolchain. `swift` exists only to run the product's own tests, and is
-# the one thing here that needs macOS.
+# Swift toolchain. `swift` runs the product's own tests and then compiles the
+# app shell, and is the one thing here that needs macOS.
 name: CI
 
 on:
@@ -162,3 +162,37 @@ jobs:
             ( cd "$dir" && swift test )
             echo "::endgroup::"
           done < "$RUNNER_TEMP/swift-packages"
+
+      # The app target is invisible to the step above: it adds no `Package.swift`,
+      # so `find` returns only the kit's manifest and nothing has ever compiled
+      # `src/DayByDay/` in CI. A misspelled binding, a renamed kit symbol, a body
+      # that no longer type-checks — all of it could land on `main` green.
+      #
+      # ADR-1019 left this out and named the exact command that would add it,
+      # on the ground that a compile-only step "proves nothing about drawing".
+      # That is true, and it is not the comparison: the alternative here is not a
+      # UI test, it is nothing at all. The ADR also named its own trigger — add
+      # it "the first time the shell holds anything the kit does not" — and the
+      # shell now holds four such things, two of which `docs/open-questions.md`
+      # already records. So the trigger has fired.
+      #
+      # `docs/open-questions.md` § *No UI smoke layer* is NOT closed by this. That
+      # gap is about proving SwiftUI draws, which needs XCUITest and a change to
+      # CI check 4; this step only proves the shell still compiles.
+      #
+      # No runtime download and no signing identity. ADR-1019 verified that the
+      # `macos-26` image ships the iOS 26.2, 26.4 and 26.5 simulator runtimes, so
+      # `generic/platform=iOS Simulator` resolves without one, and the project
+      # carries `CODE_SIGNING_ALLOWED = NO`. A cold build measured 11.4s locally.
+      #
+      # Hard-coded rather than discovery-based, unlike `swift test` above: a
+      # scheme name cannot be derived from a `find`, and a second `.xcodeproj`
+      # here would be an event worth editing this file for.
+      - name: xcodebuild — the app shell compiles
+        run: |
+          set -eu
+          xcodebuild \
+            -project src/DayByDay/DayByDay.xcodeproj \
+            -scheme DayByDay \
+            -destination 'generic/platform=iOS Simulator' \
+            build

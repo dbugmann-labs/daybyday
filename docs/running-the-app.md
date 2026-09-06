@@ -5,10 +5,15 @@ a Story's git; this one is for looking at the thing. Everything here was run on 
 2026-09-03 and copied out of the terminal rather than written from memory — `docs/retrospective.md`
 §5 is the four documented commands that could never have worked, every one of them recalled.
 
-**What you are looking at is the app shell**, and it decides nothing: `CONTEXT.md` § *App shell*,
-ADR-1019. It draws what `DayByDayKit` already answers, from a hardcoded copy of the day-one week,
-and it persists nothing. There is no ticking, no navigation and no store behind it yet — those are
-Stories #71 and #72 and the open question about where a store is opened.
+**What you are looking at is the app shell**: `CONTEXT.md` § *App shell*, ADR-1019. It draws what
+`DayByDayKit` already answers and holds no rule of its own. Since this file was first written it
+has grown ticking (#71), a date and navigation between days (#92, #93), and a record and a roster
+kept under `Library/Application Support/DayByDay/` (#91, #103) — so it does persist now, and a run
+leaves state behind on the simulator. `xcrun simctl uninstall 'iPhone 17' com.example.DayByDay` is
+how you get a first-launch back.
+
+The shell also no longer *quite* decides nothing, which is a known drift rather than a design:
+`docs/open-questions.md` records what it has accumulated.
 
 ## Once, before the first run
 
@@ -91,7 +96,18 @@ is not given `-derivedDataPath`. It is gitignored (ADR-1019), so this is noise r
 
 ## What CI does with all this
 
-Nothing. CI's `swift` job discovers `Package.swift` files and runs `swift test`; an `.xcodeproj`
-adds no manifest, so the app target is not built by CI at all. That is deliberate and ADR-1019
-names the step that would change it — a compile-only step proves nothing about drawing, which is
-the gap `docs/open-questions.md` § *No UI smoke layer* already records and defers.
+**It builds the app, and it does not run it.** CI's `swift` job discovers `Package.swift` files and
+runs `swift test` — an `.xcodeproj` adds no manifest, so that half still cannot see the app target
+— and then compiles the shell explicitly, with the `-scheme` build above against
+`generic/platform=iOS Simulator`. Nothing boots a simulator, installs anything or takes a
+screenshot; the commands above are still the only way anyone sees the app.
+
+The compile step was added on 2026-09-06 and is deliberately narrow. It answers "does the shell
+still compile against the kit" — a renamed symbol, a misspelled binding, a body that no longer
+type-checks — which had no answer before, because nothing in CI had ever built `src/DayByDay/`.
+ADR-1019 named both the command and its own trigger for adding it, and left it out while the shell
+held nothing the kit did not; it now holds four such things.
+
+What it still does not answer is whether SwiftUI *draws*. That is
+`docs/open-questions.md` § *No UI smoke layer*, it needs XCUITest and a change to CI check 4, and
+it is still open.

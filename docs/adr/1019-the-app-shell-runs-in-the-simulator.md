@@ -3,6 +3,8 @@
 - Status: accepted — the first two decisions were the owner's at the Feature grill on 2026-09-02;
   the third, what the target is called, is this record's own recommendation and is accepted by the
   chore PR that carries it
+- Amended: 2026-09-06 — CI now builds the app. The trigger this record named for adding the step
+  has fired, so the consequence that said it does not has been rewritten to say what CI does.
 - Date: 2026-09-02
 - Deciders: Diego Bugmann
 
@@ -122,13 +124,17 @@ phone.
 
 ## Consequences
 
-- **CI does not build the app, and this ADR does not make it.** The cost of changing that is one
-  step on the `macos-26` runner the `swift` job already uses —
-  `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay -destination
-  'generic/platform=iOS Simulator' build` — and no runtime download, because the image ships three.
-  It is left out because a compile-only step proves the shell compiles and nothing about drawing,
-  which is the gap `docs/open-questions.md` already records. Add it the first time the shell holds
-  anything the kit does not, which is also the first time it could break without anyone noticing.
+- **CI builds the app, since 2026-09-06.** This record originally left it out and named both the
+  step and the trigger for adding it: one step on the `macos-26` runner the `swift` job already
+  uses — `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay -destination
+  'generic/platform=iOS Simulator' build` — and no runtime download, because the image ships
+  three. The trigger was *the first time the shell holds anything the kit does not*, and it has
+  fired: the shell now carries a row identity, four user-facing strings, a swallowed error and a
+  scene-phase trigger. Between this record and that step, every commit to `src/DayByDay/` reached
+  `main` without anything having compiled it.
+  The step is compile-only and deliberately stays so. It proves the shell still builds against the
+  kit and nothing about drawing, which is why it narrows `docs/open-questions.md` § *No UI smoke
+  layer* rather than closing it.
 - **8.52 GB has to be on the machine before anything runs**, once. It is the simulator *runtime*;
   the iOS Simulator SDK was already there. It is now installed on this machine, so the price is
   paid; it will be charged again on a new machine, and again whenever Xcode moves to an iOS version
@@ -153,10 +159,11 @@ phone.
 - **The 99 USD of ADR-1001 is not due yet.** A simulator build needs no signing identity. The
   Developer Program becomes a bill the day the app first goes on the phone, and the ADR's judgement
   that it is mandatory rather than optional is unchanged; only its timing is now known.
-- **The *No UI smoke layer* gap is not closed, and one of its three costs is now paid.** That gap
+- **The *No UI smoke layer* gap is not closed, and two of its three costs are now paid.** That gap
   named an ADR, an `xcodebuild` job against a simulator, and a change to CI check 4. This ADR is
-  the first, and the second now has a project to point at. Check 4 still cannot see an XCTest
-  method name, so the gap stands.
+  the first; the second arrived on 2026-09-06 as the build step above, though it builds rather
+  than tests. Check 4 still cannot see an XCTest method name, and nothing yet asserts that a view
+  drew, so the gap stands.
 - **`docs/open-questions.md` is narrowed on one point and this ADR does not edit it.** It records
   that "whichever Story creates the app target chooses the place" the store is opened under
   `Library/Application Support/`. On this decision the *chore* creates the target and chooses
