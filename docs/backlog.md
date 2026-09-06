@@ -453,6 +453,30 @@ shape it lacks, not the quota.
   it up again returns it there; a reorder has to say whether a stopped commitment keeps a place at
   all.
 
+### B-034 — choose a mood from its range instead of typing it
+*Captured 2026-09-06, at the grill of `add-number-record` (#138).*
+
+> "Bounds only - but for a mood, I would like to have 1-10 (whole numbers) as predefined inputs,
+> which can be chosen with e.g. a slider"
+
+- **Trigger** — evening, once a day, saying how the day went; the one interaction the mood
+  commitment exists for.
+- **Touches** — `day-screen`, for what a row offers when the commitment declares a range. Not
+  `record`: #138's grill settled that a range is bounds and nothing else, so 5.5 is a mood and the
+  wholeness lives in the affordance rather than in what a number is.
+- **Principle** — tested against *entered where you stand*: **passes**. A mood typed on a number
+  pad is a keyboard for one digit; chosen from its range it is one gesture in the row, which is
+  what "as little interaction as the value allows" means for a value with ten possibilities.
+  Tested against *five percent of seven things*: **fails** — it deepens an entry that #139 will
+  already have made possible. Both are written down because the second is why a pass might
+  reasonably not take it.
+- **Open** — is this every number with a range, or a mood? A weight with a range of 40 to 150 has
+  a hundred and ten whole values and no useful slider, so the affordance may turn on how wide the
+  range is rather than on the range existing.
+- **Open** — a slider over whole numbers can express less than the record accepts, since the
+  record takes 5.5. Is that a deliberate narrowing, or does the row need both ways in?
+- **Open** — the *Decided* line of 2026-09-06 already sends the mood's one tap to the Story that
+  enters a number (#139). This entry is that line's missing half: what the affordance actually is.
 
 ## Decided
 
