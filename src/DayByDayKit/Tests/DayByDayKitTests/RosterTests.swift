@@ -524,3 +524,19 @@ func aRosterThatHoldsNothingAnswersWithNothingOnEveryDate() {
 
     #expect(answers.allSatisfy { $0.isEmpty })
 }
+
+@Test("two commitments alike in every way but the kind their days take are both held")
+func twoCommitmentsAlikeInEveryWayButTheKindTheirDaysTakeAreBothHeld() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let tick = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let note = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var roster = Roster()
+    _ = roster.add(tick)
+
+    let added = roster.add(note)
+
+    #expect(added)
+    #expect(roster.commitments == [tick, note])
+}

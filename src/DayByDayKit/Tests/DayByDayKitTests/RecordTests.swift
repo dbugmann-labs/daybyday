@@ -365,3 +365,47 @@ func aHistoryTickedAndThenUntickedIsTheSameAsOneNeverTicked() {
 
     #expect(tickedThenUnticked == History())
 }
+
+@Test("a commitment whose kind is not a tick takes no tick on a date it is due on")
+func aCommitmentWhoseKindIsNotATickTakesNoTickOnADateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let target = Commitment.Target(120)!
+
+    let numberNoRange = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let numberWithRange = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let note = Commitment(name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let total = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let tickKind = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+
+    #expect(Tick(numberNoRange, on: monday) == nil)
+    #expect(Tick(numberWithRange, on: monday) == nil)
+    #expect(Tick(note, on: monday) == nil)
+    #expect(Tick(total, on: monday) == nil)
+    #expect(Tick(tickKind, on: monday) != nil)
+}
+
+@Test("a commitment whose kind is not a tick was not kept on a date it is due on")
+func aCommitmentWhoseKindIsNotATickWasNotKeptOnADateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let number = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let tickKind = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+
+    let history = History()
+    var withTickKindTick = History()
+    withTickKindTick.add(Tick(tickKind, on: monday)!)
+
+    #expect(!history.isKept(number, on: monday))
+    #expect(!withTickKindTick.isKept(number, on: monday))
+}

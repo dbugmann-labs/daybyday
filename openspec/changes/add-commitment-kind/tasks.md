@@ -5,7 +5,7 @@ part that every one of its roughly two hundred construction sites has to keep me
 through, and because the two failable types this change introduces should be red on their first
 assertion rather than accidentally green.
 
-- [ ] 1.1 Add `Sources/DayByDayKit/CommitmentKind.swift` declaring, in an `extension Commitment`,
+- [x] 1.1 Add `Sources/DayByDayKit/CommitmentKind.swift` declaring, in an `extension Commitment`,
   exactly what `design.md` § *The kind is an enum with associated values* gives:
   `public enum Kind: Hashable, Sendable` with `case tick`, `case number(range: Range?)`, `case note`
   and `case total(target: Target)`; `public struct Range: Hashable, Sendable` with
@@ -14,7 +14,7 @@ assertion rather than accidentally green.
   with `public let amount: Decimal` and `public init?(_ amount: Decimal)`. **Both initializers are
   bodied `fatalError("not implemented")`.** The file opens with `import Foundation`, which is where
   `Decimal` comes from. Nothing else is public. `cd src/DayByDayKit && swift build` exits 0.
-- [ ] 1.2 In `Sources/DayByDayKit/Commitment.swift`, add `public let kind: Kind` as the fourth stored
+- [x] 1.2 In `Sources/DayByDayKit/Commitment.swift`, add `public let kind: Kind` as the fourth stored
   part and give the initializer a fourth parameter, `kind: Kind = .tick`, assigned like the other
   three. The blank-name guard is the only guard and does not move. **No caller anywhere is edited**:
   the default is what keeps the nine day-one constructions in `ContentView.swift`,
@@ -22,7 +22,7 @@ assertion rather than accidentally green.
   `Hashable` stays synthesized, so identity picks the kind up for free. Verify with
   `cd src/DayByDayKit && swift test` reporting **391 tests passing**; a red test here is a rule-5
   stop, because nothing in this box was supposed to change an answer.
-- [ ] 1.3 Confirm the starting point before writing a test: from the repo root, `pnpm run checks`
+- [x] 1.3 Confirm the starting point before writing a test: from the repo root, `pnpm run checks`
   reports `scenario coverage — 64/92 scenario(s) covered` for this change and names
   `"a commitment reads back the kind it was given"` as next. A different number means something else
   moved; report it rather than working around it.
@@ -42,30 +42,30 @@ is `true`), 2.9 (the first call into `Target.init?`'s `fatalError`) and 2.11 (th
 red on their own. **Record which ones actually ran red as you go, in § 9**; a prediction here is not
 evidence.
 
-- [ ] 2.1 `a commitment reads back the kind it was given`
-- [ ] 2.2 `a commitment of each of the four kinds is formed and reads its kind back`
-- [ ] 2.3 `a commitment formed without a kind is of the plain kind` — assert both halves: the kind
+- [x] 2.1 `a commitment reads back the kind it was given`
+- [x] 2.2 `a commitment of each of the four kinds is formed and reads its kind back`
+- [x] 2.3 `a commitment formed without a kind is of the plain kind` — assert both halves: the kind
   reads back as `.tick`, and the commitment is `==` one formed with `.tick` named.
-- [ ] 2.4 `a commitment's kind does not change whether it is due` — the guard against a kind that
+- [x] 2.4 `a commitment's kind does not change whether it is due` — the guard against a kind that
   leaks into `isDue(on:)`.
-- [ ] 2.5 `a number commitment declares a range and reads it back`
-- [ ] 2.6 `a range whose lowest is above its highest is not a range`
-- [ ] 2.7 `a range whose lowest and highest are equal is a range` — and the negative pair in the
+- [x] 2.5 `a number commitment declares a range and reads it back`
+- [x] 2.6 `a range whose lowest is above its highest is not a range`
+- [x] 2.7 `a range whose lowest and highest are equal is a range` — and the negative pair in the
   `AND`, which is what stops someone reading "lowest" as "at least zero".
-- [ ] 2.8 `a range end that is not a number is not a range` — both orders, as the scenario says.
+- [x] 2.8 `a range end that is not a number is not a range` — both orders, as the scenario says.
   `Decimal.nan` is the value; an implementation guarding only on `lowest <= highest` passes 2.6 and
   2.7 and fails exactly here.
-- [ ] 2.9 `a total commitment declares a target and reads it back`
-- [ ] 2.10 `a target with a decimal fraction is a target`
-- [ ] 2.11 `a target of zero and a target below zero are not targets`
-- [ ] 2.12 `a target that is not a number is not a target`
-- [ ] 2.13 `two commitments differing only in the kind their days take are different commitments`
-- [ ] 2.14 `two number commitments differing only in their range are different commitments` — the
+- [x] 2.9 `a total commitment declares a target and reads it back`
+- [x] 2.10 `a target with a decimal fraction is a target`
+- [x] 2.11 `a target of zero and a target below zero are not targets`
+- [x] 2.12 `a target that is not a number is not a target`
+- [x] 2.13 `two commitments differing only in the kind their days take are different commitments`
+- [x] 2.14 `two number commitments differing only in their range are different commitments` — the
   test that proves a kind's *parameters* are part of identity and not just the case.
 
 ## 3. `commitment` — the roster judges four parts
 
-- [ ] 3.1 `two commitments alike in every way but the kind their days take are both held` — one test
+- [x] 3.1 `two commitments alike in every way but the kind their days take are both held` — one test
   at the end of `Tests/DayByDayKitTests/RosterTests.swift`. Expect it **green on first write**:
   `Roster` compares whole commitments, so the fourth part reaches it through `Hashable` without a
   line changing. That is the point of the test rather than a reason to skip it — it is what stops a
@@ -76,10 +76,10 @@ evidence.
 
 Two scenarios from `specs/record/spec.md`, both in `Tests/DayByDayKitTests/RecordTests.swift`.
 
-- [ ] 4.1 `a commitment whose kind is not a tick takes no tick on a date it is due on` — add the
+- [x] 4.1 `a commitment whose kind is not a tick takes no tick on a date it is due on` — add the
   guard to `Tick.init?` in `Sources/DayByDayKit/Tick.swift`, beside the `isDue(on:)` one. All four
   kinds are in this one scenario, plus the tick-kind control that must still form.
-- [ ] 4.2 `a commitment whose kind is not a tick was not kept on a date it is due on` — expect it
+- [x] 4.2 `a commitment whose kind is not a tick was not kept on a date it is due on` — expect it
   green on first write once 4.1 is in: a history holds ticks, and there is now no tick of such a
   commitment to hold. Same standing as 3.1 — a red test is a finding, not a licence to edit
   `History`.
