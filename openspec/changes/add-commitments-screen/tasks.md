@@ -944,7 +944,7 @@ the rule.
 **One thing happened on `main` while this section was being written, and it is not a finding.**
 `add-refused-tick-notice` (#100) merged as `b454d16`. It answers the neighbouring question on the
 day screen and it landed `public private(set) var refusedChangeRow: DayView.Row?` on `DayScreen`,
-cleared on three conditions of its own. Two consequences here, and no more: § 7.17 pins the one
+cleared on three conditions of its own. Two consequences here, and no more: § 7.15 pins the one
 interaction the merge order created — that being returned to is not one of those three conditions,
 which § 3's requirement already promised in prose and now has a scenario for — and **this branch no
 longer rebases cleanly onto `origin/main`**. The conflict is `DayScreenTests.swift`, where #100 and
