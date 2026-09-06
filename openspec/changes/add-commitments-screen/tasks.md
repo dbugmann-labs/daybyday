@@ -536,7 +536,7 @@ a prediction here is not evidence.
 
 ### The shell, which now decides nothing
 
-- [ ] 6.11 In `src/DayByDay/DayByDay/CommitmentsView.swift`: delete the `max(1, $0)` from the
+- [x] 6.11 In `src/DayByDay/DayByDay/CommitmentsView.swift`: delete the `max(1, $0)` from the
   day-count field's binding, delete all three `guard let … else { return }` around `DayOfMonth`,
   `DayInterval` and `WeeklyQuota`, build the `Rhythm` straight from the three `@State` integers,
   and add the message for `.rhythmOutOfRange` beside the four already there — the shell's own

@@ -53,6 +53,8 @@ struct CommitmentsView: View {
     @State private var timesPerWeek = 1
     @State private var keptFromDate: Date
     @State private var refusal: CommitmentsScreen.Refusal?
+    @State private var stopRefusal: CommitmentsScreen.Refusal?
+    @State private var keepAgainRefusal: CommitmentsScreen.Refusal?
 
     init(screen: CommitmentsScreen) {
         self.screen = screen
@@ -74,17 +76,25 @@ struct CommitmentsView: View {
                 }
             }
 
+            if let stopRefusal {
+                refusalText(stopRefusal)
+            }
+
             Section("Stopped") {
                 if screen.stopped.isEmpty {
                     Text("Nothing has been stopped.")
                 }
                 ForEach(screen.stopped, id: \.self) { commitment in
                     Button {
-                        refusal = screen.keepAgain(commitment)
+                        keepAgainRefusal = screen.keepAgain(commitment)
                     } label: {
                         Text(commitment.name)
                     }
                 }
+            }
+
+            if let keepAgainRefusal {
+                refusalText(keepAgainRefusal)
             }
 
             switch screen.rosterState {
@@ -125,14 +135,8 @@ struct CommitmentsView: View {
                     Stepper("Day \(dayOfMonth)", value: $dayOfMonth, in: 1...31)
                 case .everyNDays:
                     LabeledContent("Every") {
-                        TextField(
-                            "Days",
-                            value: Binding(
-                                get: { intervalDays },
-                                set: { intervalDays = max(1, $0) }
-                            ), format: .number
-                        )
-                        .keyboardType(.numberPad)
+                        TextField("Days", value: $intervalDays, format: .number)
+                            .keyboardType(.numberPad)
                         Text("day(s)")
                     }
                 case .weeklyQuota:
@@ -145,17 +149,8 @@ struct CommitmentsView: View {
                     define()
                 }
 
-                switch refusal {
-                case nil:
-                    EmptyView()
-                case .namesNothing:
-                    Text("Give it a name.")
-                case .dueOnNoDay:
-                    Text("Choose at least one weekday.")
-                case .alreadyKept:
-                    Text("Already being kept.")
-                case .notKept:
-                    Text("The roster could not be read or could not be written.")
+                if let refusal {
+                    refusalText(refusal)
                 }
             }
         }
@@ -163,12 +158,12 @@ struct CommitmentsView: View {
         .onChange(of: screen.dayToKeepFrom) { _, newValue in
             keptFromDate = date(from: newValue)
         }
-        .confirmationDialog(
+        .alert(
             "Stop keeping this commitment?",
             isPresented: Binding(
                 get: { screen.awaitingConfirmation != nil },
                 set: { isPresented in
-                    if !isPresented {
+                    if !isPresented && screen.awaitingConfirmation != nil {
                         screen.cancelStopKeeping()
                     }
                 }
@@ -176,7 +171,7 @@ struct CommitmentsView: View {
             presenting: screen.awaitingConfirmation
         ) { commitment in
             Button("Stop keeping \(commitment.name)", role: .destructive) {
-                refusal = screen.confirmStopKeeping()
+                stopRefusal = screen.confirmStopKeeping()
             }
             Button("Cancel", role: .cancel) {
                 screen.cancelStopKeeping()
@@ -184,24 +179,41 @@ struct CommitmentsView: View {
         }
     }
 
+    /// The words a person reads for a refused change, in the shell's own vocabulary — the same
+    /// shape `RosterState`'s three cases already map to. One case, `.namesNothing` through
+    /// `.notKept`, one sentence; nothing here decides whether a refusal happened, only what it is
+    /// called.
+    @ViewBuilder
+    private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
+        switch refusal {
+        case .namesNothing:
+            Text("Give it a name.")
+        case .dueOnNoDay:
+            Text("Choose at least one weekday.")
+        case .rhythmOutOfRange:
+            Text("That number isn't one this rhythm accepts.")
+        case .alreadyKept:
+            Text("Already being kept.")
+        case .notKept:
+            Text("The roster could not be read or could not be written.")
+        }
+    }
+
     /// Builds the `Rhythm` the form is currently offering and hands it to `define`, alongside
-    /// the name typed and the day picked. Does nothing when a widget's own value cannot form the
-    /// piece it stands for — a `Stepper` bounded to a type's own range cannot produce one, so this
-    /// only guards the free-form day count and the date picker's arbitrary range.
+    /// the name typed and the day picked. A number the calendar will not take is not judged here —
+    /// `screen.define` refuses it as `.rhythmOutOfRange` — so the only guard left is the date
+    /// picker's instant failing to convert, which a `DatePicker` cannot actually produce.
     private func define() {
         let rhythm: Rhythm
         switch rhythmKind {
         case .weekdays:
             rhythm = .weekdays(selectedWeekdays)
         case .dayOfMonth:
-            guard let value = DayOfMonth(day: dayOfMonth) else { return }
-            rhythm = .dayOfMonth(value)
+            rhythm = .dayOfMonth(dayOfMonth)
         case .everyNDays:
-            guard let value = DayInterval(days: intervalDays) else { return }
-            rhythm = .everyNDays(value)
+            rhythm = .everyNDays(intervalDays)
         case .weeklyQuota:
-            guard let value = WeeklyQuota(timesPerWeek: timesPerWeek) else { return }
-            rhythm = .weeklyQuota(value)
+            rhythm = .weeklyQuota(timesPerWeek)
         }
 
         let components = Calendar.current.dateComponents(
