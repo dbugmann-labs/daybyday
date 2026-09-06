@@ -70,17 +70,27 @@ Things that are built, or deliberately not built, in a state someone will trip o
   screen, and the owner's answer at #91's question round said so in as many words. It is still
   owed by whatever first needs to tell a locked store apart from a corrupt one — a message
   saying "try again in a moment" rather than "something is wrong with your record".
-- **The shell identifies rows by equality, and two rows may be equal.** Surfaced at #71's
-  review, 2026-09-03. `src/DayByDay` draws `List(dayView.rows, id: \.self)`, so a row's
-  `Hashable` conformance is what SwiftUI uses to tell one row from another — but `day-screen`'s
-  spec deliberately permits two rows to be equal, since a commitment handed to a day view twice,
-  or two commitments alike in name, schedule and kept-from day, produce identical rows. SwiftUI
-  given duplicate ids drops or misanimates rows. It cannot bite today: the day-one week has no
-  duplicates, and `add-tick-from-row` (#71) made rows count their date towards equality, which
-  narrows nothing here because every row in one list carries that list's date. The fix is the
-  shell's — a stable identity that is not the value — and it belongs to whichever Story first
-  draws a list the user can add to. Left alone in #71 deliberately: changing it there would have
-  been a silent edit to the app target from a Story scoped to `DayByDayKit`.
+- **The shell identifies rows by position.** Surfaced at #71's review, 2026-09-03, as
+  *identity by equality*: the shell drew `List(dayView.rows, id: \.self)`, so a row's `Hashable`
+  conformance told one row from another, while `day-screen`'s spec deliberately permits two rows
+  to be equal — a commitment handed to a day view twice, or two commitments alike in name,
+  schedule and kept-from day, produce identical rows — and SwiftUI given duplicate ids drops or
+  misanimates them.
+
+  **That is no longer the shape, and this entry described a line that had already gone.**
+  `125da39`, `chore(shell): draw a row's kept flag` (#105), replaced it the same day with
+  `ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset)`, for a different reason: a tap
+  flips `isKept`, which is part of the value, so keying on the value made SwiftUI read a tap as
+  one row removed and another inserted. Corrected 2026-09-06.
+
+  **What that fixed and what it did not.** Distinct offsets cannot collide, so the duplicate-id
+  failure above is gone outright. The gap is not closed, though — it moved: an index is stable
+  across a tap and not across an insertion, a removal or a reorder, where every row after the
+  change point takes on the identity of its neighbour. Same misanimation, different trigger. It
+  cannot bite today because a day's list is fixed once the day is: nothing in the app can add a
+  row to the screen you are looking at. The fix is unchanged and still the shell's — a stable
+  identity that is neither the value nor the position — and still belongs to whichever Story
+  first draws a list the user can add to, realistically `add-commitments-screen` (#104).
 - **The Story issue template asks an agent to write the G4 marker string.** Surfaced writing
   #91..#93, 2026-09-03. `.github/ISSUE_TEMPLATE/story.yml`'s last Definition-of-ready checkbox
   quotes the marker line literally, so an agent rendering the template faithfully writes that
@@ -136,6 +146,13 @@ Things that are built, or deliberately not built, in a state someone will trip o
   a simulator, and a change to CI check 4, which reads `@Test("...")` display names out of Swift
   source and cannot see an XCTest method name. Revisit when there is a second screen to regress
   against.
+  **Narrowed 2026-09-06, not closed.** The `swift` job now runs
+  `xcodebuild ... -scheme DayByDay build`, so the second of those three costs is paid and the
+  shell no longer reaches `main` without compiling — which had been true of every commit to
+  `src/DayByDay/` since it was created. That answers "a renamed kit symbol broke the shell" and
+  answers nothing about drawing: the misspelled-binding case in the sentence above still passes
+  CI. What is left is a test target in the hand-written `.xcodeproj` and check 4 learning to see
+  a test name that is not a `@Test("...")` literal.
 - **Playwright is ruled out on a fact, not a preference**, recorded so it is not re-proposed. It
   drives browser engines only, ships no `_ios` counterpart to its experimental `_android`, and
   cannot launch Apple's Simulator. It is unreachable without reversing ADR-1001, which chose

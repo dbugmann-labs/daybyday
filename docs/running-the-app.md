@@ -5,10 +5,15 @@ a Story's git; this one is for looking at the thing. Everything here was run on 
 2026-09-03 and copied out of the terminal rather than written from memory — `docs/retrospective.md`
 §5 is the four documented commands that could never have worked, every one of them recalled.
 
-**What you are looking at is the app shell**, and it decides nothing: `CONTEXT.md` § *App shell*,
-ADR-1019. It draws what `DayByDayKit` already answers, from a hardcoded copy of the day-one week,
-and it persists nothing. There is no ticking, no navigation and no store behind it yet — those are
-Stories #71 and #72 and the open question about where a store is opened.
+**What you are looking at is the app shell**: `CONTEXT.md` § *App shell*, ADR-1019. It draws what
+`DayByDayKit` already answers and holds no rule of its own. Since this file was first written it
+has grown ticking (#71), a date and navigation between days (#92, #93), and a record and a roster
+kept under `Library/Application Support/DayByDay/` (#91, #103) — so it does persist now, and a run
+leaves state behind on the simulator. `xcrun simctl uninstall 'iPhone 17' com.example.DayByDay` is
+how you get a first-launch back.
+
+The shell also no longer *quite* decides nothing, which is a known drift rather than a design:
+`docs/open-questions.md` records what it has accumulated.
 
 ## Once, before the first run
 
