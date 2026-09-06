@@ -98,7 +98,16 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
 - **The `swift` job grows a third step** and about four minutes: 3m45s on `macos-26`, against 50s
   on this machine. A UI test spends most of that booting a simulator clone and installing the app,
   not testing — the test case itself is 25s there and 7s here. The job went from about 90 seconds
-  to about five minutes, which is the real price of this record and is paid on every push.
+  to about five minutes.
+
+  **So it is gated twice, and this is the part of the record most likely to be revisited.** It is
+  skipped while a PR is a draft — the idiom checks 4, 5, 8 and 9 already use, and the reason
+  `ready_for_review` is in the workflow's trigger list — and skipped again unless the diff reaches
+  `src/DayByDay/`, `src/DayByDayKit/Sources/` or the workflow itself. Eight of this repository's
+  first 129 commits touched the shell, and a Story pushes tens of times while it is a draft, so
+  unconditionally this would be waste on nearly every push. Neither gate weakens the merge: a
+  Story leaves draft at Stage 8, a chore PR is never a draft, and the push to `main` is ungated by
+  the first condition — so nothing merges without it having run.
 - **The step discovers its simulator device** from `simctl` rather than naming one, because the
   runner image's device list moves with Xcode
   and is not ours to pin; the step prints which device it took, so a green run is attributable.
