@@ -52,7 +52,20 @@ Things that are built, or deliberately not built, in a state someone will trip o
   which day it is on, because `CalendarDate`'s `year`, `month` and `day` are internal and it is
   not `Comparable`. Rendering a date is a delta against `openspec/specs/schedule/spec.md` rather
   than `day-screen`, so it is a Story of its own against a second capability — which is why #72
-  did not widen it in passing.
+  did not widen it in passing. **One face of this closed with `add-commitments-screen` (#104),
+  2026-09-06:** that Story's commitments screen has to seed a date picker with the day it offers
+  to keep a commitment from, and a picker speaks instants, so it is the first thing that needed
+  ADR-1004's conversion run backwards. `CalendarDate`'s `year`, `month` and `day` are now `public
+  let`s, authorised by one requirement added to `openspec/specs/schedule/spec.md` — *A calendar
+  date gives back the year, the month and the day it names*. The widening shipped before that
+  requirement existed and was caught at #104's second review; the Story was reopened for a second
+  G4 rather than reverted, on the ground that this entry had named those three members as owed
+  since #72. **Five faces remain, and none of them is closed by that requirement, which says so in
+  its own prose:** `CalendarDate` is still not `Comparable`, and `DayOfMonth`, `DayInterval`,
+  `WeeklyQuota`, `History` and `Tick` still give their payloads back to nothing outside the
+  module. The ranges those three value types accept are unreadable too, which is why
+  `CommitmentsView`'s steppers write `1...31` and `1...7` a second time — a sixth face, added by
+  #104 rather than closed by it.
 - **`RecordStore.init` can throw outside `RecordStoreError`.** Surfaced at #56's review,
   2026-09-02. A place that exists but cannot be read as data — a directory, a file without
   read permission, or on iOS a store protected by data protection when the app is launched
