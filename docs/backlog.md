@@ -306,20 +306,39 @@ shape it lacks, not the quota.
 
 > "See what rhythm a commitment runs on, in words — 'every 14 days', 'the 25th'."
 
-- **Trigger** — passive, wherever a commitment is named: B-020's list, and possibly the day
-  screen row.
-- **Touches** — `schedule` (#6) and whatever surface names a commitment. Saying a rule back in
-  English is not the job `schedule` does today, which is deciding due-ness.
+*Folded in 2026-09-06, the want said again by the owner and naming the surface:*
+
+> "In the "Commitments" overview, I want to see the schedule of a committment in the list, and
+> not just the name"
+
+- **Trigger** — passive, wherever a commitment is named: the commitments screen's two lists,
+  which the owner has now named outright, and possibly the day screen row.
+- **Touches** — `schedule` (#6) **and `commitment` (#26)**, which is new since capture. Saying a
+  rule back in English is not the job `schedule` does today, which is deciding due-ness — and
+  since `add-commitments-screen` (#104) shipped, `commitment` refuses the words outright:
+  *"An entry in the list SHALL be a commitment's name and nothing else … a commitments screen
+  MUST NOT say one"* (`openspec/specs/commitment/spec.md`). Taking this want deltas both
+  capabilities, and the refusal was written on the reasoning that the words belong to `schedule`
+  whichever screen reads them, not on the reasoning that nobody wants them.
 - **Principle** — tested against *an iPhone, in your hand*: passes. "Every 14 days" is three
-  words in a row, and it is what stops a list of eight names being unreadable.
+  words in a row, and it is what stops a list of eight names being unreadable. The shipped
+  screen makes that concrete: two commitments alike in name and unlike in rhythm are accepted as
+  "two entries a person cannot tell apart", so the list a person manages commitments through can
+  today hold two rows it is impossible to choose between.
 - **A known gap already points at this.** `docs/open-questions.md` § *Known gaps*: `DayOfMonth`
   is public but `DayOfMonth.day` is internal, and `DayInterval` carries the same asymmetry, so a
   screen can build "the 25th" and never recover the `25` to render it. The first Story that
   renders a rule needs a delta widening the type. That gap was recorded before anyone had said
   they wanted this; the want is its other half.
-- **Open** — may fold into B-020. If the words only ever appear in that list, this is one of
-  that Feature's requirements rather than a want of its own. It stays separate while the day
-  screen row is still a candidate for them.
+- **Open** — *narrowed 2026-09-06, not closed.* The surface is the commitments screen; that half
+  of the question is answered, and the fold's own words are the answer. What is still open is
+  whether the day screen row says it too — the owner did not mention that row either way, and
+  silence is not a refusal. B-020 promoted into `FEAT: commitment` (#26) and closed, so this is
+  no longer a want that might be one of that Feature's requirements; it is a delta against a
+  shipped spec that says the opposite.
+- **Open** — which rhythms have words that fit a row. "The 25th" and "every 14 days" are short;
+  a weekday set of five days and a weekly quota are not obviously so, and the day-one week has
+  both.
 
 ### B-025 — know where I stand on a weekly quota, inside its week
 *Captured 2026-09-03, from the sweep. The wording is the sweep's.*
@@ -425,6 +444,75 @@ shape it lacks, not the quota.
   already shows only what is due, so an empty group is a claim about the day rather than about the
   commitments a person keeps.
 - **Open** — cannot be taken before B-029: without it there is no key to group by.
+
+### B-031 — get rid of a commitment for good, not just stop keeping it
+*Captured 2026-09-06.*
+
+> "In addition to stopping a commitment, it should also be possible to delete a commitment
+> entirely. Idea: in the commitments page, behind each commitment, have a stop and a delete icon.
+> In the "stopped" commitments section, have a resume and a delete icon"
+
+- **Trigger** — twice over, and they are different moments. Right after taking one on that was a
+  mistake — a typo, the wrong rhythm — where nothing has been recorded against it yet. And much
+  later, tidying a stopped list that has no other exit.
+- **Touches** — `commitment` (#26). Stopping shipped with `add-roster-retirement` (#102) and
+  `add-commitments-screen` (#104): a stop is a kept-until day the roster holds, the commitment
+  moves from one list to the other, and **nothing ever leaves the roster**. Deleting is the verb
+  the lifecycle does not have — create, stop and take-up-again are all built, and there is no way
+  back out.
+- **Principle** — tested against *five percent of seven things*: **fails**, and is captured
+  anyway. Stopping already takes a commitment off every day screen, so deleting deepens a
+  lifecycle that works rather than making a new kind of record possible. What it answers is
+  narrower and real: the stopped list is append-only, so every mistake made while defining a
+  commitment is on that screen for ever, and ADR-1027 writes day one into an empty roster, which
+  means the eight commitments a person did not choose are the first thing they will want to
+  remove.
+- **Open** — what happens to the ticks. `Tick` embeds the whole `Commitment` **by value** and
+  `History.isKept` answers by set membership (ADR-1023), and the record store is a separate file
+  from the roster store — so removing a commitment from the roster leaves every tick against it
+  intact and unreachable from any list. Either the record is left alone, and deleting is a roster
+  operation that quietly orphans history; or the record is deleted too, and the app deliberately
+  destroys the thing it exists to keep. ADR-1013's promise that a past day answers as it did
+  points at the first; the word "entirely" points at the second.
+- **Open** — is deleting offered on a commitment that has ticks at all? "Delete the one I just
+  mistyped" and "delete two years of the gym" are the same gesture with very different costs, and
+  refusing the second is a cheaper answer than deciding what it does.
+- **Open** — what it asks before it happens. `add-commitments-screen` shipped a confirmation on
+  stopping and none on taking up again, on the reasoning that one is reversible and the other is
+  not. Deleting is less reversible than either, so it is at least a confirmation, and possibly
+  something stronger.
+- **Open** — the affordance is the owner's own idea rather than the want: a stop and a delete
+  icon behind each kept commitment, a resume and a delete behind each stopped one. That is the
+  commitments screen's to decide, and it moves stopping from a confirmed action to an icon, so it
+  is a change to something shipped rather than a free addition.
+
+### B-032 — start a weight entry from the last weight I gave
+*Captured 2026-09-06.*
+
+> "When entering the weight for a day, I want my last weight entry to be prefilled, so that I can
+> adjust it based on the last entry I made"
+
+- **Trigger** — once a day, on the scale, changing the number by a few hundred grams from
+  yesterday's.
+- **Touches** — `record`, for what a numeric entry is, and `day-screen` for the row it is made in.
+  It cannot be taken before B-001, which is the want that makes a weight recordable at all;
+  nothing about this is buildable while there is no weight to prefill from.
+- **Principle** — tested against *entered where you stand*: **passes, and is the sharpest example
+  of it yet** — a weight typed from scratch is five taps on a number pad, and adjusted from
+  yesterday's it is one or two, in the row. Tested against *five percent of seven things*:
+  **fails** — it deepens one payload kind that does not exist yet rather than making a new record
+  possible. Both are written down because the second is why a pass might reasonably not take it,
+  and the first is why it is worth having when B-001 lands.
+- **Open** — the last entry *ever*, or the last one before the day being entered? The day screen
+  moves between days, so entering a weight for last Tuesday can prefill from Monday or from
+  today, and only the first is "the last entry I made" as of that day.
+- **Open** — does a prefilled row read as already answered? A suggested value and a recorded one
+  must be told apart, or a day nobody stepped on the scale for silently carries a number. This is
+  the one way the want could do real damage to the record, and it is a design question rather
+  than a preference.
+- **Open** — is this weight, or every number? B-002's protein accumulates across a day and B-003's
+  mood is a single tap, so neither obviously wants it. If it is weight only, the prefill is a
+  property of a kind of payload, which is a thing `record` does not have yet.
 
 
 ## Decided
