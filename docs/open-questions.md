@@ -27,6 +27,15 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   early and add a check that fails the PR when the number is taken. The first two stop the
   collision reaching the change folder at all, which is what made it expensive. Worth an ADR
   when something forces it; nothing does yet, and the workaround is a rename.
+  **It recurred on a chore, 2026-09-03, and a fourth answer is what caught it.** The
+  `chore/on-the-phone` branch wrote `docs/adr/1023-the-bundle-identifier-...`; `add-roster-retirement`
+  (#109) merged nineteen minutes later carrying `1023-a-commitment-is-kept-until-a-day-the-roster-holds.md`,
+  and the branch renumbered past 1024 — taken meanwhile by #114 — to land as ADR-1025. Two renames
+  in one branch, cheap only because a chore has no signed change folder to re-approve. The fourth
+  answer is the one now in force and is not in the list above: ADR-1020 put a rule in
+  `docs/adr/README.md` — a new ADR takes the lowest number no file **and no open branch** has used —
+  so the mitigation is convention, checked by a human, and `main`'s own README does not show which
+  numbers an open branch is holding.
 
 ## Known gaps
 
@@ -60,7 +69,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `WeeklyQuota`, `History` and `Tick` still give their payloads back to nothing outside the
   module. The ranges those three value types accept are unreadable too, which is why
   `CommitmentsView`'s steppers write `1...31` and `1...7` a second time — a seventh face, added by
-  #104 rather than closed by it.
+  #104 rather than closed by it. **An eighth face is the load-bearing one and was never written
+  down:** `Commitment.schedule` and `Commitment.keptFrom` are internal, and `DayView.Row` publishes
+  only `name` and `isKept` while keeping `commitment` and `date` internal. So `Schedule` and its four
+  cases being public buys nothing from outside — there is no public way to get a schedule *out of* a
+  commitment, or a commitment out of a row. Making `DayOfMonth.day` public tomorrow would still leave
+  B-021 unable to render "the 25th" beside a name. Recorded 2026-09-06.
 - **`RecordStore.init` can throw outside `RecordStoreError`.** Surfaced at #56's review,
   2026-09-02. A place that exists but cannot be read as data — a directory, a file without
   read permission, or on iOS a store protected by data protection when the app is launched
@@ -110,8 +124,28 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
   Which sharpens the rule worth remembering here: **value identity is safe exactly where the model
   refuses duplicates**, and unsafe on the day screen because `day-screen`'s spec deliberately
-  permits two rows to be equal. So this waits for a day screen whose list can change while someone
-  is looking at it, and no Story on the tracker is that yet.
+  permits two rows to be equal.
+
+  **The trigger arrived with #104, and this entry said the opposite. Corrected 2026-09-06.** It
+  claimed the gap "cannot bite today because a day's list is fixed once the day is: nothing in the
+  app can add a row to the screen you are looking at". That is false on `main`.
+  `ContentView.swift` calls `screen.returnedTo()` when the commitments screen is dismissed, and
+  `DayScreen.returnedTo()` re-reads the roster and forms the day view again from
+  `roster.commitments(on: shownDay)` — so stopping a commitment removes a row **from the middle of
+  the day list**, and every row below it inherits its neighbour's `\.offset`, on a list the person
+  is watching as it comes back. The earlier reading was right that #104 leaves the `ForEach`
+  untouched and wrong to conclude it is unrelated: it did not touch the `ForEach`, it built the
+  mutation path that makes the `ForEach` unsafe.
+
+  A second face, same cause: `ContentView.swift` picks the refusal notice with
+  `row == screen.refusedChangeRow` — value equality — so two rows alike in name and kept-state would
+  both draw "Not saved. Try again.", against *A day screen tells on the row that was tapped*.
+
+  **There is no shell-only fix, so this is a Story rather than a chore.** The shell can see only
+  `name` and `isKept`; a stable identity that is neither the value nor the position has to come from
+  a public widening of `DayView.Row`, which is a delta against `openspec/specs/day-screen/spec.md`
+  and a G4. It is the same widening the eighth face above describes, which is an argument for one
+  Story covering both. Unowned: the tracker holds no open issue at all.
 - **The Story issue template asks an agent to write the G4 marker string.** Surfaced writing
   #91..#93, 2026-09-03. `.github/ISSUE_TEMPLATE/story.yml`'s last Definition-of-ready checkbox
   quotes the marker line literally, so an agent rendering the template faithfully writes that
@@ -126,19 +160,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   person or an agent grepping issue text, and the rule itself. The fix is one line in the
   template, which is a chore; it is written down here rather than done because nothing was
   asked for it.
-- **A day screen's `today` is both the day it is on and the day it is asked on.** Surfaced at
-  #91's review, 2026-09-03. `DayScreen` keeps one `today`, and `tick(_:)` passes it to
-  `Row.tick(asOf:)` — but `CONTEXT.md` § *Today* separates those deliberately, saying that
-  "confusing the two is what would let a screen offer a tick for a day that has not happened".
-  The two coincide while a day screen can only ever be on today, so the guard is correct and
-  unreachable, and #91's delta approves exactly this shape. It stops being correct in
-  `add-screen-navigation` (#93): moving the screen's day by writing the same field would leave
-  the tick asked as of the *displayed* date, so navigating forward two days and tapping a row
-  would write a tick for a day that has not arrived — the refusal `add-tick-from-row` (#71)
-  exists to enforce. #91's `design.md` claims the guard "becomes reachable with #93", which is
-  true only if #93 splits the field; splitting it is the finding. **Owed by #93's grill**, and
-  written down here because #93 is two Stories away and nobody who has not read that review
-  would rediscover it.
 - **The tasks template puts G7 inside the implementer's own checklist.** Surfaced at #91's
   review, 2026-09-03. A change's `tasks.md` carries a box reading "`mattpocock-skills:code-review`
   reports nothing unresolved on either axis (**G7**)", and `openspec validate --archived`
@@ -149,8 +170,20 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `2026-09-03-add-day-navigation/tasks.md:112`, and #91's own. It is not merely cosmetic: on
   #91 the implementer read that box as instructing it to perform G7 and reported having done
   so, which is the one thing `AGENTS.md`'s routing table gives to a separate agent that may
-  write nothing. The fix is to the template the change folder is generated from, which is a
-  chore; it is recorded rather than done because nothing has asked for it.
+  write nothing.
+  **The premise in the title is wrong, and the fix named here pointed at a file this repo does not
+  own. Corrected 2026-09-06.** There is no such template: OpenSpec's own
+  `node_modules/@fission-ai/openspec/schemas/spec-driven/templates/tasks.md` holds two placeholder
+  task groups and no G7 box at all, and nothing in this repo prescribes one either. The box
+  propagates by `spec-author` copying the previous change folder, which is why it reaches back to
+  `2026-08-23-add-version-command/tasks.md:44` and appears in a dozen more — and why it is still
+  arriving: #103 and #104 both carry it.
+  **#100 already wrote the wording that fixes it**, in
+  `2026-09-06-add-refused-tick-notice/tasks.md`: the box is *"the reviewer having been run and its
+  findings written down, not a verdict on them"*. So the chore is to put that form where
+  `spec-author` will read it — `.claude/agents/spec-author.md`, beside its existing rule that every
+  box must be tickable before the archive — which under rule 6 belongs to the session talking to the
+  human. Still not done, and now for a reason: nothing has asked for it.
 - **Playwright is ruled out on a fact, not a preference**, recorded so it is not re-proposed. It
   drives browser engines only, ships no `_ios` counterpart to its experimental `_android`, and
   cannot launch Apple's Simulator. It is unreachable without reversing ADR-1001, which chose
@@ -163,45 +196,27 @@ Things that are built, or deliberately not built, in a state someone will trip o
   it should not go back to `try?`. What is unresolved is that it arrived inside a review fix
   rather than through a design, so three things were set by default rather than decided. The
   `subsystem: "DayByDayKit"` / `category: "RosterStore"` naming is not Apple's reverse-DNS
-  convention and wants the real bundle identifier, which is still `com.example.DayByDay` on
-  `main` because the rename lives on PR #111. `privacy: .public` on the file path is a deliberate
+  convention and wants the real bundle identifier — **which is no longer an obstacle: ADR-1025
+  landed on `main` 2026-09-06 and the identifier is `com.dbugmann.daybyday`**, so the naming
+  decision this entry is waiting on can now actually be taken. `privacy: .public` on the file path is a deliberate
   override of `Logger`'s safe default: harmless on iOS, where the path is a container UUID, but on
   macOS it un-redacts the account short name. And the whole facility is a side effect no test at
   either seam can observe, so nothing regresses it. The next Story that wants to log will copy
   this shape; whichever one that is owes the decision, or a chore does it first.
-- **`RecordStore.write` can throw outside `RecordStoreError`.** Found during #100, 2026-09-06.
-  `write(_:)`'s `let data = try encoder.encode(document)` (`RecordStore.swift:80`) sits outside
-  the `do` block starting at `RecordStore.swift:82`, so an encoding failure escapes as a raw
-  `EncodingError` rather than being wrapped as `RecordStoreError.cannotWrite(at:)` the way the
-  directory-creation and file-write calls already inside that block are. It does not change
-  #100's delta — the refused-tick notice follows any thrown error, whatever its type, so the
-  shell tells the same thing either way — but a caller that switches on `RecordStoreError` sees
-  nothing for this case, the same shape as the `RecordStore.init` gap above. Unowned; nothing in
-  this repo yet switches on `RecordStoreError`, so it is naturally met by the same Story that
-  finally widens `init`'s case for a caller wanting to tell failures apart, since a caller wanting
-  one wants the other. Cheaper than that gap to close: moving the one line inside the `do` block
-  is enough, because the existing catch-all already wraps everything there as
-  `.cannotWrite(at:)` — no new case needed.
 - **The walkthrough harness recipes in § 4.3 and § 7.17 cannot be rebuilt as written.**
   Found at #104's fourth review, 2026-09-06. Both sections invoke `-scheme UITests`, and their own
-  steps create an Xcode project with a `DayByDayUITests` target but no scheme by that name; the
-  correct invocation is `-scheme DayByDay -only-testing:DayByDayUITests`. The recipes are superseded
-  in practice by #131's committed XCUITest target, which gets the scheme and path right, and neither
-  section is executed by CI since the UI-test target lives outside the repo (ADR-1029). The gap is
-  recorded because the archived change folder now holds instructions that fail at their last step —
-  § 4.3's own standard is that evidence nobody can re-create is a claim rather than a check, and this
-  is how it would be discovered: an agent or a human following the recipe from nothing but the
-  archive would hit the scheme error. Unowned; whoever next needs to rebuild the walkthrough harness
-  should report this rather than working around it.
-
-- **§ 7.17's ninth-check record quotes what was checked but not how.** Found at #104's fourth review,
-  2026-09-06. The record describes check 9 fully — what was tapped, what the screen should show —
-  but omits two setup edits its execution depends on. A rebuild from the section alone drops check 9
-  at its first assertion: a setup step stopping "Budget" between check 7 and check 8, so a stopped
-  commitment is on hand for the ninth check's take-up-again, and a `typeText("\n")` inside check 8
-  to dismiss the keyboard before the rhythm picker is revealed (recorded in that section at lines
-  586–598). The section leaves the full `WalkthroughUITests.swift` code but truncates the setup
-  story. Again, the standard is that evidence nobody can re-create is a claim rather than a check.
+  steps create an Xcode project with a `DayByDayUITests` target but no scheme by that name. The
+  recipes live in `openspec/changes/archive/2026-09-06-add-commitments-screen/tasks.md`, which is
+  **deny-listed for writing** (`.claude/settings.json`, one of the three mechanical guardrails
+  `AGENTS.md` names), so this is corrected here rather than there — the archive is the record of what
+  was run, and corrections belong in a writable place.
+  **The working invocation is committed and running.** #131's XCUITest target is
+  `src/DayByDay/DayByDayUITests/`, inside the existing `src/DayByDay/DayByDay.xcodeproj`, and CI
+  drives it as `-project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay -destination "platform=iOS
+  Simulator,id=<udid>" -only-testing:DayByDayUITests` (`.github/workflows/ci.yml`). Anyone reaching
+  for § 4.3 should use that instead of rebuilding anything. Nothing is owed; the entry stands so the
+  recipe is not followed off a cliff, and because § 4.3's own standard — evidence nobody can
+  re-create is a claim rather than a check — is the part worth keeping.
 
 - **`RefusedChange` carries a `Commitment` its only consumer discards.** Found at #104's fourth
   review, 2026-09-06. `CommitmentsScreen.swift` publishes `public enum RefusedChange` with cases
@@ -215,13 +230,53 @@ Things that are built, or deliberately not built, in a state someone will trip o
   whichever Story next touches this screen). A secondary note: `.stopping` and `.keepingAgain` are
   typed `(Commitment, Refusal)` but only ever constructed with `.notKept`, so four of the six cases
   are structurally unreachable, which is defensible but worth knowing. **ADR-1019's bounded
-  exception (its 2026-09-04 amendment) was used by this Story:** it exempts shell edits from the
-  general rule that changes to `src/DayByDay` return to the `chore/` rule when they fail to meet
-  the review's own bar, and only for "the next shell change that fails any of [the three conditions
-  set by the first shell Story]" — meaning add-commitments-screen is the one Story the exception
-  was written for, and the next shell change reads against "has a second Story claimed it yet".
+  exception (its 2026-09-04 amendment) was used by this Story.**
+
+  **Two corrections, 2026-09-06.** First, *"a person is told beside the row they tapped"* is a **doc
+  comment** on `RefusedChange` — mirrored in that Story's `design.md` — and not the requirement it is
+  attributed to. The requirement says *"a person is told beside the thing they asked for"*, and is
+  about what the **screen holds**, not where the shell draws it; two paragraphs later the same
+  requirement says a commitments screen "SHALL hold no words a person reads". So the mismatch is
+  between the shell and a doc comment, which makes the "narrow the requirement" branch of the fix
+  largely unnecessary — what is left is either the shell placing the message, or the doc comment
+  being brought back to what the spec actually says.
+
+  Second, **the exception is not spent, and reading it as spent was wrong.** ADR-1019's amendment
+  states a standing conditional: shell work may ride a Story's branch subject to three conditions,
+  and "the return to the rule is the next shell change that **fails any of those three**" — not the
+  next shell change outright. A second Story meeting all three may claim it; what the ADR adds is
+  that doing so is the signal to revisit the record rather than stretch it again.
+
+  A third thing, unnamed until now: that `design.md` sketches `RefusedChange` with a
+  `public var refusal: Refusal` accessor, and **it did not ship**. Had it, the shell would have had a
+  way to read the refusal without discarding the commitment. Design-to-code drift, unreviewed.
 
 ## Settled
+
+- 2026-09-06 — **`RecordStore.write` no longer throws outside `RecordStoreError`.** `write(_:)`'s
+  `try encoder.encode(document)` sat outside the `do` block that wraps everything else it does, so an
+  encoding failure escaped as a raw `EncodingError` while the directory-creation and file-write calls
+  beside it came back as `.cannotWrite(at:)`. Moving the one line inside the block was the whole fix
+  — the existing catch-all already wraps everything there, so no fourth case was needed and no
+  requirement moved. Closed on a chore rather than waiting for the `RecordStore.init` gap above, and
+  the earlier claim that the two are "naturally met by the same Story" was wrong about this half:
+  `init` needs a new case in the seam and a G4, this needed neither. **It is unobservable, and that
+  is deliberate**: `RecordDocument` is `Int`s and `String`s to the leaves, with no custom
+  `encode(to:)`, so `EncodingError` cannot be provoked and no red test is writable at the seam —
+  which is also why this was not a Story. Every one of the 391 kit tests passes unchanged.
+
+- 2026-09-04 — **a day screen's `today` and the day it is showing are two fields, and a tick is
+  asked as of the first.** Open since #91's review, which found one `today` serving both roles and
+  named `add-screen-navigation` (#93) as the Story where that stops being correct: moving the day by
+  writing the same field would leave a tick asked as of the *displayed* date, so navigating forward
+  and tapping would write a tick for a day that has not arrived. **#93's grill split the field, which
+  is exactly what the entry said it owed.** `DayScreen` now holds `today` and `shownDay` separately,
+  `tick(_:)` passes `today`, and `showPreviousDay`/`showNextDay` move only `shownDay`. It is a
+  requirement rather than an accident of the code — `openspec/specs/day-screen/spec.md`: *"The tick
+  SHALL be the one the row itself offers, asked as of the today the screen was handed and never as of
+  the day it is showing"*, with the scenario *ticking a row on a day a day screen has moved onto that
+  has not arrived keeps nothing* pinning it. Recorded here 2026-09-06, having been settled on merge
+  and missed.
 
 - 2026-09-06 — **the bundle identifier is `com.dbugmann.daybyday`, and it is fixed from the first
   install on a phone.** Reverse-DNS on the name the `dbugmann-labs` organisation already carries, so

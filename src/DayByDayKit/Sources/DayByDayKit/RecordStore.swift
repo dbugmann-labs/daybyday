@@ -77,9 +77,9 @@ public final class RecordStore {
         let document = RecordDocument(nextTicks)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
-        let data = try encoder.encode(document)
 
         do {
+            let data = try encoder.encode(document)
             try FileManager.default.createDirectory(
                 at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
             try data.write(to: place, options: .atomic)
