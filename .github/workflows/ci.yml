@@ -196,3 +196,27 @@ jobs:
             -scheme DayByDay \
             -destination 'generic/platform=iOS Simulator' \
             build
+
+      # The UI smoke layer: proof that SwiftUI drew something. The step above proves the
+      # shell compiles, and `swift test` proves the kit's rules; between them sits the
+      # failure neither can see — a binding misspelled so a subtree never renders, which
+      # type-checks, passes all 300 seam tests, and ships a blank row.
+      # `docs/open-questions.md` § *No UI smoke layer* recorded that gap from 2026-08-31;
+      # ADR-1029 is the decision that closed it, and `DayByDayUITests` is deliberately thin.
+      #
+      # **The device is discovered, not named.** A hard-coded `name=iPhone 17` is a bet on
+      # the runner image's device list, which moves with Xcode and is not ours to pin. The
+      # runtimes shipped on `macos-26` create devices at image build time, so this asks
+      # `simctl` which iPhone is actually there and says which one it took — a green run
+      # against a device nobody can identify is the failure mode being avoided.
+      - name: xcodebuild test — the app shell draws
+        run: |
+          set -eu
+          device=$(xcrun simctl list devices available --json \
+            | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next(d['udid'] for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')))")
+          echo "Running the UI smoke test on simulator ${device}."
+          xcodebuild test \
+            -project src/DayByDay/DayByDay.xcodeproj \
+            -scheme DayByDay \
+            -destination "platform=iOS Simulator,id=${device}" \
+            -only-testing:DayByDayUITests

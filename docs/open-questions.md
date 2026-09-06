@@ -125,8 +125,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
   written the tap does nothing, the row does not change, and nothing is said. This is approved
   as written: #91's `tasks.md` and its `design.md` shell snippet both specify `try?`, and no
   scenario covers the shell. The second half of the `throws` rationale is therefore unrealised,
-  and it sits in the layer *No UI smoke layer* below already flags. Owed by whichever Story
-  first gives the shell a way to say anything at all.
+  and it sits in the shell layer. Owed by whichever Story first gives the shell a way to say
+  anything at all — which is `add-refused-tick-notice` (#100), open at the time of writing.
+
+  The layer is no longer unwatched, but this is not what watches it: the smoke layer settled on
+  2026-09-06 asserts that the shell drew, never what it drew, so a swallowed error is exactly the
+  kind of thing it will not catch. See *Settled* below.
 - **The tasks template puts G7 inside the implementer's own checklist.** Surfaced at #91's
   review, 2026-09-03. A change's `tasks.md` carries a box reading "`mattpocock-skills:code-review`
   reports nothing unresolved on either axis (**G7**)", and `openspec validate --archived`
@@ -139,20 +143,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   so, which is the one thing `AGENTS.md`'s routing table gives to a separate agent that may
   write nothing. The fix is to the template the change folder is generated from, which is a
   chore; it is recorded rather than done because nothing has asked for it.
-- **No UI smoke layer.** Surfaced at `day-screen`'s G1, 2026-08-31. Acceptance tests for the
-  first screen attach at a view-model seam inside `DayByDayKit`, so nothing automated proves
-  SwiftUI actually draws: a row left blank by a misspelled binding passes CI. The answer is one
-  or two XCUITest cases, and it is deferred because it costs an ADR, an `xcodebuild` job against
-  a simulator, and a change to CI check 4, which reads `@Test("...")` display names out of Swift
-  source and cannot see an XCTest method name. Revisit when there is a second screen to regress
-  against.
-  **Narrowed 2026-09-06, not closed.** The `swift` job now runs
-  `xcodebuild ... -scheme DayByDay build`, so the second of those three costs is paid and the
-  shell no longer reaches `main` without compiling — which had been true of every commit to
-  `src/DayByDay/` since it was created. That answers "a renamed kit symbol broke the shell" and
-  answers nothing about drawing: the misspelled-binding case in the sentence above still passes
-  CI. What is left is a test target in the hand-written `.xcodeproj` and check 4 learning to see
-  a test name that is not a `@Test("...")` literal.
 - **Playwright is ruled out on a fact, not a preference**, recorded so it is not re-proposed. It
   drives browser engines only, ships no `_ios` counterpart to its experimental `_android`, and
   cannot launch Apple's Simulator. It is unreachable without reversing ADR-1001, which chose
@@ -173,6 +163,26 @@ Things that are built, or deliberately not built, in a state someone will trip o
   this shape; whichever one that is owes the decision, or a chore does it first.
 
 ## Settled
+
+- 2026-09-06 — **the app is proved to draw, by a committed XCUITest target on the chore lane.**
+  Open since `day-screen`'s G1 on 2026-08-31: acceptance tests attach at a seam inside
+  `DayByDayKit`, so a row left blank by a misspelled binding type-checked, passed every test behind
+  the seam, and shipped. The entry named three costs — an ADR, an `xcodebuild` job, and a change to
+  CI check 4. The job landed with the compile step on 2026-09-06, this is the ADR, and **the third
+  cost turned out not to exist**: it was booked on the assumption that UI tests would satisfy
+  scenarios, and on the chore lane there are none to satisfy, so check 4 never has to read a name
+  that is not a `@Test("...")` literal. Choosing the lane deleted the cost rather than paying it.
+
+  Two facts settled it, both measured rather than recalled. **Swift Testing cannot be used in a UI
+  test bundle** — Xcode compiles one with `-module-alias Testing=_Testing_Unavailable`, so
+  `import Testing` fails with `Unable to resolve module dependency: '_Testing_Unavailable'` — which
+  is why the layer is XCTest and why check 4 could never have seen it. And **the layer goes red for
+  the right reason**: misspelling `Text("Today")` in the shell, a change that compiles and that all
+  300 seam tests pass, ends the run `** TEST FAILED **`.
+
+  What it asserts is deliberately thin, and the rule is worth keeping: **it asserts that the shell
+  drew, never what it drew.** Anything asserting *what* is a requirement, and requirements live
+  behind the seam. `docs/adr/1029-the-ui-smoke-layer-is-a-chore-and-it-is-xctest.md`.
 
 - 2026-09-03 — **the record is kept at `<Application Support>/DayByDay/record.json`, and the
   day screen is what chooses it.** `RecordStore` keeps the record wherever it is given and cannot
