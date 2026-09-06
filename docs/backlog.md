@@ -68,91 +68,6 @@ shape it lacks, not the quota.
 
 ## Wants
 
-### B-001 — record a weight for a day, and see it as a line over months
-*Captured 2026-08-28, migrated from the parking lot 2026-09-02.*
-
-> "weight — a number entered once a day, looked at as a line over months"
-
-*Folded in 2026-09-02:*
-
-> "Track weight daily"
-
-- **Trigger** — once a day, on the scale. Separately and rarely, to look at the trend.
-- **Touches** — `commitment`, as a numeric payload rather than a tick; the line is a surface
-  that is not the day screen.
-- **Principle** — tested against *five percent of seven things*: passes. A number where
-  there was a tick makes a new kind of record possible rather than deepening one; the line
-  over months is a look-back and is judged with B-007.
-- **Open** — one want or two? Entering a number and reading months of them are different
-  triggers, and the second may be B-007 or B-008 wearing a different name. The 2026-09-02
-  braindump named the entry and the graph in separate breaths — the graph as "a separate area
-  which can be navigated to" — which strengthens the split without deciding it.
-
-### B-002 — add to a running total across a day
-*Captured 2026-08-28, migrated 2026-09-02.*
-
-> "protein — a number entered several times a day that accumulates rather than overwrites"
-
-*Folded in 2026-09-02:*
-
-> "Track grams of protein daily"
-
-- **Trigger** — several times a day, after eating.
-- **Touches** — `commitment`. The same numeric payload as B-001 with the opposite write
-  semantics: add, never replace.
-- **Principle** — tested against *five percent of seven things*: passes as a number, strains
-  as a running total. The number is B-001's new kind of record; accumulating is depth on it,
-  and is worth less on its own than the plain number.
-- **Open** — is there a target for the day, and does reaching it make the commitment done?
-  B-018 is the same question asked from the other side.
-- **Open** — the 2026-09-02 braindump groups protein with weight, mood and journal as "daily",
-  and says nothing about accumulating. That is not a contradiction of the original words, but
-  accumulation is this entry's whole identity, so grooming has to confirm it is still wanted
-  rather than assume it.
-
-### B-003 — set a mood for the day with one tap
-*Captured 2026-08-28, migrated 2026-09-02.*
-
-> "mood — a number set by a single tap, once a day"
-
-*Folded in 2026-09-02:*
-
-> "Track mood (1-10) daily"
-
-- **Trigger** — once a day, in the row itself, with no second screen.
-- **Touches** — `commitment` numeric payload and `day-screen`, because "one tap" is a claim
-  about the row, not about the value.
-- **Principle** — tested against *an iPhone, in your hand*: passes, and is the want that
-  states it most sharply — one tap, in the row, phone in hand. The ten-point scale is what
-  strains it, not the principle.
-- **Answered 2026-09-02** — the scale is 1 to 10. It was the open question on this entry, and
-  the braindump states it outright.
-- **Open** — ten values and "a single tap" pull against each other: a ten-point scale is a
-  slider or a row of ten targets, neither of which is one tap in a row. This is the same
-  tension B-010 raised for every entry that carries a value, before it became a principle.
-
-### B-004 — write two or three sentences about a day
-*Captured 2026-08-28, migrated 2026-09-02.*
-
-> "journal — two or three sentences a day, deliberately not an essay"
-
-*Folded in 2026-09-02:*
-
-> "Track journal entries daily"
-
-- **Trigger** — once a day, evening.
-- **Touches** — `commitment` with a text payload, plus somewhere to type that a row is not.
-- **Principle** — tested against *an iPhone, in your hand*: passes only because it is short.
-  Two or three sentences typed on a phone is the most interaction any daily entry asks for,
-  and "deliberately not an essay" is the owner drawing that line.
-- **Open** — the day-one list has journaling as a **tick**, not as written text. The 2026-09-02
-  braindump lists journal entries alongside weight, protein and mood — the three things that
-  carry a value — and not alongside sports, supplements and habits, which are the ticks. That
-  leans to written text, and grooming should say so rather than leave it leaning.
-- **Re-judged 2026-09-06** — journaling left the week on 2026-09-04, so the day-one list no longer
-  says tick or text about it; the lean to written text now rests on the braindump alone. The want
-  stands on its own words, and it is the one entry the new week says nothing about at all.
-
 ### B-005 — tick a habit phrased as a negative, where ticking records that it was *not* done
 *Captured 2026-08-28, migrated 2026-09-02.*
 
@@ -169,6 +84,10 @@ shape it lacks, not the quota.
   thing was *not* done records an absence, and a run of absences is a streak by another
   name; it survives as long as the tick stays a record and never becomes a count.
 - **Open** — is the negation a property of the commitment, or only of how its row is worded?
+- **Answered 2026-09-06**, at the Feature grill that reopened `FEAT: record` (#53): a name. A
+  commitment called "No nail biting" takes a plain tick and its name says the rest; nothing in the
+  record knows the difference, and an absence is never counted. Left behind by that G1 on purpose,
+  and the next pass should propose the drop rather than carry it.
 - **Re-judged 2026-09-06** — the week no longer has a line reading "supplements and habits"; what it
   has is *nails every 4 days*, a positive rhythm on the very thing this want's example phrases as a
   negative. Whether that is this want said the other way round, or a different commitment about the
@@ -288,36 +207,6 @@ shape it lacks, not the quota.
   starts before a quota over it means anything.
 - **Re-judged 2026-09-06** — stands, with yuno 5× a week where reading 3× a week was: the new week
   asks for the weekly quota exactly as the old one did, and for no longer span.
-
-### B-018 — meet a quota more than once in a single day
-*Captured 2026-09-02.*
-
-> "maybe I also want daily / biweekly / monthly quotas?"
-
-- **Trigger** — several times within one day: supplements morning and evening, water three times.
-- **Touches** — `commitment` and `record`, **not** `schedule`. This is the half of the want that
-  is not a rhythm at all: a rhythm already says "every day", and what a daily quota adds is a
-  count *within* the day.
-- **Principle** — tested against *entered where you stand*: passes on the interaction —
-  tapping a row three times is still one tap at a time, in the row — and that is the only
-  principle it clearly passes. It fails *five percent of seven things* for the same reason
-  B-017 does.
-- **Contradicts agreed vocabulary.** `CONTEXT.md` § *Record* says there is *"at most one per
-  commitment per day"*, agreed 2026-09-02 with `FEAT: record` (#53). That sentence is what settled
-  the 1–7 ceiling on Story #11's weekly quota at G4 on the same day. So this want is not a Story
-  against `schedule`: taking it means changing **Record** first, and then the shipped `record`
-  spec that #55 and #56 left behind, which carries the same rule in three places.
-- **Open** — is this B-002 (protein: *"a number entered several times a day that accumulates
-  rather than overwrites"*) said in other words? Three taps that count up to three and a number
-  that accumulates to a target may be one want with two vocabularies, and B-002's own open
-  question — whether the day has a target that finishes the commitment — is this one described
-  from the other side. Grooming should merge or separate these deliberately rather than let both
-  survive by default.
-- **Re-judged 2026-09-06** — the weakest want on the file, and it stays. Nothing in the 2026-09-04
-  week is done more than once in a day: creatine and magnesium are once daily, and there is no water
-  line. The words are the owner's, so it is not the 2026-08-28 drop's case of a rule invented while
-  answering a question — but nothing asks for it now, and a pass that declines it again for that
-  reason should propose the drop on its merits rather than carry it.
 
 ### B-021 — see what rhythm a commitment runs on, in words
 *Captured 2026-09-02, from the sweep. The wording is the sweep's.*
@@ -571,6 +460,25 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-06 — record a weight for a day, and see it as a line over months → the first half to
+  `FEAT: record` (#53), reopened under `EPIC: Daily commitments` (#1), amended rather than doubled.
+  A **number** is a kind of record: one decimal for the day, replaced when entered again, no unit,
+  an optional range. The second half, the line over months, was already B-007's and stays there.
+- 2026-09-06 — add to a running total across a day → `FEAT: record` (#53). A **total** is a kind of
+  its own: the additions in the order they were made, summed, kept when the sum reaches a required
+  **target**. The owner chose accumulation over a number typed once, and a target over kept on the
+  first addition, against the recommendation both times.
+- 2026-09-06 — set a mood for the day with one tap → `FEAT: record` (#53). Mood is a number with a
+  **range** of one to ten, declared with the commitment and refusing what is outside it; the one tap
+  is the row's affordance and belongs to the `day-screen` Story that enters a number.
+- 2026-09-06 — write two or three sentences about a day → `FEAT: record` (#53). A **note** is a kind
+  of record: short text for the day, typed in the row and nowhere else. The journal is written text
+  and not a tick — the lean the braindump gave, now decided.
+- 2026-09-06 — meet a quota more than once in a single day → merged into the **total** kind at
+  `FEAT: record` (#53): three taps in a day are a total added to by one, with a target of three. It
+  contradicted `CONTEXT.md` § *Record*'s one per day and no longer does — the record is the
+  additions, and there is one per commitment per day.
+
 - 2026-09-03 — see, in the row, that today's commitment is kept → a chore on the app shell,
   `chore/draw-kept`, under ADR-1019: `Row.isKept` is already public and drawing it carries no
   requirement, so there is nothing for a Story to specify. Kept is a dimmed name and a plain
@@ -811,3 +719,37 @@ found nothing.
       exists and #26's G2 has happened; B-021 as a Story reopening `schedule` (#6).
     - **F**, quota spans and standing: B-017 and B-025, blocked on *Week turnover*, which
       nothing yet forces.
+
+- 2026-09-06 — pass over 19 wants, the fifth.
+  - **Sweep** — one silence, confirmed and captured before clustering: B-033, the roster's order,
+    the one lifecycle verb on `commitment` nothing had said. Every line of the 2026-09-04 week is
+    under a spec and the shell's seed matches it; `record`, `schedule` and `day-screen` have every
+    verb claimed by a want or a spec. `docs/open-questions.md` held no want in disguise; two of its
+    entries are for that file to fix — the Story-template gap is stale since #136, and the
+    row-identity gap is live since #104 and unowned. The five wants the week said to re-judge all
+    stand, each with a *Re-judged* line, B-005 too; the kept-from day folded into B-014 as Open.
+    PR #135's captures (B-031, B-032, the fold into B-021) were read as part of the file.
+  - **Taken forward** — cluster A, a record that is not a tick: B-001, B-002, B-003, B-004, B-018,
+    grilled and taken to `FEAT: record` (#53), reopened under Epic #1, amended rather than doubled.
+    Three rounds, fourteen questions. Settled: the kind is the fourth part of a commitment, and that
+    answers B-029's question too; four kinds — tick, number, note, total; a number is a decimal with
+    no unit and an optional range; a total is its additions in order with a required target, kept
+    when reached (both against the recommendation); a note is short text; negation is a name;
+    entering keeps the day; taking back is the general verb. Six terms and four amendments in
+    `CONTEXT.md`. Left behind: B-032 (prefill), B-005 (a name — propose the drop next pass), B-007
+    and B-011 (looking back). Proposed for G2: the kind first, then the number, the note, the total,
+    the row's entry as a `day-screen` delta, then defining a kind on the commitments screen as a
+    `commitment` delta serialised after cluster B's Stories on #26. The fourth part is owed an ADR
+    at Story 1's Stage 4.
+  - **Not taken**, each with its disposition:
+    - **B**, the commitment's lifecycle: B-021, B-031, B-033 as Stories reopening `commitment`
+      (#26) — **taken forward in a separate session the same day, by the owner's decision**, with
+      B-014 and B-029 held until A's G1 had decided where the kind lives. That is decided now, so
+      both may follow in a second breakdown. The next pass verifies this on the tracker and in
+      *Decided* before believing it, as the fourth pass had to.
+    - **C**, the day screen's reading: B-028 free-standing; B-030 waits on B-029, B-025 on *Week
+      turnover*, B-011 on B-007.
+    - **D**, looking back: B-007, unclaimed; nothing has been recorded on a phone yet.
+    - **E**, restore: B-009. The phone install is runnable since today and its record is one
+      deleted app from gone — the strongest reason yet to take it.
+    - **F**, quota spans: B-017, blocked on *Week turnover*.
