@@ -2557,3 +2557,33 @@ func aTapOnARowADayScreensDayViewDoesNotHoldDoesNotEndWhatIsAlreadyTold() throws
 
     #expect(mondayScreen.refusedChangeRow == ownRow)
 }
+
+@MainActor
+@Test("a day screen returned to goes on telling what it was telling on a row")
+func aDayScreenReturnedToGoesOnTellingWhatItWasTellingOnARow() throws {
+    let (place, rosterPlace) = try blockerPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let seedRoster = try RosterStore(at: rosterPlace)
+    try seedRoster.add(journaling)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let row = screen.dayView.rows[0]
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(row)
+    }
+    #expect(screen.refusedChangeRow == row)
+
+    screen.returnedTo()
+
+    #expect(screen.refusedChangeRow == row)
+    #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
+}

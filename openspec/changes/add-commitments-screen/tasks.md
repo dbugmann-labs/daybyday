@@ -959,7 +959,7 @@ nothing else. A pull request that adds a string to `DayByDayKit` here has gone p
 
 ### The empty seam, before any test is written
 
-- [ ] 7.1 In `Sources/DayByDayKit/CommitmentsScreen.swift`, add
+- [x] 7.1 In `Sources/DayByDayKit/CommitmentsScreen.swift`, add
   `public enum RefusedChange: Equatable, Sendable` with `case defining(Refusal)`,
   `case stopping(Commitment, Refusal)` and `case keepingAgain(Commitment, Refusal)`, plus a
   `public var refusal: Refusal` that answers the associated refusal whichever case it is; and add
@@ -977,16 +977,16 @@ assertion already in that file may change**: these thirteen tests are added besi
 ones, and every existing test goes on asserting on the `Refusal?` each method answers, because the
 answer to the caller does not move.
 
-- [ ] 7.2 `a commitments screen holds a refused definition against defining a commitment`
-- [ ] 7.3 `a commitments screen holds a refused stop against the commitment it was asked to stop` —
+- [x] 7.2 `a commitments screen holds a refused definition against defining a commitment`
+- [x] 7.3 `a commitments screen holds a refused stop against the commitment it was asked to stop` —
   the place is made impossible to write in the shape § 2.28's test already uses: remove the roster
   file and create a directory in its path.
-- [ ] 7.4 `a commitments screen holds a refused take-up-again against the commitment it was asked to take up again`
-- [ ] 7.5 `a commitments screen refused twice holds only the change it was asked for last` — the
+- [x] 7.4 `a commitments screen holds a refused take-up-again against the commitment it was asked to take up again`
+- [x] 7.5 `a commitments screen refused twice holds only the change it was asked for last` — the
   test that fails an implementation keeping a slot per method rather than one slot. Assert both
   that the stop is what is held and that nothing about defining is.
-- [ ] 7.6 `a commitments screen that has been asked for no change holds no refused change`
-- [ ] 7.7 `a commitments screen holds nothing against a call that changes nothing at all` — three
+- [x] 7.6 `a commitments screen that has been asked for no change holds no refused change`
+- [x] 7.7 `a commitments screen holds nothing against a call that changes nothing at all` — three
   calls in one test, because it is one rule: asking to stop a commitment the screen does not keep,
   confirming a stop with nothing awaiting confirmation, and taking up again a commitment that has
   not been stopped.
@@ -995,22 +995,22 @@ answer to the caller does not move.
 
 Seven scenarios, same file, same rules.
 
-- [ ] 7.8 `what a commitments screen holds about a refused change ends when the app is shown again`
-- [ ] 7.9 `what a commitments screen holds about a refused change ends when the app is shown again where the roster then cannot be read` —
+- [x] 7.8 `what a commitments screen holds about a refused change ends when the app is shown again`
+- [x] 7.9 `what a commitments screen holds about a refused change ends when the app is shown again where the roster then cannot be read` —
   the test that fails an implementation clearing only on a successful re-open.
-- [ ] 7.10 `what a commitments screen holds about a refused change ends when a commitment is defined and kept`
-- [ ] 7.11 `what a commitments screen holds about a refused change ends when a stop is kept`
-- [ ] 7.12 `what a commitments screen holds about a refused change ends when a commitment is taken up again and kept` —
+- [x] 7.10 `what a commitments screen holds about a refused change ends when a commitment is defined and kept`
+- [x] 7.11 `what a commitments screen holds about a refused change ends when a stop is kept`
+- [x] 7.12 `what a commitments screen holds about a refused change ends when a commitment is taken up again and kept` —
   this one and 7.11 are the two the third review found genuinely stale in the shipped shell; an
   implementation that clears only the slot the change belongs to passes 7.10 and fails these.
-- [ ] 7.13 `what a commitments screen holds about a refused change stands when a call changes nothing at all` —
+- [x] 7.13 `what a commitments screen holds about a refused change stands when a call changes nothing at all` —
   the mirror of 7.7 with something already held. An implementation that clears on entry to
   `keepAgain` or `confirmStopKeeping`, rather than where the roster place is reached, fails here.
-- [ ] 7.14 `what a commitments screen holds about a refused change stands when a stop is asked for and cancelled`
+- [x] 7.14 `what a commitments screen holds about a refused change stands when a stop is asked for and cancelled`
 
 ### The day screen's neighbour, now that it has landed
 
-- [ ] 7.15 `a day screen returned to goes on telling what it was telling on a row` — one test at
+- [x] 7.15 `a day screen returned to goes on telling what it was telling on a row` — one test at
   the end of `Tests/DayByDayKitTests/DayScreenTests.swift`, beside § 3's seven, from
   `specs/day-screen/spec.md`. The behaviour ships already, because `returnedTo()` does not touch
   `refusedChangeRow` and #100's own requirement names three things that end a notice, none of them

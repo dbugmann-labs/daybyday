@@ -69,6 +69,28 @@ public final class CommitmentsScreen {
     /// The commitment a stop has been asked for and not yet confirmed or cancelled.
     public private(set) var awaitingConfirmation: Commitment?
 
+    /// The change asked for last that was refused, and why — at most one at a time, `nil` when the
+    /// last change asked for was kept and when none has been asked for. Cleared by `shown(asOf:)`.
+    public private(set) var refusedChange: RefusedChange?
+
+    /// A change a commitments screen was asked for and refused: which one, and why. The commitment
+    /// is carried on the two changes that are asked about a commitment already on a list, so that
+    /// a person is told beside the row they tapped rather than in one place for all three.
+    public enum RefusedChange: Equatable, Sendable {
+        case defining(Refusal)
+        case stopping(Commitment, Refusal)
+        case keepingAgain(Commitment, Refusal)
+
+        /// Why it was refused, whichever change it was.
+        public var refusal: Refusal {
+            switch self {
+            case .defining(let refusal): refusal
+            case .stopping(_, let refusal): refusal
+            case .keepingAgain(_, let refusal): refusal
+            }
+        }
+    }
+
     /// Why a change was refused. `nil` from any of the four below means it was kept at the place
     /// before that call returned.
     public enum Refusal: Equatable, Sendable {
@@ -89,29 +111,36 @@ public final class CommitmentsScreen {
     /// `keptFrom`, and takes it on. Takes a commitment the roster has stopped up again.
     public func define(name: String, on rhythm: Rhythm, keptFrom: CalendarDate) -> Refusal? {
         if case .weekdays(let weekdays) = rhythm, weekdays.isEmpty {
+            refusedChange = .defining(.dueOnNoDay)
             return .dueOnNoDay
         }
 
         guard let schedule = rhythm.schedule(keptFrom: keptFrom) else {
+            refusedChange = .defining(.rhythmOutOfRange)
             return .rhythmOutOfRange
         }
 
         guard let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom) else {
+            refusedChange = .defining(.namesNothing)
             return .namesNothing
         }
 
         guard let rosterStore else {
+            refusedChange = .defining(.notKept)
             return .notKept
         }
 
         do {
             guard try rosterStore.add(commitment) else {
+                refusedChange = .defining(.alreadyKept)
                 return .alreadyKept
             }
         } catch {
+            refusedChange = .defining(.notKept)
             return .notKept
         }
 
+        refusedChange = nil
         refreshLists(from: rosterStore)
         return nil
     }
@@ -139,15 +168,18 @@ public final class CommitmentsScreen {
         awaitingConfirmation = nil
 
         guard let rosterStore else {
+            refusedChange = .stopping(commitment, .notKept)
             return .notKept
         }
 
         do {
             try rosterStore.retire(commitment, keptUntil: dayToKeepFrom)
         } catch {
+            refusedChange = .stopping(commitment, .notKept)
             return .notKept
         }
 
+        refusedChange = nil
         refreshLists(from: rosterStore)
         return nil
     }
@@ -159,15 +191,18 @@ public final class CommitmentsScreen {
             return nil
         }
         guard let rosterStore else {
+            refusedChange = .keepingAgain(commitment, .notKept)
             return .notKept
         }
 
         do {
             try rosterStore.add(commitment)
         } catch {
+            refusedChange = .keepingAgain(commitment, .notKept)
             return .notKept
         }
 
+        refusedChange = nil
         refreshLists(from: rosterStore)
         return nil
     }
@@ -176,6 +211,7 @@ public final class CommitmentsScreen {
     /// read again.
     public func shown(asOf today: CalendarDate) {
         dayToKeepFrom = today
+        refusedChange = nil
 
         let opened = Self.open(at: place)
         rosterStore = opened.store
