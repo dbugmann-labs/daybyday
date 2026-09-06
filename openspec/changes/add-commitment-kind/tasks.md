@@ -236,12 +236,32 @@ diff, so 8.1 and 8.2 confirm rather than write.
 
 ## 9. The evidence, before the review
 
-- [ ] 9.1 Record, in this box, which of the tests § 2 predicted would run red actually did — 2.5,
+- [x] 9.1 Record, in this box, which of the tests § 2 predicted would run red actually did — 2.5,
   2.6, 2.8, 2.9 and 2.11 — and any test that ran red where none was expected. A prediction in a
   task file is not evidence; what happened is. A test that was expected red and came up green on
   first write is worth one line saying why, because it usually means the assertion is weaker than
   the scenario.
-- [ ] 9.2 `pnpm run verify` green from the repo root, `cd src/DayByDayKit && swift test` reporting
+
+  **None of 2.5, 2.6, 2.8, 2.9 or 2.11 ran red.** All five ran green on first write. Two other
+  tests ran red where the prediction named none: **2.2** (`a commitment of each of the four kinds
+  is formed and reads its kind back`) crashed at `CommitmentKind.swift:24`, `Target.init?`'s
+  `fatalError` — its total-kind case needs a real `Target(120)`, so it is the actual first call
+  into that initializer, two tasks before 2.9. **2.4** (`a commitment's kind does not change
+  whether it is due`) crashed the same way at `CommitmentKind.swift:16`, `Range.init?`'s
+  `fatalError` — its number-kind case needs a real `Range(lowest: 40, highest: 150)`, the actual
+  first call, one task before 2.5.
+
+  This is why 2.5 through 2.11 all ran green: making 2.2 pass required implementing `Target.init?`
+  in full — `guard amount > 0` is the whole of what the requirement asks, so there is no smaller,
+  partial version of that guard to write first — and making 2.4 pass required implementing
+  `Range.init?` in full the same way, as the explicit `guard !lowest.isNaN, !highest.isNaN, lowest
+  <= highest` design.md and ADR-1032 call for, not the narrower `guard lowest <= highest` a naive
+  first pass might reach for. **2.8 in particular is the scenario 2.6's naive guard would fail**,
+  and it passed on first write precisely because the guard written at 2.4 was already the
+  NaN-refusing one, never the comparison-only one. Neither green is a weak assertion: each of
+  2.5–2.11 asserts exactly what its scenario says, and each was already true once 2.2 and 2.4
+  forced the real guards into existence early.
+- [x] 9.2 `pnpm run verify` green from the repo root, `cd src/DayByDayKit && swift test` reporting
   **418 tests passing**, `pnpm run checks` reporting `scenario coverage — 92/92`, and
   `openspec validate add-commitment-kind --strict` exiting 0 with the change folder as it finally
   stands.
