@@ -104,11 +104,21 @@ things each day, without much navigation)".
 the monthly finances, watering the plants. It is defined once and recurs indefinitely. It is
 deliberately not a *task*, which is completed once and then gone; not a *habit*, which fits
 supplements but not finances; and not an *area*, a word tried first and dropped because it was
-covering three unlike behaviours at once. It is made of three things and no others: a name, the
-schedule it runs on, and the day it is kept from. From that day onwards it is due exactly when
-its schedule is, and it adds nothing of its own to that answer. It carries no identifier: two
-commitments alike in all three are the same commitment, and telling apart two a person
-deliberately kept separate is a property of whatever stores them, not of the commitment.
+covering three unlike behaviours at once. It is made of four things and no others: a name, the
+schedule it runs on, the day it is kept from, and the **kind** of record its days take. From that
+day onwards it is due exactly when its schedule is, and it adds nothing of its own to that answer.
+It carries no identifier: two commitments alike in all four are the same commitment, and telling
+apart two a person deliberately kept separate is a property of whatever stores them, not of the
+commitment.
+
+**Amended 2026-09-06**, at the Feature grill that reopened `FEAT: record` (#53): the kind is the
+fourth part, and until then there were three. ADR-1023 had refused a fourth part for *kept until*
+because a tick embeds the whole commitment by value, so a part that changes re-keys every tick
+already recorded. The kind does not change once a commitment is defined — changing it is what
+changing a commitment is (B-014), not this — and every commitment defined before the kind existed
+is of the plain kind, a tick, so nothing already recorded is re-keyed and nothing already kept reads
+back differently. Where the kind lives was the one question this grill and the commitment's
+lifecycle (B-029, a category) had in common, and it is answered here for both.
 
 **Commitment name** — the words a person gave a commitment, and the only part of one that is
 not a rule. It has to say something: a name that is empty, or made only of blank space, names
@@ -200,8 +210,12 @@ the commitment was kept. It is keyed to the date and never to the time it was en
 at most one per commitment per day, and it survives the app being closed and opened again —
 durability is a property of the record, not of some store behind it, because a record a few
 days old that cannot be reconstructed is the failure the product exists to remove. A tick is
-the plain kind; a number or a sentence would be other kinds, and none of those exists yet.
-Agreed 2026-09-02 at the first grooming pass, with `FEAT: record`.
+the plain kind; a **number**, a **note** and a **total** are the other three, agreed 2026-09-06 at
+the Feature grill that reopened `FEAT: record` (#53) for them. Whatever its kind, a record on a due
+day is that commitment **kept** — a tick, a number or a note by being there at all, a total when its
+sum has reached its target — and any record can be **taken back**, because a tap that cannot be
+undone is a permanent false record: a tick, a number or a note leaves the day holding nothing, a
+total loses its last addition. Agreed 2026-09-02 at the first grooming pass, with `FEAT: record`.
 
 **Tick** — to record that a due commitment was done, and the plain kind of record that
 results. A tick is of a *due* commitment: a day on which the commitment is not due takes no
@@ -215,7 +229,10 @@ from *missed* is the asker's job with the commitment's own answer beside it. It 
 tick per commitment per day, so ticking a day twice is one tick, and it is a value: two histories
 holding the same ticks are the same history, whatever order they were ticked in. Deliberately not
 the **record store**, which is where a history survives the app being closed and is #56's to define.
-Agreed 2026-09-02 at the grill of `add-tick-record` (#55).
+Agreed 2026-09-02 at the grill of `add-tick-record` (#55). **Amended 2026-09-06** — a history holds
+records of every kind, not ticks alone, and answers *kept* by each kind's own rule: a tick, a number
+or a note by being there, a total by its sum having reached its target. Still at most one record per
+commitment per day, still a value.
 
 **Untick** — to take a tick back, leaving the history as though that tick had never been: the
 commitment is not kept on that day, every other tick stands, and nothing remembers that the tick was
@@ -223,6 +240,41 @@ ever there — an untick is not a record of its own. Taking back a tick that was
 nothing rather than an error. It exists because a tick is one tap on a phone, and a tap that cannot
 be undone turns every mis-tap into a permanent false record. Proposed 2026-09-02 at the grill of
 `add-tick-record` (#55) and settled by the owner the same day, in answer to its question round.
+**Taking back** is the general verb, agreed 2026-09-06: a number and a note are taken back the same
+way, a total loses its last addition, and untick is its name for a tick.
+
+**Kind** — what a commitment's days take, and the fourth part of a commitment: a tick, a number, a
+note or a total. It is set when the commitment is defined and is one of the four things that make
+two commitments the same one. A row reads it to know what to offer before anything has been
+recorded; the day-one week is nine ticks. Agreed 2026-09-06 at the Feature grill of `FEAT: record`
+(#53).
+
+**Number** — the kind of record that holds one decimal for the day: a weight, a mood. Entered once,
+and entered again it is replaced, so there is still one record per commitment per day. It carries no
+unit — the name says kilograms — and it keeps the day by being there. A commitment of this kind may
+declare a **range**. Agreed 2026-09-06, same grill.
+
+**Range** — the lowest and the highest a number commitment will take, both or neither, declared with
+the commitment: mood is one to ten. A number outside it is refused rather than kept, the same refusal
+that stops a tick on a day the commitment is not due. Without one, any number is a number. Agreed
+2026-09-06, same grill.
+
+**Note** — the kind of record that holds a short text for the day: two or three sentences,
+deliberately not an essay. Typed in the row and nowhere else (*Entered where you stand*). It keeps
+the day by being there. Agreed 2026-09-06, same grill.
+
+**Total** — the kind of record that grows across a day: the additions made to it, in the order they
+were made, whose sum is the day's total. Protein after each meal; a supplement taken twice. Still
+one record per commitment per day — the record is the additions, and the total is derived and never
+stored. Taking back removes the last addition. It keeps the day when its sum has reached the
+commitment's **target**; additions past the target are allowed and change nothing about kept. Agreed
+2026-09-06, same grill — the owner chose accumulation over a number typed once, and a target over
+kept-on-first-addition, against the recommendation both times.
+
+**Target** — the sum a total has to reach for its day to be kept, declared with a commitment of that
+kind and required by it: 120 grams, two doses. A total without a target is not a total — a number
+you only want to watch is a number. It is within one day and never across days, which is what keeps
+it on the right side of *Nothing congratulates you*. Agreed 2026-09-06, same grill.
 
 **Store** — where a value survives the app being closed and opened again: kept at a *place* the app
 names, so that whatever opens a store at that place next holds the same value. A change is kept the
