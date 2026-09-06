@@ -572,6 +572,96 @@ place. If one appears to be needed, that is a requirement this delta is missing 
     `.rhythmOutOfRange`, confirmed present in the run's `CHECK8 TEXTS` attachment, not a system
     message.
 
+  **Re-driven again on 2026-09-06, against the shell § 7 leaves — a ninth check joins the eight.**
+  Task 7.17. The scratchpad harness the paragraphs above describe is refreshed rather than
+  rebuilt: the same Xcode project and UI-test target, with `src/DayByDay/DayByDay` and
+  `src/DayByDayKit/Sources/DayByDayKit` re-synced onto it from this branch by the same two
+  `rsync` commands, so `CommitmentsScreen.refusedChange` and the shell that now reads it are both
+  present. `WalkthroughUITests.swift` gains one setup step and one new check, and nothing already
+  passing is deleted:
+
+  **Simulator and iOS:** iPhone 17, iOS 26.5 (build 23F77), under Xcode 26.6 (build 17F113) — the
+  same device this Story has used throughout.
+
+  **What changed in `WalkthroughUITests.swift`.** A setup step is inserted between check 7 and
+  check 8 — stop keeping "Budget" (tap it under `Kept`, confirm) so a stopped commitment is on
+  hand for the ninth check — and check 8 gains one line: after typing "ZeroDays" into the name
+  field, `nameField.typeText("\n")` dismisses the keyboard through the field's own Return key
+  before the rhythm picker is revealed. **This line was not optional and is recorded because it
+  was not obvious**: with "Budget" now stopped, the list holds one row more than it did in every
+  earlier drive of this walkthrough, and with the keyboard still open and the (still-default)
+  Weekdays rhythm drawing its seven toggles, there is nowhere on screen for the picker row to sit
+  above the Add button at the same time — `reveal()`'s repeated `swipeUp` cannot manufacture room
+  that the layout does not have, and it drove the list to the same fully-scrolled position, off by
+  the same fraction of a point, every time it was tried without the dismiss. Dismissing the
+  keyboard first — which every earlier version of this form happened to have already done a
+  different way by that point — gives the list back the height check 8 was always relying on.
+  Check 9 itself is new, appended after check 8:
+
+  ```swift
+  // ===== CHECK 9: a different change landing clears the held refusal =====
+  // With "That number isn't one this rhythm accepts." still on screen from check 8, taking
+  // a stopped commitment up again must land and must clear that message — the at-most-one
+  // rule the delta requires (design.md § *How long a refusal is told is this capability's,
+  // and which change it was is part of it*): the screen holds one refused change, the one
+  // asked for last, and a change that reaches the roster place and is kept leaves nothing
+  // held, whichever change it was.
+  XCTAssertTrue(rhythmRefusal.exists, "the refusal from check 8 is still on screen")
+  toTop()
+  let budgetStopped = app.buttons["Budget"]
+  XCTAssertTrue(reveal(budgetStopped), "Budget unreachable: \(budgetStopped.frame)")
+  budgetStopped.tap(); sleep(2)
+  XCTAssertFalse(app.buttons["Stop keeping Budget"].exists,
+                 "taking up again asks for no confirmation")
+  toTop()
+  XCTAssertTrue(app.buttons["Budget"].frame.minY < app.staticTexts["Stopped"].frame.minY,
+                "Budget is back above the Stopped header")
+  XCTAssertTrue(app.staticTexts["Nothing has been stopped."].exists)
+  XCTAssertFalse(rhythmRefusal.exists, "the rhythm refusal is gone")
+  XCTAssertFalse(app.staticTexts["That number isn't one this rhythm accepts."].exists,
+                 "nothing is left under the Add button")
+  shot("check9-refusal-cleared-by-keep-again"); report("CHECK9")
+  ```
+
+  **The commands, exactly as run**, after `xcrun simctl uninstall <udid> com.example.DayByDay`
+  and `... com.example.DayByDayUITests.xctrunner` to seed day one fresh:
+  ```
+  /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project DayByDay.xcodeproj -scheme UITests -destination "platform=iOS Simulator,name=iPhone 17" -derivedDataPath <scratch>/uitest/dd -resultBundlePath <scratch>/uitest/walk10.xcresult
+  ```
+  against simulator UDID `59430515-851B-41A8-9BE7-76B5F59DE053`.
+
+  **The passing line and the result:**
+  ```
+  Test Case '-[DayByDayUITests.WalkthroughUITests testWalkthrough]' passed (157.145 seconds).
+  Test Suite 'WalkthroughUITests' passed at 2026-09-06 4:05:42.281 PM.
+  Test Suite 'DayByDayUITests.xctest' passed at 2026-09-06 4:05:42.282 PM.
+  Test Suite 'All tests' passed at 2026-09-06 4:05:42.282 PM.
+  	 Executed 1 test, with 0 failures (0 unexpected) in 157.145 (157.148) seconds
+
+  ** TEST SUCCEEDED **
+  ```
+
+  **What was observed at each of the nine checks**, from this run's own `>>> CHECK…` attachments:
+
+  - **Checks 1–7** read exactly as the paragraphs above already describe — day one, the same
+    nine, a tenth and an eleventh, back without backgrounding, stop with confirmation, take up
+    again, force-quit and reopen — unchanged by § 7's work, since none of it touches drawing,
+    navigation or the roster's own behaviour.
+  - **Check 8 — the rhythm refusal, with the seam now holding it.** Typing "ZeroDays" on an
+    `Every N days` rhythm of `0` and tapping `Add` again left "That number isn't one this rhythm
+    accepts." on screen, the field still reading `0`, the name still reading "ZeroDays", and
+    nothing added — the same behaviour as every earlier drive, now answered by
+    `screen.refusedChange` rather than a `@State` the view held itself.
+  - **Check 9 — a different change lands and the message goes.** With that refusal still on
+    screen, tapping the now-stopped "Budget" row asked for no confirmation, moved it back above
+    the `Stopped` header, and left `Stopped` reading "Nothing has been stopped." again — and the
+    same action cleared "That number isn't one this rhythm accepts." from beside the Add button,
+    confirmed absent from the run's own `CHECK9 TEXTS` attachment. Nothing under the Add button
+    was left to read, which is the one lifetime rule from `design.md` § *How long a refusal is
+    told is this capability's, and which change it was is part of it* a person can see without a
+    disk that refuses to be written: the screen holds the outcome of the last change asked of it,
+    and a change that lands displaces whatever was held before it, whichever of the three it was.
+
 ## 5. Gates, and the files this change is and is not allowed to write
 
 - [x] 5.1 `cd src/DayByDayKit && swift test` reports **391 tests passing** and no failures, and
@@ -1033,7 +1123,7 @@ Seven scenarios, same file, same rules.
   — no sentence is added, removed or reworded by this box. `swift build` through the scheme exits 0.
 ### The walkthrough, re-driven
 
-- [ ] 7.17 Re-drive § 4.3's walkthrough against the shell as § 7 leaves it, and add its record
+- [x] 7.17 Re-drive § 4.3's walkthrough against the shell as § 7 leaves it, and add its record
   there under a dated heading rather than replacing what is written. **A ninth check joins the
   eight**: with the "that number isn't one this rhythm accepts" message on screen from check eight,
   tap a stopped commitment to take it up again; the take-up-again must land and the message must go,
