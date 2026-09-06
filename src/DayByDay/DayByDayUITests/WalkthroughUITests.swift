@@ -13,6 +13,10 @@ import XCTest
 final class WalkthroughUITests: XCTestCase {
     /// The whole smoke layer in one launch. Kept as a single test on purpose: each XCUITest case
     /// relaunches the app, which costs about half a minute, and nothing here needs isolation.
+    /// `@MainActor` because `XCUIApplication.init` is main-actor-isolated and this target builds
+    /// under Swift 6 language mode; without it the call is a concurrency warning, which CI showed
+    /// and a local run filtered for errors did not.
+    @MainActor
     func testTheDayScreenDraws() {
         let app = XCUIApplication()
         app.launch()

@@ -95,8 +95,12 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
 
 ## Consequences
 
-- **The `swift` job grows a third step** and about a minute. It discovers the simulator device
-  from `simctl` rather than naming one, because the runner image's device list moves with Xcode
+- **The `swift` job grows a third step** and about four minutes: 3m45s on `macos-26`, against 50s
+  on this machine. A UI test spends most of that booting a simulator clone and installing the app,
+  not testing — the test case itself is 25s there and 7s here. The job went from about 90 seconds
+  to about five minutes, which is the real price of this record and is paid on every push.
+- **The step discovers its simulator device** from `simctl` rather than naming one, because the
+  runner image's device list moves with Xcode
   and is not ours to pin; the step prints which device it took, so a green run is attributable.
 - **`docs/open-questions.md` § *No UI smoke layer* closes**, four Stories and six days after it
   was opened. It moves to *Settled* with this pointer.
