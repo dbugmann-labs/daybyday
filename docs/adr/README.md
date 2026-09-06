@@ -95,3 +95,6 @@ DayByDay's own records start here.
 | [1027](1027-day-one-is-written-into-an-empty-roster.md) | Day one is the app's content and the engine's moment: the owner's eight commitments are taken on exactly when the roster read holds nothing at all |
 | [1028](1028-a-screen-may-refuse-what-the-engine-accepts.md) | A screen may refuse what the rule engine accepts, where the refusal is about what a person should be offered to make; the engine is never narrowed to match a screen |
 | [1029](1029-the-ui-smoke-layer-is-a-chore-and-it-is-xctest.md) | The UI smoke layer is a committed XCUITest target on the chore lane; Swift Testing is switched off in a UI test bundle, so CI check 4 never has to see it |
+| [1030](1030-the-kind-is-a-commitments-fourth-part.md) | The kind its days take is a commitment's fourth part; a kind never changes and every commitment older than kinds is a tick, so ADR-1023's re-keying argument does not reach it |
+| [1031](1031-a-store-reads-the-form-before-it.md) | A store reads the form written before it and refuses every other, and rewrites the file only when a change is kept there; no migration pass, no rewrite on open |
+| [1032](1032-a-recorded-number-is-a-decimal.md) | Every number a person records is a `Decimal`; `Double` loses a total's sum, and `Decimal`'s not-a-number comparisons are asymmetric, so a refusal may never rest on one |

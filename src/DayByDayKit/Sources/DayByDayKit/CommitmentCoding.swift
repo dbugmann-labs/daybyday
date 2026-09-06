@@ -10,18 +10,33 @@ struct CommitmentRecord: Codable {
     var name: String
     var keptFrom: DateRecord
     var schedule: ScheduleRecord
+    var kind: KindRecord?
 
     init(_ commitment: Commitment) {
         name = commitment.name
         keptFrom = DateRecord(commitment.keptFrom)
         schedule = ScheduleRecord(commitment.schedule)
+        kind = KindRecord(commitment.kind)
     }
 
+    /// `kind` decoded as `nil` — the form written before a commitment carried a kind — means the
+    /// tick kind, per `design.md` § *The form on disk*.
     func commitment() -> Commitment? {
         guard let schedule = schedule.schedule(), let keptFrom = keptFrom.calendarDate() else {
             return nil
         }
-        return Commitment(name: name, schedule: schedule, keptFrom: keptFrom)
+
+        let resolvedKind: Commitment.Kind
+        if let kind {
+            guard let decoded = kind.kind() else {
+                return nil
+            }
+            resolvedKind = decoded
+        } else {
+            resolvedKind = .tick
+        }
+
+        return Commitment(name: name, schedule: schedule, keptFrom: keptFrom, kind: resolvedKind)
     }
 }
 
@@ -187,5 +202,139 @@ enum ScheduleRecord: Codable, Equatable, Comparable {
         case .timesPerWeek(let timesPerWeek):
             return "3:\(timesPerWeek)"
         }
+    }
+}
+
+/// One of the four shapes `Commitment.Kind` has. `design.md` § *The form on disk* fixes the wire
+/// shape: one key per case, and the key's value is that case's payload — an empty object for a
+/// kind that carries nothing, so a fifth kind with parameters would not have to break the shape.
+/// The conversion from `Commitment.Kind` is an exhaustive `switch`, so a fifth kind is a compile
+/// error here, exactly as `ScheduleRecord`'s is. `KindRecord` needs no `Comparable`: nothing sorts
+/// by kind, because only a commitment of the tick kind ever forms a tick at all.
+enum KindRecord: Codable {
+    case tick
+    case number(range: RangeRecord?)
+    case note
+    case total(target: Decimal)
+
+    private enum CodingKeys: String, CodingKey {
+        case tick, number, note, total
+    }
+
+    private enum EmptyKeys: CodingKey {}
+
+    private enum RangeKeys: String, CodingKey {
+        case lowest, highest
+    }
+
+    private enum TotalKeys: String, CodingKey {
+        case target
+    }
+
+    init(_ kind: Commitment.Kind) {
+        switch kind {
+        case .tick:
+            self = .tick
+        case .number(let range):
+            self = .number(range: range.map(RangeRecord.init))
+        case .note:
+            self = .note
+        case .total(let target):
+            self = .total(target: target.amount)
+        }
+    }
+
+    func kind() -> Commitment.Kind? {
+        switch self {
+        case .tick:
+            return .tick
+        case .number(let range):
+            guard let range else {
+                return .number(range: nil)
+            }
+            guard let range = range.range() else {
+                return nil
+            }
+            return .number(range: range)
+        case .note:
+            return .note
+        case .total(let target):
+            guard let target = Commitment.Target(target) else {
+                return nil
+            }
+            return .total(target: target)
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if container.contains(.tick) {
+            self = .tick
+        } else if container.contains(.number) {
+            let payload = try container.nestedContainer(keyedBy: RangeKeys.self, forKey: .number)
+            let lowest = try payload.decodeIfPresent(Decimal.self, forKey: .lowest)
+            let highest = try payload.decodeIfPresent(Decimal.self, forKey: .highest)
+            switch (lowest, highest) {
+            case (nil, nil):
+                self = .number(range: nil)
+            case (let lowest?, let highest?):
+                self = .number(range: RangeRecord(lowest: lowest, highest: highest))
+            default:
+                throw DecodingError.dataCorrupted(
+                    DecodingError.Context(
+                        codingPath: payload.codingPath,
+                        debugDescription: "a range is both ends or neither"))
+            }
+        } else if container.contains(.note) {
+            self = .note
+        } else if container.contains(.total) {
+            let payload = try container.nestedContainer(keyedBy: TotalKeys.self, forKey: .total)
+            let target = try payload.decode(Decimal.self, forKey: .target)
+            self = .total(target: target)
+        } else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription: "no recognised kind shape"))
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .tick:
+            _ = container.nestedContainer(keyedBy: EmptyKeys.self, forKey: .tick)
+        case .number(let range):
+            var payload = container.nestedContainer(keyedBy: RangeKeys.self, forKey: .number)
+            if let range {
+                try payload.encode(range.lowest, forKey: .lowest)
+                try payload.encode(range.highest, forKey: .highest)
+            }
+        case .note:
+            _ = container.nestedContainer(keyedBy: EmptyKeys.self, forKey: .note)
+        case .total(let target):
+            var payload = container.nestedContainer(keyedBy: TotalKeys.self, forKey: .total)
+            try payload.encode(target, forKey: .target)
+        }
+    }
+}
+
+/// The wire shape of a `Commitment.Range`: a lowest and a highest, both required when present.
+struct RangeRecord {
+    var lowest: Decimal
+    var highest: Decimal
+
+    init(_ range: Commitment.Range) {
+        lowest = range.lowest
+        highest = range.highest
+    }
+
+    init(lowest: Decimal, highest: Decimal) {
+        self.lowest = lowest
+        self.highest = highest
+    }
+
+    func range() -> Commitment.Range? {
+        Commitment.Range(lowest: lowest, highest: highest)
     }
 }

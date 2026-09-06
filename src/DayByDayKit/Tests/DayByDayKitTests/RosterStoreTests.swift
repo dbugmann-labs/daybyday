@@ -320,10 +320,10 @@ func aRosterStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 2, "commitments": []}"#.utf8)
+    let bytes = Data(#"{"version": 3, "commitments": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.laterForm(at: place, version: 2)) {
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 3)) {
         try RosterStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -399,6 +399,27 @@ func aRosterStoreHoldingWhatCouldNotBeARosterIsRefused() throws {
         """.utf8)
     try sameCommitmentTwiceBytes.write(to: sameCommitmentTwicePlace)
 
+    let halfRangePlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: halfRangePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let halfRangeBytes = Data(
+        """
+        {
+          "version": 1,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "number": { "lowest": 40 } }
+              }
+            }
+          ]
+        }
+        """.utf8)
+    try halfRangeBytes.write(to: halfRangePlace)
+
     #expect(throws: RosterStoreError.notAStore(at: blankNamePlace)) {
         try RosterStore(at: blankNamePlace)
     }
@@ -408,7 +429,208 @@ func aRosterStoreHoldingWhatCouldNotBeARosterIsRefused() throws {
     #expect(throws: RosterStoreError.notAStore(at: sameCommitmentTwicePlace)) {
         try RosterStore(at: sameCommitmentTwicePlace)
     }
+    #expect(throws: RosterStoreError.notAStore(at: halfRangePlace)) {
+        try RosterStore(at: halfRangePlace)
+    }
     #expect(try Data(contentsOf: blankNamePlace) == blankNameBytes)
     #expect(try Data(contentsOf: noSuchDayPlace) == noSuchDayBytes)
     #expect(try Data(contentsOf: sameCommitmentTwicePlace) == sameCommitmentTwiceBytes)
+    #expect(try Data(contentsOf: halfRangePlace) == halfRangeBytes)
+}
+
+@Test("a commitment of each kind is read back as the same commitment")
+func aCommitmentOfEachKindIsReadBackAsTheSameCommitment() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)!))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.add(weight)
+    try store.add(mood)
+    try store.add(journal)
+    try store.add(protein)
+
+    let later = try RosterStore(at: place)
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.add(weight)
+    _ = expected.add(mood)
+    _ = expected.add(journal)
+    _ = expected.add(protein)
+    #expect(later.roster == expected)
+    #expect(later.roster.commitments.map(\.kind) == [
+        gym.kind, weight.kind, mood.kind, journal.kind, protein.kind,
+    ])
+}
+
+@Test("a range and a target are read back exactly, decimal fractions and all")
+func aRangeAndATargetAreReadBackExactlyDecimalFractionsAndAll() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: -40.5, highest: 150.25)!
+    let target = Commitment.Target(119.95)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    let store = try RosterStore(at: place)
+    try store.add(weight)
+    try store.add(protein)
+
+    let later = try RosterStore(at: place)
+
+    var expected = Roster()
+    _ = expected.add(weight)
+    _ = expected.add(protein)
+    #expect(later.roster == expected)
+    guard case .number(range: let readRange?) = later.roster.commitments[0].kind else {
+        Issue.record("expected a number commitment with a range")
+        return
+    }
+    guard case .total(target: let readTarget) = later.roster.commitments[1].kind else {
+        Issue.record("expected a total commitment with a target")
+        return
+    }
+    #expect(readRange.lowest == -40.5)
+    #expect(readRange.highest == 150.25)
+    #expect(readTarget.amount == 119.95)
+}
+
+@Test("a roster kept before a commitment carried a kind is read with every commitment of the plain kind")
+func aRosterKeptBeforeACommitmentCarriedAKindIsReadWithEveryCommitmentOfThePlainKind() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 1,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              }
+            },
+            {
+              "commitment": {
+                "name": "Finances",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "dayOfMonth": 25 }
+              }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .tick)!
+    let finances = Commitment(
+        name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom,
+        kind: .tick)!
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.add(finances)
+    #expect(store.roster == expected)
+}
+
+@Test("reading a roster kept in an earlier form changes nothing at its place")
+func readingARosterKeptInAnEarlierFormChangesNothingAtItsPlace() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 1,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    _ = try RosterStore(at: place)
+
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a commitment of another kind taken on over a roster kept in an earlier form is read back with its kind")
+func aCommitmentOfAnotherKindTakenOnOverARosterKeptInAnEarlierFormIsReadBackWithItsKind() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 1,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    try store.add(weight)
+
+    let later = try RosterStore(at: place)
+
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.add(weight)
+    #expect(later.roster == expected)
+    #expect(later.roster.commitments.map(\.kind) == [.tick, .number(range: range)])
+}
+
+@Test("a roster store written in a form this app has never written is refused")
+func aRosterStoreWrittenInAFormThisAppHasNeverWrittenIsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(#"{"version": 0, "commitments": []}"#.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RosterStoreError.notAStore(at: place)) {
+        try RosterStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
 }

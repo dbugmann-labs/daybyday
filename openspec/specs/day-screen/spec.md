@@ -157,11 +157,22 @@ tick it offers SHALL be the tick of that row's commitment on the date the day vi
 and nothing else: the row is a commitment on a date and a tick is a commitment on a date, so there
 is nothing left for a caller to supply and nothing for the row to choose.
 
-The row SHALL offer nothing exactly when the day view's date is later than the day it is asked as
-of, and the tick otherwise. A row asked as of its own date SHALL offer the tick — a day that has
-arrived can have been kept, and only one that has not is refused — and so SHALL a row whose date is
-earlier, however much earlier: the past is writable back to the day the commitment is kept from, and
-a commitment that is not due there has no row to ask.
+The row SHALL offer nothing when the day view's date is later than the day it is asked as of, and
+SHALL offer nothing when its commitment's kind is not a tick. Where neither holds it SHALL offer the
+tick. A row asked as of its own date SHALL offer the tick — a day that has arrived can have been
+kept, and only one that has not is refused — and so SHALL a row whose date is earlier, however much
+earlier: the past is writable back to the day the commitment is kept from, and a commitment that is
+not due there has no row to ask.
+
+A row whose commitment's kind is not a tick SHALL offer nothing whatever day it is asked as of, and
+that is a refusal of a different shape from the one about a day that has not arrived. There is no
+tick of such a commitment for it to offer: a tick is of a commitment whose kind is a tick, which is
+the `record` capability's rule and not one restated here. The row itself is unchanged and stays in
+the day view, because the commitment is due on that date and a day view holds a row for every
+commitment that is; hiding it would be a day view that answers a different question from the one it
+was asked. What such a row offers *instead* of a tick is not this requirement's — offering nothing
+is the honest answer while there is nothing to offer, and a tick offered in its place would record
+that a weight was taken when no weight was given.
 
 The day the row is asked as of SHALL be given to it, and this capability MUST NOT read it from a
 clock, MUST NOT consult the present moment, the device's time zone or the locale, and MUST NOT keep
@@ -184,9 +195,12 @@ day it is asked as of SHALL therefore offer nothing whether or not it says the c
 the refusal is about a day that has not arrived, not about what is recorded on it, and a row that
 could be untapped but not tapped would be two rules where the product has one.
 
-A row SHALL refuse for no other reason. A row exists only for a commitment that is due on the day
-view's date, and being due on the date is the whole of what makes a tick formable, so the only row
-that offers nothing is one asked as of a day earlier than its own.
+A row SHALL refuse for those two reasons and no other. A row exists only for a commitment that is
+due on the day view's date, so being due on the date and the commitment's kind together are the
+whole of what makes a tick formable: a row offers nothing when it is asked as of a day earlier than
+its own, and a row offers nothing when its commitment's kind is not a tick. It MUST NOT refuse on
+what the history says, on how many rows the day view holds, or on anything about the commitment
+other than the kind its days take.
 
 #### Scenario: a row offers the tick for its commitment on the date the day view is of
 
@@ -286,6 +300,19 @@ that offers nothing is one asked as of a day earlier than its own.
   row is asked as of Sunday 6 September 2026
 - **THEN** the day view holds one row named "Reading", saying the commitment is not kept
 - **AND** that row offers a tick
+
+#### Scenario: a row for a commitment whose kind is not a tick offers nothing
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no tick, of
+  a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, and its one row is asked as of Monday
+  31 August 2026
+- **THEN** the day view holds one row named "Weight", saying the commitment is not kept
+- **AND** that row offers no tick
+- **AND** the same row asked as of Sunday 6 September 2026, a day later than its own, offers no tick
+  either
+- **AND** a row for a commitment alike in every way but of the tick kind, asked as of Monday
+  31 August 2026, offers a tick
 
 ### Requirement: A row is a commitment's line on a date
 

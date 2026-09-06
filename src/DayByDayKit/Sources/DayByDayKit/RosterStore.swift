@@ -22,7 +22,7 @@ public final class RosterStore {
         else {
             throw RosterStoreError.notAStore(at: place)
         }
-        guard envelope.version == RosterDocument.currentVersion else {
+        guard (1...RosterDocument.currentVersion).contains(envelope.version) else {
             if envelope.version > RosterDocument.currentVersion {
                 throw RosterStoreError.laterForm(at: place, version: envelope.version)
             }

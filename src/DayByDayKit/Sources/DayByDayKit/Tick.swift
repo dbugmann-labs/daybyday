@@ -7,6 +7,10 @@ public struct Tick: Hashable, Sendable {
             return nil
         }
 
+        guard commitment.kind == .tick else {
+            return nil
+        }
+
         self.commitment = commitment
         self.date = date
     }

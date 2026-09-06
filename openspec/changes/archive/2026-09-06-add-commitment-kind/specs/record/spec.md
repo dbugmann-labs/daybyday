@@ -1,13 +1,4 @@
-# record Specification
-
-## Purpose
-
-Describes what a tick is to DayByDay — a commitment on a calendar date it was due on, and nothing
-more — and how a history of ticks answers whether a commitment was kept on a day. It is the record
-the product exists to keep: every screen that shows a day as done or not done reads it, and the store
-that makes it survive the app being closed persists exactly this shape and nothing it invented.
-
-## Requirements
+## ADDED Requirements
 
 ### Requirement: A store reads a history kept before a commitment carried a kind
 
@@ -64,6 +55,7 @@ because a number no version of this app ever wrote says nothing about the shape 
 - **AND** the error says the content is not a store rather than that it is from a later form
 - **AND** the content at that place is byte-for-byte what it was before
 
+## MODIFIED Requirements
 
 ### Requirement: A tick is of a commitment on a calendar date it is due on
 
@@ -263,54 +255,6 @@ ticks SHALL be the same history, whatever order the ticks were added in.
 - **AND** a history holding a tick for a commitment alike in every way but of the tick kind, on that
   same date, still answers that the number commitment was not kept on it
 
-### Requirement: A tick can be taken back
-
-A history SHALL let a tick it holds be taken back. Taking back a tick SHALL leave the history as
-though that tick had never been added: the commitment is not kept on that date, and every other tick
-— the same commitment on other dates, other commitments on the same date — stands exactly as it did.
-The system MUST NOT keep anything of a tick that was taken back: an untick is not a record of its
-own, and a history that was ticked and then unticked SHALL be the same history as one that was never
-ticked.
-
-Taking back a tick the history does not hold SHALL leave the history unchanged rather than being
-refused: the outcome asked for — no such tick — already holds.
-
-#### Scenario: a tick taken back leaves the commitment not kept on that date
-
-- **WHEN** a tick for a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday,
-  kept from 1 January 2026, on Monday 31 August 2026 is added to a history and then taken back
-- **THEN** the history answers that the commitment was not kept on Monday 31 August 2026
-
-#### Scenario: taking back a tick leaves the same commitment's ticks on other dates standing
-
-- **WHEN** ticks for a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday,
-  kept from 1 January 2026, on Monday 31 August 2026 and on Saturday 5 September 2026 are added to a
-  history, and the tick on 31 August is taken back
-- **THEN** the history answers that the commitment was kept on Saturday 5 September 2026
-- **AND** that it was not kept on Monday 31 August 2026
-
-#### Scenario: taking back a tick leaves another commitment's tick on the same date standing
-
-- **WHEN** ticks on Monday 31 August 2026 for a commitment named "Gym" and for a commitment named
-  "Run", both on a schedule listing Monday, Wednesday and Saturday and both kept from 1 January 2026,
-  are added to a history, and the tick for "Gym" is taken back
-- **THEN** the history answers that "Run" was kept on Monday 31 August 2026
-- **AND** that "Gym" was not
-
-#### Scenario: taking back a tick the history does not hold leaves it unchanged
-
-- **WHEN** a tick for a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday,
-  kept from 1 January 2026, on Saturday 5 September 2026 is added to a history, and a tick for the
-  same commitment on Monday 31 August 2026, which the history does not hold, is taken back
-- **THEN** the history is the same as it was before the tick was taken back
-- **AND** it still answers that the commitment was kept on Saturday 5 September 2026
-
-#### Scenario: a history ticked and then unticked is the same as one never ticked
-
-- **WHEN** a tick for a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday,
-  kept from 1 January 2026, on Monday 31 August 2026 is added to a history and then taken back
-- **THEN** the history is the same as a history that has taken no tick
-
 ### Requirement: A store keeps a history at a place, across the app being closed and opened again
 
 A store SHALL be opened at a place, and SHALL hold a history: every tick added to it and not since
@@ -422,41 +366,3 @@ two stores at different places SHALL be independent of each other.
 - **THEN** adding the tick is refused with an error
 - **AND** the store's history is still the same as a history that has taken no tick
 - **AND** a store opened afterwards at the same place holds an empty history
-
-### Requirement: A store that cannot be read is refused rather than emptied
-
-Opening a store at a place that holds something this app cannot read as a store SHALL be refused
-with an error. The store MUST NOT answer with an empty history in its place, MUST NOT overwrite,
-move or delete what is there, and MUST NOT keep the part of it that could be read: the whole is
-refused, so that whatever is at that place is still there, unchanged, for a person or a later
-version of the app to recover. An honest error on opening is the failure the product can survive;
-a record silently replaced by an empty one is the failure it exists to remove.
-
-Three things this app cannot read as a store: content that is not a store at all; a store written
-in a form later than the one this app knows, which a later version of the app may have left behind;
-and a store holding something that could not be a tick — a date that names no day, or a commitment
-on a date it is not due on — because a tick that could not be formed is not one this app wrote.
-
-#### Scenario: content that is not a store is refused and left as it was
-
-- **WHEN** a store is opened at a place holding content that is not a store — a run of bytes that
-  is not what the store writes
-- **THEN** opening is refused with an error
-- **AND** the content at that place is byte-for-byte what it was before
-
-#### Scenario: a store written in a later form than this app knows is refused
-
-- **WHEN** a store is opened at a place holding a store written in a form one later than the form
-  this app writes, holding no ticks
-- **THEN** opening is refused with an error
-- **AND** the content at that place is byte-for-byte what it was before
-
-#### Scenario: a store holding what could not be a tick is refused
-
-- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one tick
-  is of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, on Tuesday 1 September 2026 — a date the commitment is not due on
-- **THEN** opening is refused with an error
-- **AND** a store at a place holding one tick on 30 February 2026, a date that names no day, is
-  refused the same way
-- **AND** the content at each place is byte-for-byte what it was before

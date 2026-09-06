@@ -27,7 +27,7 @@ public final class RecordStore {
         guard let envelope = try? JSONDecoder().decode(RecordDocumentEnvelope.self, from: data) else {
             throw RecordStoreError.notAStore(at: place)
         }
-        guard envelope.version == RecordDocument.currentVersion else {
+        guard (1...RecordDocument.currentVersion).contains(envelope.version) else {
             if envelope.version > RecordDocument.currentVersion {
                 throw RecordStoreError.laterForm(at: place, version: envelope.version)
             }

@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 import DayByDayKit
 
@@ -246,4 +247,188 @@ func anEveryNDaysOccurrenceBeforeTheDayItIsKeptFromIsNotDue() {
     #expect(!commitment.isDue(on: firstLandingBeforeFloor))
     #expect(!commitment.isDue(on: nextLandingBeforeFloor))
     #expect(commitment.isDue(on: firstLandingOnOrAfterFloor))
+}
+
+@Test("a commitment reads back the kind it was given")
+func aCommitmentReadsBackTheKindItWasGiven() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))
+
+    #expect(commitment?.kind == .number(range: nil))
+}
+
+@Test("a commitment of each of the four kinds is formed and reads its kind back")
+func aCommitmentOfEachOfTheFourKindsIsFormedAndReadsItsKindBack() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let target = Commitment.Target(120)!
+
+    let tick = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)
+    let number = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))
+    let note = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)
+    let total = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))
+
+    #expect(tick?.kind == .tick)
+    #expect(number?.kind == .number(range: nil))
+    #expect(note?.kind == .note)
+    #expect(total?.kind == .total(target: target))
+    #expect(target.amount == 120)
+}
+
+@Test("a commitment formed without a kind is of the plain kind")
+func aCommitmentFormedWithoutAKindIsOfThePlainKind() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+
+    let withoutKind = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)
+    let withTickNamed = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)
+
+    #expect(withoutKind?.kind == .tick)
+    #expect(withoutKind == withTickNamed)
+}
+
+@Test("a commitment's kind does not change whether it is due")
+func aCommitmentsKindDoesNotChangeWhetherItIsDue() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+
+    let tick = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let number = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+
+    let due = CalendarDate(year: 2026, month: 8, day: 31)!
+    let notDue = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    #expect(tick.isDue(on: due))
+    #expect(number.isDue(on: due))
+    #expect(!tick.isDue(on: notDue))
+    #expect(!number.isDue(on: notDue))
+}
+
+@Test("a number commitment declares a range and reads it back")
+func aNumberCommitmentDeclaresARangeAndReadsItBack() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 1, highest: 10)!
+
+    let commitment = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))
+
+    #expect(commitment?.kind == .number(range: range))
+    guard case .number(range: let readBack?) = commitment?.kind else {
+        Issue.record("expected a number commitment with a range")
+        return
+    }
+    #expect(readBack.lowest == 1)
+    #expect(readBack.highest == 10)
+}
+
+@Test("a range whose lowest is above its highest is not a range")
+func aRangeWhoseLowestIsAboveItsHighestIsNotARange() {
+    let backwards = Commitment.Range(lowest: 10, highest: 1)
+    let forwards = Commitment.Range(lowest: 1, highest: 10)
+
+    #expect(backwards == nil)
+    #expect(forwards?.lowest == 1)
+    #expect(forwards?.highest == 10)
+}
+
+@Test("a range whose lowest and highest are equal is a range")
+func aRangeWhoseLowestAndHighestAreEqualIsARange() {
+    let sameValue = Commitment.Range(lowest: 7, highest: 7)
+    let negativeToZero = Commitment.Range(lowest: -40.5, highest: 0)
+
+    #expect(sameValue != nil)
+    #expect(negativeToZero != nil)
+}
+
+@Test("a range end that is not a number is not a range")
+func aRangeEndThatIsNotANumberIsNotARange() {
+    let lowestNotANumber = Commitment.Range(lowest: Decimal.nan, highest: 5)
+    let highestNotANumber = Commitment.Range(lowest: 5, highest: Decimal.nan)
+
+    #expect(lowestNotANumber == nil)
+    #expect(highestNotANumber == nil)
+}
+
+@Test("a total commitment declares a target and reads it back")
+func aTotalCommitmentDeclaresATargetAndReadsItBack() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let target = Commitment.Target(120)!
+
+    let commitment = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))
+
+    #expect(commitment?.kind == .total(target: target))
+    guard case .total(target: let readBack) = commitment?.kind else {
+        Issue.record("expected a total commitment with a target")
+        return
+    }
+    #expect(readBack.amount == 120)
+}
+
+@Test("a target with a decimal fraction is a target")
+func aTargetWithADecimalFractionIsATarget() {
+    let half = Commitment.Target(0.5)
+    let almostTwenty = Commitment.Target(119.95)
+
+    #expect(half?.amount == 0.5)
+    #expect(almostTwenty?.amount == 119.95)
+}
+
+@Test("a target of zero and a target below zero are not targets")
+func aTargetOfZeroAndATargetBelowZeroAreNotTargets() {
+    let zero = Commitment.Target(0)
+    let negative = Commitment.Target(-1)
+    let tiny = Commitment.Target(0.0001)
+
+    #expect(zero == nil)
+    #expect(negative == nil)
+    #expect(tiny != nil)
+}
+
+@Test("a target that is not a number is not a target")
+func aTargetThatIsNotANumberIsNotATarget() {
+    let notANumber = Commitment.Target(Decimal.nan)
+
+    #expect(notANumber == nil)
+}
+
+@Test("two commitments differing only in the kind their days take are different commitments")
+func twoCommitmentsDifferingOnlyInTheKindTheirDaysTakeAreDifferentCommitments() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+
+    let tick = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)
+    let note = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)
+
+    #expect(tick != note)
+}
+
+@Test("two number commitments differing only in their range are different commitments")
+func twoNumberCommitmentsDifferingOnlyInTheirRangeAreDifferentCommitments() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range40to150 = Commitment.Range(lowest: 40, highest: 150)!
+    let range40to200 = Commitment.Range(lowest: 40, highest: 200)!
+
+    let withRange = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range40to150))
+    let withNoRange = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))
+    let withWiderRange = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range40to200))
+
+    #expect(withRange != withNoRange)
+    #expect(withRange != withWiderRange)
 }

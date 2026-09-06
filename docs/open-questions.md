@@ -75,6 +75,34 @@ Things that are built, or deliberately not built, in a state someone will trip o
   cases being public buys nothing from outside — there is no public way to get a schedule *out of* a
   commitment, or a commitment out of a row. Making `DayOfMonth.day` public tomorrow would still leave
   B-021 unable to render "the 25th" beside a name. Recorded 2026-09-06.
+  **A ninth face, and it is the odd one out: `add-commitment-kind` (#137) made `Commitment.kind` public
+  while `schedule` and `keptFrom` stay internal**, because #139's row has to know what to offer before
+  anything is recorded and nothing had yet asked for the other two. So a commitment now has four parts,
+  two readable and two not, and a screen that can say "a number from 1 to 10" still cannot say "every
+  14 days". The widening is still owed by whichever Story first renders a rule, and B-021 is that want.
+  Recorded 2026-09-06, at #137's G7.
+- **A commitment of a kind nothing can yet record is a row that does nothing when tapped.**
+  `add-commitment-kind` (#137) makes a commitment of the number, note or total kind formable and has
+  `record` refuse a tick for it, so `day-screen`'s row for one offers nothing — by requirement, and on
+  purpose, since a due commitment does not leave the day. Nothing in the shipped app can reach that
+  state: day one is nine ticks and the commitments screen defines only the plain kind. Two Stories
+  change that, in different lanes: `add-kind-to-commitments-screen` (#142) lets a person choose
+  "number", and `add-number-entry` (#139) gives the row a number to offer. If #142 lands first, a
+  person who defines a weight sees a row that answers nothing to a tap until #139 merges. No requirement
+  forbids the ordering and no edge on the tracker prevents it; the fix belongs to whichever lands first,
+  and the cheapest one is an edge from #139 to #142. Recorded 2026-09-06, at #137's G7, from that
+  change's `design.md` § *Impact*.
+- **Two of #137's tests do not match their scenarios clause for clause, and check 4 cannot see it.**
+  Found at `add-commitment-kind`'s second review, 2026-09-06. The G7 fix for a half-written range
+  added a fourth malformed place to the test named *a roster store holding what could not be a roster
+  is refused*, whose scenario is base spec and says "each of the three places"; the behaviour is
+  approved (*a range is both ends or neither*), but the store-level refusal has no scenario of its own.
+  And the roster test *two commitments alike in every way but the kind their days take are both held*
+  adds the same range twice, so a roster that compared the kind's case while ignoring its range would
+  still pass it — the implementation compares whole values, so it is a coverage gap and not a bug.
+  `scripts/check-scenario-coverage.ts` maps scenario to test and never test to scenario, which is why
+  neither shows. Owed by whichever Story next touches `commitment`'s roster or store requirements,
+  as one scenario each.
 - **`RecordStore.init` can throw outside `RecordStoreError`.** Surfaced at #56's review,
   2026-09-02. A place that exists but cannot be read as data — a directory, a file without
   read permission, or on iOS a store protected by data protection when the app is launched

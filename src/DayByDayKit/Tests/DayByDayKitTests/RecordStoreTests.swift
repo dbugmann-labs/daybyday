@@ -264,17 +264,17 @@ func aStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 2, "ticks": []}"#.utf8)
+    let bytes = Data(#"{"version": 3, "ticks": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RecordStoreError.laterForm(at: place, version: 2)) {
+    #expect(throws: RecordStoreError.laterForm(at: place, version: 3)) {
         try RecordStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
 }
 
-@Test("a store written in an earlier form than version 1 is refused")
-func aStoreWrittenInAnEarlierFormThanVersion1IsRefused() throws {
+@Test("a store written in a form this app has never written is refused")
+func aStoreWrittenInAFormThisAppHasNeverWrittenIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -339,4 +339,109 @@ func aStoreHoldingWhatCouldNotBeATickIsRefused() throws {
     }
     #expect(try Data(contentsOf: notDuePlace) == notDueBytes)
     #expect(try Data(contentsOf: noSuchDayPlace) == noSuchDayBytes)
+}
+
+@Test("a history kept before a commitment carried a kind is read with every commitment of the plain kind")
+func aHistoryKeptBeforeACommitmentCarriedAKindIsReadWithEveryCommitmentOfThePlainKind() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 1,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RecordStore(at: place)
+
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var expected = History()
+    expected.add(Tick(gym, on: monday)!)
+
+    #expect(store.history == expected)
+    #expect(store.history.isKept(gym, on: monday))
+}
+
+@Test("reading a history kept in an earlier form changes nothing at its place")
+func readingAHistoryKeptInAnEarlierFormChangesNothingAtItsPlace() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 1,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    _ = try RecordStore(at: place)
+
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a tick added over a history kept in an earlier form is read back beside the ticks already there")
+func aTickAddedOverAHistoryKeptInAnEarlierFormIsReadBackBesideTheTicksAlreadyThere() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 1,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RecordStore(at: place)
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    try store.add(Tick(gym, on: wednesday)!)
+
+    let later = try RecordStore(at: place)
+
+    var expected = History()
+    expected.add(Tick(gym, on: monday)!)
+    expected.add(Tick(gym, on: wednesday)!)
+    #expect(later.history == expected)
+    #expect(later.history.isKept(gym, on: monday))
+    #expect(later.history.isKept(gym, on: wednesday))
 }
