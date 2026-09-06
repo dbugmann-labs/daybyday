@@ -1020,7 +1020,7 @@ Seven scenarios, same file, same rules.
 
 ### The shell, which now holds no lifetime
 
-- [ ] 7.16 In `src/DayByDay/DayByDay/CommitmentsView.swift`: delete the three `@State` refusals —
+- [x] 7.16 In `src/DayByDay/DayByDay/CommitmentsView.swift`: delete the three `@State` refusals —
   `refusal`, `stopRefusal` and `keepAgainRefusal` — and draw whatever `screen.refusedChange` holds,
   switching on the case so that a `.defining` is drawn in the `Define a commitment` section where
   the form's message already sits, a `.stopping` under `Section("Kept")` and a `.keepingAgain` under

@@ -52,9 +52,6 @@ struct CommitmentsView: View {
     @State private var intervalDays = 1
     @State private var timesPerWeek = 1
     @State private var keptFromDate: Date
-    @State private var refusal: CommitmentsScreen.Refusal?
-    @State private var stopRefusal: CommitmentsScreen.Refusal?
-    @State private var keepAgainRefusal: CommitmentsScreen.Refusal?
 
     init(screen: CommitmentsScreen) {
         self.screen = screen
@@ -76,7 +73,7 @@ struct CommitmentsView: View {
                 }
             }
 
-            if let stopRefusal {
+            if case .stopping(_, let stopRefusal) = screen.refusedChange {
                 refusalText(stopRefusal)
             }
 
@@ -86,14 +83,14 @@ struct CommitmentsView: View {
                 }
                 ForEach(screen.stopped, id: \.self) { commitment in
                     Button {
-                        keepAgainRefusal = screen.keepAgain(commitment)
+                        screen.keepAgain(commitment)
                     } label: {
                         Text(commitment.name)
                     }
                 }
             }
 
-            if let keepAgainRefusal {
+            if case .keepingAgain(_, let keepAgainRefusal) = screen.refusedChange {
                 refusalText(keepAgainRefusal)
             }
 
@@ -149,7 +146,7 @@ struct CommitmentsView: View {
                     define()
                 }
 
-                if let refusal {
+                if case .defining(let refusal) = screen.refusedChange {
                     refusalText(refusal)
                 }
             }
@@ -171,7 +168,7 @@ struct CommitmentsView: View {
             presenting: screen.awaitingConfirmation
         ) { commitment in
             Button("Stop keeping \(commitment.name)", role: .destructive) {
-                stopRefusal = screen.confirmStopKeeping()
+                screen.confirmStopKeeping()
             }
             Button("Cancel", role: .cancel) {
                 screen.cancelStopKeeping()
@@ -223,7 +220,7 @@ struct CommitmentsView: View {
                 year: components.year!, month: components.month!, day: components.day!)
         else { return }
 
-        refusal = screen.define(name: name, on: rhythm, keptFrom: keptFrom)
+        let refusal = screen.define(name: name, on: rhythm, keptFrom: keptFrom)
 
         if refusal == nil {
             name = ""
