@@ -226,11 +226,11 @@ func aCommitmentDefinedOnEachOfTheFourRhythmsIsReadBackOnTheScheduleThatRhythmNa
     _ = screen.define(
         name: "Gym", on: .weekdays([.monday, .wednesday, .saturday]), keptFrom: monday)
     _ = screen.define(
-        name: "Finances", on: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: monday)
+        name: "Finances", on: .dayOfMonth(25), keptFrom: monday)
     _ = screen.define(
-        name: "Contact lenses", on: .everyNDays(DayInterval(days: 14)!), keptFrom: monday)
+        name: "Contact lenses", on: .everyNDays(14), keptFrom: monday)
     _ = screen.define(
-        name: "Reading", on: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: monday)
+        name: "Reading", on: .weeklyQuota(3), keptFrom: monday)
 
     let rosterStore = try RosterStore(at: rosterPlace)
     let expected = [
@@ -258,7 +258,7 @@ func aCommitmentDefinedOnAnIntervalRhythmCountsFromTheDayItIsKeptFrom() throws {
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
 
     _ = screen.define(
-        name: "Contact lenses", on: .everyNDays(DayInterval(days: 14)!),
+        name: "Contact lenses", on: .everyNDays(14),
         keptFrom: wednesdayFirstJuly)
 
     let rosterStore = try RosterStore(at: rosterPlace)
@@ -820,6 +820,102 @@ func aCommitmentsScreenAskedToTakeUpAgainACommitmentItHasNeverHeldDoesNothing() 
     #expect(screen.kept.map(\.name) == ["Gym"])
     #expect(screen.stopped.isEmpty)
     #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
+}
+
+@MainActor
+@Test("a commitments screen refuses a day of the month that is not one of the thirty-one")
+func aCommitmentsScreenRefusesADayOfTheMonthThatIsNotOneOfTheThirtyOne() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let zerothRefusal = screen.define(name: "Finances", on: .dayOfMonth(0), keptFrom: monday)
+    let thirtySecondRefusal = screen.define(name: "Finances", on: .dayOfMonth(32), keptFrom: monday)
+
+    #expect(zerothRefusal == .rhythmOutOfRange)
+    #expect(thirtySecondRefusal == .rhythmOutOfRange)
+    #expect(screen.kept.isEmpty)
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a commitments screen refuses an interval of fewer than one day")
+func aCommitmentsScreenRefusesAnIntervalOfFewerThanOneDay() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let zeroRefusal = screen.define(name: "Contact lenses", on: .everyNDays(0), keptFrom: monday)
+    let negativeRefusal = screen.define(name: "Contact lenses", on: .everyNDays(-7), keptFrom: monday)
+
+    #expect(zeroRefusal == .rhythmOutOfRange)
+    #expect(negativeRefusal == .rhythmOutOfRange)
+    #expect(screen.kept.isEmpty)
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a commitments screen refuses a weekly quota outside one to seven")
+func aCommitmentsScreenRefusesAWeeklyQuotaOutsideOneToSeven() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let zeroRefusal = screen.define(name: "Reading", on: .weeklyQuota(0), keptFrom: monday)
+    let eightRefusal = screen.define(name: "Reading", on: .weeklyQuota(8), keptFrom: monday)
+
+    #expect(zeroRefusal == .rhythmOutOfRange)
+    #expect(eightRefusal == .rhythmOutOfRange)
+    #expect(screen.kept.isEmpty)
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a rhythm number a commitments screen refuses is told apart from its other refusals")
+func aRhythmNumberACommitmentsScreenRefusesIsToldApartFromItsOtherRefusals() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Set<Weekday> = [
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ]
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let financesRefusal = screen.define(name: "Finances", on: .dayOfMonth(32), keptFrom: monday)
+    let blankRefusal = screen.define(name: "   ", on: .weekdays(allWeekdays), keptFrom: monday)
+    let gymRefusal = screen.define(name: "Gym", on: .weekdays([]), keptFrom: monday)
+
+    #expect(financesRefusal == .rhythmOutOfRange)
+    #expect(blankRefusal == .namesNothing)
+    #expect(gymRefusal == .dueOnNoDay)
+    #expect(financesRefusal != blankRefusal)
+    #expect(financesRefusal != gymRefusal)
+    #expect(blankRefusal != gymRefusal)
+}
+
+@MainActor
+@Test("a commitments screen accepts the number at each end of what a rhythm allows")
+func aCommitmentsScreenAcceptsTheNumberAtEachEndOfWhatARhythmAllows() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let rentRefusal = screen.define(name: "Rent", on: .dayOfMonth(1), keptFrom: monday)
+    let financesRefusal = screen.define(name: "Finances", on: .dayOfMonth(31), keptFrom: monday)
+    let shaveRefusal = screen.define(name: "Shave", on: .everyNDays(1), keptFrom: monday)
+    let longRunRefusal = screen.define(name: "Long run", on: .weeklyQuota(1), keptFrom: monday)
+    let stepsRefusal = screen.define(name: "Steps", on: .weeklyQuota(7), keptFrom: monday)
+
+    #expect(rentRefusal == nil)
+    #expect(financesRefusal == nil)
+    #expect(shaveRefusal == nil)
+    #expect(longRunRefusal == nil)
+    #expect(stepsRefusal == nil)
+    #expect(screen.kept.map(\.name) == ["Rent", "Finances", "Shave", "Long run", "Steps"])
 }
 
 @MainActor

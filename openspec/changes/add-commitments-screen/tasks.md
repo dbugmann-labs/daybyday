@@ -512,7 +512,7 @@ against 6.5's `fatalError`, **6.9** to run red if one `Refusal` case was reused 
 first write, covered by whatever 6.6 makes work. **Record which ones actually ran red, in § 5.6**;
 a prediction here is not evidence.
 
-- [ ] 6.5 Widen `Rhythm`'s three numeric cases to carry an `Int` — `dayOfMonth(Int)`,
+- [x] 6.5 Widen `Rhythm`'s three numeric cases to carry an `Int` — `dayOfMonth(Int)`,
   `everyNDays(Int)`, `weeklyQuota(Int)`, `weekdays(Set<Weekday>)` unchanged — make its internal
   `schedule(keptFrom:)` answer `Schedule?`, answering `nil` exactly when `DayOfMonth`,
   `DayInterval` or `WeeklyQuota` refuses the number, and add `case rhythmOutOfRange` to
@@ -523,15 +523,15 @@ a prediction here is not evidence.
   mechanically — `.dayOfMonth(DayOfMonth(day: 25)!)` becomes `.dayOfMonth(25)` — and **no `@Test`
   display name and no assertion may change**. `swift build` exits 0 and `swift test` still reports
   352 (348 plus § 6's first four); a different number is a rule-5 stop.
-- [ ] 6.6 `a commitments screen refuses a day of the month that is not one of the thirty-one`
-- [ ] 6.7 `a commitments screen refuses an interval of fewer than one day` — the negative case is
+- [x] 6.6 `a commitments screen refuses a day of the month that is not one of the thirty-one`
+- [x] 6.7 `a commitments screen refuses an interval of fewer than one day` — the negative case is
   what fails an implementation guarding with `days < 1` on an unsigned read of the field rather
   than on the value.
-- [ ] 6.8 `a commitments screen refuses a weekly quota outside one to seven`
-- [ ] 6.9 `a rhythm number a commitments screen refuses is told apart from its other refusals` —
+- [x] 6.8 `a commitments screen refuses a weekly quota outside one to seven`
+- [x] 6.9 `a rhythm number a commitments screen refuses is told apart from its other refusals` —
   three `define` calls, three distinct `Refusal` cases, asserted distinct from each other and not
   merely each equal to its own expectation.
-- [ ] 6.10 `a commitments screen accepts the number at each end of what a rhythm allows` — the
+- [x] 6.10 `a commitments screen accepts the number at each end of what a rhythm allows` — the
   boundary test; an implementation refusing the 31st, or a quota of 7, fails here and nowhere else.
 
 ### The shell, which now decides nothing

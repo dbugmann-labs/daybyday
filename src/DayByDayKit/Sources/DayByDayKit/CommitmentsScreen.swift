@@ -76,6 +76,9 @@ public final class CommitmentsScreen {
         case namesNothing
         /// A weekday set with no days in it — the one refusal the rule engine does not make.
         case dueOnNoDay
+        /// A day of the month, an interval or a weekly quota outside what that rhythm allows.
+        /// One case for all three: the person changes the number in the field they are on.
+        case rhythmOutOfRange
         /// The roster is already keeping this commitment.
         case alreadyKept
         /// The roster could not be written, or this screen is not keeping one.
@@ -89,7 +92,9 @@ public final class CommitmentsScreen {
             return .dueOnNoDay
         }
 
-        let schedule = rhythm.schedule(keptFrom: keptFrom)
+        guard let schedule = rhythm.schedule(keptFrom: keptFrom) else {
+            return .rhythmOutOfRange
+        }
 
         guard let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom) else {
             return .namesNothing
