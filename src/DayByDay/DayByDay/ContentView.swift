@@ -140,3 +140,6 @@ struct ContentView: View {
         }
     }
 }
+
+// CI gate demo — disposable. Touching the shell so the gate reports `reached=yes`;
+// the step should still be skipped while this PR is a draft. Not for merging.
