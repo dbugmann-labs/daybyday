@@ -352,12 +352,18 @@ not due on the date or read a history holding a tick it never looked up. What wa
 caller's to remember; the day view keeps the answer. Corrected 2026-09-02 at #70's G7, where the
 requirement had claimed identity followed the arguments.
 
-**Row** — one commitment's line in a day view: its name, whether it is kept, and the place a tick is
-made. Ticking belongs to the row and therefore to `day-screen`: `record` says what a tick is and
+**Row** — one commitment's line in a day view: its name, the **rhythm in words** it runs on, whether
+it is kept, and the place a tick is made. Ticking belongs to the row and therefore to `day-screen`: `record` says what a tick is and
 what a history answers and knows nothing of a row, of a date being displayed or of an order. A row
 for a date later than today is shown and refuses the tick — a day that has not arrived cannot have
 been kept, and `record` hands that judgement to the screen by name, since it never consults the
 present moment. Agreed 2026-09-02, the same pass.
+
+**Amended 2026-09-06**, at the grill of `add-rhythm-in-words` (#144). A row also says the **rhythm in
+words** its commitment runs on, on every row and always — not only where two rows would otherwise
+read alike, and whether or not the commitment is kept or the row offers a tick at all. The words are
+asked of the commitment the row already holds, exactly as its name is, so what a row *is* has not
+changed: still the commitment, the date, and whether it is kept.
 
 What it **offers** is one tick, and it is the tick of its own commitment on its own day view's date
 — a row is a commitment on a date and so is a tick, so there is nothing left for anyone to supply
@@ -515,9 +521,10 @@ name, a rhythm and the day it is kept from, and the way to stop keeping one. Bes
 shows **what they have stopped**, which is the only way the roster's rule that offering a stopped
 commitment again *takes it up* can be reached from a phone — a person who had to retype a name,
 rebuild a rhythm and match a kept-from day exactly would in practice be making a different
-commitment. Both lists are in the order the roster took its commitments on, and a row is a name
-and nothing else: saying a rhythm in words is a rule about how a **schedule** is said and belongs
-to that capability, whichever screen would read it.
+commitment. Both lists are in the order the roster took its commitments on, and an entry is a name
+and the **rhythm in words**: saying a rhythm in words is a rule about how a **schedule** is said and
+belongs to that capability, whichever screen reads it — and since 2026-09-06 this screen does, in
+both lists and in the form's live preview.
 
 It is the second thing in the product that is not a value, and the first that **refuses something
 the engine accepts**: a weekday set with no days in it is a legal schedule, due on nothing, and a
@@ -530,6 +537,12 @@ drawing the list it opened with. Agreed 2026-09-04 at the grill of `add-commitme
 **Amended 2026-09-06**, at `add-commitments-screen`'s third review pass. A commitments screen also
 keeps a **refused change**, so that how long a person is told about one is this capability's answer
 rather than whatever happens to be drawing the screen.
+
+**Amended 2026-09-06**, at the grill of `add-rhythm-in-words` (#144). An entry in either list is a
+name **and the rhythm in words**, and the form says in words the rhythm it is building as it is
+built. Neither the kind its days take nor the day it is kept from is said. Two commitments alike in
+name are therefore told apart when their rhythms differ and not when they do not, which is as far as
+a screen can go without judging what the roster accepts.
 
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
@@ -654,14 +667,31 @@ every-N-days rhythm holds an interval and no **start date**, because the day the
 **kept from** is that start date whenever a commitments screen forms it. That keeps a phone form to
 one date field and makes it impossible to write the screen so that the two dates disagree; the model
 goes on holding them apart, so anything that forms a commitment another way can still give them
-different days. A rhythm is not stored, not read back and never held by a commitment: it exists
+different days. A rhythm is not stored and never held by a commitment: it exists
 between a person's taps and the commitment they make, and what is kept is the schedule it named.
 Agreed 2026-09-04 while writing the delta of `add-commitments-screen` (#104). **Amended
 2026-09-06:** three of the four shapes are a number, and a rhythm carries that number exactly as
 the person gave it — a day of the month of 32 is a rhythm, and it is refused when the screen is
 asked to define on it. A rhythm is what was *said*, not what the system could make of it, so
 nothing judges it on the way in and one place judges it at the end. That is what lets the screen
-report a refusal the value makes rather than a shell swallowing it in silence.
+report a refusal the value makes rather than a shell swallowing it in silence. **Amended
+2026-09-06**, at `add-rhythm-in-words` (#144): a rhythm does say itself in words, for the form's
+preview — the words of the schedule it names, and nothing at all where its number names no schedule
+— so "not read back" was only ever true of its payload, which is still unreadable from outside the
+package (ADR-1033).
+
+**Rhythm in words** — the sentence a **schedule** is said in, so that a person can read what rhythm
+a commitment runs on wherever its name is: "Mon, Wed, Sat", "Every 14 days", "The 25th",
+"3x a week". It is the package's own English and no locale's, as the **day title** is, and it says
+the shape and its number and nothing else — no start date, since on every commitment a commitments
+screen makes that is the day it is **kept from**, and no clamp for a short month. Three surfaces
+read it: an entry on the **commitments screen**, which is a name and its rhythm in words and
+nothing else, in both lists; a **row** on a day screen, on every row, always; and the form's live
+preview of the **rhythm** being built, which says what the schedule would say and says nothing
+for a number the calendar will not take. "Every day" is what all seven weekdays and an interval of
+one both say, because they are the same rhythm; a quota of seven is still "7x a week", because a
+quota is any days; and a weekday set with no days says "No day", because it is a legal schedule a
+roster can hold. Agreed 2026-09-06 at the grill of `add-rhythm-in-words` (#144).
 
 **Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
 storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by
