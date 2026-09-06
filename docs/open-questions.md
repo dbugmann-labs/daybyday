@@ -27,11 +27,6 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   early and add a check that fails the PR when the number is taken. The first two stop the
   collision reaching the change folder at all, which is what made it expensive. Worth an ADR
   when something forces it; nothing does yet, and the workaround is a rename.
-- **The app's bundle identifier.** Opened by ADR-1019, which settled the target's name and
-  deliberately did not settle this. Changing it after even one install orphans the store the
-  previous identifier wrote, and it wants a domain the owner actually controls rather than a
-  placeholder that becomes permanent by being installed once. Forced by the first Story that puts
-  the app on a real phone rather than a simulator.
 
 ## Known gaps
 
@@ -228,6 +223,27 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
 ## Settled
 
+- 2026-09-06 — **the bundle identifier is `com.dbugmann.daybyday`, and it is fixed from the first
+  install on a phone.** Reverse-DNS on the name the `dbugmann-labs` organisation already carries, so
+  the prefix stays true whether or not a domain is ever bought. The trigger this entry named — the
+  first thing that puts the app on a real phone — fired from a direction it did not anticipate: a
+  chore wanting a week of real use, not a Story. It could not wait, because on iOS the container
+  holding `DayScreen.recordPlace` is keyed to the identifier, so changing it after an install hands
+  the app an empty container and says nothing. The UI test bundle takes
+  `com.dbugmann.daybyday.uitests`, which nothing keys a container to.
+  `docs/adr/1025-the-bundle-identifier-is-com-dbugmann-daybyday.md`.
+
+  **Signing is settled with it, and deliberately not in the project file.** The committed
+  `project.pbxproj` stays unsigned — `CODE_SIGN_IDENTITY = ""` — so CI's simulator build needs no
+  certificate on a runner; `scripts/install-on-phone.ts` passes the identity, the team and
+  `CODE_SIGNING_ALLOWED=YES` on the command line, where they outrank the project. That shape was
+  chosen off a measurement rather than a preference: with the project as it stands a device build
+  **succeeds and is unsigned** (`code object is not signed at all`, no `embedded.mobileprovision`),
+  and setting only the identity in the project does not fix it because `CODE_SIGNING_ALLOWED = NO`
+  still suppresses the step. Both checked 2026-09-06. **What is not settled is anything past the
+  build**: no phone has ever been paired with this machine, so the install, the launch and the
+  seven-day expiry are unrun. `docs/running-the-app.md` § *On your own phone* says so in place.
+
 - 2026-09-06 — **the app is proved to draw, by a committed XCUITest target on the chore lane.**
   Open since `day-screen`'s G1 on 2026-08-31: acceptance tests attach at a seam inside
   `DayByDayKit`, so a row left blank by a misspelled binding type-checked, passed every test behind
@@ -292,7 +308,7 @@ Things that are built, or deliberately not built, in a state someone will trip o
   is the part with requirements, and what is left is the product — and `PRODUCT_NAME =
   $(TARGET_NAME)` makes the target name the label under the Home screen icon, so every other
   candidate is a name plus an override putting `DayByDay` back. What it is *not* called, and what
-  it deliberately does not decide, is the bundle identifier, now an open technical decision above.
+  it deliberately does not decide, is the bundle identifier, settled by ADR-1025.
   `docs/adr/1019-the-app-shell-runs-in-the-simulator.md`, and `CONTEXT.md` § *App shell* for the
   guard that keeps the lane honest.
 
