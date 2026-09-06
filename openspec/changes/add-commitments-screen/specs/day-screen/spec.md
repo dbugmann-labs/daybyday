@@ -15,7 +15,10 @@ not see it until the app had been backgrounded and brought in front of them agai
 today, it SHALL NOT move the day being shown, and it SHALL NOT read the record again. The last of
 those matters: what a day screen says about a record it could not read, and anything else whose
 lifetime is fixed as *until the app is shown again*, SHALL stand across being returned to. A person
-walking to another screen and back has not restarted anything.
+walking to another screen and back has not restarted anything. That now has a second thing under it
+as well as the record state: `add-refused-tick-notice` (#100) landed while this Story was being
+written, and what a day screen tells on a row ends on exactly three things, of which being returned
+to is not one. It stands, and the last scenario below is what says so.
 
 Where the roster it then reads holds nothing at all, a day screen SHALL take on the commitments it
 was handed, exactly as it does when it is opened and when the app is shown again; and where the
@@ -85,6 +88,15 @@ adds no rule of its own to either.
   has been kept and a record place where nothing has been kept; everything kept at the roster place
   is removed; and the day screen is returned to
 - **THEN** a roster store opened afterwards at that place holds one commitment, named "Journaling"
+- **AND** its day view holds one row, named "Journaling"
+
+#### Scenario: a day screen returned to goes on telling what it was telling on a row
+
+- **WHEN** a day screen of no commitments at all is opened as of Monday 31 August 2026 at a roster
+  place holding a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, and at a record place where nothing can be written — a path beneath an existing
+  ordinary file; its one row is ticked and refused; and the day screen is returned to
+- **THEN** it still tells, on that row, that the change could not be kept
 - **AND** its day view holds one row, named "Journaling"
 
 ## MODIFIED Requirements

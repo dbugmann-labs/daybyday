@@ -113,7 +113,9 @@ the precedent that one change may claim more than one.
   does, or what a roster store keeps: the screen is a caller of all three and adds no rule to any
   of them.
 - `day-screen`: one requirement **ADDED** — *A day screen reads its roster again when it is
-  returned to* — with seven scenarios, and one **MODIFIED**: *A day screen draws the commitments
+  returned to* — with eight scenarios, the eighth added when `add-refused-tick-notice` (#100) merged
+  to `main` mid-Story and gave that requirement's "anything else whose lifetime is fixed as until the
+  app is shown again SHALL stand" a second thing to be true of, and one **MODIFIED**: *A day screen draws the commitments
   its roster had not stopped keeping on the day it is showing*, whose third paragraph says the
   roster a day screen asks is "the one read at that place when the app was last shown". That
   sentence becomes false the moment there is a second moment at which the place is read, and it is
@@ -163,16 +165,16 @@ refused by the value the `schedule` capability already defines, not by a new rul
   lifetime rather than a value: `CommitmentsView.swift`'s three `@State` refusals go too, and the
   file draws whatever `screen.refusedChange` holds, beside the row or the button the change was
   asked from.
-- **Tests** — sixty-nine new acceptance tests, one per new scenario: fifty-eight in a new
-  `Tests/DayByDayKitTests/CommitmentsScreenTests.swift`, seven at the end of the existing
+- **Tests** — seventy new acceptance tests, one per new scenario: fifty-eight in a new
+  `Tests/DayByDayKitTests/CommitmentsScreenTests.swift`, eight at the end of the existing
   `DayScreenTests.swift`, and four at the end of the existing `ScheduleTests.swift`, which is
   where every `CalendarDate` scenario in this repo already lives. Measured on this machine on
   2026-09-04, on Apple Swift 6.3.3, from `566297e` — the `main` this branch is rebased onto:
   `cd src/DayByDayKit && swift test` reported **300 tests passing**. Measured again on 2026-09-06,
   on the branch as the second review pass left it, it reports **348** — the 300, plus the 47 the
   first pass wrote, plus one unit test the pass added for a guard no scenario reached. The nine
-  scenarios the second version added take it to **357**, and the thirteen this version adds take it
-  to **370**. `openspec` is 1.10.0 and `node --version` is v24.19.0.
+  scenarios the second version added take it to **357**, and the fourteen this version adds take it
+  to **371**. `openspec` is 1.10.0 and `node --version` is v24.19.0.
 - **`openspec/specs/`** — `commitment/spec.md`, `day-screen/spec.md` and `schedule/spec.md` are
   rewritten at archive time by `/opsx:archive` and nothing else. Three capabilities are claimed
   and all three are edited, so CI check 2 stays green.

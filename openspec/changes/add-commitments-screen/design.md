@@ -42,8 +42,8 @@ Everything measured below was measured on this machine on 2026-09-04, from `5662
 this branch is rebased onto: Apple Swift
 6.3.3, `cd src/DayByDayKit && swift test` reporting **300 tests passing**, `openspec` 1.10.0, Node
 v24.19.0. Re-measured on 2026-09-06 on the branch as the second review pass left it, `swift test`
-reports **348**; the nine scenarios the second version added take it to **357**, and the thirteen
-this version adds take it to **370**.
+reports **348**; the nine scenarios the second version added take it to **357**, and the fourteen
+this version adds take it to **371**.
 
 ## Goals / Non-Goals
 
@@ -81,8 +81,8 @@ beside `DayScreen`.** The second is the existing `DayScreen`, which gains one me
 `CalendarDate`, which gains no method at all: it is the seam every `schedule` scenario in this repo
 already attaches at, and the four scenarios this change adds to that capability attach there too,
 alongside the nineteen `ScheduleTests.swift` already carries. The fifty-eight `commitment` scenarios
-attach at the first and the eleven `day-screen` scenarios at the second — of which four are
-restated verbatim under MODIFIED and already have their tests, so sixty-nine tests are written.
+attach at the first and the twelve `day-screen` scenarios at the second — of which four are
+restated verbatim under MODIFIED and already have their tests, so seventy tests are written.
 **No fourth seam appears, and the third was already there**: "an existing seam beats a new one" is
 satisfied by putting the read-back on the type the capability is about rather than by threading a
 component accessor through `DayScreen` or `CommitmentsScreen`.
@@ -441,12 +441,16 @@ the defect this section exists to remove rather than a fix for it. The cheaper h
 the message is about the change you asked for last and stands until you ask for another, and the
 next Add replaces it with the right answer.
 
-**Why no ADR.** `add-refused-tick-notice` (#100) states the same rule for the day screen and is an
-open draft that has not merged; writing the pattern down as a decision record while one of its two
-instances is unlanded would fix a shape that has been through review once. The two deltas agree
-today — one refusal at a time, the last change asked for, ended by the app being shown and by a
-change that lands — and whichever merges second should be read against the first. If they diverge,
-that divergence is the ADR, and it belongs to whichever Story causes it.
+**Why no ADR.** `add-refused-tick-notice` (#100) states the same rule for the day screen and
+**merged to `main` as `b454d16` while this version was being written**, so this Story is the second
+of the two and is read against it. They agree where they overlap — at most one at a time, the change
+asked for last, ended by the app being shown and by a change that reaches the place — and they
+differ where the two screens differ: the day screen names no cause (ADR-1021) and holds *which row*,
+while a commitments screen tells its five refusals apart and holds *which change*. `DayScreen`'s
+landed member is `refusedChangeRow`; `CommitmentsScreen`'s is `refusedChange`, and the shared stem is
+deliberate. That is a pattern stated twice, in two capabilities, with a documented difference — not
+yet a decision worth its own record. **The trigger for an ADR is a third screen**, or either of these
+two changing its lifetime, at which point the rule wants one home rather than two.
 
 ### A rhythm is a schedule with the start date taken out
 

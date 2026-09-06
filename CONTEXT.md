@@ -480,6 +480,15 @@ change is a fact about what happened, and the sentence said for each one is the 
 same division the roster state already runs on. Named at `add-commitments-screen` (#104), 2026-09-06,
 where three unwritten lifetimes in a SwiftUI view were what it replaced.
 
+It is the **commitments screen**'s word, and the **day screen** has its own for the neighbouring
+thing: the *notice* `add-refused-tick-notice` (#100) landed, amended onto **Row** above. They share a
+lifetime and differ in what they carry, deliberately. A notice is told **on a row**, names no cause
+because a refused tick leaves a person one thing to do (ADR-1021), and ends on a third condition a
+commitments screen has no equivalent of — the day being shown changing. A refused change names
+**which change and why**, because the commitments screen's five refusals are five different things
+to do. Two words for two things, not one thing twice; if a third screen wants the same shape, that is
+the point at which one word should replace both.
+
 **Record place** — the one place a day screen keeps its record at, and the only thing about the
 record that is a day screen's to choose. It is a file inside the directory the platform reserves for
 an application's own supporting data, in a directory of this app's own, and it is the same place

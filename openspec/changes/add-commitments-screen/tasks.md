@@ -173,7 +173,7 @@ is not evidence.
 - [x] 2.33 `a commitments screen keeps its roster at the place a day screen keeps its` — asserts
   `CommitmentsScreen.rosterPlace == DayScreen.rosterPlace` and **constructs no screen**, so nothing
   in this file ever opens the real Application Support directory. That makes it the one test of the
-  seventy-three that cannot go red, since the static is *declared* as `DayScreen.rosterPlace`;
+  seventy-four that cannot go red, since the static is *declared* as `DayScreen.rosterPlace`;
   § 5.6's first residual records the trade-off, which stands.
 - [x] 2.34 `a commitment defined through a commitments screen is held by a day screen opened afterwards at the same place`
   — the one test in § 2 that builds a `DayScreen`; it needs a record place too, and it must be a
@@ -574,18 +574,21 @@ place. If one appears to be needed, that is a requirement this delta is missing 
 
 ## 5. Gates, and the files this change is and is not allowed to write
 
-- [ ] 5.1 `cd src/DayByDayKit && swift test` reports **370 tests passing** and no failures, and
-  `pnpm run verify` exits 0. The 370 is the 300 that were on `main` at `566297e`, plus the 47 the
+- [ ] 5.1 `cd src/DayByDayKit && swift test` reports **371 tests passing** and no failures, and
+  `pnpm run verify` exits 0. The 371 is the 300 that were on `main` at `566297e`, plus the 47 the
   first implementation pass wrote, plus the 1 unit test `d364a25` added for a guard no scenario
-  reached, plus the 9 § 6 writes, plus the 13 § 7 writes. **The first version of this box said 347
+  reached, plus the 9 § 6 writes, plus the 14 § 7 writes. **`add-refused-tick-notice` (#100) merged
+  to `main` as `b454d16` after this count was taken**, adding tests of its own; whoever rebases this
+  branch re-derives the number from the rebased tree and reports the difference rather than editing
+  this box to whatever `swift test` happens to print. **The first version of this box said 347
   and was ticked; the count on the branch was already 348** — measured on 2026-09-06 — so a box
   asserting a number was ticked against a different number. The box is unticked again here because
   357 was true of the branch when § 6 finished and is not the number that must be true at the end.
   None of the 357 may change.
 - [ ] 5.2 `pnpm exec openspec validate add-commitments-screen --strict` exits 0 and `pnpm run
-  checks` reports scenario coverage as 73 of 73 — the 51 of the first version, plus the 5 rhythm
-  scenarios and the 4 calendar-date scenarios § 6 adds, plus the 13 refused-change scenarios § 7
-  adds. Unticked again for the same reason as 5.1: 60 was true when § 6 finished.
+  checks` reports scenario coverage as 74 of 74 — the 51 of the first version, plus the 5 rhythm
+  scenarios and the 4 calendar-date scenarios § 6 adds, plus the 13 refused-change scenarios and the
+  1 day-screen scenario § 7 adds. Unticked again for the same reason as 5.1: 60 was true when § 6 finished.
 - [ ] 5.3 `mattpocock-skills:code-review` reports nothing unresolved on either axis (**G7**). Five
   things the reviewer is asked to look for by name: that every one of `define`, `confirmStopKeeping`
   and `keepAgain` assigns `kept` and `stopped` only **after** the `RosterStore` call returns, so
@@ -772,7 +775,7 @@ place. If one appears to be needed, that is a requirement this delta is missing 
   because a trade-off nobody wrote down is indistinguishable from an oversight the next time
   somebody reads the file.
 
-  1. **One scenario of the seventy-three has no test that can go red.**
+  1. **One scenario of the seventy-four has no test that can go red.**
      `CommitmentsScreenTests.swift`'s test for *a commitments screen keeps its roster at the place a
      day screen keeps its* is `#expect(CommitmentsScreen.rosterPlace == DayScreen.rosterPlace)`,
      and `CommitmentsScreen.rosterPlace` is declared as `DayScreen.rosterPlace`, so the assertion is
@@ -935,7 +938,20 @@ held three `@State` refusals — `refusal`, `stopRefusal`, `keepAgainRefusal` �
 lifetimes lived in the one layer nothing regresses. Two of them were already wrong: a stop refusal
 outlived a later successful take-up-again, and a `rhythmOutOfRange` message outlived a switch to a
 rhythm that cannot produce it. `design.md` § *How long a refusal is told is this capability's, and
-which change it was is part of it* is the decision, and the thirteen scenarios below are the rule.
+which change it was is part of it* is the decision, and the thirteen commitment scenarios below are
+the rule.
+
+**One thing happened on `main` while this section was being written, and it is not a finding.**
+`add-refused-tick-notice` (#100) merged as `b454d16`. It answers the neighbouring question on the
+day screen and it landed `public private(set) var refusedChangeRow: DayView.Row?` on `DayScreen`,
+cleared on three conditions of its own. Two consequences here, and no more: § 7.17 pins the one
+interaction the merge order created — that being returned to is not one of those three conditions,
+which § 3's requirement already promised in prose and now has a scenario for — and **this branch no
+longer rebases cleanly onto `origin/main`**. The conflict is `DayScreenTests.swift`, where #100 and
+§ 3 both appended tests at the end of the file, and `ContentView.swift` will likely be the second.
+It is neither the change folder nor `openspec/specs/`, so it is not the stop `AGENTS.md` § *Working a
+Story* names; it is an ordinary append-and-append that whoever holds `src/**` resolves, keeping both
+sides. Nothing in this folder changes because of it.
 
 **The words are not in scope and must not move.** § 4.1's `refusalText(_:)` keeps its five
 sentences and ADR-1022 is unamended: this section moves a *lifetime* out of `src/DayByDay` and
@@ -992,9 +1008,19 @@ Seven scenarios, same file, same rules.
   `keepAgain` or `confirmStopKeeping`, rather than where the roster place is reached, fails here.
 - [ ] 7.14 `what a commitments screen holds about a refused change stands when a stop is asked for and cancelled`
 
+### The day screen's neighbour, now that it has landed
+
+- [ ] 7.15 `a day screen returned to goes on telling what it was telling on a row` — one test at
+  the end of `Tests/DayByDayKitTests/DayScreenTests.swift`, beside § 3's seven, from
+  `specs/day-screen/spec.md`. The behaviour ships already, because `returnedTo()` does not touch
+  `refusedChangeRow` and #100's own requirement names three things that end a notice, none of them
+  being returned to; this test is what stops the next edit to `returnedTo()` taking it out by
+  accident. Expect it green on first write and **treat a red one as a rule-5 stop** rather than as a
+  licence to change either Story's code.
+
 ### The shell, which now holds no lifetime
 
-- [ ] 7.15 In `src/DayByDay/DayByDay/CommitmentsView.swift`: delete the three `@State` refusals —
+- [ ] 7.16 In `src/DayByDay/DayByDay/CommitmentsView.swift`: delete the three `@State` refusals —
   `refusal`, `stopRefusal` and `keepAgainRefusal` — and draw whatever `screen.refusedChange` holds,
   switching on the case so that a `.defining` is drawn in the `Define a commitment` section where
   the form's message already sits, a `.stopping` under `Section("Kept")` and a `.keepingAgain` under
@@ -1004,7 +1030,9 @@ Seven scenarios, same file, same rules.
   in a **local**, because clearing the typed name and the chosen weekdays when nothing was refused
   is drawing rather than a lifetime. `refusalText(_:)` keeps its five sentences exactly as they are
   — no sentence is added, removed or reworded by this box. `swift build` through the scheme exits 0.
-- [ ] 7.16 Re-drive § 4.3's walkthrough against the shell as § 7 leaves it, and add its record
+### The walkthrough, re-driven
+
+- [ ] 7.17 Re-drive § 4.3's walkthrough against the shell as § 7 leaves it, and add its record
   there under a dated heading rather than replacing what is written. **A ninth check joins the
   eight**: with the "that number isn't one this rhythm accepts" message on screen from check eight,
   tap a stopped commitment to take it up again; the take-up-again must land and the message must go,
