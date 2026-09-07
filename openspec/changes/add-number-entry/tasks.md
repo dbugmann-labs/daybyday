@@ -257,7 +257,7 @@ diff, so these boxes confirm rather than write.
 - [x] 11.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 2, 6 and 8 actually ran red before the code that satisfies them was written. A
   prediction in a task is not evidence; this is.
-- [ ] 11.2 Re-run after § 12, which is why this box is open again: `pnpm run verify` green from the
+- [x] 11.2 Re-run after § 12, which is why this box is open again: `pnpm run verify` green from the
   repo root, and `pnpm run checks` reporting `scenario coverage — 75/75`. `cd src/DayByDayKit &&
   swift test` reports **592 tests passing** — 544 on the base this branch now sits on (§ 1.1), plus
   the forty-six written in §§ 2–8 and the two written in § 12, plus none removed. **Read the number
