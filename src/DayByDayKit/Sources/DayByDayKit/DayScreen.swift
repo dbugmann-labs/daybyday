@@ -173,9 +173,16 @@ public final class DayScreen {
     public private(set) var rosterState: RosterState
 
     /// What a person is told on a row, and nothing else: which row, and the cause where there is
-    /// one a person can act on.
+    /// one a person can act on. `cause` is `nil` for a refusal by the place, which names nothing,
+    /// and for a refused tick, which carries no cause at all.
     public struct Notice: Hashable, Sendable {
         public let row: DayView.Row
+        public let cause: String?
+
+        init(row: DayView.Row, cause: String? = nil) {
+            self.row = row
+            self.cause = cause
+        }
     }
 
     /// The notice a person is owed, or `nil` when there is nothing to tell. Set when `tick(_:)`
@@ -258,6 +265,20 @@ public final class DayScreen {
         return .number(Decimal(string: normalized)!)
     }
 
+    /// The cause named when `commitment` refuses a number: the range it declares, said "Must be
+    /// between 40 and 150" — this package's own English, and each bound exactly as the
+    /// commitment declares it, as a range hint says it. A number-kind commitment always has a
+    /// range here: `enter(_:on:)` only reaches this once `Number.init?` has already refused the
+    /// value, and every other reason it could refuse one is already ruled out by the guards
+    /// above. `docs/adr/1036`.
+    private static func rangeRefusalCause(for commitment: Commitment) -> String? {
+        guard case .number(let range?) = commitment.kind else {
+            return nil
+        }
+
+        return "Must be between \(range.lowest) and \(range.highest)"
+    }
+
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
     /// nothing, and keeps the change before `dayView` says so. Does nothing when `row` is not one
     /// this screen's day view holds, when this screen is not keeping a record, or when `row`
@@ -285,7 +306,7 @@ public final class DayScreen {
             }
         case .number(let decimal):
             guard let number = Number(decimal, for: row.commitment, on: row.date) else {
-                notice = Notice(row: row)
+                notice = Notice(row: row, cause: Self.rangeRefusalCause(for: row.commitment))
                 return
             }
 
@@ -296,7 +317,7 @@ public final class DayScreen {
                 throw error
             }
         case .notANumber:
-            notice = Notice(row: row)
+            notice = Notice(row: row, cause: "Not a number")
             return
         }
         notice = nil

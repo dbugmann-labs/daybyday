@@ -163,7 +163,7 @@ The two sentences are fixed by the delta and are asserted verbatim: `"Must be be
 and `"Not a number"`. They are composed in `DayByDayKit`, with each bound said by `Decimal`'s own
 description exactly as § 3's hint says it — `docs/adr/1036`.
 
-- [ ] 7.1 `a number outside the commitment's range is told on the row, naming the bounds it broke` —
+- [x] 7.1 `a number outside the commitment's range is told on the row, naming the bounds it broke` —
   two commitments with two different ranges, so that the bounds cannot be a constant.
 - [ ] 7.2 `a value that is not a number is told on the row, saying so` — with a range and with none.
 - [ ] 7.3 `a number refused by the place is told on the row and names no cause` — the entry and the
