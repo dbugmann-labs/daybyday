@@ -4,11 +4,11 @@ This section changes no behaviour and adds no test. It moves the eleven sites th
 *a later form* and pins the starting point, so that everything after it is measured against a number
 rather than a memory.
 
-- [ ] 1.1 Confirm the branch point before touching anything: from `src/DayByDayKit`, `swift test`
+- [x] 1.1 Confirm the branch point before touching anything: from `src/DayByDayKit`, `swift test`
   reports **418 tests passing**. Measured on this machine on 2026-09-06, Apple Swift 6.3.3
   (swiftlang-6.3.3.1.3), target `arm64-apple-macosx26.0`. A different number means `main` moved under
   the branch; report it rather than working around it (`AGENTS.md` rule 5).
-- [ ] 1.2 Edit the eleven sites that say `3` to mean *a later form* so they say `4`. Nine JSON
+- [x] 1.2 Edit the eleven sites that say `3` to mean *a later form* so they say `4`. Nine JSON
   fixtures — `RecordStoreTests.swift:267`, `RosterStoreTests.swift:323`,
   `CommitmentsScreenTests.swift:1024`, and `DayScreenTests.swift:370`, `:454`, `:585`, `:1673`,
   `:1831`, `:2471` — and two assertions, `RecordStoreTests.swift:270` and `RosterStoreTests.swift:326`,
@@ -19,7 +19,7 @@ rather than a memory.
   `4` for the same reason the record's six do: the roster document does not move in this change, and
   `4` is above its `currentVersion` of `2` as surely as `3` was. `swift test` still reports **418 passing** after this box — a red test is a
   rule-5 stop, because nothing in this box was supposed to change an answer.
-- [ ] 1.3 Confirm the coverage tool agrees before writing a test: from the repo root,
+- [x] 1.3 Confirm the coverage tool agrees before writing a test: from the repo root,
   `pnpm run checks` reports `scenario coverage — 37/75 scenario(s) covered` for this change and names
   `"a number is recorded for a number commitment on a date it is due on"` as next. A different number
   means something else moved; report it rather than working around it.
