@@ -55,7 +55,7 @@ exists. **Record which ones actually ran red as you go, in § 11**; a prediction
 - [x] 2.5 `a row for a date later than the day it is asked as of offers no number entry even where the
   day holds a number`
 - [x] 2.6 `a row for a date earlier than the day it is asked as of offers the number entry`
-- [ ] 2.7 `a row offers the number entry whether or not the day is already kept`
+- [x] 2.7 `a row offers the number entry whether or not the day is already kept`
 
 ## 3. What a number entry says
 

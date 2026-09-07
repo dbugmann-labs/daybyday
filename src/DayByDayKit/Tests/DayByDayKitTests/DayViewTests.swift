@@ -1355,3 +1355,24 @@ func aRowForADateEarlierThanTheDayItIsAskedAsOfOffersTheNumberEntry() {
 
     #expect(dayView.rows[0].numberEntry(asOf: saturday) != nil)
 }
+
+@Test("a row offers the number entry whether or not the day is already kept")
+func aRowOffersTheNumberEntryWhetherOrNotTheDayIsAlreadyKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let unkept = History()
+    var kept = History()
+    kept.add(Number(70.5, for: weight, on: monday)!)
+
+    let unkeptView = DayView(of: [weight], on: monday, in: unkept)
+    let keptView = DayView(of: [weight], on: monday, in: kept)
+
+    #expect(!unkeptView.rows[0].isKept)
+    #expect(keptView.rows[0].isKept)
+    #expect(unkeptView.rows[0].numberEntry(asOf: monday) != nil)
+    #expect(keptView.rows[0].numberEntry(asOf: monday) != nil)
+}
