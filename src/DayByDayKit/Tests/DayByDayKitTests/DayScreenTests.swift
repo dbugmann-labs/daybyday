@@ -3127,3 +3127,29 @@ func anEntryCommittedEmptyTakesTheNumberBackAndOneHoldingNothingButSpaceDoesTheS
     #expect(screen.dayView.rows.allSatisfy { !$0.isKept })
     #expect(screen.dayView.rows.allSatisfy { $0.numberEntry(asOf: monday)?.number == nil })
 }
+
+@MainActor
+@Test("a value that is not a number keeps nothing and takes nothing back")
+func aValueThatIsNotANumberKeepsNothingAndTakesNothingBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+
+    for notANumber in ["1.2.3", ".", "-", "12abc", "1e3", "7-0", "٧٠"] {
+        try screen.enter(notANumber, on: screen.dayView.rows[0])
+        #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+    }
+
+    #expect(screen.dayView.rows[0].isKept)
+
+    let later = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(later.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+}

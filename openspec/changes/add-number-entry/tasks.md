@@ -150,7 +150,7 @@ number entered before it.
 - [x] 6.4 `a negative number is entered where the commitment declares no range`
 - [x] 6.5 `an entry committed empty takes the number back, and one holding nothing but space does the
   same`
-- [ ] 6.6 `a value that is not a number keeps nothing and takes nothing back` — all seven values, each
+- [x] 6.6 `a value that is not a number keeps nothing and takes nothing back` — all seven values, each
   over a day already holding 70.5.
 
 ## 7. The cause a notice names
