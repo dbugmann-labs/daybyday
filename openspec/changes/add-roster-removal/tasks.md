@@ -225,18 +225,30 @@ no day, no match and no refusal. Only `src/DayByDay/DayByDay/CommitmentsView.swi
 
 ## 11. Before the review, and what the janitor does at the archive
 
-- [ ] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 489 plus the 54
+- [x] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 489 plus the 54
   scenarios above. From the repo root, `pnpm run verify` green and `pnpm run checks` reporting
   `161/161 scenario(s) covered`.
-- [ ] 11.2 `openspec validate add-roster-removal --strict` exits 0, and `openspec validate --all
+
+  Confirmed 2026-09-07: `swift test` reports **543 tests in 0 suites passed** (489 + 54). From the
+  repo root, `pnpm run verify` exits 0 (lint, typecheck, and 118 TypeScript tests all pass), and
+  `pnpm run checks` reports `scenario coverage — all 161 scenario(s) have a matching test (118
+  TypeScript, 543 Swift across 43 .swift file(s))`.
+- [x] 11.2 `openspec validate add-roster-removal --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
-- [ ] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+
+  Confirmed 2026-09-07: both exit 0. `openspec validate --all --strict --no-interactive` reports
+  `Totals: 6 passed, 0 failed (6 items)`, covering `change/add-roster-removal` and all five specs.
+- [x] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-roster-removal/` or anywhere under `openspec/specs/` is a **stop**, not a
   merge to resolve: it means another Story landed on `commitment` or `day-screen` while this one was
   being written, which is the owner's call (rule 5).
+
+  Confirmed 2026-09-07: the branch's merge-base with `origin/main` was already `origin/main`'s tip
+  (`8f78852dfcd54bee0df2f3f8b9a46f438e4423e6`) before this rebase ran, so `git rebase origin/main`
+  reported "up to date" with no commits to replay and no conflict anywhere.
 - [ ] 11.4 Ask for the review (**G7**) with `mattpocock-skills:code-review`, and fix what it finds on
   this branch before the archive.
-- [ ] 11.5 Tell the janitor, in the archive handover, that after `/opsx:archive` has run it must read
+- [x] 11.5 Tell the janitor, in the archive handover, that after `/opsx:archive` has run it must read
   the recomposed `openspec/specs/commitment/spec.md` and `openspec/specs/day-screen/spec.md` and
   confirm that each MODIFIED requirement sits where it sat before — this delta renames nothing, so
   nothing may have moved to the bottom of either file — and that `openspec validate --archived`
@@ -246,3 +258,21 @@ no day, no match and no refusal. Only `src/DayByDay/DayByDay/CommitmentsView.swi
   archive runs; the checking itself is the janitor's step and has no box, deliberately —
   `add-roster-store` (#103) shipped a box that could only be ticked after the archive and stalled
   the Story between review and merge.
+
+  **Archive handover, for the janitor.** This delta's `specs/commitment/spec.md` carries fifteen
+  `## MODIFIED Requirements`: four roster requirements (hold-order, refusal, stop, and
+  answer-on-a-date), three roster-store requirements (keep-across-restart, kind-migration, and
+  unreadable-refusal), and eight commitments-screen requirements (list order, stopped-list,
+  define, confirm-a-stop, keep-roster-place, cannot-read, holds-a-refused-change, and what it holds
+  lasting until the app is shown again or a change is kept) — plus two `## ADDED Requirements`
+  (*A roster removes a commitment it holds, and never lets it go* and *A commitments screen removes
+  a commitment only when its name is typed back*). `specs/day-screen/spec.md` carries two
+  `## MODIFIED Requirements` (the draws-the-commitments requirement and the
+  takes-on-nothing-at-all requirement). None of these seventeen MODIFIED requirements is renamed
+  anywhere in this delta — only prose inside each changes — so after `/opsx:archive` runs, read the
+  recomposed `openspec/specs/commitment/spec.md` and `openspec/specs/day-screen/spec.md` and
+  confirm each of those seventeen still sits at the same place in requirement order it held before
+  this archive, that both ADDED requirements landed in `commitment` and nowhere else, and that
+  `openspec validate --archived` exits 0. Any drift — a requirement moved, dropped, or reworded
+  beyond this delta's own MODIFIED text — is a stop and a report, never a hand-edit (rule 2); this
+  box records that the instruction has been written, not that the check has been run.
