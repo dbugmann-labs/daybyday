@@ -153,6 +153,31 @@ reading as kept once more. **Retiring** is the verb the code uses and **stopping
 verb a person uses; they are one act, and the day it names is this one.
 ADR-1023, agreed 2026-09-03 at the grill of `add-roster-retirement` (#102).
 
+**Amended 2026-09-07**, at the grill of `add-roster-removal` (#145). The day is still inclusive and
+still the roster's to judge, but the day a **commitments screen** hands when a person stops a
+commitment is now the day *before* the one the screen was handed, so that the row leaves that day's
+screen at once rather than lingering as though the stop had failed. The price, taken knowingly: a
+tick made in the morning on a commitment stopped that afternoon is not drawn that day, though the
+record stands and the row returns if the commitment is taken up again. A commitment defined and
+stopped on the same day is one kept on no day at all, which the roster already accepts. ADR-1023 is
+amended in place.
+
+**Removed** — a commitment a person has got rid of for good: the roster still holds it, in the place
+it was taken on in and with the day it was **kept until**, but it is shown in neither of the
+**commitments screen**'s lists and is owed on no day after that one. It is the third state a roster
+holds a commitment in, beside kept and stopped, and it differs from stopped in exactly one thing: it
+has left the screen. Every past day up to the day it was kept until draws it exactly as a stopped
+one is drawn, and every record against it stands, because the record is what the product exists to
+keep and a removal is a fact about the roster and not about what was done. It is deliberately not
+dropped from the roster: a roster that forgot it would lose those past rows, and would read as
+holding nothing once the last one went, which is the moment **day one** is written. A removed kept
+commitment is kept until the day before the screen was handed, as a stopped one now is; a removed
+stopped one keeps the day it already had. Offering the roster the same commitment again takes it up
+again, in its old place and with its history — the one way back, and since no list shows it, it is
+reached by defining the commitment again exactly. **Removing** is the roster's verb and the spec's;
+what the person reads is the **app shell**'s. Agreed 2026-09-07 at the grill of
+`add-roster-removal` (#145).
+
 **Roster** — the commitments a person keeps, held as one ordered set: every commitment that has been
 taken on, in the order it was taken on, and never two of the same one. It is the answer to "what do
 I keep", the thing a day is drawn from, and the thing a commitment is eventually retired out of. It
@@ -191,6 +216,13 @@ choosing between them — the same reason a day view orders nothing of its own. 
 **roster store** that keeps a roster across the app being closed, in the way a history is not the
 record store that keeps it, and deliberately not a **list on a screen**, which may draw a roster in
 whatever order it likes. Agreed 2026-09-03 at the grill of `add-commitment-roster` (#101).
+
+**Amended 2026-09-07**, at the grill of `add-roster-removal` (#145). A roster also holds, for each
+commitment it has **removed**, that it was removed — a third state beside kept and stopped. A removed
+commitment is in nothing the roster reads back as kept or as stopped, is answered about a date
+exactly as a stopped one is, and is taken up again by being offered again. The roster never lets a
+commitment go: removing is a last state, not a departure, so a roster that has ever taken something
+on never again holds nothing at all.
 
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
@@ -320,6 +352,10 @@ kept. Order is one of the things a roster is, so a roster store keeps the order 
 than one of its own — unlike a record store, which is free to write ticks in whatever order makes
 its file stable, because a history is the same history whatever order its ticks arrived in. Agreed
 2026-09-04 at the grill of `add-roster-store` (#103).
+
+**Amended 2026-09-07**, at the grill of `add-roster-removal` (#145). A roster store also keeps,
+against each commitment the roster has **removed**, that it was removed — beside the day it was kept
+until, which a removed commitment keeps.
 
 **Day one** — the commitments a fresh install begins with, before anyone has defined one: the
 owner's own week, quoted in `docs/backlog.md` § *What day one looks like*. It is written into a
@@ -550,6 +586,14 @@ name **and the rhythm in words**, and the form says in words the rhythm it is bu
 built. Neither the kind its days take nor the day it is kept from is said. Two commitments alike in
 name are therefore told apart when their rhythms differ and not when they do not, which is as far as
 a screen can go without judging what the roster accepts.
+
+**Amended 2026-09-07**, at the grill of `add-roster-removal` (#145). A commitments screen also
+**removes** a commitment, from either list, and it is the one change the screen makes only after the
+person has typed the commitment's name back — exactly as it was given, surrounding blank space
+aside. Until the name matches there is nothing to confirm, and nothing is refused or said: the match
+is the whole of the check. A removed commitment is in neither list. Stopping through this screen now
+keeps a commitment until the day **before** the one the screen was handed, and removing a kept one
+does the same; see **Kept until**.
 
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
