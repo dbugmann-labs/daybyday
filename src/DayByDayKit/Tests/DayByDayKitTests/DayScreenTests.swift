@@ -2777,12 +2777,14 @@ func committingAnEmptyEntryTakesTheNumberBack() throws {
     try screen.enter("", on: screen.dayView.rows[0])
 
     #expect(!screen.dayView.rows[0].isKept)
-    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == nil)
+    let entry = try #require(screen.dayView.rows[0].numberEntry(asOf: monday))
+    #expect(entry.number == nil)
 
     let later = DayScreen(
         startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     #expect(!later.dayView.rows[0].isKept)
-    #expect(later.dayView.rows[0].numberEntry(asOf: monday)?.number == nil)
+    let laterEntry = try #require(later.dayView.rows[0].numberEntry(asOf: monday))
+    #expect(laterEntry.number == nil)
 }
 
 @MainActor
@@ -3129,7 +3131,10 @@ func anEntryCommittedEmptyTakesTheNumberBackAndOneHoldingNothingButSpaceDoesTheS
     try screen.enter("  ", on: screen.dayView.rows[1])
 
     #expect(screen.dayView.rows.allSatisfy { !$0.isKept })
-    #expect(screen.dayView.rows.allSatisfy { $0.numberEntry(asOf: monday)?.number == nil })
+    let weightEntry = try #require(screen.dayView.rows[0].numberEntry(asOf: monday))
+    let moodEntry = try #require(screen.dayView.rows[1].numberEntry(asOf: monday))
+    #expect(weightEntry.number == nil)
+    #expect(moodEntry.number == nil)
 }
 
 @MainActor
