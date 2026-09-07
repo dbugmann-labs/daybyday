@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 import DayByDayKit
 
@@ -408,4 +409,185 @@ func aCommitmentWhoseKindIsNotATickWasNotKeptOnADateItIsDueOn() {
 
     #expect(!history.isKept(number, on: monday))
     #expect(!withTickKindTick.isKept(number, on: monday))
+}
+
+@Test("a number is recorded for a number commitment on a date it is due on")
+func aNumberIsRecordedForANumberCommitmentOnADateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let withRange = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let noRange = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+
+    #expect(Number(70.5, for: withRange, on: monday) != nil)
+    #expect(Number(70.5, for: noRange, on: monday) != nil)
+}
+
+@Test("a number commitment takes no number on a date it is not due on")
+func aNumberCommitmentTakesNoNumberOnADateItIsNotDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+
+    let laterFloor = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let beforeFloor = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: laterFloor, kind: .number(range: nil))!
+
+    let noWeekday = Commitment(
+        name: "Weight", schedule: Schedule.weekdays([]), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let week = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ]
+
+    #expect(Number(70.5, for: commitment, on: tuesday) == nil)
+    #expect(schedule.isDue(on: monday))
+    #expect(Number(70.5, for: beforeFloor, on: monday) == nil)
+    for date in week {
+        #expect(Number(70.5, for: noWeekday, on: date) == nil)
+    }
+}
+
+@Test("a commitment whose kind is not a number takes no number on a date it is due on")
+func aCommitmentWhoseKindIsNotANumberTakesNoNumberOnADateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+
+    let tickKind = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let note = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let total = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let numberKind = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+
+    #expect(Number(70.5, for: tickKind, on: monday) == nil)
+    #expect(Number(70.5, for: note, on: monday) == nil)
+    #expect(Number(70.5, for: total, on: monday) == nil)
+    #expect(Number(70.5, for: numberKind, on: monday) != nil)
+}
+
+@Test("a number outside the commitment's range is not recorded")
+func aNumberOutsideTheCommitmentsRangeIsNotRecorded() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+
+    #expect(Number(300, for: commitment, on: monday) == nil)
+    #expect(Number(39.9, for: commitment, on: monday) == nil)
+    #expect(Number(70.5, for: commitment, on: monday) != nil)
+}
+
+@Test("a number at either end of the commitment's range is recorded")
+func aNumberAtEitherEndOfTheCommitmentsRangeIsRecorded() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let singleValueRange = Commitment.Range(lowest: 100, highest: 100)!
+    let singleValueCommitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: singleValueRange))!
+
+    #expect(Number(40, for: commitment, on: monday) != nil)
+    #expect(Number(150, for: commitment, on: monday) != nil)
+    #expect(Number(100, for: singleValueCommitment, on: monday) != nil)
+}
+
+@Test("a number between two whole numbers is recorded on a range of whole numbers")
+func aNumberBetweenTwoWholeNumbersIsRecordedOnARangeOfWholeNumbers() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 1, highest: 10)!
+    let commitment = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+
+    let number = Number(5.5, for: commitment, on: monday)
+    let five = Number(5, for: commitment, on: monday)
+    let six = Number(6, for: commitment, on: monday)
+
+    #expect(number != nil)
+    #expect(number != five)
+    #expect(number != six)
+}
+
+@Test("a number commitment with no range takes any number")
+func aNumberCommitmentWithNoRangeTakesAnyNumber() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let veryLarge = Decimal(string: "98765432109876543210.5")!
+    let veryLargeRounded = Decimal(string: "98765432109876543211")!
+    let values: [Decimal] = [-12.75, 0, 0.000001, veryLarge]
+
+    for value in values {
+        #expect(Number(value, for: commitment, on: monday) != nil)
+    }
+
+    #expect(Number(-12.75, for: commitment, on: monday) != Number(-13, for: commitment, on: monday))
+    #expect(Number(0.000001, for: commitment, on: monday) != Number(0, for: commitment, on: monday))
+    #expect(
+        Number(veryLarge, for: commitment, on: monday)
+            != Number(veryLargeRounded, for: commitment, on: monday))
+}
+
+@Test("a value that is not a number is not recorded")
+func aValueThatIsNotANumberIsNotRecorded() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let noRange = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let withRange = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+
+    #expect(Number(Decimal.nan, for: noRange, on: monday) == nil)
+    #expect(Number(Decimal.nan, for: withRange, on: monday) == nil)
+}
+
+@Test("two numbers are the same exactly when their commitment, date and number all are")
+func twoNumbersAreTheSameExactlyWhenTheirCommitmentDateAndNumberAllAre() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let otherCommitment = Commitment(
+        name: "Weight before breakfast", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: nil))!
+
+    let first = Number(70.5, for: commitment, on: monday)!
+    let second = Number(70.5, for: commitment, on: monday)!
+    let differentNumber = Number(71, for: commitment, on: monday)!
+    let differentDate = Number(70.5, for: commitment, on: wednesday)!
+    let differentCommitment = Number(70.5, for: otherCommitment, on: monday)!
+
+    #expect(first == second)
+    #expect(first != differentNumber)
+    #expect(second != differentNumber)
+    #expect(first != differentDate)
+    #expect(first != differentCommitment)
 }

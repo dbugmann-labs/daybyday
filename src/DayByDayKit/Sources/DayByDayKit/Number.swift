@@ -10,7 +10,27 @@ public struct Number: Hashable, Sendable {
     let number: Decimal
 
     public init?(_ number: Decimal, for commitment: Commitment, on date: CalendarDate) {
-        fatalError("not implemented")
+        guard commitment.isDue(on: date) else {
+            return nil
+        }
+
+        guard case .number(let range) = commitment.kind else {
+            return nil
+        }
+
+        guard !number.isNaN else {
+            return nil
+        }
+
+        if let range {
+            guard range.lowest <= number, number <= range.highest else {
+                return nil
+            }
+        }
+
+        self.commitment = commitment
+        self.date = date
+        self.number = number
     }
 }
 

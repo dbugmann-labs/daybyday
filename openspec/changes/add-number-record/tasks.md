@@ -49,22 +49,22 @@ one that fails a range-only implementation**, because `Decimal.nan <= Decimal(15
 commitment with no range runs no check at all) to run red on their own. **Record which ones actually
 ran red as you go, in § 9**; a prediction here is not evidence.
 
-- [ ] 3.1 `a number is recorded for a number commitment on a date it is due on`
-- [ ] 3.2 `a number commitment takes no number on a date it is not due on` — all three clauses: not
+- [x] 3.1 `a number is recorded for a number commitment on a date it is due on`
+- [x] 3.2 `a number commitment takes no number on a date it is not due on` — all three clauses: not
   due, before the day it is kept from, and a schedule due on no date across seven days.
-- [ ] 3.3 `a commitment whose kind is not a number takes no number on a date it is due on` — the
+- [x] 3.3 `a commitment whose kind is not a number takes no number on a date it is due on` — the
   tick, note and total kinds, plus the number-kind control that must still record.
-- [ ] 3.4 `a number outside the commitment's range is not recorded` — above and below, plus the
+- [x] 3.4 `a number outside the commitment's range is not recorded` — above and below, plus the
   in-range control.
-- [ ] 3.5 `a number at either end of the commitment's range is recorded` — ends inclusive, and a
+- [x] 3.5 `a number at either end of the commitment's range is recorded` — ends inclusive, and a
   range of exactly one value.
-- [ ] 3.6 `a number between two whole numbers is recorded on a range of whole numbers` — the owner's
+- [x] 3.6 `a number between two whole numbers is recorded on a range of whole numbers` — the owner's
   own answer at the grill: a range is bounds and nothing else, so 5.5 is a mood of one to ten.
-- [ ] 3.7 `a number commitment with no range takes any number` — negative, zero, very small and very
+- [x] 3.7 `a number commitment with no range takes any number` — negative, zero, very small and very
   large, each recorded as itself.
-- [ ] 3.8 `a value that is not a number is not recorded` — `Decimal.nan`, with a range and with none.
+- [x] 3.8 `a value that is not a number is not recorded` — `Decimal.nan`, with a range and with none.
   The second half is the one that fails an implementation that leans on the range.
-- [ ] 3.9 `two numbers are the same exactly when their commitment, date and number all are` — all
+- [x] 3.9 `two numbers are the same exactly when their commitment, date and number all are` — all
   four clauses, which is what pins that the value is part of the record rather than beside it.
 
 ## 4. `record` — what a history holds and answers
