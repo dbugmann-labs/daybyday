@@ -2851,3 +2851,31 @@ func aNumberThatCannotBeKeptIsRefusedAndLeavesTheDayViewAsItWas() throws {
     }
     #expect(!screen.dayView.rows[0].isKept)
 }
+
+@MainActor
+@Test("entering a number on a row the day screen's day view does not hold changes nothing")
+func enteringANumberOnARowTheDayScreensDayViewDoesNotHoldChangesNothing() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let mondayScreen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let wednesdayScreen = DayScreen(
+        startingFrom: [weight], asOf: wednesday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    try mondayScreen.enter("70.5", on: wednesdayScreen.dayView.rows[0])
+
+    #expect(!mondayScreen.dayView.rows[0].isKept)
+
+    let laterOnWednesday = DayScreen(
+        startingFrom: [weight], asOf: wednesday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    #expect(!laterOnWednesday.dayView.rows[0].isKept)
+}
