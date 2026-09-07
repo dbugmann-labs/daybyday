@@ -1,9 +1,13 @@
-# 1033. A schedule says its rhythm in words, and its payload stays inside the package
+# 1034. A schedule says its rhythm in words, and its payload stays inside the package
 
 - Status: accepted — proposed and argued by `add-rhythm-in-words` (#144), the change that first
   shows a rule to a person
 - Date: 2026-09-06
 - Deciders: Diego Bugmann
+- Renumbered: 2026-09-07 — written as `1033`, which `add-number-record` (#138) had already
+  claimed at commit `7f476e2`; this record took the next free number, since
+  `docs/adr/README.md` § *Numbering* gives a number to whoever claimed it first and never
+  reuses one
 
 ## Context
 

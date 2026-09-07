@@ -46,7 +46,7 @@ becomes public so that a caller can render it. It does not. The package says the
   is made public: `Commitment.schedule` stays internal, `DayOfMonth.day`, `DayInterval.days` and
   `WeeklyQuota.timesPerWeek` stay internal, and what a commitment and a row publish is one more
   *sentence*. `docs/open-questions.md` § *Known gaps* stays open and loses its pressure — recorded
-  as `docs/adr/1033-a-schedule-says-its-rhythm-in-words.md`.
+  as `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
 - **Not in this change:** the kind on the commitments screen (#142); anything a row offers, which is
   #139's and #141's; changing a commitment's rhythm, which is B-014; sorting, grouping or filtering
   by rhythm; and any second language, which ADR-1022 already priced.
@@ -132,7 +132,7 @@ and unedited; thirty-two are new. **No existing test is renamed and no existing 
 - **`openspec/specs/`** — `schedule/spec.md`, `commitment/spec.md` and `day-screen/spec.md` are
   rewritten at archive time by `/opsx:archive` and nothing else. Three capabilities are claimed and
   all three are edited, so CI check 2 stays green.
-- **ADRs** — `1033-a-schedule-says-its-rhythm-in-words.md`, the lowest free number: 1032 is the
+- **ADRs** — `1034-a-schedule-says-its-rhythm-in-words.md`, the lowest free number: 1032 is the
   highest on any local or remote ref, checked 2026-09-06. `docs/adr/README.md` gains one row.
   ADR-1022 said its reasoning "applies on its face" to any other sentence but that each Story takes
   the decision for itself; this is that Story, and the class is wider — a *rule* said in words, not

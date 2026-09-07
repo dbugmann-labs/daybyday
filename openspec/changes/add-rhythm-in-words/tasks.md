@@ -80,7 +80,7 @@ about §§ 2–3 rather than as a reason to edit the words here.
 - [x] 4.2 `two schedules that name the same rhythm say the same words`
 - [x] 4.3 `a number is said in digits with no grouping separator` — "Every 1000 days". This one is
   expected red only if something reached for a locale-aware number formatter, which is the whole
-  reason the scenario exists (ADR-1022, ADR-1033); if it passes on first write, say so in § 9 and
+  reason the scenario exists (ADR-1022, ADR-1034); if it passes on first write, say so in § 9 and
   confirm by reading the implementation that no formatter is there to be caught.
 
 ## 5. `commitment` — the entry and the form's preview
@@ -91,7 +91,7 @@ Nine scenarios from `specs/commitment/spec.md`, all in
 - [x] 5.1 `an entry says the rhythm its commitment runs on, whichever of the four shapes it is` —
   adds `public var Commitment.rhythmInWords: String` in `Sources/DayByDayKit/Commitment.swift`,
   reading `schedule.inWords`. **No other member of `Commitment` changes visibility**: `schedule`
-  and `keptFrom` stay internal, which is the whole of ADR-1033 and of what the grill settled.
+  and `keptFrom` stay internal, which is the whole of ADR-1034 and of what the grill settled.
 - [x] 5.2 `two commitments alike in name and not in rhythm are told apart by the rhythm their
   entries say` — expect green on first write once 5.1 is in. It is the Story's own reason stated as
   an assertion, and it sits immediately after the scenario whose title says the opposite.
@@ -205,7 +205,7 @@ from `DayByDayKit`, and the shell chooses no word, no separator and no order.
 
 ## 8. The documents
 
-`docs/adr/1033-a-schedule-says-its-rhythm-in-words.md` and its row in `docs/adr/README.md` are
+`docs/adr/1034-a-schedule-says-its-rhythm-in-words.md` and its row in `docs/adr/README.md` are
 **written with this folder** and are in the G4 diff, so 8.1 and 8.2 confirm rather than write.
 
 - [x] 8.1 Confirm before the review that 1033 is still the lowest free ADR number —
@@ -217,10 +217,14 @@ from `DayByDayKit`, and the shell chooses no word, no separator and no order.
   `docs/adr/1033-a-number-is-taken-back-by-naming-the-day.md`, at commit `7f476e2` — proposed on
   `story/138-add-number-record` (`origin/story/138-add-number-record`), which is not merged to
   `origin/main` (`git merge-base --is-ancestor 7f476e2 origin/main` fails). This folder's own
-  `docs/adr/1033-a-schedule-says-its-rhythm-in-words.md` is unchanged and is not this Story's to
-  renumber — whichever of #138 and #144 merges second owes the renumber at that point, which is a
-  decision for whoever reviews the two PRs together, not for either Story's own implementer.
-- [x] 8.2 Confirm ADR-1033 still says what the code does, now that the code exists — in particular
+  ADR was written as `1033` and was left unchanged here, since which Story owes the renumber was
+  a decision for whoever read the two PRs together rather than for either Story's own implementer.
+
+  **Decided by the repo owner on 2026-09-07:** #138 claimed `1033` first and keeps it, so this
+  Story took `1034` — `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`, verified free on
+  every local and remote ref that day. The renumber landed as one bounded edit after G7 and moves
+  the G4 digest, which the owner re-approves.
+- [x] 8.2 Confirm ADR-1034 still says what the code does, now that the code exists — in particular
   that no payload accessor became public on the way: `git diff origin/main -- src/DayByDayKit`
   shows no `internal`-to-`public` change on `Commitment.schedule`, `Commitment.keptFrom`,
   `DayOfMonth.day`, `DayInterval.days`, `WeeklyQuota.timesPerWeek`, `DayView.Row.commitment` or
@@ -237,7 +241,7 @@ from `DayByDayKit`, and the shell chooses no word, no separator and no order.
   the Story that entry has been naming since #9 as the one that would have to widen a schedule's
   payload — "the widening is still owed by whichever Story first renders a rule, and B-021 is that
   want" — and it renders every rule in the product without reading a single payload out. The
-  package says the words (ADR-1033), so `Commitment.schedule`, `DayOfMonth.day`, `DayInterval.days`
+  package says the words (ADR-1034), so `Commitment.schedule`, `DayOfMonth.day`, `DayInterval.days`
   and `WeeklyQuota.timesPerWeek` are all still internal and all nine faces are still open. What
   changed is that nothing is now waiting on them: the next thing to need a payload will be
   something that must *compute* with one outside the package, not something that must *show* one.

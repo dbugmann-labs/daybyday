@@ -353,11 +353,11 @@ caller's to remember; the day view keeps the answer. Corrected 2026-09-02 at #70
 requirement had claimed identity followed the arguments.
 
 **Row** — one commitment's line in a day view: its name, the **rhythm in words** it runs on, whether
-it is kept, and the place a tick is made. Ticking belongs to the row and therefore to `day-screen`: `record` says what a tick is and
-what a history answers and knows nothing of a row, of a date being displayed or of an order. A row
-for a date later than today is shown and refuses the tick — a day that has not arrived cannot have
-been kept, and `record` hands that judgement to the screen by name, since it never consults the
-present moment. Agreed 2026-09-02, the same pass.
+it is kept, and the place a tick is made. Ticking belongs to the row and therefore to `day-screen`:
+`record` says what a tick is and what a history answers and knows nothing of a row, of a date being
+displayed or of an order. A row for a date later than today is shown and refuses the tick — a day
+that has not arrived cannot have been kept, and `record` hands that judgement to the screen by name,
+since it never consults the present moment. Agreed 2026-09-02, the same pass.
 
 **Amended 2026-09-06**, at the grill of `add-rhythm-in-words` (#144). A row also says the **rhythm in
 words** its commitment runs on, on every row and always — not only where two rows would otherwise
@@ -678,7 +678,7 @@ report a refusal the value makes rather than a shell swallowing it in silence. *
 2026-09-06**, at `add-rhythm-in-words` (#144): a rhythm does say itself in words, for the form's
 preview — the words of the schedule it names, and nothing at all where its number names no schedule
 — so "not read back" was only ever true of its payload, which is still unreadable from outside the
-package (ADR-1033).
+package (ADR-1034).
 
 **Rhythm in words** — the sentence a **schedule** is said in, so that a person can read what rhythm
 a commitment runs on wherever its name is: "Mon, Wed, Sat", "Every 14 days", "The 25th",

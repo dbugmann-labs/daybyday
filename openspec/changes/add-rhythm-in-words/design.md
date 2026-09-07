@@ -75,7 +75,7 @@ against. Adding one computed property to `Commitment` costs none of that.
 **No payload accessor becomes public**, which the grill settled and this seam keeps:
 `Commitment.schedule` stays internal, and so do `DayOfMonth.day`, `DayInterval.days` and
 `WeeklyQuota.timesPerWeek`. What a commitment publishes is one more *sentence*, not one more part.
-The distinction is the whole of ADR-1033: a sentence can be wrong in a way a test catches, and it
+The distinction is the whole of ADR-1034: a sentence can be wrong in a way a test catches, and it
 is caught inside the package; a payload handed out is a rule the shell then has to compose, which
 is the move `CONTEXT.md` § *App shell* forbids.
 
