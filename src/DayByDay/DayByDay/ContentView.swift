@@ -171,7 +171,9 @@ struct ContentView: View {
                                     .foregroundStyle(.red)
                             }
                         }
-                        Spacer()
+                        if row.isKept || row.numberEntry(asOf: today()) != nil {
+                            Spacer()
+                        }
                         if row.isKept {
                             Image(systemName: "checkmark")
                         }
