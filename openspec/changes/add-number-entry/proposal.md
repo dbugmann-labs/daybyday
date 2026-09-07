@@ -117,10 +117,13 @@ carried by passing tests; forty-six are new.
 ## Impact
 
 - **`src/DayByDayKit`** — no new file. `DayView.swift` gains `NumberEntry`, the number a row was
-  formed with, and `Row.numberEntry(asOf:)` beside `Row.tick(asOf:)`; `DayScreen.swift` gains
-  `enter(_:on:)`, the reading of the committed text, and `Notice` in place of the bare
-  `refusedChangeRow`. Nothing else in the package is edited — `Number`, `History` and
-  `RecordStore` already carry everything this needs, which is what #138 was for.
+  formed with, `Row.numberEntry(asOf:)` beside `Row.tick(asOf:)`, and — beside `Row.tick(asOf:)`
+  for the same reason — `Row.number(_:asOf:)`, which makes the record so that a screen never has
+  to; `DayScreen.swift` gains `enter(_:on:)`, the reading of the committed text, and `Notice` in
+  place of the bare `refusedChangeRow`. Nothing else in the package is edited — `Number`, `History`
+  and `RecordStore` already carry everything this needs, which is what #138 was for, and the one
+  adapter that spells `record`'s take-back for a row-made record sits in `DayScreen.swift` rather
+  than in `record`'s own file.
 - **One public property is renamed, and it costs 26 mechanical edits in one existing test file.**
   `DayScreen.refusedChangeRow: DayView.Row?` becomes `DayScreen.notice: Notice?`, because a notice
   now carries a second thing and `add-refused-tick-notice`'s own `design.md` rejected a companion

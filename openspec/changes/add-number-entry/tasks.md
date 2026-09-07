@@ -257,14 +257,15 @@ diff, so these boxes confirm rather than write.
 - [x] 11.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 2, 6 and 8 actually ran red before the code that satisfies them was written. A
   prediction in a task is not evidence; this is.
-- [x] 11.2 Re-run after § 12, which is why this box is open again: `pnpm run verify` green from the
-  repo root, and `pnpm run checks` reporting `scenario coverage — 75/75`. `cd src/DayByDayKit &&
-  swift test` reports **592 tests passing** — 544 on the base this branch now sits on (§ 1.1), plus
-  the forty-six written in §§ 2–8 and the two written in § 12, plus none removed. **Read the number
-  the run prints and tick this against that, never against this arithmetic**: the first time this
-  box was ticked it asserted 535, which had been right against the old base and was wrong by 55 the
-  moment the branch was rebased, and nothing caught it until the review. A count that is neither
-  measured nor explained by § 1.1 is a stop and a report.
+- [ ] 11.2 Re-run after § 13, which is why this box is open again — it was ticked after § 12 and
+  § 13 moves code underneath it: `pnpm run verify` green from the repo root, and `pnpm run checks`
+  reporting `scenario coverage — 75/75`. `cd src/DayByDayKit && swift test` reports **592 tests
+  passing** — 544 on the base this branch now sits on (§ 1.1), plus the forty-six written in §§ 2–8
+  and the two written in § 12, plus none removed and **none added by § 13**, which writes no test.
+  **Read the number the run prints and tick this against that, never against this arithmetic**: the
+  first time this box was ticked it asserted 535, which had been right against the old base and was
+  wrong by 55 the moment the branch was rebased, and nothing caught it until the review. A count
+  that is neither measured nor explained by § 1.1 is a stop and a report.
 - [ ] 11.3 Open the app on the phone with `pnpm run phone`, **after deleting the installed app** so
   that § 9.3's day one is taken on. Enter a weight from its row, read it back after force-quitting
   and reopening, type a number outside the range and read the sentence on the row, then open the
@@ -338,6 +339,89 @@ and change no behaviour.
   `?.number == nil`, which hold just as well when `numberEntry(asOf:)` returns `nil` and the entry
   was never offered. Require the entry first, then assert on it — the same weakening § 1.3 refused
   by name for the rename. Neither `@Test` display name changes.
+
+## 13. What the third review pass found
+
+Two findings, both Spec axis, and the owner decided both the same way: **the requirements stand and
+the code moves.** Nothing in `specs/day-screen/spec.md` changes; what changed is `design.md`, in
+§ *The seam* and in the two places a measured claim was false, which is why a **third G4** is owed on
+this folder before a line of § 13 is written. Run `pnpm run check:g4` first; the digest moved when
+`design.md` did.
+
+**§ 13 writes no test and adds no scenario.** The first finding is invisible to every scenario —
+each one is about what the day holds afterwards, and the behaviour is already right — and the second
+is already fenced by the two scenarios § 12 added, which refuse for the digit count and for the
+floor, neither of which moves. So this is not a red-green section: every existing test stays green
+through all of it, and a red one is a rule-5 stop rather than a licence to edit a test. It runs
+**before** § 11.2, § 11.3 and § 11.5, all of which are open for it.
+
+- [ ] 13.1 Re-measure the type's line before moving anything, and read the output rather than this
+  file. From anywhere, with the toolchain in `AGENTS.md` § *This machine* on PATH:
+
+  ```bash
+  cat > /tmp/decimal-line.swift <<'EOF'
+  import Foundation
+  func z(_ n: Int) -> String { String(repeating: "0", count: n) }
+  let nines = String(repeating: "9", count: 38)
+  for t in ["1" + z(165), "3" + z(165), "4" + z(165), "1" + z(166),
+            nines + z(127), nines + z(128), "0." + z(127) + "1", "0." + z(128) + "1"] {
+      let d = Decimal(string: t)
+      print(t.prefix(4), "…", t.count, "chars →",
+            d == nil ? "nil" : (d!.description == t ? "held, digit for digit" : "held, as \(d!.description.prefix(8))…"))
+  }
+  EOF
+  swift /tmp/decimal-line.swift
+  ```
+
+  Expect, in order: held, held, **nil**, **nil**, held, **nil**, held, **nil** — the four `nil`s are
+  the type's ceiling and its floor, and the four held ones are `design.md` § *Context*'s third
+  measurement. Any line disagreeing with that section is a stop and a report: the bound in § 13.5
+  rests on it, and this document has now been wrong about it twice.
+
+- [ ] 13.2 Give the row the maker it is short of. In `Sources/DayByDayKit/DayView.swift`, add to
+  `Row`: `public func number(_ decimal: Decimal, asOf today: CalendarDate) -> Number?`, which
+  answers `nil` where `numberEntry(asOf: today)` does and otherwise returns
+  `Number(decimal, for: commitment, on: date)`; and an internal
+  `var recordedDay: RecordedDay { RecordedDay(commitment: commitment, date: date) }`. Both are the
+  row making what it is a line of, exactly as `tick(asOf:)` already does — `design.md` § *The seam*.
+  Nothing calls either yet, so `swift test` reports the same count as before this box.
+
+- [ ] 13.3 Move the refusal's words next to the hint's. Add an internal `let refusalCause: String?`
+  to `DayView.NumberEntry` and form it in `numberEntry(asOf:)` off the same `case .number(let range)`
+  binding `hint` is formed from — `range.map { "Must be between \($0.lowest) and \($0.highest)" }` —
+  then delete `DayScreen.rangeRefusalCause` and its doc comment. **The sentence must not change by a
+  character**: the test named `a number outside the commitment's range is told on the row, naming the
+  bounds it broke` (§ 7.1) asserts it verbatim, and a red there means the move changed the wording.
+
+- [ ] 13.4 Stop `enter(_:on:)` reaching past the row. Bind the entry the third guard already asks
+  for — `guard let entry = row.numberEntry(asOf: today) else { return }`, the same guard in the same
+  place, so the order § *Notes* records does not move. Then: the take-back becomes
+  `try recordStore.removeNumber(on: row.recordedDay)`, through a `private extension RecordStore`
+  added at the foot of `DayScreen.swift` that forwards to `removeNumber(for:on:)` — it goes in
+  `day-screen`'s own file, not `record`'s, and `design.md` § *The seam* says why; the keep becomes
+  `guard let number = row.number(decimal, asOf: today)`; and the refusal reads
+  `Notice(row: row, cause: entry.refusalCause)`. **Tick this on the grep, not on the reading**: from
+  `src/DayByDayKit`, `grep -n 'row\.commitment\|row\.date' Sources/DayByDayKit/DayScreen.swift`
+  prints nothing at all. It prints three lines today, which is the finding.
+
+- [ ] 13.5 Replace the wrong bound with a question asked of the type. In `DayScreen.swift`, the
+  check before the parse becomes the significant-digit count and nothing else — at most 38, counted
+  as it is counted today, leading and trailing zeros dropped — and the two exponent comparisons go.
+  `Decimal(string:)` returning `nil` is then the type saying it cannot hold the number at all, and
+  is read as a value that is not a number, which the code already does. Rename `canBeKeptExactly` to
+  say what is left of it — it no longer answers whether the number can be kept, only whether it is
+  within the digits this system keeps — and rewrite its doc comment against `design.md` § *A number
+  this system cannot keep exactly is not a number here*. **Tick this on the grep too**: from
+  `src/DayByDayKit`, `grep -n '127\|-128' Sources/DayByDayKit/DayScreen.swift` prints nothing; it
+  prints two lines today, one of them the doc comment. The three values the test named `a number too
+  long to be kept exactly keeps nothing and takes nothing back` commits are all still refused — 39
+  nines and 200 ones on the digit count, the 129th place after the point on the type's floor — so
+  that test stays green, and a red one is a stop.
+
+- [ ] 13.6 Record in § *Notes*, under a heading of its own, what § 13.1 actually printed, and that
+  `cd src/DayByDayKit && swift test` was run after each of §§ 13.2–13.5 with no test failing and no
+  `@Test` display name changed. § 11.2 records the count; this records that nothing in a section
+  which writes no test went red on the way.
 
 ## Notes
 
