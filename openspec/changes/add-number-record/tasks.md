@@ -168,25 +168,25 @@ and are in the G4 diff, so these boxes confirm rather than write.
   `for r in $(git for-each-ref --format='%(refname)' refs/heads refs/remotes); do git ls-tree --name-only $r docs/adr/; done | sort -u`.
   1032 was the highest on any local or remote ref on 2026-09-06. **Report rather than renumber** if
   another branch has taken it (`AGENTS.md` rule 5).
-- [ ] 8.2 Confirm 1033 still says what the code does, now that the code exists — in particular that
+- [x] 8.2 Confirm 1033 still says what the code does, now that the code exists — in particular that
   `History` really does take a number back by `for:on:` and that nothing acquired an overload of
   `remove(_:)` taking a `Number`.
-- [ ] 8.3 Confirm 1031's amendment still describes the guard that was actually written: every form
+- [x] 8.3 Confirm 1031's amendment still describes the guard that was actually written: every form
   read, each read as the shape that form has, one comparison against the declared version rather than
   three decode paths, and `kind`'s absence-means-tick rule deliberately untightened. An ADR that has
   drifted from the implementation is edited in place and stamped, per `docs/adr/README.md`; a
   decision that has actually changed is a stop, not an edit.
-- [ ] 8.4 Confirm `CONTEXT.md` gained its two amendments and **no new term**. The Feature grill
+- [x] 8.4 Confirm `CONTEXT.md` gained its two amendments and **no new term**. The Feature grill
   landed **Number**, **Range** and **Taking back** on `main` before this Story existed, and
   `grill.md` records that this Story's grill added none. A new term appearing here means something
   was decided that should have been asked.
 
 ## 9. Closing the Story
 
-- [ ] 9.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
+- [x] 9.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 3, 6 and 7 actually ran red before the code that satisfies them was written.
   A prediction in a task is not evidence; this is.
-- [ ] 9.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
+- [x] 9.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
   `scenario coverage — 75/75`. `cd src/DayByDayKit && swift test` reports **456 tests passing** —
   418 at the branch point plus the thirty-eight written here, plus none removed. A different number
   means a test was added or lost outside rule 3; report it.
@@ -205,3 +205,44 @@ and are in the G4 diff, so these boxes confirm rather than write.
   this branch — `AGENTS.md` § *Agent roles* puts that file outside a Story's reach. The entry: the
   read-back gap has a tenth face, in that `History` now lets a number out and still lets no tick out,
   so one value answers one question with a value and the other with a yes or no.
+
+## Notes
+
+Which boxes predicted red in §§ 3, 6 and 7, and what actually happened, measured as each scenario's
+test was written rather than assumed from the prediction:
+
+- **§ 3 — matched the prediction exactly.** 3.1 ran red on `Number.init?`'s `fatalError("not
+  implemented")`. 3.4 ran red once the initializer held only the due and kind guards (no range, no
+  NaN check) — offering 300 and 39.9 against a 40–150 range both formed a `Number` instead of
+  refusing one — and the range guard written to pass it is what made it green. 3.8 ran red the same
+  way once the range guard existed but no NaN guard did: `Decimal.nan` formed for the no-range
+  commitment (the with-range half was already refused by the range comparison, as measured in
+  `design.md` § *Context*). Every other § 3 scenario (3.2, 3.3, 3.5, 3.6, 3.7, 3.9) ran green on
+  first write, off guards an earlier scenario in the same section had already driven out.
+  - One correction along the way: the first pass at 3.1 wrote all four guards — due, kind, range and
+    NaN — at once, which is what `mattpocock-skills:tdd`'s "don't anticipate future tests" rule
+    exists to catch. It was caught before 3.1 was ticked: the range and NaN guards were reverted back
+    to `fatalError`-adjacent minimalism (due and kind only), 3.1 through 3.3 re-verified still green
+    on that smaller shape, and 3.4 and 3.8 then drove the range and NaN guards out for real, red
+    first. No test's assertions changed as a result — only `Number.swift`'s intermediate shape did,
+    and only before any box here was ticked.
+- **§ 6 — 6.1 did not run red.** `isKept`'s widening — `ticks.contains(tick) ||
+  numbers[RecordedDay(...)] != nil` — was driven out by **4.9** (`a history holds ticks and numbers
+  side by side and answers each on its own`), which asks `history.isKept(weight, on: monday)` for a
+  number commitment and is unsatisfiable without the same widening 6.1 names. 4.9 ran red for exactly
+  that assertion and the widening landed there, three scenarios before § 6 was reached in task order.
+  6.1 through 6.5 all ran green on first write, each confirming a fact the widening (or, for 6.4 and
+  6.5, an already-correct refusal) already made true — none of 6.3, 6.4 or 6.5 ran red, so no further
+  edit was needed or made.
+- **§ 7 — matched the prediction exactly.** 7.2 through 7.10 all ran green on first write once 7.1's
+  mechanical step was in, as `design.md` predicted for 7.8, 7.9 and 7.10 by name and as held for the
+  rest. 7.11 ran red on both halves — an early-form fixture carrying a `numbers` array, and a
+  current-form fixture with none — because `RecordDocument.numbers` decoded leniently (`nil` when
+  absent, formed when present) with no check yet that its presence agreed with the declared version;
+  the explicit guard added to `RecordStore.init` (`(document.numbers != nil) == (document.version ==
+  RecordDocument.currentVersion)`) is what made it green.
+- **Stale count in 7.1's own box.** 7.1's text predicts `swift test` reports "418 passing" after that
+  box; the actual count there was 446 (418 at the branch point plus the 28 scenarios §§ 3–6 had
+  already added by the time task order reaches 7.1). The box's own point — no regression from
+  whatever the count already was — held; only the specific number written into the task was stale,
+  carried over from § 1's phrasing rather than updated for where 7.1 actually falls in the sequence.
