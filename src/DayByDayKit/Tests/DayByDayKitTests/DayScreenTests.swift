@@ -3211,3 +3211,33 @@ func aValueThatIsNotANumberIsToldOnTheRowSayingSo() throws {
     #expect(unrangedScreen.notice?.row == unrangedScreen.dayView.rows[0])
     #expect(unrangedScreen.notice?.cause == "Not a number")
 }
+
+@MainActor
+@Test("a number refused by the place is told on the row and names no cause")
+func aNumberRefusedByThePlaceIsToldOnTheRowAndNamesNoCause() throws {
+    let (place, rosterPlace) = try blockerPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let enteringScreen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try enteringScreen.enter("70.5", on: enteringScreen.dayView.rows[0])
+    }
+    #expect(enteringScreen.notice?.row == enteringScreen.dayView.rows[0])
+    #expect(enteringScreen.notice?.cause == nil)
+
+    let (takeBackPlace, takeBackRosterPlace) = try blockerPlaces()
+    let takeBackScreen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: takeBackPlace,
+        keepingRosterAt: takeBackRosterPlace)
+    #expect(throws: RecordStoreError.cannotWrite(at: takeBackPlace)) {
+        try takeBackScreen.enter("", on: takeBackScreen.dayView.rows[0])
+    }
+    #expect(takeBackScreen.notice?.row == takeBackScreen.dayView.rows[0])
+    #expect(takeBackScreen.notice?.cause == nil)
+}

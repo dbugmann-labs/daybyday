@@ -166,7 +166,7 @@ description exactly as § 3's hint says it — `docs/adr/1036`.
 - [x] 7.1 `a number outside the commitment's range is told on the row, naming the bounds it broke` —
   two commitments with two different ranges, so that the bounds cannot be a constant.
 - [x] 7.2 `a value that is not a number is told on the row, saying so` — with a range and with none.
-- [ ] 7.3 `a number refused by the place is told on the row and names no cause` — the entry and the
+- [x] 7.3 `a number refused by the place is told on the row and names no cause` — the entry and the
   take-back, both with `cause == nil`.
 - [ ] 7.4 `a second refused commit is told on the row committed on last and no longer on the first`
 - [ ] 7.5 Confirm the five restated scenarios of that requirement still have their original tests,
