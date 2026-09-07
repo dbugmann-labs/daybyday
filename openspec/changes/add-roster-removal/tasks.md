@@ -1,6 +1,6 @@
 ## 1. Before a line is written
 
-- [ ] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
+- [x] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
   From `src/DayByDayKit`, `swift test` reports **489 tests passing** — measured 2026-09-07 with this
   branch rebased onto `main` at `62ffe83`, which includes `add-number-record` (#151). From the repo
   root, `pnpm run check:scenarios` reports `scenario coverage — 107/161 scenario(s) covered` for this
