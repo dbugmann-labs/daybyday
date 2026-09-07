@@ -387,10 +387,22 @@ read the same way, because an iPhone's decimal keypad prints whichever the regio
 and a field that refuses the key on its own keyboard is broken. The number it holds SHALL be the
 number those digits say, exactly, with no digit added and none dropped.
 
+A day screen SHALL therefore keep only a number it can keep **exactly**, and text saying one it
+cannot SHALL be a value that is not a number here. Up to **thirty-eight significant digits** SHALL
+be kept — counted from the first digit that is not a zero to the last that is not a zero — at every
+magnitude this system holds. Text saying more digits than that, or a number too large or too near
+zero for this system to hold at all, MUST NOT be rounded, shortened or otherwise fitted to what can
+be held: a number nobody typed, kept under a person's name and never mentioned, is exactly the false
+record this product exists to remove, and it is worse than a refusal because nothing tells them it
+happened. Nor SHALL such text be read as a take-back, for the reason no value that is not a number
+is one. The bound is this system's own rather than a rule about weights — no number a commitment in
+this product asks a person for comes near it, and what reaches it is a paste.
+
 Everything else SHALL be a value that is not a number: two separators, a separator with no digit
 beside it, a sign anywhere but the front, an exponent, letters or spaces among the digits, a digit
-that is not one of the ten this package reads. Such a value SHALL keep nothing and SHALL take
-nothing back, and the day SHALL be left exactly as it was.
+that is not one of the ten this package reads, and digits saying a number that cannot be kept
+exactly. Such a value SHALL keep nothing and SHALL take nothing back, and the day SHALL be left
+exactly as it was.
 
 #### Scenario: a number typed with a full stop is entered exactly as it was typed
 
@@ -448,6 +460,30 @@ nothing back, and the day SHALL be left exactly as it was.
   row it then holds
 - **THEN** the entry the row the day screen then holds offers says the number 70.5 after every one
   of them
+- **AND** the day view says the commitment is kept on that date
+- **AND** a day screen opened afterwards at the same place as of the same day says the same
+
+#### Scenario: a number of as many digits as can be kept is entered exactly
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, and a whole number of thirty-eight
+  nines is committed on its one row
+- **THEN** the entry the row the day screen then holds offers says that number, digit for digit
+- **AND** the day view says the commitment is kept on that date
+- **AND** a day screen opened afterwards at the same place as of the same day says the same
+
+#### Scenario: a number too long to be kept exactly keeps nothing and takes nothing back
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026; "70.5" is committed on its one row; and
+  a whole number of thirty-nine nines, a whole number of two hundred ones, and a number whose only
+  digit that is not a zero is at the hundred-and-twenty-ninth place after the point are each then
+  committed in turn on the row it then holds
+- **THEN** the entry the row the day screen then holds offers says the number 70.5 after every one
+  of them
+- **AND** the day screen tells, on that row, that it is not a number
 - **AND** the day view says the commitment is kept on that date
 - **AND** a day screen opened afterwards at the same place as of the same day says the same
 

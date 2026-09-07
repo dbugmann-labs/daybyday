@@ -39,6 +39,24 @@ at most one separator and an optional leading minus. `Decimal(string:locale:)` *
 this package, and accepting both separators unconditionally is both simpler and right on a phone
 whose keyboard language and region disagree.
 
+**A second measurement, taken at G7 because the first set was incomplete, is why a length bound
+exists at all.** Past a point `Decimal(string:)` does not mis-read, it *fails*; just short of that
+point it rounds without saying so. Same machine, same day:
+
+```
+Decimal(string: 200 x "1")              -> nil        nil at 10^166 and above
+Decimal(string: "0." + 128 x "0" + "1") -> nil        nil below 10^-128
+Decimal(string: 39 x "9")               -> 999...990  38 digits kept, the 39th dropped
+Decimal(string: 38 x "9")               -> 999...999  exact, and exact through the store
+```
+
+Both failures are reachable from the shell — `ContentView.swift` binds an unbounded `TextField`, so
+a paste is enough — and both are digits and nothing else, so a shape check on characters alone
+passes them. The first pair returns `nil` to a parse this design had claimed could not fail; the
+third keeps a number nobody typed, which the delta's own "no digit added and none dropped" forbids.
+One rule answers all three, and it is § *A number this system cannot keep exactly is not a number
+here* below.
+
 ## Goals / Non-Goals
 
 **Goals**
@@ -175,12 +193,53 @@ second seam would buy nothing but a second place to test.
 
 The order is: trim surrounding whitespace; if what is left is empty, it is a take-back; otherwise
 check the shape in full (optional leading `-`, then characters that are `0`–`9` or one separator,
-at least one digit, at most one separator); if the shape holds, replace a `,` with a `.` and call
-`Decimal(string:)`, which cannot fail on text of that shape; otherwise it is not a number. The
-whitespace trim is what makes `" "` a take-back rather than a `Decimal(string:)`-flavoured **0**,
-and it is why the delta says space is disregarded *before* anything else is decided.
+at least one digit, at most one separator); then check the *size* the digits say, which is the next
+section; if both hold, replace a `,` with a `.` and call `Decimal(string:)`; otherwise it is not a
+number. The whitespace trim is what makes `" "` a take-back rather than a
+`Decimal(string:)`-flavoured **0**, and it is why the delta says space is disregarded *before*
+anything else is decided.
+
+**The parse is never force-unwrapped.** An earlier draft of this section said `Decimal(string:)`
+"cannot fail on text of that shape" and the code took a `!` on that word; the measurement in
+§ *Context* shows the claim was false and the `!` a crash a paste could reach. The size check makes
+a `nil` unreachable, and a `nil` reaching the reader anyway is read as a value that is not a number
+rather than trusted — the cost is one more case and the alternative is `fatalError` in a person's
+hands.
 
 `Decimal` and not `Double`, which is ADR-1032 and not re-decided here.
+
+### A number this system cannot keep exactly is not a number here
+
+The delta promises the number kept is "the number those digits say, exactly, with no digit added and
+none dropped", and `record`'s store requirement promises the same digit for digit. `Decimal` cannot
+honour that for every string of digits, so the delta says where the promise stops rather than
+letting the type decide it silently.
+
+**The rule the reading applies**, on the text once space is disregarded: take the digits, drop the
+leading zeros and the trailing zeros, and let *s* be what is left and *e* the power of ten it is
+multiplied by. The number is kept when *s* is at most **38 digits** long and *e* lies between
+−128 and 127; otherwise the text is a value that is not a number. Measured against
+`Decimal(string:)` on this machine, that line falls where the type's own does: 38 nines are exact,
+39 are rounded, and both `1` followed by 200 zeros and a `1` at the 129th place after the point are
+`nil`. It is deliberately a shade conservative — a 39-digit mantissa below 2^128 does in fact fit —
+because "thirty-eight digits" is a sentence a person can be told and `2^128` is not, and no
+commitment in this product asks for a 39th digit.
+
+**Refused rather than rounded**, because rounding is the one outcome the delta had already ruled
+out. A weight of 39 nines kept back as 38 nines and a zero is a record nobody made, and nothing on
+the screen would say so. A refusal is visible; a wrong number is not.
+
+**Told as "Not a number", and not as a third cause.** ADR-1036 names exactly two causes and says a
+third needs a decision that says so; this is the first candidate and it is declined. The person's
+next action is identical to the one for "1.2.3" — type a plainer number — and that action is the
+test 1036 actually applies. The requirement is also already using this sentence for a value that is
+a number to a person and not to this package: `٧٠` and `1e3` are told "Not a number" today. And the
+notice requirement's own paragraph argues that a commitment with no range can meet no refusal but
+this one; that argument stays true only while this case lands inside it.
+
+**Rejected: bound the field instead**, capping the `TextField`'s length in the shell. It puts a
+requirement in the one file nothing tests, a paste can defeat it, and a capability that promises
+exactness must be able to say what it will not keep whatever shell is in front of it.
 
 ### A value the commitment refuses does not throw
 
@@ -219,8 +278,9 @@ weight on the phone and reading it back after a force-quit.
   Not mitigated, deliberately. It is B-035's other half and this change declines to fix half a bug
   in one kind of row; whoever takes B-035 finds both here and in the delta's own words.
 - **The rename touches 26 assertions in a file of passing tests.** → `tasks.md` § 1 is one
-  mechanical step, listed by line, with `swift test` reporting the same 489 before and after. A red
-  test there is a rule-5 stop, not a licence to edit further.
+  mechanical step, listed by line, with `swift test` reporting the same count before it and after it
+  — whatever `main` has made that count by then. A red test there is a rule-5 stop, not a licence to
+  edit further.
 - **"Must be between 40 and 150" is now a spec'd string, and localising the app later rewrites it.**
   → Accepted on ADR-1022's own terms: the same is already true of every day title and every rhythm
   in words, and the trigger for revisiting it is a second person using the app in another language.
@@ -241,8 +301,11 @@ repository; `DayByDayKit` has no consumer outside it.
 ## Open Questions
 
 **None.** `grill.md` § *Left open* says "None." with its reason, and writing the delta turned up
-nothing that must be answered before the code is written. Four things it did turn up, and why each
-is settled here rather than asked:
+nothing that must be answered before the code is written. **Nor did the review.** The G7 finding
+that a long paste crashes the app is answered above by a rule this delta's own words already
+implied, and the one place it could have become a question — whether such a value earns a cause of
+its own — is decided against ADR-1036's stated test rather than by preference. Five things writing
+it turned up, and why each is settled here rather than asked:
 
 - **Whether text holding nothing but space is a take-back or a value that is not a number.** Settled
   as a take-back. A decimal keypad cannot print a space, so nothing a person can do reaches it; the
@@ -255,6 +318,10 @@ is settled here rather than asked:
 - **Whether a value the commitment refuses throws.** Settled by precedent inside this module —
   `CommitmentsScreen.define` returns its refusal — and it changes no scenario either way, since
   every one of them observes the notice and the day rather than the throw.
+- **Whether a number too long to be kept exactly is refused or rounded.** Settled as refused, by
+  this requirement's own sentence and by `record`'s store requirement, which both say the number
+  kept is the number typed, digit for digit. Rounding satisfies neither, and there is no preference
+  available that overrules two requirements already past G4.
 - **Whether `docs/adr/1021` is amended or a new record written.** Settled as a new record: 1021
   decides what a day screen does with a record it cannot open, and every word of it stays true. What
   changes is a sentence in a *spec* requirement, whose reasoning cites 1021 — so 1036 cites it back

@@ -74,6 +74,12 @@ had over-applied it.
   be asked of every future refusal rather than answered once by "no". That is the real cost of this
   record, and it is why the two causes are enumerated in the requirement itself rather than left to a
   reader's sense of the principle: adding a third means editing a spec that has passed G4.
+- **The rule met its first candidate before the change had even merged, and declined it.** The
+  review of this change's own code found that a pasted number too long for the type to hold exactly
+  is refused, and asked what it should say. It says "Not a number", because the person's next act is
+  the one "1.2.3" calls for — type a plainer number — and that act is the whole of the test above. A
+  third cause was not added. This is what the rule costs and what it is worth: the question has to
+  be asked each time, and asking it took one paragraph rather than a new sentence in a spec.
 - **Two more strings are pinned by scenarios, and localising the app later rewrites them.** The same
   was already true of every day title (ADR-1022) and every rhythm in words (ADR-1034). The trigger is
   unchanged: a second person using the app in another language.
