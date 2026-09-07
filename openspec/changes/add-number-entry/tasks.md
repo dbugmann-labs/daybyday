@@ -121,7 +121,7 @@ the reading out; until then, take the smallest reading that passes the scenario 
 - [x] 5.9 `entering a number on a row the day screen's day view does not hold changes nothing`
 - [x] 5.10 `committing on a row that offers no number entry changes nothing` — a tick row, and a
   number row on a day that has not arrived.
-- [ ] 5.11 `entering a number on a day screen that is not keeping a record changes nothing and keeps
+- [x] 5.11 `entering a number on a day screen that is not keeping a record changes nothing and keeps
   nothing` — including that the place is byte-for-byte what it was.
 - [ ] 5.12 `entering a number on one row leaves the other rows of the day as they were`
 - [ ] 5.13 `entering a number on a day a day screen has moved back to keeps it on that day`

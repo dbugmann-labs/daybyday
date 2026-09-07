@@ -2908,3 +2908,29 @@ func committingOnARowThatOffersNoNumberEntryChangesNothing() throws {
         keepingRosterAt: rosterPlace)
     #expect(later.dayView.rows.allSatisfy { !$0.isKept })
 }
+
+@MainActor
+@Test("entering a number on a day screen that is not keeping a record changes nothing and keeps nothing")
+func enteringANumberOnADayScreenThatIsNotKeepingARecordChangesNothingAndKeepsNothing() throws {
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytesBefore = Data("not a record".utf8)
+    try bytesBefore.write(to: place)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.recordState == .unreadable)
+    #expect(try Data(contentsOf: place) == bytesBefore)
+}
