@@ -121,7 +121,7 @@ same shape as `keepAgain`, and `RefusedChange` gains a fifth case, `moving(Commi
   the second list reads the roster's order and not a taken-on order it remembers.
 - [x] 5.11 `moving a commitment leaves a stop awaiting confirmation exactly as it was` — a move takes
   neither confirmation slot. Do not touch `awaitingConfirmation` or `awaitingRemoval` in `move`.
-- [ ] 5.12 `a commitments screen that cannot read its roster does nothing when it is asked to move a
+- [x] 5.12 `a commitments screen that cannot read its roster does nothing when it is asked to move a
   commitment`
 - [ ] 5.13 `a commitments screen holds a refused move against the commitment it was asked to move` —
   the fifth `RefusedChange` case.

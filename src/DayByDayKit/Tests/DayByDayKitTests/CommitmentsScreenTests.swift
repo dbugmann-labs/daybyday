@@ -2457,3 +2457,28 @@ func movingACommitmentLeavesAStopAwaitingConfirmationExactlyAsItWas() throws {
 
     #expect(screen.kept.map(\.name) == ["Journaling"])
 }
+
+@MainActor
+@Test("a commitments screen that cannot read its roster does nothing when it is asked to move a commitment")
+func aCommitmentsScreenThatCannotReadItsRosterDoesNothingWhenItIsAskedToMoveACommitment() throws {
+    let rosterPlace = freshRosterPlace()
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let originalBytes = Data("not what a roster is written as".utf8)
+    try originalBytes.write(to: rosterPlace)
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let moved = screen.move(gym, toOffset: 0)
+
+    #expect(moved == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.rosterState == .notKept)
+    #expect(try Data(contentsOf: rosterPlace) == originalBytes)
+}
