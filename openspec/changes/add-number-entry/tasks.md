@@ -125,7 +125,7 @@ the reading out; until then, take the smallest reading that passes the scenario 
   nothing` — including that the place is byte-for-byte what it was.
 - [x] 5.12 `entering a number on one row leaves the other rows of the day as they were`
 - [x] 5.13 `entering a number on a day a day screen has moved back to keeps it on that day`
-- [ ] 5.14 `entering a number writes nothing to the roster's place` — read the roster file after the
+- [x] 5.14 `entering a number writes nothing to the roster's place` — read the roster file after the
   screen has opened (day one writes it then), then compare byte for byte after an entry and a
   take-back.
 

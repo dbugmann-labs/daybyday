@@ -2990,3 +2990,25 @@ func enteringANumberOnADayADayScreenHasMovedBackToKeepsItOnThatDay() throws {
         startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     #expect(!laterOnMonday.dayView.rows[0].isKept)
 }
+
+@MainActor
+@Test("entering a number writes nothing to the roster's place")
+func enteringANumberWritesNothingToTheRostersPlace() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let bytesAfterOpen = try Data(contentsOf: rosterPlace)
+
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+    try screen.enter("", on: screen.dayView.rows[0])
+
+    #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
+    #expect(screen.rosterState == .kept)
+}
