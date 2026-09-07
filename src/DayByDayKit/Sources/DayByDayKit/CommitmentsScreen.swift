@@ -105,6 +105,7 @@ public final class CommitmentsScreen {
         case stopping(Commitment, Refusal)
         case keepingAgain(Commitment, Refusal)
         case removing(Commitment, Refusal)
+        case moving(Commitment, Refusal)
     }
 
     /// Why a change was refused. `nil` from any of the four below means it was kept at the place
@@ -286,6 +287,46 @@ public final class CommitmentsScreen {
         }
 
         refusedChange = nil
+        refreshLists(from: rosterStore)
+        return nil
+    }
+
+    /// Moves `commitment` to `offset`, counted over what this screen keeps as they stand before
+    /// the move — the same arithmetic `Roster.move` takes and exactly what `onMove(perform:)`
+    /// hands over, so nothing here converts it. Does nothing and says nothing, neither refusing
+    /// nor changing anything, when `commitment` is not in what this screen keeps — stopped or on
+    /// neither list, `design.md` § *An offset outside the range* is why a stopped commitment is
+    /// answered the same as one on neither list rather than as a refusal — or when `offset` is
+    /// outside the commitments it keeps, which is a place that is not there rather than a move
+    /// the roster refuses. Answers `nil` on the change being kept, including a move that leaves
+    /// what is kept exactly where it was. Neither `awaitingConfirmation` nor `awaitingRemoval` is
+    /// touched: a move takes neither slot.
+    @discardableResult public func move(_ commitment: Commitment, toOffset offset: Int) -> Refusal? {
+        guard kept.contains(commitment) else {
+            return nil
+        }
+        guard (0...kept.count).contains(offset) else {
+            return nil
+        }
+        guard let rosterStore else {
+            refusedChange = .moving(commitment, .notKept)
+            return .notKept
+        }
+
+        let rosterBeforeMove = rosterStore.roster
+        do {
+            try rosterStore.move(commitment, toOffset: offset)
+        } catch {
+            refusedChange = .moving(commitment, .notKept)
+            return .notKept
+        }
+
+        // Settled answer 13: a call that reaches the place with no change to make does not end a
+        // standing refused-change notice. `design.md` § *A store writes what a change made* is
+        // why the comparison is against the roster itself rather than the boolean `move` answers.
+        if rosterStore.roster != rosterBeforeMove {
+            refusedChange = nil
+        }
         refreshLists(from: rosterStore)
         return nil
     }
