@@ -3012,3 +3012,30 @@ func enteringANumberWritesNothingToTheRostersPlace() throws {
     #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
     #expect(screen.rosterState == .kept)
 }
+
+@MainActor
+@Test("a number typed with a full stop is entered exactly as it was typed")
+func aNumberTypedWithAFullStopIsEnteredExactlyAsItWasTyped() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == Decimal(string: "70.5")!)
+
+    try screen.enter("0.000001", on: screen.dayView.rows[0])
+    #expect(
+        screen.dayView.rows[0].numberEntry(asOf: monday)?.number
+            == Decimal(string: "0.000001")!)
+
+    try screen.enter("98765432109876543210.5", on: screen.dayView.rows[0])
+    #expect(
+        screen.dayView.rows[0].numberEntry(asOf: monday)?.number
+            == Decimal(string: "98765432109876543210.5")!)
+}
