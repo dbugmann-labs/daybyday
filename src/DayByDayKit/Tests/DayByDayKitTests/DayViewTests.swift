@@ -1259,3 +1259,25 @@ func aRowOffersTheNumberEntryForItsCommitmentOnTheDateTheDayViewIsOf() {
     #expect(dayView.rows[0].name == "Weight")
     #expect(dayView.rows[0].numberEntry(asOf: monday) != nil)
 }
+
+@Test("a row for a commitment whose kind is not a number offers no number entry")
+func aRowForACommitmentWhoseKindIsNotANumberOffersNoNumberEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let water = Commitment(
+        name: "Water", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, journal, water], on: monday, in: history)
+    let numberDayView = DayView(of: [weight], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Journal", "Water"])
+    #expect(dayView.rows.allSatisfy { $0.numberEntry(asOf: monday) == nil })
+    #expect(numberDayView.rows[0].numberEntry(asOf: monday) != nil)
+}
