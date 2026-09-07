@@ -94,13 +94,13 @@ map is what makes 4.5 pass without an explicit remove-then-insert.
 Five scenarios from § *A number can be taken back*, in `Tests/DayByDayKitTests/RecordTests.swift`.
 The take-back names the commitment and the date, never the number — `docs/adr/1033` and § 8.2.
 
-- [ ] 5.1 `a number taken back leaves the day holding no number and the commitment not kept on it`
-- [ ] 5.2 `taking back a number leaves the same commitment's numbers on other days standing`
-- [ ] 5.3 `taking back a number leaves another commitment's number on the same day standing`
-- [ ] 5.4 `taking back a number where the history holds none leaves it unchanged` — three cases: a
+- [x] 5.1 `a number taken back leaves the day holding no number and the commitment not kept on it`
+- [x] 5.2 `taking back a number leaves the same commitment's numbers on other days standing`
+- [x] 5.3 `taking back a number leaves another commitment's number on the same day standing`
+- [x] 5.4 `taking back a number where the history holds none leaves it unchanged` — three cases: a
   day with nothing on it, a commitment of the wrong kind, and a date it is not due on. None is an
   error.
-- [ ] 5.5 `a history given a number and then taken back is the same as one never given one`
+- [x] 5.5 `a history given a number and then taken back is the same as one never given one`
 
 ## 6. `record` — what the two existing answers say now
 

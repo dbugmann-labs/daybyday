@@ -21,6 +21,10 @@ public struct History: Hashable, Sendable {
         numbers[RecordedDay(commitment: number.commitment, date: number.date)] = number.number
     }
 
+    public mutating func removeNumber(for commitment: Commitment, on date: CalendarDate) {
+        numbers[RecordedDay(commitment: commitment, date: date)] = nil
+    }
+
     /// Re-forms a tick from `commitment` and `date` rather than testing `ticks` for one built
     /// directly, because `Tick` exposes neither part to build one from. That re-forming asks
     /// `Schedule.isDue(on:)` again, but not as a second, independent check: a tick can only be

@@ -770,3 +770,101 @@ func aHistoryHoldsTicksAndNumbersSideBySideAndAnswersEachOnItsOwn() {
 
     #expect(history.number(for: weight, on: monday) == 70.5)
 }
+
+@Test("a number taken back leaves the day holding no number and the commitment not kept on it")
+func aNumberTakenBackLeavesTheDayHoldingNoNumberAndTheCommitmentNotKeptOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+
+    var history = History()
+    history.add(Number(70.5, for: commitment, on: monday)!)
+    history.removeNumber(for: commitment, on: monday)
+
+    #expect(history.number(for: commitment, on: monday) == nil)
+    #expect(!history.isKept(commitment, on: monday))
+}
+
+@Test("taking back a number leaves the same commitment's numbers on other days standing")
+func takingBackANumberLeavesTheSameCommitmentsNumbersOnOtherDaysStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+
+    var history = History()
+    history.add(Number(70.5, for: commitment, on: monday)!)
+    history.add(Number(71, for: commitment, on: saturday)!)
+    history.removeNumber(for: commitment, on: monday)
+
+    #expect(history.number(for: commitment, on: saturday) == 71)
+    #expect(history.number(for: commitment, on: monday) == nil)
+}
+
+@Test("taking back a number leaves another commitment's number on the same day standing")
+func takingBackANumberLeavesAnotherCommitmentsNumberOnTheSameDayStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+
+    var history = History()
+    history.add(Number(70.5, for: weight, on: monday)!)
+    history.add(Number(8, for: mood, on: monday)!)
+    history.removeNumber(for: weight, on: monday)
+
+    #expect(history.number(for: mood, on: monday) == 8)
+    #expect(history.number(for: weight, on: monday) == nil)
+}
+
+@Test("taking back a number where the history holds none leaves it unchanged")
+func takingBackANumberWhereTheHistoryHoldsNoneLeavesItUnchanged() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let tickKind = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+
+    var history = History()
+    history.add(Number(70.5, for: commitment, on: saturday)!)
+    let before = history
+
+    history.removeNumber(for: commitment, on: monday)
+    #expect(history == before)
+
+    history.removeNumber(for: tickKind, on: saturday)
+    #expect(history == before)
+
+    history.removeNumber(for: commitment, on: tuesday)
+    #expect(history == before)
+}
+
+@Test("a history given a number and then taken back is the same as one never given one")
+func aHistoryGivenANumberAndThenTakenBackIsTheSameAsOneNeverGivenOne() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+
+    var history = History()
+    history.add(Number(70.5, for: commitment, on: monday)!)
+    history.removeNumber(for: commitment, on: monday)
+
+    #expect(history == History())
+}
