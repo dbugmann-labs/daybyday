@@ -1400,3 +1400,17 @@ func aNumberEntrySaysTheRangeItsCommitmentDeclaresAsAHint() {
     #expect(dayView.rows[1].numberEntry(asOf: monday)?.hint == "1–10")
     #expect(fractionalDayView.rows[0].numberEntry(asOf: monday)?.hint == "40.5–150.25")
 }
+
+@Test("a number entry of a commitment that declares no range says no hint")
+func aNumberEntryOfACommitmentThatDeclaresNoRangeSaysNoHint() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [weight], on: monday, in: history)
+
+    #expect(dayView.rows[0].numberEntry(asOf: monday)?.hint == nil)
+}
