@@ -8,6 +8,10 @@ public struct DayView: Hashable, Sendable {
         /// The range the commitment declares, said for an empty field — "40–150" — or `nil`
         /// where it declares none.
         public let hint: String?
+        /// The same range said as the cause a number outside it is refused for — "Must be
+        /// between 40 and 150" — or `nil` where the commitment declares none. Internal: the
+        /// shell reads a cause off the notice, never off an entry.
+        let refusalCause: String?
     }
 
     public struct Row: Hashable, Sendable {
@@ -47,7 +51,26 @@ public struct DayView: Hashable, Sendable {
                 return nil
             }
 
-            return NumberEntry(number: number, hint: range.map { "\($0.lowest)–\($0.highest)" })
+            return NumberEntry(
+                number: number, hint: range.map { "\($0.lowest)–\($0.highest)" },
+                refusalCause: range.map { "Must be between \($0.lowest) and \($0.highest)" })
+        }
+
+        /// The number record this row makes of `decimal` — this row's commitment, on this row's
+        /// date — or `nil` when the row offers no number entry as of `today`, or its commitment
+        /// refuses the value.
+        public func number(_ decimal: Decimal, asOf today: CalendarDate) -> Number? {
+            guard numberEntry(asOf: today) != nil else {
+                return nil
+            }
+
+            return Number(decimal, for: commitment, on: date)
+        }
+
+        /// The record a number for this row is kept under: this row's commitment on this row's
+        /// date. Internal, and the only thing a take-back needs.
+        var recordedDay: RecordedDay {
+            RecordedDay(commitment: commitment, date: date)
         }
     }
 

@@ -257,7 +257,7 @@ diff, so these boxes confirm rather than write.
 - [x] 11.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 2, 6 and 8 actually ran red before the code that satisfies them was written. A
   prediction in a task is not evidence; this is.
-- [ ] 11.2 Re-run after § 13, which is why this box is open again — it was ticked after § 12 and
+- [x] 11.2 Re-run after § 13, which is why this box is open again — it was ticked after § 12 and
   § 13 moves code underneath it: `pnpm run verify` green from the repo root, and `pnpm run checks`
   reporting `scenario coverage — 75/75`. `cd src/DayByDayKit && swift test` reports **592 tests
   passing** — 544 on the base this branch now sits on (§ 1.1), plus the forty-six written in §§ 2–8
@@ -355,7 +355,7 @@ floor, neither of which moves. So this is not a red-green section: every existin
 through all of it, and a red one is a rule-5 stop rather than a licence to edit a test. It runs
 **before** § 11.2, § 11.3 and § 11.5, all of which are open for it.
 
-- [ ] 13.1 Re-measure the type's line before moving anything, and read the output rather than this
+- [x] 13.1 Re-measure the type's line before moving anything, and read the output rather than this
   file. From anywhere, with the toolchain in `AGENTS.md` § *This machine* on PATH:
 
   ```bash
@@ -378,7 +378,7 @@ through all of it, and a red one is a rule-5 stop rather than a licence to edit 
   measurement. Any line disagreeing with that section is a stop and a report: the bound in § 13.5
   rests on it, and this document has now been wrong about it twice.
 
-- [ ] 13.2 Give the row the maker it is short of. In `Sources/DayByDayKit/DayView.swift`, add to
+- [x] 13.2 Give the row the maker it is short of. In `Sources/DayByDayKit/DayView.swift`, add to
   `Row`: `public func number(_ decimal: Decimal, asOf today: CalendarDate) -> Number?`, which
   answers `nil` where `numberEntry(asOf: today)` does and otherwise returns
   `Number(decimal, for: commitment, on: date)`; and an internal
@@ -386,14 +386,14 @@ through all of it, and a red one is a rule-5 stop rather than a licence to edit 
   row making what it is a line of, exactly as `tick(asOf:)` already does — `design.md` § *The seam*.
   Nothing calls either yet, so `swift test` reports the same count as before this box.
 
-- [ ] 13.3 Move the refusal's words next to the hint's. Add an internal `let refusalCause: String?`
+- [x] 13.3 Move the refusal's words next to the hint's. Add an internal `let refusalCause: String?`
   to `DayView.NumberEntry` and form it in `numberEntry(asOf:)` off the same `case .number(let range)`
   binding `hint` is formed from — `range.map { "Must be between \($0.lowest) and \($0.highest)" }` —
   then delete `DayScreen.rangeRefusalCause` and its doc comment. **The sentence must not change by a
   character**: the test named `a number outside the commitment's range is told on the row, naming the
   bounds it broke` (§ 7.1) asserts it verbatim, and a red there means the move changed the wording.
 
-- [ ] 13.4 Stop `enter(_:on:)` reaching past the row. Bind the entry the third guard already asks
+- [x] 13.4 Stop `enter(_:on:)` reaching past the row. Bind the entry the third guard already asks
   for — `guard let entry = row.numberEntry(asOf: today) else { return }`, the same guard in the same
   place, so the order § *Notes* records does not move. Then: the take-back becomes
   `try recordStore.removeNumber(on: row.recordedDay)`, through a `private extension RecordStore`
@@ -404,7 +404,7 @@ through all of it, and a red one is a rule-5 stop rather than a licence to edit 
   `src/DayByDayKit`, `grep -n 'row\.commitment\|row\.date' Sources/DayByDayKit/DayScreen.swift`
   prints nothing at all. It prints three lines today, which is the finding.
 
-- [ ] 13.5 Replace the wrong bound with a question asked of the type. In `DayScreen.swift`, the
+- [x] 13.5 Replace the wrong bound with a question asked of the type. In `DayScreen.swift`, the
   check before the parse becomes the significant-digit count and nothing else — at most 38, counted
   as it is counted today, leading and trailing zeros dropped — and the two exponent comparisons go.
   `Decimal(string:)` returning `nil` is then the type saying it cannot hold the number at all, and
@@ -418,7 +418,7 @@ through all of it, and a red one is a rule-5 stop rather than a licence to edit 
   nines and 200 ones on the digit count, the 129th place after the point on the type's floor — so
   that test stays green, and a red one is a stop.
 
-- [ ] 13.6 Record in § *Notes*, under a heading of its own, what § 13.1 actually printed, and that
+- [x] 13.6 Record in § *Notes*, under a heading of its own, what § 13.1 actually printed, and that
   `cd src/DayByDayKit && swift test` was run after each of §§ 13.2–13.5 with no test failing and no
   `@Test` display name changed. § 11.2 records the count; this records that nothing in a section
   which writes no test went red on the way.
@@ -452,3 +452,34 @@ first run against the code that existed before it:
   failure — `Fatal error: Unexpectedly found nil while unwrapping an Optional value` at
   `DayScreen.swift:265`, the `Decimal(string: normalized)!` on text the size rule had not yet
   ruled out. The size check plus removing the `!` made it pass.
+
+## § 13 — the third review pass's moves
+
+§ 13.1's re-measurement, run on this machine on 2026-09-07 with the toolchain named in
+`design.md` § *Context* (Apple Swift 6.3.3, swiftlang-6.3.3.1.3,
+target `arm64-apple-macosx26.0`), printed:
+
+```
+1000 … 166 chars → held, digit for digit
+3000 … 166 chars → held, digit for digit
+4000 … 166 chars → nil
+1000 … 167 chars → nil
+9999 … 165 chars → held, digit for digit
+9999 … 166 chars → nil
+0.00 … 130 chars → held, digit for digit
+0.00 … 131 chars → nil
+```
+
+Held, held, nil, nil, held, nil, held, nil, in that order — exactly what § 13.1 and `design.md`
+§ *Context*'s third measurement expect, and confirmation that the bound `tasks.md` § 13.5 moves
+to is the type's own line and not a restatement of it.
+
+`cd src/DayByDayKit && swift test` was run after each of §§ 13.2, 13.3 and 13.4 together (the
+two are one compiling change: `NumberEntry.refusalCause` cannot land without `enter(_:on:)`
+reading it), and after § 13.5, each time reporting **592 tests passing, 0 failures**, the same
+count § 11.2 already expects, with no `@Test` display name changed and no test newly red. The
+three scenarios § 13 touches most directly —
+`a number outside the commitment's range is told on the row, naming the bounds it broke`,
+`a number too long to be kept exactly keeps nothing and takes nothing back` and
+`a number of as many digits as can be kept is entered exactly` — were also run individually
+after § 13.5 and passed.

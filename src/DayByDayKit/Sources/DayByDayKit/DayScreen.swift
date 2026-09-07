@@ -258,7 +258,9 @@ public final class DayScreen {
             }
         }
 
-        guard digitCount >= 1, separatorCount <= 1, Self.canBeKeptExactly(digits) else {
+        guard digitCount >= 1, separatorCount <= 1,
+            Self.hasAtMostThirtyEightSignificantDigits(digits)
+        else {
             return .notANumber
         }
 
@@ -270,54 +272,26 @@ public final class DayScreen {
     }
 
     /// Whether `digits` — text already proved to hold nothing but digits and at most one
-    /// separator, with any leading `-` already removed — describes a number this system can keep
-    /// exactly. `design.md` § *A number this system cannot keep exactly is not a number here*:
-    /// take the digits, drop the leading zeros and the trailing zeros, and let *s* be what is
-    /// left and *e* the power of ten it is multiplied by; the number is kept when *s* is at most
-    /// thirty-eight digits long and *e* lies between −128 and 127. Zero is always kept, whatever
-    /// its own digit count, since dropping every one of its digits changes nothing it means.
-    private static func canBeKeptExactly(_ digits: Substring) -> Bool {
-        let separatorIndex = digits.firstIndex { $0 == "." || $0 == "," }
-        let fractionalPart: Substring
-        let allDigits: String
-        if let separatorIndex {
-            fractionalPart = digits[digits.index(after: separatorIndex)...]
-            allDigits = String(digits[digits.startIndex..<separatorIndex]) + String(fractionalPart)
-        } else {
-            fractionalPart = ""
-            allDigits = String(digits)
-        }
+    /// separator, with any leading `-` already removed — has at most the thirty-eight
+    /// significant digits this system keeps exactly. `design.md` § *A number this system cannot
+    /// keep exactly is not a number here*: take the digits, drop the leading zeros and the
+    /// trailing zeros, and count what is left. This answers only that one bound of this
+    /// system's own; whether the number itself fits is a question asked of the type, in
+    /// `read(_:)`'s own call to `Decimal(string:)` — a `nil` there is read as a value that is
+    /// not a number. Zero is always kept, whatever its own digit count, since dropping every one
+    /// of its digits leaves none to count.
+    private static func hasAtMostThirtyEightSignificantDigits(_ digits: Substring) -> Bool {
+        let allDigits = String(digits.filter { $0 != "." && $0 != "," })
 
         var significant = allDigits[...]
         while significant.first == "0" {
             significant.removeFirst()
         }
-        guard !significant.isEmpty else {
-            return true
-        }
-
-        var trailingZerosDropped = 0
         while significant.last == "0" {
             significant.removeLast()
-            trailingZerosDropped += 1
         }
 
-        let exponent = trailingZerosDropped - fractionalPart.count
-        return significant.count <= 38 && exponent >= -128 && exponent <= 127
-    }
-
-    /// The cause named when `commitment` refuses a number: the range it declares, said "Must be
-    /// between 40 and 150" — this package's own English, and each bound exactly as the
-    /// commitment declares it, as a range hint says it. A number-kind commitment always has a
-    /// range here: `enter(_:on:)` only reaches this once `Number.init?` has already refused the
-    /// value, and every other reason it could refuse one is already ruled out by the guards
-    /// above. `docs/adr/1036`.
-    private static func rangeRefusalCause(for commitment: Commitment) -> String? {
-        guard case .number(let range?) = commitment.kind else {
-            return nil
-        }
-
-        return "Must be between \(range.lowest) and \(range.highest)"
+        return significant.count <= 38
     }
 
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
@@ -333,21 +307,21 @@ public final class DayScreen {
         guard let recordStore else {
             return
         }
-        guard row.numberEntry(asOf: today) != nil else {
+        guard let entry = row.numberEntry(asOf: today) else {
             return
         }
 
         switch Self.read(text) {
         case .takeBack:
             do {
-                try recordStore.removeNumber(for: row.commitment, on: row.date)
+                try recordStore.removeNumber(on: row.recordedDay)
             } catch {
                 notice = Notice(row: row)
                 throw error
             }
         case .number(let decimal):
-            guard let number = Number(decimal, for: row.commitment, on: row.date) else {
-                notice = Notice(row: row, cause: Self.rangeRefusalCause(for: row.commitment))
+            guard let number = row.number(decimal, asOf: today) else {
+                notice = Notice(row: row, cause: entry.refusalCause)
                 return
             }
 
@@ -447,5 +421,14 @@ public final class DayScreen {
         self.dayView = DayView(
             of: openedRoster.roster.commitments(on: shownDay), on: shownDay,
             in: recordStore?.history ?? History())
+    }
+}
+
+// `record` spells a take-back with a commitment and a date, and a day screen holds neither —
+// only the `RecordedDay` its row already is. Private to this capability's own file, per
+// `design.md` § *The seam*.
+private extension RecordStore {
+    func removeNumber(on day: RecordedDay) throws {
+        try removeNumber(for: day.commitment, on: day.date)
     }
 }
