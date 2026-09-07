@@ -3080,3 +3080,21 @@ func aNumberTypedWithLeadingZerosOrATrailingSeparatorIsEnteredAsTheNumberItSays(
     try screen.enter(" 70.5 ", on: screen.dayView.rows[0])
     #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
 }
+
+@MainActor
+@Test("a negative number is entered where the commitment declares no range")
+func aNegativeNumberIsEnteredWhereTheCommitmentDeclaresNoRange() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let balance = Commitment(
+        name: "Balance", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [balance], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("-12.75", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == -12.75)
+    #expect(screen.dayView.rows[0].isKept)
+}
