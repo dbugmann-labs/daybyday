@@ -3155,6 +3155,33 @@ func aValueThatIsNotANumberKeepsNothingAndTakesNothingBack() throws {
 }
 
 @MainActor
+@Test("a number of as many digits as can be kept is entered exactly")
+func aNumberOfAsManyDigitsAsCanBeKeptIsEnteredExactly() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let thirtyEightNines = String(repeating: "9", count: 38)
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter(thirtyEightNines, on: screen.dayView.rows[0])
+
+    #expect(
+        screen.dayView.rows[0].numberEntry(asOf: monday)?.number
+            == Decimal(string: thirtyEightNines)!)
+    #expect(screen.dayView.rows[0].isKept)
+
+    let later = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(
+        later.dayView.rows[0].numberEntry(asOf: monday)?.number
+            == Decimal(string: thirtyEightNines)!)
+}
+
+@MainActor
 @Test("a number outside the commitment's range is told on the row, naming the bounds it broke")
 func aNumberOutsideTheCommitmentsRangeIsToldOnTheRowNamingTheBoundsItBroke() throws {
     let (place, rosterPlace) = freshPlaces()

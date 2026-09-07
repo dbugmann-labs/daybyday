@@ -303,7 +303,7 @@ What is left is code, and it runs **before** § 11.2, § 11.3 and § 11.5, all o
 acceptance test named after it verbatim, smallest change that passes. §§ 12.3–12.6 add no scenario
 and change no behaviour.
 
-- [ ] 12.1 `a number of as many digits as can be kept is entered exactly` — in
+- [x] 12.1 `a number of as many digits as can be kept is entered exactly` — in
   `Tests/DayByDayKitTests/DayScreenTests.swift`. Expect it **green on arrival**: 38 nines already
   parse exactly and already survive the store, measured on this machine on 2026-09-07. Record in
   § *Notes* whether it actually ran red, as §§ 2, 6 and 8 did.
@@ -362,3 +362,5 @@ first run against the code that existed before it:
   the text — the same three in the same order as `tick(_:)`, which is what § 5 asked for. No
   scenario tells the store-first order from the membership-first one, so nothing about the behaviour
   turns on it; what turned on it was 11.1's own claim to be evidence rather than a prediction.
+- **12.1 did not run red**, as predicted: 38 nines already parsed exactly and already survived the
+  store before the size rule existed, since `Decimal(string:)` itself keeps 38 digits exactly.
