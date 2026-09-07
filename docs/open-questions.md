@@ -36,6 +36,23 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   `docs/adr/README.md` — a new ADR takes the lowest number no file **and no open branch** has used —
   so the mitigation is convention, checked by a human, and `main`'s own README does not show which
   numbers an open branch is holding.
+  **It recurred again, 2026-09-07, and the convention is what failed.** `add-number-record` (#138)
+  committed `docs/adr/1033-a-number-is-taken-back-by-naming-the-day.md` at 22:41:19 on 2026-09-06
+  and `add-rhythm-in-words` (#144) committed `docs/adr/1033-a-schedule-says-its-rhythm-in-words.md`
+  at 22:52:10 — eleven minutes apart, proposed by two sessions in parallel, both pushed. ADR-1020's
+  rule is exactly what should have caught it and did not: the second session read 1032 as the
+  highest and never asked what an open branch was holding. What caught it was a box in a Story's own
+  `tasks.md` — #138's 8.1, which told the agent to confirm 1033 was still free and to **report
+  rather than renumber**, and which duly reported the collision at `4812770` and was left unticked
+  until G7 settled it; #144's 8.1 found the same thing six minutes later and also declined to move.
+  Both are hand-written Story instructions rather than a systemic check, so neither would have fired
+  on a Story whose § 8 lacked one. Resolved at `2e5db79` by #144 renumbering to 1034 before merge,
+  #138 keeping 1033 on `docs/adr/README.md`'s first-claim rule. Cheap, but not free: nothing in
+  `src/` names an ADR number, so the rename reached only the ADR, its README row, `CONTEXT.md` and
+  #144's own change folder — but that folder is signed, so the digest moved and the Story was
+  re-approved, which is the same price #11 paid. The third candidate answer above — keep claiming
+  early and add a check that fails the PR when the number is taken — is the one this recurrence
+  argues for, the convention having now failed on its second outing.
 
 ## Known gaps
 
@@ -82,6 +99,19 @@ Things that are built, or deliberately not built, in a state someone will trip o
   14 days". The widening is still owed by whichever Story first renders a rule, and B-021 is that want.
   Recorded 2026-09-06, at #137's G7.
   **The ninth face's prediction has been answered and the gap is unchanged.** `add-rhythm-in-words` (#144) is the Story that entry has been naming since #9 as the one that would have to widen a schedule's payload — "the widening is still owed by whichever Story first renders a rule, and B-021 is that want" — and it renders every rule in the product without reading a single payload out. The package says the words (ADR-1034), so `Commitment.schedule`, `DayOfMonth.day`, `DayInterval.days` and `WeeklyQuota.timesPerWeek` are all still internal and all nine faces are still open. What changed is that nothing is now waiting on them: the next thing to need a payload will be something that must *compute* with one outside the package, not something that must *show* one. Recorded 2026-09-07.
+  **A tenth face, and it is odd in the same way the ninth is: `add-number-record` (#138) gives a
+  `History` a way to let a number out.** `History.number(for:on:)` returns the `Decimal?` recorded
+  for a commitment on a date, while a tick still comes out of that same type as nothing but a yes or
+  no from `History.isKept(_:on:)`, and `Tick` still gives back neither its commitment nor its date —
+  nor does `Number` give back any of its three. So one value type now answers one of its two
+  questions with a value and the other with a boolean. Like the ninth, this is a *deliberate*
+  widening authorised by a requirement in the delta rather than an oversight: that Story's grill
+  settled at Q1 that a record nothing can read back is not a record, and that #139's row has nowhere
+  else to get the number it must draw. The widening is number-shaped rather than general — the same
+  grill's Q5 — so #140's note and #141's total will each face this question again, and the shape the
+  three would share is deliberately not being designed until all three exist. Recorded 2026-09-07,
+  at #138's G7. #138 has not merged — PR #151 is still a draft — so `main` does not have this yet
+  and the tenth face is a forward reference until it lands.
 - **A commitment of a kind nothing can yet record is a row that does nothing when tapped.**
   `add-commitment-kind` (#137) makes a commitment of the number, note or total kind formable and has
   `record` refuse a tick for it, so `day-screen`'s row for one offers nothing — by requirement, and on
