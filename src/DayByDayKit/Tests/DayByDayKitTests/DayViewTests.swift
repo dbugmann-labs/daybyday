@@ -1454,3 +1454,30 @@ func aNumberEntrySaysNoNumberWhereTheDayHoldsNone() {
     #expect(neverRecordedView.rows[0].numberEntry(asOf: monday)?.number == nil)
     #expect(addedThenRemovedView.rows[0].numberEntry(asOf: monday)?.number == nil)
 }
+
+@Test(
+  "a row for a number commitment holding a number says its name, its rhythm and that the day is kept"
+)
+func aRowForANumberCommitmentHoldingANumberSaysItsNameItsRhythmAndThatTheDayIsKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var historyWith70_5 = History()
+    historyWith70_5.add(Number(70.5, for: weight, on: monday)!)
+    var historyWith71 = History()
+    historyWith71.add(Number(71, for: weight, on: monday)!)
+
+    let dayView = DayView(of: [weight], on: monday, in: historyWith70_5)
+    let otherDayView = DayView(of: [weight], on: monday, in: historyWith71)
+
+    #expect(dayView.rows.count == 1)
+    #expect(dayView.rows[0].name == "Weight")
+    #expect(dayView.rows[0].rhythmInWords == "Mon, Wed, Sat")
+    #expect(dayView.rows[0].isKept)
+    #expect(otherDayView.rows[0].name == dayView.rows[0].name)
+    #expect(otherDayView.rows[0].rhythmInWords == dayView.rows[0].rhythmInWords)
+    #expect(otherDayView.rows[0].isKept == dayView.rows[0].isKept)
+}

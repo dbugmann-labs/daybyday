@@ -75,7 +75,7 @@ around it, and each bound said by `Decimal`'s own description. There is no `Numb
   value exactly, which is what stops a `Double` creeping in later.
 - [x] 3.4 `a number entry says no number where the day holds none` — a history that took none, and a
   history a number was added to and taken back from.
-- [ ] 3.5 `a row for a number commitment holding a number says its name, its rhythm and that the day
+- [x] 3.5 `a row for a number commitment holding a number says its name, its rhythm and that the day
   is kept` — and says all three identically for a row holding a different number. This is the
   assertable half of "the row never says the number"; the unassertable half is the shape, and
   `design.md` says why no scenario can carry it.
