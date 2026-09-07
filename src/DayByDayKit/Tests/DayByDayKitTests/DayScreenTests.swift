@@ -3456,3 +3456,27 @@ func whatADayScreenTellsAboutARefusedValueEndsWhenTheAppIsShownAgain() throws {
     #expect(screen.notice == nil)
     #expect(!screen.dayView.rows[0].isKept)
 }
+
+@MainActor
+@Test("what a day screen tells about a refused value ends when the day screen is moved to the day before")
+func whatADayScreenTellsAboutARefusedValueEndsWhenTheDayScreenIsMovedToTheDayBefore() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("1.2.3", on: screen.dayView.rows[0])
+    #expect(screen.notice != nil)
+
+    screen.showPreviousDay()
+
+    #expect(screen.notice == nil)
+    #expect(screen.title == "Sunday 30 August 2026")
+}

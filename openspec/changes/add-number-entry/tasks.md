@@ -192,7 +192,7 @@ in particular 8.1 is red if the text is read before the store is checked.
 - [x] 8.5 `what a day screen tells on a row ends when a number is entered and kept`
 - [x] 8.6 `what a day screen tells on a row ends when a number is taken back and kept`
 - [x] 8.7 `what a day screen tells about a refused value ends when the app is shown again`
-- [ ] 8.8 `what a day screen tells about a refused value ends when the day screen is moved to the day
+- [x] 8.8 `what a day screen tells about a refused value ends when the day screen is moved to the day
   before`
 - [ ] 8.9 Confirm the fifteen restated scenarios of those two requirements are still green with no
   `@Test` display name changed and no assertion changed beyond § 1.3's mechanical move. A refused
