@@ -1601,6 +1601,34 @@ func aRhythmCarryingTheNumberAtEachEndOfWhatItAllowsIsSaidInWords() {
 }
 
 @MainActor
+@Test("a commitment defined and stopped on one day through a commitments screen is kept on no day at all")
+func aCommitmentDefinedAndStoppedOnOneDayThroughACommitmentsScreenIsKeptOnNoDayAtAll() throws {
+    let rosterPlace = freshRosterPlace()
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "Gym", on: allWeekdays, keptFrom: monday)
+    #expect(refusal == nil)
+    let gym = try #require(screen.kept.first)
+
+    screen.askToStopKeeping(gym)
+    screen.confirmStopKeeping()
+
+    #expect(screen.kept.isEmpty)
+    #expect(screen.stopped.map(\.name) == ["Gym"])
+
+    let laterStore = try RosterStore(at: rosterPlace)
+    #expect(laterStore.roster.commitments(on: monday).isEmpty)
+    #expect(laterStore.roster.commitments(on: sunday).map(\.name) == ["Gym"])
+    #expect(!gym.isDue(on: sunday))
+}
+
+@MainActor
 @Test("a commitments screen handed the first supported date stops a commitment as of that day")
 func aCommitmentsScreenHandedTheFirstSupportedDateStopsACommitmentAsOfThatDay() throws {
     let rosterPlace = freshRosterPlace()

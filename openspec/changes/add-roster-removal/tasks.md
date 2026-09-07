@@ -108,7 +108,7 @@ names**; two new scenarios follow. All in `Tests/DayByDayKitTests/CommitmentsScr
   than Tuesday 1 September 2026, and confirm it is green off 5.1's change alone. If any **other**
   test in the package goes red at this point, stop and report it: `design.md` names these two as the
   only ones whose assertions move, measured 2026-09-07.
-- [ ] 5.3 `a commitment defined and stopped on one day through a commitments screen is kept on no day at all`
+- [x] 5.3 `a commitment defined and stopped on one day through a commitments screen is kept on no day at all`
 - [x] 5.4 `a commitments screen handed the first supported date stops a commitment as of that day` —
   the calendar floor, and the one place `CalendarDate.adding(days: -1)` answers `nil`.
 
