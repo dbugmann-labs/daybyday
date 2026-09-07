@@ -322,7 +322,7 @@ and change no behaviour.
   bullets and the test asserts two; the missing one is **"a day screen opened afterwards at the same
   place says the same"**, which every sibling scenario in that requirement opens a second screen
   for. Nothing else in the test changes and its `@Test` display name does not change.
-- [ ] 12.4 Correct the doc comment on `DayScreen.notice` (`DayScreen.swift:188-190`). It says the
+- [x] 12.4 Correct the doc comment on `DayScreen.notice` (`DayScreen.swift:188-190`). It says the
   notice is "Set when `tick(_:)` throws", which was true before § 7: `enter(_:on:)` now also sets it
   where the commitment refuses the number and where the value is not a number, and neither throws.
   Say what the public surface actually does — set when a change is refused, whether by the place,

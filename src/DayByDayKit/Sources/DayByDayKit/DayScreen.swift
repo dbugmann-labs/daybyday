@@ -185,9 +185,11 @@ public final class DayScreen {
         }
     }
 
-    /// The notice a person is owed, or `nil` when there is nothing to tell. Set when `tick(_:)`
-    /// throws; cleared by `shown(asOf:)`, by a change that reaches the record's place, and by the
-    /// day being shown changing.
+    /// The notice a person is owed, or `nil` when there is nothing to tell. Set when a change is
+    /// refused, whether by the place, which throws, or by the value — a number outside its
+    /// commitment's range, or text that is not a number — which does not; cleared by
+    /// `shown(asOf:)`, by a change that reaches the record's place, and by the day being shown
+    /// changing.
     public private(set) var notice: Notice?
 
     /// Makes the tick `row` offers, or takes it back where `row` says its commitment is kept, and
