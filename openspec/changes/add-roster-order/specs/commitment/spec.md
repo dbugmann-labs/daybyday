@@ -1662,11 +1662,17 @@ order, which it is not.
 
 **An offset that puts a commitment where it already is SHALL be accepted**, SHALL report that the
 roster moved it, and SHALL leave the roster the same roster it was. Two offsets do this for any
-commitment — the one it is at, and the one just after it — because an offset names the commitment to
-go before, and both of those name the moved commitment itself. This is not a refusal: the roster's
-refusals are about a move it cannot make at all, and this is one it can make whose result is the
-roster it already had. A person who picks a row up and puts it back has made no mistake to be told
-about.
+commitment — the one it is at, and the one just after it — and they arrive there differently. The
+offset it is at names the moved commitment itself, and immediately before itself is where it already
+stands. The offset just after it names the **next** commitment the roster is keeping and not the
+moved one — or, where the moved commitment is the last one kept, is the number kept, which is after
+the last of them and so is again where it already stands — and a commitment is already immediately
+before the one that follows it among the ones the roster is keeping. Neither offset asks for a
+commitment the roster is keeping to stand anywhere new, so nothing in the sequence the roster holds
+moves at all: a stopped or removed commitment lying between the moved one and the one that follows
+it is not passed, because nothing goes by it. This is not a refusal: the roster's refusals are about
+a move it cannot make at all, and this is one it can make whose result is the roster it already had.
+A person who picks a row up and puts it back has made no mistake to be told about.
 
 The roster SHALL refuse to move a commitment in exactly two cases, and SHALL report each rather than
 doing nothing silently, for the same reason a refused addition is reported:

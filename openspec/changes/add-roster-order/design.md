@@ -138,10 +138,19 @@ moved one moves" produce a result a reader would not guess.
 ### A no-op move is accepted, and there are exactly two of them
 
 Settled answer 5 makes a drop that changes nothing an acceptance rather than a refusal. Writing the
-delta made the arithmetic concrete: for a commitment at index *i*, both offset *i* and offset *i+1*
-leave the list untouched, because an offset names the commitment to go before and both of those name
-the moved commitment itself. Measured on `Array.move` above; the requirement says it, and a scenario
-asserts both.
+delta made the arithmetic concrete: for a commitment at kept index *i*, both offset *i* and offset
+*i+1* leave the list untouched, and **they get there for different reasons**. Offset *i* names the
+moved commitment itself. Offset *i+1* names the **next** commitment kept — or, where the moved one is
+the last kept, is the number kept, which is after the last of them — and a commitment already stands
+immediately before the one that follows it. Measured on `Array.move` above; the requirement says it,
+and a scenario asserts both.
+
+**Reading *i+1* as naming the moved commitment too is arithmetically false**, and it is false in
+exactly the case the `Array.move` measurement cannot show, because a plain array has no stopped
+commitments in it: where one lies between the moved commitment and the next one kept, "insert
+immediately before the next one kept" taken literally walks the moved commitment past it, and the
+roster comes out different from the roster it was. Nothing moves on either no-op offset, so nothing
+passes anything.
 
 **It is not a refusal**, because the roster's refusals are about a move it cannot make at all and
 this is one it can make whose result is the roster it already had. **And it does not clear a standing
