@@ -89,8 +89,8 @@ stored outside equality, which `design.md` rejects by name.
 
 - [x] 4.1 `two rows for the same number commitment and date holding different numbers are different
   rows`
-- [ ] 4.2 `two rows for the same number commitment and date holding the same number are the same row`
-- [ ] 4.3 Confirm that the seven restated scenarios of that requirement still have their original
+- [x] 4.2 `two rows for the same number commitment and date holding the same number are the same row`
+- [x] 4.3 Confirm that the seven restated scenarios of that requirement still have their original
   tests, unrenamed and with no assertion changed: `two rows for the same commitment and date saying
   the same thing are the same row`, `two rows for the same commitment on different dates are
   different rows`, `two rows for the same commitment and date differing in whether it is kept are

@@ -1502,3 +1502,22 @@ func twoRowsForTheSameNumberCommitmentAndDateHoldingDifferentNumbersAreDifferent
     #expect(secondView.rows[0].isKept)
     #expect(firstView.rows[0] != secondView.rows[0])
 }
+
+@Test("two rows for the same number commitment and date holding the same number are the same row")
+func twoRowsForTheSameNumberCommitmentAndDateHoldingTheSameNumberAreTheSameRow() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Number(70.5, for: weight, on: monday)!)
+
+    let firstView = DayView(of: [weight], on: monday, in: history)
+    let secondView = DayView(of: [weight], on: monday, in: history)
+
+    #expect(firstView.rows[0].isKept)
+    #expect(secondView.rows[0].isKept)
+    #expect(firstView.rows[0] == secondView.rows[0])
+}
