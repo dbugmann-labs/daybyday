@@ -112,7 +112,7 @@ same shape as `keepAgain`, and `RefusedChange` gains a fifth case, `moving(Commi
   why the screen answers this differently from the roster.
 - [ ] 5.6 `a move that drops a commitment where it already is changes nothing and refuses nothing` —
   and writes nothing, asserted on the file's bytes.
-- [ ] 5.7 `a move a commitments screen could not keep leaves both its lists as they were`
+- [x] 5.7 `a move a commitments screen could not keep leaves both its lists as they were`
 - [ ] 5.8 `a commitments screen shown again lists what it keeps in the order it was moved into`
 - [ ] 5.9 `a commitment moved and then stopped through a commitments screen keeps the place it was
   moved to`

@@ -2735,3 +2735,31 @@ func aCommitmentsScreenGivenAnOffsetTheListItKeepsDoesNotHaveDoesNothingAndSaysN
     #expect(screen.refusedChange == nil)
     #expect(screen.kept.map(\.name) == ["Gym", "Journaling"])
 }
+
+@MainActor
+@Test("a move a commitments screen could not keep leaves both its lists as they were")
+func aMoveACommitmentsScreenCouldNotKeepLeavesBothItsListsAsTheyWere() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(journaling)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    try FileManager.default.removeItem(at: rosterPlace)
+    try FileManager.default.createDirectory(at: rosterPlace, withIntermediateDirectories: true)
+
+    let refusal = screen.move(journaling, toOffset: 0)
+
+    #expect(refusal == .notKept)
+    #expect(screen.kept.map(\.name) == ["Gym", "Journaling"])
+    #expect(screen.stopped == [])
+}
