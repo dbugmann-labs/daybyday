@@ -207,13 +207,17 @@ jobs:
       # Unconditional, because the build below needs a concrete destination whether or
       # not anything runs on it. Naming a device does not boot one.
       #
-      # **An already-booted iPhone wins, if there is one.** The boot below is the
-      # largest thing in this job at about 2m13s, and it is only owed on a device
-      # that is cold. Nothing promises the runner image leaves one up — this is
-      # written to take the saving if it is there and to change nothing if it is
-      # not, and it prints the booted list either way so the answer is on the
-      # record rather than assumed. Ordering is unchanged otherwise: newest
-      # runtime first, first iPhone in it.
+      # **An already-booted iPhone wins, if there is one — and on 2026-09-07 there
+      # was not.** The boot below is the largest thing in this job at 115-135s
+      # across three runs, and it is only owed on a cold device, so it was worth
+      # asking whether the image leaves one up. It does not: `simctl list devices
+      # booted` on `macos-26` prints the iOS 26.2, 26.4, 26.5 and tvOS 26.2
+      # runtime headers and no device rows at all. The preference is kept anyway
+      # because it costs a couple of seconds, falls back to exactly the previous
+      # choice, and would take the saving if an image ever changed — and the probe
+      # is kept with it so the answer stays on the record instead of becoming a
+      # claim in a comment. Ordering is otherwise unchanged: newest runtime first,
+      # first iPhone in it.
       - name: which simulator?
         id: sim
         run: |

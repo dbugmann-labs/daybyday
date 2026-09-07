@@ -116,9 +116,13 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
     `.xcscheme` in the tree to say otherwise. One test on one device buys nothing from a clone.
     `-parallel-testing-enabled NO` declines it: 47.7s to 28.3s locally, and on the runner the
     test operation fell from 284.6s and 492.4s to 76.1s, 96.5s and 112.6s across three runs.
-  - **The price: the cold first boot of the simulator is 2m06s** and nothing here can make it
-    cheaper. A runner's devices have never been booted since the image was built. This was always
-    being paid — it is most of what this record originally booked as the UI test being slow.
+  - **The price: the cold first boot of the simulator is 115-135s across three runs** and nothing
+    here can make it cheaper. A runner's devices have never been booted since the image was built,
+    and that was checked rather than assumed: `simctl list devices booted` on `macos-26` prints
+    the iOS 26.2, 26.4, 26.5 and tvOS 26.2 runtime headers and no device rows, so there is no warm
+    device to prefer. The discovery prefers one anyway, for the day an image ships one. This price
+    was always being paid — it is most of what this record originally booked as the UI test being
+    slow.
   - **Overlapping the price with `swift test` does not work, and that was tried.** With
     `simctl boot` started at the top of the job the boot does run underneath the other steps —
     the command returns in about half a second and the boot proceeds inside
