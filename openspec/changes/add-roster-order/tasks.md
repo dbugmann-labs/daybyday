@@ -127,7 +127,7 @@ same shape as `keepAgain`, and `RefusedChange` gains a fifth case, `moving(Commi
   the fifth `RefusedChange` case.
 - [x] 5.14 `a commitments screen holds nothing against a move that asks for no change at all`
 - [x] 5.15 `what a commitments screen holds about a refused change ends when a move is kept`
-- [ ] 5.16 `what a commitments screen holds about a refused change stands when a move drops a
+- [x] 5.16 `what a commitments screen holds about a refused change stands when a move drops a
   commitment where it already is` — settled answer 13, and the one that decides where `refusedChange
   = nil` may be written in `move`. It may only be written where the store actually kept something.
 
