@@ -68,12 +68,8 @@ struct CommitmentsView: View {
                     Button {
                         screen.askToStopKeeping(commitment)
                     } label: {
-                        VStack(alignment: .leading) {
-                            Text(commitment.name)
-                            Text(commitment.rhythmInWords)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                        commitmentLine(
+                            Text(commitment.name), rhythmInWords: commitment.rhythmInWords)
                     }
                 }
             }
@@ -90,12 +86,8 @@ struct CommitmentsView: View {
                     Button {
                         screen.keepAgain(commitment)
                     } label: {
-                        VStack(alignment: .leading) {
-                            Text(commitment.name)
-                            Text(commitment.rhythmInWords)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                        commitmentLine(
+                            Text(commitment.name), rhythmInWords: commitment.rhythmInWords)
                     }
                 }
             }

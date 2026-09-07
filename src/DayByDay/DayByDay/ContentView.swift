@@ -151,11 +151,10 @@ struct ContentView: View {
                 } label: {
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(row.name)
-                                .foregroundStyle(row.isKept ? .secondary : .primary)
-                            Text(row.rhythmInWords)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            commitmentLine(
+                                Text(row.name)
+                                    .foregroundStyle(row.isKept ? .secondary : .primary),
+                                rhythmInWords: row.rhythmInWords)
                             if row == screen.refusedChangeRow {
                                 Text("Not saved. Try again.")
                                     .font(.caption)
