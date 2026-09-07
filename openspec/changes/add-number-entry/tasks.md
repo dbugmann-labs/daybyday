@@ -204,16 +204,16 @@ in particular 8.1 is red if the text is read before the store is checked.
 No requirement and no test — `CONTEXT.md` § *App shell*, and `docs/open-questions.md` § *No UI smoke
 layer*. Do this after § 8 so that everything it draws already answers.
 
-- [ ] 9.1 In `src/DayByDay/DayByDay/ContentView.swift`, draw the number row: a standard disclosure
+- [x] 9.1 In `src/DayByDay/DayByDay/ContentView.swift`, draw the number row: a standard disclosure
   chevron where `row.numberEntry(asOf:)` is non-`nil`, a tap opening an `.alert` holding one
   `TextField` prefilled from `entry.number` and place-held with `entry.hint`, with **Save** and
   **Cancel**. Save calls `try? screen.enter(text, on: row)` and closes; **Cancel closes and calls
   nothing at all** — that is what keeps it from becoming a fourth end for the notice. A tick row's
   tap is unchanged.
-- [ ] 9.2 In the same file, draw the cause: the notice's line becomes
+- [x] 9.2 In the same file, draw the cause: the notice's line becomes
   `Text(screen.notice?.cause ?? "Not saved. Try again.")`. The constant stays in the shell and is
   not moved into the package — `design.md` § *The notice carries a cause* says why.
-- [ ] 9.3 Add one number commitment to `dayOneCommitments` so the field is reachable on a fresh
+- [x] 9.3 Add one number commitment to `dayOneCommitments` so the field is reachable on a fresh
   install: a weight with a range. **Day one is a seed, not the roster** — the comment in that file
   says so — so this changes nothing on an install that has already run, and § 10.2 deletes the app
   first for that reason.
