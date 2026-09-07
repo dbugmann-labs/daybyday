@@ -84,14 +84,14 @@ what a change made, and a no-op made nothing* fixes the one place this does not 
 `remove` exactly. **No form moves**: `RosterDocument` is not edited by any box here, and reaching for
 it is the stop § 1.2 names.
 
-- [ ] 4.1 `a commitment moved through a roster store is read back in the place it was moved to` — adds
+- [x] 4.1 `a commitment moved through a roster store is read back in the place it was moved to` — adds
   `public func move(_ commitment: Commitment, toOffset offset: Int) throws -> Bool`, the same shape
   as `remove`, writing before it reports.
-- [ ] 4.2 `a move a roster store refuses is reported and nothing at its place changes`
-- [ ] 4.3 `a move that leaves a roster as it was keeps nothing at its place` — the one comparison the
+- [x] 4.2 `a move a roster store refuses is reported and nothing at its place changes`
+- [x] 4.3 `a move that leaves a roster as it was keeps nothing at its place` — the one comparison the
   design calls for: report what the roster reports, write only when the roster changed. Asserted
   byte-for-byte on the file.
-- [ ] 4.4 `a move that cannot be kept is refused and the roster a store reports does not move`
+- [x] 4.4 `a move that cannot be kept is refused and the roster a store reports does not move`
 
 ## 5. `commitment` — a commitments screen moves a commitment
 

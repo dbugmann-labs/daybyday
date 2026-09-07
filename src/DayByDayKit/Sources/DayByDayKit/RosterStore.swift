@@ -115,6 +115,26 @@ public final class RosterStore {
         roster = nextRoster
         return true
     }
+
+    /// Kept at `place` before this returns, unless the move left the roster exactly as it was.
+    /// Answers what `Roster.move` answers — `true` even for a move that changed nothing, and
+    /// `false`, without throwing and without writing, when the roster does not hold
+    /// `commitment` or `offset` is outside the commitments it is keeping. A store keeps what a
+    /// change made, and a no-op made nothing, so this is the one call that can answer `true`
+    /// without writing.
+    @discardableResult
+    public func move(_ commitment: Commitment, toOffset offset: Int) throws -> Bool {
+        var nextRoster = roster
+        guard nextRoster.move(commitment, toOffset: offset) else {
+            return false
+        }
+        if nextRoster != roster {
+            try write(nextRoster)
+        }
+
+        roster = nextRoster
+        return true
+    }
 }
 
 public enum RosterStoreError: Error, Equatable, Sendable {
