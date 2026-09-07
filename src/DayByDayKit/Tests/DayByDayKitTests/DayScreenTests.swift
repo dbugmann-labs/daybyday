@@ -2647,3 +2647,30 @@ func aDayScreenOpenedOnARosterWhoseCommitmentsHaveAllBeenRemovedTakesNothingOn()
     _ = expected.remove(journaling, keptUntil: sunday)
     #expect(later.roster == expected)
 }
+
+@MainActor
+@Test("a day screen draws its rows in the order its roster was moved into")
+func aDayScreenDrawsItsRowsInTheOrderItsRosterWasMovedInto() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let supplements = Commitment(
+        name: "Supplements and habits", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+    try rosterStore.add(supplements)
+    try rosterStore.add(gym)
+    try rosterStore.move(gym, toOffset: 0)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.rows.map(\.name) == ["Gym", "Journaling", "Supplements and habits"])
+    #expect(screen.rosterState == .kept)
+}

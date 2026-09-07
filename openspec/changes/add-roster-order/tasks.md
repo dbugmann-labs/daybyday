@@ -135,7 +135,7 @@ same shape as `keepAgain`, and `RefusedChange` gains a fifth case, `moving(Commi
 
 One scenario from `specs/day-screen/spec.md`, in `Tests/DayByDayKitTests/DayScreenTests.swift`.
 
-- [ ] 6.1 `a day screen draws its rows in the order its roster was moved into` — **this should pass
+- [x] 6.1 `a day screen draws its rows in the order its roster was moved into` — **this should pass
   without a line changing in `DayScreen.swift` or `DayView.swift`; that is the claim, and this is the
   test that turns it into a fact.** If either needs a change, **stop and report it**: it would mean
   the day screen was reordering the roster's answer after all, which `day-screen/spec.md:1642`
