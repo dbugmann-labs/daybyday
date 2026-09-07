@@ -2399,3 +2399,32 @@ func whatACommitmentsScreenHoldsAboutARefusedChangeStandsWhenARemovalIsAskedForA
     #expect(screen.awaitingRemoval == nil)
     #expect(screen.nameTypedBack == "")
 }
+
+@MainActor
+@Test("what a commitments screen has stopped is in the order its roster holds them")
+func whatACommitmentsScreenHasStoppedIsInTheOrderItsRosterHoldsThem() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let waterPlants = Commitment(name: "Water plants", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(waterPlants)
+    try rosterStore.add(gym)
+    try rosterStore.add(journaling)
+    try rosterStore.move(journaling, toOffset: 0)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    screen.askToStopKeeping(journaling)
+    screen.confirmStopKeeping()
+    screen.askToStopKeeping(waterPlants)
+    screen.confirmStopKeeping()
+
+    #expect(screen.stopped.map(\.name) == ["Journaling", "Water plants"])
+    #expect(screen.kept.map(\.name) == ["Gym"])
+}
