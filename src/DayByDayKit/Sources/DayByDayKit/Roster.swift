@@ -99,15 +99,27 @@ public struct Roster: Hashable, Sendable {
             return false
         }
 
+        let sourceKeptIndex = keptBeforeMove.firstIndex(where: { $0.commitment == commitment })!
+
+        // Offset `sourceKeptIndex` names the moved commitment itself, and offset
+        // `sourceKeptIndex + 1` names the commitment that already follows it among the ones kept
+        // — or, where the moved commitment is the last one kept, is the number kept, again where
+        // it already stands. Neither asks a kept commitment to stand anywhere new, so nothing in
+        // the sequence moves, and a stopped or removed commitment lying between the two is not
+        // passed because nothing goes by it. Checking this before touching `entries` is what
+        // keeps that true: computing a destination from a post-removal index, as the general case
+        // below does, would walk the moved commitment past exactly such a commitment.
+        guard offset != sourceKeptIndex, offset != sourceKeptIndex + 1 else {
+            return true
+        }
+
         let entry = entries.remove(at: sourceIndex)
 
         // `offset == keptBeforeMove.count` means "after the last of them"; every other offset
         // names the commitment that stood there before the move, before which the moved
-        // commitment is put back. Either target may be `commitment` itself — both of the two
-        // no-op offsets — in which case reinserting at `sourceIndex` restores exactly what was
-        // there, since nothing before it moved.
+        // commitment is put back.
         let target = offset == keptBeforeMove.count ? keptBeforeMove.last : keptBeforeMove[offset]
-        if let target, target.commitment != commitment,
+        if let target,
             let targetIndex = entries.firstIndex(where: { $0.commitment == target.commitment })
         {
             let destination = offset == keptBeforeMove.count ? targetIndex + 1 : targetIndex

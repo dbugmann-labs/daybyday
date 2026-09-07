@@ -1006,6 +1006,49 @@ func twoOffsetsLeaveACommitmentWhereItAlreadyIsAndBothAreAccepted() {
     #expect(atOffsetJustAfter == neverAsked())
 }
 
+@Test(
+    "the offset just after a commitment's own leaves it where it is even with a stopped or removed commitment between"
+)
+func theOffsetJustAfterACommitmentsOwnLeavesItWhereItIsEvenWithAStoppedOrRemovedCommitmentBetween()
+{
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+
+    func neverAsked(removingJournaling: Bool) -> Roster {
+        var roster = Roster()
+        _ = roster.add(waterPlants)
+        _ = roster.add(gym)
+        _ = roster.add(journaling)
+        _ = roster.add(reading)
+        if removingJournaling {
+            _ = roster.remove(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+        } else {
+            _ = roster.retire(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+        }
+        return roster
+    }
+
+    // "Gym" is kept second among the commitments kept — "Water plants", "Gym", "Reading" — with
+    // "Journaling" stopped or removed and lying between it and "Reading", the one that follows it.
+    // Offset 2 names "Reading", the offset just after "Gym"'s own, so this is a no-op: nothing
+    // passes "Journaling", stopped or removed alike.
+    var withStopped = neverAsked(removingJournaling: false)
+    let movedWithStopped = withStopped.move(gym, toOffset: 2)
+
+    #expect(movedWithStopped)
+    #expect(withStopped == neverAsked(removingJournaling: false))
+
+    var withRemoved = neverAsked(removingJournaling: true)
+    let movedWithRemoved = withRemoved.move(gym, toOffset: 2)
+
+    #expect(movedWithRemoved)
+    #expect(withRemoved == neverAsked(removingJournaling: true))
+}
+
 @Test("a roster keeping one commitment accepts both the offsets it has")
 func aRosterKeepingOneCommitmentAcceptsBothTheOffsetsItHas() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
