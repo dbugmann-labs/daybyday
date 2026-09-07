@@ -2595,3 +2595,32 @@ func whatACommitmentsScreenHoldsAboutARefusedChangeStandsWhenAMoveDropsACommitme
     #expect(screen.refusedChange == .defining(.namesNothing))
     #expect(screen.kept.map(\.name) == ["Gym", "Journaling"])
 }
+
+@MainActor
+@Test("a commitment moved through a commitments screen is where it was dropped, and is kept there")
+func aCommitmentMovedThroughACommitmentsScreenIsWhereItWasDroppedAndIsKeptThere() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let waterPlants = Commitment(name: "Water plants", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(waterPlants)
+    try rosterStore.add(gym)
+    try rosterStore.add(journaling)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let refusal = screen.move(journaling, toOffset: 0)
+
+    #expect(refusal == nil)
+    #expect(screen.kept.map(\.name) == ["Journaling", "Water plants", "Gym"])
+
+    let later = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(later.kept.map(\.name) == ["Journaling", "Water plants", "Gym"])
+}
