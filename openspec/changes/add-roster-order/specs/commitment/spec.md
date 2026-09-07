@@ -394,8 +394,11 @@ itself falls.
   "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
   1 January 2026, stops keeping "Gym" as of 31 January 2026 and then moves "Journaling" to the
   offset 0
-- **THEN** asked about 31 January 2026 it answers with "Water plants", then "Journaling", then "Gym"
-- **AND** asked about 1 February 2026 it answers with "Water plants" and then "Journaling"
+- **THEN** asked about 31 January 2026 it answers with "Journaling", then "Water plants", then "Gym"
+  — the offset naming "Water plants", the first of the two commitments it was keeping, as the one the
+  moved commitment comes to stand before, and "Gym" still after "Water plants", passed rather than
+  pushed
+- **AND** asked about 1 February 2026 it answers with "Journaling" and then "Water plants"
 
 
 ### Requirement: A roster store keeps a roster at a place, across the app being closed and opened again
