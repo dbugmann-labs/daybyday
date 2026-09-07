@@ -193,14 +193,14 @@ nothing and orders nothing. Only `src/DayByDay/DayByDay/CommitmentsView.swift` c
   `147/147 scenario(s) covered`.
 - [x] 9.2 `openspec validate add-roster-order --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
-- [ ] 9.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+- [x] 9.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-roster-order/` or anywhere under `openspec/specs/` is a **stop**, not a merge
   to resolve: it means another Story landed on `commitment` or `day-screen` while this one was being
   written, which is the owner's call (rule 5). `add-number-entry` (#139) is open on `day-screen` and
   is the likeliest source — `design.md` § *Risks* names it.
 - [ ] 9.4 Ask for the review (**G7**) with `mattpocock-skills:code-review`, and fix what it finds on
   this branch before the archive.
-- [ ] 9.5 Write the archive handover for the janitor, into the PR or the handover message, saying
+- [x] 9.5 Write the archive handover for the janitor, into the PR or the handover message, saying
   what it must check **after** `/opsx:archive` has run. This box is ticked when the instruction has
   been written, which is before the archive; the checking itself is the janitor's step and has no box
   of its own, deliberately — `add-roster-store` (#103) shipped a box that could only be ticked after
