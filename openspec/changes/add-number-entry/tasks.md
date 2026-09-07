@@ -52,7 +52,7 @@ exists. **Record which ones actually ran red as you go, in § 11**; a prediction
 - [x] 2.3 `a row offers a tick or a number entry and never both`
 - [x] 2.4 `a row for a date later than the day it is asked as of offers no number entry` — the same
   guard `tick(asOf:)` carries, and the assertion that no tick is offered either.
-- [ ] 2.5 `a row for a date later than the day it is asked as of offers no number entry even where the
+- [x] 2.5 `a row for a date later than the day it is asked as of offers no number entry even where the
   day holds a number`
 - [ ] 2.6 `a row for a date earlier than the day it is asked as of offers the number entry`
 - [ ] 2.7 `a row offers the number entry whether or not the day is already kept`
