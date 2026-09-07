@@ -18,7 +18,7 @@ public struct Roster: Hashable, Sendable {
         entries = []
     }
 
-    /// The commitments this roster keeps, in the order they were taken on. A commitment it has
+    /// The commitments this roster keeps, in the order it holds them. A commitment it has
     /// stopped keeping is not among them.
     public var commitments: [Commitment] {
         entries.compactMap { $0.keptUntil == nil ? $0.commitment : nil }
@@ -131,8 +131,8 @@ public struct Roster: Hashable, Sendable {
         return true
     }
 
-    /// The commitments this roster had not stopped keeping on `date`, in the order they were
-    /// taken on. It applies no other rule: a commitment's own day it is kept from and its
+    /// The commitments this roster had not stopped keeping on `date`, in the order it holds
+    /// them. It applies no other rule: a commitment's own day it is kept from and its
     /// schedule are the commitment's answer, not the roster's. A removed commitment answers
     /// exactly as a stopped one does — invisible to removal is the whole point.
     public func commitments(on date: CalendarDate) -> [Commitment] {

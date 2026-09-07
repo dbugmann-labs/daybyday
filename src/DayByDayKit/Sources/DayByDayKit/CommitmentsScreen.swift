@@ -41,7 +41,7 @@ public final class CommitmentsScreen {
         }
     }
 
-    /// The commitments `roster` has stopped keeping, in the order they were taken on. A removed
+    /// The commitments `roster` has stopped keeping, in the order `roster` holds them. A removed
     /// commitment is in neither this list nor `kept` — `design.md` § *The seam*: removal is a
     /// third state, not a second way to be stopped.
     private static func stopped(in roster: Roster) -> [Commitment] {
@@ -56,10 +56,10 @@ public final class CommitmentsScreen {
         stopped = store.map { Self.stopped(in: $0.roster) } ?? []
     }
 
-    /// The commitments the roster is keeping, in the order they were taken on.
+    /// The commitments the roster is keeping, in the order the roster holds them.
     public private(set) var kept: [Commitment] = []
 
-    /// The commitments the roster has stopped keeping, in the order they were taken on.
+    /// The commitments the roster has stopped keeping, in the order the roster holds them.
     public private(set) var stopped: [Commitment] = []
 
     /// Anything but `.kept` means both lists are empty and nothing is taken on.
@@ -268,7 +268,7 @@ public final class CommitmentsScreen {
         return nil
     }
 
-    /// Takes `commitment` up again, in the place it was taken on in. Answers `nil` and does
+    /// Takes `commitment` up again, in the place it has. Answers `nil` and does
     /// nothing when `stopped` does not hold it.
     @discardableResult public func keepAgain(_ commitment: Commitment) -> Refusal? {
         guard stopped.contains(commitment) else {
