@@ -2535,3 +2535,32 @@ func aCommitmentsScreenHoldsNothingAgainstAMoveThatAsksForNoChangeAtAll() throws
     #expect(screen.refusedChange == nil)
     #expect(screen.kept.map(\.name) == ["Gym"])
 }
+
+@MainActor
+@Test("what a commitments screen holds about a refused change ends when a move is kept")
+func whatACommitmentsScreenHoldsAboutARefusedChangeEndsWhenAMoveIsKept() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let schedule: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(journaling)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    _ = screen.define(name: "   ", on: daily, keptFrom: monday)
+
+    let refusal = screen.move(journaling, toOffset: 0)
+
+    #expect(refusal == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.kept.map(\.name) == ["Journaling", "Gym"])
+}
