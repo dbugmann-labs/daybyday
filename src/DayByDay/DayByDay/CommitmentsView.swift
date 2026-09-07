@@ -65,11 +65,16 @@ struct CommitmentsView: View {
                     Text("Nothing is being kept.")
                 }
                 ForEach(screen.kept, id: \.self) { commitment in
-                    Button {
-                        screen.askToStopKeeping(commitment)
-                    } label: {
-                        commitmentLine(
-                            Text(commitment.name), rhythmInWords: commitment.rhythmInWords)
+                    commitmentLine(
+                        Text(commitment.name), rhythmInWords: commitment.rhythmInWords
+                    )
+                    .swipeActions {
+                        Button("Stop") {
+                            screen.askToStopKeeping(commitment)
+                        }
+                        Button("Remove", role: .destructive) {
+                            screen.askToRemove(commitment)
+                        }
                     }
                 }
             }
@@ -78,22 +83,39 @@ struct CommitmentsView: View {
                 refusalText(stopRefusal)
             }
 
+            if case .removing(let removed, let removingRefusal) = screen.refusedChange,
+                screen.kept.contains(removed)
+            {
+                refusalText(removingRefusal)
+            }
+
             Section("Stopped") {
                 if screen.stopped.isEmpty {
                     Text("Nothing has been stopped.")
                 }
                 ForEach(screen.stopped, id: \.self) { commitment in
-                    Button {
-                        screen.keepAgain(commitment)
-                    } label: {
-                        commitmentLine(
-                            Text(commitment.name), rhythmInWords: commitment.rhythmInWords)
+                    commitmentLine(
+                        Text(commitment.name), rhythmInWords: commitment.rhythmInWords
+                    )
+                    .swipeActions {
+                        Button("Resume") {
+                            screen.keepAgain(commitment)
+                        }
+                        Button("Remove", role: .destructive) {
+                            screen.askToRemove(commitment)
+                        }
                     }
                 }
             }
 
             if case .keepingAgain(_, let keepAgainRefusal) = screen.refusedChange {
                 refusalText(keepAgainRefusal)
+            }
+
+            if case .removing(let removed, let removingRefusal) = screen.refusedChange,
+                screen.stopped.contains(removed)
+            {
+                refusalText(removingRefusal)
             }
 
             switch screen.rosterState {
@@ -179,6 +201,46 @@ struct CommitmentsView: View {
             }
             Button("Cancel", role: .cancel) {
                 screen.cancelStopKeeping()
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { screen.awaitingRemoval != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        screen.cancelRemoving()
+                    }
+                }
+            )
+        ) {
+            if let commitment = screen.awaitingRemoval {
+                NavigationStack {
+                    Form {
+                        Section {
+                            Text("Type \"\(commitment.name)\" to remove it for good.")
+                            TextField(
+                                "Name",
+                                text: Binding(
+                                    get: { screen.nameTypedBack },
+                                    set: { screen.nameTypedBack = $0 }
+                                ))
+                        }
+                    }
+                    .navigationTitle("Remove \(commitment.name)")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                screen.cancelRemoving()
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Remove", role: .destructive) {
+                                screen.confirmRemoving()
+                            }
+                            .disabled(!screen.nameTypedBackMatches)
+                        }
+                    }
+                }
             }
         }
     }

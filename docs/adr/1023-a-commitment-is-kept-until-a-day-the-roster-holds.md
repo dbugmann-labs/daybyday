@@ -3,6 +3,8 @@
 - Status: accepted
 - Date: 2026-09-03
 - Deciders: Diego Bugmann
+- Amended: 2026-09-07 — a commitments screen hands the day *before* the one it was handed, for a
+  stop and for a removal alike; the kept-until day itself is unchanged
 
 ## Context
 
@@ -44,8 +46,22 @@ Four things are part of the decision rather than incidental to it:
   does. A stopped commitment goes on answering `isDue(on:)` exactly as it did.
 - **The kept-until day is the last day the commitment was kept**, inclusive: a commitment kept from
   A and kept until B was kept on every date from A through B and on none after B. The alternative
-  reading — the first day it is *not* kept — would let a screen stopping a commitment today hide a
-  tick the person had already made this morning from the very day they made it.
+  reading — the first day it is *not* kept — would make the day a roster holds mean something other
+  than what its name says, in the one place a person can be shown it.
+- **A commitments screen hands the day before the one it was handed** — amended 2026-09-07, at the
+  grill of `add-roster-removal` (#145), and reaffirmed by the owner after its cost was stated. Which
+  day a screen *hands* is a separate question from what the day *means*, and only the first of the
+  two moved. It shipped as the day the screen was handed, so a commitment stopped this afternoon
+  kept its row on this afternoon's day screen, which reads as a stop that failed on the one screen
+  whose purpose is to make the change. The price, taken knowingly: a tick made this morning on a
+  commitment stopped this afternoon is not drawn today, though the record of it stands untouched and
+  the row returns on that day if the commitment is ever taken up again. A commitment defined and
+  stopped on the same day becomes one kept on no day at all, which the roster already accepts as
+  what changing your mind before starting looks like. On the first date the calendar supports there
+  is no day before, and the screen hands that day itself rather than refusing — a floor is not
+  something a person can act on, and no device presents that date. Removing a kept commitment hands
+  the same day for the same reason; removing one already stopped moves nothing, because the day it
+  was kept until was visible on a list and a removal is not an occasion to change it.
 - **Only the roster judges it.** Asked what it was keeping on a date, a roster subtracts the
   commitments whose kept-until day falls before that date and applies nothing else — not a
   commitment's own kept-from day and not its schedule, which stay ADR-1013's and `schedule`'s. One
@@ -81,6 +97,10 @@ Four things are part of the decision rather than incidental to it:
 - **Storage has one more thing to keep.** `add-roster-store` (#103) persists the kept-until day
   beside the commitment. It is one optional date per commitment and needs no change to what a tick
   is.
+- **A third state joined the two.** `add-roster-removal` (#145) added **removed** beside kept and
+  stopped, and it rests entirely on this record: a removed commitment carries a kept-until day and
+  is answered about a date exactly as a stopped one is, and it stays off `Commitment` for the reason
+  this ADR gives about `Tick`. ADR-1035.
 - **ADR-1013 does not move.** It said the end date was not its to decide, so nothing in it becomes
   wrong; this record is the answer to the half it left open, and the two are read together.
 

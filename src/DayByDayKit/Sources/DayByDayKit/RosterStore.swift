@@ -28,9 +28,23 @@ public final class RosterStore {
             }
             throw RosterStoreError.notAStore(at: place)
         }
-        guard let document = try? JSONDecoder().decode(RosterDocument.self, from: data),
-            let roster = document.formRoster()
+        guard let document = try? JSONDecoder().decode(RosterDocument.self, from: data) else {
+            throw RosterStoreError.notAStore(at: place)
+        }
+        // Each form is read as the shape that form has, per `design.md` § *The form on disk*:
+        // the `removed` field is present on every entry at the form that introduced it and at
+        // every form since, so its presence must agree with the declared version in both
+        // directions. Checked against `removalIntroducedInVersion`, not `currentVersion` — the
+        // two agree today only because form 3 is both, and a later form raising `currentVersion`
+        // alone must not move which forms this check accepts.
+        guard
+            document.commitments.allSatisfy({
+                ($0.removed != nil) == (document.version >= RosterDocument.removalIntroducedInVersion)
+            })
         else {
+            throw RosterStoreError.notAStore(at: place)
+        }
+        guard let roster = document.formRoster() else {
             throw RosterStoreError.notAStore(at: place)
         }
 
@@ -79,6 +93,21 @@ public final class RosterStore {
     public func retire(_ commitment: Commitment, keptUntil date: CalendarDate) throws -> Bool {
         var nextRoster = roster
         guard nextRoster.retire(commitment, keptUntil: date) else {
+            return false
+        }
+        try write(nextRoster)
+
+        roster = nextRoster
+        return true
+    }
+
+    /// Kept at `place` before this returns. Answers what `Roster.remove` answers — `false`,
+    /// without throwing and without writing, when the roster does not hold `commitment` or has
+    /// already removed it.
+    @discardableResult
+    public func remove(_ commitment: Commitment, keptUntil date: CalendarDate) throws -> Bool {
+        var nextRoster = roster
+        guard nextRoster.remove(commitment, keptUntil: date) else {
             return false
         }
         try write(nextRoster)

@@ -1,384 +1,5 @@
-# commitment Specification
+## MODIFIED Requirements
 
-## Purpose
-
-Describes what a commitment is to DayByDay — the name a person gave something they owe themselves,
-the schedule deciding which days it is due on, and the day from which they have been keeping it —
-and how it answers whether it is due on a calendar date. The `schedule` capability owns the rules;
-this one owns the thing that carries one, which is what a screen lists, what a person reads, and
-what a tick is eventually recorded against.
-
-## Requirements
-### Requirement: A commitment is a name, a schedule, and the day it is kept from
-
-A commitment SHALL be exactly four things: a name, the schedule that decides which days it is due
-on, the calendar date from which it is kept, and the kind of record its days take. It SHALL carry
-nothing else. In particular it has no identifier of its own, no record of what was ticked, no
-position in a list, and no state that can be paused or archived — a commitment is what it is made
-of, and nothing more. The name it was given SHALL be readable back, and so SHALL the kind.
-
-The first three SHALL be required. The system MUST NOT form a commitment without a day it is kept
-from, and MUST NOT supply one of its own in place of a missing one: it cannot know what day it is,
-because the present moment is not something this capability is allowed to consult, and a default of
-any other kind would be a guess about a person's history. The kind is the one part with a default,
-and that default is the plain kind — a tick — because a day that takes a tick is what every
-commitment took before there was a choice.
-
-Two commitments SHALL be the same commitment when their name, their schedule, the day they are kept
-from and their kind are all the same, and SHALL be different commitments when any of the four
-differs. This is what "carries nothing else" means where it can be observed: a commitment holds no
-hidden identity that would make two commitments a person would call identical distinguishable to the
-system. A weight and a mood taken on the same rhythm, from the same day, under one name are two
-commitments, because what their days hold is not the same thing.
-
-The day a commitment is kept from is a calendar date, so it already names a day that exists inside
-the supported years and needs no validity rule of its own here. It is deliberately not a record of
-when the commitment was entered into the app: a person who has been going to the gym since June may
-say so, and the day they are keeping it from is then in the past.
-
-The kind is fixed when the commitment is formed and SHALL NOT change afterwards. There is no way to
-move a commitment from one kind to another, and there is deliberately none: a record embeds the
-whole commitment by value, so a part that changed would orphan everything already recorded against
-it. Changing what a person keeps is changing a commitment, which is a want of its own and not this.
-
-#### Scenario: a commitment reads back the name it was given
-
-- **WHEN** a commitment is formed with the name "Gym", a schedule listing Monday, Wednesday and
-  Saturday, and kept from 1 January 2026
-- **THEN** the commitment's name reads back as "Gym"
-
-#### Scenario: two commitments alike in name, schedule and kept-from day are the same commitment
-
-- **WHEN** two commitments are formed, both named "Gym", both on a schedule listing Monday,
-  Wednesday and Saturday, and both kept from 1 January 2026
-- **THEN** the two are the same commitment
-
-#### Scenario: two commitments differing only in name are different commitments
-
-- **WHEN** two commitments are formed on the same schedule listing Monday, Wednesday and Saturday
-  and kept from the same 1 January 2026, one named "Gym" and one named "Run"
-- **THEN** the two are different commitments
-
-#### Scenario: two commitments differing only in schedule are different commitments
-
-- **WHEN** two commitments are formed, both named "Gym" and both kept from 1 January 2026, one on a
-  schedule listing Monday and one on a schedule listing Tuesday
-- **THEN** the two are different commitments
-
-#### Scenario: two commitments differing only in the day they are kept from are different commitments
-
-- **WHEN** two commitments are formed, both named "Gym" and both on a schedule listing Monday,
-  Wednesday and Saturday, one kept from 1 January 2026 and one kept from 2 January 2026
-- **THEN** the two are different commitments
-
-#### Scenario: two commitments differing only in the kind their days take are different commitments
-
-- **WHEN** two commitments are formed, both named "Gym", both on a schedule listing Monday,
-  Wednesday and Saturday and both kept from 1 January 2026, one of the tick kind and one of the note
-  kind
-- **THEN** the two are different commitments
-
-#### Scenario: two number commitments differing only in their range are different commitments
-
-- **WHEN** two commitments are formed, both named "Weight", both on a schedule listing Monday,
-  Wednesday and Saturday, both kept from 1 January 2026 and both of the number kind, one with a
-  range of 40 to 150 and one with no range at all
-- **THEN** the two are different commitments
-- **AND** a third alike in every way but carrying a range of 40 to 200 is a different commitment
-  again
-### Requirement: A commitment's name says something
-
-The system SHALL refuse to form a commitment whose name is empty, or whose name is made only of
-whitespace, and MUST refuse it rather than adjust it: it MUST NOT trim the name down to nothing and
-accept the result, and MUST NOT substitute a placeholder of its own such as "Untitled". A name of
-nothing but blank space names nothing, so it picks out no commitment for the person reading a list
-of them — the same refusal, for the same reason, that stops a calendar date being formed from a
-combination that names no day.
-
-Every other name SHALL be accepted, and SHALL be stored exactly as it was given. There is no upper
-bound on a name's length, no restriction on the script it is written in, no character the system
-reserves, and no name it rewrites: a commitment's name is the words its owner chose, including any
-blank space at the start or the end of them. Tidying what a person typed belongs where they typed
-it, not in the rule that decides what a commitment is.
-
-#### Scenario: an empty name is not a commitment
-
-- **WHEN** an empty name, a schedule listing Monday, Wednesday and Saturday, and 1 January 2026 as
-  the day it is kept from are offered as a commitment
-- **THEN** no commitment is formed
-
-#### Scenario: a name of only whitespace is not a commitment
-
-- **WHEN** a name of three spaces, a schedule listing Monday, Wednesday and Saturday, and 1 January
-  2026 as the day it is kept from are offered as a commitment
-- **THEN** no commitment is formed
-- **AND** a name of a tab followed by a newline forms none either
-
-#### Scenario: a name with a space at each end is stored exactly as given
-
-- **WHEN** a commitment is formed with the name " Gym ", a schedule listing Monday, Wednesday and
-  Saturday, and kept from 1 January 2026
-- **THEN** the commitment's name reads back as " Gym ", with both spaces
-- **AND** it is a different commitment from one named "Gym" alike in every other way
-
-#### Scenario: a name of a single emoji is a commitment
-
-- **WHEN** a commitment is formed with a name that is the single emoji 🏋️, a schedule listing
-  Monday, Wednesday and Saturday, and kept from 1 January 2026
-- **THEN** the commitment's name reads back as that emoji
-### Requirement: A commitment's kind is a tick, a number, a note or a total
-
-A commitment's kind SHALL be exactly one of four: a **tick**, a **number**, a **note** or a
-**total**. There SHALL be no fifth, and no way to hold none: a commitment's days take something,
-and what they take is decided when the commitment is defined rather than the first time a day is
-entered.
-
-Each kind SHALL carry its own parameters and no others. A tick SHALL carry nothing and a note SHALL
-carry nothing: both are made of the fact that they are there. A number MAY carry a **range**, and a
-total MUST carry a **target**. A range SHALL belong to the number kind and a target to the total
-kind, and the system MUST NOT offer any way of attaching either to a kind it does not belong to —
-this is a rule about what can be *formed at all* rather than one about what is refused when it is
-tried, so there is no such thing as a note with a target to write a scenario about. A total SHALL
-NOT be formed without a target: a total whose sum has nothing to reach is a number a person only
-wants to watch, which is the number kind and not this one.
-
-A commitment SHALL read its kind back, along with whatever that kind carries. It is not enough that
-the commitment holds one: a caller that has to decide what to offer a person before anything has
-been recorded — the row on a day screen, the screen a commitment is defined on — has no other way to
-know, and a kind it cannot read is a kind that may as well not be there.
-
-A commitment formed without a kind being named SHALL be of the plain kind, a tick. This is the one
-part of a commitment with a default, and it has one because every commitment that existed before
-kinds did is a tick and a stated default is what keeps that true in one place rather than at every
-call. It is a default and not a fallback: naming a kind is always allowed, and naming the tick
-explicitly SHALL give the same commitment as naming nothing.
-
-The kind SHALL NOT enter into whether a commitment is due. Due-ness is the schedule and the day the
-commitment is kept from, and nothing else; a number commitment is due on its days exactly as a tick
-commitment is, and it is what a due day *takes* that the kind decides.
-
-#### Scenario: a commitment reads back the kind it was given
-
-- **WHEN** a commitment named "Weight" on a schedule listing Monday, Wednesday and Saturday, kept
-  from 1 January 2026, is formed of the number kind carrying no range
-- **THEN** the commitment's kind reads back as the number kind
-- **AND** it carries no range
-
-#### Scenario: a commitment of each of the four kinds is formed and reads its kind back
-
-- **WHEN** four commitments are formed, all named "Gym", all on a schedule listing Monday,
-  Wednesday and Saturday and all kept from 1 January 2026 — one of the tick kind, one of the number
-  kind carrying no range, one of the note kind, and one of the total kind with a target of 120
-- **THEN** each of the four reads its own kind back
-- **AND** the total reads back a target of 120
-
-#### Scenario: a commitment formed without a kind is of the plain kind
-
-- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, is formed without a kind being named
-- **THEN** its kind reads back as the tick kind
-- **AND** it is the same commitment as one formed alike in every way with the tick kind named
-
-#### Scenario: a commitment's kind does not change whether it is due
-
-- **WHEN** two commitments named "Gym" are formed on a schedule listing Monday, Wednesday and
-  Saturday, kept from 1 January 2026, one of the tick kind and one of the number kind carrying a
-  range of 40 to 150
-- **THEN** both are due on Monday 31 August 2026
-- **AND** neither is due on Tuesday 1 September 2026
-### Requirement: A range is a lowest and a highest, and the lowest is not above the highest
-
-A range SHALL be exactly two numbers: the lowest a number commitment will take and the highest. Both
-SHALL be required — a range is both ends or neither, and a number commitment declaring only a floor
-or only a ceiling is not a thing this system has. A commitment of the number kind that declares no
-range at all SHALL be a commitment of the number kind, and any number is then a number for it.
-
-Both ends SHALL be inclusive: a mood of one to ten takes 1 and takes 10. The system MUST NOT form a
-range whose lowest is above its highest, and MUST refuse rather than adjust — it MUST NOT swap the
-two ends, and MUST NOT keep one of them and drop the other. This is the refusal that stops 30
-February being a calendar date and 32 a day of the month, made where the range is formed so that
-every caller gets it: a screen refusing the same thing in words a person can read is #142's, and it
-is that refusal surfaced rather than a second one.
-
-A range whose lowest and its highest are equal SHALL be a range — a range of exactly one value,
-which is a strange thing to want and not a contradiction. A range end MAY be negative and MAY be
-zero: a temperature and a weight change both go below zero, and nothing about a range says which
-numbers a person is allowed to care about.
-
-A value that is not a number SHALL NOT be an end of a range. Neither end may be one, and this is
-stated rather than left to the comparison, because a comparison against a value that is not a number
-answers *true* in one direction and *false* in the other and would let one through.
-
-#### Scenario: a number commitment declares a range and reads it back
-
-- **WHEN** a commitment named "Mood" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, is formed of the number kind with a range of 1 to 10
-- **THEN** its kind reads back as the number kind carrying that range
-- **AND** the range reads back a lowest of 1 and a highest of 10
-
-#### Scenario: a range whose lowest is above its highest is not a range
-
-- **WHEN** a range of 10 down to 1 is offered — a lowest of 10 and a highest of 1
-- **THEN** no range is formed
-- **AND** a range of 1 to 10 is formed, with a lowest of 1 and a highest of 10
-
-#### Scenario: a range whose lowest and highest are equal is a range
-
-- **WHEN** a range with a lowest of 7 and a highest of 7 is offered
-- **THEN** a range is formed
-- **AND** a range with a lowest of -40.5 and a highest of 0 is formed too
-
-#### Scenario: a range end that is not a number is not a range
-
-- **WHEN** a range is offered whose lowest is not a number and whose highest is 5
-- **THEN** no range is formed
-- **AND** a range whose lowest is 5 and whose highest is not a number forms none either
-### Requirement: A target is a number above zero
-
-A target SHALL be a single number, and SHALL be above zero. The system MUST NOT form a target of
-zero, and MUST NOT form one below zero: a target of zero is reached before anything has been added,
-so every day of that commitment would be kept the moment it was defined, which is the opposite of
-what a total is for. It MUST refuse rather than adjust — it MUST NOT substitute a target of its own
-and MUST NOT treat a refused target as no target, because a total without a target is not a total.
-
-A target MAY have a decimal fraction. It is the same kind of number a day's additions are made of,
-and 0.5 of a dose is a target a person can mean; the system MUST NOT round it, MUST NOT require a
-whole number, and MUST NOT attach a unit to it — the commitment's name says grams.
-
-A value that is not a number SHALL NOT be a target, for the same reason it is not an end of a range.
-
-What a target *does* — the sum a day's additions have to reach for that day to be kept — is not this
-requirement's and is not this change's: it is `record`'s, once a total can be recorded at all. This
-requirement fixes only what a target is and what refuses to be one.
-
-#### Scenario: a total commitment declares a target and reads it back
-
-- **WHEN** a commitment named "Protein" on a schedule listing every day of the week, kept from
-  1 January 2026, is formed of the total kind with a target of 120
-- **THEN** its kind reads back as the total kind carrying that target
-- **AND** the target reads back as 120
-
-#### Scenario: a target with a decimal fraction is a target
-
-- **WHEN** a target of 0.5 is offered
-- **THEN** a target is formed, reading back as 0.5
-- **AND** a target of 119.95 is formed too
-
-#### Scenario: a target of zero and a target below zero are not targets
-
-- **WHEN** a target of 0 is offered
-- **THEN** no target is formed
-- **AND** a target of -1 forms none either
-- **AND** a target of 0.0001 is formed
-
-#### Scenario: a target that is not a number is not a target
-
-- **WHEN** a target that is not a number is offered
-- **THEN** no target is formed
-### Requirement: A commitment is due exactly when its schedule is due, on and after the day it is kept from
-
-On the day a commitment is kept from and on every date after it, the commitment SHALL be due exactly
-when the schedule it carries is due on that date, and SHALL NOT be due on any other such date. It
-adds nothing to its schedule's answer and takes nothing away: the system MUST NOT consider the
-commitment's name, the current time, the device's time zone, the locale, or whether the commitment
-has been ticked. As throughout `schedule`, the question is asked of a calendar date rather than of
-the present moment, so a date in the past answers the same way today as it did when it was today.
-
-Delegation is the whole of the rule from that day onwards, and it holds for every schedule shape the
-`schedule` capability defines and for every shape added to it later, without this requirement
-changing. It holds equally for a schedule that is due on no date at all: such a commitment SHALL
-answer that it is not due, rather than the system treating it as an error, exactly as `schedule`
-requires of the schedule itself.
-
-#### Scenario: a commitment on a weekday-set schedule is due on a listed weekday and not on another
-
-- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, is asked about Monday 31 August 2026
-- **THEN** the commitment is due on that date
-- **AND** the same commitment asked about Tuesday 1 September 2026 answers that it is not due
-
-#### Scenario: a commitment on a day-of-month schedule is due on the last day of a month too short for its day
-
-- **WHEN** a commitment named "Finances" on a schedule on the 31st of the month, kept from 1 January
-  2026, is asked about 28 February 2027
-- **THEN** the commitment is due on that date
-- **AND** the same commitment asked about 1 March 2027 answers that it is not due
-
-#### Scenario: a commitment on an every-N-days schedule is due on its start date and not on the day before it
-
-- **WHEN** a commitment named "Contact lenses" on a schedule of every 14 days starting on 25 August
-  2026, kept from that same 25 August 2026, is asked about 25 August 2026
-- **THEN** the commitment is due on that date
-- **AND** the same commitment asked about 24 August 2026 answers that it is not due
-
-#### Scenario: two commitments with different names and the same schedule are due on the same dates
-
-- **WHEN** a commitment named "Gym" and a commitment named "Run", both on a schedule listing Monday,
-  Wednesday and Saturday and both kept from 1 January 2026, are each asked about every date from
-  Monday 31 August through Sunday 6 September 2026
-- **THEN** the two answer identically on all seven dates — due on 31 August, 2 September and
-  5 September 2026, and not due on the other four
-
-#### Scenario: a commitment on a schedule that is due on no date is never due
-
-- **WHEN** a commitment named "Gym" on a schedule listing no weekday at all, kept from 1 January
-  2026, is asked about each date from Monday 31 August through Sunday 6 September 2026
-- **THEN** the commitment is due on none of those seven dates
-### Requirement: A commitment is not due before the day it is kept from
-
-A commitment SHALL NOT be due on any calendar date earlier than the day it is kept from, whatever
-its schedule says about that date. The day it is kept from is where the commitment begins to be
-owed; the dates before it are dates on which nothing had been committed to, and the system MUST NOT
-answer that a commitment was due on one of them.
-
-This is what stops the product inventing a history of failures. Because an unticked due day reads as
-a day the commitment was missed, a rule anchored only to the calendar would fill every earlier year
-with misses nobody could ever have avoided: a commitment on Mondays, Wednesdays and Saturdays, kept
-from this week, would otherwise answer *due* for every such day back to the first year the system
-supports. A record of what was actually kept cannot open with a fabricated one.
-
-The rule applies to every schedule shape alike, and it is a floor rather than a phase: the day a
-commitment is kept from does not have to be a day its schedule is due on, and it does not shift the
-schedule to begin there. When the schedule is an interval of days, its own start date and this floor
-are separate and both apply — the interval decides which dates the rhythm lands on, this requirement
-decides that landings before the floor are not due, and a start date earlier than the floor is
-therefore a rhythm whose first occurrences are simply never owed.
-
-#### Scenario: a commitment is not due on a date before the day it is kept from
-
-- **WHEN** a commitment on a schedule listing Monday, Wednesday and Saturday, kept from Wednesday
-  2 September 2026, is asked about Monday 31 August 2026
-- **THEN** the commitment is not due on that date, though its schedule is due on it
-- **AND** the same commitment asked about Wednesday 2 September 2026 answers that it is due
-
-#### Scenario: a commitment is due on the day it is kept from when its schedule is due that day
-
-- **WHEN** a commitment on a schedule listing Monday, Wednesday and Saturday, kept from Monday
-  31 August 2026, is asked about Monday 31 August 2026
-- **THEN** the commitment is due on that date
-
-#### Scenario: a commitment is not due on the day it is kept from when its schedule is not due that day
-
-- **WHEN** a commitment on a schedule listing Monday, Wednesday and Saturday, kept from Tuesday
-  1 September 2026, is asked about Tuesday 1 September 2026
-- **THEN** the commitment is not due on that date
-- **AND** the same commitment asked about Wednesday 2 September 2026 answers that it is due
-
-#### Scenario: a commitment is due on none of the dates in the month before it is kept from
-
-- **WHEN** a commitment on a schedule on the 25th of the month, kept from 1 September 2026, is asked
-  about each date from 1 through 31 August 2026
-- **THEN** the commitment is due on none of those thirty-one dates
-- **AND** the same commitment asked about 25 September 2026 answers that it is due
-
-#### Scenario: an every-N-days occurrence before the day it is kept from is not due
-
-- **WHEN** a commitment on a schedule of every 3 days starting on 25 August 2026, kept from
-  1 September 2026, is asked about 28 August 2026
-- **THEN** the commitment is not due on that date, though the interval lands on it
-- **AND** the same commitment asked about 31 August 2026, the next landing before the floor, answers
-  that it is not due
-- **AND** the same commitment asked about 3 September 2026 answers that it is due
 ### Requirement: A roster holds the commitments a person keeps, in the order they were taken on
 
 A roster SHALL hold commitments, in the order they were added to it, and SHALL read back, in that
@@ -475,6 +96,7 @@ any of the three SHALL still hold what it held.
   from 1 January 2026
 - **THEN** the roster holds both, in that order, and reads each back with the day it is kept from
   unchanged
+
 ### Requirement: A roster refuses a commitment it already holds
 
 A roster SHALL refuse a commitment equal to one it is already keeping — one it holds and has neither
@@ -628,6 +250,7 @@ neither states them nor narrows them.
   commitment again
 - **THEN** it answers with that commitment on 31 January 2026, on 1 February 2026 and on 1 March 2026
 - **AND** the roster reads back that one commitment and no second copy of it
+
 ### Requirement: A roster stops keeping a commitment, on the day it was kept until
 
 A roster SHALL stop keeping a commitment it holds, on being given that commitment and a calendar
@@ -745,6 +368,7 @@ and two rosters differing only in the day one commitment was kept until SHALL be
 - **THEN** the roster reports that it did not stop keeping the commitment
 - **AND** the roster is the same roster as one that removed the commitment as of 31 January 2026 and
   was never asked to stop keeping it
+
 ### Requirement: A roster answers which commitments it had not stopped keeping on a calendar date
 
 For any calendar date the system supports, a roster SHALL answer with the commitments it had not
@@ -859,6 +483,7 @@ itself falls.
   1583, and is then removed as of 31 January 2026 and asked about those three dates again
 - **THEN** all three answers are the same after the commitment was removed as before it, each naming
   that one commitment
+
 ### Requirement: A roster store keeps a roster at a place, across the app being closed and opened again
 
 A roster store SHALL be opened at a place, and SHALL hold a roster: every commitment taken on
@@ -1090,6 +715,7 @@ MUST NOT change what is kept at any other place.
 - **THEN** removing the commitment is refused with an error
 - **AND** the store's roster is still the same roster as one given that commitment once and asked
   nothing else
+
 ### Requirement: A roster store reads a roster kept before a commitment carried a kind
 
 A roster store SHALL read a roster kept in any form this app has written before the one it writes
@@ -1196,6 +822,7 @@ version of this app ever wrote says nothing about the shape of what follows it.
 - **THEN** the later store's roster is the same roster as one given that commitment once and asked to
   remove it as of 31 January 2026
 - **AND** the later store's roster reads back no commitments it is keeping
+
 ### Requirement: A roster store that cannot be read is refused rather than emptied
 
 Opening a roster store at a place that holds something this app cannot read as a roster store SHALL
@@ -1246,6 +873,7 @@ been in.
 - **THEN** opening is refused with an error
 - **AND** the error says the content is not a roster store rather than that it is from a later form
 - **AND** the content at that place is byte-for-byte what it was before
+
 ### Requirement: A commitments screen lists the commitments its roster keeps, in the order they were taken on
 
 A commitments screen SHALL hold a roster, read at the place it keeps its roster, and SHALL list the
@@ -1360,6 +988,7 @@ holds nothing (ADR-1027), and a second thing writing day one would take it on tw
   it is asked to remove the second of them; "Vitamins" is typed back; and the removal is confirmed
 - **THEN** what it keeps is one entry, named "Vitamins", saying "Mon, Wed"
 - **AND** what it has stopped is nothing
+
 ### Requirement: A commitments screen lists what has been stopped, beside what it keeps
 
 A commitments screen SHALL list, separately from the commitments its roster is keeping, the
@@ -1432,6 +1061,7 @@ A roster that has stopped nothing SHALL list nothing as stopped.
 - **THEN** what it keeps is one entry, named "Water plants"
 - **AND** what it has stopped is one entry, named "Journaling"
 - **AND** "Gym" is in neither of its lists
+
 ### Requirement: A commitments screen defines a commitment from a name, a rhythm and the day it is kept from
 
 A commitments screen SHALL define a commitment from three things and no others: a name, a rhythm,
@@ -1525,186 +1155,7 @@ any way the calendar does not.
 - **THEN** nothing is refused
 - **AND** what it keeps is three entries, named "Water plants", then "Gym", then "Journaling"
 - **AND** what it has stopped is nothing
-### Requirement: A commitments screen refuses a name that says nothing, and a rhythm due on no day
 
-A commitments screen SHALL refuse to define a commitment whose name is empty or made only of blank
-space, and SHALL refuse to define one on a weekday set with no days in it. Neither SHALL be kept at
-the roster place, and neither SHALL change either of the screen's lists. The two SHALL be told
-apart from each other, because they are different things to fix.
-
-The first refusal is the one a commitment already makes: a name that names nothing names nothing on
-any screen.
-
-**The second is the screen's own, and the rule engine goes on accepting the value.** A weekday set
-with no days in it is a legal schedule, due on no date the system supports, and the `schedule`
-capability SHALL be unchanged by this requirement. A commitment made on one is a commitment a
-person would never see again, which is a rule about what a screen should offer to make rather than
-about what a schedule value may be. ADR-1028.
-
-A commitments screen SHALL refuse nothing else about a name. There is no length limit, no
-restricted script and no reserved word: the name is the owner's own words rather than the system's.
-
-#### Scenario: a commitments screen refuses a commitment named with nothing but blank space
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and a commitment named "   " on a weekday-set rhythm of all seven
-  weekdays, kept from that same day, is defined through it
-- **THEN** it is refused as a name that says nothing
-- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
-
-#### Scenario: a commitments screen refuses a weekday set with no days in it
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and a commitment named "Gym" on a weekday-set rhythm listing no weekdays
-  at all, kept from that same day, is defined through it
-- **THEN** it is refused as a rhythm due on no day, told apart from a name that says nothing
-- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
-
-#### Scenario: a weekday set with no days in it is still a schedule the rule engine accepts
-
-- **WHEN** a commitment named "Gym" is formed directly from a schedule listing no weekdays at all,
-  kept from 1 January 2026
-- **THEN** the commitment is formed
-- **AND** it is not due on 1 January 2026 and not due on any of the seven days after it
-
-#### Scenario: a commitments screen refuses nothing else about a name
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and three commitments on a weekday-set rhythm of all seven weekdays, kept
-  from that same day, are defined through it — one named "x", one named " Gym ", and one named
-  "Gym 🏋️"
-- **THEN** none of the three is refused
-- **AND** what the screen keeps is three entries, named "x", then " Gym ", then "Gym 🏋️", the
-  spaces around " Gym " kept exactly as they were given
-### Requirement: A commitments screen refuses a rhythm number the calendar will not take
-
-A commitments screen SHALL refuse to define a commitment on a day of the month that is not one of
-the thirty-one, on an interval of fewer than one day, or on a weekly quota outside one to seven a
-week. It SHALL refuse the number rather than change it: a number outside what a rhythm allows MUST
-NOT be moved to the nearest number that is allowed, and MUST NOT be dropped in silence. Nothing
-SHALL be kept at the roster place and neither of the screen's lists SHALL change.
-
-The three refusals are one refusal, told apart from every other the screen makes but not from each
-other. What a person does about any of them is the same thing — put a different number in the field
-they are already looking at — and the form knows which field that is, so a second case would buy a
-distinction nothing could act on. That is ADR-1021's rule, applied where it does hold, in the same
-change that departs from it where it does not.
-
-**This is not the screen disagreeing with the rule engine, and it is the opposite of the
-requirement above.** A weekday set with no days in it is a value the engine accepts and the screen
-refuses (ADR-1028). A day of the month of 32 is a value the engine refuses to form at all: the
-`schedule` capability already says a day of the month is a number from the first to the
-thirty-first, an interval is a whole number of days at least one, and a weekly quota is a number of
-times from one to seven, and the `schedule` capability is unchanged by this requirement. All this
-requirement does is make the screen *say* what the value said, which ADR-1028 records as what every
-screen in this product already did.
-
-The numbers a rhythm allows SHALL be accepted at both ends. The first and the thirty-first of the
-month, an interval of one day, and one and seven times a week are each the last number that is
-allowed rather than the first that is not.
-
-#### Scenario: a commitments screen refuses a day of the month that is not one of the thirty-one
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and a commitment named "Finances" on a day-of-the-month rhythm of the 0th,
-  kept from that same day, is defined through it; and then one named "Finances" on a
-  day-of-the-month rhythm of the 32nd, kept from that same day
-- **THEN** both are refused as a rhythm number the calendar will not take
-- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
-
-#### Scenario: a commitments screen refuses an interval of fewer than one day
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and a commitment named "Contact lenses" on an interval rhythm of 0 days,
-  kept from that same day, is defined through it; and then one named "Contact lenses" on an
-  interval rhythm of -7 days, kept from that same day
-- **THEN** both are refused as a rhythm number the calendar will not take
-- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
-
-#### Scenario: a commitments screen refuses a weekly quota outside one to seven
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and a commitment named "Reading" on a weekly-quota rhythm of 0 times a
-  week, kept from that same day, is defined through it; and then one named "Reading" on a
-  weekly-quota rhythm of 8 times a week, kept from that same day
-- **THEN** both are refused as a rhythm number the calendar will not take
-- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
-
-#### Scenario: a rhythm number a commitments screen refuses is told apart from its other refusals
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and three commitments kept from that same day are defined through it — one
-  named "Finances" on a day-of-the-month rhythm of the 32nd, one named "   " on a weekday-set rhythm
-  of all seven weekdays, and one named "Gym" on a weekday-set rhythm listing no weekdays at all
-- **THEN** the first is refused as a rhythm number the calendar will not take
-- **AND** the second is refused as a name that says nothing, and the third as a rhythm due on no
-  day, each of the three told apart from the other two
-
-#### Scenario: a commitments screen accepts the number at each end of what a rhythm allows
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
-  nothing has been kept, and five commitments kept from that same day are defined through it —
-  "Rent" on a day-of-the-month rhythm of the 1st, "Finances" on a day-of-the-month rhythm of the
-  31st, "Shave" on an interval rhythm of 1 day, "Long run" on a weekly-quota rhythm of 1 time a
-  week, and "Steps" on a weekly-quota rhythm of 7 times a week
-- **THEN** none of the five is refused
-- **AND** what the screen keeps is five entries, named "Rent", then "Finances", then "Shave", then
-  "Long run", then "Steps"
-### Requirement: A commitments screen tells a commitment it already keeps apart from a roster it could not write
-
-A commitments screen SHALL refuse a commitment its roster is already keeping, and SHALL refuse a
-change it could not keep at the roster place, and SHALL tell the two apart. Neither SHALL change
-either of the screen's lists, and neither SHALL change what is at the roster place.
-
-This deliberately does not follow the day screen, which tells every refused tick the same way
-(ADR-1021). The reasoning there was that a refusal a person cannot act on differently should not be
-told apart, and it does not carry: a commitment you already keep is your own doing and you can
-change the name, the rhythm or the day you keep it from, while a place that will not take a write
-leaves a person nothing to do but try again later.
-
-A commitment the roster has **stopped** keeping is not a duplicate. Defining the same three things
-again SHALL take that commitment up again, in the place it was taken on in, exactly as offering it
-to the roster does.
-
-#### Scenario: a commitments screen refuses a commitment its roster is already keeping
-
-- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
-  as of Monday 31 August 2026; and a commitment named "Gym" on a weekday-set rhythm of Monday,
-  Wednesday and Saturday, kept from 1 January 2026, is defined through it
-- **THEN** it is refused as a commitment already kept
-- **AND** what the screen keeps is one entry, named "Gym"
-- **AND** the content at that roster place is byte-for-byte what it was immediately after the screen
-  was opened
-
-#### Scenario: a commitments screen that could not keep a new commitment says the roster could not be written
-
-- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place under a
-  directory that cannot be created, and a commitment named "Gym" on a weekday-set rhythm of all
-  seven weekdays, kept from that same day, is defined through it
-- **THEN** it is refused as a roster that could not be written, told apart from a commitment already
-  kept
-- **AND** what the screen keeps is nothing
-
-#### Scenario: defining a commitment a commitments screen has stopped keeping takes it up again in the place it was taken on in
-
-- **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling",
-  all on a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a
-  roster place; "Gym" is stopped there as of Sunday 30 August 2026; a commitments screen is opened
-  at that roster place as of Monday 31 August 2026; and a commitment named "Gym" on a weekday-set
-  rhythm of all seven weekdays, kept from 1 January 2026, is defined through it
-- **THEN** it is not refused
-- **AND** what the screen keeps is three entries, named "Water plants", then "Gym", then
-  "Journaling"
-- **AND** what it has stopped is nothing
-
-#### Scenario: a commitment a commitments screen refuses as already kept is not taken on a second time
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
-  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
-  as of Monday 31 August 2026; and that same commitment is defined through it twice
-- **THEN** both are refused as a commitment already kept
-- **AND** a roster store opened afterwards at that place holds one commitment
 ### Requirement: A commitments screen asks you to confirm before it stops keeping a commitment
 
 A commitments screen SHALL be asked to stop keeping a commitment, and SHALL change nothing until
@@ -1853,59 +1304,7 @@ be written, and SHALL leave both lists as they were.
 - **THEN** nothing is awaiting removal
 - **AND** it says "Gym" is awaiting confirmation
 - **AND** what it keeps is one entry, named "Gym", and what it has stopped is nothing
-### Requirement: A commitments screen takes a stopped commitment up again in one tap
 
-A commitments screen SHALL take a commitment it has stopped up again, without asking for
-confirmation and without asking for a name, a rhythm or a day. It SHALL keep that at the roster
-place before either list says so; the commitment SHALL then be in what the screen keeps, in the
-place it was taken on in, and not in what it has stopped.
-
-It asks for no confirmation because the whole point of the second list is that stopping costs one
-tap to undo. It asks for nothing else because the commitment is already three things the roster
-holds; asking again would be defining a different commitment.
-
-A commitments screen asked to take up again a commitment its roster has not stopped SHALL do
-nothing and SHALL say nothing. One it could not keep at the roster place SHALL be refused as a
-roster that could not be written, leaving both lists as they were.
-
-#### Scenario: a commitment taken up again through a commitments screen moves from what it has stopped to what it keeps
-
-- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
-  weekdays and kept from 1 January 2026, are taken on at a roster place; "Gym" is stopped there as
-  of Sunday 30 August 2026; a commitments screen is opened at that roster place as of Monday
-  31 August 2026; and "Gym" is taken up again through it
-- **THEN** what it keeps is two entries, named "Gym" and then "Journaling"
-- **AND** what it has stopped is nothing
-- **AND** a roster store opened afterwards at that place answers with "Gym" when asked what it had
-  not stopped keeping on Tuesday 1 September 2026
-
-#### Scenario: a commitment taken up again through a commitments screen is in the place it was taken on in
-
-- **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling",
-  all on a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a
-  roster place; "Water plants" is stopped there as of Sunday 30 August 2026; a commitments screen
-  is opened at that roster place as of Monday 31 August 2026; and "Water plants" is taken up again
-  through it
-- **THEN** what it keeps is three entries, named "Water plants", then "Gym", then "Journaling"
-
-#### Scenario: taking a commitment up again through a commitments screen asks for no confirmation
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
-  1 January 2026, is taken on at a roster place; "Gym" is stopped there as of Sunday 30 August 2026;
-  a commitments screen is opened at that roster place as of Monday 31 August 2026; and "Gym" is
-  taken up again through it
-- **THEN** nothing is awaiting confirmation at any point
-- **AND** what it keeps is one entry, named "Gym", with nothing else asked of the screen
-
-#### Scenario: a commitments screen asked to take up again a commitment it has not stopped does nothing
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
-  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
-  as of Monday 31 August 2026; and "Gym" is taken up again through it
-- **THEN** nothing is refused
-- **AND** what it keeps is one entry, named "Gym", and what it has stopped is nothing
-- **AND** the content at that roster place is byte-for-byte what it was immediately after the screen
-  was opened
 ### Requirement: A commitments screen keeps its roster at the place a day screen keeps its, and reads it again when the app is shown
 
 A commitments screen SHALL keep its roster, when it is not told another place, at exactly the place
@@ -1954,6 +1353,7 @@ not move it.
   not stopped keeping on Monday 31 August 2026, the day before the one the screen was last handed
 - **AND** it answers with nothing when asked the same about Tuesday 1 September 2026
 - **AND** the day the screen offers to keep a commitment from is Tuesday 1 September 2026
+
 ### Requirement: A commitments screen that cannot read its roster lists nothing and changes nothing
 
 A commitments screen whose roster place cannot be read SHALL list nothing in either list and SHALL
@@ -2017,6 +1417,7 @@ afresh.
   named "Gym" on a schedule listing all seven weekdays, kept from 1 January 2026, formed directly
 - **THEN** nothing is awaiting removal and nothing is refused
 - **AND** the content at that place is byte-for-byte what was written there
+
 ### Requirement: A commitments screen holds the change it refused and why, one at a time
 
 Where a change asked of a commitments screen is refused, the screen SHALL hold **which change was
@@ -2135,6 +1536,7 @@ restated here.
 - **THEN** the removal refuses nothing
 - **AND** the screen still holds a name that says nothing, against defining a commitment
 - **AND** what it keeps is one entry, named "Gym", and "Gym" is still awaiting removal
+
 ### Requirement: What a commitments screen holds about a refused change lasts until the app is shown again or a change is kept
 
 A commitments screen SHALL go on holding a refused change until one of exactly two things happens,
@@ -2247,64 +1649,9 @@ been proved about it either way.
   to remove "Gym", "Gym" is typed back, and the removal is cancelled
 - **THEN** the screen still holds a name that says nothing, against defining a commitment
 - **AND** nothing is awaiting removal and nothing has been typed back
-### Requirement: A commitments screen says in words the rhythm its form is building
 
-A commitments screen SHALL say, for the rhythm its form is currently building, the words the
-schedule that rhythm names would be said in — the same words the entry for that commitment will say
-once it is defined, and no others. It SHALL say them as the rhythm is built rather than only once
-it is defined, so that a person reads what their rhythm will say before they commit to it.
+## ADDED Requirements
 
-It SHALL say them **without being given a day to keep the commitment from**. An interval rhythm
-carries no start date and an interval schedule's words never say one, so a rhythm's words are
-exactly the words of the schedule it names, on every one of the four shapes and whatever day the
-commitment would be kept from.
-
-A rhythm this screen would refuse to define a commitment on SHALL be said in one of exactly two
-ways, and never in the wording of the refusal itself:
-
-- A **weekday set with no days in it** names a schedule the system forms, so it SHALL be said as
-  that schedule is said — "No day". The screen refuses to define on it (ADR-1028); saying so is
-  what the refusal does, and the words go on describing the rhythm being built.
-- A **number no schedule can be built on** — a day of the month that is not one of the thirty-one,
-  an interval of fewer than one day, a weekly quota outside one to seven — names no schedule at
-  all, so there are no words for it and the screen SHALL say **nothing**. It MUST NOT substitute
-  the nearest number that would work, and MUST NOT say a refusal here: what a person does about
-  such a number is told when they try to define on it, in one place, by the requirement above.
-
-#### Scenario: a rhythm being built is said in the words the schedule it names says
-
-- **WHEN** a weekday-set rhythm of Monday, Wednesday and Saturday, a day-of-the-month rhythm of the
-  25th, an interval rhythm of 14 days, and a weekly-quota rhythm of 3 times a week are each said in
-  words for a commitments screen's form
-- **THEN** they say "Mon, Wed, Sat", "The 25th", "Every 14 days" and "3x a week"
-
-#### Scenario: an interval rhythm is said without a day to keep the commitment from
-
-- **WHEN** an interval rhythm of 14 days is said in words for a commitments screen's form
-- **THEN** it says "Every 14 days"
-- **AND** those are the words of a schedule of every 14 days starting on 1 January 2026, and the
-  words of a schedule of every 14 days starting on 31 August 2026, alike
-
-#### Scenario: a weekday-set rhythm with no days in it is said as no day
-
-- **WHEN** a weekday-set rhythm listing no weekdays at all is said in words for a commitments
-  screen's form
-- **THEN** it says "No day"
-
-#### Scenario: a rhythm carrying a number the calendar will not take is said as nothing
-
-- **WHEN** a day-of-the-month rhythm of the 32nd, a day-of-the-month rhythm of the 0th, an interval
-  rhythm of 0 days and a weekly-quota rhythm of 8 times a week are each said in words for a
-  commitments screen's form
-- **THEN** each says nothing at all
-- **AND** in particular none of them says "The 31st", "Every 1 day" or "7x a week"
-
-#### Scenario: a rhythm carrying the number at each end of what it allows is said in words
-
-- **WHEN** a day-of-the-month rhythm of the 1st, a day-of-the-month rhythm of the 31st, an interval
-  rhythm of 1 day, a weekly-quota rhythm of 1 time a week and a weekly-quota rhythm of 7 times a
-  week are each said in words for a commitments screen's form
-- **THEN** they say "The 1st", "The 31st", "Every day", "1x a week" and "7x a week"
 ### Requirement: A roster removes a commitment it holds, and never lets it go
 
 A roster SHALL remove a commitment it holds, on being given that commitment and a calendar date.
@@ -2439,6 +1786,7 @@ rosters.
   the roster answers with on 31 January 2026 is asked whether it is due
 - **THEN** that commitment is due on Monday 5 January 2026 and not due on Tuesday 6 January 2026
 - **AND** it reads back the name "Gym" and the day it is kept from, both unchanged
+
 ### Requirement: A commitments screen removes a commitment only when its name is typed back
 
 A commitments screen SHALL be asked to remove a commitment on either of its lists, and SHALL change

@@ -2587,3 +2587,63 @@ func aDayScreenReturnedToGoesOnTellingWhatItWasTellingOnARow() throws {
     #expect(screen.refusedChangeRow == row)
     #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
 }
+
+@MainActor
+@Test("a day screen draws a removed commitment on the day it was kept until and not on the day after it")
+func aDayScreenDrawsARemovedCommitmentOnTheDayItWasKeptUntilAndNotOnTheDayAfterIt() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+    try rosterStore.remove(journaling, keptUntil: sunday)
+
+    let recordStore = try RecordStore(at: place)
+    try recordStore.add(Tick(journaling, on: sunday)!)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.rows.isEmpty)
+
+    screen.showPreviousDay()
+
+    #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
+    #expect(screen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a day screen opened on a roster whose commitments have all been removed takes nothing on")
+func aDayScreenOpenedOnARosterWhoseCommitmentsHaveAllBeenRemovedTakesNothingOn() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+    try rosterStore.remove(journaling, keptUntil: sunday)
+
+    let screen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.rows.isEmpty)
+
+    let later = try RosterStore(at: rosterPlace)
+    var expected = Roster()
+    _ = expected.add(journaling)
+    _ = expected.remove(journaling, keptUntil: sunday)
+    #expect(later.roster == expected)
+}

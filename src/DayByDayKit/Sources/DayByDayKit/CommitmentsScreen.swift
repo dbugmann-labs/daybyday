@@ -41,9 +41,11 @@ public final class CommitmentsScreen {
         }
     }
 
-    /// The commitments `roster` has stopped keeping, in the order they were taken on.
+    /// The commitments `roster` has stopped keeping, in the order they were taken on. A removed
+    /// commitment is in neither this list nor `kept` — `design.md` § *The seam*: removal is a
+    /// third state, not a second way to be stopped.
     private static func stopped(in roster: Roster) -> [Commitment] {
-        roster.entries.compactMap { $0.keptUntil == nil ? nil : $0.commitment }
+        roster.entries.compactMap { $0.keptUntil == nil || $0.isRemoved ? nil : $0.commitment }
     }
 
     /// Sets `kept` and `stopped` from `store`, or empties both when `store` is `nil`. The one
@@ -69,6 +71,28 @@ public final class CommitmentsScreen {
     /// The commitment a stop has been asked for and not yet confirmed or cancelled.
     public private(set) var awaitingConfirmation: Commitment?
 
+    /// The commitment a removal has been asked for and not yet confirmed or cancelled.
+    public private(set) var awaitingRemoval: Commitment?
+
+    /// What has been typed back to confirm removing `awaitingRemoval`. Settable so the shell can
+    /// bind a text field to it; `design.md` § *The screen holds what has been typed* is why this
+    /// lives here rather than in `@State`. Cleared to `""` whenever a removal is asked for, when
+    /// a second one is asked for, when either is cancelled or confirmed, and when the app is
+    /// shown again.
+    public var nameTypedBack: String = ""
+
+    /// Whether `nameTypedBack` matches the name of the commitment awaiting removal, once
+    /// surrounding blank space is trimmed from both. `false` when nothing is awaiting removal.
+    /// This is a fact about two strings, not words a person reads — ADR-1022, restated for
+    /// removal in `design.md` § *Nothing here is words a person reads*.
+    public var nameTypedBackMatches: Bool {
+        guard let awaitingRemoval else {
+            return false
+        }
+        return nameTypedBack.trimmingCharacters(in: .whitespacesAndNewlines)
+            == awaitingRemoval.name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     /// The change asked for last that was refused, and why — at most one at a time, `nil` when the
     /// last change asked for was kept and when none has been asked for. Cleared by `shown(asOf:)`.
     public private(set) var refusedChange: RefusedChange?
@@ -80,6 +104,7 @@ public final class CommitmentsScreen {
         case defining(Refusal)
         case stopping(Commitment, Refusal)
         case keepingAgain(Commitment, Refusal)
+        case removing(Commitment, Refusal)
     }
 
     /// Why a change was refused. `nil` from any of the four below means it was kept at the place
@@ -136,13 +161,16 @@ public final class CommitmentsScreen {
         return nil
     }
 
-    /// Puts `commitment` up for confirmation, replacing whatever was there. Does nothing when
-    /// `kept` does not hold it.
+    /// Puts `commitment` up for confirmation, replacing whatever was there, and leaves nothing
+    /// awaiting removal — a screen has at most one change of any kind awaiting confirmation.
+    /// Does nothing when `kept` does not hold it.
     public func askToStopKeeping(_ commitment: Commitment) {
         guard kept.contains(commitment) else {
             return
         }
         awaitingConfirmation = commitment
+        awaitingRemoval = nil
+        nameTypedBack = ""
     }
 
     /// Leaves nothing awaiting confirmation and changes nothing else.
@@ -150,8 +178,12 @@ public final class CommitmentsScreen {
         awaitingConfirmation = nil
     }
 
-    /// Stops keeping whatever is awaiting confirmation, as of the day this screen holds. Answers
-    /// `nil` and does nothing when nothing is awaiting confirmation.
+    /// Stops keeping whatever is awaiting confirmation, as of the day before the one this screen
+    /// holds — `design.md` § *The day before*, settled answer 3: the day the screen was handed
+    /// answers with nothing afterwards, and only the day before it still does. Falls back to the
+    /// day this screen holds itself where the calendar has no day before it (1 January 1583),
+    /// rather than refusing something a person has no remedy for. Answers `nil` and does nothing
+    /// when nothing is awaiting confirmation.
     @discardableResult public func confirmStopKeeping() -> Refusal? {
         guard let commitment = awaitingConfirmation else {
             return nil
@@ -164,9 +196,69 @@ public final class CommitmentsScreen {
         }
 
         do {
-            try rosterStore.retire(commitment, keptUntil: dayToKeepFrom)
+            try rosterStore.retire(commitment, keptUntil: Self.dayBefore(dayToKeepFrom))
         } catch {
             refusedChange = .stopping(commitment, .notKept)
+            return .notKept
+        }
+
+        refusedChange = nil
+        refreshLists(from: rosterStore)
+        return nil
+    }
+
+    /// The day before `date`, or `date` itself where the calendar has no day before it (1 January
+    /// 1583) — the one helper every day-before change goes through, so a stop and a removal made
+    /// through this screen agree on it. `design.md` § *The day before, and the one date that has
+    /// no day before it*.
+    private static func dayBefore(_ date: CalendarDate) -> CalendarDate {
+        date.adding(days: -1) ?? date
+    }
+
+    /// Puts `commitment` up for removal, replacing whatever was there, and leaves nothing
+    /// awaiting a stop — a screen has at most one change of any kind awaiting confirmation. Does
+    /// nothing when neither `kept` nor `stopped` holds it.
+    public func askToRemove(_ commitment: Commitment) {
+        guard kept.contains(commitment) || stopped.contains(commitment) else {
+            return
+        }
+        awaitingRemoval = commitment
+        nameTypedBack = ""
+        awaitingConfirmation = nil
+    }
+
+    /// Leaves nothing awaiting removal and nothing typed back, and changes nothing else.
+    public func cancelRemoving() {
+        awaitingRemoval = nil
+        nameTypedBack = ""
+    }
+
+    /// Removes whatever is awaiting removal, as of the day before the one this screen holds where
+    /// the roster is still keeping it — the same day-before rule and the same fallback
+    /// `confirmStopKeeping` uses — or the day it was already kept until where the roster had
+    /// already stopped keeping it, which `Roster.remove` enforces on its own by ignoring the date
+    /// it is handed there. Answers `nil` and does nothing when nothing is awaiting removal, and
+    /// when what has been typed back does not match: no refusal, because a name still being typed
+    /// is not a change anyone has asked for yet.
+    @discardableResult public func confirmRemoving() -> Refusal? {
+        guard let commitment = awaitingRemoval else {
+            return nil
+        }
+        guard nameTypedBackMatches else {
+            return nil
+        }
+        awaitingRemoval = nil
+        nameTypedBack = ""
+
+        guard let rosterStore else {
+            refusedChange = .removing(commitment, .notKept)
+            return .notKept
+        }
+
+        do {
+            try rosterStore.remove(commitment, keptUntil: Self.dayBefore(dayToKeepFrom))
+        } catch {
+            refusedChange = .removing(commitment, .notKept)
             return .notKept
         }
 
@@ -203,6 +295,8 @@ public final class CommitmentsScreen {
     public func shown(asOf today: CalendarDate) {
         dayToKeepFrom = today
         refusedChange = nil
+        awaitingRemoval = nil
+        nameTypedBack = ""
 
         let opened = Self.open(at: place)
         rosterStore = opened.store
