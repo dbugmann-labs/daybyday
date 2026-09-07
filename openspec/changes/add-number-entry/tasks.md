@@ -4,12 +4,12 @@ This section changes no behaviour and adds no test. It pins the starting point a
 notice's public name, so that everything after it is measured against a number rather than a memory
 and nothing later has to touch those 26 lines twice.
 
-- [ ] 1.1 Confirm the branch point before touching anything: from `src/DayByDayKit`, `swift test`
+- [x] 1.1 Confirm the branch point before touching anything: from `src/DayByDayKit`, `swift test`
   reports **489 tests passing**. Measured on this machine on 2026-09-07, Apple Swift 6.3.3
   (swiftlang-6.3.3.1.3), target `arm64-apple-macosx26.0`, at `8f78852` — the branch point, re-measured
   after `main` moved under this branch once already while the folder was being written. A different
   number means it has moved again; report it rather than working around it (`AGENTS.md` rule 5).
-- [ ] 1.2 Rename the notice. In `Sources/DayByDayKit/DayScreen.swift`, add
+- [x] 1.2 Rename the notice. In `Sources/DayByDayKit/DayScreen.swift`, add
   `public struct Notice: Hashable, Sendable { public let row: DayView.Row }` nested in `DayScreen`
   and replace `public private(set) var refusedChangeRow: DayView.Row?` (`:179`) with
   `public private(set) var notice: Notice?`; the five assignment sites are `:203` (which becomes
@@ -19,7 +19,7 @@ and nothing later has to touch those 26 lines twice.
   `row == screen.notice?.row` — that line moved from 159 to 158 when
   `chore(shell): draw a commitment's rhythm beside its name` (#157) landed on `main` under this
   branch, so read it before editing it.
-- [ ] 1.3 Move the 26 assertion sites in `Tests/DayByDayKitTests/DayScreenTests.swift`: lines 2036,
+- [x] 1.3 Move the 26 assertion sites in `Tests/DayByDayKitTests/DayScreenTests.swift`: lines 2036,
   2064, 2065, 2066, 2095, 2126, 2127, 2151, 2171, 2198, 2229, 2266, 2302, 2325, 2349, 2374, 2414,
   2415, 2441, 2461, 2481, 2503, 2531, 2558, 2583 and 2587. A comparison **against a row** becomes
   `screen.notice?.row`; a comparison **against `nil`** becomes `screen.notice == nil`, never
@@ -27,7 +27,7 @@ and nothing later has to touch those 26 lines twice.
   assertion. **No `@Test` display name changes, no assertion changes meaning, and no test is added
   or removed here.** `swift test` still reports **489 passing** after this box — a red test is a
   rule-5 stop, because nothing in this box was supposed to change an answer.
-- [ ] 1.4 Confirm the coverage tool agrees before writing a test: from the repo root,
+- [x] 1.4 Confirm the coverage tool agrees before writing a test: from the repo root,
   `pnpm run checks` reports `scenario coverage — 27/73 scenario(s) covered` for this change and
   names `"a row offers the number entry for its commitment on the date the day view is of"` as next.
   A different number means something else moved; report it rather than working around it.

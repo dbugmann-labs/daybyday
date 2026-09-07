@@ -2033,7 +2033,7 @@ func aRefusedTickIsToldOnTheRowThatWasTapped() throws {
     #expect(throws: RecordStoreError.cannotWrite(at: place)) {
         try screen.tick(row)
     }
-    #expect(screen.refusedChangeRow == row)
+    #expect(screen.notice?.row == row)
 }
 
 @MainActor
@@ -2061,9 +2061,9 @@ func aRefusedTickIsToldOnTheRowThatWasTappedAndOnNoOtherRow() throws {
         try screen.tick(secondRow)
     }
 
-    #expect(screen.refusedChangeRow == secondRow)
-    #expect(screen.refusedChangeRow != screen.dayView.rows[0])
-    #expect(screen.refusedChangeRow != screen.dayView.rows[2])
+    #expect(screen.notice?.row == secondRow)
+    #expect(screen.notice?.row != screen.dayView.rows[0])
+    #expect(screen.notice?.row != screen.dayView.rows[2])
 }
 
 @MainActor
@@ -2092,7 +2092,7 @@ func aRefusedTakeBackIsToldOnTheRowThatWasTapped() throws {
         try screen.tick(row)
     }
 
-    #expect(screen.refusedChangeRow == row)
+    #expect(screen.notice?.row == row)
     #expect(screen.dayView.rows[0].isKept)
 }
 
@@ -2123,8 +2123,8 @@ func aSecondRefusedTapIsToldOnTheRowTappedLastAndNoLongerOnTheFirst() throws {
         try screen.tick(secondRow)
     }
 
-    #expect(screen.refusedChangeRow == secondRow)
-    #expect(screen.refusedChangeRow != firstRow)
+    #expect(screen.notice?.row == secondRow)
+    #expect(screen.notice?.row != firstRow)
 }
 
 @MainActor
@@ -2148,7 +2148,7 @@ func aRefusedChangeDoesNotChangeWhatADayScreenSaysAboutKeepingARecord() throws {
     }
 
     #expect(screen.recordState == .kept)
-    #expect(screen.refusedChangeRow == row)
+    #expect(screen.notice?.row == row)
 }
 
 @MainActor
@@ -2168,7 +2168,7 @@ func whatADayScreenTellsOnARowEndsWhenTheAppIsShownAgain() throws {
 
     screen.shown(asOf: monday)
 
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
     #expect(!screen.dayView.rows[0].isKept)
 }
 
@@ -2195,7 +2195,7 @@ func whatADayScreenTellsOnARowEndsWhenTheAppIsShownAgainWhereTheRecordThenCannot
     screen.shown(asOf: monday)
 
     #expect(screen.recordState == .unreadable)
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
 }
 
 @MainActor
@@ -2226,7 +2226,7 @@ func whatADayScreenTellsOnARowEndsWhenTheSameChangeIsMadeAgainAndIsKept() throws
     try screen.tick(screen.dayView.rows[0])
 
     #expect(screen.dayView.rows[0].isKept)
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
 }
 
 @MainActor
@@ -2263,7 +2263,7 @@ func whatADayScreenTellsOnARowEndsWhenAChangeIsKeptOnAnotherRow() throws {
 
     #expect(screen.dayView.rows.map(\.name) == ["Gym", "Journaling"])
     #expect(screen.dayView.rows.map(\.isKept) == [false, true])
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
 }
 
 @MainActor
@@ -2299,7 +2299,7 @@ func whatADayScreenTellsOnARowEndsWhenATakeBackIsKept() throws {
     try screen.tick(screen.dayView.rows[1])
 
     #expect(!screen.dayView.rows[1].isKept)
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
 }
 
 @MainActor
@@ -2322,7 +2322,7 @@ func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsMovedToTheDayBefore() throws
 
     screen.showPreviousDay()
 
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
     #expect(screen.title == "Sunday 30 August 2026")
 }
 
@@ -2346,7 +2346,7 @@ func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsMovedToTheDayAfter() throws 
 
     screen.showNextDay()
 
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
     #expect(screen.title == "Tuesday 1 September 2026")
 }
 
@@ -2371,7 +2371,7 @@ func whatADayScreenTellsOnARowEndsWhenTheDayScreenIsSentBackToTodayFromAnotherDa
 
     screen.showToday()
 
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
     #expect(screen.title == "Today · Monday 31 August 2026")
 }
 
@@ -2411,8 +2411,8 @@ func whatADayScreenTellsOnARowStandsWhenAMoveHasNowhereToGo() throws {
     first.showPreviousDay()
     last.showNextDay()
 
-    #expect(first.refusedChangeRow == first.dayView.rows[0])
-    #expect(last.refusedChangeRow == last.dayView.rows[0])
+    #expect(first.notice?.row == first.dayView.rows[0])
+    #expect(last.notice?.row == last.dayView.rows[0])
     #expect(first.title == "Today · Saturday 1 January 1583")
     #expect(last.title == "Today · Friday 31 December 9999")
 }
@@ -2438,7 +2438,7 @@ func whatADayScreenTellsOnARowStandsWhenADayScreenShowingTodayIsSentBackToToday(
 
     screen.showToday()
 
-    #expect(screen.refusedChangeRow == row)
+    #expect(screen.notice?.row == row)
     #expect(screen.title == "Today · Monday 31 August 2026")
 }
 
@@ -2458,7 +2458,7 @@ func aTapOnADayScreenThatIsNotKeepingARecordIsToldNothingOnTheRow() throws {
     let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     try screen.tick(screen.dayView.rows[0])
 
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
     #expect(screen.recordState == .unreadable)
 }
 
@@ -2478,7 +2478,7 @@ func aTapOnADayScreenHoldingARecordFromALaterVersionIsToldNothingOnTheRow() thro
     let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     try screen.tick(screen.dayView.rows[0])
 
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
     #expect(screen.recordState == .writtenByALaterVersion)
 }
 
@@ -2500,7 +2500,7 @@ func aTapOnARowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
     screen.showNextDay()
     try screen.tick(screen.dayView.rows[0])
 
-    #expect(screen.refusedChangeRow == nil)
+    #expect(screen.notice == nil)
     #expect(!screen.dayView.rows[0].isKept)
 
     let laterOnTuesday = DayScreen(
@@ -2528,7 +2528,7 @@ func aTapOnARowADayScreensDayViewDoesNotHoldIsToldNothingOnTheRow() throws {
 
     try mondayScreen.tick(wednesdayScreen.dayView.rows[0])
 
-    #expect(mondayScreen.refusedChangeRow == nil)
+    #expect(mondayScreen.notice == nil)
 }
 
 @MainActor
@@ -2555,7 +2555,7 @@ func aTapOnARowADayScreensDayViewDoesNotHoldDoesNotEndWhatIsAlreadyTold() throws
 
     try mondayScreen.tick(wednesdayScreen.dayView.rows[0])
 
-    #expect(mondayScreen.refusedChangeRow == ownRow)
+    #expect(mondayScreen.notice?.row == ownRow)
 }
 
 @MainActor
@@ -2580,11 +2580,11 @@ func aDayScreenReturnedToGoesOnTellingWhatItWasTellingOnARow() throws {
     #expect(throws: RecordStoreError.cannotWrite(at: place)) {
         try screen.tick(row)
     }
-    #expect(screen.refusedChangeRow == row)
+    #expect(screen.notice?.row == row)
 
     screen.returnedTo()
 
-    #expect(screen.refusedChangeRow == row)
+    #expect(screen.notice?.row == row)
     #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
 }
 

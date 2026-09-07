@@ -155,7 +155,7 @@ struct ContentView: View {
                                 Text(row.name)
                                     .foregroundStyle(row.isKept ? .secondary : .primary),
                                 rhythmInWords: row.rhythmInWords)
-                            if row == screen.refusedChangeRow {
+                            if row == screen.notice?.row {
                                 Text("Not saved. Try again.")
                                     .font(.caption)
                                     .foregroundStyle(.red)
