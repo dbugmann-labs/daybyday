@@ -16,11 +16,22 @@
 # in the trigger list: it is not one of the default pull_request types, and
 # without it the first full run would be whatever push happened to follow.
 #
-# Two jobs, because the repository holds two languages doing unrelated jobs
-# (ADR 1001). `verify` runs the whole numbered check list on Linux — including
-# check 4, which reads Swift test names out of source text and so needs no
-# Swift toolchain. `swift` runs the product's own tests and then compiles the
-# app shell, and is the one thing here that needs macOS.
+# Three jobs. `verify` runs the whole numbered check list on Linux — including
+# check 4, which reads Swift test names out of source text and so needs no Swift
+# toolchain. `swift` runs the product's own tests and compiles the app shell.
+# `ui-smoke` launches the app on a simulator and asks whether it drew.
+#
+# The first split is by language, because the repository holds two doing
+# unrelated jobs (ADR 1001). The second is by cost: `ui-smoke` pays a cold
+# simulator boot of about two minutes that nothing can make cheaper, and on
+# 2026-09-07 it was measured that a `macos-26` runner has no spare capacity to
+# absorb that boot alongside anything else. So it gets a runner of its own rather
+# than making `swift test` wait behind it or, worse, run beside it. ADR 1029.
+#
+# **`verify` and `swift` are the `main` ruleset's required checks, by name.**
+# `ui-smoke` is not one unless somebody adds it there, and until they do, a red
+# smoke test does not block a merge. Nothing in this file can assert that, which
+# is the shape ADR 0013 is about: do not read a job's existence as a gate.
 name: CI
 
 on:
@@ -129,105 +140,21 @@ jobs:
   # Standard GitHub-hosted runners, macOS included, are free and unlimited on
   # public repositories, which ADR 0007 is the reason this repo is. Larger
   # runners are billed even here, so this stays on a standard one.
+  #
+  # **This job is the Swift code, and it is deliberately short.** Everything that
+  # needs a simulator moved to `ui-smoke` below on 2026-09-07, because a boot is
+  # about two minutes that nothing can make cheaper and there is no reason for
+  # `swift test` to wait behind it. It runs about 90 seconds.
   swift:
     name: swift
     runs-on: macos-26
     steps:
+      # No `fetch-depth: 0` here any more. The question that needed history — does
+      # this diff reach the app — went to `ui-smoke` with the step that asks it.
       - uses: actions/checkout@v7
-        with:
-          # The UI smoke step below asks whether this change reaches the app at
-          # all, which is a question about a diff — so it needs history, exactly
-          # as the bespoke checks in `verify` do.
-          fetch-depth: 0
 
       - name: toolchain
         run: swift --version
-
-      # **Why the smoke test is gated twice, when the two steps before it are
-      # not.** It is skipped while a PR is a draft — the idiom checks 4, 5, 8 and
-      # 9 already use — and skipped again unless the diff reaches the shell, the
-      # kit's sources or this file. Over this repository's first 129 commits, 8
-      # touched `src/DayByDay/`, and a Story pushes tens of times while it is a
-      # draft, so paid unconditionally it would be waste on nearly every push.
-      # Neither gate weakens the merge: a Story PR leaves draft at Stage 8 and a
-      # chore PR is never a draft, so the step runs before anything is merged and
-      # again on the push to `main`.
-      #
-      # **The gates matter more than ADR-1029 thought, not less.** It costed the
-      # smoke test at 3m45s; on 2026-09-07 it was 5m10s and 8m36s, and taking the
-      # clone out left a cold simulator boot that is minutes on its own and cannot
-      # be got rid of. This is the only question in the job that can decline to
-      # pay it.
-      #
-      # **Asked here, at the top, rather than beside the steps it gates**, because
-      # it now gates two of them — the boot and the test — and both read it. It
-      # needs only the checkout.
-      - name: does this change reach the app?
-        id: scope
-        run: |
-          set -eu
-          # Listed literally rather than held in a variable: `-- $watched` relies
-          # on the shell splitting one string into three pathspecs, which bash
-          # does and zsh does not, so it works here and silently matches nothing
-          # when anyone tests it from a Mac terminal. Caught doing exactly that.
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch --quiet origin "${{ github.base_ref }}"
-            base=$(git merge-base "origin/${{ github.base_ref }}" HEAD)
-          else
-            base="${{ github.event.before }}"
-            # A first push to a branch, or a force-push, reports a `before` that
-            # is not in the tree. Nothing to diff against, so do not guess: run.
-            if [ -z "$base" ] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
-              echo "No usable base to diff against — running the smoke test."
-              echo "reached=yes" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          fi
-
-          changed=$(git diff --name-only "$base" HEAD -- \
-            src/DayByDay/ \
-            src/DayByDayKit/Sources/ \
-            .github/workflows/ci.yml)
-
-          if [ -n "$changed" ]; then
-            echo "Reaches the app:"
-            echo "$changed" | sed 's/^/  /'
-            echo "reached=yes" >> "$GITHUB_OUTPUT"
-          else
-            echo "Reaches neither the shell, the kit's sources, nor this workflow."
-            echo "reached=no" >> "$GITHUB_OUTPUT"
-          fi
-
-      # **The device is discovered, not named.** A hard-coded `name=iPhone 17` is a bet on
-      # the runner image's device list, which moves with Xcode and is not ours to pin. The
-      # runtimes shipped on `macos-26` create devices at image build time, so this asks
-      # `simctl` which iPhone is actually there and says which one it took — a green run
-      # against a device nobody can identify is the failure mode being avoided.
-      #
-      # Unconditional, because the build below needs a concrete destination whether or
-      # not anything runs on it. Naming a device does not boot one.
-      #
-      # **An already-booted iPhone wins, if there is one — and on 2026-09-07 there
-      # was not.** The boot below is the largest thing in this job at 115-135s
-      # across three runs, and it is only owed on a cold device, so it was worth
-      # asking whether the image leaves one up. It does not: `simctl list devices
-      # booted` on `macos-26` prints the iOS 26.2, 26.4, 26.5 and tvOS 26.2
-      # runtime headers and no device rows at all. The preference is kept anyway
-      # because it costs a couple of seconds, falls back to exactly the previous
-      # choice, and would take the saving if an image ever changed — and the probe
-      # is kept with it so the answer stays on the record instead of becoming a
-      # claim in a comment. Ordering is otherwise unchanged: newest runtime first,
-      # first iPhone in it.
-      - name: which simulator?
-        id: sim
-        run: |
-          set -eu
-          echo "Already booted on this runner:"
-          xcrun simctl list devices booted | sed 's/^/  /'
-          device=$(xcrun simctl list devices available --json \
-            | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; ps=[d for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')]; b=[d for d in ps if d['state']=='Booted']; print((b or ps)[0]['udid'])")
-          echo "Building against, and if it runs, testing on simulator ${device}."
-          echo "device=$device" >> "$GITHUB_OUTPUT"
 
       # Discovers packages rather than hard-coding a path: it predates the first
       # Swift Story (ADR 1001 was the decision, not the code) and stays discovery-
@@ -268,33 +195,184 @@ jobs:
       # already records. So the trigger has fired.
       #
       # `docs/open-questions.md` § *No UI smoke layer* is NOT closed by this. That
-      # gap is about proving SwiftUI draws, which needs XCUITest and a change to
-      # CI check 4; this step only proves the shell still compiles.
+      # gap is about proving SwiftUI draws, which needs XCUITest; this step only
+      # proves the shell still compiles.
       #
       # No runtime download and no signing identity. ADR-1019 verified that the
-      # `macos-26` image ships the iOS 26.2, 26.4 and 26.5 simulator runtimes, and
-      # the project carries `CODE_SIGNING_ALLOWED = NO`.
+      # `macos-26` image ships the iOS 26.2, 26.4 and 26.5 simulator runtimes, so
+      # `generic/platform=iOS Simulator` resolves without one, and the project
+      # carries `CODE_SIGNING_ALLOWED = NO`.
       #
-      # **`build-for-testing`, not `build`, and against the concrete simulator —
-      # which is two deliberate narrowings, measured 2026-09-07.** It was
-      # `-destination 'generic/platform=iOS Simulator' build`, which builds a
-      # universal `x86_64 arm64` binary (confirmed with `lipo -archs`) and cost
-      # 43-48s on the runner; the test step then compiled the same sources again
-      # for the device it was about to run on. One `build-for-testing` against
-      # that device does both jobs — and leaves DerivedData warm, so the step
-      # below is the test and nothing else. The narrowings: the shell is now
-      # compiled for arm64 only, and compiled with testability enabled. For pure
-      # Swift against one SDK neither changes what "does the shell still compile
-      # against the kit" can catch, and the runners are arm64.
+      # **`build` against the generic destination, and the narrowings of
+      # 2026-09-07 are given back.** For one day this was a `build-for-testing`
+      # against the concrete simulator, shared with the test step so the sources
+      # were not compiled twice — which cost the check its second architecture and
+      # its non-testability build, both written down at the time as deliberate.
+      # Splitting `ui-smoke` off buys them back for nothing: the duplicate compile
+      # is now on a different runner at the same wall-clock moment, so what it
+      # costs is 43-48s of a job that is no longer anybody's critical path.
       #
-      # Coverage and the index store are off because nothing reads either. The
-      # scheme `xcodebuild` derives turns coverage on, so the kit was being
-      # compiled `-profile-generate -profile-coverage-mapping` for no reader.
+      # **Unconditional, unlike everything in `ui-smoke`.** This is the only step
+      # that compiles the shell on a diff the smoke test's gate does not watch —
+      # `src/DayByDayKit/Package.swift`, say, which can break the app build while
+      # matching none of the three watched paths.
       #
       # Hard-coded rather than discovery-based, unlike `swift test` above: a
       # scheme name cannot be derived from a `find`, and a second `.xcodeproj`
       # here would be an event worth editing this file for.
       - name: xcodebuild — the app shell compiles
+        run: |
+          set -eu
+          xcodebuild \
+            -project src/DayByDay/DayByDay.xcodeproj \
+            -scheme DayByDay \
+            -destination 'generic/platform=iOS Simulator' \
+            build
+
+  # The UI smoke layer: proof that SwiftUI drew something. The `swift` job proves
+  # the shell compiles and the kit's rules hold; between them sits the failure
+  # neither can see — a binding misspelled so a subtree never renders, which
+  # type-checks, passes all 300 seam tests, and ships a blank row.
+  # `docs/open-questions.md` § *No UI smoke layer* recorded that gap from
+  # 2026-08-31; ADR-1029 is the decision that closed it, and `DayByDayUITests` is
+  # deliberately thin.
+  #
+  # **Its own job since 2026-09-07, and the reason is a measurement rather than
+  # tidiness.** A runner's simulators have never been booted since the image was
+  # built, so this pays a cold boot of 115-135s that nothing here can avoid — the
+  # image leaves no device booted, which was checked. Inside the `swift` job that
+  # boot was serial with `swift test`, and overlapping the two was tried and
+  # disproved: `swift test` went to 436s, 245s and 384s against a 34-76s baseline
+  # while the smoke step fell by about as much, because a `macos-26` runner has no
+  # spare capacity to absorb a boot. A second runner has its own capacity, which
+  # is the one way to overlap them honestly. ADR-1029 carries the numbers.
+  #
+  # **It is not in the `main` ruleset's required checks unless someone puts it
+  # there.** `verify` and `swift` are required by name; this job is not, so until
+  # it is added a red smoke test does not block a merge. That is a repository
+  # setting rather than anything this file can assert, which is exactly the shape
+  # ADR-0013 warns about — do not read this comment as the guarantee.
+  ui-smoke:
+    name: ui-smoke
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The scope step below asks whether this change reaches the app at all,
+          # which is a question about a diff — so it needs history, exactly as the
+          # bespoke checks in `verify` do.
+          fetch-depth: 0
+
+      # **Why the smoke test is gated twice.** It is skipped while a PR is a draft
+      # — the idiom checks 4, 5, 8 and 9 already use — and skipped again unless the
+      # diff reaches the shell, the kit's sources or this file. Over this
+      # repository's first 129 commits, 8 touched `src/DayByDay/`. Neither gate
+      # weakens the merge: a Story PR leaves draft at Stage 8 and a chore PR is
+      # never a draft, so the step runs before anything is merged and again on the
+      # push to `main`.
+      #
+      # **The gates matter more than ADR-1029 thought, not less.** It costed the
+      # smoke test at 3m45s; on 2026-09-07 it was 5m10s and 8m36s, and taking the
+      # clone out left a cold simulator boot that is minutes on its own and cannot
+      # be got rid of. This is the only question in the job that can decline to
+      # pay it — and now that the job is its own, declining costs nothing at all.
+      - name: does this change reach the app?
+        id: scope
+        run: |
+          set -eu
+          # Listed literally rather than held in a variable: `-- $watched` relies
+          # on the shell splitting one string into three pathspecs, which bash
+          # does and zsh does not, so it works here and silently matches nothing
+          # when anyone tests it from a Mac terminal. Caught doing exactly that.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --quiet origin "${{ github.base_ref }}"
+            base=$(git merge-base "origin/${{ github.base_ref }}" HEAD)
+          else
+            base="${{ github.event.before }}"
+            # A first push to a branch, or a force-push, reports a `before` that
+            # is not in the tree. Nothing to diff against, so do not guess: run.
+            if [ -z "$base" ] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+              echo "No usable base to diff against — running the smoke test."
+              echo "reached=yes" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+
+          changed=$(git diff --name-only "$base" HEAD -- \
+            src/DayByDay/ \
+            src/DayByDayKit/Sources/ \
+            .github/workflows/ci.yml)
+
+          if [ -n "$changed" ]; then
+            echo "Reaches the app:"
+            echo "$changed" | sed 's/^/  /'
+            echo "reached=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "Reaches neither the shell, the kit's sources, nor this workflow."
+            echo "reached=no" >> "$GITHUB_OUTPUT"
+          fi
+
+      # **The device is discovered, not named.** A hard-coded `name=iPhone 17` is a
+      # bet on the runner image's device list, which moves with Xcode and is not
+      # ours to pin. The runtimes shipped on `macos-26` create devices at image
+      # build time, so this asks `simctl` which iPhone is actually there and says
+      # which one it took — a green run against a device nobody can identify is
+      # the failure mode being avoided.
+      #
+      # **An already-booted iPhone wins, if there is one — and on 2026-09-07 there
+      # was not.** The boot below is the largest thing in this job at 114-135s
+      # across four runs, and it is only owed on a cold device, so it was worth
+      # asking whether the image leaves one up. It does not: `simctl list devices
+      # booted` on `macos-26` prints the iOS 26.2, 26.4, 26.5 and tvOS 26.2
+      # runtime headers and no device rows at all. The preference is kept anyway
+      # because it costs a couple of seconds, falls back to exactly the previous
+      # choice, and would take the saving if an image ever changed — and the probe
+      # is kept with it so the answer stays on the record instead of becoming a
+      # claim in a comment. Ordering is otherwise unchanged: newest runtime first,
+      # first iPhone in it.
+      - name: which simulator?
+        id: sim
+        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
+        run: |
+          set -eu
+          echo "Already booted on this runner:"
+          xcrun simctl list devices booted | sed 's/^/  /'
+          device=$(xcrun simctl list devices available --json \
+            | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; ps=[d for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')]; b=[d for d in ps if d['state']=='Booted']; print((b or ps)[0]['udid'])")
+          echo "Building against and testing on simulator ${device}."
+          echo "device=$device" >> "$GITHUB_OUTPUT"
+
+      # **The boot gets its own step, because it is the single largest thing in
+      # this job and it should say so.** Folded into the test step it read as "the
+      # UI test is slow", which is what ADR-1029 originally recorded and what sent
+      # the first attempt at this chore chasing the wrong thing.
+      #
+      # **It runs before the build rather than after it**, which is worth a
+      # sentence because it looks like the wrong order. `bootstatus -b` blocks, so
+      # nothing overlaps and no step's number is borrowed from another; what the
+      # build buys is 30-50 seconds of the device *settling* before anything is
+      # installed on it. That is not a guess — the runs where the device had been
+      # up for minutes finished the test step in 106-139s, and the runs where it
+      # had just this second reported `Finished` took 189-262s.
+      #
+      # `bootstatus -b` boots the device as well as waiting for it, and is
+      # documented as safe to call before any boot has been attempted — so this
+      # one command is the whole thing, and it is where a simulator that will not
+      # come up gets reported.
+      - name: boot the simulator
+        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
+        run: xcrun simctl bootstatus "${{ steps.sim.outputs.device }}" -b
+
+      # `build-for-testing` rather than `build`: this is the app *and* the UI test
+      # bundle, against the device the test will run on, so the step after it is
+      # the test and nothing else. The `swift` job's compile step is the one that
+      # answers "does the shell compile" for the diffs this job's gate declines.
+      #
+      # Coverage and the index store are off because nothing reads either. The
+      # scheme `xcodebuild` derives turns coverage on, so the kit was being
+      # compiled `-profile-generate -profile-coverage-mapping` for no reader.
+      - name: xcodebuild build-for-testing
+        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
         run: |
           set -eu
           xcodebuild build-for-testing \
@@ -305,53 +383,16 @@ jobs:
             -enableCodeCoverage NO \
             COMPILER_INDEX_STORE_ENABLE=NO
 
-      # **The boot gets its own step, because it is the single largest thing in
-      # this job and it should say so.** A runner's simulator devices have never
-      # been booted since the image was built, so this is a cold first boot and it
-      # is minutes. Folded into the test step it read as "the UI test is slow",
-      # which is what ADR-1029 originally recorded and what sent the first attempt
-      # at this chore chasing the wrong thing.
-      #
-      # **It is deliberately not overlapped with anything, and that is a measured
-      # decision rather than a missed trick.** The first version of this chore
-      # started the boot at the top of the job with `simctl boot` — which does
-      # return in about half a second, and does keep booting inside
-      # `CoreSimulatorService` across later steps, both verified — so that it would
-      # run underneath `swift test` and the build. It works, and it buys nothing:
-      # over three runs on 2026-09-07 `swift test` took 436s, 245s and 384s against
-      # a 34-76s baseline across the eight runs before it, while the smoke step
-      # fell by about the same amount. A `macos-26` runner has no spare capacity to
-      # absorb a simulator boot, so overlapping only moves the cost into a step
-      # that then lies about what it measures.
-      #
-      # `bootstatus -b` boots the device as well as waiting for it, and is
-      # documented as safe to call before any boot has been attempted — so this one
-      # command is the whole thing, and it is where a simulator that will not come
-      # up gets reported.
-      - name: boot the simulator
-        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
-        run: xcrun simctl bootstatus "${{ steps.sim.outputs.device }}" -b
-
-      # The UI smoke layer: proof that SwiftUI drew something. The compile step proves the
-      # shell compiles, and `swift test` proves the kit's rules; between them sits the
-      # failure neither can see — a binding misspelled so a subtree never renders, which
-      # type-checks, passes all 300 seam tests, and ships a blank row.
-      # `docs/open-questions.md` § *No UI smoke layer* recorded that gap from 2026-08-31;
-      # ADR-1029 is the decision that closed it, and `DayByDayUITests` is deliberately thin.
-      #
       # **`-parallel-testing-enabled NO`.** The derived scheme parallelises by
       # default and there is no `.xcscheme` in the tree to say otherwise, so
       # `xcodebuild test` was cloning the device and running on
       # `Clone 1 of iPhone 17 Pro`. One test on one device buys nothing from a
       # clone. Measured locally on 2026-09-07, cold simulator and warm build:
-      # 47.7s cloned against 28.3s not. On the runner it is worth less than that
-      # arithmetic suggests — the clone is of an already-booted device — but the
-      # test operation did fall from 284.6s and 492.4s (runs 34120659274 and
-      # 34116245290) to 96.5s and 112.6s.
+      # 47.7s cloned against 28.3s not. On the runner the test operation fell from
+      # 284.6s and 492.4s to 76.1s, 96.5s and 112.6s.
       #
-      # **`test-without-building`**, because the compile step already built it,
-      # against this same device. Splitting the two is what lets the boot sit
-      # between them as its own step rather than inside `xcodebuild test`.
+      # **`test-without-building`**, because the step above already built it,
+      # against this same device.
       - name: xcodebuild test — the app shell draws
         if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
         run: |

@@ -135,20 +135,44 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
   The separate compile step folded into the same `build-for-testing` while this was being done.
   It had been building a universal `x86_64 arm64` binary against `generic/platform=iOS Simulator`
   — 43-48s on the runner, confirmed with `lipo -archs` — and the test step then compiled the same
-  sources again for the device it was about to run on. It measured 27s in that shape. **That
-  narrows the compile check twice**, and the narrowings are stated rather than hidden: the shell
-  is now compiled for arm64 only, and compiled with testability enabled. For pure Swift against
-  one SDK neither changes what "does the shell still compile against the kit" can catch, and the
-  runners are arm64. If a Story ever makes the shell arch-sensitive, that is the trigger to split
-  the step back out.
+  sources again for the device it was about to run on. It measured 27s in that shape, against
+  43-48s, at the cost of narrowing the check twice — the shell compiled for arm64 only, and with
+  testability enabled. **Both narrowings were given back a day later** and the note is left here
+  because the reasoning is the interesting part: the fold was only worth its cost while the two
+  builds shared a runner, and the split below means the duplicate compile now happens on a second
+  machine at the same wall-clock moment. It buys back the universal build for nothing.
 
-  **What is honestly still open is the job total.** The defect is fixed and the price is not, so
-  the `swift` job is still five to nine minutes whenever the smoke test runs, and one run cannot
-  tell these shapes apart: across the runs read for this amendment `swift test` alone ranged 34-76s
-  and the compile step 27-99s on identical code. The remaining lever is a second job — the boot
-  costs the same but stops being serial with `swift test` — and it is not taken here, because the
-  `main` ruleset requires `verify` and `swift` by name and a new job would not block a merge until
-  the owner adds it. That is a repository setting, which is rule 6's, not an agent's.
+  **Amended 2026-09-07, second time: the smoke layer is its own job.** The first amendment left
+  the job total honestly open — the defect fixed, the price not, and the `swift` job still five to
+  nine minutes whenever the smoke test ran. The lever it named has now been pulled. `ui-smoke` is a
+  separate job on its own `macos-26` runner, so the boot is paid on capacity that is not competing
+  with anything. Standard runners are free and unlimited on public repositories (ADR 0007), so the
+  second machine costs nothing but a checkout. Measured on the chore's own run:
+
+  | | before | after, two runs |
+  |---|---|---|
+  | `swift` | 7m11s - 12m32s | **1m13s, 1m46s** |
+  | `ui-smoke` | — | 4m21s, 7m36s |
+  | the whole run, longest job | 7m11s - 10m37s | **4m21s, 7m36s** |
+
+  Two runs and not one, because this record has now twice been wrong by writing down a single
+  measurement of a simulator boot. The honest reading of them is that the *required* check is
+  unambiguously fixed — `swift` is a minute or two whatever the runner is doing — while the run's
+  wall time still varies with the boot, because that is what the boot does. The first run's
+  `ui-smoke` broke down as boot 72s, build 82s, test 81s.
+
+  The test step at 81s is the settling effect being taken deliberately: 106-139s was what it cost
+  on the runs where the device had been up for minutes, against 189-262s where it had just booted,
+  so the boot is placed in front of `build-for-testing` and the build is the settling time.
+
+  **The gate that this does not close, and it is the important sentence in this record.** The
+  `main` ruleset's required status checks are `verify` and `swift`, by name. `ui-smoke` is not one
+  of them, so **until somebody adds it there a red smoke test does not block a merge** — the job
+  goes red, the PR stays mergeable. Adding it is a repository setting, which rule 6 puts with the
+  owner rather than an agent, and it has a consequence worth knowing before it is done: a required
+  check that a branch's workflow does not define never reports, so every open branch cut before
+  this change has to rebase onto `main` before it can merge. This is exactly the shape ADR-0013
+  warns about — a guardrail that a table has a row for and nothing enforces.
 
   **What this record got wrong is worth naming, because the shape recurs.** It measured one cold
   run of a step whose cost is dominated by a simulator boot, wrote the number down as a property
