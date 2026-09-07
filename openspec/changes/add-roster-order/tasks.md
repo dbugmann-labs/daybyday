@@ -101,7 +101,7 @@ same shape as `keepAgain`, and `RefusedChange` gains a fifth case, `moving(Commi
 
 - [x] 5.1 `a commitment moved through a commitments screen is where it was dropped, and is kept there`
   — the first screen test and the one that adds `move`.
-- [ ] 5.2 `an offset a commitments screen is given is counted over what it keeps before the move`
+- [x] 5.2 `an offset a commitments screen is given is counted over what it keeps before the move`
 - [ ] 5.3 `a commitments screen asked to move a commitment it has stopped does nothing and says
   nothing` — the guard is `kept.contains(commitment)` alone, not `kept || stopped` as `askToRemove`
   has it. Getting this wrong is the likeliest defect in the change.

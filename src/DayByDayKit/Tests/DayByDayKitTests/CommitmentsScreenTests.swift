@@ -2624,3 +2624,34 @@ func aCommitmentMovedThroughACommitmentsScreenIsWhereItWasDroppedAndIsKeptThere(
 
     #expect(later.kept.map(\.name) == ["Journaling", "Water plants", "Gym"])
 }
+
+@MainActor
+@Test("an offset a commitments screen is given is counted over what it keeps before the move")
+func anOffsetACommitmentsScreenIsGivenIsCountedOverWhatItKeepsBeforeTheMove() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let waterPlants = Commitment(name: "Water plants", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    func neverMoved() throws -> CommitmentsScreen {
+        let rosterPlace = freshRosterPlace()
+        let rosterStore = try RosterStore(at: rosterPlace)
+        try rosterStore.add(waterPlants)
+        try rosterStore.add(gym)
+        try rosterStore.add(journaling)
+        return CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    }
+
+    let atOffsetTwo = try neverMoved()
+    _ = atOffsetTwo.move(waterPlants, toOffset: 2)
+
+    let atOffsetThree = try neverMoved()
+    _ = atOffsetThree.move(waterPlants, toOffset: 3)
+
+    #expect(atOffsetTwo.kept.map(\.name) == ["Gym", "Water plants", "Journaling"])
+    #expect(atOffsetThree.kept.map(\.name) == ["Gym", "Journaling", "Water plants"])
+}
