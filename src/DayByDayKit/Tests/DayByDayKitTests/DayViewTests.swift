@@ -1481,3 +1481,24 @@ func aRowForANumberCommitmentHoldingANumberSaysItsNameItsRhythmAndThatTheDayIsKe
     #expect(otherDayView.rows[0].rhythmInWords == dayView.rows[0].rhythmInWords)
     #expect(otherDayView.rows[0].isKept == dayView.rows[0].isKept)
 }
+
+@Test("two rows for the same number commitment and date holding different numbers are different rows")
+func twoRowsForTheSameNumberCommitmentAndDateHoldingDifferentNumbersAreDifferentRows() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var historyWith70_5 = History()
+    historyWith70_5.add(Number(70.5, for: weight, on: monday)!)
+    var historyWith71 = History()
+    historyWith71.add(Number(71, for: weight, on: monday)!)
+
+    let firstView = DayView(of: [weight], on: monday, in: historyWith70_5)
+    let secondView = DayView(of: [weight], on: monday, in: historyWith71)
+
+    #expect(firstView.rows[0].isKept)
+    #expect(secondView.rows[0].isKept)
+    #expect(firstView.rows[0] != secondView.rows[0])
+}

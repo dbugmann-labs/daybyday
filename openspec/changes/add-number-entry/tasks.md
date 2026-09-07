@@ -87,7 +87,7 @@ Two scenarios from the MODIFIED § *A row is a commitment's line on a date*, in
 is in, since `Row`'s `Hashable` conformance is synthesized — a red test here means the number was
 stored outside equality, which `design.md` rejects by name.
 
-- [ ] 4.1 `two rows for the same number commitment and date holding different numbers are different
+- [x] 4.1 `two rows for the same number commitment and date holding different numbers are different
   rows`
 - [ ] 4.2 `two rows for the same number commitment and date holding the same number are the same row`
 - [ ] 4.3 Confirm that the seven restated scenarios of that requirement still have their original
