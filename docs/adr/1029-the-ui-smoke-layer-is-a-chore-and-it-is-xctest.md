@@ -165,14 +165,22 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
   on the runs where the device had been up for minutes, against 189-262s where it had just booted,
   so the boot is placed in front of `build-for-testing` and the build is the settling time.
 
-  **The gate that this does not close, and it is the important sentence in this record.** The
-  `main` ruleset's required status checks are `verify` and `swift`, by name. `ui-smoke` is not one
-  of them, so **until somebody adds it there a red smoke test does not block a merge** — the job
-  goes red, the PR stays mergeable. Adding it is a repository setting, which rule 6 puts with the
-  owner rather than an agent, and it has a consequence worth knowing before it is done: a required
-  check that a branch's workflow does not define never reports, so every open branch cut before
-  this change has to rebase onto `main` before it can merge. This is exactly the shape ADR-0013
-  warns about — a guardrail that a table has a row for and nothing enforces.
+  **The gate this opens, and it is the important sentence in this record.** Splitting the job out
+  did not by itself make the smoke test binding: the `main` ruleset's required status checks are
+  named, and a new job is not one until someone says so. **`ui-smoke` was added to that list on
+  2026-09-07**, at the owner's instruction and in the same sitting, so a red smoke test now blocks
+  a merge.
+
+  The feared cost of adding it did not materialise. A required check that a branch's workflow does
+  not define never reports, so every branch cut before the split should have been stranded — but
+  the policy is already `strict`, so all three open PRs were `BEHIND` and owed a rebase onto `main`
+  regardless, and that rebase brings the job with it. Nothing had to be done that was not already
+  owed.
+
+  **What is left is the ADR-0013 shape, and it is worth naming.** Nothing in this repository
+  enforces, checks or would notice the removal of that ruleset entry. The workflow says the job is
+  required; the workflow cannot make it so. A reader who takes the comment as the guarantee is
+  making exactly the mistake that record warns about.
 
   **What this record got wrong is worth naming, because the shape recurs.** It measured one cold
   run of a step whose cost is dominated by a simulator boot, wrote the number down as a property

@@ -270,9 +270,10 @@ cold simulator boot of about two minutes that nothing makes cheaper, and a runne
 capacity to absorb that boot alongside `swift test`; a second runner does, and standard runners
 are free on a public repository.
 
-**`ui-smoke` is not one of the `main` ruleset's required checks.** `verify` and `swift` are, by
-name. So a red smoke test does not block a merge until somebody adds it there — do not read the
-job's existence as a gate. Run it yourself with:
+**`ui-smoke` is one of the `main` ruleset's required checks**, added on 2026-09-07 alongside
+`verify` and `swift`, so a red smoke test blocks a merge. That is a repository setting rather than
+anything in the workflow — the job's existence is not the gate, and nothing in the tree would
+notice the setting being changed back. Run it yourself with:
 
 ```bash
 device=$(xcrun simctl list devices available --json \

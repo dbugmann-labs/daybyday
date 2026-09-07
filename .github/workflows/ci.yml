@@ -28,10 +28,11 @@
 # absorb that boot alongside anything else. So it gets a runner of its own rather
 # than making `swift test` wait behind it or, worse, run beside it. ADR 1029.
 #
-# **`verify` and `swift` are the `main` ruleset's required checks, by name.**
-# `ui-smoke` is not one unless somebody adds it there, and until they do, a red
-# smoke test does not block a merge. Nothing in this file can assert that, which
-# is the shape ADR 0013 is about: do not read a job's existence as a gate.
+# **All three are the `main` ruleset's required checks, by name** — `ui-smoke`
+# was added to that list on 2026-09-07, the same day the job was split out, so a
+# red smoke test blocks a merge. Nothing in this file makes that true and nothing
+# in it would notice the setting being changed back, which is the shape ADR 0013
+# is about: this comment is a report of a repository setting, not the gate.
 name: CI
 
 on:
@@ -247,11 +248,11 @@ jobs:
   # spare capacity to absorb a boot. A second runner has its own capacity, which
   # is the one way to overlap them honestly. ADR-1029 carries the numbers.
   #
-  # **It is not in the `main` ruleset's required checks unless someone puts it
-  # there.** `verify` and `swift` are required by name; this job is not, so until
-  # it is added a red smoke test does not block a merge. That is a repository
-  # setting rather than anything this file can assert, which is exactly the shape
-  # ADR-0013 warns about — do not read this comment as the guarantee.
+  # **It is one of the `main` ruleset's required checks, added there on
+  # 2026-09-07.** So a red smoke test blocks a merge — but that is a repository
+  # setting rather than anything this file can assert, and if it is ever removed
+  # from that list this job will go on running and go on being ignored. Exactly
+  # the shape ADR-0013 warns about: do not read this comment as the guarantee.
   ui-smoke:
     name: ui-smoke
     runs-on: macos-26
