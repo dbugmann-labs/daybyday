@@ -26,7 +26,7 @@ rather than a memory.
 
 ## 2. `Number`, before anything holds one
 
-- [ ] 2.1 Add `Sources/DayByDayKit/Number.swift` declaring exactly what `design.md` § *`Number` is its
+- [x] 2.1 Add `Sources/DayByDayKit/Number.swift` declaring exactly what `design.md` § *`Number` is its
   own type* gives: `public struct Number: Hashable, Sendable` with internal `commitment`, `date` and
   `number` (a `Decimal`) and `public init?(_ number: Decimal, for commitment: Commitment, on date:
   CalendarDate)`; and `struct RecordedDay: Hashable, Sendable` — internal, not public — with
