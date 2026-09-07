@@ -2784,3 +2784,25 @@ func committingAnEmptyEntryTakesTheNumberBack() throws {
     #expect(!later.dayView.rows[0].isKept)
     #expect(later.dayView.rows[0].numberEntry(asOf: monday)?.number == nil)
 }
+
+@MainActor
+@Test("committing an empty entry on a day that holds no number leaves the day as it was")
+func committingAnEmptyEntryOnADayThatHoldsNoNumberLeavesTheDayAsItWas() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+
+    let later = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!later.dayView.rows[0].isKept)
+}
