@@ -224,6 +224,30 @@ exactly as a stopped one is, and is taken up again by being offered again. The r
 commitment go: removing is a last state, not a departure, so a roster that has ever taken something
 on never again holds nothing at all.
 
+**Amended 2026-09-07**, at the grill of `add-roster-order` (#146). **The order is the one the person
+set.** It is still one of the things a roster is, and two rosters holding the same commitments in a
+different order are still not the same roster — what has changed is where the order comes from. The
+order commitments were taken on is now only its initial value and the place a newly taken-on
+commitment lands, rather than a rule the roster is bound to for ever. The old reasoning stands
+against the *system* inventing an order: alphabetical would be a rule about the owner's own words,
+and by the day each is kept from would leave day one's tied. Neither argues against the owner
+choosing, and only they can, because the thing an order is for — which rows a thumb reaches without
+scrolling — is not something a roster can work out. The order runs over everything the roster holds,
+kept, stopped and removed alike, so a stopped commitment keeps the place it has and taking it up
+again returns it there. What changes it is **moving** a commitment, and nothing else.
+
+**Move** — the roster's fourth act on a commitment, beside taking one on, stopping keeping one and
+removing one: putting a commitment it is keeping at a place among the ones it is keeping. It is the
+only thing that ever changes a **roster**'s order, and the only act a person performs on that order.
+It takes a commitment and a place, never a date — a move records nothing about days, and the roster
+goes on never asking what day it is. Only the commitment named moves: everything else the roster
+holds stays exactly where it was, in the order it was in, which is what stopping and removing already
+promise. Moving a commitment the roster is not keeping is refused and said, as every other change to
+a roster is, and so is a place that is not one of the places there are. The person's gesture is a
+drag on the **commitments screen**'s kept list, and that list is the only one it is offered on: a
+stopped commitment's place is one it already has. Agreed 2026-09-07 at the grill of
+`add-roster-order` (#146).
+
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
 times within a week on any days.
@@ -356,6 +380,13 @@ its file stable, because a history is the same history whatever order its ticks 
 **Amended 2026-09-07**, at the grill of `add-roster-removal` (#145). A roster store also keeps,
 against each commitment the roster has **removed**, that it was removed — beside the day it was kept
 until, which a removed commitment keeps.
+
+**Amended 2026-09-07**, at the grill of `add-roster-order` (#146). What it keeps is still the order
+the roster holds and never one of its own — but that order is now the person's rather than a record
+of when things were taken on, so a store that reordered would be overwriting a decision rather than
+merely sorting. It keeps it the way it always has, as the order the commitments are written in, so
+nothing about what is stored changes and a roster written before this reads back with its taken-on
+order as the order its owner starts from.
 
 **Day one** — the commitments a fresh install begins with, before anyone has defined one: the
 owner's own week, quoted in `docs/backlog.md` § *What day one looks like*. It is written into a
@@ -595,6 +626,13 @@ is the whole of the check. A removed commitment is in neither list. Stopping thr
 keeps a commitment until the day **before** the one the screen was handed, and removing a kept one
 does the same; see **Kept until**.
 
+**Amended 2026-09-07**, at the grill of `add-roster-order` (#146). A commitments screen also
+**moves** a commitment, and this is where the order a **day screen** draws in is set. It is offered
+on the kept list alone, because a stopped commitment already has its place; a move it will not make
+is the fifth kind of **refused change**, and a commitment dropped back where it already was is not
+one of them — that is a move the screen makes, whose result is the roster it already had, and it
+neither writes anything nor answers a notice already standing.
+
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
 one, because one refusal is one event and the ask a person is waiting on an answer for is the one
@@ -753,5 +791,12 @@ SwiftUI body that draws what `DayByDayKit` already answers. It is what is left o
 everything with a requirement is behind the seam, and the test of whether something belongs in it
 is whether that thing could be wrong in a way a test would catch — an order, a formatting rule, a
 refusal, a place a store is opened at, all fail that test and owe a Story. That is why the shell
-is built on a `chore/` branch with no G4, and it is the only part of the app that ever is. Agreed
-2026-09-02 with ADR-1019.
+has no G4 of its own, and it is the only part of the app that never does. Agreed 2026-09-02 with
+ADR-1019.
+
+**Corrected 2026-09-07**, at the grill of `add-roster-order` (#146), where this entry was found
+still describing ADR-1019 as it stood before its own 2026-09-04 amendment. Shell work is a chore and
+takes a `chore/` branch **except** where it exists only to make a Story usable, in which case it may
+ride that Story's branch — the immediate consumer of the Story landing in the same PR, introducing
+no behaviour the kit does not specify, and named as its own section in that change's `tasks.md`.
+All three conditions must hold. What the shell may *contain* is unchanged and is the sentence above.
