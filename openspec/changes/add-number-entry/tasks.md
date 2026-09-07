@@ -113,7 +113,7 @@ the reading out; until then, take the smallest reading that passes the scenario 
   end. This is the scenario the grill's answer 8 turns on.
 - [x] 5.4 `a number entered on a day that already holds one replaces it` — `record`'s answer, asserted
   through the screen; no replacement logic belongs here.
-- [ ] 5.5 `committing an empty entry takes the number back`
+- [x] 5.5 `committing an empty entry takes the number back`
 - [ ] 5.6 `committing an empty entry on a day that holds no number leaves the day as it was`
 - [ ] 5.7 `a number the commitment refuses keeps nothing and leaves the day as it was`
 - [ ] 5.8 `a number that cannot be kept is refused and leaves the day view as it was` — the throw, on
