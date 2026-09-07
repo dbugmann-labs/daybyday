@@ -149,11 +149,17 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
   with anything. Standard runners are free and unlimited on public repositories (ADR 0007), so the
   second machine costs nothing but a checkout. Measured on the chore's own run:
 
-  | | before | after |
+  | | before | after, two runs |
   |---|---|---|
-  | `swift` | 7m11s - 12m32s | **1m13s** |
-  | `ui-smoke` | — | 4m21s: boot 72s, build 82s, test 81s |
-  | the whole run, longest job | 7m11s - 10m37s | **4m21s** |
+  | `swift` | 7m11s - 12m32s | **1m13s, 1m46s** |
+  | `ui-smoke` | — | 4m21s, 7m36s |
+  | the whole run, longest job | 7m11s - 10m37s | **4m21s, 7m36s** |
+
+  Two runs and not one, because this record has now twice been wrong by writing down a single
+  measurement of a simulator boot. The honest reading of them is that the *required* check is
+  unambiguously fixed — `swift` is a minute or two whatever the runner is doing — while the run's
+  wall time still varies with the boot, because that is what the boot does. The first run's
+  `ui-smoke` broke down as boot 72s, build 82s, test 81s.
 
   The test step at 81s is the settling effect being taken deliberately: 106-139s was what it cost
   on the runs where the device had been up for minutes, against 189-262s where it had just booted,
