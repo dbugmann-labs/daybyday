@@ -116,7 +116,7 @@ the reading out; until then, take the smallest reading that passes the scenario 
 - [x] 5.5 `committing an empty entry takes the number back`
 - [x] 5.6 `committing an empty entry on a day that holds no number leaves the day as it was`
 - [x] 5.7 `a number the commitment refuses keeps nothing and leaves the day as it was`
-- [ ] 5.8 `a number that cannot be kept is refused and leaves the day view as it was` — the throw, on
+- [x] 5.8 `a number that cannot be kept is refused and leaves the day view as it was` — the throw, on
   a path beneath an existing ordinary file.
 - [ ] 5.9 `entering a number on a row the day screen's day view does not hold changes nothing`
 - [ ] 5.10 `committing on a row that offers no number entry changes nothing` — a tick row, and a
