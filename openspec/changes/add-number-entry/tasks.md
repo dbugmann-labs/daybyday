@@ -71,7 +71,7 @@ around it, and each bound said by `Decimal`'s own description. There is no `Numb
 - [x] 3.1 `a number entry says the range its commitment declares as a hint` — three ranges, including
   one with fractional bounds; assert the strings exactly.
 - [x] 3.2 `a number entry of a commitment that declares no range says no hint`
-- [ ] 3.3 `a number entry says the number the history holds for that commitment on that date` — the
+- [x] 3.3 `a number entry says the number the history holds for that commitment on that date` — the
   value exactly, which is what stops a `Double` creeping in later.
 - [ ] 3.4 `a number entry says no number where the day holds none` — a history that took none, and a
   history a number was added to and taken back from.

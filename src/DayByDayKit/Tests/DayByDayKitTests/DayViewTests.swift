@@ -1414,3 +1414,23 @@ func aNumberEntryOfACommitmentThatDeclaresNoRangeSaysNoHint() {
 
     #expect(dayView.rows[0].numberEntry(asOf: monday)?.hint == nil)
 }
+
+@Test("a number entry says the number the history holds for that commitment on that date")
+func aNumberEntrySaysTheNumberTheHistoryHoldsForThatCommitmentOnThatDate() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Number(70.5, for: weight, on: monday)!)
+
+    let dayView = DayView(of: [weight], on: monday, in: history)
+
+    let entry = dayView.rows[0].numberEntry(asOf: monday)
+
+    #expect(entry?.number == 70.5)
+    #expect(entry?.number != 70)
+    #expect(entry?.number != 71)
+}
