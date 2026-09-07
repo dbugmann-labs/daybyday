@@ -188,10 +188,10 @@ nothing and orders nothing. Only `src/DayByDay/DayByDay/CommitmentsView.swift` c
 
 ## 9. Before the review, and what the janitor does at the archive
 
-- [ ] 9.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 544 plus the 35
+- [x] 9.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 544 plus the 35
   scenarios above. From the repo root, `pnpm run verify` green and `pnpm run checks` reporting
   `147/147 scenario(s) covered`.
-- [ ] 9.2 `openspec validate add-roster-order --strict` exits 0, and `openspec validate --all
+- [x] 9.2 `openspec validate add-roster-order --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [ ] 9.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-roster-order/` or anywhere under `openspec/specs/` is a **stop**, not a merge
