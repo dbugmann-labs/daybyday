@@ -128,7 +128,7 @@ Ten scenarios across the three MODIFIED store requirements, all in
 `Tests/DayByDayKitTests/RecordStoreTests.swift`. Do 7.1 first as one mechanical step and verify the
 suite before writing a test; then one scenario at a time as above.
 
-- [ ] 7.1 In `Sources/DayByDayKit/RecordDocument.swift`, add `NumberRecord` — `commitment`, `date`
+- [x] 7.1 In `Sources/DayByDayKit/RecordDocument.swift`, add `NumberRecord` — `commitment`, `date`
   and `number` — give `RecordDocument` a `numbers` field, move `currentVersion` from `2` to `3`, and
   sort `numbers` by the same key `ticks` already uses (commitment name, kept-from day, date,
   schedule). `formNumbers()` re-forms every number through `Number.init?` and returns `nil` if any
@@ -136,23 +136,23 @@ suite before writing a test; then one scenario at a time as above.
   numbers the store keeps beside the ticks, and add the two writes. **`CommitmentCoding.swift` is not
   edited** — the roster store shares it and does not move. `swift test` still reports 418 passing
   after this box; a red test is a rule-5 stop.
-- [ ] 7.2 `a number added to a store is held by a second store opened at the same place while the
+- [x] 7.2 `a number added to a store is held by a second store opened at the same place while the
   first is still open`
-- [ ] 7.3 `a number taken back is not held by a store opened afterwards at the same place`
-- [ ] 7.4 `a number entered again is kept once by a store opened afterwards, as the later number`
-- [ ] 7.5 `a number is read back exactly as it was given, whatever its digits` — five values through
+- [x] 7.3 `a number taken back is not held by a store opened afterwards at the same place`
+- [x] 7.4 `a number entered again is kept once by a store opened afterwards, as the later number`
+- [x] 7.5 `a number is read back exactly as it was given, whatever its digits` — five values through
   a real file. This is the test that fails the day someone reaches for a `Double`.
-- [ ] 7.6 `a store opened again holds exactly the ticks and numbers added and not taken back`
-- [ ] 7.7 `a number that cannot be kept is refused and not held` — the unwritable place, and the
+- [x] 7.6 `a store opened again holds exactly the ticks and numbers added and not taken back`
+- [x] 7.7 `a number that cannot be kept is refused and not held` — the unwritable place, and the
   store's history left as it was.
-- [ ] 7.8 `a store holding a number its commitment would refuse is refused` — a hand-written form-3
+- [x] 7.8 `a store holding a number its commitment would refuse is refused` — a hand-written form-3
   fixture, three ways: out of range, wrong kind, not due. All three come from `formNumbers()`
   returning `nil`, so expect this green once 7.1 is in; a red test is a finding.
-- [ ] 7.9 `a history kept before a day could hold a number is read, and no day in it holds a number`
+- [x] 7.9 `a history kept before a day could hold a number is read, and no day in it holds a number`
   — a form-2 fixture. Expect green once 7.1 is in: the version guard already reads `1...3`.
-- [ ] 7.10 `a number added over a history kept before a day could hold a number is read back beside
+- [x] 7.10 `a number added over a history kept before a day could hold a number is read back beside
   the ticks already there` — a form-2 fixture written over, then reopened at form 3.
-- [ ] 7.11 `a store whose shape and declared form disagree about numbers is refused` — the guard from
+- [x] 7.11 `a store whose shape and declared form disagree about numbers is refused` — the guard from
   `design.md` § *Each form is read as the shape that form has*, both directions: a form-2 fixture
   carrying `numbers`, and a form-3 fixture with no `numbers` field at all. Expect red on both halves
   before the guard is written.
