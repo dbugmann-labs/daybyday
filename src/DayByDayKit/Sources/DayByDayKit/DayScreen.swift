@@ -219,8 +219,7 @@ public final class DayScreen {
         }
         notice = nil
 
-        dayView = DayView(
-            of: roster.commitments(on: shownDay), on: shownDay, in: recordStore.history)
+        dayView = dayViewOfShownDay()
     }
 
     /// What `enter(_:on:)` reads a commit as: a number, a take-back, or a value that is not a
@@ -364,8 +363,7 @@ public final class DayScreen {
         }
         notice = nil
 
-        dayView = DayView(
-            of: roster.commitments(on: shownDay), on: shownDay, in: recordStore.history)
+        dayView = dayViewOfShownDay()
     }
 
     /// The day view of `shownDay`, drawn from `roster` and `recordStore`'s history exactly as

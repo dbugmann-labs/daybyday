@@ -327,7 +327,7 @@ and change no behaviour.
   where the commitment refuses the number and where the value is not a number, and neither throws.
   Say what the public surface actually does — set when a change is refused, whether by the place,
   which throws, or by the value, which does not — and leave the three ends as they are.
-- [ ] 12.5 Call `dayViewOfShownDay()` from `enter(_:on:)` (`DayScreen.swift:326-327`) instead of the
+- [x] 12.5 Call `dayViewOfShownDay()` from `enter(_:on:)` (`DayScreen.swift:326-327`) instead of the
   copy of `tick(_:)`'s day-view block. Past the `recordStore` guard the two are equivalent, since
   `recordStore?.history ?? History()` reduces to `recordStore.history` there. `tick(_:)`'s own copy
   at `:219-220` goes the same way. Every test stays green; a red one means the two were not
