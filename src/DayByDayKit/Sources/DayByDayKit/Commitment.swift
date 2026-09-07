@@ -24,6 +24,6 @@ public struct Commitment: Hashable, Sendable {
     }
 
     /// The rhythm this commitment runs on, in words. See
-    /// `docs/adr/1033-a-schedule-says-its-rhythm-in-words.md`.
+    /// `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
     public var rhythmInWords: String { schedule.inWords }
 }

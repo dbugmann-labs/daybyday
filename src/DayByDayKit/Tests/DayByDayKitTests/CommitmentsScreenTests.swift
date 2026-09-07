@@ -60,6 +60,7 @@ func anEntrySaysTheRhythmItsCommitmentRunsOnWhicheverOfTheFourShapesItIs() throw
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
 
+    #expect(screen.kept.map(\.name) == ["Gym", "Finances", "Contact lenses", "Reading"])
     #expect(screen.kept.map(\.rhythmInWords) == [
         "Mon, Wed, Sat", "The 25th", "Every 14 days", "3x a week",
     ])

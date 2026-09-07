@@ -230,7 +230,7 @@ from `DayByDayKit`, and the shell chooses no word, no separator and no order.
   — *rhythm in words*, committed with this folder. A second term appearing here means something was
   decided that should have been asked at the grill, and it is worth saying so in the PR rather than
   quietly adding it.
-- [ ] 8.4 One entry is owed in `docs/open-questions.md`, which is not this change's file to write
+- [x] 8.4 One entry is owed in `docs/open-questions.md`, which is not this change's file to write
   (`AGENTS.md` § *Agent roles*). Write it as a **chore commit alongside the merge**, not here, the
   way #92, #103 and #137 each left theirs. On the read-back gap, under *Known gaps*: **the ninth
   face's prediction has been answered and the gap is unchanged.** `add-rhythm-in-words` (#144) is
@@ -241,6 +241,10 @@ from `DayByDayKit`, and the shell chooses no word, no separator and no order.
   and `WeeklyQuota.timesPerWeek` are all still internal and all nine faces are still open. What
   changed is that nothing is now waiting on them: the next thing to need a payload will be
   something that must *compute* with one outside the package, not something that must *show* one.
+
+  Not landed on this branch — exactly as #92, #103 and #137 each left their own entries for a
+  chore commit alongside the merge rather than touching `docs/open-questions.md` from inside a
+  Story's own commits. The entry is named above, verbatim, for whoever writes that commit.
 
 ## 9. The evidence, before the review
 

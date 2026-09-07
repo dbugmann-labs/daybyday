@@ -39,7 +39,7 @@ public enum Rhythm: Hashable, Sendable {
     /// needed. `nil` when the number this rhythm carries names no schedule at all: guarded
     /// through the same three failable initializers `CommitmentsScreen.define` guards it through,
     /// so the preview and the definable rhythms cannot drift apart on which numbers exist.
-    /// See `docs/adr/1033-a-schedule-says-its-rhythm-in-words.md`.
+    /// See `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
     public var inWords: String? {
         switch self {
         case .weekdays(let weekdays):
