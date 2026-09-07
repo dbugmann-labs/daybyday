@@ -2934,3 +2934,29 @@ func enteringANumberOnADayScreenThatIsNotKeepingARecordChangesNothingAndKeepsNot
     #expect(screen.recordState == .unreadable)
     #expect(try Data(contentsOf: place) == bytesBefore)
 }
+
+@MainActor
+@Test("entering a number on one row leaves the other rows of the day as they were")
+func enteringANumberOnOneRowLeavesTheOtherRowsOfTheDayAsTheyWere() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .number(range: range))!
+    let moodRange = Commitment.Range(lowest: 1, highest: 10)!
+    let mood = Commitment(
+        name: "Mood", schedule: daily, keptFrom: keptFrom, kind: .number(range: moodRange))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym, weight, mood], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[1])
+
+    #expect(screen.dayView.rows.map(\.name) == ["Gym", "Weight", "Mood"])
+    #expect(screen.dayView.rows.map(\.isKept) == [false, true, false])
+}
