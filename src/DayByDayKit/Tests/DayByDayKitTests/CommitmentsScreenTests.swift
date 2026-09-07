@@ -2510,3 +2510,28 @@ func aCommitmentsScreenHoldsARefusedMoveAgainstTheCommitmentItWasAskedToMove() t
     #expect(screen.refusedChange == .moving(journaling, .notKept))
     #expect(screen.kept.map(\.name) == ["Gym", "Journaling"])
 }
+
+@MainActor
+@Test("a commitments screen holds nothing against a move that asks for no change at all")
+func aCommitmentsScreenHoldsNothingAgainstAMoveThatAsksForNoChangeAtAll() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let movedNeverTakenOn = screen.move(journaling, toOffset: 0)
+    let movedOutsideTheList = screen.move(gym, toOffset: 2)
+
+    #expect(movedNeverTakenOn == nil)
+    #expect(movedOutsideTheList == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.kept.map(\.name) == ["Gym"])
+}
