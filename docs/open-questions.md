@@ -386,7 +386,8 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
   **It is gated twice**: skipped while a PR is a draft — a condition on the job since 2026-09-08,
   so a draft push allocates no runner at all — and skipped unless the diff reaches
-  `src/DayByDay/`, `src/DayByDayKit/Sources/` or the workflow, which is a condition on the steps
+  `src/DayByDay/`, `src/DayByDayKit/Sources/`, `src/DayByDayKit/Package.swift` or the workflow,
+  which is a condition on the steps
   because it is computed from a diff inside the job. Nothing merges without it having run. The
   gates were put there because the step cost five minutes a push; on 2026-09-07 it was found to be
   costing eight and a half, and taking it apart showed most of that was never the test: a needless

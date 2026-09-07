@@ -196,7 +196,8 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
   **So it is gated twice, and this is the part of the record most likely to be revisited.** It is
   skipped while a PR is a draft — the idiom checks 4, 5, 8 and 9 already use, and the reason
   `ready_for_review` is in the workflow's trigger list — and skipped again unless the diff reaches
-  `src/DayByDay/`, `src/DayByDayKit/Sources/` or the workflow itself. Eight of this repository's
+  `src/DayByDay/`, `src/DayByDayKit/Sources/`, `src/DayByDayKit/Package.swift` or the workflow
+  itself. Eight of this repository's
   first 129 commits touched the shell, and a Story pushes tens of times while it is a draft, so
   unconditionally this would be waste on nearly every push. Neither gate weakens the merge: a
   Story leaves draft at Stage 8, a chore PR is never a draft, and the push to `main` is ungated by
@@ -220,6 +221,12 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
   Splitting the job did widen what the scope half declines to pay, though, and by more than was
   noticed at the time: `build-for-testing` had to be unconditional while it doubled as the `swift`
   job's compile check, and it is 2m49s.
+
+  **The manifest was the one thing under `src/` that no gate watched, and on 2026-09-08 it joined
+  this one.** `src/DayByDayKit/Package.swift` could change what the app links while matching none
+  of the three paths above; the `swift` job's compile step covered it breaking the build, which is
+  the reason that step is there, but nothing re-proved the app still drew. `src/DayByDayKit/Tests/`
+  is deliberately still outside — it cannot reach the app — and that is now the whole of the gap.
 
   **The coarse edge of the scope half is `.github/workflows/ci.yml`, and it is now the expensive
   one.** 15 of this repository's first 163 commits touched that file and exactly 1 of those also
