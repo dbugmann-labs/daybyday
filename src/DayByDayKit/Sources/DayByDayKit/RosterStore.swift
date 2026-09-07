@@ -118,7 +118,7 @@ public final class RosterStore {
 
     /// Kept at `place` before this returns, unless the move left the roster exactly as it was.
     /// Answers what `Roster.move` answers — `true` even for a move that changed nothing, and
-    /// `false`, without throwing and without writing, when the roster does not hold
+    /// `false`, without throwing and without writing, when the roster is not keeping
     /// `commitment` or `offset` is outside the commitments it is keeping. A store keeps what a
     /// change made, and a no-op made nothing, so this is the one call that can answer `true`
     /// without writing.

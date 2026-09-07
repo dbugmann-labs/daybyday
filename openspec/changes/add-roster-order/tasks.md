@@ -210,7 +210,7 @@ nothing and orders nothing. Only `src/DayByDay/DayByDay/CommitmentsView.swift` c
   to resolve: it means another Story landed on `commitment` or `day-screen` while this one was being
   written, which is the owner's call (rule 5). `add-number-entry` (#139) is open on `day-screen` and
   is the likeliest source — `design.md` § *Risks* names it.
-- [ ] 9.4 Ask for the review (**G7**) with `mattpocock-skills:code-review`, and fix what it finds on
+- [x] 9.4 Ask for the review (**G7**) with `mattpocock-skills:code-review`, and fix what it finds on
   this branch before the archive.
 - [x] 9.5 Write the archive handover for the janitor, into the PR or the handover message, saying
   what it must check **after** `/opsx:archive` has run. This box is ticked when the instruction has
