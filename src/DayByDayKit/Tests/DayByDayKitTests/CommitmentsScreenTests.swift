@@ -2763,3 +2763,30 @@ func aMoveACommitmentsScreenCouldNotKeepLeavesBothItsListsAsTheyWere() throws {
     #expect(screen.kept.map(\.name) == ["Gym", "Journaling"])
     #expect(screen.stopped == [])
 }
+
+@MainActor
+@Test("a move that drops a commitment where it already is changes nothing and refuses nothing")
+func aMoveThatDropsACommitmentWhereItAlreadyIsChangesNothingAndRefusesNothing() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(journaling)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let bytesBeforeMove = try Data(contentsOf: rosterPlace)
+
+    let refusal = screen.move(journaling, toOffset: 2)
+
+    #expect(refusal == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.kept.map(\.name) == ["Gym", "Journaling"])
+    #expect(try Data(contentsOf: rosterPlace) == bytesBeforeMove)
+}

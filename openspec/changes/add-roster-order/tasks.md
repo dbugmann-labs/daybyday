@@ -110,7 +110,7 @@ same shape as `keepAgain`, and `RefusedChange` gains a fifth case, `moving(Commi
 - [x] 5.5 `a commitments screen given an offset the list it keeps does not have does nothing and says
   nothing` — both ends, and neither is a refusal. `design.md` § *An offset outside the range* says
   why the screen answers this differently from the roster.
-- [ ] 5.6 `a move that drops a commitment where it already is changes nothing and refuses nothing` —
+- [x] 5.6 `a move that drops a commitment where it already is changes nothing and refuses nothing` —
   and writes nothing, asserted on the file's bytes.
 - [x] 5.7 `a move a commitments screen could not keep leaves both its lists as they were`
 - [ ] 5.8 `a commitments screen shown again lists what it keeps in the order it was moved into`
