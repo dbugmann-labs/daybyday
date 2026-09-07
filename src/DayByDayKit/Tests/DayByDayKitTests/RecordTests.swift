@@ -868,3 +868,104 @@ func aHistoryGivenANumberAndThenTakenBackIsTheSameAsOneNeverGivenOne() {
 
     #expect(history == History())
 }
+
+@Test("a number commitment with a number recorded on a date was kept on that date")
+func aNumberCommitmentWithANumberRecordedOnADateWasKeptOnThatDate() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+
+    var history = History()
+    history.add(Number(70.5, for: commitment, on: monday)!)
+
+    #expect(history.isKept(commitment, on: monday))
+}
+
+@Test("a number commitment due on a date with no number recorded was not kept on it")
+func aNumberCommitmentDueOnADateWithNoNumberRecordedWasNotKeptOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let moodRange = Commitment.Range(lowest: 1, highest: 10)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: moodRange))!
+
+    var history = History()
+    history.add(Number(70.5, for: weight, on: monday)!)
+
+    #expect(!history.isKept(weight, on: wednesday))
+    #expect(!history.isKept(mood, on: monday))
+}
+
+@Test("every number a commitment accepts keeps its day, whatever the number is")
+func everyNumberACommitmentAcceptsKeepsItsDayWhateverTheNumberIs() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let noRangeCommitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+
+    var lowest = History()
+    lowest.add(Number(40, for: commitment, on: monday)!)
+
+    var highest = History()
+    highest.add(Number(150, for: commitment, on: monday)!)
+
+    var middle = History()
+    middle.add(Number(95, for: commitment, on: monday)!)
+
+    var negative = History()
+    negative.add(Number(-12.75, for: noRangeCommitment, on: monday)!)
+
+    #expect(lowest.isKept(commitment, on: monday))
+    #expect(highest.isKept(commitment, on: monday))
+    #expect(middle.isKept(commitment, on: monday))
+    #expect(negative.isKept(noRangeCommitment, on: monday))
+}
+
+@Test("a commitment of the note kind and one of the total kind were not kept on a date they are due on")
+func aCommitmentOfTheNoteKindAndOneOfTheTotalKindWereNotKeptOnADateTheyAreDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    history.add(Number(70.5, for: weight, on: monday)!)
+
+    #expect(!history.isKept(journal, on: monday))
+    #expect(!history.isKept(protein, on: monday))
+}
+
+@Test("a number commitment with a number on a date still takes no tick on it")
+func aNumberCommitmentWithANumberOnADateStillTakesNoTickOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+
+    var history = History()
+    history.add(Number(70.5, for: commitment, on: monday)!)
+
+    #expect(Tick(commitment, on: monday) == nil)
+    #expect(history.number(for: commitment, on: monday) == 70.5)
+}

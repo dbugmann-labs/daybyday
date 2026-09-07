@@ -108,16 +108,16 @@ Five scenarios across the two MODIFIED requirements that change what a history *
 `Tests/DayByDayKitTests/RecordTests.swift`. Expect 6.1 red — `isKept` has to widen — and the rest
 green once it is in; a red test at 6.3, 6.4 or 6.5 is a real finding, not a licence to edit further.
 
-- [ ] 6.1 `a number commitment with a number recorded on a date was kept on that date` — widen
+- [x] 6.1 `a number commitment with a number recorded on a date was kept on that date` — widen
   `History.isKept(_:on:)` per `design.md`. This is the one requirement #137 shipped that this Story
   reverses in part.
-- [ ] 6.2 `a number commitment due on a date with no number recorded was not kept on it`
-- [ ] 6.3 `every number a commitment accepts keeps its day, whatever the number is` — both ends of a
+- [x] 6.2 `a number commitment due on a date with no number recorded was not kept on it`
+- [x] 6.3 `every number a commitment accepts keeps its day, whatever the number is` — both ends of a
   range, a value between them, and a negative on a commitment with no range. A range says which
   numbers a commitment takes and never which of them count.
-- [ ] 6.4 `a commitment of the note kind and one of the total kind were not kept on a date they are
+- [x] 6.4 `a commitment of the note kind and one of the total kind were not kept on a date they are
   due on` — what stops this Story quietly keeping the two kinds it does not implement.
-- [ ] 6.5 `a number commitment with a number on a date still takes no tick on it` — from § *A tick is
+- [x] 6.5 `a number commitment with a number on a date still takes no tick on it` — from § *A tick is
   of a commitment on a calendar date it is due on*. `Tick.swift` is **not** edited: its kind guard
   already refuses this, and the test is what pins that it stays refused now that such a commitment
   can be kept.
