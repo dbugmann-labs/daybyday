@@ -163,6 +163,12 @@ phone.
   The step is compile-only and deliberately stays so. It proves the shell still builds against the
   kit and nothing about drawing, which is why it narrows `docs/open-questions.md` § *No UI smoke
   layer* rather than closing it.
+
+  **The command above is the one that landed and is no longer what runs.** On 2026-09-07 it folded
+  into the smoke layer's `xcodebuild build-for-testing` against a concrete simulator, because the
+  generic destination was building a universal binary and the smoke step then compiled the same
+  sources a second time. What it checks is unchanged; the arch it checks on is narrowed. ADR-1029's
+  2026-09-07 amendment carries the measurement and the trigger for splitting it back out.
 - **8.52 GB has to be on the machine before anything runs**, once. It is the simulator *runtime*;
   the iOS Simulator SDK was already there. It is now installed on this machine, so the price is
   paid; it will be charged again on a new machine, and again whenever Xcode moves to an iOS version
