@@ -224,20 +224,20 @@ layer*. Do this after § 8 so that everything it draws already answers.
 `CONTEXT.md`'s one new term and two amendments are **written with this folder** and are in the G4
 diff, so these boxes confirm rather than write.
 
-- [ ] 10.1 Confirm before the review that 1036 is still the lowest free ADR number:
+- [x] 10.1 Confirm before the review that 1036 is still the lowest free ADR number:
   `for r in $(git for-each-ref --format='%(refname)' refs/heads refs/remotes); do git ls-tree --name-only $r docs/adr/; done | sort -u`.
   1035 was the highest on any local or remote ref on 2026-09-07, taken by
   `story/145-add-roster-removal`. **Report rather than renumber** if another branch has taken 1036
   (`AGENTS.md` rule 5).
-- [ ] 10.2 Confirm 1036 still says what the code does, now that the code exists: that exactly two
+- [x] 10.2 Confirm 1036 still says what the code does, now that the code exists: that exactly two
   causes are named, that both sentences are composed inside `DayByDayKit`, and that `Notice.cause` is
   `nil` for every refusal by the place. An ADR that has drifted from the implementation is edited in
   place and stamped (`docs/adr/README.md`); a decision that has actually changed is a stop, not an
   edit.
-- [ ] 10.3 Confirm `docs/adr/1021-a-day-screen-without-its-record-draws-the-day.md` is still
+- [x] 10.3 Confirm `docs/adr/1021-a-day-screen-without-its-record-draws-the-day.md` is still
   untouched and still true. It decides what a screen does with a record it cannot open; if writing
   the code made a sentence of it false, that is a stop and a report, not a quiet amendment.
-- [ ] 10.4 Confirm `CONTEXT.md` gained exactly one new term — **Number entry** — and two amendments,
+- [x] 10.4 Confirm `CONTEXT.md` gained exactly one new term — **Number entry** — and two amendments,
   § *Row* and § *Day screen*, and that all three say what the delta says. The grill drafted them in
   `grill.md` § *Terms landed in CONTEXT.md* and its commit `f1f10cb` did not write them; if a term
   appears here that is in neither that section nor this change's `design.md`, something was decided
