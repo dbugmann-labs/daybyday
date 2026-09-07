@@ -145,7 +145,7 @@ number entered before it.
 - [x] 6.1 `a number typed with a full stop is entered exactly as it was typed` — including a very
   small and a very large value, digit for digit.
 - [x] 6.2 `a number typed with a comma is entered as the same number as one typed with a full stop`
-- [ ] 6.3 `a number typed with leading zeros or a trailing separator is entered as the number it says`
+- [x] 6.3 `a number typed with leading zeros or a trailing separator is entered as the number it says`
   — `"0000070.50"`, `"70."` and `" 70.5 "`.
 - [ ] 6.4 `a negative number is entered where the commitment declares no range`
 - [ ] 6.5 `an entry committed empty takes the number back, and one holding nothing but space does the

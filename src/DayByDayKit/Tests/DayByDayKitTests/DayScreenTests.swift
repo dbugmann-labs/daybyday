@@ -3057,3 +3057,26 @@ func aNumberTypedWithACommaIsEnteredAsTheSameNumberAsOneTypedWithAFullStop() thr
 
     #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
 }
+
+@MainActor
+@Test("a number typed with leading zeros or a trailing separator is entered as the number it says")
+func aNumberTypedWithLeadingZerosOrATrailingSeparatorIsEnteredAsTheNumberItSays() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("0000070.50", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+
+    try screen.enter("70.", on: screen.dayView.rows[0])
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70)
+
+    try screen.enter(" 70.5 ", on: screen.dayView.rows[0])
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+}
