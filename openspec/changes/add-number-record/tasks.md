@@ -164,7 +164,7 @@ suite before writing a test; then one scenario at a time as above.
 two amendments on `CONTEXT.md` — § *Store* and § *Record store* — are **written with this folder**
 and are in the G4 diff, so these boxes confirm rather than write.
 
-- [ ] 8.1 Confirm before the review that 1033 is still the lowest free ADR number:
+- [x] 8.1 Confirm before the review that 1033 is still the lowest free ADR number:
   `for r in $(git for-each-ref --format='%(refname)' refs/heads refs/remotes); do git ls-tree --name-only $r docs/adr/; done | sort -u`.
   1032 was the highest on any local or remote ref on 2026-09-06. **Report rather than renumber** if
   another branch has taken it (`AGENTS.md` rule 5).
@@ -187,10 +187,10 @@ and are in the G4 diff, so these boxes confirm rather than write.
   predicted red in §§ 3, 6 and 7 actually ran red before the code that satisfies them was written.
   A prediction in a task is not evidence; this is.
 - [x] 9.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
-  `scenario coverage — 75/75`. `cd src/DayByDayKit && swift test` reports **456 tests passing** —
-  418 at the branch point plus the thirty-eight written here, plus none removed. A different number
-  means a test was added or lost outside rule 3; report it.
-- [ ] 9.3 Open the app on the simulator with `pnpm run phone` and confirm the day screen still draws
+  `scenario coverage — 75/75`. `cd src/DayByDayKit && swift test` reports **457 tests passing** —
+  418 at the branch point plus the thirty-eight written here plus one added at G7, plus none
+  removed. A different number means a test was added or lost outside rule 3; report it.
+- [x] 9.3 Open the app on the simulator with `pnpm run phone` and confirm the day screen still draws
   its nine day-one ticks and that ticking one still works. Nothing in the shipped app can reach a
   number record — day one is nine ticks and no screen offers a number until #139 — so what this box
   checks is that the store's third form did not break the two forms a real phone is actually in.
@@ -246,3 +246,10 @@ test was written rather than assumed from the prediction:
   already added by the time task order reaches 7.1). The box's own point — no regression from
   whatever the count already was — held; only the specific number written into the task was stale,
   carried over from § 1's phrasing rather than updated for where 7.1 actually falls in the sequence.
+- **9.2's count moved from 456 to 457.** The G7 fix round for finding 4 (`RecordDocument.swift:74-87`,
+  the sort key not ordering two numbers totally) added one below-the-seam unit test in
+  `RecordDocumentTests.swift`, pinning the `kind` tiebreaker at the level the defect lives. Rule 3
+  governs one acceptance test per scenario and says nothing about unit tests below the seam, so the
+  test stands and the 38 scenario tests § 9.1 counted are unchanged; 9.2's number is 418 at the
+  branch point plus 38 scenario tests plus this one G7 unit test. Confirmed by running `swift test`
+  from `src/DayByDayKit` on this tree on 2026-09-07: `Test run with 457 tests in 0 suites passed`.
