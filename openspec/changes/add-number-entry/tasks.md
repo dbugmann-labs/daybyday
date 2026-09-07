@@ -111,7 +111,7 @@ the reading out; until then, take the smallest reading that passes the scenario 
   place`
 - [x] 5.3 `the number entry a row offers says the number just entered on it` — the prefill, end to
   end. This is the scenario the grill's answer 8 turns on.
-- [ ] 5.4 `a number entered on a day that already holds one replaces it` — `record`'s answer, asserted
+- [x] 5.4 `a number entered on a day that already holds one replaces it` — `record`'s answer, asserted
   through the screen; no replacement logic belongs here.
 - [ ] 5.5 `committing an empty entry takes the number back`
 - [ ] 5.6 `committing an empty entry on a day that holds no number leaves the day as it was`
