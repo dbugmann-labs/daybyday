@@ -168,8 +168,8 @@ description exactly as § 3's hint says it — `docs/adr/1036`.
 - [x] 7.2 `a value that is not a number is told on the row, saying so` — with a range and with none.
 - [x] 7.3 `a number refused by the place is told on the row and names no cause` — the entry and the
   take-back, both with `cause == nil`.
-- [ ] 7.4 `a second refused commit is told on the row committed on last and no longer on the first`
-- [ ] 7.5 Confirm the five restated scenarios of that requirement still have their original tests,
+- [x] 7.4 `a second refused commit is told on the row committed on last and no longer on the first`
+- [x] 7.5 Confirm the five restated scenarios of that requirement still have their original tests,
   unrenamed and with no assertion changed beyond § 1.3's mechanical move: `a refused tick is told on
   the row that was tapped`, `a refused tick is told on the row that was tapped and on no other row`,
   `a refused take-back is told on the row that was tapped`, `a second refused tap is told on the row
