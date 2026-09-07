@@ -3181,3 +3181,33 @@ func aNumberOutsideTheCommitmentsRangeIsToldOnTheRowNamingTheBoundsItBroke() thr
     #expect(screen.notice?.row == screen.dayView.rows[1])
     #expect(screen.notice?.cause == "Must be between 1 and 10")
 }
+
+@MainActor
+@Test("a value that is not a number is told on the row, saying so")
+func aValueThatIsNotANumberIsToldOnTheRowSayingSo() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([.monday, .wednesday, .saturday])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .number(range: range))!
+    let unranged = Commitment(
+        name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rangedScreen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try rangedScreen.enter("1.2.3", on: rangedScreen.dayView.rows[0])
+
+    #expect(rangedScreen.notice?.row == rangedScreen.dayView.rows[0])
+    #expect(rangedScreen.notice?.cause == "Not a number")
+
+    let (unrangedPlace, unrangedRosterPlace) = freshPlaces()
+    let unrangedScreen = DayScreen(
+        startingFrom: [unranged], asOf: monday, keepingRecordAt: unrangedPlace,
+        keepingRosterAt: unrangedRosterPlace)
+    try unrangedScreen.enter("1.2.3", on: unrangedScreen.dayView.rows[0])
+
+    #expect(unrangedScreen.notice?.row == unrangedScreen.dayView.rows[0])
+    #expect(unrangedScreen.notice?.cause == "Not a number")
+}
