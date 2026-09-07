@@ -262,27 +262,34 @@ type-checks — which had no answer before, because nothing in CI had ever built
 ADR-1019 named both the command and its own trigger for adding it, and left it out while the shell
 held nothing the kit did not; it now holds four such things.
 
-**Whether SwiftUI *draws* is answered too, since 2026-09-06.** A further step runs the
-`DayByDayUITests` bundle against a simulator the workflow discovers from `simctl` rather than
-names. It is deliberately thin — it asserts the shell drew, never what it drew — and ADR-1029
-carries the reasoning. Run it yourself with:
+**Whether SwiftUI *draws* is answered too, since 2026-09-06, and by a job of its own since
+2026-09-07.** `ui-smoke` runs the `DayByDayUITests` bundle against a simulator the workflow
+discovers from `simctl` rather than names. It is deliberately thin — it asserts the shell drew,
+never what it drew — and ADR-1029 carries the reasoning. It is a separate job because it pays a
+cold simulator boot of about two minutes that nothing makes cheaper, and a runner has no spare
+capacity to absorb that boot alongside `swift test`; a second runner does, and standard runners
+are free on a public repository.
+
+**`ui-smoke` is not one of the `main` ruleset's required checks.** `verify` and `swift` are, by
+name. So a red smoke test does not block a merge until somebody adds it there — do not read the
+job's existence as a gate. Run it yourself with:
 
 ```bash
 device=$(xcrun simctl list devices available --json \
-  | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next(d['udid'] for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')))")
+  | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; ps=[d for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')]; b=[d for d in ps if d['state']=='Booted']; print((b or ps)[0]['udid'])")
+
+xcrun simctl bootstatus "$device" -b
 
 xcodebuild build-for-testing -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
   -destination "platform=iOS Simulator,id=${device}" -only-testing:DayByDayUITests \
   -enableCodeCoverage NO COMPILER_INDEX_STORE_ENABLE=NO
-
-xcrun simctl bootstatus "$device" -b
 
 xcodebuild test-without-building -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
   -destination "platform=iOS Simulator,id=${device}" -only-testing:DayByDayUITests \
   -parallel-testing-enabled NO -enableCodeCoverage NO
 ```
 
-That takes **40.2 seconds cold** here — no derived data, every simulator shut down — and ends in
+That takes **41.5 seconds cold** here — no derived data, every simulator shut down — and ends in
 `** TEST SUCCEEDED **`. It does not replace looking at the app: it proves the screen was not
 blank, and nothing about whether what is on it is right.
 
@@ -303,17 +310,24 @@ here and 5-8½ minutes on CI, and in both cases almost none of that was the test
 `Clone 1 of iPhone 17 Pro` — because the scheme it derives parallelises by default and there is
 no `.xcscheme` in the tree to say otherwise. For one test on one device the clone is a boot
 bought for nothing, and `-parallel-testing-enabled NO` is what declines it. Splitting `test`
-into `build-for-testing` and `test-without-building` is what puts the boot between them, where
-`bootstatus -b` can wait for it and be timed. Coverage is off because nothing reads it — the
+into `build-for-testing` and `test-without-building` is what lets `bootstatus -b` stand on its own
+in front of both, where it can be waited for and timed. Coverage is off because nothing reads it — the
 derived scheme was compiling the kit with `-profile-generate -profile-coverage-mapping` for no
 reader.
 
 **On a runner the boot is the whole story, and here it is nearly free.** These simulators have
 been booted hundreds of times on this machine, so `bootstatus -b` returns in seconds. On a
 `macos-26` runner the device has never been booted since the image was built, and the same
-command takes **2m06s** — measured on 2026-09-07 once it was given a step of its own, which is
-the first time anybody could see it. That number was always being paid; ADR-1029 booked it as
-the UI test being slow, because it was hidden inside `xcodebuild test` along with the clone.
+command takes **114-135s across four runs** — measured on 2026-09-07 once it was given a step of
+its own, which is the first time anybody could see it. That number was always being paid; ADR-1029
+booked it as the UI test being slow, because it was hidden inside `xcodebuild test` along with the
+clone. It is also why the smoke layer is a CI job of its own rather than a step of the `swift` one.
+
+**The boot goes before the build, which looks like the wrong order and is not.** `bootstatus -b`
+blocks, so nothing is overlapped; what the build buys is half a minute of the device *settling*
+before anything is installed on it. On CI that is the difference between a test step of 106-139s,
+on runs where the device had been up for minutes, and 189-262s on runs where it had just this
+second reported `Finished`.
 
 **Do not try to hide it behind `swift test`.** Starting the boot at the top of the job with
 `simctl boot` does work — the command returns in about half a second and the boot carries on
