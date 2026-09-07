@@ -68,7 +68,12 @@ struct CommitmentsView: View {
                     Button {
                         screen.askToStopKeeping(commitment)
                     } label: {
-                        Text(commitment.name)
+                        VStack(alignment: .leading) {
+                            Text(commitment.name)
+                            Text(commitment.rhythmInWords)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
@@ -85,7 +90,12 @@ struct CommitmentsView: View {
                     Button {
                         screen.keepAgain(commitment)
                     } label: {
-                        Text(commitment.name)
+                        VStack(alignment: .leading) {
+                            Text(commitment.name)
+                            Text(commitment.rhythmInWords)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
@@ -138,6 +148,11 @@ struct CommitmentsView: View {
                     }
                 case .weeklyQuota:
                     Stepper("\(timesPerWeek) time(s) a week", value: $timesPerWeek, in: 1...7)
+                }
+
+                if let preview = rhythmBeingBuilt.inWords {
+                    Text(preview)
+                        .foregroundStyle(.secondary)
                 }
 
                 DatePicker("Kept from", selection: $keptFromDate, displayedComponents: [.date])
@@ -196,23 +211,26 @@ struct CommitmentsView: View {
         }
     }
 
-    /// Builds the `Rhythm` the form is currently offering and hands it to `define`, alongside
-    /// the name typed and the day picked. A number the calendar will not take is not judged here —
-    /// `screen.define` refuses it as `.rhythmOutOfRange` — so the only guard left is the date
-    /// picker's instant failing to convert, which a `DatePicker` cannot actually produce.
-    private func define() {
-        let rhythm: Rhythm
+    /// The `Rhythm` the form is currently offering, from whichever fields `rhythmKind` selects.
+    /// Read by `define()` to hand off, and by the preview to say it in words as it is built.
+    private var rhythmBeingBuilt: Rhythm {
         switch rhythmKind {
         case .weekdays:
-            rhythm = .weekdays(selectedWeekdays)
+            return .weekdays(selectedWeekdays)
         case .dayOfMonth:
-            rhythm = .dayOfMonth(dayOfMonth)
+            return .dayOfMonth(dayOfMonth)
         case .everyNDays:
-            rhythm = .everyNDays(intervalDays)
+            return .everyNDays(intervalDays)
         case .weeklyQuota:
-            rhythm = .weeklyQuota(timesPerWeek)
+            return .weeklyQuota(timesPerWeek)
         }
+    }
 
+    /// Hands `rhythmBeingBuilt` to `define`, alongside the name typed and the day picked. A
+    /// number the calendar will not take is not judged here — `screen.define` refuses it as
+    /// `.rhythmOutOfRange` — so the only guard left is the date picker's instant failing to
+    /// convert, which a `DatePicker` cannot actually produce.
+    private func define() {
         let components = Calendar.current.dateComponents(
             [.year, .month, .day], from: keptFromDate)
         guard
@@ -220,7 +238,7 @@ struct CommitmentsView: View {
                 year: components.year!, month: components.month!, day: components.day!)
         else { return }
 
-        let refusal = screen.define(name: name, on: rhythm, keptFrom: keptFrom)
+        let refusal = screen.define(name: name, on: rhythmBeingBuilt, keptFrom: keptFrom)
 
         if refusal == nil {
             name = ""

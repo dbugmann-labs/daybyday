@@ -4,6 +4,21 @@ public enum Schedule: Hashable, Sendable {
     case everyNDays(DayInterval, from: CalendarDate)
     case weeklyQuota(WeeklyQuota)
 
+    /// The rhythm this schedule runs on, in words. See
+    /// `docs/adr/1033-a-schedule-says-its-rhythm-in-words.md`.
+    public var inWords: String {
+        switch self {
+        case .weekdays(let weekdays):
+            return ScheduleWords.weekdays(weekdays)
+        case .dayOfMonth(let dayOfMonth):
+            return ScheduleWords.dayOfMonth(dayOfMonth.day)
+        case .everyNDays(let interval, from: _):
+            return ScheduleWords.everyNDays(interval.days)
+        case .weeklyQuota(let weeklyQuota):
+            return ScheduleWords.weeklyQuota(weeklyQuota.timesPerWeek)
+        }
+    }
+
     public func isDue(on date: CalendarDate) -> Bool {
         switch self {
         case .weekdays(let weekdays):

@@ -1,6 +1,89 @@
 import Testing
 import DayByDayKit
 
+@Test("a weekday-set schedule says its weekdays as three-letter names")
+func aWeekdaySetScheduleSaysItsWeekdaysAsThreeLetterNames() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+
+    #expect(schedule.inWords == "Mon, Wed, Sat")
+}
+
+@Test("a weekday-set schedule says its weekdays in week order from Monday")
+func aWeekdaySetScheduleSaysItsWeekdaysInWeekOrderFromMonday() {
+    let firstSchedule = Schedule.weekdays([.saturday, .monday, .wednesday])
+    let secondSchedule = Schedule.weekdays([.sunday, .monday])
+
+    #expect(firstSchedule.inWords == "Mon, Wed, Sat")
+    #expect(secondSchedule.inWords == "Mon, Sun")
+}
+
+@Test("every weekday is said by its own three-letter name")
+func everyWeekdayIsSaidByItsOwnThreeLetterName() {
+    let schedules: [Schedule] = [
+        .weekdays([.monday]),
+        .weekdays([.tuesday]),
+        .weekdays([.wednesday]),
+        .weekdays([.thursday]),
+        .weekdays([.friday]),
+        .weekdays([.saturday]),
+        .weekdays([.sunday]),
+    ]
+
+    #expect(schedules.map(\.inWords) == [
+        "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
+    ])
+}
+
+@Test("a weekday set listing every weekday is said as every day")
+func aWeekdaySetListingEveryWeekdayIsSaidAsEveryDay() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    #expect(schedule.inWords == "Every day")
+}
+
+@Test("a weekday set listing no weekday is said as no day")
+func aWeekdaySetListingNoWeekdayIsSaidAsNoDay() {
+    let schedule = Schedule.weekdays([])
+
+    #expect(schedule.inWords == "No day")
+}
+
+@Test("each of the four schedule shapes says the rhythm it runs on in words")
+func eachOfTheFourScheduleShapesSaysTheRhythmItRunsOnInWords() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let weekdaySchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let dayOfMonthSchedule = Schedule.dayOfMonth(DayOfMonth(day: 25)!)
+    let intervalSchedule = Schedule.everyNDays(DayInterval(days: 14)!, from: start)
+    let quotaSchedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+
+    #expect(weekdaySchedule.inWords == "Mon, Wed, Sat")
+    #expect(dayOfMonthSchedule.inWords == "The 25th")
+    #expect(intervalSchedule.inWords == "Every 14 days")
+    #expect(quotaSchedule.inWords == "3x a week")
+}
+
+@Test("two schedules that name the same rhythm say the same words")
+func twoSchedulesThatNameTheSameRhythmSayTheSameWords() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let weekdaySchedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let intervalSchedule = Schedule.everyNDays(DayInterval(days: 1)!, from: start)
+
+    #expect(weekdaySchedule.inWords == "Every day")
+    #expect(intervalSchedule.inWords == "Every day")
+}
+
+@Test("a number is said in digits with no grouping separator")
+func aNumberIsSaidInDigitsWithNoGroupingSeparator() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 1000)!, from: start)
+
+    #expect(schedule.inWords == "Every 1000 days")
+}
+
 @Test("a date on a listed weekday is due")
 func aDateOnAListedWeekdayIsDue() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])

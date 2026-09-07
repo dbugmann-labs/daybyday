@@ -33,4 +33,32 @@ public enum Rhythm: Hashable, Sendable {
             return .weeklyQuota(weeklyQuota)
         }
     }
+
+    /// The words the schedule this rhythm names would be said in, without being given a day to
+    /// keep the commitment from — an interval rhythm's words never say a start date, so none is
+    /// needed. `nil` when the number this rhythm carries names no schedule at all: guarded
+    /// through the same three failable initializers `CommitmentsScreen.define` guards it through,
+    /// so the preview and the definable rhythms cannot drift apart on which numbers exist.
+    /// See `docs/adr/1033-a-schedule-says-its-rhythm-in-words.md`.
+    public var inWords: String? {
+        switch self {
+        case .weekdays(let weekdays):
+            return ScheduleWords.weekdays(weekdays)
+        case .dayOfMonth(let day):
+            guard let dayOfMonth = DayOfMonth(day: day) else {
+                return nil
+            }
+            return ScheduleWords.dayOfMonth(dayOfMonth.day)
+        case .everyNDays(let days):
+            guard let interval = DayInterval(days: days) else {
+                return nil
+            }
+            return ScheduleWords.everyNDays(interval.days)
+        case .weeklyQuota(let timesPerWeek):
+            guard let weeklyQuota = WeeklyQuota(timesPerWeek: timesPerWeek) else {
+                return nil
+            }
+            return ScheduleWords.weeklyQuota(weeklyQuota.timesPerWeek)
+        }
+    }
 }

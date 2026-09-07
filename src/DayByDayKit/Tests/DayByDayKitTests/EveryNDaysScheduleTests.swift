@@ -1,6 +1,41 @@
 import Testing
 import DayByDayKit
 
+@Test("an every-N-days schedule says its interval in days")
+func anEveryNDaysScheduleSaysItsIntervalInDays() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 14)!, from: start)
+
+    #expect(schedule.inWords == "Every 14 days")
+}
+
+@Test("an every-N-days schedule says the same words whatever its start date")
+func anEveryNDaysScheduleSaysTheSameWordsWhateverItsStartDate() {
+    let firstStart = CalendarDate(year: 2026, month: 8, day: 31)!
+    let secondStart = CalendarDate(year: 1583, month: 1, day: 1)!
+    let firstSchedule = Schedule.everyNDays(DayInterval(days: 14)!, from: firstStart)
+    let secondSchedule = Schedule.everyNDays(DayInterval(days: 14)!, from: secondStart)
+
+    #expect(firstSchedule.inWords == "Every 14 days")
+    #expect(secondSchedule.inWords == "Every 14 days")
+}
+
+@Test("an interval of one day is said as every day")
+func anIntervalOfOneDayIsSaidAsEveryDay() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 1)!, from: start)
+
+    #expect(schedule.inWords == "Every day")
+}
+
+@Test("an interval of two days says its number")
+func anIntervalOfTwoDaysSaysItsNumber() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 2)!, from: start)
+
+    #expect(schedule.inWords == "Every 2 days")
+}
+
 @Test("a schedule is due on its start date")
 func aScheduleIsDueOnItsStartDate() {
     let start = CalendarDate(year: 2026, month: 8, day: 31)!

@@ -22,4 +22,8 @@ public struct Commitment: Hashable, Sendable {
 
         return schedule.isDue(on: date)
     }
+
+    /// The rhythm this commitment runs on, in words. See
+    /// `docs/adr/1033-a-schedule-says-its-rhythm-in-words.md`.
+    public var rhythmInWords: String { schedule.inWords }
 }

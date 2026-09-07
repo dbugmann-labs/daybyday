@@ -1,6 +1,50 @@
 import Testing
 import DayByDayKit
 
+@Test("a day-of-month schedule says its day as an ordinal")
+func aDayOfMonthScheduleSaysItsDayAsAnOrdinal() {
+    let schedule = Schedule.dayOfMonth(DayOfMonth(day: 25)!)
+
+    #expect(schedule.inWords == "The 25th")
+}
+
+@Test("the eleventh, twelfth and thirteenth are said with th and not with st, nd and rd")
+func theEleventhTwelfthAndThirteenthAreSaidWithThAndNotWithStNdAndRd() {
+    let eleventh = Schedule.dayOfMonth(DayOfMonth(day: 11)!)
+    let twelfth = Schedule.dayOfMonth(DayOfMonth(day: 12)!)
+    let thirteenth = Schedule.dayOfMonth(DayOfMonth(day: 13)!)
+    let twentyFirst = Schedule.dayOfMonth(DayOfMonth(day: 21)!)
+    let twentySecond = Schedule.dayOfMonth(DayOfMonth(day: 22)!)
+    let twentyThird = Schedule.dayOfMonth(DayOfMonth(day: 23)!)
+
+    #expect(eleventh.inWords == "The 11th")
+    #expect(twelfth.inWords == "The 12th")
+    #expect(thirteenth.inWords == "The 13th")
+    #expect(twentyFirst.inWords == "The 21st")
+    #expect(twentySecond.inWords == "The 22nd")
+    #expect(twentyThird.inWords == "The 23rd")
+}
+
+@Test("every day of the month from the first to the thirty-first is said as its own ordinal")
+func everyDayOfTheMonthFromTheFirstToTheThirtyFirstIsSaidAsItsOwnOrdinal() {
+    let schedules = (1...31).map { Schedule.dayOfMonth(DayOfMonth(day: $0)!) }
+
+    #expect(schedules.map(\.inWords) == [
+        "The 1st", "The 2nd", "The 3rd", "The 4th", "The 5th", "The 6th", "The 7th",
+        "The 8th", "The 9th", "The 10th", "The 11th", "The 12th", "The 13th", "The 14th",
+        "The 15th", "The 16th", "The 17th", "The 18th", "The 19th", "The 20th", "The 21st",
+        "The 22nd", "The 23rd", "The 24th", "The 25th", "The 26th", "The 27th", "The 28th",
+        "The 29th", "The 30th", "The 31st",
+    ])
+}
+
+@Test("a day-of-month schedule does not say the clamp onto a short month")
+func aDayOfMonthScheduleDoesNotSayTheClampOntoAShortMonth() {
+    let schedule = Schedule.dayOfMonth(DayOfMonth(day: 31)!)
+
+    #expect(schedule.inWords == "The 31st")
+}
+
 @Test("a date on the scheduled day of the month is due")
 func aDateOnTheScheduledDayOfTheMonthIsDue() {
     let schedule = Schedule.dayOfMonth(DayOfMonth(day: 25)!)

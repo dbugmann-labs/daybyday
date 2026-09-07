@@ -37,6 +37,35 @@ func aCommitmentsScreenListsTheCommitmentsItsRosterKeepsInTheOrderTheyWereTakenO
 }
 
 @MainActor
+@Test("an entry says the rhythm its commitment runs on, whichever of the four shapes it is")
+func anEntrySaysTheRhythmItsCommitmentRunsOnWhicheverOfTheFourShapesItIs() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let finances = Commitment(
+        name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom)!
+    let contactLenses = Commitment(
+        name: "Contact lenses",
+        schedule: .everyNDays(DayInterval(days: 14)!, from: keptFrom), keptFrom: keptFrom)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(finances)
+    try rosterStore.add(contactLenses)
+    try rosterStore.add(reading)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.kept.map(\.rhythmInWords) == [
+        "Mon, Wed, Sat", "The 25th", "Every 14 days", "3x a week",
+    ])
+}
+
+@MainActor
 @Test("a commitments screen does not list a commitment its roster has stopped keeping")
 func aCommitmentsScreenDoesNotListACommitmentItsRosterHasStoppedKeeping() throws {
     let rosterPlace = freshRosterPlace()
@@ -87,6 +116,55 @@ func twoCommitmentsAlikeInNameAndNotInRhythmAreTwoEntriesAPersonCannotTellApart(
 }
 
 @MainActor
+@Test("two commitments alike in name and not in rhythm are told apart by the rhythm their entries say")
+func twoCommitmentsAlikeInNameAndNotInRhythmAreToldApartByTheRhythmTheirEntriesSay() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let vitaminsMondayWednesday = Commitment(
+        name: "Vitamins", schedule: .weekdays([.monday, .wednesday]), keptFrom: keptFrom)!
+    let vitaminsTuesdayThursday = Commitment(
+        name: "Vitamins", schedule: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(vitaminsMondayWednesday)
+    try rosterStore.add(vitaminsTuesdayThursday)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.kept.map(\.name) == ["Vitamins", "Vitamins"])
+    #expect(screen.kept.map(\.rhythmInWords) == ["Mon, Wed", "Tue, Thu"])
+
+    screen.askToStopKeeping(screen.kept[0])
+    screen.confirmStopKeeping()
+
+    #expect(screen.kept.map(\.name) == ["Vitamins"])
+    #expect(screen.kept.map(\.rhythmInWords) == ["Tue, Thu"])
+}
+
+@MainActor
+@Test("two commitments alike in name and in rhythm are two entries that say the same thing")
+func twoCommitmentsAlikeInNameAndInRhythmAreTwoEntriesThatSayTheSameThing() throws {
+    let rosterPlace = freshRosterPlace()
+    let januaryFirst = CalendarDate(year: 2026, month: 1, day: 1)!
+    let juneFirst = CalendarDate(year: 2026, month: 6, day: 1)!
+    let vitaminsFromJanuary = Commitment(
+        name: "Vitamins", schedule: .weekdays([.monday, .wednesday]), keptFrom: januaryFirst)!
+    let vitaminsFromJune = Commitment(
+        name: "Vitamins", schedule: .weekdays([.monday, .wednesday]), keptFrom: juneFirst)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(vitaminsFromJanuary)
+    try rosterStore.add(vitaminsFromJune)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.kept.map(\.name) == ["Vitamins", "Vitamins"])
+    #expect(screen.kept.map(\.rhythmInWords) == ["Mon, Wed", "Mon, Wed"])
+}
+
+@MainActor
 @Test("a commitments screen opened on a roster that holds nothing lists nothing and takes nothing on")
 func aCommitmentsScreenOpenedOnARosterThatHoldsNothingListsNothingAndTakesNothingOn() {
     let rosterPlace = freshRosterPlace()
@@ -125,6 +203,30 @@ func aCommitmentsScreenListsWhatItsRosterHasStoppedKeepingInTheOrderTheyWereTake
 
     #expect(screen.stopped.map(\.name) == ["Water plants", "Journaling"])
     #expect(screen.kept.map(\.name) == ["Gym"])
+}
+
+@MainActor
+@Test("a stopped entry says the rhythm its commitment runs on, as a kept entry does")
+func aStoppedEntrySaysTheRhythmItsCommitmentRunsOnAsAKeptEntryDoes() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let vitaminsMondayWednesday = Commitment(
+        name: "Vitamins", schedule: .weekdays([.monday, .wednesday]), keptFrom: keptFrom)!
+    let vitaminsThreeAWeek = Commitment(
+        name: "Vitamins", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(vitaminsMondayWednesday)
+    try rosterStore.add(vitaminsThreeAWeek)
+    try rosterStore.retire(vitaminsMondayWednesday, keptUntil: sunday)
+    try rosterStore.retire(vitaminsThreeAWeek, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.stopped.map(\.name) == ["Vitamins", "Vitamins"])
+    #expect(screen.stopped.map(\.rhythmInWords) == ["Mon, Wed", "3x a week"])
 }
 
 @MainActor
@@ -1429,4 +1531,68 @@ func whatACommitmentsScreenHoldsAboutARefusedChangeStandsWhenAStopIsAskedForAndC
 
     #expect(screen.refusedChange == .defining(.namesNothing))
     #expect(screen.awaitingConfirmation == nil)
+}
+
+@Test("a rhythm being built is said in the words the schedule it names says")
+func aRhythmBeingBuiltIsSaidInTheWordsTheScheduleItNamesSays() {
+    let weekdayRhythm: Rhythm = .weekdays([.monday, .wednesday, .saturday])
+    let dayOfMonthRhythm: Rhythm = .dayOfMonth(25)
+    let intervalRhythm: Rhythm = .everyNDays(14)
+    let weeklyQuotaRhythm: Rhythm = .weeklyQuota(3)
+
+    #expect(weekdayRhythm.inWords == "Mon, Wed, Sat")
+    #expect(dayOfMonthRhythm.inWords == "The 25th")
+    #expect(intervalRhythm.inWords == "Every 14 days")
+    #expect(weeklyQuotaRhythm.inWords == "3x a week")
+}
+
+@Test("an interval rhythm is said without a day to keep the commitment from")
+func anIntervalRhythmIsSaidWithoutADayToKeepTheCommitmentFrom() {
+    let rhythm: Rhythm = .everyNDays(14)
+    let januaryFirst = CalendarDate(year: 2026, month: 1, day: 1)!
+    let augustThirtyFirst = CalendarDate(year: 2026, month: 8, day: 31)!
+    let scheduleFromJanuary = Schedule.everyNDays(DayInterval(days: 14)!, from: januaryFirst)
+    let scheduleFromAugust = Schedule.everyNDays(DayInterval(days: 14)!, from: augustThirtyFirst)
+
+    #expect(rhythm.inWords == "Every 14 days")
+    #expect(rhythm.inWords == scheduleFromJanuary.inWords)
+    #expect(rhythm.inWords == scheduleFromAugust.inWords)
+}
+
+@Test("a weekday-set rhythm with no days in it is said as no day")
+func aWeekdaySetRhythmWithNoDaysInItIsSaidAsNoDay() {
+    let rhythm: Rhythm = .weekdays([])
+
+    #expect(rhythm.inWords == "No day")
+}
+
+@Test("a rhythm carrying a number the calendar will not take is said as nothing")
+func aRhythmCarryingANumberTheCalendarWillNotTakeIsSaidAsNothing() {
+    let thirtySecond: Rhythm = .dayOfMonth(32)
+    let zeroth: Rhythm = .dayOfMonth(0)
+    let noInterval: Rhythm = .everyNDays(0)
+    let eightAWeek: Rhythm = .weeklyQuota(8)
+
+    #expect(thirtySecond.inWords == nil)
+    #expect(zeroth.inWords == nil)
+    #expect(noInterval.inWords == nil)
+    #expect(eightAWeek.inWords == nil)
+    #expect(thirtySecond.inWords != "The 31st")
+    #expect(noInterval.inWords != "Every 1 day")
+    #expect(eightAWeek.inWords != "7x a week")
+}
+
+@Test("a rhythm carrying the number at each end of what it allows is said in words")
+func aRhythmCarryingTheNumberAtEachEndOfWhatItAllowsIsSaidInWords() {
+    let firstOfMonth: Rhythm = .dayOfMonth(1)
+    let thirtyFirst: Rhythm = .dayOfMonth(31)
+    let oneDayInterval: Rhythm = .everyNDays(1)
+    let onceAWeek: Rhythm = .weeklyQuota(1)
+    let sevenAWeek: Rhythm = .weeklyQuota(7)
+
+    #expect(firstOfMonth.inWords == "The 1st")
+    #expect(thirtyFirst.inWords == "The 31st")
+    #expect(oneDayInterval.inWords == "Every day")
+    #expect(onceAWeek.inWords == "1x a week")
+    #expect(sevenAWeek.inWords == "7x a week")
 }
