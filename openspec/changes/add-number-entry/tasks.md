@@ -194,7 +194,7 @@ in particular 8.1 is red if the text is read before the store is checked.
 - [x] 8.7 `what a day screen tells about a refused value ends when the app is shown again`
 - [x] 8.8 `what a day screen tells about a refused value ends when the day screen is moved to the day
   before`
-- [ ] 8.9 Confirm the fifteen restated scenarios of those two requirements are still green with no
+- [x] 8.9 Confirm the fifteen restated scenarios of those two requirements are still green with no
   `@Test` display name changed and no assertion changed beyond § 1.3's mechanical move. A refused
   *value* must not end a notice and a refused *value* must not be ended by one: if any of the ten
   lifetime scenarios goes red, the clearing of `notice` moved somewhere it should not have.
