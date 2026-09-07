@@ -1161,16 +1161,17 @@ func movingACommitmentMovesNoDayAndChangesNoCommitment() {
     _ = roster.retire(waterPlants, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
 
     let moved = roster.move(journaling, toOffset: 0)
+    let onNextDay = roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!)
 
     #expect(moved)
     #expect(
         roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
             == [waterPlants, journaling, gym])
-    #expect(
-        roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!)
-            == [journaling, gym])
-    #expect(gym.isDue(on: CalendarDate(year: 2026, month: 3, day: 2)!))
-    #expect(!gym.isDue(on: CalendarDate(year: 2026, month: 3, day: 3)!))
+    #expect(onNextDay == [journaling, gym])
+
+    let gymFromRoster = onNextDay.first { $0.name == "Gym" }!
+    #expect(gymFromRoster.isDue(on: CalendarDate(year: 2026, month: 3, day: 2)!))
+    #expect(!gymFromRoster.isDue(on: CalendarDate(year: 2026, month: 3, day: 3)!))
 }
 
 @Test("moving a commitment on a copy of a roster leaves the roster it was copied from unchanged")
