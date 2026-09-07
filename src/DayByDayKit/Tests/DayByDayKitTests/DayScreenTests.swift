@@ -3098,3 +3098,32 @@ func aNegativeNumberIsEnteredWhereTheCommitmentDeclaresNoRange() throws {
     #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == -12.75)
     #expect(screen.dayView.rows[0].isKept)
 }
+
+@MainActor
+@Test(
+    "an entry committed empty takes the number back, and one holding nothing but space does the same"
+)
+func anEntryCommittedEmptyTakesTheNumberBackAndOneHoldingNothingButSpaceDoesTheSame() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([.monday, .wednesday, .saturday])
+    let weightRange = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .number(range: weightRange))!
+    let moodRange = Commitment.Range(lowest: 1, highest: 10)!
+    let mood = Commitment(
+        name: "Mood", schedule: daily, keptFrom: keptFrom, kind: .number(range: moodRange))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight, mood], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+    try screen.enter("8", on: screen.dayView.rows[1])
+
+    try screen.enter("", on: screen.dayView.rows[0])
+    try screen.enter("  ", on: screen.dayView.rows[1])
+
+    #expect(screen.dayView.rows.allSatisfy { !$0.isKept })
+    #expect(screen.dayView.rows.allSatisfy { $0.numberEntry(asOf: monday)?.number == nil })
+}
