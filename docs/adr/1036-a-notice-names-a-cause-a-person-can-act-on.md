@@ -102,9 +102,10 @@ try again — is guaranteed to fail. A message that is always wrong is worse tha
 **Say the cause inside the entry rather than on the row.** Put the sentence in the alert, beside the
 field, where a person is already looking. Reads better, and the owner considered it. Rejected at the
 grill on two grounds: one mechanism then serves refusals on rows and another serves refusals in
-fields, and the inside of an alert is unreachable to every test this repo has
-(`docs/open-questions.md` § *No UI smoke layer*), so the wording would be the one thing nothing
-checks.
+fields, and nothing this repo runs would read the wording once it was there — tests at the
+`DayByDayKit` seam never draw a view, and the UI smoke layer that does draw one asserts that the
+shell drew and never what it drew (ADR-1029, which keeps it that thin on purpose). So the sentence
+would be the one thing nothing checks.
 
 **Carry an enum and let the shell compose the sentence.** `case notANumber` and
 `case outsideTheRange(lowest:highest:)`. Rejected as the move ADR-1022 already refused: formatting a
