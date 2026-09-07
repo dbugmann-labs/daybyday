@@ -1,6 +1,6 @@
 ## 1. Before a line is written
 
-- [ ] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
+- [x] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
   From `src/DayByDayKit`, `swift test` reports **544 tests passing** — measured 2026-09-07 with this
   branch cut from `main` at `00a8f23`, which includes `add-roster-removal` (#145). From the repo
   root, `pnpm run check:scenarios` reports `scenario coverage — 112/147 scenario(s) covered` for this
@@ -8,7 +8,7 @@
   to"` as next. Those 112 are the scenarios this delta carries verbatim from the current spec; **no
   test behind any of them may be renamed, moved, or have an assertion changed by a box below.**
 
-- [ ] 1.2 Confirm the two facts the whole design rests on, before writing the first test, and stop
+- [x] 1.2 Confirm the two facts the whole design rests on, before writing the first test, and stop
   and report if either is false (`design.md` § *Context*, § *Nothing on disk moves*):
 
   **The order is carried by array position and by nothing else.** `grep -n 'position\|index\|rank\|
@@ -37,33 +37,33 @@ title **verbatim**, then makes it pass with the smallest change that does. Never
 the first is green (`AGENTS.md` rule 3). Verify each with `cd src/DayByDayKit && swift test`: the
 named test green, every earlier test still green.
 
-- [ ] 2.1 `moving a commitment to the front puts it before every commitment the roster is keeping` —
+- [x] 2.1 `moving a commitment to the front puts it before every commitment the roster is keeping` —
   the first test in this change, and the one that adds
   `public mutating func move(_ commitment: Commitment, toOffset offset: Int) -> Bool` to `Roster`.
   `design.md` § *The seam* fixes the signature and the offset's meaning; `Roster.Entry` gains
   nothing.
-- [ ] 2.2 `moving a commitment to the end puts it after every commitment the roster is keeping` — the
+- [x] 2.2 `moving a commitment to the end puts it after every commitment the roster is keeping` — the
   past-the-end offset, which is the one `Array.move` would get wrong under a final-position reading.
-- [ ] 2.3 `an offset is counted over the commitments the roster is keeping as they stand before the
+- [x] 2.3 `an offset is counted over the commitments the roster is keeping as they stand before the
   move` — the scenario that pins the convention itself. Both halves in one test.
-- [ ] 2.4 `a stopped commitment between the two places is passed rather than pushed` — where "only
+- [x] 2.4 `a stopped commitment between the two places is passed rather than pushed` — where "only
   the moved commitment moves" stops being a slogan. A stopped "Gym" starts second and ends first
   without being named, and a removed one does the same.
-- [ ] 2.5 `an offset of nothing at all puts a commitment before the first one kept and not before a
+- [x] 2.5 `an offset of nothing at all puts a commitment before the first one kept and not before a
   stopped one` — the one result a reader would not guess, and the reason the offset is counted over
   the kept commitments alone (`design.md` § *One order over three states*).
-- [ ] 2.6 `two offsets leave a commitment where it already is, and both are accepted` — settled
+- [x] 2.6 `two offsets leave a commitment where it already is, and both are accepted` — settled
   answer 5 plus the arithmetic § 1.2 measured. Accepted, reported as moved, roster unchanged.
-- [ ] 2.7 `a roster keeping one commitment accepts both the offsets it has` — the degenerate list,
+- [x] 2.7 `a roster keeping one commitment accepts both the offsets it has` — the degenerate list,
   where the two no-op offsets are the only two there are, and offset 2 is refused.
-- [ ] 2.8 `moving a commitment the roster is not keeping says it was not moved and leaves the roster
+- [x] 2.8 `moving a commitment the roster is not keeping says it was not moved and leaves the roster
   as it was` — all three of not-held, stopped and removed, in one test as the scenario's clauses
   read.
-- [ ] 2.9 `an offset below zero and one above the number of commitments kept are both refused` —
+- [x] 2.9 `an offset below zero and one above the number of commitments kept are both refused` —
   refused, never clamped. `design.md` § *An offset outside the range* is why.
-- [ ] 2.10 `moving a commitment moves no day and changes no commitment` — the scenario that proves a
+- [x] 2.10 `moving a commitment moves no day and changes no commitment` — the scenario that proves a
   move is dated by nothing. If it needs `Roster` to consult anything, stop and report it.
-- [ ] 2.11 `moving a commitment on a copy of a roster leaves the roster it was copied from unchanged`
+- [x] 2.11 `moving a commitment on a copy of a roster leaves the roster it was copied from unchanged`
   — the value half, as `add`, `retire` and `remove` each have.
 
 ## 3. `commitment` — the roster's other rules meet a moved order
@@ -73,9 +73,9 @@ as § 2. All three should be green the moment `move` exists, because each assert
 rule reads the roster's own order rather than a remembered one. **Write them anyway** — they are what
 turns "the place it was taken on in" becoming "the place it has" from a wording change into a fact.
 
-- [ ] 3.1 `a commitment moved and then stopped is taken up again in the place it was moved to`
-- [ ] 3.2 `a roster answers about a date in the order it was moved into`
-- [ ] 3.3 `removing a commitment that has been moved keeps it in the place it was moved to`
+- [x] 3.1 `a commitment moved and then stopped is taken up again in the place it was moved to`
+- [x] 3.2 `a roster answers about a date in the order it was moved into`
+- [x] 3.3 `removing a commitment that has been moved keeps it in the place it was moved to`
 
 ## 4. `commitment` — a roster store keeps a move
 

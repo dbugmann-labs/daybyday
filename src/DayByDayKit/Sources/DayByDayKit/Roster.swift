@@ -80,6 +80,45 @@ public struct Roster: Hashable, Sendable {
         return true
     }
 
+    /// Moves `commitment` to `offset`, a place counted over the commitments this roster is
+    /// keeping as they stand before the move, running from 0 (before the first of them) to the
+    /// number it is keeping (after the last). Answers `true` and reorders `entries` so that
+    /// `commitment` sits immediately before whichever commitment stood at `offset` among the
+    /// kept ones before the move, or after all of them when `offset` is the number kept. Answers
+    /// `false` and changes nothing when this roster is not keeping `commitment`, or when `offset`
+    /// is below 0 or above the number of commitments kept.
+    public mutating func move(_ commitment: Commitment, toOffset offset: Int) -> Bool {
+        guard let sourceIndex = entries.firstIndex(where: { $0.commitment == commitment }),
+            entries[sourceIndex].keptUntil == nil
+        else {
+            return false
+        }
+
+        let keptBeforeMove = entries.filter { $0.keptUntil == nil }
+        guard (0...keptBeforeMove.count).contains(offset) else {
+            return false
+        }
+
+        let entry = entries.remove(at: sourceIndex)
+
+        // `offset == keptBeforeMove.count` means "after the last of them"; every other offset
+        // names the commitment that stood there before the move, before which the moved
+        // commitment is put back. Either target may be `commitment` itself — both of the two
+        // no-op offsets — in which case reinserting at `sourceIndex` restores exactly what was
+        // there, since nothing before it moved.
+        let target = offset == keptBeforeMove.count ? keptBeforeMove.last : keptBeforeMove[offset]
+        if let target, target.commitment != commitment,
+            let targetIndex = entries.firstIndex(where: { $0.commitment == target.commitment })
+        {
+            let destination = offset == keptBeforeMove.count ? targetIndex + 1 : targetIndex
+            entries.insert(entry, at: destination)
+        } else {
+            entries.insert(entry, at: sourceIndex)
+        }
+
+        return true
+    }
+
     /// The commitments this roster had not stopped keeping on `date`, in the order they were
     /// taken on. It applies no other rule: a commitment's own day it is kept from and its
     /// schedule are the commitment's answer, not the roster's. A removed commitment answers
