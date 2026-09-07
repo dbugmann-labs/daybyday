@@ -141,11 +141,14 @@ pass, which is what it counted before those two.
   with no requirement of its own (`CONTEXT.md` § *App shell*), and `docs/open-questions.md` § *No
   UI smoke layer* means nothing automated proves it was drawn. `tasks.md` § 8 runs it on the
   phone.
-- **Tests** — 40 new acceptance tests, one per new scenario, all in
-  `Tests/DayByDayKitTests/DayViewTests.swift` and `Tests/DayByDayKitTests/DayScreenTests.swift`.
-  Measured on this machine on 2026-09-07, Apple Swift 6.3.3 (swiftlang-6.3.3.1.3), target
-  `arm64-apple-macosx26.0`: `cd src/DayByDayKit && swift test` reports **489 tests passing** at
-  `8f78852`, the branch point after this folder was rebased onto it; this change takes it to 535.
+- **Tests** — 48 new acceptance tests, one per new scenario, all in
+  `Tests/DayByDayKitTests/DayViewTests.swift` and `Tests/DayByDayKitTests/DayScreenTests.swift`:
+  the forty-six of §§ 2–8 and the two the first review pass added in § 12. Measured on this machine
+  on 2026-09-07, Apple Swift 6.3.3 (swiftlang-6.3.3.1.3), target `arm64-apple-macosx26.0`.
+  **The absolute counts live in `tasks.md` § 1.1 and § 11.2 and are not restated here**, because
+  `main` has moved under this branch three times and a second copy of a number is a second thing to
+  go stale: § 1.1 records the base each run was measured against — 489 at `8f78852`, 544 at
+  `00a8f23`, 580 at `8b2483e` — and § 11.2 records what the branch reports at the current one.
   `openspec` is 1.10.0 and `node --version` is v24.19.0.
 - **`openspec/specs/`** — `day-screen/spec.md` alone, rewritten at archive time by `/opsx:archive`
   and nothing else. One capability is claimed and one is edited, so CI check 2 stays green.

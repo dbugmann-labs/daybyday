@@ -13,7 +13,19 @@ and nothing later has to touch those 26 lines twice.
   against the base it was measured on: the branch was rebased onto `origin/main` at `00a8f23` on
   2026-09-07, where `add-roster-removal` (#156) had landed, and that base reports **544 passing**
   before any test this branch adds. 489 is what §§ 1.2–1.3 ran against and stays the record of what
-  they ran against; 544 is what § 11.2 counts from. A count that is neither is a stop and a report.
+  they ran against; 544 is what §§ 2–14 counted from.
+  **And it moved a third time, before § 15 and deliberately**: the branch was rebased onto
+  `origin/main` at `8b2483e` on 2026-09-07, where `add-roster-order` (#161) had landed, and that
+  base reports **580 passing**, measured in a throwaway worktree of that commit rather than worked
+  out from 544. The rebase was taken before the fifth G4 rather than after it because these two
+  numbers live in this folder, so correcting them now is free and correcting them later is a sixth
+  approval; it cost one adjacency conflict in `DayScreenTests.swift`, where #161 and this branch had
+  each appended a `@Test` at the same point and both were kept, and one in `docs/adr/README.md`,
+  resolved 1035, 1036, 1037. **So three bases and three numbers: 489 at `8f78852`, 544 at `00a8f23`,
+  580 at `8b2483e`, and 580 is what § 11.2 now counts from.** Every count recorded in § *Notes* is
+  against the base that run actually had, which is why they read 592 and § 11.2 now says 628 — the
+  difference is 580 − 544 and nothing else. A count explained by none of the three bases is a stop
+  and a report.
 - [x] 1.2 Rename the notice. In `Sources/DayByDayKit/DayScreen.swift`, add
   `public struct Notice: Hashable, Sendable { public let row: DayView.Row }` nested in `DayScreen`
   and replace `public private(set) var refusedChangeRow: DayView.Row?` (`:179`) with
@@ -31,7 +43,7 @@ and nothing later has to touch those 26 lines twice.
   `screen.notice?.row == nil`, which is true for two different reasons and would weaken the
   assertion. **No `@Test` display name changes, no assertion changes meaning, and no test is added
   or removed here.** `swift test` reports after this box exactly the count it reported before it —
-  489 on the base this box ran against, and whatever § 1.1's second paragraph says on any later one.
+  489 on the base this box ran against, and whatever base § 1.1 records for any later one.
   A red test is a rule-5 stop, because nothing in this box was supposed to change an answer.
 - [x] 1.4 Confirm the coverage tool agrees before writing a test: from the repo root,
   `pnpm run checks` reports `scenario coverage — 27/73 scenario(s) covered` for this change and
@@ -260,15 +272,20 @@ diff, so these boxes confirm rather than write.
 - [ ] 11.2 Re-run after § 15, which is why this box is open again — it has been ticked after § 12,
   after § 13 and after § 14, and § 15 moves the code underneath it: `pnpm run verify` green from the
   repo root, and `pnpm run checks` reporting `scenario coverage — 75/75`.
-  `cd src/DayByDayKit && swift test` reports **592 tests passing** — 544 on the base this branch now
+  `cd src/DayByDayKit && swift test` reports **628 tests passing** — 580 on the base this branch now
   sits on (§ 1.1), plus the forty-six written in §§ 2–8 and the two written in § 12, plus none
   removed and **none added by § 13, § 14 or § 15**, none of which writes a test. The fifth review
   pass added none either: its three fixes moved a doc, an ADR and five assertions, and left the
   count where § 14 did.
+  **628 is a number read off a run, not worked out here**: it was measured at `98ecb51`, the branch
+  tip immediately after the rebase onto `8b2483e` and before a line of § 15 — so § 15 has to leave it
+  exactly there, which is what "writes no test that stays" means in a number. The temporary test in
+  § 15.2 takes it to 629 while it exists and back to 628 when it is deleted.
   **Read the number the run prints and tick this against that, never against this arithmetic**: the
   first time this box was ticked it asserted 535, which had been right against the old base and was
-  wrong by 55 the moment the branch was rebased, and nothing caught it until the review. A count
-  that is neither measured nor explained by § 1.1 is a stop and a report.
+  wrong by 55 the moment the branch was rebased, and nothing caught it until the review. It has since
+  been rebased twice more. A count that is neither measured nor explained by § 1.1 is a stop and a
+  report.
 - [ ] 11.3 Open the app on the phone with `pnpm run phone`, **after deleting the installed app** so
   that § 9.3's day one is taken on. Enter a weight from its row, read it back after force-quitting
   and reopening, type a number outside the range and read the sentence on the row, then open the
@@ -688,7 +705,8 @@ all of which are open for it.
   § 14.4 put on the other exactness assertions and the reason they can fail. Run it
   **before** touching `read(_:)` — it must go **red**, and a green there means the case was
   misdiagnosed and is a stop — then make it green with the change above, then **delete it** so
-  `swift test` reports 592 again, unchanged from § 14. It is deleted because no scenario names it
+  `swift test` reports 628 again, the count § 11.2 measured at `98ecb51` before § 15 began — 629
+  while the temporary test exists. It is deleted because no scenario names it
   and this Story adds none; if it should stay, that is a scenario, a delta edit and a sixth G4, and
   the place to say so is G4 rather than this box. Then, from `src/DayByDayKit`,
   `grep -n 'Decimal(string:' Sources/DayByDayKit/DayScreen.swift | grep -v '///'` prints exactly one
@@ -700,7 +718,7 @@ all of which are open for it.
 - [ ] 15.3 Record in § *Notes*, under a heading of its own, what § 15.1 actually printed — all four
   blocks, and the two totals of the last one as they came out on the day — that § 15.2's temporary
   test went red before the change and green after it, that it was deleted, and that
-  `cd src/DayByDayKit && swift test` reports 592 with no `@Test` display name changed once it is
+  `cd src/DayByDayKit && swift test` reports 628 with no `@Test` display name changed once it is
   gone.
 
 ## Notes
