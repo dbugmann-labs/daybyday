@@ -3333,3 +3333,32 @@ func aCommitOnARowThatOffersNoNumberEntryIsToldNothingOnTheRow() throws {
     #expect(screen.notice == nil)
     #expect(!screen.dayView.rows[0].isKept)
 }
+
+@MainActor
+@Test(
+    "a commit on a row a day screen's day view does not hold is told nothing and does not end what is already told"
+)
+func aCommitOnARowADayScreensDayViewDoesNotHoldIsToldNothingAndDoesNotEndWhatIsAlreadyTold() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let firstScreen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let secondScreen = DayScreen(
+        startingFrom: [weight], asOf: wednesday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    try firstScreen.enter("300", on: firstScreen.dayView.rows[0])
+    try firstScreen.enter("1.2.3", on: secondScreen.dayView.rows[0])
+
+    #expect(firstScreen.notice?.row == firstScreen.dayView.rows[0])
+    #expect(firstScreen.notice?.cause == "Must be between 40 and 150")
+}

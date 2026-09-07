@@ -187,7 +187,7 @@ in particular 8.1 is red if the text is read before the store is checked.
   including a value the commitment would refuse and one that is not a number.
 - [x] 8.2 `a commit on a row for a day that has not arrived is told nothing on the row`
 - [x] 8.3 `a commit on a row that offers no number entry is told nothing on the row`
-- [ ] 8.4 `a commit on a row a day screen's day view does not hold is told nothing and does not end
+- [x] 8.4 `a commit on a row a day screen's day view does not hold is told nothing and does not end
   what is already told`
 - [ ] 8.5 `what a day screen tells on a row ends when a number is entered and kept`
 - [ ] 8.6 `what a day screen tells on a row ends when a number is taken back and kept`
