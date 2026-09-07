@@ -5,14 +5,21 @@ import Foundation
 /// on the engine types: the file's shape is a contract independent of how `Schedule`, `Commitment`
 /// and `Tick` happen to be laid out in Swift.
 ///
-/// `RecordDocument` converts to and from a `Set<Tick>` rather than a `History`: `History` keeps its
-/// own ticks `private`, by design, and building one back up from a decoded document only needs its
-/// public `add(_:)` — reading one out is the direction that has no public way through, so this type
-/// works at the one level the engine already opens up.
+/// `RecordDocument` converts to and from a `Set<Tick>` and a `[RecordedDay: Decimal]` rather than a
+/// `History`: `History` keeps its own ticks and numbers `private`, by design, and building one back
+/// up from a decoded document only needs its public `add(_:)` — reading one out is the direction
+/// that has no public way through, so this type works at the one level the engine already opens up.
 struct RecordDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
     static let currentVersion = 3
+
+    /// The form `numbers` was introduced at: forms at or after this one carry the key, forms
+    /// before it never do. Kept apart from `currentVersion` on purpose — a fourth form would move
+    /// `currentVersion` to `4` without moving this, and `RecordStore.init(at:)`'s shape-against-form
+    /// guard reads against this constant precisely so raising `currentVersion` alone cannot
+    /// silently change which forms are expected to carry `numbers`.
+    static let numbersIntroducedInVersion = 3
 
     var version: Int
     var ticks: [TickRecord]
@@ -25,10 +32,14 @@ struct RecordDocument: Codable {
     var numbers: [NumberRecord]?
 
     /// Builds the document that exactly represents `ticks` and `numbers`, in the stable order
-    /// `design.md` fixes: by commitment name, then kept-from day, then date, then schedule as the
-    /// last tiebreaker for two records alike in the first three — so two equal sets of ticks and
-    /// numbers produce byte-identical files. `numbers` is sorted by the same key: a day holds at
-    /// most one number, so two numbers cannot tie on all four either.
+    /// `design.md` fixes: by commitment name, then kept-from day, then date, then schedule, then
+    /// kind as the final tiebreaker — so two equal sets of ticks and numbers produce
+    /// byte-identical files regardless of `Dictionary`'s per-process iteration order. A day holds
+    /// at most one number per commitment, so two numbers cannot tie on all five for the *same*
+    /// commitment — but two distinct commitments (different kinds, same name, schedule and
+    /// kept-from day) can each hold a number on the same date and tie on the first four, which is
+    /// what `kind` is for. A tick's commitment is always of the tick kind, so `kind` never
+    /// actually discriminates two ticks.
     init(_ ticks: Set<Tick>, _ numbers: [RecordedDay: Decimal]) {
         version = Self.currentVersion
         self.ticks = ticks.map(TickRecord.init).sorted(by: Self.isOrderedBefore)
@@ -59,14 +70,18 @@ struct RecordDocument: Codable {
     /// Re-forms every number this document holds, exactly as `formTicks()` does for ticks. A
     /// document with no `numbers` key at all holds none, which is not a failure to form — `nil`
     /// here means one of the numbers present could not be formed, the whole document refused, not
-    /// the bad ones dropped.
-    func formNumbers() -> [RecordedDay: Decimal]? {
-        var result: [RecordedDay: Decimal] = [:]
+    /// the bad ones dropped. Returns the formed `Number`s themselves, not a dictionary keyed by
+    /// day: `RecordStore.init(at:)` needs both the dictionary (to hold and later write back) and
+    /// each `Number` (to add to `history`), and building the dictionary from the `Number`s is one
+    /// line at the call site — forming it here and having the caller re-form each `Number` back
+    /// out of it, as this used to, ran `Number.init?` twice over the same three inputs.
+    func formNumbers() -> [Number]? {
+        var result: [Number] = []
         for record in numbers ?? [] {
             guard let number = record.formed() else {
                 return nil
             }
-            result[RecordedDay(commitment: number.commitment, date: number.date)] = number.number
+            result.append(number)
         }
         return result
     }
@@ -83,7 +98,36 @@ struct RecordDocument: Codable {
         if lhs.date != rhs.date {
             return lhs.date < rhs.date
         }
-        return lhs.commitment.schedule < rhs.commitment.schedule
+        if lhs.commitment.schedule != rhs.commitment.schedule {
+            return lhs.commitment.schedule < rhs.commitment.schedule
+        }
+        return kindSortKey(lhs.commitment.kind) < kindSortKey(rhs.commitment.kind)
+    }
+
+    /// The final tiebreaker: two numbers for two distinct commitments alike in name, kept-from
+    /// day, date and schedule but of different kinds tie on every field above this one, so `kind`
+    /// closes the order — case first then payload, mirroring `ScheduleRecord`'s own `sortKey`
+    /// rather than asking `KindRecord` to compare itself (see its doc comment in
+    /// `CommitmentCoding.swift`). `nil` — the form written before a commitment carried a kind —
+    /// sorts before every case; no number can be held in that form, so it never actually ties
+    /// against one.
+    private static func kindSortKey(_ kind: KindRecord?) -> String {
+        guard let kind else {
+            return ""
+        }
+        switch kind {
+        case .tick:
+            return "0"
+        case .number(let range):
+            guard let range else {
+                return "1:"
+            }
+            return "1:\(range.lowest):\(range.highest)"
+        case .note:
+            return "2"
+        case .total(let target):
+            return "3:\(target)"
+        }
     }
 }
 

@@ -39,25 +39,31 @@ public final class RecordStore {
             throw RecordStoreError.notAStore(at: place)
         }
         // Each form is read as the shape that form has, per `design.md` § *Each form is read as
-        // the shape that form has*: the `numbers` field is present exactly at the form that
-        // writes it, so its presence must agree with the declared version in both directions.
-        guard (document.numbers != nil) == (document.version == RecordDocument.currentVersion)
+        // the shape that form has*: the `numbers` field is present at the form that introduced it
+        // and at every form since, so its presence must agree with the declared version in both
+        // directions. Checked against `numbersIntroducedInVersion`, not `currentVersion` — the two
+        // agree today only because form 3 is both, and a later form raising `currentVersion` alone
+        // must not move which forms this check accepts.
+        guard (document.numbers != nil)
+            == (document.version >= RecordDocument.numbersIntroducedInVersion)
         else {
             throw RecordStoreError.notAStore(at: place)
         }
-        guard let ticks = document.formTicks(), let numbers = document.formNumbers() else {
+        guard let ticks = document.formTicks(), let formedNumbers = document.formNumbers() else {
             throw RecordStoreError.notAStore(at: place)
         }
 
         self.ticks = ticks
-        self.numbers = numbers
         var history = History()
         for tick in ticks {
             history.add(tick)
         }
-        for (day, value) in numbers {
-            history.add(Number(value, for: day.commitment, on: day.date)!)
+        var numbers: [RecordedDay: Decimal] = [:]
+        for number in formedNumbers {
+            numbers[RecordedDay(commitment: number.commitment, date: number.date)] = number.number
+            history.add(number)
         }
+        self.numbers = numbers
         self.history = history
     }
 
@@ -124,7 +130,9 @@ public final class RecordStore {
 }
 
 public enum RecordStoreError: Error, Equatable, Sendable {
-    /// What is at `place` is not a store this app can read, or holds what could not be a tick.
+    /// What is at `place` is not a store this app can read: it holds what could not be a tick or
+    /// a number, a number its commitment would refuse, or a shape that disagrees with its
+    /// declared form.
     case notAStore(at: URL)
     /// A store in a form later than this app writes; `version` is the form found.
     case laterForm(at: URL, version: Int)

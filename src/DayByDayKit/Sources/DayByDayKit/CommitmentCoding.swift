@@ -209,8 +209,10 @@ enum ScheduleRecord: Codable, Equatable, Comparable {
 /// shape: one key per case, and the key's value is that case's payload — an empty object for a
 /// kind that carries nothing, so a fifth kind with parameters would not have to break the shape.
 /// The conversion from `Commitment.Kind` is an exhaustive `switch`, so a fifth kind is a compile
-/// error here, exactly as `ScheduleRecord`'s is. `KindRecord` needs no `Comparable`: nothing sorts
-/// by kind, because only a commitment of the tick kind ever forms a tick at all.
+/// error here, exactly as `ScheduleRecord`'s is. `KindRecord` needs no `Comparable`: `RecordDocument`
+/// sorts by kind as its final tiebreaker for two numbers alike in every earlier field, but reaches
+/// into these cases with its own `switch` (`kindSortKey(_:)`) rather than asking this type to
+/// compare itself.
 enum KindRecord: Codable {
     case tick
     case number(range: RangeRecord?)
