@@ -1281,3 +1281,23 @@ func aRowForACommitmentWhoseKindIsNotANumberOffersNoNumberEntry() {
     #expect(dayView.rows.allSatisfy { $0.numberEntry(asOf: monday) == nil })
     #expect(numberDayView.rows[0].numberEntry(asOf: monday) != nil)
 }
+
+@Test("a row offers a tick or a number entry and never both")
+func aRowOffersATickOrANumberEntryAndNeverBoth() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, weight], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Weight"])
+    #expect(dayView.rows[0].tick(asOf: monday) != nil)
+    #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
+    #expect(dayView.rows[1].numberEntry(asOf: monday) != nil)
+    #expect(dayView.rows[1].tick(asOf: monday) == nil)
+}
