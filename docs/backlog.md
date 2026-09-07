@@ -322,6 +322,45 @@ shape it lacks, not the quota.
 - **Open** — the *Decided* line of 2026-09-06 already sends the mood's one tap to the Story that
   enters a number (#139). This entry is that line's missing half: what the affordance actually is.
 
+### B-035 — know that a commitment on a future day cannot be ticked yet
+*Captured 2026-09-07, from the repo owner running main's build on the phone.*
+
+> "I just installed the most recent version (the one that is on main) onto the phone, and I cannot
+> see any message when I try to click a commitment on a day in the future
+> Is that on purpose, or a bug?"
+
+- **Trigger** — every time the day screen is moved forward, which is one tap from the day every
+  visit lands on. The row for tomorrow is drawn exactly like the row for today and answers a tap
+  with nothing at all.
+- **Touches** — `day-screen` (#27), and **the spec has already named the answer without writing
+  it**. The requirement *A day screen tells nothing on a row where there was no tick to refuse*
+  makes a tap on a row for a day that has not arrived one of its three silent cases, because "what
+  is told on a row means a change did not reach the place, and here there was no change" — and
+  then, in the same paragraph, "the honest answer to a day that has not arrived is a row that does
+  not invite the tap at all, and that is not this capability's answer here". So the silence is
+  specified and the kit is right; the row that does not invite the tap is the half nobody has
+  written. Same shape as B-028 — a control offering a target it cannot honour.
+- **Principle** — tested against *Entered where you stand*: **passes, by subtraction**, exactly as
+  B-028 does. The day screen is where all five daily visits happen, and a dead target sits in the
+  middle of it. Tested against *five percent of seven things*: **fails** — it deepens a screen that
+  already works rather than making a new kind of record possible. Both are written down because the
+  second is why a pass might reasonably not take it, and the first is why it is worth having.
+- **Open** — which of three answers: the row not drawn at all on a day that has not arrived, the
+  row drawn but not tappable, or the tap answered with a message. The want asks for the third —
+  "I cannot see any message" — and the spec's own sentence argues for the second. Only one of the
+  three puts words on the screen, and they are not the same product decision.
+- **Open** — Story or chore, and B-028 does not settle it either way. `DayView.Row.tick(asOf:)` is
+  public and already answers `nil` for a day that has not arrived, and `ContentView` reads its own
+  `today()`, so the shell *could* work it out — which is the `chore/draw-kept` reading. Against
+  that: a refusal is exactly what `CONTEXT.md` § *App shell* says owes a Story, and having the
+  shell try to form a tick in order to learn whether it may offer one is the rule being re-derived
+  outside the seam.
+- **Open** — does one answer cover the other silent row? A row whose commitment's kind is not a
+  tick offers nothing on **every** day, under the same requirement, and #139–#142 are about to make
+  those rows ordinary. "A row that cannot be tapped does not look tappable" is one rule for both;
+  a message about a day that has not arrived leaves the number and note rows exactly as mute as
+  they are now.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
