@@ -317,7 +317,7 @@ and change no behaviour.
   the `!`**: a `nil` from that call is read as a value that is not a number, never trusted. The
   notice this scenario asserts is `"Not a number"`, the existing sentence and not a third cause;
   `docs/adr/1036` says why, and it is not amended by this box.
-- [ ] 12.3 Add the third assertion to the existing test named `a number that cannot be kept is
+- [x] 12.3 Add the third assertion to the existing test named `a number that cannot be kept is
   refused and leaves the day view as it was` (`DayScreenTests.swift`). The scenario has three THEN
   bullets and the test asserts two; the missing one is **"a day screen opened afterwards at the same
   place says the same"**, which every sibling scenario in that requirement opens a second screen

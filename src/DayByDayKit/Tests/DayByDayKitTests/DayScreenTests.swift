@@ -2850,6 +2850,10 @@ func aNumberThatCannotBeKeptIsRefusedAndLeavesTheDayViewAsItWas() throws {
         try screen.enter("70.5", on: screen.dayView.rows[0])
     }
     #expect(!screen.dayView.rows[0].isKept)
+
+    let later = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!later.dayView.rows[0].isKept)
 }
 
 @MainActor
