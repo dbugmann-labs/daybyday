@@ -1301,3 +1301,21 @@ func aRowOffersATickOrANumberEntryAndNeverBoth() {
     #expect(dayView.rows[1].numberEntry(asOf: monday) != nil)
     #expect(dayView.rows[1].tick(asOf: monday) == nil)
 }
+
+@Test("a row for a date later than the day it is asked as of offers no number entry")
+func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoNumberEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [weight], on: wednesday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Weight"])
+    #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
+    #expect(dayView.rows[0].tick(asOf: monday) == nil)
+}

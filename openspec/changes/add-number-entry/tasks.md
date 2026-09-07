@@ -50,7 +50,7 @@ exists. **Record which ones actually ran red as you go, in § 11**; a prediction
 - [x] 2.2 `a row for a commitment whose kind is not a number offers no number entry` — the tick, note
   and total kinds, plus the number-kind control that must offer one.
 - [x] 2.3 `a row offers a tick or a number entry and never both`
-- [ ] 2.4 `a row for a date later than the day it is asked as of offers no number entry` — the same
+- [x] 2.4 `a row for a date later than the day it is asked as of offers no number entry` — the same
   guard `tick(asOf:)` carries, and the assertion that no tick is offered either.
 - [ ] 2.5 `a row for a date later than the day it is asked as of offers no number entry even where the
   day holds a number`
