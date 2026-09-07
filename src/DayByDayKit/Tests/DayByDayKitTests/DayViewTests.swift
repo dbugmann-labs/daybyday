@@ -1339,3 +1339,19 @@ func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoNumberEntryEvenWhereTheDayH
     #expect(dayView.rows[0].isKept)
     #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
 }
+
+@Test("a row for a date earlier than the day it is asked as of offers the number entry")
+func aRowForADateEarlierThanTheDayItIsAskedAsOfOffersTheNumberEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let history = History()
+
+    let dayView = DayView(of: [weight], on: monday, in: history)
+
+    #expect(dayView.rows[0].numberEntry(asOf: saturday) != nil)
+}
