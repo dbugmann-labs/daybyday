@@ -107,7 +107,7 @@ entry — then reads what was committed, then writes, then re-forms the day view
 the reading out; until then, take the smallest reading that passes the scenario in front of you.
 
 - [x] 5.1 `entering a number on a row makes the day screen say the commitment is kept`
-- [ ] 5.2 `a number entered on a day screen is held by a day screen opened afterwards at the same
+- [x] 5.2 `a number entered on a day screen is held by a day screen opened afterwards at the same
   place`
 - [ ] 5.3 `the number entry a row offers says the number just entered on it` — the prefill, end to
   end. This is the scenario the grill's answer 8 turns on.
