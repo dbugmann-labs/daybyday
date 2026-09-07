@@ -30,7 +30,7 @@ else asks it something, the store second because the screen writes through it, t
 
 ## 2. `commitment` — a roster moves a commitment among the ones it keeps
 
-Eleven scenarios from `specs/commitment/spec.md` § *A roster moves a commitment among the ones it
+Twelve scenarios from `specs/commitment/spec.md` § *A roster moves a commitment among the ones it
 keeps*, all in `Tests/DayByDayKitTests/RosterTests.swift`. Each task takes exactly one
 `#### Scenario:` and writes one acceptance test whose `@Test("...")` display name is that scenario
 title **verbatim**, then makes it pass with the smallest change that does. Never write two before
@@ -54,16 +54,26 @@ named test green, every earlier test still green.
   the kept commitments alone (`design.md` § *One order over three states*).
 - [x] 2.6 `two offsets leave a commitment where it already is, and both are accepted` — settled
   answer 5 plus the arithmetic § 1.2 measured. Accepted, reported as moved, roster unchanged.
-- [x] 2.7 `a roster keeping one commitment accepts both the offsets it has` — the degenerate list,
+- [ ] 2.7 `the offset just after a commitment's own passes nothing, with a stopped or removed
+  commitment lying between` — **the test for this already exists and needs renaming, not writing.**
+  `RosterTests.swift` holds it as *"the offset just after a commitment's own leaves it where it is
+  even with a stopped or removed commitment between"*, written with the fix in `b60bec6` as a
+  regression test against a title no scenario had. Change the `@Test("...")` display name to the
+  scenario title verbatim and the function name with it; **change no assertion** — the scenario was
+  written to what the test already asserts, so a body that needs editing means the two have drifted
+  and that is a stop. The case it covers is the one the delta's other no-op scenarios cannot reach,
+  because both put the moved commitment next to the commitment that follows it with nothing in
+  between: `design.md` § *A no-op move is accepted* is why that difference is the whole defect.
+- [x] 2.8 `a roster keeping one commitment accepts both the offsets it has` — the degenerate list,
   where the two no-op offsets are the only two there are, and offset 2 is refused.
-- [x] 2.8 `moving a commitment the roster is not keeping says it was not moved and leaves the roster
+- [x] 2.9 `moving a commitment the roster is not keeping says it was not moved and leaves the roster
   as it was` — all three of not-held, stopped and removed, in one test as the scenario's clauses
   read.
-- [x] 2.9 `an offset below zero and one above the number of commitments kept are both refused` —
+- [x] 2.10 `an offset below zero and one above the number of commitments kept are both refused` —
   refused, never clamped. `design.md` § *An offset outside the range* is why.
-- [x] 2.10 `moving a commitment moves no day and changes no commitment` — the scenario that proves a
+- [x] 2.11 `moving a commitment moves no day and changes no commitment` — the scenario that proves a
   move is dated by nothing. If it needs `Roster` to consult anything, stop and report it.
-- [x] 2.11 `moving a commitment on a copy of a roster leaves the roster it was copied from unchanged`
+- [x] 2.12 `moving a commitment on a copy of a roster leaves the roster it was copied from unchanged`
   — the value half, as `add`, `retire` and `remove` each have.
 
 ## 3. `commitment` — the roster's other rules meet a moved order
@@ -188,9 +198,11 @@ nothing and orders nothing. Only `src/DayByDay/DayByDay/CommitmentsView.swift` c
 
 ## 9. Before the review, and what the janitor does at the archive
 
-- [x] 9.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 544 plus the 35
+- [x] 9.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 544 plus the 36
   scenarios above. From the repo root, `pnpm run verify` green and `pnpm run checks` reporting
-  `147/147 scenario(s) covered`.
+  `148/148 scenario(s) covered`. **The 36th is § 2.7's**, which reached the delta at the second
+  review rather than at G4: § 1.1's `112/147` is the measurement taken before it existed and is left
+  as it was read.
 - [x] 9.2 `openspec validate add-roster-order --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [x] 9.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside

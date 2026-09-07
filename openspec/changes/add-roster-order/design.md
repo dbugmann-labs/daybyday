@@ -152,6 +152,12 @@ immediately before the next one kept" taken literally walks the moved commitment
 roster comes out different from the roster it was. Nothing moves on either no-op offset, so nothing
 passes anything.
 
+So the requirement's anchor rule — take the commitment out, put it back before whatever stood at the
+offset — is written with both no-op offsets carved out of it, rather than stated flat and then
+contradicted a paragraph later. And the case has a scenario of its own, because neither of the other
+two can reach it: both leave the moved commitment beside the one that follows it with nothing lying
+in between, which is precisely the arrangement in which the flat reading and the true one agree.
+
 **It is not a refusal**, because the roster's refusals are about a move it cannot make at all and
 this is one it can make whose result is the roster it already had. **And it does not clear a standing
 refused-change notice**, which is settled answer 13 and which the existing spec already covers

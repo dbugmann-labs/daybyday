@@ -1640,13 +1640,21 @@ from 0, before the first of them, to the number it is keeping, which is after th
 report that the roster moved the commitment. This is the only thing that ever changes a roster's
 order.
 
-**The moved commitment is put where the offset points, and nothing else is picked up.** It SHALL be
+**The moved commitment is put where the offset points, and nothing else is picked up.** Unless the
+offset is one of the two that ask for the place the commitment already has — the offset it is at
+among the commitments the roster is keeping, and the one just after that — the commitment SHALL be
 taken out of the sequence the roster holds and put back immediately before the commitment that stood
 at that offset among the ones the roster was keeping, or immediately after the last of them where
 the offset is the number it is keeping. Every other commitment the roster holds SHALL afterwards be
 in the order it was in — kept, stopped and removed alike — and no two of them SHALL be reordered
 against each other. A stopped or removed commitment lying between where the moved commitment was and
 where it goes is passed rather than pushed: the moved commitment goes by, and it stands still.
+
+**On those two offsets the commitment SHALL NOT be taken out of the sequence at all**, and nothing
+in the sequence SHALL move. The carve-out is not tidiness: taking the commitment out and putting it
+back immediately before whatever stood at the offset just after its own would walk it past a stopped
+or removed commitment lying between the two, and hand back a roster that is not the roster it was.
+The paragraph below says why both offsets ask for the place the commitment already has.
 
 **An offset is counted over the commitments the roster is keeping and over nothing else.** The
 commitments a roster has stopped keeping or removed are in its order but not in that count, because
@@ -1758,6 +1766,19 @@ and two rosters holding the same commitments in a different order are already di
 - **THEN** each reports that it moved the commitment
 - **AND** each reads back "Water plants", "Gym", "Journaling"
 - **AND** each is the same roster as one that was never asked
+
+#### Scenario: the offset just after a commitment's own passes nothing, with a stopped or removed commitment lying between
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", then one named "Reading", all on a schedule listing Monday, Wednesday and Saturday
+  and all kept from 1 January 2026, stops keeping "Journaling" as of 31 January 2026, and is then
+  asked to move "Gym" to the offset 2 — the offset just after "Gym"'s own among the three it is then
+  keeping, which names "Reading" and not "Gym", with the stopped "Journaling" lying between the two
+- **THEN** the roster reports that it moved the commitment
+- **AND** the roster is the same roster as one that was never asked, "Journaling" still standing
+  between "Gym" and "Reading" rather than passed
+- **AND** a roster that had removed "Journaling" as of that same day instead reports that it moved
+  the commitment and is likewise the same roster as one that was never asked
 
 #### Scenario: moving a commitment the roster is not keeping says it was not moved and leaves the roster as it was
 
