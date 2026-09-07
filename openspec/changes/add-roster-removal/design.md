@@ -193,6 +193,26 @@ the calendar's floor is not something they can act on, and a refusal with no rem
 the refused-change vocabulary is not for. It has a scenario at each of the two seams that can reach
 it, and no device will ever present that day.
 
+### Kept on no day at all is the commitment's floor, not the roster's answer
+
+The scenario *a commitment defined and stopped on one day through a commitments screen is kept on no
+day at all* asked, as first written, for the roster store to answer with nothing on Sunday 30 August
+2026. It cannot, and the rule it would need bent is one this change does not touch: a roster answers
+with a stopped commitment **on its kept-until day**, and MUST NOT apply the commitment's own day it
+is kept from. Sunday is the kept-until day, so the answer has "Gym" in it.
+
+The clause was rewritten rather than the rule, because the rule is right and the clause was asserting
+the intent at the wrong seam. "Kept on no day at all" is a fact about the commitment, not about the
+roster's answer: the roster answers with it on Sunday, the commitment's kept-from floor is the Monday
+after, and asking that commitment whether it is due on Sunday gets no. A day drawn from the answer
+asks each commitment exactly that, so no date ever shows the row. Stating the floor a second time in
+the roster would be the two-places-to-be-wrong the requirement names in as many words.
+
+The scenario keeps its title, which is still true of the commitment, and now asserts both halves:
+what the roster answers with, and that what it answers with is not due there. Nothing else in the
+delta moves — in particular *a commitment removed as of the first supported date and one as of the
+last are both accepted*, which is green and depends on the rule as it stands.
+
 ### Three scenario titles that are now wrong
 
 Three scenarios keep their titles and change what they assert, and one keeps a title this change

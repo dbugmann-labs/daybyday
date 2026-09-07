@@ -1281,7 +1281,10 @@ be written, and SHALL leave both lists as they were.
   confirmed
 - **THEN** what it keeps is nothing and what it has stopped is one entry, named "Gym"
 - **AND** a roster store opened afterwards at that place answers with nothing when asked what it had
-  not stopped keeping on Monday 31 August 2026, and with nothing on Sunday 30 August 2026
+  not stopped keeping on Monday 31 August 2026, and with "Gym" on Sunday 30 August 2026, the day it
+  was kept until
+- **AND** that "Gym" is not due on Sunday 30 August 2026, the day before the day it is kept from, so
+  there is no date on which it is both answered with and due
 
 #### Scenario: a commitments screen handed the first supported date stops a commitment as of that day
 
