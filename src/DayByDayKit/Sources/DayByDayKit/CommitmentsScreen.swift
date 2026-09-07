@@ -89,8 +89,8 @@ public final class CommitmentsScreen {
         guard let awaitingRemoval else {
             return false
         }
-        return nameTypedBack.trimmingCharacters(in: .whitespaces)
-            == awaitingRemoval.name.trimmingCharacters(in: .whitespaces)
+        return nameTypedBack.trimmingCharacters(in: .whitespacesAndNewlines)
+            == awaitingRemoval.name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// The change asked for last that was refused, and why — at most one at a time, `nil` when the

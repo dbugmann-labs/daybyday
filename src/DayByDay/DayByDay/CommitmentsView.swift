@@ -69,11 +69,11 @@ struct CommitmentsView: View {
                         Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                     )
                     .swipeActions {
-                        Button("Remove", role: .destructive) {
-                            screen.askToRemove(commitment)
-                        }
                         Button("Stop") {
                             screen.askToStopKeeping(commitment)
+                        }
+                        Button("Remove", role: .destructive) {
+                            screen.askToRemove(commitment)
                         }
                     }
                 }
@@ -81,6 +81,12 @@ struct CommitmentsView: View {
 
             if case .stopping(_, let stopRefusal) = screen.refusedChange {
                 refusalText(stopRefusal)
+            }
+
+            if case .removing(let removed, let removingRefusal) = screen.refusedChange,
+                screen.kept.contains(removed)
+            {
+                refusalText(removingRefusal)
             }
 
             Section("Stopped") {
@@ -92,11 +98,11 @@ struct CommitmentsView: View {
                         Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                     )
                     .swipeActions {
-                        Button("Remove", role: .destructive) {
-                            screen.askToRemove(commitment)
-                        }
                         Button("Resume") {
                             screen.keepAgain(commitment)
+                        }
+                        Button("Remove", role: .destructive) {
+                            screen.askToRemove(commitment)
                         }
                     }
                 }
@@ -106,7 +112,9 @@ struct CommitmentsView: View {
                 refusalText(keepAgainRefusal)
             }
 
-            if case .removing(_, let removingRefusal) = screen.refusedChange {
+            if case .removing(let removed, let removingRefusal) = screen.refusedChange,
+                screen.stopped.contains(removed)
+            {
                 refusalText(removingRefusal)
             }
 

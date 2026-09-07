@@ -1786,6 +1786,33 @@ func aCommitmentWhoseNameEndsInASpaceIsRemovedByTypingTheNameWithoutIt() throws 
 }
 
 @MainActor
+@Test("a commitment whose name ends in a newline is removed by typing the name without it")
+func aCommitmentWhoseNameEndsInANewlineIsRemovedByTypingTheNameWithoutIt() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gymWithTrailingNewline = Commitment(name: "Gym\n", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gymWithTrailingNewline)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    screen.askToRemove(gymWithTrailingNewline)
+    screen.nameTypedBack = "Gym"
+
+    #expect(screen.nameTypedBackMatches)
+
+    let refusal = screen.confirmRemoving()
+
+    #expect(refusal == nil)
+    #expect(screen.kept.isEmpty)
+    #expect(screen.stopped.isEmpty)
+}
+
+@MainActor
 @Test("a removal confirmed on a name that does not match changes nothing and refuses nothing")
 func aRemovalConfirmedOnANameThatDoesNotMatchChangesNothingAndRefusesNothing() throws {
     let rosterPlace = freshRosterPlace()

@@ -246,8 +246,14 @@ no day, no match and no refusal. Only `src/DayByDay/DayByDay/CommitmentsView.swi
   Confirmed 2026-09-07: the branch's merge-base with `origin/main` was already `origin/main`'s tip
   (`8f78852dfcd54bee0df2f3f8b9a46f438e4423e6`) before this rebase ran, so `git rebase origin/main`
   reported "up to date" with no commits to replay and no conflict anywhere.
-- [ ] 11.4 Ask for the review (**G7**) with `mattpocock-skills:code-review`, and fix what it finds on
+- [x] 11.4 Ask for the review (**G7**) with `mattpocock-skills:code-review`, and fix what it finds on
   this branch before the archive.
+
+  Confirmed 2026-09-07: reviewer Standards findings 1–3 fixed on this branch (finding 4, the
+  `Entry` shape, triaged by the owner as approved design and left as is) — `.whitespaces` widened
+  to `.whitespacesAndNewlines` in `CommitmentsScreen.nameTypedBackMatches`, a refused removal now
+  draws under the list the commitment is actually in, and `Stop`/`Resume` are listed before
+  `Remove` in each row's `swipeActions` so the everyday action is the full-swipe default.
 - [x] 11.5 Tell the janitor, in the archive handover, that after `/opsx:archive` has run it must read
   the recomposed `openspec/specs/commitment/spec.md` and `openspec/specs/day-screen/spec.md` and
   confirm that each MODIFIED requirement sits where it sat before — this delta renames nothing, so
