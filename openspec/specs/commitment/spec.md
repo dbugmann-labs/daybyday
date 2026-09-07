@@ -9,6 +9,7 @@ this one owns the thing that carries one, which is what a screen lists, what a p
 what a tick is eventually recorded against.
 
 ## Requirements
+
 ### Requirement: A commitment is a name, a schedule, and the day it is kept from
 
 A commitment SHALL be exactly four things: a name, the schedule that decides which days it is due
@@ -86,6 +87,7 @@ it. Changing what a person keeps is changing a commitment, which is a want of it
 - **THEN** the two are different commitments
 - **AND** a third alike in every way but carrying a range of 40 to 200 is a different commitment
   again
+
 ### Requirement: A commitment's name says something
 
 The system SHALL refuse to form a commitment whose name is empty, or whose name is made only of
@@ -126,6 +128,7 @@ it, not in the rule that decides what a commitment is.
 - **WHEN** a commitment is formed with a name that is the single emoji 🏋️, a schedule listing
   Monday, Wednesday and Saturday, and kept from 1 January 2026
 - **THEN** the commitment's name reads back as that emoji
+
 ### Requirement: A commitment's kind is a tick, a number, a note or a total
 
 A commitment's kind SHALL be exactly one of four: a **tick**, a **number**, a **note** or a
@@ -186,6 +189,7 @@ commitment is, and it is what a due day *takes* that the kind decides.
   range of 40 to 150
 - **THEN** both are due on Monday 31 August 2026
 - **AND** neither is due on Tuesday 1 September 2026
+
 ### Requirement: A range is a lowest and a highest, and the lowest is not above the highest
 
 A range SHALL be exactly two numbers: the lowest a number commitment will take and the highest. Both
@@ -233,6 +237,7 @@ answers *true* in one direction and *false* in the other and would let one throu
 - **WHEN** a range is offered whose lowest is not a number and whose highest is 5
 - **THEN** no range is formed
 - **AND** a range whose lowest is 5 and whose highest is not a number forms none either
+
 ### Requirement: A target is a number above zero
 
 A target SHALL be a single number, and SHALL be above zero. The system MUST NOT form a target of
@@ -275,6 +280,7 @@ requirement fixes only what a target is and what refuses to be one.
 
 - **WHEN** a target that is not a number is offered
 - **THEN** no target is formed
+
 ### Requirement: A commitment is due exactly when its schedule is due, on and after the day it is kept from
 
 On the day a commitment is kept from and on every date after it, the commitment SHALL be due exactly
@@ -324,6 +330,7 @@ requires of the schedule itself.
 - **WHEN** a commitment named "Gym" on a schedule listing no weekday at all, kept from 1 January
   2026, is asked about each date from Monday 31 August through Sunday 6 September 2026
 - **THEN** the commitment is due on none of those seven dates
+
 ### Requirement: A commitment is not due before the day it is kept from
 
 A commitment SHALL NOT be due on any calendar date earlier than the day it is kept from, whatever
@@ -379,20 +386,29 @@ therefore a rhythm whose first occurrences are simply never owed.
 - **AND** the same commitment asked about 31 August 2026, the next landing before the floor, answers
   that it is not due
 - **AND** the same commitment asked about 3 September 2026 answers that it is due
+
 ### Requirement: A roster holds the commitments a person keeps, in the order they were taken on
 
-A roster SHALL hold commitments, in the order they were added to it, and SHALL read back, in that
-order, every commitment it has not stopped keeping. A roster that has been given no commitment SHALL
+A roster SHALL hold commitments, in an order it holds, and SHALL read back, in that order, every
+commitment it has not stopped keeping. A roster that has been given no commitment SHALL
 hold none, and SHALL be an answer rather than a refusal: a person who keeps nothing yet has an empty
 roster, not a missing one. There SHALL be no upper bound on how many commitments a roster holds.
 
-The order SHALL be the order they were taken on and nothing else. A roster MUST NOT sort its
-commitments by name, by the day each is kept from, by the schedule each runs on, or by any other
-property of them. It has no order of its own to invent: day one's commitments are all kept from the
-same day, so an order taken from that day would leave them tied and the roster choosing between
-them, and an order taken from a name would be a rule about the owner's own words. This is the same
-reason a day view orders nothing of its own and shows what it was handed in the order it was handed
-it.
+**The order SHALL be the person's.** The order the commitments were taken on is its initial value
+and the place a newly taken-on commitment lands, and **moving** a commitment is the only thing that
+ever changes it. A roster MUST NOT sort its commitments by name, by the day each is kept from, by
+the schedule each runs on, or by any other property of them: it still has no order of its own to
+invent, because day one's commitments are all kept from the same day, so an order taken from that
+day would leave them tied and the roster choosing between them, and an order taken from a name would
+be a rule about the owner's own words. None of that argues against the owner choosing, and only they
+can, because what an order is for — which rows a thumb reaches first — is not something a roster can
+work out. This is the same reason a day view orders nothing of its own and shows what it was handed
+in the order it was handed it. ADR-1037.
+
+**The order runs over everything the roster holds**, kept, stopped and removed alike, as one
+sequence. A roster holds one order and not one per state, so a commitment it has stopped keeping or
+removed has a place in that sequence exactly as a kept one does, keeps that place while it is
+stopped or removed, and returns to it when it is taken up again.
 
 A roster SHALL hold commitments and, for each commitment, at most two further things: the day that
 commitment was **kept until**, where the roster has stopped keeping it or removed it, and **that it
@@ -402,7 +418,10 @@ state of its own, and it MUST NOT alter a commitment it holds: a commitment read
 roster SHALL be the commitment that was put in, with the same name, the same schedule and the same
 day it is kept from. Neither the day a commitment was kept until nor its having been removed is ever
 the commitment's: a commitment SHALL NOT gain a fourth part by being stopped or removed, and it
-SHALL go on answering whether it is due on a date exactly as it did before.
+SHALL go on answering whether it is due on a date exactly as it did before. **The ban on a position
+is a ban on a read.** Nothing asks a roster where a commitment is, and moving one hands a place
+**in** rather than reading one out; the sequence is observable only as the order the roster reads
+its commitments back in.
 
 **Kept, stopped and removed are the three states a roster holds a commitment in**, and a commitment
 it holds is in exactly one of them. A commitment it is keeping has no kept-until day and has not been
@@ -423,8 +442,8 @@ A roster SHALL be a value. Two rosters holding the same commitments in the same 
 same one of the three states and each with the same kept-until day where it has one, SHALL be the
 same roster, and two holding the same commitments in a different order SHALL be different rosters,
 because the order is one of the things a roster holds. Adding a commitment to a roster, stopping
-one, or removing one SHALL leave every other roster untouched, so a roster that was copied before
-any of the three SHALL still hold what it held.
+one, removing one or moving one SHALL leave every other roster untouched, so a roster that was
+copied before any of the four SHALL still hold what it held.
 
 #### Scenario: a roster that has been given no commitment holds none
 
@@ -475,6 +494,7 @@ any of the three SHALL still hold what it held.
   from 1 January 2026
 - **THEN** the roster holds both, in that order, and reads each back with the day it is kept from
   unchanged
+
 ### Requirement: A roster refuses a commitment it already holds
 
 A roster SHALL refuse a commitment equal to one it is already keeping — one it holds and has neither
@@ -488,8 +508,8 @@ it up again rather than being refused. **A commitment the roster has removed is 
 too, and offering it again SHALL take it up again in exactly the same way** — that is the one way
 back from a removal, and it exists because a roster never lets a commitment go. In both cases the
 roster SHALL drop the day that commitment was kept until, SHALL no longer hold it as removed, SHALL
-read the commitment back once more among the commitments it keeps, in the place it was taken on in
-rather than at the end, and SHALL report that the roster now keeps it — the same report an addition
+read the commitment back once more among the commitments it keeps, in the place it has rather than
+at the end, and SHALL report that the roster now keeps it — the same report an addition
 makes, because it says the same thing. It SHALL NOT hold the commitment twice, and there SHALL be no
 second way to take one up again: offering it is the way, whichever of the two states it was in.
 
@@ -499,7 +519,7 @@ oversight. A roster holds at most one kept-until day for a commitment and holds 
 a commitment with no kept-until day is one it was keeping on every date. The alternative — refusing,
 so that starting again means a commitment kept from a different day — was weighed and rejected: it
 leaves a mis-tapped stop with no way back, and the commitment that came back would be a different
-one, losing the place it was taken on in and starting a fresh history. What was actually done on
+one, losing the place it has and starting a fresh history. What was actually done on
 those days is untouched either way, because that is the ticks and no tick moves. What a screen
 offers, and whether it says that the days between will read as kept, is the screen's.
 
@@ -628,6 +648,16 @@ neither states them nor narrows them.
   commitment again
 - **THEN** it answers with that commitment on 31 January 2026, on 1 February 2026 and on 1 March 2026
 - **AND** the roster reads back that one commitment and no second copy of it
+
+#### Scenario: a commitment moved and then stopped is taken up again in the place it was moved to
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, moves "Journaling" to the offset 0, stops keeping it as of 31 January 2026, and is
+  then given that same commitment again
+- **THEN** the roster reports that it now keeps the commitment
+- **AND** it reads back three commitments in the order "Journaling", "Water plants", "Gym"
+
 ### Requirement: A roster stops keeping a commitment, on the day it was kept until
 
 A roster SHALL stop keeping a commitment it holds, on being given that commitment and a calendar
@@ -745,14 +775,16 @@ and two rosters differing only in the day one commitment was kept until SHALL be
 - **THEN** the roster reports that it did not stop keeping the commitment
 - **AND** the roster is the same roster as one that removed the commitment as of 31 January 2026 and
   was never asked to stop keeping it
+
 ### Requirement: A roster answers which commitments it had not stopped keeping on a calendar date
 
 For any calendar date the system supports, a roster SHALL answer with the commitments it had not
 stopped keeping on that date: every commitment it holds that it has neither stopped nor removed, and
 every commitment it has stopped **or removed** whose kept-until day is that date or later. The
-answer SHALL be in the order the commitments were taken on, the same order the roster reads them
-back in, with a stopped or removed commitment in the place it has always had rather than at either
-end.
+answer SHALL be in the order the roster holds them, the same order it reads them back in, with a
+stopped or removed commitment in the place it has rather than at either end. Moving a commitment
+therefore changes the order every date answers in, and changes nothing else about any date: a move
+is dated by nothing and moves no kept-until day.
 
 **A removed commitment is answered exactly as a stopped one is, and that is the whole of what
 removal costs a past date: nothing.** A person who gets rid of a commitment for good is saying
@@ -859,11 +891,24 @@ itself falls.
   1583, and is then removed as of 31 January 2026 and asked about those three dates again
 - **THEN** all three answers are the same after the commitment was removed as before it, each naming
   that one commitment
+
+#### Scenario: a roster answers about a date in the order it was moved into
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, stops keeping "Gym" as of 31 January 2026 and then moves "Journaling" to the
+  offset 0
+- **THEN** asked about 31 January 2026 it answers with "Journaling", then "Water plants", then "Gym"
+  — the offset naming "Water plants", the first of the two commitments it was keeping, as the one the
+  moved commitment comes to stand before, and "Gym" still after "Water plants", passed rather than
+  pushed
+- **AND** asked about 1 February 2026 it answers with "Journaling" and then "Water plants"
+
 ### Requirement: A roster store keeps a roster at a place, across the app being closed and opened again
 
 A roster store SHALL be opened at a place, and SHALL hold a roster: every commitment taken on
-through it, in the order it was taken on, and against each commitment it has stopped keeping or
-removed, the day that commitment was kept until, and against each commitment it has removed, that it
+through it, in the order the roster holds them, and against each commitment it has stopped keeping
+or removed, the day that commitment was kept until, and against each commitment it has removed, that it
 was removed. Opening a roster store at a place where nothing has been kept SHALL give a roster
 holding nothing rather than an error — that is what the first launch looks like, and it is the only
 time a roster store opens holding nothing.
@@ -871,7 +916,7 @@ time a roster store opens holding nothing.
 A commitment taken on through a roster store SHALL be kept at that place before the store reports it
 taken on, so that a store opened at the same place afterwards — by the app opened again, or by
 anything else, and whether or not the first store was ever closed — holds it. Stopping a commitment
-SHALL be kept the same way, and so SHALL removing one, and so SHALL taking one up again. There is no
+SHALL be kept the same way, and so SHALL removing one, moving one, and taking one up again. There is no
 separate step at which a roster store is saved: the app can be stopped at any moment without
 warning, and a commitment waiting to be saved would be one a person believes they have taken on. A
 roster store that cannot keep a change MUST refuse it and MUST NOT hold it: the roster a store
@@ -880,8 +925,12 @@ reports is never ahead of what is kept at its place.
 A roster store SHALL report exactly what the roster reports, and MUST NOT turn a roster's own refusal
 into an error. Offering a commitment the roster is already keeping, asking it to stop keeping one it
 does not hold, asking it to stop keeping one it has already stopped or removed, and asking it to
-remove one it does not hold or has already removed each leave the roster exactly as it was — so
-nothing is kept at the place, and the store says what the roster said. What a roster accepts, what it
+remove one it does not hold or has already removed, and asking it to move one it is not keeping or
+to move one to an offset outside the commitments it is keeping each leave the roster exactly as it
+was — so nothing is kept at the place, and the store says what the roster said. **A move that leaves
+the roster exactly as it was SHALL keep nothing at the place either, and SHALL still report that the
+commitment was moved**, which is what the roster reports: a store keeps what a change made, and a
+change that made none has nothing to keep. What a roster accepts, what it
 refuses and what it takes up again are the roster's own rules, stated above, and a store adds nothing
 to them and takes nothing away.
 
@@ -892,9 +941,10 @@ kept until; and against each removed commitment that it was removed — and noth
 number commitment's range SHALL be kept where it has one and SHALL be absent where it has none, both
 ends exactly as they were given; a total commitment's target SHALL be kept exactly as it was given,
 decimal fraction and all, and MUST NOT be rounded, widened or narrowed on the way in or out. It
-SHALL keep the commitments in the order they were taken on and read them back in that order, because
-the order is one of the things a roster is; a roster store MUST NOT impose an order of its own, and
-MUST NOT sort by name, by a day or by anything else. A roster read back SHALL be the same roster
+SHALL keep the commitments in the order the roster holds them and read them back in that order,
+because the order is one of the things a roster is — and it is the person's, so a store that
+reordered would be overwriting a decision rather than tidying a history. A roster store MUST NOT
+impose an order of its own, and MUST NOT sort by name, by a day or by anything else. A roster read back SHALL be the same roster
 that was kept, for every schedule shape, for every kind, for any name a commitment can have, for any
 date the system supports, and for each of the three states a roster holds a commitment in. The store
 MUST NOT key anything to the moment it was entered, MUST NOT record the day a commitment was taken
@@ -902,8 +952,8 @@ on, and MUST NOT pass a calendar date through an instant, a time zone or a local
 out.
 
 Roster stores at different places SHALL be independent of each other, and a roster store SHALL be
-independent of any store keeping anything else: taking on a commitment, stopping one or removing one
-MUST NOT change what is kept at any other place.
+independent of any store keeping anything else: taking on a commitment, stopping one, removing one
+or moving one MUST NOT change what is kept at any other place.
 
 #### Scenario: a roster store opened where nothing has been kept holds a roster holding nothing
 
@@ -1090,6 +1140,45 @@ MUST NOT change what is kept at any other place.
 - **THEN** removing the commitment is refused with an error
 - **AND** the store's roster is still the same roster as one given that commitment once and asked
   nothing else
+
+#### Scenario: a commitment moved through a roster store is read back in the place it was moved to
+
+- **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling", all
+  on a schedule listing Monday, Wednesday and Saturday and all kept from 1 January 2026, are taken on
+  through a roster store; the store is asked to move "Journaling" to the offset 0; and a store is
+  opened afterwards at the same place
+- **THEN** the store reports that it moved the commitment
+- **AND** the later store's roster reads back three commitments in the order "Journaling", "Water
+  plants", "Gym"
+- **AND** its roster is the same roster as one given the three in that order and never moved
+
+#### Scenario: a move a roster store refuses is reported and nothing at its place changes
+
+- **WHEN** a commitment named "Water plants" and one named "Gym", both on a schedule listing Monday,
+  Wednesday and Saturday and both kept from 1 January 2026, are taken on through a roster store; the
+  store is asked to move a commitment named "Run" alike in every other way, and never taken on, to
+  the offset 0; and a store is opened afterwards at the same place
+- **THEN** the store reports that it did not move the commitment, and does not report an error
+- **AND** the later store's roster reads back "Water plants" and then "Gym"
+
+#### Scenario: a move that leaves a roster as it was keeps nothing at its place
+
+- **WHEN** a commitment named "Water plants" and one named "Gym", both on a schedule listing Monday,
+  Wednesday and Saturday and both kept from 1 January 2026, are taken on through a roster store; the
+  content at that place is read; and the store is then asked to move "Gym" to the offset 2
+- **THEN** the store reports that it moved the commitment
+- **AND** the content at that place is byte-for-byte what was read before the move
+- **AND** the store's roster reads back "Water plants" and then "Gym"
+
+#### Scenario: a move that cannot be kept is refused and the roster a store reports does not move
+
+- **WHEN** a commitment named "Water plants" and one named "Gym", both on a schedule listing Monday,
+  Wednesday and Saturday and both kept from 1 January 2026, are taken on through a roster store; what
+  is at that place is then made impossible to write; and the store is asked to move "Gym" to the
+  offset 0
+- **THEN** the move is refused
+- **AND** the store's roster still reads back "Water plants" and then "Gym"
+
 ### Requirement: A roster store reads a roster kept before a commitment carried a kind
 
 A roster store SHALL read a roster kept in any form this app has written before the one it writes
@@ -1196,6 +1285,7 @@ version of this app ever wrote says nothing about the shape of what follows it.
 - **THEN** the later store's roster is the same roster as one given that commitment once and asked to
   remove it as of 31 January 2026
 - **AND** the later store's roster reads back no commitments it is keeping
+
 ### Requirement: A roster store that cannot be read is refused rather than emptied
 
 Opening a roster store at a place that holds something this app cannot read as a roster store SHALL
@@ -1246,6 +1336,7 @@ been in.
 - **THEN** opening is refused with an error
 - **AND** the error says the content is not a roster store rather than that it is from a later form
 - **AND** the content at that place is byte-for-byte what it was before
+
 ### Requirement: A commitments screen lists the commitments its roster keeps, in the order they were taken on
 
 A commitments screen SHALL hold a roster, read at the place it keeps its roster, and SHALL list the
@@ -1360,11 +1451,13 @@ holds nothing (ADR-1027), and a second thing writing day one would take it on tw
   it is asked to remove the second of them; "Vitamins" is typed back; and the removal is confirmed
 - **THEN** what it keeps is one entry, named "Vitamins", saying "Mon, Wed"
 - **AND** what it has stopped is nothing
+
 ### Requirement: A commitments screen lists what has been stopped, beside what it keeps
 
 A commitments screen SHALL list, separately from the commitments its roster is keeping, the
-commitments that roster has stopped keeping — in the order they were taken on, each as a name and
-the rhythm it runs on in words, exactly as the first list is. **A commitment the roster has removed
+commitments that roster has stopped keeping — in the order the roster holds them, each as a name and
+the rhythm it runs on in words, exactly as the first list is. A stopped commitment is never moved,
+so that is the order it was taken on in for as long as nobody has moved a commitment past it. **A commitment the roster has removed
 SHALL be in neither list**; every other commitment the roster holds SHALL be in exactly one of the
 two and never in both.
 
@@ -1432,13 +1525,25 @@ A roster that has stopped nothing SHALL list nothing as stopped.
 - **THEN** what it keeps is one entry, named "Water plants"
 - **AND** what it has stopped is one entry, named "Journaling"
 - **AND** "Gym" is in neither of its lists
+
+#### Scenario: what a commitments screen has stopped is in the order its roster holds them
+
+- **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling", all
+  on a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster
+  place; a commitments screen is opened at that roster place as of Monday 31 August 2026;
+  "Journaling" is moved to the offset 0; and "Journaling" and then "Water plants" are stopped through
+  it
+- **THEN** what it has stopped is two entries, named "Journaling" and then "Water plants", and not in
+  the order the two were taken on
+- **AND** what it keeps is one entry, named "Gym"
+
 ### Requirement: A commitments screen defines a commitment from a name, a rhythm and the day it is kept from
 
 A commitments screen SHALL define a commitment from three things and no others: a name, a rhythm,
 and the day it is kept from. The commitment so formed SHALL be taken on at the roster place before
 either of the screen's lists says so, and SHALL then be last in what the screen keeps, because that
 is the place the roster gives it — **unless the roster already holds that commitment stopped or
-removed, in which case it is taken up again in the place it was taken on in**, again because that is
+removed, in which case it is taken up again in the place it has**, again because that is
 the place the roster gives it. Defining is therefore the one way back to a removed commitment, and
 the screen does nothing of its own to make it so: it hands the roster three things and reports what
 the roster answers.
@@ -1525,6 +1630,7 @@ any way the calendar does not.
 - **THEN** nothing is refused
 - **AND** what it keeps is three entries, named "Water plants", then "Gym", then "Journaling"
 - **AND** what it has stopped is nothing
+
 ### Requirement: A commitments screen refuses a name that says nothing, and a rhythm due on no day
 
 A commitments screen SHALL refuse to define a commitment whose name is empty or made only of blank
@@ -1576,6 +1682,7 @@ restricted script and no reserved word: the name is the owner's own words rather
 - **THEN** none of the three is refused
 - **AND** what the screen keeps is three entries, named "x", then " Gym ", then "Gym 🏋️", the
   spaces around " Gym " kept exactly as they were given
+
 ### Requirement: A commitments screen refuses a rhythm number the calendar will not take
 
 A commitments screen SHALL refuse to define a commitment on a day of the month that is not one of
@@ -1650,6 +1757,7 @@ allowed rather than the first that is not.
 - **THEN** none of the five is refused
 - **AND** what the screen keeps is five entries, named "Rent", then "Finances", then "Shave", then
   "Long run", then "Steps"
+
 ### Requirement: A commitments screen tells a commitment it already keeps apart from a roster it could not write
 
 A commitments screen SHALL refuse a commitment its roster is already keeping, and SHALL refuse a
@@ -1663,8 +1771,8 @@ change the name, the rhythm or the day you keep it from, while a place that will
 leaves a person nothing to do but try again later.
 
 A commitment the roster has **stopped** keeping is not a duplicate. Defining the same three things
-again SHALL take that commitment up again, in the place it was taken on in, exactly as offering it
-to the roster does.
+again SHALL take that commitment up again, in the place it has, exactly as offering it to the
+roster does.
 
 #### Scenario: a commitments screen refuses a commitment its roster is already keeping
 
@@ -1705,6 +1813,7 @@ to the roster does.
   as of Monday 31 August 2026; and that same commitment is defined through it twice
 - **THEN** both are refused as a commitment already kept
 - **AND** a roster store opened afterwards at that place holds one commitment
+
 ### Requirement: A commitments screen asks you to confirm before it stops keeping a commitment
 
 A commitments screen SHALL be asked to stop keeping a commitment, and SHALL change nothing until
@@ -1714,7 +1823,9 @@ commitment SHALL replace the first, since only one stop can be awaiting confirma
 **A commitments screen SHALL have at most one change awaiting confirmation of any kind**, so being
 asked to stop keeping a commitment SHALL leave nothing awaiting removal, and being asked to remove
 one SHALL leave nothing awaiting a stop. A person is answering one question at a time, and a screen
-holding two would have to be drawn twice over.
+holding two would have to be drawn twice over. **Moving a commitment awaits no confirmation and
+takes neither slot**, so a move SHALL leave whatever is awaiting confirmation exactly as it is: a
+drag is its own confirmation, and a drag back is its undo.
 
 A stop that is cancelled SHALL leave the screen's two lists, and what is at the roster place,
 exactly as they were, and SHALL leave nothing awaiting confirmation. Confirming SHALL do the same
@@ -1723,8 +1834,8 @@ when there is nothing awaiting confirmation.
 A confirmed stop SHALL stop keeping the commitment **as of the day before the one the screen was
 handed**, that day being the last day it was kept, and SHALL keep that at the roster place before
 either list says so. The commitment SHALL then be in what the screen has stopped and not in what it
-keeps, in the place it was taken on in. A commitments screen holds one day and no other, so it
-offers no date to pick.
+keeps, in the place it has. A commitments screen holds one day and no other, so it offers no date to
+pick.
 
 **The day before, and not the day the screen was handed, so that the row leaves today's screen at
 once.** A row that outlived the stop that was just made reads as a stop that failed, on the one
@@ -1853,12 +1964,23 @@ be written, and SHALL leave both lists as they were.
 - **THEN** nothing is awaiting removal
 - **AND** it says "Gym" is awaiting confirmation
 - **AND** what it keeps is one entry, named "Gym", and what it has stopped is nothing
+
+#### Scenario: moving a commitment leaves a stop awaiting confirmation exactly as it was
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, and one named "Journaling" alike in every other way are taken on at a roster place;
+  a commitments screen is opened at that roster place as of Monday 31 August 2026; it is asked to
+  stop keeping "Gym"; and "Journaling" is then moved to the offset 0
+- **THEN** "Gym" is still awaiting confirmation
+- **AND** what it keeps is two entries, named "Journaling" and then "Gym"
+- **AND** confirming the stop then leaves what it keeps as one entry, named "Journaling"
+
 ### Requirement: A commitments screen takes a stopped commitment up again in one tap
 
 A commitments screen SHALL take a commitment it has stopped up again, without asking for
 confirmation and without asking for a name, a rhythm or a day. It SHALL keep that at the roster
 place before either list says so; the commitment SHALL then be in what the screen keeps, in the
-place it was taken on in, and not in what it has stopped.
+place it has, and not in what it has stopped.
 
 It asks for no confirmation because the whole point of the second list is that stopping costs one
 tap to undo. It asks for nothing else because the commitment is already three things the roster
@@ -1906,6 +2028,7 @@ roster that could not be written, leaving both lists as they were.
 - **AND** what it keeps is one entry, named "Gym", and what it has stopped is nothing
 - **AND** the content at that roster place is byte-for-byte what it was immediately after the screen
   was opened
+
 ### Requirement: A commitments screen keeps its roster at the place a day screen keeps its, and reads it again when the app is shown
 
 A commitments screen SHALL keep its roster, when it is not told another place, at exactly the place
@@ -1954,6 +2077,7 @@ not move it.
   not stopped keeping on Monday 31 August 2026, the day before the one the screen was last handed
 - **AND** it answers with nothing when asked the same about Tuesday 1 September 2026
 - **AND** the day the screen offers to keep a commitment from is Tuesday 1 September 2026
+
 ### Requirement: A commitments screen that cannot read its roster lists nothing and changes nothing
 
 A commitments screen whose roster place cannot be read SHALL list nothing in either list and SHALL
@@ -1962,9 +2086,10 @@ is at the place — what is there is left untouched for a person or a later vers
 recover.
 
 Defining a commitment through such a screen SHALL be refused as a roster that could not be written.
-Asking it to stop keeping a commitment, to take one up again, or to remove one SHALL do nothing and
-say nothing, by the rule that already governs a commitment neither list holds: both its lists are
-empty, so there is nothing there to stop, nothing there to take up and nothing there to remove.
+Asking it to stop keeping a commitment, to take one up again, to remove one, or to move one SHALL do
+nothing and say nothing, by the rule that already governs a commitment neither list holds: both its
+lists are empty, so there is nothing there to stop, nothing there to take up, nothing there to
+remove and nothing there to move.
 
 Every way the place can refuse to be read SHALL be answered alike, save one, which SHALL be named:
 a roster **written by a later version of DayByDay**. That roster is whole and it is the app that is
@@ -2017,6 +2142,16 @@ afresh.
   named "Gym" on a schedule listing all seven weekdays, kept from 1 January 2026, formed directly
 - **THEN** nothing is awaiting removal and nothing is refused
 - **AND** the content at that place is byte-for-byte what was written there
+
+#### Scenario: a commitments screen that cannot read its roster does nothing when it is asked to move a commitment
+
+- **WHEN** a run of bytes that is not a roster store is written at a roster place; a commitments
+  screen is opened at that place as of Monday 31 August 2026; and it is asked to move a commitment
+  named "Gym" on a schedule listing all seven weekdays, kept from 1 January 2026, formed directly, to
+  the offset 0
+- **THEN** nothing is refused and it says it is not keeping a roster
+- **AND** the content at that place is byte-for-byte what was written there
+
 ### Requirement: A commitments screen holds the change it refused and why, one at a time
 
 Where a change asked of a commitments screen is refused, the screen SHALL hold **which change was
@@ -2027,9 +2162,9 @@ the screen holds is what a person is told from. A screen that only answered woul
 person is told for to whatever drew it, and that lifetime would then be decided in a layer nothing
 regresses.
 
-The change it holds SHALL be one of the four a person can ask for — defining a commitment, stopping
-keeping one, taking a stopped one up again, or removing one — and for the three that are asked about
-a commitment already on one of its lists, it SHALL name that commitment. Which change it was is not
+The change it holds SHALL be one of the five a person can ask for — defining a commitment, stopping
+keeping one, taking a stopped one up again, removing one, or moving one — and for the four that are
+asked about a commitment already on one of its lists, it SHALL name that commitment. Which change it was is not
 decoration: a person is told beside the thing they asked for, and the only other way to place the
 message is for whatever draws the screen to remember which call it made.
 
@@ -2046,9 +2181,11 @@ on an answer for is the one they just made.
 A call that asks for **no change at all** SHALL NOT be a refusal. Asking to stop keeping a
 commitment the screen does not keep, confirming a stop when nothing is awaiting confirmation, taking
 up again a commitment the screen has not stopped, asking to remove a commitment on neither of its
-lists, confirming a removal when nothing is awaiting removal, and **confirming a removal while the
-name typed back does not match** each answer nothing and change nothing, so each SHALL leave the
-screen holding no refused change and SHALL leave whatever it is already holding exactly as it was.
+lists, confirming a removal when nothing is awaiting removal, **confirming a removal while the name
+typed back does not match**, **asking to move a commitment the screen does not keep** and **asking
+to move one to an offset outside what it keeps** each answer nothing and change nothing, so each
+SHALL leave the screen holding no refused change and SHALL leave whatever it is already holding
+exactly as it was.
 There is nothing to report and nothing has been proved about the roster place either way.
 
 A name typed back that does not match is emphatically not a refusal, and that is the decision rather
@@ -2135,6 +2272,28 @@ restated here.
 - **THEN** the removal refuses nothing
 - **AND** the screen still holds a name that says nothing, against defining a commitment
 - **AND** what it keeps is one entry, named "Gym", and "Gym" is still awaiting removal
+
+#### Scenario: a commitments screen holds a refused move against the commitment it was asked to move
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, and one named "Journaling" alike in every other way are taken on at a roster place;
+  a commitments screen is opened at that roster place as of Monday 31 August 2026; what is at that
+  place is then made impossible to write; and "Journaling" is moved to the offset 0
+- **THEN** it is refused as a roster that could not be written
+- **AND** the screen holds that refusal, against moving "Journaling"
+- **AND** what it keeps is two entries, named "Gym" and then "Journaling"
+
+#### Scenario: a commitments screen holds nothing against a move that asks for no change at all
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; it is asked to move a commitment named "Journaling" on that same
+  schedule and kept-from day, formed directly and never taken on, to the offset 0; and "Gym" is then
+  moved to the offset 2, which a list of one commitment does not have
+- **THEN** neither is refused
+- **AND** the screen holds no refused change
+- **AND** what it keeps is one entry, named "Gym"
+
 ### Requirement: What a commitments screen holds about a refused change lasts until the app is shown again or a change is kept
 
 A commitments screen SHALL go on holding a refused change until one of exactly two things happens,
@@ -2147,17 +2306,19 @@ answer about a place that has since been read again. It SHALL end whether or not
 be read — a screen that is then not keeping a roster says that instead, and says more than a refused
 change ever could.
 
-**A change reaching the roster place** ends it, whichever of the four it was and whichever change
+**A change reaching the roster place** ends it, whichever of the five it was and whichever change
 was refused before it. Defining a commitment that is taken on, a stop that is kept, a take-up-again
-that is kept and a removal that is kept all count. This is one rule rather than four because it is
+that is kept, a removal that is kept and a move that is kept all count. This is one rule rather than four because it is
 the at-most-one rule above read the other way round: a commitments screen holds the outcome of the
 last change asked of it, so a change that is asked for and kept leaves nothing to hold. A person who
 has just been told a change landed is not also told that an earlier one did not.
 
 A call that reaches the place with no change to make SHALL NOT end it, by the rule above that such a
-call is not a change asked for at all. Nor SHALL putting a stop or a removal up for confirmation,
-typing a name back, or cancelling either: none of them reaches the roster place, and nothing has
-been proved about it either way.
+call is not a change asked for at all. **A move that drops a commitment where it already is is
+exactly such a call** — it is accepted rather than refused, and nothing is kept at the place, so
+there is nothing to have answered a notice with. Nor SHALL putting a stop or a removal up for
+confirmation, typing a name back, or cancelling either: none of them reaches the roster place, and
+nothing has been proved about it either way.
 
 #### Scenario: what a commitments screen holds about a refused change ends when the app is shown again
 
@@ -2247,6 +2408,29 @@ been proved about it either way.
   to remove "Gym", "Gym" is typed back, and the removal is cancelled
 - **THEN** the screen still holds a name that says nothing, against defining a commitment
 - **AND** nothing is awaiting removal and nothing has been typed back
+
+#### Scenario: what a commitments screen holds about a refused change ends when a move is kept
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, and one named "Journaling" alike in every other way are taken on at a roster place;
+  a commitments screen is opened at that roster place as of Monday 31 August 2026; a commitment named
+  "   " on a weekday-set rhythm of all seven weekdays, kept from that same day, is defined through it
+  and refused; and "Journaling" is then moved to the offset 0
+- **THEN** the move is not refused
+- **AND** the screen holds no refused change
+- **AND** what it keeps is two entries, named "Journaling" and then "Gym"
+
+#### Scenario: what a commitments screen holds about a refused change stands when a move drops a commitment where it already is
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, and one named "Journaling" alike in every other way are taken on at a roster place;
+  a commitments screen is opened at that roster place as of Monday 31 August 2026; a commitment named
+  "   " on a weekday-set rhythm of all seven weekdays, kept from that same day, is defined through it
+  and refused; and "Journaling" is then moved to the offset 2
+- **THEN** the move is not refused
+- **AND** the screen still holds a name that says nothing, against defining a commitment
+- **AND** what it keeps is two entries, named "Gym" and then "Journaling"
+
 ### Requirement: A commitments screen says in words the rhythm its form is building
 
 A commitments screen SHALL say, for the rhythm its form is currently building, the words the
@@ -2305,13 +2489,14 @@ ways, and never in the wording of the refusal itself:
   rhythm of 1 day, a weekly-quota rhythm of 1 time a week and a weekly-quota rhythm of 7 times a
   week are each said in words for a commitments screen's form
 - **THEN** they say "The 1st", "The 31st", "Every day", "1x a week" and "7x a week"
+
 ### Requirement: A roster removes a commitment it holds, and never lets it go
 
 A roster SHALL remove a commitment it holds, on being given that commitment and a calendar date.
 Removing SHALL take the commitment out of the commitments the roster reads back and out of the
 commitments it reads back as stopped, SHALL hold it as **removed**, and SHALL report that the roster
-removed it. The commitment SHALL stay in the place it was taken on in, and everything else the
-roster holds SHALL be exactly as it was, in the order it was in.
+removed it. The commitment SHALL stay in the place it has, and everything else the roster holds
+SHALL be exactly as it was, in the order it was in.
 
 **A removed commitment keeps a day it was kept until.** Where the roster is keeping the commitment,
 the date it is given SHALL become the day that commitment was kept until, exactly as a stop's date
@@ -2333,8 +2518,8 @@ at all. The alternative — dropping the entry — was weighed and rejected, bec
 would then lose that commitment's rows and a roster emptied by removal would read as a first launch
 to whatever writes day one. ADR-1035.
 
-The one way back SHALL be offering the commitment again, which takes it up again in the place it was
-taken on in and clears both the day it was kept until and its being removed — the rule is *A roster
+The one way back SHALL be offering the commitment again, which takes it up again in the place it has
+and clears both the day it was kept until and its being removed — the rule is *A roster
 refuses a commitment it already holds*, and there is no second way.
 
 The roster SHALL refuse on no date. Any calendar date the system supports SHALL be accepted as a day
@@ -2439,6 +2624,16 @@ rosters.
   the roster answers with on 31 January 2026 is asked whether it is due
 - **THEN** that commitment is due on Monday 5 January 2026 and not due on Tuesday 6 January 2026
 - **AND** it reads back the name "Gym" and the day it is kept from, both unchanged
+
+#### Scenario: removing a commitment that has been moved keeps it in the place it was moved to
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, moves "Journaling" to the offset 0 and then removes it as of 31 January 2026
+- **THEN** the roster reports that it removed the commitment
+- **AND** asked about 31 January 2026 it answers with "Journaling", then "Water plants", then "Gym"
+- **AND** it reads back two commitments it is keeping, "Water plants" and then "Gym"
+
 ### Requirement: A commitments screen removes a commitment only when its name is typed back
 
 A commitments screen SHALL be asked to remove a commitment on either of its lists, and SHALL change
@@ -2652,3 +2847,327 @@ drawing's. ADR-1022.
 - **THEN** nothing is refused and "Gym" is in neither of its lists
 - **AND** a roster store opened afterwards at that place answers with "Gym" when asked what it had
   not stopped keeping on 1 January 1583, and with nothing on 2 January 1583
+
+### Requirement: A roster moves a commitment among the ones it keeps
+
+A roster SHALL move a commitment it is keeping, on being given that commitment and an **offset**: a
+place counted over the commitments the roster is keeping **as they stand before the move**, running
+from 0, before the first of them, to the number it is keeping, which is after the last. Moving SHALL
+report that the roster moved the commitment. This is the only thing that ever changes a roster's
+order.
+
+**The moved commitment is put where the offset points, and nothing else is picked up.** Unless the
+offset is one of the two that ask for the place the commitment already has — the offset it is at
+among the commitments the roster is keeping, and the one just after that — the commitment SHALL be
+taken out of the sequence the roster holds and put back immediately before the commitment that stood
+at that offset among the ones the roster was keeping, or immediately after the last of them where
+the offset is the number it is keeping. Every other commitment the roster holds SHALL afterwards be
+in the order it was in — kept, stopped and removed alike — and no two of them SHALL be reordered
+against each other. A stopped or removed commitment lying between where the moved commitment was and
+where it goes is passed rather than pushed: the moved commitment goes by, and it stands still.
+
+**On those two offsets the commitment SHALL NOT be taken out of the sequence at all**, and nothing
+in the sequence SHALL move. The carve-out is not tidiness: taking the commitment out and putting it
+back immediately before whatever stood at the offset just after its own would walk it past a stopped
+or removed commitment lying between the two, and hand back a roster that is not the roster it was.
+The paragraph below says why both offsets ask for the place the commitment already has.
+
+**An offset is counted over the commitments the roster is keeping and over nothing else.** The
+commitments a roster has stopped keeping or removed are in its order but not in that count, because
+the list a person is looking at when they move something is the list of what they keep; a place
+counted over all three states would be a number nothing shows.
+
+**The price of one order over three states, taken knowingly.** A commitment the roster has stopped
+keeping has a place in the sequence and holds it, so taking it up again returns it exactly there —
+but the commitments around it may have moved since, so what it comes back beside is where the
+sequence now puts it and not the neighbour it used to have. That is what one order over everything a
+roster holds costs. The alternative, an order per state, would mean a roster holding more than one
+order, which it is not.
+
+**An offset that puts a commitment where it already is SHALL be accepted**, SHALL report that the
+roster moved it, and SHALL leave the roster the same roster it was. Two offsets do this for any
+commitment — the one it is at, and the one just after it — and they arrive there differently. The
+offset it is at names the moved commitment itself, and immediately before itself is where it already
+stands. The offset just after it names the **next** commitment the roster is keeping and not the
+moved one — or, where the moved commitment is the last one kept, is the number kept, which is after
+the last of them and so is again where it already stands — and a commitment is already immediately
+before the one that follows it among the ones the roster is keeping. Neither offset asks for a
+commitment the roster is keeping to stand anywhere new, so nothing in the sequence the roster holds
+moves at all: a stopped or removed commitment lying between the moved one and the one that follows
+it is not passed, because nothing goes by it. This is not a refusal: the roster's refusals are about
+a move it cannot make at all, and this is one it can make whose result is the roster it already had.
+A person who picks a row up and puts it back has made no mistake to be told about.
+
+The roster SHALL refuse to move a commitment in exactly two cases, and SHALL report each rather than
+doing nothing silently, for the same reason a refused addition is reported:
+
+- **a commitment it is not keeping** — one it does not hold at all, one it has stopped keeping, or
+  one it has removed. A stopped or a removed commitment already has its place, and a move that
+  reached one would rearrange an order against a list nobody moves things on.
+- **an offset below 0, or above the number of commitments the roster is keeping.** Not clamped. A
+  clamp puts a commitment somewhere nobody asked for, which is the silently-wrong-thing the roster's
+  other refusals exist to prevent; no gesture can produce such an offset, but a gesture is not the
+  only way in.
+
+A roster asked either SHALL be left exactly as it was.
+
+**A move takes no date and moves none.** The roster SHALL NOT be asked what day it is for a move,
+SHALL NOT record when one happened, and SHALL NOT change any day a commitment was kept until or any
+commitment's own day it is kept from. Moving SHALL change nothing about the commitment itself and
+nothing about what has been recorded against it: every tick already recorded SHALL stand, and the
+commitment SHALL go on answering whether it is due on a date exactly as it did before.
+
+A roster SHALL be a value here too: moving a commitment SHALL leave every other roster untouched,
+and two rosters holding the same commitments in a different order are already different rosters.
+
+#### Scenario: moving a commitment to the end puts it after every commitment the roster is keeping
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, is asked to move "Water plants" to the offset 3, counted over the three commitments
+  it is keeping
+- **THEN** the roster reports that it moved the commitment
+- **AND** it reads back three commitments in the order "Gym", "Journaling", "Water plants"
+
+#### Scenario: moving a commitment to the front puts it before every commitment the roster is keeping
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, is asked to move "Journaling" to the offset 0
+- **THEN** the roster reports that it moved the commitment
+- **AND** it reads back three commitments in the order "Journaling", "Water plants", "Gym"
+
+#### Scenario: an offset is counted over the commitments the roster is keeping as they stand before the move
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, is asked to move "Water plants" to the offset 2
+- **THEN** it reads back three commitments in the order "Gym", "Water plants", "Journaling", the
+  offset naming "Journaling" — the commitment that stood at it before the move — as the one the moved
+  commitment comes to stand before
+- **AND** a roster alike in every way asked to move "Water plants" to the offset 3 instead reads back
+  "Gym", "Journaling", "Water plants"
+
+#### Scenario: a stopped commitment between the two places is passed rather than pushed
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", then one named "Reading", all on a schedule listing Monday, Wednesday and Saturday
+  and all kept from 1 January 2026, stops keeping "Gym" as of 31 January 2026, and is then asked to
+  move "Water plants" to the offset 2, counted over the three commitments it is then keeping
+- **THEN** the roster reports that it moved the commitment
+- **AND** it reads back three commitments it is keeping, in the order "Journaling", "Water plants",
+  "Reading"
+- **AND** asked about 31 January 2026 it answers with "Gym", then "Journaling", then "Water plants",
+  then "Reading" — "Gym" first, where it has been since it was taken on
+- **AND** a roster that had removed "Gym" as of that same day instead answers with those four in that
+  same order
+
+#### Scenario: an offset of nothing at all puts a commitment before the first one kept and not before a stopped one
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, stops keeping "Water plants" as of 31 January 2026, and is then asked to move
+  "Journaling" to the offset 0
+- **THEN** the roster reports that it moved the commitment
+- **AND** it reads back two commitments it is keeping, "Journaling" and then "Gym"
+- **AND** asked about 31 January 2026 it answers with "Water plants", then "Journaling", then "Gym",
+  the stopped commitment still first
+
+#### Scenario: two offsets leave a commitment where it already is, and both are accepted
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, is asked to move "Gym" to the offset 1, and a roster alike in every way is asked to
+  move "Gym" to the offset 2
+- **THEN** each reports that it moved the commitment
+- **AND** each reads back "Water plants", "Gym", "Journaling"
+- **AND** each is the same roster as one that was never asked
+
+#### Scenario: the offset just after a commitment's own passes nothing, with a stopped or removed commitment lying between
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", then one named "Reading", all on a schedule listing Monday, Wednesday and Saturday
+  and all kept from 1 January 2026, stops keeping "Journaling" as of 31 January 2026, and is then
+  asked to move "Gym" to the offset 2 — the offset just after "Gym"'s own among the three it is then
+  keeping, which names "Reading" and not "Gym", with the stopped "Journaling" lying between the two
+- **THEN** the roster reports that it moved the commitment
+- **AND** the roster is the same roster as one that was never asked, "Journaling" still standing
+  between "Gym" and "Reading" rather than passed
+- **AND** a roster that had removed "Journaling" as of that same day instead reports that it moved
+  the commitment and is likewise the same roster as one that was never asked
+
+#### Scenario: moving a commitment the roster is not keeping says it was not moved and leaves the roster as it was
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, stops keeping "Gym" as of 31 January 2026 and removes "Journaling" as of that same
+  day, and is then asked to move "Gym" to the offset 0
+- **THEN** the roster reports that it did not move the commitment
+- **AND** the roster is the same roster as one that was never asked
+- **AND** asking it to move "Journaling" to the offset 0, and asking it to move a commitment named
+  "Run" alike in every other way to "Water plants" and never given to it, each report that it did not
+  move the commitment and leave the roster the same
+
+#### Scenario: an offset below zero and one above the number of commitments kept are both refused
+
+- **WHEN** a roster given a commitment named "Water plants" and then one named "Gym", both on a
+  schedule listing Monday, Wednesday and Saturday and both kept from 1 January 2026, is asked to move
+  "Gym" to the offset -1
+- **THEN** the roster reports that it did not move the commitment
+- **AND** the roster is the same roster as one that was never asked
+- **AND** asking it to move "Gym" to the offset 3, one above the two commitments it is keeping,
+  reports that it did not move the commitment and leaves the roster the same
+
+#### Scenario: moving a commitment moves no day and changes no commitment
+
+- **WHEN** a roster given a commitment named "Water plants" kept from 1 January 2026, then one named
+  "Gym" kept from 1 March 2026, then one named "Journaling" kept from 1 June 2026, all on a schedule
+  listing Monday, Wednesday and Saturday, stops keeping "Water plants" as of 31 January 2026, and is
+  then asked to move "Journaling" to the offset 0
+- **THEN** the roster answers with "Water plants" on 31 January 2026 and without it on
+  1 February 2026, the day it was kept until unmoved
+- **AND** each of the three reads back the day it is kept from unchanged
+- **AND** "Gym" is due on Monday 2 March 2026 and not due on Tuesday 3 March 2026, exactly as it was
+  before
+
+#### Scenario: moving a commitment on a copy of a roster leaves the roster it was copied from unchanged
+
+- **WHEN** a roster holding a commitment named "Water plants" and then one named "Gym", both on a
+  schedule listing Monday, Wednesday and Saturday and both kept from 1 January 2026, is copied, and
+  the copy moves "Gym" to the offset 0
+- **THEN** the copy reads back "Gym" and then "Water plants"
+- **AND** the roster it was copied from still reads back "Water plants" and then "Gym", and is not
+  the same roster as the copy
+
+#### Scenario: a roster keeping one commitment accepts both the offsets it has
+
+- **WHEN** a roster holding one commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, is asked to move it to the offset 0, and a roster alike in
+  every way is asked to move it to the offset 1
+- **THEN** each reports that it moved the commitment
+- **AND** each is the same roster as one that was never asked
+- **AND** a roster alike in every way asked to move it to the offset 2 reports that it did not move
+  the commitment
+
+### Requirement: A commitments screen moves a commitment among the ones it keeps
+
+A commitments screen SHALL move a commitment on the list of what it keeps, on being given that
+commitment and an **offset** counted over that list **as it stands before the move**, and SHALL keep
+the move at the roster place before the list says so. It SHALL ask for no confirmation and SHALL ask
+for nothing else: the gesture is a drag, a drag is its own confirmation, and dragging back is the
+undo. This is where the order a **day screen** draws in is set, and it is the only place a person
+sets it.
+
+**The move is offered on what the screen keeps and nowhere else.** A commitment on the list of what
+it has stopped SHALL NOT be moved through this screen: it already has a place in the roster's order,
+taking it up again returns it there, and that list is not the one an order is read off.
+
+A commitments screen asked to move a commitment neither of its lists holds, one on the list of what
+it has stopped, or one to an offset that the list of what it keeps does not have SHALL do nothing and
+SHALL say nothing. Each of those asks for no change at all, by the rule that already governs a
+commitment neither list holds, so the roster's own two refusals are never reached through this
+screen and there is nothing for it to word.
+
+A move the screen could not keep at the roster place SHALL be refused as a roster that could not be
+written, leaving both lists as they were. That is the **fifth** kind of refused change a commitments
+screen holds, beside defining a commitment, stopping keeping one, taking one up again and removing
+one, and it SHALL name the commitment it was asked to move. A reorder that silently failed to write
+would leave a person looking at an order the phone forgets the moment it is closed, which is what
+this screen's refusals exist to prevent.
+
+**A drop that puts a commitment where it already is changes nothing and says nothing.** It is not
+refused, it changes neither list, and it does not answer a refused change the screen is already
+holding: nothing reached the roster place, so nothing has been proved about it either way. Two
+offsets do this for any commitment, which is the gesture's own arithmetic rather than a rule this
+screen makes.
+
+#### Scenario: a commitment moved through a commitments screen is where it was dropped, and is kept there
+
+- **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling", all
+  on a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster
+  place; a commitments screen is opened at that roster place as of Monday 31 August 2026; and
+  "Journaling" is moved to the offset 0
+- **THEN** nothing is refused
+- **AND** what it keeps is three entries, named "Journaling", "Water plants" and then "Gym"
+- **AND** a commitments screen opened afterwards at that place as of that same day keeps those three
+  in that same order
+
+#### Scenario: an offset a commitments screen is given is counted over what it keeps before the move
+
+- **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling", all
+  on a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster
+  place; a commitments screen is opened at that roster place as of Monday 31 August 2026; and "Water
+  plants" is moved to the offset 2
+- **THEN** what it keeps is three entries, named "Gym", "Water plants" and then "Journaling"
+- **AND** a screen alike in every way that moves "Water plants" to the offset 3 instead keeps "Gym",
+  "Journaling" and then "Water plants"
+
+#### Scenario: a commitments screen asked to move a commitment it has stopped does nothing and says nothing
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Gym" is stopped there as of
+  Sunday 30 August 2026; a commitments screen is opened at that roster place as of Monday
+  31 August 2026; and it is asked to move "Gym" to the offset 0
+- **THEN** nothing is refused and the screen holds no refused change
+- **AND** what it keeps is one entry, named "Journaling", and what it has stopped is one entry, named
+  "Gym"
+
+#### Scenario: a commitments screen asked to move a commitment on neither of its lists does nothing and says nothing
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; and it is asked to move a commitment named "Journaling" on that same
+  schedule and kept-from day, formed directly and never taken on, to the offset 0
+- **THEN** nothing is refused and the screen holds no refused change
+- **AND** what it keeps is one entry, named "Gym"
+
+#### Scenario: a commitments screen given an offset the list it keeps does not have does nothing and says nothing
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; a commitments screen is
+  opened at that roster place as of Monday 31 August 2026; and "Gym" is moved to the offset 3, which
+  a list of two does not have
+- **THEN** nothing is refused and the screen holds no refused change
+- **AND** what it keeps is two entries, named "Gym" and then "Journaling"
+- **AND** moving "Gym" to the offset -1 refuses nothing and leaves what it keeps the same again
+
+#### Scenario: a move a commitments screen could not keep leaves both its lists as they were
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; a commitments screen is
+  opened at that roster place as of Monday 31 August 2026; what is at that place is then made
+  impossible to write; and "Journaling" is moved to the offset 0
+- **THEN** it is refused as a roster that could not be written
+- **AND** what it keeps is two entries, named "Gym" and then "Journaling", and what it has stopped is
+  nothing
+
+#### Scenario: a move that drops a commitment where it already is changes nothing and refuses nothing
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; a commitments screen is
+  opened at that roster place as of Monday 31 August 2026; the content at that place is read; and
+  "Journaling" is moved to the offset 2
+- **THEN** nothing is refused and the screen holds no refused change
+- **AND** what it keeps is two entries, named "Gym" and then "Journaling"
+- **AND** the content at that place is byte-for-byte what was read before the move
+
+#### Scenario: a commitments screen shown again lists what it keeps in the order it was moved into
+
+- **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling", all
+  on a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster
+  place; a commitments screen is opened at that roster place as of Monday 31 August 2026;
+  "Journaling" is moved to the offset 0; and the screen is shown again as of Tuesday
+  1 September 2026
+- **THEN** what it keeps is three entries, named "Journaling", "Water plants" and then "Gym"
+
+#### Scenario: a commitment moved and then stopped through a commitments screen keeps the place it was moved to
+
+- **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling", all
+  on a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster
+  place; a commitments screen is opened at that roster place as of Monday 31 August 2026;
+  "Journaling" is moved to the offset 0; and the screen is then asked to stop keeping "Journaling"
+  and the stop is confirmed
+- **THEN** what it keeps is two entries, named "Water plants" and then "Gym"
+- **AND** what it has stopped is one entry, named "Journaling"
+- **AND** a roster store opened afterwards at that place answers with "Journaling", then "Water
+  plants", then "Gym" when asked what it had not stopped keeping on Sunday 30 August 2026
