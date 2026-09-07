@@ -153,16 +153,15 @@ jobs:
       # chore PR is never a draft, so the step runs before anything is merged and
       # again on the push to `main`.
       #
-      # The arithmetic behind that is much smaller than it was. ADR-1029 costed
-      # this step at 3m45s; by 2026-09-07 it was 5m10s and 8m36s on two
-      # consecutive runs, and the rebuild below took it to about a minute. At
-      # that price the second gate is thrift rather than necessity — kept
-      # because it costs one `git diff` and still saves a boot.
+      # **The gates matter more than ADR-1029 thought, not less.** It costed the
+      # smoke test at 3m45s; on 2026-09-07 it was 5m10s and 8m36s, and taking the
+      # clone out left a cold simulator boot that is minutes on its own and cannot
+      # be got rid of. This is the only question in the job that can decline to
+      # pay it.
       #
-      # **Asked here, at the top, rather than beside the step it gates.** The
-      # answer is what decides whether the simulator is worth booting, and a boot
-      # started after the build has nothing left to overlap. It needs only the
-      # checkout.
+      # **Asked here, at the top, rather than beside the steps it gates**, because
+      # it now gates two of them — the boot and the test — and both read it. It
+      # needs only the checkout.
       - name: does this change reach the app?
         id: scope
         run: |
@@ -215,27 +214,6 @@ jobs:
             | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next(d['udid'] for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')))")
           echo "Building against, and if it runs, testing on simulator ${device}."
           echo "device=$device" >> "$GITHUB_OUTPUT"
-
-      # **This is the step that made the smoke test affordable**, and it is three
-      # words of shell. A runner's simulator devices have never been booted since
-      # the image was built, so the first boot is a cold one and it is minutes,
-      # not seconds — and until 2026-09-07 every second of it was spent *after*
-      # the build, with the runner otherwise idle. Started here it runs underneath
-      # `swift test` and the build, and `bootstatus -b` at the bottom is the join.
-      #
-      # `simctl boot` returns in about half a second and the boot proceeds inside
-      # `CoreSimulatorService`, a launchd job — so it is not a child of this step's
-      # shell and the runner's orphan-process cleanup between steps does not touch
-      # it. Verified across separate shells on 2026-09-07. A backgrounded `&` here
-      # would be killed; this is why the step is a plain foreground command.
-      #
-      # `|| true` because `boot` errors on a device that is already booted, and
-      # because a boot that fails outright is not this step's to report: the
-      # `bootstatus -b` below boots the device itself if this did not, so the
-      # failure surfaces where it can be read.
-      - name: start booting it
-        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
-        run: xcrun simctl boot "${{ steps.sim.outputs.device }}" || true
 
       # Discovers packages rather than hard-coding a path: it predates the first
       # Swift Story (ADR 1001 was the decision, not the code) and stays discovery-
@@ -313,36 +291,57 @@ jobs:
             -enableCodeCoverage NO \
             COMPILER_INDEX_STORE_ENABLE=NO
 
-      # The UI smoke layer: proof that SwiftUI drew something. The step above proves the
+      # **The boot gets its own step, because it is the single largest thing in
+      # this job and it should say so.** A runner's simulator devices have never
+      # been booted since the image was built, so this is a cold first boot and it
+      # is minutes. Folded into the test step it read as "the UI test is slow",
+      # which is what ADR-1029 originally recorded and what sent the first attempt
+      # at this chore chasing the wrong thing.
+      #
+      # **It is deliberately not overlapped with anything, and that is a measured
+      # decision rather than a missed trick.** The first version of this chore
+      # started the boot at the top of the job with `simctl boot` — which does
+      # return in about half a second, and does keep booting inside
+      # `CoreSimulatorService` across later steps, both verified — so that it would
+      # run underneath `swift test` and the build. It works, and it buys nothing:
+      # over three runs on 2026-09-07 `swift test` took 436s, 245s and 384s against
+      # a 34-76s baseline across the eight runs before it, while the smoke step
+      # fell by about the same amount. A `macos-26` runner has no spare capacity to
+      # absorb a simulator boot, so overlapping only moves the cost into a step
+      # that then lies about what it measures.
+      #
+      # `bootstatus -b` boots the device as well as waiting for it, and is
+      # documented as safe to call before any boot has been attempted — so this one
+      # command is the whole thing, and it is where a simulator that will not come
+      # up gets reported.
+      - name: boot the simulator
+        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
+        run: xcrun simctl bootstatus "${{ steps.sim.outputs.device }}" -b
+
+      # The UI smoke layer: proof that SwiftUI drew something. The compile step proves the
       # shell compiles, and `swift test` proves the kit's rules; between them sits the
       # failure neither can see — a binding misspelled so a subtree never renders, which
       # type-checks, passes all 300 seam tests, and ships a blank row.
       # `docs/open-questions.md` § *No UI smoke layer* recorded that gap from 2026-08-31;
       # ADR-1029 is the decision that closed it, and `DayByDayUITests` is deliberately thin.
       #
-      # **`bootstatus -b` is the join and the gate.** It waits for the boot started
-      # near the top of this job, boots the device itself if that never happened,
-      # and is documented as safe to call before a boot has been attempted — so it
-      # is the one place a simulator that will not come up gets reported.
+      # **`-parallel-testing-enabled NO`.** The derived scheme parallelises by
+      # default and there is no `.xcscheme` in the tree to say otherwise, so
+      # `xcodebuild test` was cloning the device and running on
+      # `Clone 1 of iPhone 17 Pro`. One test on one device buys nothing from a
+      # clone. Measured locally on 2026-09-07, cold simulator and warm build:
+      # 47.7s cloned against 28.3s not. On the runner it is worth less than that
+      # arithmetic suggests — the clone is of an already-booted device — but the
+      # test operation did fall from 284.6s and 492.4s (runs 34120659274 and
+      # 34116245290) to 96.5s and 112.6s.
       #
-      # **`-parallel-testing-enabled NO`, which is where the minutes went.** The
-      # derived scheme parallelises by default and there is no `.xcscheme` in the
-      # tree to say otherwise, so `xcodebuild test` was cloning the device and
-      # running on `Clone 1 of iPhone 17 Pro` — a second cold first boot stacked on
-      # the source device's own. One test on one device buys nothing from a clone.
-      # Measured here on 2026-09-07, cold simulator, warm build: 47.7s cloned
-      # against 28.3s not, and 17.0s not-cloned-and-already-booted. On the runner
-      # the same shape cost 260-450s (runs 34120659274 and 34116245290), of which
-      # the test itself was 25-40s.
-      #
-      # **`test-without-building`**, because the step above already built it. The
-      # two halves are split so the boot has something to overlap; run as one
-      # `xcodebuild test` there is nothing between the build and the simulator.
+      # **`test-without-building`**, because the compile step already built it,
+      # against this same device. Splitting the two is what lets the boot sit
+      # between them as its own step rather than inside `xcodebuild test`.
       - name: xcodebuild test — the app shell draws
         if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
         run: |
           set -eu
-          xcrun simctl bootstatus "${{ steps.sim.outputs.device }}" -b
           xcodebuild test-without-building \
             -project src/DayByDay/DayByDay.xcodeproj \
             -scheme DayByDay \
