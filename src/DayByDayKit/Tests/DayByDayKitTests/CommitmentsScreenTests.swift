@@ -2705,3 +2705,33 @@ func aCommitmentsScreenAskedToMoveACommitmentOnNeitherOfItsListsDoesNothingAndSa
     #expect(screen.refusedChange == nil)
     #expect(screen.kept.map(\.name) == ["Gym"])
 }
+
+@MainActor
+@Test("a commitments screen given an offset the list it keeps does not have does nothing and says nothing")
+func aCommitmentsScreenGivenAnOffsetTheListItKeepsDoesNotHaveDoesNothingAndSaysNothing() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(journaling)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let movedPastTheEnd = screen.move(gym, toOffset: 3)
+
+    #expect(movedPastTheEnd == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.kept.map(\.name) == ["Gym", "Journaling"])
+
+    let movedBelowZero = screen.move(gym, toOffset: -1)
+
+    #expect(movedBelowZero == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.kept.map(\.name) == ["Gym", "Journaling"])
+}

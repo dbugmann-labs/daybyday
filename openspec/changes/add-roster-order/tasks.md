@@ -107,7 +107,7 @@ same shape as `keepAgain`, and `RefusedChange` gains a fifth case, `moving(Commi
   has it. Getting this wrong is the likeliest defect in the change.
 - [x] 5.4 `a commitments screen asked to move a commitment on neither of its lists does nothing and
   says nothing`
-- [ ] 5.5 `a commitments screen given an offset the list it keeps does not have does nothing and says
+- [x] 5.5 `a commitments screen given an offset the list it keeps does not have does nothing and says
   nothing` — both ends, and neither is a refusal. `design.md` § *An offset outside the range* says
   why the screen answers this differently from the roster.
 - [ ] 5.6 `a move that drops a commitment where it already is changes nothing and refuses nothing` —
