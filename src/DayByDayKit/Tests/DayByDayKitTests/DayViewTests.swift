@@ -1402,7 +1402,7 @@ func aNumberEntrySaysTheRangeItsCommitmentDeclaresAsAHint() {
 }
 
 @Test("a number entry of a commitment that declares no range says no hint")
-func aNumberEntryOfACommitmentThatDeclaresNoRangeSaysNoHint() {
+func aNumberEntryOfACommitmentThatDeclaresNoRangeSaysNoHint() throws {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let weight = Commitment(
         name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
@@ -1411,8 +1411,9 @@ func aNumberEntryOfACommitmentThatDeclaresNoRangeSaysNoHint() {
     let history = History()
 
     let dayView = DayView(of: [weight], on: monday, in: history)
+    let entry = try #require(dayView.rows[0].numberEntry(asOf: monday))
 
-    #expect(dayView.rows[0].numberEntry(asOf: monday)?.hint == nil)
+    #expect(entry.hint == nil)
 }
 
 @Test("a number entry says the number the history holds for that commitment on that date")
@@ -1436,7 +1437,7 @@ func aNumberEntrySaysTheNumberTheHistoryHoldsForThatCommitmentOnThatDate() {
 }
 
 @Test("a number entry says no number where the day holds none")
-func aNumberEntrySaysNoNumberWhereTheDayHoldsNone() {
+func aNumberEntrySaysNoNumberWhereTheDayHoldsNone() throws {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let range = Commitment.Range(lowest: 40, highest: 150)!
     let weight = Commitment(
@@ -1451,8 +1452,12 @@ func aNumberEntrySaysNoNumberWhereTheDayHoldsNone() {
     let neverRecordedView = DayView(of: [weight], on: monday, in: neverRecorded)
     let addedThenRemovedView = DayView(of: [weight], on: monday, in: addedThenRemoved)
 
-    #expect(neverRecordedView.rows[0].numberEntry(asOf: monday)?.number == nil)
-    #expect(addedThenRemovedView.rows[0].numberEntry(asOf: monday)?.number == nil)
+    let neverRecordedEntry = try #require(neverRecordedView.rows[0].numberEntry(asOf: monday))
+    let addedThenRemovedEntry = try #require(
+        addedThenRemovedView.rows[0].numberEntry(asOf: monday))
+
+    #expect(neverRecordedEntry.number == nil)
+    #expect(addedThenRemovedEntry.number == nil)
 }
 
 @Test(

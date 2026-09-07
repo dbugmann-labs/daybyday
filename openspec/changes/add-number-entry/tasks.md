@@ -332,7 +332,7 @@ and change no behaviour.
   `recordStore?.history ?? History()` reduces to `recordStore.history` there. `tick(_:)`'s own copy
   at `:219-220` goes the same way. Every test stays green; a red one means the two were not
   equivalent and is a rule-5 stop.
-- [ ] 12.6 Strengthen the two `DayViewTests.swift` assertions that pass for the wrong reason:
+- [x] 12.6 Strengthen the two `DayViewTests.swift` assertions that pass for the wrong reason:
   `a number entry of a commitment that declares no range says no hint` and `a number entry says no
   number where the day holds none`. Both read `...numberEntry(asOf: monday)?.hint == nil` and
   `?.number == nil`, which hold just as well when `numberEntry(asOf:)` returns `nil` and the entry
