@@ -1,4 +1,15 @@
+import Foundation
+
 public struct DayView: Hashable, Sendable {
+    /// What a number commitment's row offers in a tick's place.
+    public struct NumberEntry: Hashable, Sendable {
+        /// The number the day already holds, or `nil` where it holds none.
+        public let number: Decimal?
+        /// The range the commitment declares, said for an empty field — "40–150" — or `nil`
+        /// where it declares none.
+        public let hint: String?
+    }
+
     public struct Row: Hashable, Sendable {
         let commitment: Commitment
         let date: CalendarDate
@@ -17,6 +28,20 @@ public struct DayView: Hashable, Sendable {
             }
 
             return Tick(commitment, on: date)
+        }
+
+        /// The number entry this row offers, or `nil` when its commitment's kind is not a number
+        /// or the row's date is later than `today`.
+        public func numberEntry(asOf today: CalendarDate) -> NumberEntry? {
+            guard today.days(until: date) <= 0 else {
+                return nil
+            }
+
+            guard case .number = commitment.kind else {
+                return nil
+            }
+
+            return NumberEntry(number: nil, hint: nil)
         }
     }
 

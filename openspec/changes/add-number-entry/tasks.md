@@ -46,7 +46,7 @@ test still green.
 red on the missing method and 2.4 red on the day guard; 2.2 should be red before the kind guard
 exists. **Record which ones actually ran red as you go, in § 11**; a prediction here is not evidence.
 
-- [ ] 2.1 `a row offers the number entry for its commitment on the date the day view is of`
+- [x] 2.1 `a row offers the number entry for its commitment on the date the day view is of`
 - [ ] 2.2 `a row for a commitment whose kind is not a number offers no number entry` — the tick, note
   and total kinds, plus the number-kind control that must offer one.
 - [ ] 2.3 `a row offers a tick or a number entry and never both`
