@@ -3031,17 +3031,17 @@ func aNumberTypedWithAFullStopIsEnteredExactlyAsItWasTyped() throws {
         startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     try screen.enter("70.5", on: screen.dayView.rows[0])
 
-    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == Decimal(string: "70.5")!)
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number?.description == "70.5")
 
     try screen.enter("0.000001", on: screen.dayView.rows[0])
     #expect(
-        screen.dayView.rows[0].numberEntry(asOf: monday)?.number
-            == Decimal(string: "0.000001")!)
+        screen.dayView.rows[0].numberEntry(asOf: monday)?.number?.description
+            == "0.000001")
 
     try screen.enter("98765432109876543210.5", on: screen.dayView.rows[0])
     #expect(
-        screen.dayView.rows[0].numberEntry(asOf: monday)?.number
-            == Decimal(string: "98765432109876543210.5")!)
+        screen.dayView.rows[0].numberEntry(asOf: monday)?.number?.description
+            == "98765432109876543210.5")
 }
 
 @MainActor
@@ -3174,15 +3174,15 @@ func aNumberOfAsManyDigitsAsCanBeKeptIsEnteredExactly() throws {
     try screen.enter(thirtyEightNines, on: screen.dayView.rows[0])
 
     #expect(
-        screen.dayView.rows[0].numberEntry(asOf: monday)?.number
-            == Decimal(string: thirtyEightNines)!)
+        screen.dayView.rows[0].numberEntry(asOf: monday)?.number?.description
+            == thirtyEightNines)
     #expect(screen.dayView.rows[0].isKept)
 
     let later = DayScreen(
         startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     #expect(
-        later.dayView.rows[0].numberEntry(asOf: monday)?.number
-            == Decimal(string: thirtyEightNines)!)
+        later.dayView.rows[0].numberEntry(asOf: monday)?.number?.description
+            == thirtyEightNines)
 }
 
 @MainActor
