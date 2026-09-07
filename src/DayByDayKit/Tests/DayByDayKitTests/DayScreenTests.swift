@@ -3182,6 +3182,39 @@ func aNumberOfAsManyDigitsAsCanBeKeptIsEnteredExactly() throws {
 }
 
 @MainActor
+@Test("a number too long to be kept exactly keeps nothing and takes nothing back")
+func aNumberTooLongToBeKeptExactlyKeepsNothingAndTakesNothingBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+
+    let tooLong = [
+        String(repeating: "9", count: 39),
+        String(repeating: "1", count: 200),
+        "0." + String(repeating: "0", count: 128) + "1",
+    ]
+    for notANumber in tooLong {
+        try screen.enter(notANumber, on: screen.dayView.rows[0])
+        #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+    }
+
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(screen.notice?.cause == "Not a number")
+    #expect(screen.dayView.rows[0].isKept)
+
+    let later = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(later.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+}
+
+@MainActor
 @Test("a number outside the commitment's range is told on the row, naming the bounds it broke")
 func aNumberOutsideTheCommitmentsRangeIsToldOnTheRowNamingTheBoundsItBroke() throws {
     let (place, rosterPlace) = freshPlaces()

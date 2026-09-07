@@ -257,12 +257,52 @@ public final class DayScreen {
             }
         }
 
-        guard digitCount >= 1, separatorCount <= 1 else {
+        guard digitCount >= 1, separatorCount <= 1, Self.canBeKeptExactly(digits) else {
             return .notANumber
         }
 
         let normalized = trimmed.replacingOccurrences(of: ",", with: ".")
-        return .number(Decimal(string: normalized)!)
+        guard let number = Decimal(string: normalized) else {
+            return .notANumber
+        }
+        return .number(number)
+    }
+
+    /// Whether `digits` — text already proved to hold nothing but digits and at most one
+    /// separator, with any leading `-` already removed — describes a number this system can keep
+    /// exactly. `design.md` § *A number this system cannot keep exactly is not a number here*:
+    /// take the digits, drop the leading zeros and the trailing zeros, and let *s* be what is
+    /// left and *e* the power of ten it is multiplied by; the number is kept when *s* is at most
+    /// thirty-eight digits long and *e* lies between −128 and 127. Zero is always kept, whatever
+    /// its own digit count, since dropping every one of its digits changes nothing it means.
+    private static func canBeKeptExactly(_ digits: Substring) -> Bool {
+        let separatorIndex = digits.firstIndex { $0 == "." || $0 == "," }
+        let fractionalPart: Substring
+        let allDigits: String
+        if let separatorIndex {
+            fractionalPart = digits[digits.index(after: separatorIndex)...]
+            allDigits = String(digits[digits.startIndex..<separatorIndex]) + String(fractionalPart)
+        } else {
+            fractionalPart = ""
+            allDigits = String(digits)
+        }
+
+        var significant = allDigits[...]
+        while significant.first == "0" {
+            significant.removeFirst()
+        }
+        guard !significant.isEmpty else {
+            return true
+        }
+
+        var trailingZerosDropped = 0
+        while significant.last == "0" {
+            significant.removeLast()
+            trailingZerosDropped += 1
+        }
+
+        let exponent = trailingZerosDropped - fractionalPart.count
+        return significant.count <= 38 && exponent >= -128 && exponent <= 127
     }
 
     /// The cause named when `commitment` refuses a number: the range it declares, said "Must be

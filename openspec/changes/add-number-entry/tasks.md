@@ -307,7 +307,7 @@ and change no behaviour.
   `Tests/DayByDayKitTests/DayScreenTests.swift`. Expect it **green on arrival**: 38 nines already
   parse exactly and already survive the store, measured on this machine on 2026-09-07. Record in
   § *Notes* whether it actually ran red, as §§ 2, 6 and 8 did.
-- [ ] 12.2 `a number too long to be kept exactly keeps nothing and takes nothing back` — same file.
+- [x] 12.2 `a number too long to be kept exactly keeps nothing and takes nothing back` — same file.
   Expect it red, and expect the red to be **the test process aborting rather than a failure being
   reported**: `read(_:)` at `DayScreen.swift:265` force-unwraps `Decimal(string:)`, which is `nil`
   for two of this scenario's three values, and a `fatalError` takes the whole run down. That is the
@@ -364,3 +364,7 @@ first run against the code that existed before it:
   turns on it; what turned on it was 11.1's own claim to be evidence rather than a prediction.
 - **12.1 did not run red**, as predicted: 38 nines already parsed exactly and already survived the
   store before the size rule existed, since `Decimal(string:)` itself keeps 38 digits exactly.
+- **12.2 ran red**, and for the predicted reason: the test process aborted rather than reporting a
+  failure — `Fatal error: Unexpectedly found nil while unwrapping an Optional value` at
+  `DayScreen.swift:265`, the `Decimal(string: normalized)!` on text the size rule had not yet
+  ruled out. The size check plus removing the `!` made it pass.
