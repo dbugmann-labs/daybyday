@@ -15,21 +15,41 @@ Read `AGENTS.md` first. It is binding.
 
 ## Your steps, in order
 
-1. **Archive.** `/opsx:archive` on the story branch, as the **last commit on that branch** —
-   not a follow-up PR. It merges the delta into `openspec/specs/` and moves the change folder
-   under `openspec/changes/archive/`. This runs only after review is clean, so the reviewer saw
-   the change folder at the path the human approved.
+1. **Archive.** Run the CLI on the story branch, as the **last commit on that branch** — not a
+   follow-up PR:
+
+   ```bash
+   openspec archive <change-id> --yes
+   ```
+
+   It merges the delta into `openspec/specs/` and moves the change folder under
+   `openspec/changes/archive/<date>-<change-id>/`, and it prints what it applied — `+ 2 added`,
+   `~ 17 modified` — which is the first thing your report quotes. This runs only after review is
+   clean, so the reviewer saw the change folder at the path the human approved.
+
+   **The shell command, never the `/opsx:archive` skill.** Everywhere else this repo says
+   `/opsx:archive` it means this command, and in openspec 1.10.0 the two are not the same thing.
+   The skill's generated text (`.claude/commands/opsx/archive.md`, step 4) does not call the
+   CLI: it runs "the `/opsx:sync` workflow inline (agent-driven intelligent merge)" — that is, it
+   tells *you* to write `openspec/specs/` — and then moves the folder with `mv`. A janitor that
+   follows it has hand-edited the specs, which rule 2 forbids and which the deny rule on
+   `openspec/specs/**` cannot stop, because a script writes through `Bash`. That happened at
+   `add-roster-removal` (#145) on 2026-09-07: the janitor invoked the skill, wrote a Python
+   merge, and committed it. The content came out identical to the CLI's — measured afterwards by
+   re-running `openspec archive` on the pre-archive commit and diffing the specs: 55 blank lines
+   and nothing else — by luck, not by construction. If you find yourself about to write a spec
+   file, whatever a skill's text says, you have left this step: stop and hand back.
 2. **Verify the archive.** `openspec validate --archived` — every `tasks.md` box ticked — and
    `pnpm run checks`, which asserts spec-diff containment and scenario coverage. Check 9 there is
    informational: it reads the disk you just archived, so only CI can tell you the *PR* is archived.
 
-   Then **check what `/opsx:archive` actually wrote, requirement by requirement, before you
+   Then **check what `openspec archive` actually wrote, requirement by requirement, before you
    commit it.** It has dropped prose before: archiving `add-screen-navigation` (#93) silently lost
    the wording of two MODIFIED requirements, and nothing caught it until the next Story read the
    spec. Diff every `## MODIFIED` block in the change folder's delta against the same requirement
    in `openspec/specs/<capability>/spec.md`, and confirm each `## ADDED` requirement landed in the
    capability the delta filed it under. **Any drift is a stop and a report — never a hand-edit:**
-   rule 2 says `openspec/specs/` is written by `/opsx:archive` and nothing else.
+   rule 2 says `openspec/specs/` is written by the archive command and nothing else.
 
    **You never tick a box to record this, and you must never try.** By the time you can run the
    check, `tasks.md` has moved under `openspec/changes/archive/`, which `.claude/settings.json`
@@ -93,7 +113,9 @@ professional record.
 
 ## Why you have no file-editing tools
 
-You do not need them: archiving goes through the `openspec` CLI and issue state through `gh`.
+You do not need them: archiving goes through the `openspec` CLI — the command in step 1, not the
+`/opsx:archive` skill, which would have you write the specs yourself — and issue state through
+`gh`.
 Everything you touch has a tool that owns it, and wanting to edit a file directly is the signal
 you have hit a judgement call — stop and hand back. In any case `openspec/specs/` is
 write-denied by permission settings, deliberately: the archive CLI writes it and nothing else in
