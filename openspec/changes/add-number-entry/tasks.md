@@ -428,19 +428,19 @@ through all of it, and a red one is a rule-5 stop rather than a licence to edit 
 
 ## 14. What the fourth review pass found
 
-Three findings, all accepted, **batched into one folder edit so a single fourth G4 covers them.**
-Two are this folder's — finding 1 corrected a premise sentence in `design.md` and finding 3 renamed
-a member it names — and the third is `tests/**` only. It is § 14.4 here all the same, because
-`tasks.md` is where the work of this Story is listed and a fix tracked nowhere is a fix nobody runs.
-A **fourth G4** is owed before a line of § 14 is written: `design.md` moved, so the digest moved.
-Run `pnpm run check:g4` first.
+Three findings, all accepted, **batched with the residual round's two answers into one folder edit
+so a single fourth G4 covers the lot.** Two are this folder's — finding 1 corrected a premise
+sentence in `design.md` and finding 3 renamed a member it names — and the third is `tests/**` only.
+It is § 14.4 here all the same, because `tasks.md` is where the work of this Story is listed and a
+fix tracked nowhere is a fix nobody runs. A **fourth G4** is owed before a line of § 14 is written:
+`design.md` moved, so the digest moved. Run `pnpm run check:g4` first.
 
-**§ 14 writes no test and adds no scenario**, and that is a decision the owner has been asked to
-confirm — `design.md` § *Questions for you* question 1. If the answer is "add one", this section
-gains a red-green cycle under `AGENTS.md` rule 3 before § 14.5 and § 11.2's count becomes 593;
-until then every existing test stays green through all of § 14 and a red one is a rule-5 stop rather
-than a licence to edit a test. § 14 runs **before** § 11.2, § 11.3 and § 11.5, all of which are open
-for it.
+**§ 14 writes no test and adds no scenario**, and that is the owner's own decision, taken — the
+residual round's first question, answered "leave it to the requirement's words" and recorded in
+`design.md` § *Open Questions*. So this section adds no red-green cycle and § 11.2's expected count
+stays as § 11.2 states it. Every existing test stays green through all of § 14, and a red one is a
+rule-5 stop rather than a licence to edit a test. § 14 runs **before** § 11.2, § 11.3 and § 11.5,
+all of which are open for it.
 
 - [ ] 14.1 Re-measure the one case finding 1 rests on before moving anything, and read the output
   rather than this file. From anywhere, with the toolchain in `AGENTS.md` § *This machine* on PATH:
@@ -486,8 +486,9 @@ for it.
   `guard let number = row.numberRecord(decimal, asOf: today)`. Nothing else in the package or the
   shell names it — two sites in all, and no test does, so no `@Test` display name changes and the
   count does not move. `design.md` § *The seam* says why the name moves and what it commits #140 and
-  #141 to. **If `design.md` § *Questions for you* question 2 came back with another name, that name
-  goes here and in the three places `design.md` lists — never a name chosen at the keyboard.**
+  #141 to. **The name is the owner's, answered:** the residual round's second question came back
+  `numberRecord(_:asOf:)`, which is the name written above and in `design.md` § *Open Questions*.
+  Type that one; never a name chosen at the keyboard.
   **Tick this on the grep**: from `src/DayByDayKit`,
   `grep -rn 'func number(\|row\.number(' Sources/` prints nothing at all. It prints two lines today.
 

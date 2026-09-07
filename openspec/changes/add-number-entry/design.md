@@ -449,8 +449,8 @@ weight on the phone and reading it back after a force-quit.
   about a number that cannot be kept is about text that really cannot be kept, so nothing asserts
   this one and nothing would catch it regressing. The case is reachable only by a paste of 131
   characters, the fix is three lines and ticks on a grep, and adding a scenario is a delta edit the
-  fourth review pass did not ask for. `## Questions for you` question 1 puts the choice in front of
-  the owner rather than leaving it made here.
+  fourth review pass did not ask for. This was put to the owner rather than left made here, and the
+  answer was to leave it — § *Open Questions*, first entry.
 - **The reading rests on a measured property of `Decimal(string:)` that Foundation does not
   document** — that at 38 significant digits or fewer it never rounds. → Accepted, and it is the
   cheaper of the two risks on offer: the alternative is restating the type's ceiling as a constant
@@ -465,44 +465,29 @@ Nothing to migrate. No store form moves, no file on a phone is read or written d
 record written by #138 reads back unchanged. The one public renaming is source-level inside this
 repository; `DayByDayKit` has no consumer outside it.
 
-## Questions for you
-
-Two, both raised while writing the fourth review pass's moves into this folder, and both
-**outstanding**. The folder below is written on the recommended answer to each; this section is
-deleted once they are answered and what was decided is recorded under *Open Questions*.
-
-1. **Zero written past the type's floor will be kept, and no scenario will say so.** The fix to
-   finding 1 changes behaviour — `"0."` followed by 129 zeros is told "Not a number" today and is
-   kept as zero afterwards — and not one of the delta's 75 scenarios asserts it, so nothing but a
-   measurement recorded in prose stands between it and a silent regression later. Add a scenario to
-   the delta, or leave the case carried by the requirement's words alone?
-   - *Recommended:* leave it. The requirement already says a number this system can hold SHALL be
-     kept and zero is one; the text that reaches this is a 131-character paste and nothing a person
-     types; the delta is otherwise finished and name-matched at 75/75; and the review pass that
-     measured this case asked for the code to move and not for a scenario. The behaviour is fenced
-     on the other side by the two scenarios § 12 added, which still refuse for the digit count and
-     for the floor.
-   - *If you say add one:* the delta gains one scenario under *A day screen reads what an entry is
-     committed with* — 76 in all — `tasks.md` § 14 gains a red-green cycle writing the acceptance
-     test named after it verbatim, § 11.2's expected count becomes 593, and the risk this document
-     now records as accepted goes away. Nothing else moves; the code is the same three lines either
-     way.
-
-2. **The maker's new name is `numberRecord(_:asOf:)`.** Finding 3 said rename it and did not name
-   the replacement, so this document chose one — and by the finding's own reasoning the choice is
-   what #140 and #141 will copy: `<kind>Entry(asOf:)` for what a row offers,
-   `<kind>Record(_:asOf:)` for what a row makes.
-   - *Recommended:* `numberRecord(_:asOf:)`. It says what it gives back, it keeps the parallel with
-     the `numberEntry(asOf:)` the row already has, and it generalises to `noteRecord` and
-     `totalRecord` without a second decision.
-   - *If you want another:* three files in this folder carry the name — `design.md` § *The seam*,
-     `tasks.md` §§ 13.2 and 14.3, `proposal.md` § *Impact* — and the edit is mechanical in all
-     three. Nothing in `specs/` carries it, so the delta does not move whichever way this goes.
-
 ## Open Questions
 
-**Two, and both are in § *Questions for you* above rather than here**, because this section records
-what is settled and neither of them is yet. Nothing else is open: `grill.md` § *Left open* says
+**None.** The two this document carried as a residual round were put to the owner and answered, and
+both came back on the recommendation, so **the delta did not move for either** — 75 scenarios before
+and 75 after, and nothing in `specs/` touched:
+
+- **Whether a zero written past the type's floor earns a scenario of its own.** Answered: **leave it
+  to the requirement's words, no new scenario.** The requirement already says a number this system
+  can hold SHALL be kept and zero is one; the case is reachable only by a 131-character paste and
+  never by anything a person types; and the fourth review pass that measured it asked for the code
+  to move and not for a scenario. The delta stays at 75, `tasks.md` § 14 gains no red-green cycle,
+  § 11.2's expected count stays as written, and the exposure stands recorded and accepted in
+  § *Risks / Trade-offs* rather than fenced by a test. That risk bullet is the thing to read if this
+  ever regresses.
+- **What to call the maker the fourth pass's finding 3 renamed.** Answered: **`numberRecord(_:asOf:)`**
+  — the name this folder was already written on. It says what it gives back, keeps the parallel with
+  the `numberEntry(asOf:)` the row already has, and generalises to `noteRecord` and `totalRecord`
+  without a second decision. By finding 3's own reasoning that makes it a commitment #140 and #141
+  copy: **`<kind>Entry(asOf:)` for what a row offers, `<kind>Record(_:asOf:)` for what a row makes**
+  — § *The seam* holds the argument. No file in this folder changed on the answer; the three that
+  carry the name already carried this one.
+
+Nothing else is open: `grill.md` § *Left open* says
 "None." with its reason, writing the delta turned up nothing that must be answered before the code
 is written, and everything the review's four passes found was decided rather than asked. The first
 pass's finding that a long paste crashes the app is answered above by a rule this delta's own words
@@ -512,9 +497,9 @@ and fourth passes' five findings are the owner's decisions already taken**, and 
 way: the requirements stand and the code moves. What was left for this document was where the seam
 is short (§ *The seam*), where a measured claim was false (§ *Context*, § *A number this system
 cannot keep exactly is not a number here*, twice over), and what to call a member whose name
-answered to two things (§ *The seam* again) — and none of those is a preference, except the name
-itself, which is question 2 above. Five things writing the delta turned up, and why each is settled
-here rather than asked:
+answered to two things (§ *The seam* again) — and none of those was a preference, except the name
+itself, which was the second of the two answered at the top of this section. Five things writing the
+delta turned up, and why each is settled here rather than asked:
 
 - **Whether text holding nothing but space is a take-back or a value that is not a number.** Settled
   as a take-back. A decimal keypad cannot print a space, so nothing a person can do reaches it; the
