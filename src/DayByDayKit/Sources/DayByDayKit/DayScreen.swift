@@ -258,10 +258,12 @@ public final class DayScreen {
             }
         }
 
-        guard digitCount >= 1, separatorCount <= 1,
-            Self.hasAtMostThirtyEightSignificantDigits(digits)
-        else {
+        let significantDigits = Self.significantDigitCount(digits)
+        guard digitCount >= 1, separatorCount <= 1, significantDigits <= 38 else {
             return .notANumber
+        }
+        guard significantDigits > 0 else {
+            return .number(0)
         }
 
         let normalized = trimmed.replacingOccurrences(of: ",", with: ".")
@@ -271,16 +273,15 @@ public final class DayScreen {
         return .number(number)
     }
 
-    /// Whether `digits` — text already proved to hold nothing but digits and at most one
-    /// separator, with any leading `-` already removed — has at most the thirty-eight
-    /// significant digits this system keeps exactly. `design.md` § *A number this system cannot
-    /// keep exactly is not a number here*: take the digits, drop the leading zeros and the
-    /// trailing zeros, and count what is left. This answers only that one bound of this
-    /// system's own; whether the number itself fits is a question asked of the type, in
-    /// `read(_:)`'s own call to `Decimal(string:)` — a `nil` there is read as a value that is
-    /// not a number. Zero is always kept, whatever its own digit count, since dropping every one
-    /// of its digits leaves none to count.
-    private static func hasAtMostThirtyEightSignificantDigits(_ digits: Substring) -> Bool {
+    /// The number of significant digits in `digits` — text already proved to hold nothing but
+    /// digits and at most one separator, with any leading `-` already removed — counted by
+    /// dropping the leading zeros and the trailing zeros and counting what is left.
+    /// `design.md` § *A number this system cannot keep exactly is not a number here*: a count
+    /// above thirty-eight is a value that is not a number, and a count of zero is answered as
+    /// `.number(0)` without `read(_:)` ever calling `Decimal(string:)` — that call returns `nil`
+    /// for some text whose value is zero, once its written form falls below the type's floor,
+    /// which is not what a `nil` means for any other text `read(_:)` reaches.
+    private static func significantDigitCount(_ digits: Substring) -> Int {
         let allDigits = String(digits.filter { $0 != "." && $0 != "," })
 
         var significant = allDigits[...]
@@ -291,7 +292,7 @@ public final class DayScreen {
             significant.removeLast()
         }
 
-        return significant.count <= 38
+        return significant.count
     }
 
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
@@ -320,7 +321,7 @@ public final class DayScreen {
                 throw error
             }
         case .number(let decimal):
-            guard let number = row.number(decimal, asOf: today) else {
+            guard let number = row.numberRecord(decimal, asOf: today) else {
                 notice = Notice(row: row, cause: entry.refusalCause)
                 return
             }

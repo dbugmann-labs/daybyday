@@ -59,7 +59,7 @@ public struct DayView: Hashable, Sendable {
         /// The number record this row makes of `decimal` — this row's commitment, on this row's
         /// date — or `nil` when the row offers no number entry as of `today`, or its commitment
         /// refuses the value.
-        public func number(_ decimal: Decimal, asOf today: CalendarDate) -> Number? {
+        public func numberRecord(_ decimal: Decimal, asOf today: CalendarDate) -> Number? {
             guard numberEntry(asOf: today) != nil else {
                 return nil
             }
