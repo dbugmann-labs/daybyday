@@ -201,7 +201,7 @@ and are in the G4 diff, so these boxes confirm rather than write.
   is due on* still the second — the reading order `design.md` § *Three titles that lag their bodies*
   measured. Any drift there is a stop and a report, never a hand-edit: `openspec/specs/` is written
   by `/opsx:archive` and by nothing else (`AGENTS.md` rule 2).
-- [ ] 9.5 Add one entry to `docs/open-questions.md` as a **chore commit alongside the merge**, not on
+- [x] 9.5 Add one entry to `docs/open-questions.md` as a **chore commit alongside the merge**, not on
   this branch — `AGENTS.md` § *Agent roles* puts that file outside a Story's reach. The entry: the
   read-back gap has a tenth face, in that `History` now lets a number out and still lets no tick out,
   so one value answers one question with a value and the other with a yes or no.
@@ -246,6 +246,14 @@ test was written rather than assumed from the prediction:
   already added by the time task order reaches 7.1). The box's own point — no regression from
   whatever the count already was — held; only the specific number written into the task was stale,
   carried over from § 1's phrasing rather than updated for where 7.1 actually falls in the sequence.
+- **9.5's chore landed before the archive, not alongside it.** `docs(open-questions): a tenth
+  read-back face and a second ADR collision` merged to `main` as `72bb8b2` (PR #154) ahead of this
+  Story's own archive commit. That ordering was the repo owner's call at the gate: `openspec
+  validate --archived` requires every archived change's `tasks.md` to have every box ticked, and a
+  chore commit that lands *after* the archive would leave 9.5 truthfully unticked at archive time —
+  either the archive ships with a false checkmark or the entry waits for a second, unrelated PR
+  after the Story is closed. Landing the chore first lets 9.5 be ticked honestly, on evidence
+  (`72bb8b2` read directly off `main`) rather than in anticipation of a merge still to come.
 - **9.2's count moved from 456 to 457.** The G7 fix round for finding 4 (`RecordDocument.swift:74-87`,
   the sort key not ordering two numbers totally) added one below-the-seam unit test in
   `RecordDocumentTests.swift`, pinning the `kind` tiebreaker at the level the defect lives. Rule 3
