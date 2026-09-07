@@ -54,7 +54,7 @@ named test green, every earlier test still green.
   the kept commitments alone (`design.md` § *One order over three states*).
 - [x] 2.6 `two offsets leave a commitment where it already is, and both are accepted` — settled
   answer 5 plus the arithmetic § 1.2 measured. Accepted, reported as moved, roster unchanged.
-- [ ] 2.7 `the offset just after a commitment's own passes nothing, with a stopped or removed
+- [x] 2.7 `the offset just after a commitment's own passes nothing, with a stopped or removed
   commitment lying between` — **the test for this already exists and needs renaming, not writing.**
   `RosterTests.swift` holds it as *"the offset just after a commitment's own leaves it where it is
   even with a stopped or removed commitment between"*, written with the fix in `b60bec6` as a

@@ -1007,10 +1007,9 @@ func twoOffsetsLeaveACommitmentWhereItAlreadyIsAndBothAreAccepted() {
 }
 
 @Test(
-    "the offset just after a commitment's own leaves it where it is even with a stopped or removed commitment between"
+    "the offset just after a commitment's own passes nothing, with a stopped or removed commitment lying between"
 )
-func theOffsetJustAfterACommitmentsOwnLeavesItWhereItIsEvenWithAStoppedOrRemovedCommitmentBetween()
-{
+func theOffsetJustAfterACommitmentsOwnPassesNothingWithAStoppedOrRemovedCommitmentLyingBetween() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
