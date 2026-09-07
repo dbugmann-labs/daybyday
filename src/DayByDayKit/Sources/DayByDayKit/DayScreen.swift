@@ -367,8 +367,10 @@ public final class DayScreen {
     }
 
     /// The day view of `shownDay`, drawn from `roster` and `recordStore`'s history exactly as
-    /// they stand now — asks neither again. Shared by every move that only steps the day already
-    /// held: `showPreviousDay`, `showNextDay` and `showToday`.
+    /// they stand now — asks neither again. Shared by every caller that re-forms `dayView` after
+    /// changing what it is drawn from or which day it is drawn for: the writes `tick` and
+    /// `enter(_:on:)` keep before re-forming it, and the moves `showPreviousDay`, `showNextDay`
+    /// and `showToday` that only step the day already held.
     private func dayViewOfShownDay() -> DayView {
         DayView(
             of: roster.commitments(on: shownDay), on: shownDay,
