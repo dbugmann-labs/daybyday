@@ -5,8 +5,8 @@ import Foundation
 /// on the engine types: the file's shape is a contract independent of how `Roster` and
 /// `Commitment` happen to be laid out in Swift.
 ///
-/// The array is in the order the commitments were taken on, and is not sorted — `design.md` says
-/// why: order is one of the things a roster is.
+/// The array is in the roster's own order, and is not sorted — `design.md` says why: order is
+/// one of the things a roster is.
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.

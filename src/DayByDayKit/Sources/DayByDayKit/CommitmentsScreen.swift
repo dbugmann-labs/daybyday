@@ -98,8 +98,8 @@ public final class CommitmentsScreen {
     public private(set) var refusedChange: RefusedChange?
 
     /// A change a commitments screen was asked for and refused: which one, and why. The commitment
-    /// is carried on the two changes that are asked about a commitment already on a list, so that
-    /// a person is told beside the row they tapped rather than in one place for all three.
+    /// is carried on the four changes that are asked about a commitment already on a list, so that
+    /// a person is told beside the row they tapped rather than in one place for all five.
     public enum RefusedChange: Equatable, Sendable {
         case defining(Refusal)
         case stopping(Commitment, Refusal)
@@ -108,7 +108,7 @@ public final class CommitmentsScreen {
         case moving(Commitment, Refusal)
     }
 
-    /// Why a change was refused. `nil` from any of the four below means it was kept at the place
+    /// Why a change was refused. `nil` from any of the five below means it was kept at the place
     /// before that call returned.
     public enum Refusal: Equatable, Sendable {
         /// A name that is empty or made only of blank space.

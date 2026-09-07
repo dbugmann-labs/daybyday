@@ -82,11 +82,18 @@ public struct Roster: Hashable, Sendable {
 
     /// Moves `commitment` to `offset`, a place counted over the commitments this roster is
     /// keeping as they stand before the move, running from 0 (before the first of them) to the
-    /// number it is keeping (after the last). Answers `true` and reorders `entries` so that
-    /// `commitment` sits immediately before whichever commitment stood at `offset` among the
-    /// kept ones before the move, or after all of them when `offset` is the number kept. Answers
-    /// `false` and changes nothing when this roster is not keeping `commitment`, or when `offset`
-    /// is below 0 or above the number of commitments kept.
+    /// number it is keeping (after the last). Answers `false` and changes nothing when this
+    /// roster is not keeping `commitment`, or when `offset` is below 0 or above the number of
+    /// commitments kept.
+    ///
+    /// Two offsets name the place `commitment` already has — the one it is at among the kept
+    /// ones, and the one just after that, naming whichever kept commitment already follows it
+    /// (or, when it is the last kept, the number kept) — and on both, nothing is taken out of
+    /// `entries` and nothing in it moves. Every other offset takes `commitment` out of the
+    /// sequence and puts it back immediately before whichever commitment stood at `offset`
+    /// among the kept ones before the move, or after all of them when `offset` is the number
+    /// kept; a stopped or removed commitment lying between is passed rather than pushed. Both
+    /// paths answer `true` and report that the roster moved `commitment`.
     public mutating func move(_ commitment: Commitment, toOffset offset: Int) -> Bool {
         guard let sourceIndex = entries.firstIndex(where: { $0.commitment == commitment }),
             entries[sourceIndex].keptUntil == nil
@@ -117,10 +124,12 @@ public struct Roster: Hashable, Sendable {
 
         // `offset == keptBeforeMove.count` means "after the last of them"; every other offset
         // names the commitment that stood there before the move, before which the moved
-        // commitment is put back. Neither lookup can miss: the guard above ruled out `offset ==
-        // sourceKeptIndex` and `offset == sourceKeptIndex + 1`, so `target` is never the
-        // commitment just removed, and every other member of `keptBeforeMove` is still in
-        // `entries` after that one removal.
+        // commitment is put back. Neither lookup can miss, and not for the same reason.
+        // `keptBeforeMove.last!` cannot trap because `keptBeforeMove` always holds the moved
+        // commitment itself, so it is never empty. `entries.firstIndex(...)!` cannot trap
+        // because the guard above ruled out `offset == sourceKeptIndex` and `offset ==
+        // sourceKeptIndex + 1`, so `target` is never the commitment just removed, and every
+        // other member of `keptBeforeMove` is still in `entries` after that one removal.
         let target = offset == keptBeforeMove.count ? keptBeforeMove.last! : keptBeforeMove[offset]
         let targetIndex = entries.firstIndex(where: { $0.commitment == target.commitment })!
         let destination = offset == keptBeforeMove.count ? targetIndex + 1 : targetIndex
