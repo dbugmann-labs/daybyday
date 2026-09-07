@@ -151,8 +151,9 @@ struct ContentView: View {
             // row removed and another inserted. The array's position is stable across a tap, so
             // it stands in as the identity instead.
             ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset) { _, row in
+                let entry = row.numberEntry(asOf: today())
                 Button {
-                    if let entry = row.numberEntry(asOf: today()) {
+                    if let entry {
                         enteringText = entry.number.map { "\($0)" } ?? ""
                         enteringRow = row
                     } else {
@@ -171,13 +172,13 @@ struct ContentView: View {
                                     .foregroundStyle(.red)
                             }
                         }
-                        if row.isKept || row.numberEntry(asOf: today()) != nil {
+                        if row.isKept || entry != nil {
                             Spacer()
                         }
                         if row.isKept {
                             Image(systemName: "checkmark")
                         }
-                        if row.numberEntry(asOf: today()) != nil {
+                        if entry != nil {
                             Image(systemName: "chevron.right")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
