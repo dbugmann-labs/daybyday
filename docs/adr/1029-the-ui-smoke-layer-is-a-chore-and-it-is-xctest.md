@@ -107,36 +107,52 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
   25-40s on the test case, and **260-450s on simulator setup** — all of it serial, all of it
   after the build had finished and the runner had nothing else to do.
 
-  **Amended 2026-09-07: the step is about a minute, and this was a defect rather than a price.**
-  Two causes, both measured here before they were changed:
+  **Amended 2026-09-07. Part of that was a defect and part of it is a price, and the amendment
+  that matters is being able to tell them apart.** The job now has a step that does nothing but
+  boot the simulator, so its cost is on the page instead of inside the UI test's number:
 
-  - `xcodebuild test` was **cloning the device** — `Clone 1 of iPhone 17 Pro` in both runs'
-    logs — because the scheme `xcodebuild` derives parallelises by default and there is no
-    `.xcscheme` in the tree to say otherwise. On a runner, whose devices have never been booted
-    since the image was built, that is a cold first boot of the clone stacked on a cold first
-    boot of the source. One test on one device buys nothing from a clone.
-    `-parallel-testing-enabled NO` declines it: 47.7s to 28.3s here, cold simulator, warm build.
-  - **The boot had nothing to overlap.** Split into `build-for-testing` and
-    `test-without-building`, with `simctl boot` started at the top of the job, the boot runs
-    underneath `swift test` and the build and `bootstatus -b` is the join — 28.3s to 17.0s here.
-    `simctl boot` returns in about half a second and the boot proceeds inside
-    `CoreSimulatorService`, so it is not a child of the step's shell and the runner's
-    orphan-process cleanup does not touch it.
+  - **The defect: `xcodebuild test` was cloning the device** — `Clone 1 of iPhone 17 Pro` in both
+    runs' logs — because the scheme `xcodebuild` derives parallelises by default and there is no
+    `.xcscheme` in the tree to say otherwise. One test on one device buys nothing from a clone.
+    `-parallel-testing-enabled NO` declines it: 47.7s to 28.3s locally, and on the runner the
+    test operation fell from 284.6s and 492.4s to 76.1s, 96.5s and 112.6s across three runs.
+  - **The price: the cold first boot of the simulator is 2m06s** and nothing here can make it
+    cheaper. A runner's devices have never been booted since the image was built. This was always
+    being paid — it is most of what this record originally booked as the UI test being slow.
+  - **Overlapping the price with `swift test` does not work, and that was tried.** With
+    `simctl boot` started at the top of the job the boot does run underneath the other steps —
+    the command returns in about half a second and the boot proceeds inside
+    `CoreSimulatorService`, surviving the runner's orphan-process cleanup between steps, both
+    verified. It buys nothing: over three runs `swift test`, untouched by the change, took 436s,
+    245s and 384s against a 34-76s baseline over the eight runs before it, while the smoke step
+    fell by about the same amount. **A `macos-26` runner has no spare capacity to absorb a
+    simulator boot.** So the boot is serial and visible rather than concurrent and hidden.
 
   The separate compile step folded into the same `build-for-testing` while this was being done.
   It had been building a universal `x86_64 arm64` binary against `generic/platform=iOS Simulator`
   — 43-48s on the runner, confirmed with `lipo -archs` — and the test step then compiled the same
-  sources again for the device it was about to run on. **That narrows the compile check twice**,
-  and the narrowings are stated rather than hidden: the shell is now compiled for arm64 only, and
-  compiled with testability enabled. For pure Swift against one SDK neither changes what "does the
-  shell still compile against the kit" can catch, and the runners are arm64. If a Story ever makes
-  the shell arch-sensitive, that is the trigger to split the step back out.
+  sources again for the device it was about to run on. It measured 27s in that shape. **That
+  narrows the compile check twice**, and the narrowings are stated rather than hidden: the shell
+  is now compiled for arm64 only, and compiled with testability enabled. For pure Swift against
+  one SDK neither changes what "does the shell still compile against the kit" can catch, and the
+  runners are arm64. If a Story ever makes the shell arch-sensitive, that is the trigger to split
+  the step back out.
+
+  **What is honestly still open is the job total.** The defect is fixed and the price is not, so
+  the `swift` job is still five to nine minutes whenever the smoke test runs, and one run cannot
+  tell these shapes apart: across the runs read for this amendment `swift test` alone ranged 34-76s
+  and the compile step 27-99s on identical code. The remaining lever is a second job — the boot
+  costs the same but stops being serial with `swift test` — and it is not taken here, because the
+  `main` ruleset requires `verify` and `swift` by name and a new job would not block a merge until
+  the owner adds it. That is a repository setting, which is rule 6's, not an agent's.
 
   **What this record got wrong is worth naming, because the shape recurs.** It measured one cold
   run of a step whose cost is dominated by a simulator boot, wrote the number down as a property
   of the step, and built an argument on it. Simulator boot on a shared runner is variable by
   nature — 260s and 450s in the same week — so a single measurement of it is a sample, not a
   price. Nothing here was recalled rather than run; the error was treating one run as the answer.
+  The chore that fixed it repeated the shape once, betting on an overlap that three runs then
+  disproved, which is why the disproof is written down above rather than quietly reverted.
 
   **So it is gated twice, and this is the part of the record most likely to be revisited.** It is
   skipped while a PR is a draft — the idiom checks 4, 5, 8 and 9 already use, and the reason

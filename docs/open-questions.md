@@ -387,9 +387,10 @@ Things that are built, or deliberately not built, in a state someone will trip o
   **It is gated twice**: skipped while a PR is a draft, and skipped unless the diff reaches
   `src/DayByDay/`, `src/DayByDayKit/Sources/` or the workflow. Nothing merges without it having
   run. The gates were put there because the step cost five minutes a push; on 2026-09-07 it was
-  found to be costing eight and a half, almost all of it a simulator being cloned and cold-booted
-  after the build rather than underneath it, and the rebuild took it to about a minute. The gates
-  stayed — at that price they are thrift rather than necessity.
+  found to be costing eight and a half, and taking it apart showed most of that was never the
+  test: a needless simulator clone, which is gone, and a cold simulator boot of 2m06s, which is
+  not. The gates matter more for that, not less — they are the only thing in the job that can
+  decline to pay a boot.
   `docs/adr/1029-the-ui-smoke-layer-is-a-chore-and-it-is-xctest.md`.
 
 - 2026-09-06 — **the shell no longer swallows the one failure a tick reports.** `DayScreen` now

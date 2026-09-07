@@ -271,8 +271,6 @@ carries the reasoning. Run it yourself with:
 device=$(xcrun simctl list devices available --json \
   | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next(d['udid'] for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')))")
 
-xcrun simctl boot "$device" || true
-
 xcodebuild build-for-testing -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
   -destination "platform=iOS Simulator,id=${device}" -only-testing:DayByDayUITests \
   -enableCodeCoverage NO COMPILER_INDEX_STORE_ENABLE=NO
@@ -284,11 +282,11 @@ xcodebuild test-without-building -project src/DayByDay/DayByDay.xcodeproj -schem
   -parallel-testing-enabled NO -enableCodeCoverage NO
 ```
 
-That takes **38.8 seconds cold** here — no derived data, every simulator shut down — and ends in
+That takes **40.2 seconds cold** here — no derived data, every simulator shut down — and ends in
 `** TEST SUCCEEDED **`. It does not replace looking at the app: it proves the screen was not
 blank, and nothing about whether what is on it is right.
 
-**It is five commands rather than one because of where the time goes, and it is worth knowing
+**It is four commands rather than one because of where the time goes, and it is worth knowing
 why before anyone simplifies it back.** The single `xcodebuild test` this replaced took 61.3s
 here and 5-8½ minutes on CI, and in both cases almost none of that was the test. Measured
 2026-09-07:
@@ -303,13 +301,26 @@ here and 5-8½ minutes on CI, and in both cases almost none of that was the test
 
 `xcodebuild test` clones the simulator before running a UI test — the log says
 `Clone 1 of iPhone 17 Pro` — because the scheme it derives parallelises by default and there is
-no `.xcscheme` in the tree to say otherwise. For one test on one device the clone is a second
-cold boot bought for nothing, and `-parallel-testing-enabled NO` is what declines it. Splitting
-`test` into `build-for-testing` and `test-without-building` is what lets the boot happen
-underneath the build instead of after it; `simctl boot` returns in about half a second and the
-boot carries on inside `CoreSimulatorService`, so it survives into a later shell, and
-`bootstatus -b` is the wait. Coverage is off because nothing reads it — the derived scheme was
-compiling the kit with `-profile-generate -profile-coverage-mapping` for no reader.
+no `.xcscheme` in the tree to say otherwise. For one test on one device the clone is a boot
+bought for nothing, and `-parallel-testing-enabled NO` is what declines it. Splitting `test`
+into `build-for-testing` and `test-without-building` is what puts the boot between them, where
+`bootstatus -b` can wait for it and be timed. Coverage is off because nothing reads it — the
+derived scheme was compiling the kit with `-profile-generate -profile-coverage-mapping` for no
+reader.
+
+**On a runner the boot is the whole story, and here it is nearly free.** These simulators have
+been booted hundreds of times on this machine, so `bootstatus -b` returns in seconds. On a
+`macos-26` runner the device has never been booted since the image was built, and the same
+command takes **2m06s** — measured on 2026-09-07 once it was given a step of its own, which is
+the first time anybody could see it. That number was always being paid; ADR-1029 booked it as
+the UI test being slow, because it was hidden inside `xcodebuild test` along with the clone.
+
+**Do not try to hide it behind `swift test`.** Starting the boot at the top of the job with
+`simctl boot` does work — the command returns in about half a second and the boot carries on
+inside `CoreSimulatorService`, surviving into later steps — and it buys nothing. Over three runs
+`swift test` took 436s, 245s and 384s against a 34-76s baseline, while the smoke step fell by
+about the same amount: a runner has no spare capacity to absorb a simulator boot, and all the
+overlap achieves is moving the cost into a step that then lies about what it measures.
 
 **Not cloning means the app is left installed on that device**, with whatever it wrote under
 `Library/Application Support/DayByDay/`, exactly as `pnpm run phone` leaves it on a phone. The
