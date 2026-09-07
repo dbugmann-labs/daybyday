@@ -18,7 +18,7 @@ public struct Roster: Hashable, Sendable {
         entries = []
     }
 
-    /// The commitments this roster keeps, in the order they were taken on. A commitment it has
+    /// The commitments this roster keeps, in the order it holds them. A commitment it has
     /// stopped keeping is not among them.
     public var commitments: [Commitment] {
         entries.compactMap { $0.keptUntil == nil ? $0.commitment : nil }
@@ -80,8 +80,66 @@ public struct Roster: Hashable, Sendable {
         return true
     }
 
-    /// The commitments this roster had not stopped keeping on `date`, in the order they were
-    /// taken on. It applies no other rule: a commitment's own day it is kept from and its
+    /// Moves `commitment` to `offset`, a place counted over the commitments this roster is
+    /// keeping as they stand before the move, running from 0 (before the first of them) to the
+    /// number it is keeping (after the last). Answers `false` and changes nothing when this
+    /// roster is not keeping `commitment`, or when `offset` is below 0 or above the number of
+    /// commitments kept.
+    ///
+    /// Two offsets name the place `commitment` already has — the one it is at among the kept
+    /// ones, and the one just after that, naming whichever kept commitment already follows it
+    /// (or, when it is the last kept, the number kept) — and on both, nothing is taken out of
+    /// `entries` and nothing in it moves. Every other offset takes `commitment` out of the
+    /// sequence and puts it back immediately before whichever commitment stood at `offset`
+    /// among the kept ones before the move, or after all of them when `offset` is the number
+    /// kept; a stopped or removed commitment lying between is passed rather than pushed. Both
+    /// paths answer `true` and report that the roster moved `commitment`.
+    public mutating func move(_ commitment: Commitment, toOffset offset: Int) -> Bool {
+        guard let sourceIndex = entries.firstIndex(where: { $0.commitment == commitment }),
+            entries[sourceIndex].keptUntil == nil
+        else {
+            return false
+        }
+
+        let keptBeforeMove = entries.filter { $0.keptUntil == nil }
+        guard (0...keptBeforeMove.count).contains(offset) else {
+            return false
+        }
+
+        let sourceKeptIndex = keptBeforeMove.firstIndex(where: { $0.commitment == commitment })!
+
+        // Offset `sourceKeptIndex` names the moved commitment itself, and offset
+        // `sourceKeptIndex + 1` names the commitment that already follows it among the ones kept
+        // — or, where the moved commitment is the last one kept, is the number kept, again where
+        // it already stands. Neither asks a kept commitment to stand anywhere new, so nothing in
+        // the sequence moves, and a stopped or removed commitment lying between the two is not
+        // passed because nothing goes by it. Checking this before touching `entries` is what
+        // keeps that true: computing a destination from a post-removal index, as the general case
+        // below does, would walk the moved commitment past exactly such a commitment.
+        guard offset != sourceKeptIndex, offset != sourceKeptIndex + 1 else {
+            return true
+        }
+
+        let entry = entries.remove(at: sourceIndex)
+
+        // `offset == keptBeforeMove.count` means "after the last of them"; every other offset
+        // names the commitment that stood there before the move, before which the moved
+        // commitment is put back. Neither lookup can miss, and not for the same reason.
+        // `keptBeforeMove.last!` cannot trap because `keptBeforeMove` always holds the moved
+        // commitment itself, so it is never empty. `entries.firstIndex(...)!` cannot trap
+        // because the guard above ruled out `offset == sourceKeptIndex` and `offset ==
+        // sourceKeptIndex + 1`, so `target` is never the commitment just removed, and every
+        // other member of `keptBeforeMove` is still in `entries` after that one removal.
+        let target = offset == keptBeforeMove.count ? keptBeforeMove.last! : keptBeforeMove[offset]
+        let targetIndex = entries.firstIndex(where: { $0.commitment == target.commitment })!
+        let destination = offset == keptBeforeMove.count ? targetIndex + 1 : targetIndex
+        entries.insert(entry, at: destination)
+
+        return true
+    }
+
+    /// The commitments this roster had not stopped keeping on `date`, in the order it holds
+    /// them. It applies no other rule: a commitment's own day it is kept from and its
     /// schedule are the commitment's answer, not the roster's. A removed commitment answers
     /// exactly as a stopped one does — invisible to removal is the whole point.
     public func commitments(on date: CalendarDate) -> [Commitment] {

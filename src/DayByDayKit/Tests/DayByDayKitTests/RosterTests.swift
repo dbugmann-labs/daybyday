@@ -852,3 +852,410 @@ func removingACommitmentLeavesEveryEarlierDateAnsweringAsItDid() {
     #expect(before == after)
     #expect(after.allSatisfy { $0 == [gym] })
 }
+
+@Test("moving a commitment to the front puts it before every commitment the roster is keeping")
+func movingACommitmentToTheFrontPutsItBeforeEveryCommitmentTheRosterIsKeeping() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+
+    let moved = roster.move(journaling, toOffset: 0)
+
+    #expect(moved)
+    #expect(roster.commitments == [journaling, waterPlants, gym])
+}
+
+@Test("moving a commitment to the end puts it after every commitment the roster is keeping")
+func movingACommitmentToTheEndPutsItAfterEveryCommitmentTheRosterIsKeeping() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+
+    let moved = roster.move(waterPlants, toOffset: 3)
+
+    #expect(moved)
+    #expect(roster.commitments == [gym, journaling, waterPlants])
+}
+
+@Test("an offset is counted over the commitments the roster is keeping as they stand before the move")
+func anOffsetIsCountedOverTheCommitmentsTheRosterIsKeepingAsTheyStandBeforeTheMove() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.move(waterPlants, toOffset: 2)
+
+    #expect(roster.commitments == [gym, waterPlants, journaling])
+
+    var alike = Roster()
+    _ = alike.add(waterPlants)
+    _ = alike.add(gym)
+    _ = alike.add(journaling)
+    _ = alike.move(waterPlants, toOffset: 3)
+
+    #expect(alike.commitments == [gym, journaling, waterPlants])
+}
+
+@Test("a stopped commitment between the two places is passed rather than pushed")
+func aStoppedCommitmentBetweenTheTwoPlacesIsPassedRatherThanPushed() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.add(reading)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let moved = roster.move(waterPlants, toOffset: 2)
+
+    #expect(moved)
+    #expect(roster.commitments == [journaling, waterPlants, reading])
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+            == [gym, journaling, waterPlants, reading])
+
+    var removedInstead = Roster()
+    _ = removedInstead.add(waterPlants)
+    _ = removedInstead.add(gym)
+    _ = removedInstead.add(journaling)
+    _ = removedInstead.add(reading)
+    _ = removedInstead.remove(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    _ = removedInstead.move(waterPlants, toOffset: 2)
+
+    #expect(
+        removedInstead.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+            == [gym, journaling, waterPlants, reading])
+}
+
+@Test("an offset of nothing at all puts a commitment before the first one kept and not before a stopped one")
+func anOffsetOfNothingAtAllPutsACommitmentBeforeTheFirstOneKeptAndNotBeforeAStoppedOne() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.retire(waterPlants, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let moved = roster.move(journaling, toOffset: 0)
+
+    #expect(moved)
+    #expect(roster.commitments == [journaling, gym])
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+            == [waterPlants, journaling, gym])
+}
+
+@Test("two offsets leave a commitment where it already is, and both are accepted")
+func twoOffsetsLeaveACommitmentWhereItAlreadyIsAndBothAreAccepted() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    func neverAsked() -> Roster {
+        var roster = Roster()
+        _ = roster.add(waterPlants)
+        _ = roster.add(gym)
+        _ = roster.add(journaling)
+        return roster
+    }
+
+    var atItsOwnOffset = neverAsked()
+    let movedAtItsOwnOffset = atItsOwnOffset.move(gym, toOffset: 1)
+
+    var atOffsetJustAfter = neverAsked()
+    let movedAtOffsetJustAfter = atOffsetJustAfter.move(gym, toOffset: 2)
+
+    #expect(movedAtItsOwnOffset)
+    #expect(movedAtOffsetJustAfter)
+    #expect(atItsOwnOffset.commitments == [waterPlants, gym, journaling])
+    #expect(atOffsetJustAfter.commitments == [waterPlants, gym, journaling])
+    #expect(atItsOwnOffset == neverAsked())
+    #expect(atOffsetJustAfter == neverAsked())
+}
+
+@Test(
+    "the offset just after a commitment's own passes nothing, with a stopped or removed commitment lying between"
+)
+func theOffsetJustAfterACommitmentsOwnPassesNothingWithAStoppedOrRemovedCommitmentLyingBetween() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+
+    func neverAsked(removingJournaling: Bool) -> Roster {
+        var roster = Roster()
+        _ = roster.add(waterPlants)
+        _ = roster.add(gym)
+        _ = roster.add(journaling)
+        _ = roster.add(reading)
+        if removingJournaling {
+            _ = roster.remove(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+        } else {
+            _ = roster.retire(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+        }
+        return roster
+    }
+
+    // "Gym" is kept second among the commitments kept — "Water plants", "Gym", "Reading" — with
+    // "Journaling" stopped or removed and lying between it and "Reading", the one that follows it.
+    // Offset 2 names "Reading", the offset just after "Gym"'s own, so this is a no-op: nothing
+    // passes "Journaling", stopped or removed alike.
+    var withStopped = neverAsked(removingJournaling: false)
+    let movedWithStopped = withStopped.move(gym, toOffset: 2)
+
+    #expect(movedWithStopped)
+    #expect(withStopped == neverAsked(removingJournaling: false))
+
+    var withRemoved = neverAsked(removingJournaling: true)
+    let movedWithRemoved = withRemoved.move(gym, toOffset: 2)
+
+    #expect(movedWithRemoved)
+    #expect(withRemoved == neverAsked(removingJournaling: true))
+}
+
+@Test("a roster keeping one commitment accepts both the offsets it has")
+func aRosterKeepingOneCommitmentAcceptsBothTheOffsetsItHas() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    func neverAsked() -> Roster {
+        var roster = Roster()
+        _ = roster.add(gym)
+        return roster
+    }
+
+    var atOffsetZero = neverAsked()
+    let movedAtOffsetZero = atOffsetZero.move(gym, toOffset: 0)
+
+    var atOffsetOne = neverAsked()
+    let movedAtOffsetOne = atOffsetOne.move(gym, toOffset: 1)
+
+    #expect(movedAtOffsetZero)
+    #expect(movedAtOffsetOne)
+    #expect(atOffsetZero == neverAsked())
+    #expect(atOffsetOne == neverAsked())
+
+    var atOffsetTwo = neverAsked()
+    let movedAtOffsetTwo = atOffsetTwo.move(gym, toOffset: 2)
+
+    #expect(!movedAtOffsetTwo)
+}
+
+@Test("moving a commitment the roster is not keeping says it was not moved and leaves the roster as it was")
+func movingACommitmentTheRosterIsNotKeepingSaysItWasNotMovedAndLeavesTheRosterAsItWas() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+
+    func neverAsked() -> Roster {
+        var roster = Roster()
+        _ = roster.add(waterPlants)
+        _ = roster.add(gym)
+        _ = roster.add(journaling)
+        _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+        _ = roster.remove(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+        return roster
+    }
+
+    var roster = neverAsked()
+    let movedGym = roster.move(gym, toOffset: 0)
+
+    #expect(!movedGym)
+    #expect(roster == neverAsked())
+
+    var alsoJournaling = neverAsked()
+    let movedJournaling = alsoJournaling.move(journaling, toOffset: 0)
+
+    var alsoRun = neverAsked()
+    let movedRun = alsoRun.move(run, toOffset: 0)
+
+    #expect(!movedJournaling)
+    #expect(alsoJournaling == neverAsked())
+    #expect(!movedRun)
+    #expect(alsoRun == neverAsked())
+}
+
+@Test("an offset below zero and one above the number of commitments kept are both refused")
+func anOffsetBelowZeroAndOneAboveTheNumberOfCommitmentsKeptAreBothRefused() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    func neverAsked() -> Roster {
+        var roster = Roster()
+        _ = roster.add(waterPlants)
+        _ = roster.add(gym)
+        return roster
+    }
+
+    var roster = neverAsked()
+    let movedBelowZero = roster.move(gym, toOffset: -1)
+
+    #expect(!movedBelowZero)
+    #expect(roster == neverAsked())
+
+    var alsoAbove = neverAsked()
+    let movedAboveTheCount = alsoAbove.move(gym, toOffset: 3)
+
+    #expect(!movedAboveTheCount)
+    #expect(alsoAbove == neverAsked())
+}
+
+@Test("moving a commitment moves no day and changes no commitment")
+func movingACommitmentMovesNoDayAndChangesNoCommitment() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let waterPlants = Commitment(
+        name: "Water plants", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let gym = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
+    let journaling = Commitment(
+        name: "Journaling", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 6, day: 1)!)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.retire(waterPlants, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let moved = roster.move(journaling, toOffset: 0)
+    let onNextDay = roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!)
+
+    #expect(moved)
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+            == [waterPlants, journaling, gym])
+    #expect(onNextDay == [journaling, gym])
+
+    let gymFromRoster = onNextDay.first { $0.name == "Gym" }!
+    #expect(gymFromRoster.isDue(on: CalendarDate(year: 2026, month: 3, day: 2)!))
+    #expect(!gymFromRoster.isDue(on: CalendarDate(year: 2026, month: 3, day: 3)!))
+}
+
+@Test("moving a commitment on a copy of a roster leaves the roster it was copied from unchanged")
+func movingACommitmentOnACopyOfARosterLeavesTheRosterItWasCopiedFromUnchanged() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var original = Roster()
+    _ = original.add(waterPlants)
+    _ = original.add(gym)
+
+    var copy = original
+    _ = copy.move(gym, toOffset: 0)
+
+    #expect(copy.commitments == [gym, waterPlants])
+    #expect(original.commitments == [waterPlants, gym])
+    #expect(original != copy)
+}
+
+@Test("a commitment moved and then stopped is taken up again in the place it was moved to")
+func aCommitmentMovedAndThenStoppedIsTakenUpAgainInThePlaceItWasMovedTo() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let journalingAgain = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.move(journaling, toOffset: 0)
+    _ = roster.retire(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let takenUp = roster.add(journalingAgain)
+
+    #expect(takenUp)
+    #expect(roster.commitments == [journalingAgain, waterPlants, gym])
+}
+
+@Test("a roster answers about a date in the order it was moved into")
+func aRosterAnswersAboutADateInTheOrderItWasMovedInto() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    _ = roster.move(journaling, toOffset: 0)
+
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+            == [journaling, waterPlants, gym])
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!)
+            == [journaling, waterPlants])
+}
+
+@Test("removing a commitment that has been moved keeps it in the place it was moved to")
+func removingACommitmentThatHasBeenMovedKeepsItInThePlaceItWasMovedTo() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.move(journaling, toOffset: 0)
+
+    let removed = roster.remove(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(removed)
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+            == [journaling, waterPlants, gym])
+    #expect(roster.commitments == [waterPlants, gym])
+}

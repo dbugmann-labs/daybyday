@@ -912,3 +912,96 @@ func aRosterStoreHoldingACommitmentRemovedWithNoDayItWasKeptUntilIsRefused() thr
     }
     #expect(try Data(contentsOf: place) == bytes)
 }
+
+@Test("a commitment moved through a roster store is read back in the place it was moved to")
+func aCommitmentMovedThroughARosterStoreIsReadBackInThePlaceItWasMovedTo() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(waterPlants)
+    try store.add(gym)
+    try store.add(journaling)
+    let moved = try store.move(journaling, toOffset: 0)
+
+    let later = try RosterStore(at: place)
+
+    #expect(moved)
+    #expect(later.roster.commitments == [journaling, waterPlants, gym])
+    var expected = Roster()
+    _ = expected.add(journaling)
+    _ = expected.add(waterPlants)
+    _ = expected.add(gym)
+    #expect(later.roster == expected)
+}
+
+@Test("a move a roster store refuses is reported and nothing at its place changes")
+func aMoveARosterStoreRefusesIsReportedAndNothingAtItsPlaceChanges() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(waterPlants)
+    try store.add(gym)
+    let moved = try store.move(run, toOffset: 0)
+
+    let later = try RosterStore(at: place)
+
+    #expect(!moved)
+    #expect(later.roster.commitments == [waterPlants, gym])
+}
+
+@Test("a move that leaves a roster as it was keeps nothing at its place")
+func aMoveThatLeavesARosterAsItWasKeepsNothingAtItsPlace() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(waterPlants)
+    try store.add(gym)
+    let bytesBeforeMove = try Data(contentsOf: place)
+
+    let moved = try store.move(gym, toOffset: 2)
+
+    #expect(moved)
+    #expect(try Data(contentsOf: place) == bytesBeforeMove)
+    #expect(store.roster.commitments == [waterPlants, gym])
+}
+
+@Test("a move that cannot be kept is refused and the roster a store reports does not move")
+func aMoveThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let place = directory.appendingPathComponent("roster.json")
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(waterPlants)
+    try store.add(gym)
+
+    try FileManager.default.removeItem(at: directory)
+    try Data().write(to: directory)
+
+    #expect(throws: RosterStoreError.cannotWrite(at: place)) {
+        try store.move(gym, toOffset: 0)
+    }
+
+    var expected = Roster()
+    _ = expected.add(waterPlants)
+    _ = expected.add(gym)
+    #expect(store.roster == expected)
+}
