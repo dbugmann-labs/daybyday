@@ -114,7 +114,7 @@ same shape as `keepAgain`, and `RefusedChange` gains a fifth case, `moving(Commi
   and writes nothing, asserted on the file's bytes.
 - [x] 5.7 `a move a commitments screen could not keep leaves both its lists as they were`
 - [x] 5.8 `a commitments screen shown again lists what it keeps in the order it was moved into`
-- [ ] 5.9 `a commitment moved and then stopped through a commitments screen keeps the place it was
+- [x] 5.9 `a commitment moved and then stopped through a commitments screen keeps the place it was
   moved to`
 - [x] 5.10 `what a commitments screen has stopped is in the order its roster holds them` — the stopped
   list is computed from `roster.entries`, so this is green off § 2 alone; it is the test that says
