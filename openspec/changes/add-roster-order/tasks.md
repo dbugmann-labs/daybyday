@@ -123,7 +123,7 @@ same shape as `keepAgain`, and `RefusedChange` gains a fifth case, `moving(Commi
   neither confirmation slot. Do not touch `awaitingConfirmation` or `awaitingRemoval` in `move`.
 - [x] 5.12 `a commitments screen that cannot read its roster does nothing when it is asked to move a
   commitment`
-- [ ] 5.13 `a commitments screen holds a refused move against the commitment it was asked to move` —
+- [x] 5.13 `a commitments screen holds a refused move against the commitment it was asked to move` —
   the fifth `RefusedChange` case.
 - [ ] 5.14 `a commitments screen holds nothing against a move that asks for no change at all`
 - [ ] 5.15 `what a commitments screen holds about a refused change ends when a move is kept`
