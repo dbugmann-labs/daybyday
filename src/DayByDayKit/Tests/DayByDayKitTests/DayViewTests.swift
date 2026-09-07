@@ -1376,3 +1376,27 @@ func aRowOffersTheNumberEntryWhetherOrNotTheDayIsAlreadyKept() {
     #expect(unkeptView.rows[0].numberEntry(asOf: monday) != nil)
     #expect(keptView.rows[0].numberEntry(asOf: monday) != nil)
 }
+
+@Test("a number entry says the range its commitment declares as a hint")
+func aNumberEntrySaysTheRangeItsCommitmentDeclaresAsAHint() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 40, highest: 150)!))!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)!))!
+    let fractional = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 40.5, highest: 150.25)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [weight, mood], on: monday, in: history)
+    let fractionalDayView = DayView(of: [fractional], on: monday, in: history)
+
+    #expect(dayView.rows[0].numberEntry(asOf: monday)?.hint == "40–150")
+    #expect(dayView.rows[1].numberEntry(asOf: monday)?.hint == "1–10")
+    #expect(fractionalDayView.rows[0].numberEntry(asOf: monday)?.hint == "40.5–150.25")
+}

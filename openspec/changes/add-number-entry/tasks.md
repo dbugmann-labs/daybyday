@@ -68,7 +68,7 @@ The hint is composed in this package's own words, with an **en dash** (`–`, U+
 around it, and each bound said by `Decimal`'s own description. There is no `NumberFormatter` and no
 `Locale` anywhere in it (ADR-1004, ADR-1022).
 
-- [ ] 3.1 `a number entry says the range its commitment declares as a hint` — three ranges, including
+- [x] 3.1 `a number entry says the range its commitment declares as a hint` — three ranges, including
   one with fractional bounds; assert the strings exactly.
 - [ ] 3.2 `a number entry of a commitment that declares no range says no hint`
 - [ ] 3.3 `a number entry says the number the history holds for that commitment on that date` — the

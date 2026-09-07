@@ -15,6 +15,12 @@ public struct DayView: Hashable, Sendable {
         let date: CalendarDate
         public let isKept: Bool
 
+        /// The number the history the day view was formed from holds for this row's commitment
+        /// on this row's date, or `nil` where it holds none. Not given back by anything but
+        /// `numberEntry(asOf:)`; see `design.md` § *A row holds the number and does not give it
+        /// out*.
+        let number: Decimal?
+
         public var name: String { commitment.name }
 
         /// The rhythm this row's commitment runs on, in words. See
@@ -37,11 +43,11 @@ public struct DayView: Hashable, Sendable {
                 return nil
             }
 
-            guard case .number = commitment.kind else {
+            guard case .number(let range) = commitment.kind else {
                 return nil
             }
 
-            return NumberEntry(number: nil, hint: nil)
+            return NumberEntry(number: number, hint: range.map { "\($0.lowest)–\($0.highest)" })
         }
     }
 
@@ -68,7 +74,11 @@ public struct DayView: Hashable, Sendable {
         self.date = date
         self.rows = commitments
             .filter { $0.isDue(on: date) }
-            .map { Row(commitment: $0, date: date, isKept: history.isKept($0, on: date)) }
+            .map {
+                Row(
+                    commitment: $0, date: date, isKept: history.isKept($0, on: date),
+                    number: history.number(for: $0, on: date))
+            }
     }
 
     /// The day view of the calendar date one day before this one's, or `nil` when this day view
