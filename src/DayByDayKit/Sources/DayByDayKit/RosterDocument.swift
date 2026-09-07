@@ -10,7 +10,15 @@ import Foundation
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 2
+    static let currentVersion = 3
+
+    /// The form `removed` was introduced at: forms at or after this one carry it on every entry,
+    /// forms before it never do. Kept apart from `currentVersion` on purpose, for the reason
+    /// `RecordDocument.numbersIntroducedInVersion`'s own comment gives — a fourth form would move
+    /// `currentVersion` to `4` without moving this, and `RosterStore.init(at:)`'s
+    /// shape-against-form guard reads against this constant precisely so raising `currentVersion`
+    /// alone cannot silently change which forms are expected to carry `removed`.
+    static let removalIntroducedInVersion = 3
 
     var version: Int
     var commitments: [RosterEntryRecord]
@@ -21,14 +29,16 @@ struct RosterDocument: Codable {
         commitments = roster.entries.map { entry in
             RosterEntryRecord(
                 commitment: CommitmentRecord(entry.commitment),
-                keptUntil: entry.keptUntil.map(DateRecord.init))
+                keptUntil: entry.keptUntil.map(DateRecord.init),
+                removed: entry.isRemoved)
         }
     }
 
-    /// Re-forms `roster` through `Roster.add` and `Roster.retire`, so every invariant the engine
-    /// has applies to what comes off the disk and a document that could not be a roster is
-    /// refused rather than trusted. `nil` if any one entry in the document could not be formed, or
-    /// if replaying it is refused by `Roster` itself.
+    /// Re-forms `roster` through `Roster.add`, `Roster.retire` and `Roster.remove`, so every
+    /// invariant the engine has applies to what comes off the disk and a document that could not
+    /// be a roster is refused rather than trusted. `nil` if any one entry in the document could
+    /// not be formed, if replaying it is refused by `Roster` itself, or if an entry is held as
+    /// removed with no day it was kept until — a state a roster has never been in.
     func formRoster() -> Roster? {
         var roster = Roster()
         for entry in commitments {
@@ -38,10 +48,20 @@ struct RosterDocument: Codable {
             guard roster.add(commitment) else {
                 return nil
             }
-            if let keptUntilRecord = entry.keptUntil {
-                guard let keptUntil = keptUntilRecord.calendarDate() else {
+            guard let keptUntilRecord = entry.keptUntil else {
+                guard entry.removed != true else {
                     return nil
                 }
+                continue
+            }
+            guard let keptUntil = keptUntilRecord.calendarDate() else {
+                return nil
+            }
+            if entry.removed == true {
+                guard roster.remove(commitment, keptUntil: keptUntil) else {
+                    return nil
+                }
+            } else {
                 guard roster.retire(commitment, keptUntil: keptUntil) else {
                     return nil
                 }
@@ -60,7 +80,13 @@ struct RosterDocumentEnvelope: Decodable {
 
 /// One commitment a roster keeps, and the day it was kept until when the roster has stopped
 /// keeping it. `keptUntil` is absent for a commitment the roster has not stopped keeping.
+/// `removed` is present exactly at forms at or after `RosterDocument.removalIntroducedInVersion`
+/// — `true` for a commitment the roster has removed, `false` for one it has not, and absent
+/// entirely at every form before: presence means "this form", not "this commitment", which is
+/// what lets `RosterStore.init(at:)` check the whole document's shape against its declared
+/// version rather than trusting each entry on its own.
 struct RosterEntryRecord: Codable {
     var commitment: CommitmentRecord
     var keptUntil: DateRecord?
+    var removed: Bool?
 }

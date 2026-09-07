@@ -24,22 +24,22 @@ title **verbatim**, then makes it pass with the smallest change that does. Never
 the first is green (`AGENTS.md` rule 3). Verify each with `cd src/DayByDayKit && swift test`: the
 named test green, every earlier test still green.
 
-- [ ] 2.1 `removing a commitment a roster keeps says so and records the day it was kept until` — the
+- [x] 2.1 `removing a commitment a roster keeps says so and records the day it was kept until` — the
   first test in this change, and the one that adds `isRemoved: Bool` to `Roster.Entry` and
   `public mutating func remove(_:keptUntil:) -> Bool` to `Roster`. `design.md` § *The seam* fixes
   both: the entry's third part is stored and internal, and `remove` is one method taking a date that
   is used only where the roster holds no kept-until day for that commitment yet.
-- [ ] 2.2 `removing a commitment a roster has stopped keeping keeps the day it was already kept until`
+- [x] 2.2 `removing a commitment a roster has stopped keeping keeps the day it was already kept until`
   — the half of `remove` that ignores the date it is handed.
-- [ ] 2.3 `removing one commitment leaves every other where it was`
-- [ ] 2.4 `removing a commitment a roster does not hold says it was not removed and leaves the roster as it was`
-- [ ] 2.5 `removing a commitment already removed says it was not removed and keeps the day first given`
-- [ ] 2.6 `a commitment removed as of the first supported date and one as of the last are both accepted`
-- [ ] 2.7 `a removed commitment answers whether it is due on a date exactly as it did before` — the
+- [x] 2.3 `removing one commitment leaves every other where it was`
+- [x] 2.4 `removing a commitment a roster does not hold says it was not removed and leaves the roster as it was`
+- [x] 2.5 `removing a commitment already removed says it was not removed and keeps the day first given`
+- [x] 2.6 `a commitment removed as of the first supported date and one as of the last are both accepted`
+- [x] 2.7 `a removed commitment answers whether it is due on a date exactly as it did before` — the
   scenario that proves `Commitment` gained nothing, which is ADR-1023's argument and ADR-1035's.
-- [ ] 2.8 `removing a commitment on a copy of a roster leaves the roster it was copied from unchanged`
-- [ ] 2.9 `two rosters differing only in whether a commitment has been removed are different rosters`
-- [ ] 2.10 `a roster that has removed every commitment it holds is not a roster holding nothing` —
+- [x] 2.8 `removing a commitment on a copy of a roster leaves the roster it was copied from unchanged`
+- [x] 2.9 `two rosters differing only in whether a commitment has been removed are different rosters`
+- [x] 2.10 `a roster that has removed every commitment it holds is not a roster holding nothing` —
   the roster half of ADR-1027's obligation; § 8 has the day screen half.
 
 ## 3. `commitment` — the roster's other rules meet the third state
@@ -47,16 +47,16 @@ named test green, every earlier test still green.
 Five scenarios, all in `Tests/DayByDayKitTests/RosterTests.swift`, same one-scenario-one-test rule
 as § 2.
 
-- [ ] 3.1 `offering a commitment the roster has removed takes it up again, in the place it was taken on in`
+- [x] 3.1 `offering a commitment the roster has removed takes it up again, in the place it was taken on in`
   — `add` clears `isRemoved` as well as the kept-until day.
-- [ ] 3.2 `a commitment taken up again after being removed is kept on every date again`
-- [ ] 3.3 `stopping a commitment a roster has removed says it was not stopped and keeps the day it was kept until`
+- [x] 3.2 `a commitment taken up again after being removed is kept on every date again`
+- [x] 3.3 `stopping a commitment a roster has removed says it was not stopped and keeps the day it was kept until`
   — `retire`'s third refusal case.
-- [ ] 3.4 `a removed commitment is in the answer on the day it was kept until and out of it on the next day`
+- [x] 3.4 `a removed commitment is in the answer on the day it was kept until and out of it on the next day`
   — this one may well be green the moment `remove` exists, because `commitments(on:)` already reads
   the kept-until day and nothing else. Write it anyway and say so in the PR: it is the scenario that
   makes the invisibility of removal to a past date a fact rather than a coincidence.
-- [ ] 3.5 `removing a commitment leaves every earlier date answering as it did`
+- [x] 3.5 `removing a commitment leaves every earlier date answering as it did`
 
 ## 4. `commitment` — a roster store keeps a removal and reads the two forms before it
 
@@ -70,23 +70,23 @@ is no migration pass and no rewrite on open. **Read `RecordStore.init(at:)` befo
 this** — the comment above its own guard says why the second constant exists, and this one exists for
 the same reason.
 
-- [ ] 4.1 `a commitment removed through a roster store is read back removed, on the day it was kept until`
+- [x] 4.1 `a commitment removed through a roster store is read back removed, on the day it was kept until`
   — the task that moves the form. `RosterDocument.formRoster()` replays through `Roster.add`,
   `Roster.retire` and now `Roster.remove`, so a document that could not be a roster is still refused
   rather than trusted.
-- [ ] 4.2 `a removal a roster store refuses is reported and nothing at its place changes`
-- [ ] 4.3 `a commitment taken up again through a roster store after being removed is read back kept`
-- [ ] 4.4 `a removal that cannot be kept is refused and the roster a store reports does not move`
-- [ ] 4.5 `a roster kept before a commitment could be removed is read with every commitment not removed`
+- [x] 4.2 `a removal a roster store refuses is reported and nothing at its place changes`
+- [x] 4.3 `a commitment taken up again through a roster store after being removed is read back kept`
+- [x] 4.4 `a removal that cannot be kept is refused and the roster a store reports does not move`
+- [x] 4.5 `a roster kept before a commitment could be removed is read with every commitment not removed`
   — the form-2 read. Build the fixture by hand, as the form-1 fixtures in this file already are;
   do not build it by writing with an older binary.
-- [ ] 4.6 `a roster store declaring a form written before removal and saying something about removal is refused`
+- [x] 4.6 `a roster store declaring a form written before removal and saying something about removal is refused`
   — one half of the shape-against-form guard.
-- [ ] 4.7 `a roster store declaring the form this app writes and saying nothing about removal is refused`
+- [x] 4.7 `a roster store declaring the form this app writes and saying nothing about removal is refused`
   — the other half. Both fixtures are written by hand, as the form-1 fixtures in this file are.
-- [ ] 4.8 `a commitment removed over a roster kept before removal existed is read back removed` — the
+- [x] 4.8 `a commitment removed over a roster kept before removal existed is read back removed` — the
   form-2-in, form-3-out path.
-- [ ] 4.9 `a roster store holding a commitment removed with no day it was kept until is refused` — the
+- [x] 4.9 `a roster store holding a commitment removed with no day it was kept until is refused` — the
   one new way a *roster* can fail to be formed, as against the two above, which are ways a *form* can
   fail to be the shape it declares. This is the reason `remove` is replayed through `Roster` rather
   than the field being read straight into an entry.
@@ -96,20 +96,20 @@ the same reason.
 Settled answer 3, ADR-1023 amended. Two existing tests change what they assert and **keep their
 names**; two new scenarios follow. All in `Tests/DayByDayKitTests/CommitmentsScreenTests.swift`.
 
-- [ ] 5.1 Rewrite the assertions of `a commitment stopped through a commitments screen is kept until
+- [x] 5.1 Rewrite the assertions of `a commitment stopped through a commitments screen is kept until
   the day the screen was handed` (line 699–700 as it stands) to the delta's — "Gym" answered on
   Sunday 30 August 2026, nothing on Monday 31 August 2026, nothing on Tuesday 1 September 2026 —
   watch it go red, then make it green by having `confirmStopKeeping` retire as of the day **before**
   `dayToKeepFrom`, falling back to `dayToKeepFrom` itself where the calendar has no day before it.
   **Do not rename this test.** Its title is wrong from here on and `design.md` § *Three scenario
   titles that are now wrong* holds the measured reason it cannot be dropped.
-- [ ] 5.2 Rewrite the assertions of `a commitments screen shown again on a later day stops a
+- [x] 5.2 Rewrite the assertions of `a commitments screen shown again on a later day stops a
   commitment as of that later day` (line 1099 as it stands) to name Monday 31 August 2026 rather
   than Tuesday 1 September 2026, and confirm it is green off 5.1's change alone. If any **other**
   test in the package goes red at this point, stop and report it: `design.md` names these two as the
   only ones whose assertions move, measured 2026-09-07.
 - [ ] 5.3 `a commitment defined and stopped on one day through a commitments screen is kept on no day at all`
-- [ ] 5.4 `a commitments screen handed the first supported date stops a commitment as of that day` —
+- [x] 5.4 `a commitments screen handed the first supported date stops a commitment as of that day` —
   the calendar floor, and the one place `CalendarDate.adding(days: -1)` answers `nil`.
 
 ## 6. `commitment` — a commitments screen removes a commitment on a typed-back name
@@ -120,45 +120,45 @@ Eighteen scenarios, all in `Tests/DayByDayKitTests/CommitmentsScreenTests.swift`
 `nameTypedBack: String` (settable, so the shell binds to it) and `nameTypedBackMatches: Bool`
 (computed). `RefusedChange` gains a fourth case, `removing(Commitment, Refusal)`.
 
-- [ ] 6.1 `asking a commitments screen to remove a commitment changes nothing until it is confirmed`
-- [ ] 6.2 `a commitments screen says a name typed back matches only when it is the commitment's name`
-- [ ] 6.3 `a name typed back with blank space at either end matches, and one differing in case does not`
-- [ ] 6.4 `a name typed back differing in blank space inside the name does not match`
-- [ ] 6.5 `a commitment whose name ends in a space is removed by typing the name without it` — the
+- [x] 6.1 `asking a commitments screen to remove a commitment changes nothing until it is confirmed`
+- [x] 6.2 `a commitments screen says a name typed back matches only when it is the commitment's name`
+- [x] 6.3 `a name typed back with blank space at either end matches, and one differing in case does not`
+- [x] 6.4 `a name typed back differing in blank space inside the name does not match`
+- [x] 6.5 `a commitment whose name ends in a space is removed by typing the name without it` — the
   scenario `design.md` § *Blank space is trimmed from both sides of the comparison* exists for. Trim
   both the typed name and the commitment's name; trimming only the typed one makes this commitment
   unremovable.
-- [ ] 6.6 `a removal confirmed on a name that does not match changes nothing and refuses nothing`
-- [ ] 6.7 `a removal confirmed with nothing awaiting removal changes nothing`
-- [ ] 6.8 `a kept commitment removed through a commitments screen is kept until the day before the one the screen was handed`
+- [x] 6.6 `a removal confirmed on a name that does not match changes nothing and refuses nothing`
+- [x] 6.7 `a removal confirmed with nothing awaiting removal changes nothing`
+- [x] 6.8 `a kept commitment removed through a commitments screen is kept until the day before the one the screen was handed`
   — the same day-before helper § 5 introduced; do not write a second one.
-- [ ] 6.9 `a stopped commitment removed through a commitments screen keeps the day it was already kept until`
-- [ ] 6.10 `a commitment removed through a commitments screen is in neither of its lists`
-- [ ] 6.11 `a removal a commitments screen has been asked for and then cancelled changes nothing`
-- [ ] 6.12 `a commitments screen asked to remove a second commitment awaits removal of that one only`
-- [ ] 6.13 `a commitments screen asked to remove a commitment on neither of its lists does nothing`
-- [ ] 6.14 `a removal a commitments screen could not keep leaves both its lists as they were`
-- [ ] 6.15 `asking a commitments screen to remove a commitment leaves no stop awaiting confirmation`
-- [ ] 6.16 `asking a commitments screen to stop keeping a commitment leaves nothing awaiting removal`
+- [x] 6.9 `a stopped commitment removed through a commitments screen keeps the day it was already kept until`
+- [x] 6.10 `a commitment removed through a commitments screen is in neither of its lists`
+- [x] 6.11 `a removal a commitments screen has been asked for and then cancelled changes nothing`
+- [x] 6.12 `a commitments screen asked to remove a second commitment awaits removal of that one only`
+- [x] 6.13 `a commitments screen asked to remove a commitment on neither of its lists does nothing`
+- [x] 6.14 `a removal a commitments screen could not keep leaves both its lists as they were`
+- [x] 6.15 `asking a commitments screen to remove a commitment leaves no stop awaiting confirmation`
+- [x] 6.16 `asking a commitments screen to stop keeping a commitment leaves nothing awaiting removal`
   — the other half of 6.15. Two slots, mutually exclusive by rule; `design.md` § *Two confirmation
   slots* says why not one slot with a discriminator.
-- [ ] 6.17 `a commitments screen shown again leaves nothing awaiting removal and nothing typed back`
-- [ ] 6.18 `a commitments screen handed the first supported date removes a kept commitment as of that day`
+- [x] 6.17 `a commitments screen shown again leaves nothing awaiting removal and nothing typed back`
+- [x] 6.18 `a commitments screen handed the first supported date removes a kept commitment as of that day`
 
 ## 7. `commitment` — the screen's other rules meet removal
 
 Eight scenarios in `Tests/DayByDayKitTests/CommitmentsScreenTests.swift`.
 
-- [ ] 7.1 `a commitments screen lists a commitment its roster has removed in neither of its lists` —
+- [x] 7.1 `a commitments screen lists a commitment its roster has removed in neither of its lists` —
   the stopped list is computed from `roster.entries`, so this is where that computation learns about
   the third state.
-- [ ] 7.2 `removing one of two entries alike in name removes the one it was asked about`
-- [ ] 7.3 `a commitment defined again after being removed is taken up again in the place it was taken on in`
-- [ ] 7.4 `a commitments screen that cannot read its roster does nothing when it is asked to remove a commitment`
-- [ ] 7.5 `a commitments screen holds a refused removal against the commitment it was asked to remove`
-- [ ] 7.6 `a commitments screen holds nothing against a removal confirmed on a name that does not match`
-- [ ] 7.7 `what a commitments screen holds about a refused change ends when a removal is kept`
-- [ ] 7.8 `what a commitments screen holds about a refused change stands when a removal is asked for and cancelled`
+- [x] 7.2 `removing one of two entries alike in name removes the one it was asked about`
+- [x] 7.3 `a commitment defined again after being removed is taken up again in the place it was taken on in`
+- [x] 7.4 `a commitments screen that cannot read its roster does nothing when it is asked to remove a commitment`
+- [x] 7.5 `a commitments screen holds a refused removal against the commitment it was asked to remove`
+- [x] 7.6 `a commitments screen holds nothing against a removal confirmed on a name that does not match`
+- [x] 7.7 `what a commitments screen holds about a refused change ends when a removal is kept`
+- [x] 7.8 `what a commitments screen holds about a refused change stands when a removal is asked for and cancelled`
 
 ## 8. `day-screen` — a removed commitment's rows, and day one
 
@@ -166,10 +166,10 @@ Two scenarios from `specs/day-screen/spec.md`, in `Tests/DayByDayKitTests/DayScr
 Both should pass without a line changing in `DayScreen.swift`; that is the claim, and these are the
 tests that turn it into a fact.
 
-- [ ] 8.1 `a day screen draws a removed commitment on the day it was kept until and not on the day after it`
+- [x] 8.1 `a day screen draws a removed commitment on the day it was kept until and not on the day after it`
   — carries a tick made before the removal, so it asserts the whole promise: the row is drawn and it
   still says kept.
-- [ ] 8.2 `a day screen opened on a roster whose commitments have all been removed takes nothing on`
+- [x] 8.2 `a day screen opened on a roster whose commitments have all been removed takes nothing on`
   — ADR-1027's obligation, discharged without a marker. If `DayScreen` needs a change to pass this,
   stop and report it: `design.md` says it should not, and a change here would mean the day-one
   condition was not what it was believed to be.
@@ -180,14 +180,14 @@ Under ADR-1019's 2026-09-04 amendment, whose three conditions `design.md` § *Th
 Story* checks off one by one. Every string drawn arrives whole from `DayByDayKit`; the shell decides
 no day, no match and no refusal. Only `src/DayByDay/DayByDay/CommitmentsView.swift` changes.
 
-- [ ] 9.1 Move both lists' actions into swipe actions: a kept row swipes to **Stop** or **Remove**, a
+- [x] 9.1 Move both lists' actions into swipe actions: a kept row swipes to **Stop** or **Remove**, a
   stopped row to **Resume** or **Remove**. Delete the `Button` wrapper that makes the whole row
   tappable in each list — settled answer 8, and the row's own tap does nothing afterwards.
-- [ ] 9.2 Draw the removal confirmation: the commitment's name shown, a text field bound to
+- [x] 9.2 Draw the removal confirmation: the commitment's name shown, a text field bound to
   `screen.nameTypedBack`, a destructive confirm button disabled while `screen.nameTypedBackMatches`
   is `false`, and a cancel that calls `cancelRemoving()`. No message under the field when the name
   does not match — settled answer 6, and § *A name that does not match is not a refusal*.
-- [ ] 9.3 Add the fourth `RefusedChange` case to the shell's existing refusal rendering, beside
+- [x] 9.3 Add the fourth `RefusedChange` case to the shell's existing refusal rendering, beside
   `.stopping` and `.keepingAgain`, using `refusalText` unchanged. No new sentence is invented here.
 - [ ] 9.4 Run it. `pnpm run phone`, or the simulator per `docs/running-the-app.md`, and check by
   hand: stop a commitment and watch its row leave today's list at once; remove a kept one and a
@@ -197,7 +197,7 @@ no day, no match and no refusal. Only `src/DayByDay/DayByDay/CommitmentsView.swi
 
 ## 10. The records
 
-- [ ] 10.1 Write `docs/adr/1035-a-roster-never-lets-a-commitment-go.md` — the decision that removal
+- [x] 10.1 Write `docs/adr/1035-a-roster-never-lets-a-commitment-go.md` — the decision that removal
   is a last state rather than a departure, the two alternatives it beat (drop the entry; refuse
   removal where records exist), and the consequences: past days keep their rows, day one stays
   unreachable without a marker, the file gains a state, and the way back is defining the commitment
@@ -205,21 +205,21 @@ no day, no match and no refusal. Only `src/DayByDay/DayByDay/CommitmentsView.swi
   `main` and against every open branch — `origin/story/138-add-number-record` holds `1033` and
   `add-rhythm-in-words` renumbered to `1034` for exactly this reason. `git ls-tree -r --name-only
   <branch> -- docs/adr` per branch answers it.
-- [ ] 10.2 Amend `docs/adr/1023-a-commitment-is-kept-until-a-day-the-roster-holds.md` in place, with
+- [x] 10.2 Amend `docs/adr/1023-a-commitment-is-kept-until-a-day-the-roster-holds.md` in place, with
   an `- Amended: 2026-09-07 — ...` line under `Deciders` (ADR-1020). The kept-until day stays
   inclusive and stays the roster's to judge; what changes is that a commitments screen hands the day
   *before* the one it was handed, and the price — a tick made this morning is not drawn on a
   commitment stopped this afternoon — is stated as taken knowingly. Leave one coherent decision
   behind, not a decision with a rebuttal stapled to it.
-- [ ] 10.3 Leave `docs/adr/1031-a-store-reads-the-form-before-it.md` alone, and confirm before the
+- [x] 10.3 Leave `docs/adr/1031-a-store-reads-the-form-before-it.md` alone, and confirm before the
   review that leaving it alone is still right. It was amended on 2026-09-06 at `add-number-record`
   (#138) and its trigger now reads *"a fourth form, or a form that differs by more than a field"*;
   the roster's form 3 differs from its form 2 by one field under one comparison, so nothing here is
   new to it. If the implementation ends up needing more than that one comparison, **stop**: that is
   the trigger firing, and it is an ADR amendment rather than a wider guard.
-- [ ] 10.4 Add the ADR-1035 row to `docs/adr/README.md`'s DayByDay table, and update ADR-1023's row
+- [x] 10.4 Add the ADR-1035 row to `docs/adr/README.md`'s DayByDay table, and update ADR-1023's row
   there if its one-line summary no longer describes the decision as it stands.
-- [ ] 10.5 Move the want off `docs/backlog.md` § *Wants* if it is still listed there, and check its
+- [x] 10.5 Move the want off `docs/backlog.md` § *Wants* if it is still listed there, and check its
   § *Decided* line for `add-roster-removal` still describes what shipped — it says the Story "owes
   ADR-1027's test for a place nothing has ever been taken on at", which § 8.2 is.
 
