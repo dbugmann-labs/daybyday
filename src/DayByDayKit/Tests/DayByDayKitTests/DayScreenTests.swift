@@ -2879,3 +2879,32 @@ func enteringANumberOnARowTheDayScreensDayViewDoesNotHoldChangesNothing() throws
         keepingRosterAt: rosterPlace)
     #expect(!laterOnWednesday.dayView.rows[0].isKept)
 }
+
+@MainActor
+@Test("committing on a row that offers no number entry changes nothing")
+func committingOnARowThatOffersNoNumberEntryChangesNothing() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym, weight], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+    screen.showNextDay()
+    try screen.enter("70.5", on: screen.dayView.rows[1])
+
+    #expect(screen.dayView.rows.allSatisfy { !$0.isKept })
+
+    let later = DayScreen(
+        startingFrom: [gym, weight], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    #expect(later.dayView.rows.allSatisfy { !$0.isKept })
+}
