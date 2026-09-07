@@ -1434,3 +1434,23 @@ func aNumberEntrySaysTheNumberTheHistoryHoldsForThatCommitmentOnThatDate() {
     #expect(entry?.number != 70)
     #expect(entry?.number != 71)
 }
+
+@Test("a number entry says no number where the day holds none")
+func aNumberEntrySaysNoNumberWhereTheDayHoldsNone() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let neverRecorded = History()
+    var addedThenRemoved = History()
+    addedThenRemoved.add(Number(70.5, for: weight, on: monday)!)
+    addedThenRemoved.removeNumber(for: weight, on: monday)
+
+    let neverRecordedView = DayView(of: [weight], on: monday, in: neverRecorded)
+    let addedThenRemovedView = DayView(of: [weight], on: monday, in: addedThenRemoved)
+
+    #expect(neverRecordedView.rows[0].numberEntry(asOf: monday)?.number == nil)
+    #expect(addedThenRemovedView.rows[0].numberEntry(asOf: monday)?.number == nil)
+}
