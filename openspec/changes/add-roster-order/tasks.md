@@ -105,7 +105,7 @@ same shape as `keepAgain`, and `RefusedChange` gains a fifth case, `moving(Commi
 - [x] 5.3 `a commitments screen asked to move a commitment it has stopped does nothing and says
   nothing` — the guard is `kept.contains(commitment)` alone, not `kept || stopped` as `askToRemove`
   has it. Getting this wrong is the likeliest defect in the change.
-- [ ] 5.4 `a commitments screen asked to move a commitment on neither of its lists does nothing and
+- [x] 5.4 `a commitments screen asked to move a commitment on neither of its lists does nothing and
   says nothing`
 - [ ] 5.5 `a commitments screen given an offset the list it keeps does not have does nothing and says
   nothing` — both ends, and neither is a refusal. `design.md` § *An offset outside the range* says

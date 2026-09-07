@@ -2682,3 +2682,26 @@ func aCommitmentsScreenAskedToMoveACommitmentItHasStoppedDoesNothingAndSaysNothi
     #expect(screen.kept.map(\.name) == ["Journaling"])
     #expect(screen.stopped.map(\.name) == ["Gym"])
 }
+
+@MainActor
+@Test("a commitments screen asked to move a commitment on neither of its lists does nothing and says nothing")
+func aCommitmentsScreenAskedToMoveACommitmentOnNeitherOfItsListsDoesNothingAndSaysNothing() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let refusal = screen.move(journaling, toOffset: 0)
+
+    #expect(refusal == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.kept.map(\.name) == ["Gym"])
+}
