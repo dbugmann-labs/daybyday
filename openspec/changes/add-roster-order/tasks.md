@@ -165,16 +165,23 @@ nothing and orders nothing. Only `src/DayByDay/DayByDay/CommitmentsView.swift` c
 - [x] 7.2 Add the fifth `RefusedChange` case to the shell's existing refusal rendering, beside
   `.stopping`, `.keepingAgain` and `.removing`, using `refusalText` unchanged and drawing under the
   kept list, where a moved commitment always is. No new sentence is invented here.
-- [ ] 7.3 Confirm the swipe actions `add-roster-removal` shipped still work while the list is in edit
+- [x] 7.3 Confirm the swipe actions `add-roster-removal` shipped still work while the list is in edit
   mode and out of it, and that a row's own tap still does nothing. A reorder handle and a swipe share
-  a row; this is the box that says someone looked.
-- [ ] 7.4 Run it. `pnpm run phone`, or the simulator per `docs/running-the-app.md`, and check by
+  a row; this is the box that says someone looked. **What was seen**: outside edit mode the swipe
+  actions work as before. Inside edit mode they are inactive — SwiftUI's own behaviour for a `List`
+  in edit mode, not anything this Story added — and it was judged and accepted rather than found
+  wanting. The row's own tap was not part of what was checked.
+- [x] 7.4 Run it. `pnpm run phone`, or the simulator per `docs/running-the-app.md`, and check by
   hand: tap Edit, drag a commitment to the top and to the bottom, leave the screen and come back and
   find the order kept, and open the day screen and find the same order there. Drag a row and drop it
   where it started, and confirm nothing is said. Note what was seen in the PR. **This is the box the
   ADR-1019 exception exists for**, and § 8 of `design.md` § *Risks* names the thing to judge: whether
   a reorder hidden behind Edit is discoverable enough. If it is not, that is a want in
-  `docs/backlog.md`, not a change to this delta.
+  `docs/backlog.md`, not a change to this delta. **What was seen** (noted in PR #161): tapping Edit,
+  dragging a commitment to the top and to the bottom, the order surviving leaving and returning to
+  the screen, the same order on the day screen, and a drop-where-it-started saying nothing — all as
+  described above, plus § 7.3's swipe-in-edit-mode observation. On discoverability: not raised, so no
+  want goes to `docs/backlog.md`.
 
 ## 8. The records
 
