@@ -189,7 +189,7 @@ no day, no match and no refusal. Only `src/DayByDay/DayByDay/CommitmentsView.swi
   does not match — settled answer 6, and § *A name that does not match is not a refusal*.
 - [x] 9.3 Add the fourth `RefusedChange` case to the shell's existing refusal rendering, beside
   `.stopping` and `.keepingAgain`, using `refusalText` unchanged. No new sentence is invented here.
-- [ ] 9.4 Run it. `pnpm run phone`, or the simulator per `docs/running-the-app.md`, and check by
+- [x] 9.4 Run it. `pnpm run phone`, or the simulator per `docs/running-the-app.md`, and check by
   hand: stop a commitment and watch its row leave today's list at once; remove a kept one and a
   stopped one; type the name wrong and confirm the button stays dead; remove a commitment that has a
   tick and confirm the day screen still draws its row on the day it was kept until. Note what was
