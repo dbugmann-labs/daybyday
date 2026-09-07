@@ -2960,3 +2960,33 @@ func enteringANumberOnOneRowLeavesTheOtherRowsOfTheDayAsTheyWere() throws {
     #expect(screen.dayView.rows.map(\.name) == ["Gym", "Weight", "Mood"])
     #expect(screen.dayView.rows.map(\.isKept) == [false, true, false])
 }
+
+@MainActor
+@Test("entering a number on a day a day screen has moved back to keeps it on that day")
+func enteringANumberOnADayADayScreenHasMovedBackToKeepsItOnThatDay() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showPreviousDay()
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+
+    let laterOnSunday = DayScreen(
+        startingFrom: [weight], asOf: sunday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(laterOnSunday.dayView.rows[0].isKept)
+
+    let laterOnMonday = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!laterOnMonday.dayView.rows[0].isKept)
+}
