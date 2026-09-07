@@ -2655,3 +2655,30 @@ func anOffsetACommitmentsScreenIsGivenIsCountedOverWhatItKeepsBeforeTheMove() th
     #expect(atOffsetTwo.kept.map(\.name) == ["Gym", "Water plants", "Journaling"])
     #expect(atOffsetThree.kept.map(\.name) == ["Gym", "Journaling", "Water plants"])
 }
+
+@MainActor
+@Test("a commitments screen asked to move a commitment it has stopped does nothing and says nothing")
+func aCommitmentsScreenAskedToMoveACommitmentItHasStoppedDoesNothingAndSaysNothing() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(journaling)
+    try rosterStore.retire(gym, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let refusal = screen.move(gym, toOffset: 0)
+
+    #expect(refusal == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.kept.map(\.name) == ["Journaling"])
+    #expect(screen.stopped.map(\.name) == ["Gym"])
+}
