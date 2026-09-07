@@ -8,6 +8,9 @@
   consequence below is rewritten to say what it actually is. Nothing in the Decision moves: the
   lane, the framework and the thin assertion are untouched, and so is the rule that this layer
   asserts the shell drew and never what it drew.
+- Amended: 2026-09-08 — the draft half of the gate moves from the steps to the job. Nothing about
+  what is gated changes; where the condition is written does, and with it what a skip costs. The
+  gate bullet below is rewritten and now also says what the required check actually promises.
 - Deciders: Diego Bugmann
 
 ## Context
@@ -198,6 +201,42 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
   unconditionally this would be waste on nearly every push. Neither gate weakens the merge: a
   Story leaves draft at Stage 8, a chore PR is never a draft, and the push to `main` is ungated by
   the first condition — so nothing merges without it having run.
+
+  **The two halves are written at different levels, and on 2026-09-08 that stopped being
+  arbitrary.** Both were step conditions while this lived inside `swift`, where gating the steps
+  gated everything there was to gate — the runner was bought for `swift test` regardless. Splitting
+  the job left that shape behind: a draft push still took a `macos-26` runner and a full-history
+  checkout to work out it had nothing to do, and then reported green. So the draft half is now the
+  job's `if:`, where a skip costs nothing and reads as a skip. It was 34 of the 60 runs before the
+  change. That a skipped job still satisfies a required status check is GitHub's documented
+  behaviour rather than an inference — "A job that is skipped will report its status as 'Success'.
+  It will not prevent a pull request from merging, even if it is a required check" — and the `main`
+  ruleset asks for the bare context `ui-smoke`, which cannot tell a skip from a pass.
+
+  **The scope half stays on the steps, and the reason is a trade rather than an oversight.**
+  `reached` is computed inside the job from a diff, so hoisting it needs a second job and a
+  `needs:` edge, which would add that job's runner start and checkout to the critical path of every
+  run that *does* want the smoke test in order to save a free macOS runner on the runs that do not.
+  Splitting the job did widen what the scope half declines to pay, though, and by more than was
+  noticed at the time: `build-for-testing` had to be unconditional while it doubled as the `swift`
+  job's compile check, and it is 2m49s.
+
+  **The coarse edge of the scope half is `.github/workflows/ci.yml`, and it is now the expensive
+  one.** 15 of this repository's first 163 commits touched that file and exactly 1 of those also
+  touched `src/DayByDay/`; the other 14 bought a full smoke run for a diff that could not change
+  what the app draws. #163 changed comments in it and paid 7m53s on the PR and 6m01s on the push.
+  That was close to free while this lived inside `swift`, and it is the critical path now. It stays
+  watched regardless, because dropping it is how a broken smoke job merges green. The precise fix,
+  when it costs more than it saves, is to move the job into `.github/workflows/ui-smoke.yml` and
+  watch that file — the required check is a bare context, so it survives the move — at the price of
+  a second `on:` and `concurrency:` block to keep in step with this one. Not taken yet: the 15 are
+  inflated by the two days of CI work that produced this amendment.
+
+  **Say plainly what the required check promises, because it is narrower than its name.** A green
+  `ui-smoke` does not assert that this merge drew the app. It asserts that every merge whose diff
+  reached the app drew it. That is the design and not a defect — but it is the same shape as the
+  ruleset point above, and a reader who takes the tick at face value is making the ADR-0013
+  mistake in the other direction.
 - **The step discovers its simulator device** from `simctl` rather than naming one, because the
   runner image's device list moves with Xcode
   and is not ours to pin; the step prints which device it took, so a green run is attributable.

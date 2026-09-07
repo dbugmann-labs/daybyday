@@ -384,13 +384,16 @@ Things that are built, or deliberately not built, in a state someone will trip o
   the recipe and the `-1719`-not-`-25211` correction about Accessibility grants came from. Keeping
   the harness is what ends the rebuild-and-discard cycle.
 
-  **It is gated twice**: skipped while a PR is a draft, and skipped unless the diff reaches
-  `src/DayByDay/`, `src/DayByDayKit/Sources/` or the workflow. Nothing merges without it having
-  run. The gates were put there because the step cost five minutes a push; on 2026-09-07 it was
-  found to be costing eight and a half, and taking it apart showed most of that was never the
-  test: a needless simulator clone, which is gone, and a cold simulator boot of 2m06s, which is
-  not. The gates matter more for that, not less — they are the only thing in the job that can
-  decline to pay a boot.
+  **It is gated twice**: skipped while a PR is a draft — a condition on the job since 2026-09-08,
+  so a draft push allocates no runner at all — and skipped unless the diff reaches
+  `src/DayByDay/`, `src/DayByDayKit/Sources/` or the workflow, which is a condition on the steps
+  because it is computed from a diff inside the job. Nothing merges without it having run. The
+  gates were put there because the step cost five minutes a push; on 2026-09-07 it was found to be
+  costing eight and a half, and taking it apart showed most of that was never the test: a needless
+  simulator clone, which is gone, and a cold simulator boot of 2m06s, which is not. The gates
+  matter more for that, not less — they are the only thing in the job that can decline to pay a
+  boot. What they do **not** promise is worth saying once: a green `ui-smoke` asserts that every
+  merge whose diff reached the app drew it, not that this merge drew it.
   `docs/adr/1029-the-ui-smoke-layer-is-a-chore-and-it-is-xctest.md`.
 
 - 2026-09-06 — **the shell no longer swallows the one failure a tick reports.** `DayScreen` now

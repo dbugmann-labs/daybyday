@@ -256,6 +256,28 @@ jobs:
   ui-smoke:
     name: ui-smoke
     runs-on: macos-26
+    # **The draft half of the gate is here rather than on the steps, and that is
+    # the whole of what a job-level `if:` buys: on a draft the runner is never
+    # allocated.** It was step-level until 2026-09-08 because until the day
+    # before it lived inside `swift`, which had to run anyway — so gating the
+    # steps was gating everything there was to gate. Once the job was its own,
+    # a skipped run still took a `macos-26` runner and a full-history checkout
+    # to decide it had nothing to do. Story PRs are drafts from Stage 4 to Stage
+    # 8, which was 34 of the 60 runs before this.
+    #
+    # **A skipped job satisfies a required check**, which is the thing this turns
+    # on and so was read rather than remembered — GitHub's own words, at
+    # docs.github.com/actions/using-jobs/using-conditions-to-control-job-execution:
+    # "A job that is skipped will report its status as 'Success'. It will not
+    # prevent a pull request from merging, even if it is a required check."
+    # The `main` ruleset asks for the bare context `ui-smoke`, so there is
+    # nothing there that can tell a skip from a pass.
+    #
+    # The scope half stays on the steps below and cannot come up here: `reached`
+    # is computed inside this job, and hoisting it would mean a second job and a
+    # `needs:` edge — 20-30s added to the critical path of every run that does
+    # want the smoke test, to save a free runner on the runs that do not.
+    if: github.event.pull_request.draft != true
     steps:
       - uses: actions/checkout@v7
         with:
@@ -264,19 +286,36 @@ jobs:
           # bespoke checks in `verify` do.
           fetch-depth: 0
 
-      # **Why the smoke test is gated twice.** It is skipped while a PR is a draft
-      # — the idiom checks 4, 5, 8 and 9 already use — and skipped again unless the
-      # diff reaches the shell, the kit's sources or this file. Over this
-      # repository's first 129 commits, 8 touched `src/DayByDay/`. Neither gate
-      # weakens the merge: a Story PR leaves draft at Stage 8 and a chore PR is
-      # never a draft, so the step runs before anything is merged and again on the
-      # push to `main`.
+      # **This is the second half of the gate; the draft half is on the job.** The
+      # smoke test is skipped while a PR is a draft — the idiom checks 4, 5, 8 and
+      # 9 already use — and skipped again unless the diff reaches the shell, the
+      # kit's sources or this file. Over this repository's first 129 commits, 8
+      # touched `src/DayByDay/`. Neither half weakens the merge: a Story PR leaves
+      # draft at Stage 8 and a chore PR is never a draft, so the test runs before
+      # anything is merged and again on the push to `main`.
       #
-      # **The gates matter more than ADR-1029 thought, not less.** It costed the
+      # **Say what the required check therefore means, because it is narrower than
+      # its name.** A green `ui-smoke` does not assert that this merge drew the
+      # app. It asserts that every merge *whose diff reached the app* drew it —
+      # which is the design and not a defect, but it is the ADR-0013 shape and it
+      # should be written down rather than inferred from a tick.
+      #
+      # **The gate matters more than ADR-1029 thought, not less.** It costed the
       # smoke test at 3m45s; on 2026-09-07 it was 5m10s and 8m36s, and taking the
       # clone out left a cold simulator boot that is minutes on its own and cannot
-      # be got rid of. This is the only question in the job that can decline to
-      # pay it — and now that the job is its own, declining costs nothing at all.
+      # be got rid of. Splitting the job widened what this question can decline to
+      # pay: `build-for-testing` was unconditional while it doubled as the `swift`
+      # job's compile check, and it is 2m49s.
+      #
+      # **`.github/workflows/ci.yml` is the coarse one, and it is deliberate.** 15
+      # of this repository's first 163 commits touched it and exactly 1 of those
+      # also touched `src/DayByDay/`, so 14 bought a full smoke run for a diff that
+      # could not change what the app draws — #163 changed comments in this file
+      # and paid 7m53s. It stays watched because dropping it is how a broken smoke
+      # job merges green. The precise fix, if that ever costs more than it saves,
+      # is to move this job into `.github/workflows/ui-smoke.yml` and watch that
+      # file instead; the ruleset asks for the bare context `ui-smoke`, so the
+      # required check would survive the move untouched.
       - name: does this change reach the app?
         id: scope
         run: |
@@ -333,7 +372,7 @@ jobs:
       # first iPhone in it.
       - name: which simulator?
         id: sim
-        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
+        if: steps.scope.outputs.reached == 'yes'
         run: |
           set -eu
           echo "Already booted on this runner:"
@@ -361,7 +400,7 @@ jobs:
       # one command is the whole thing, and it is where a simulator that will not
       # come up gets reported.
       - name: boot the simulator
-        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
+        if: steps.scope.outputs.reached == 'yes'
         run: xcrun simctl bootstatus "${{ steps.sim.outputs.device }}" -b
 
       # `build-for-testing` rather than `build`: this is the app *and* the UI test
@@ -373,7 +412,7 @@ jobs:
       # scheme `xcodebuild` derives turns coverage on, so the kit was being
       # compiled `-profile-generate -profile-coverage-mapping` for no reader.
       - name: xcodebuild build-for-testing
-        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
+        if: steps.scope.outputs.reached == 'yes'
         run: |
           set -eu
           xcodebuild build-for-testing \
@@ -395,7 +434,7 @@ jobs:
       # **`test-without-building`**, because the step above already built it,
       # against this same device.
       - name: xcodebuild test — the app shell draws
-        if: github.event.pull_request.draft != true && steps.scope.outputs.reached == 'yes'
+        if: steps.scope.outputs.reached == 'yes'
         run: |
           set -eu
           xcodebuild test-without-building \
