@@ -104,12 +104,38 @@ commit it**: it drops the `DayByDayUITests` target that ADR-1029's smoke layer n
 -- src/DayByDay/DayByDay.xcodeproj/project.pbxproj` after the GUI has done its work; the signing
 you just set up lives in the script, not in the file, so throwing the rewrite away costs nothing.
 
-**A personal team needs a device before it can make a provisioning profile.** With none
-registered, the build ends in *"Your team has no devices from which to generate a provisioning
-profile"* and *"No profiles for 'com.dbugmann.daybyday' were found"* — both observed on 2026-09-06.
-They are the same missing phone rather than two problems, and neither blocks a **simulator** build,
-which needs no profile. Plug the phone in, unlock it, answer *Trust This Computer*, and
+**A personal team needs a device before it can make a provisioning profile.** With none usable,
+the build ends in *"Your team has no devices from which to generate a provisioning profile"* and
+*"No profiles for 'com.dbugmann.daybyday' were found"*. Neither blocks a **simulator** build, which
+needs no profile. Plug the phone in, unlock it, answer *Trust This Computer*, and
 `-allowProvisioningUpdates` lets Xcode register the device and issue the profile without the GUI.
+
+**Do not trust that pair of errors, though — they are what this machine says for every reason a
+phone is unusable, and only one of them is the one they name.** Getting the app onto its first real
+phone on 2026-09-07 hit three causes in a row and all three arrived as that same text, pointing at
+a developer.apple.com page a free account cannot open. In the order they bit:
+
+1. **Developer Mode was off on the phone.** iOS 16 and later refuse development builds until it is
+   on: *Settings → Privacy & Security → Developer Mode*, then restart the phone and confirm after
+   unlocking. The entry only appears once a Mac has tried to connect for development.
+2. **The developer disk image could not mount, because the phone was locked.** `xcrun devicectl
+   device info details --device <identifier>` reports `ddiServicesAvailable: false` while
+   `developerModeStatus: enabled`, and `xcrun devicectl device info ddiServices --device
+   <identifier>` names it outright: *kAMDMobileImageMounterDeviceLocked*. Unlock the phone and
+   leave the screen on.
+3. **The build was aimed at `generic/platform=iOS`.** That is the one that made the other two
+   illegible: with no particular device named, automatic signing has no udid to register, so every
+   underlying cause came out as the missing-device error. `pnpm run phone` now builds against
+   `platform=iOS,id=<udid>` and the same failures report themselves — *"Developer Mode disabled"*,
+   *"The developer disk image could not be mounted on this device"*.
+
+**Ask the phone before believing the build.** These three answer it in one line each:
+
+```bash
+xcrun devicectl list devices
+xcrun devicectl device info lockState --device <identifier>
+xcrun devicectl device info details --device <identifier> | grep -E 'developerMode|ddiServices'
+```
 
 **A free Apple ID expires the build after seven days.** The app stops launching and needs the
 install run again; the record survives, because it lives in the app's container rather than in the
@@ -155,31 +181,44 @@ xcrun devicectl list devices
 
 xcodebuild -project src/DayByDay/DayByDay.xcodeproj \
   -scheme DayByDay \
-  -destination 'generic/platform=iOS' \
+  -destination 'platform=iOS,id=<udid>' \
   CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES CODE_SIGN_STYLE=Automatic \
   CODE_SIGN_IDENTITY='Apple Development' DEVELOPMENT_TEAM=4QZ29N6GN2 \
   -allowProvisioningUpdates \
   build
 
 APP=$(xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
-        -destination 'generic/platform=iOS' -showBuildSettings 2>/dev/null \
+        -destination 'platform=iOS,id=<udid>' -showBuildSettings 2>/dev/null \
       | awk -F' = ' '/ BUILT_PRODUCTS_DIR/{d=$2} / FULL_PRODUCT_NAME/{n=$2} END{print d"/"n}')
 
 xcrun devicectl device install app --device <identifier> "$APP"
 xcrun devicectl device process launch --device <identifier> com.dbugmann.daybyday
 ```
 
+**`<identifier>` and `<udid>` are two names for the same phone and are not interchangeable.**
+`xcrun devicectl list devices` prints the identifier — CoreDevice's UUID, `859C…` — and every
+`devicectl` subcommand takes it. The udid is the hardware one, `00008130-…`, it is what
+`xcodebuild -destination id=` takes, and `devicectl list devices --json-output` carries it at
+`hardwareProperties.udid`. Passing one where the other belongs fails without naming either.
+
 **The first launch fails on an untrusted developer**, which is the free account and not a defect:
 on the phone, **Settings → General → VPN & Device Management → Developer App**, trust the
 certificate, and launch again.
 
-**What has and has not been run.** The `devicectl` subcommands and flags were checked against
-`--help` on 2026-09-03. The build half was run for real on 2026-09-06 and is what the measurements
-above are; it reached the missing-device error and stopped there. **Nothing past that point — the
-install, the launch, the trust prompt, the seven-day expiry — has ever been executed**, because no
-phone has been paired with this machine. `AGENTS.md` says to verify rather than remember, and this
-is the honest state of it: the first person to plug a phone in should correct whatever is wrong
-here and delete this paragraph.
+**A launch straight after an install also just fails sometimes**, on a phone that trusted the
+certificate long ago, and succeeds seconds later. `pnpm run phone` retries once before it says
+anything, because reporting the first failure sends you to Settings to fix something that is not
+broken.
+
+**What has and has not been run.** All of the above was run for real on 2026-09-07, against a
+paired iPhone 15 Pro on iOS 26.6.1: `pnpm run phone` built, signed, installed and launched, and the
+app is on the phone. The three causes above were each hit and cleared in that session, and the JSON
+field names quoted here were read off real payloads rather than guessed.
+
+**Two things still have not happened**, and neither can be made to happen on demand: the **seven-day
+signature expiry**, and a **reinstall over an app holding real ticks** — the promise that a
+reinstall keeps the record is argued from where the container lives, not yet observed. Correct this
+paragraph the first time either one is.
 
 ## Looking without looking
 

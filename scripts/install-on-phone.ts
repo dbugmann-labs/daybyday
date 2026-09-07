@@ -56,16 +56,23 @@ const SIGNING = [
 ]
 
 /**
- * One device as `devicectl list devices --json-output` reports it. Only the envelope
- * (`result.devices`, `info.outcome`) has been seen against the real tool — with no phone paired,
- * `result.devices` came back `[]` — so the per-device fields below are read defensively and every
- * one of them is optional. Correct this type against a real payload rather than trusting it.
+ * One device as `devicectl list devices --json-output` reports it. Read off a real payload on
+ * 2026-09-07, from a paired iPhone 15 Pro on iOS 26.6.1, rather than guessed — but every field
+ * stays optional, because a tool whose stdout is explicitly unstable can move them.
+ *
+ * **`identifier` and `udid` are two names for the same phone and are not interchangeable.**
+ * `identifier` is CoreDevice's own UUID (`859C354E-…`) and is what every `devicectl` subcommand
+ * takes. `udid` is the hardware identifier (`00008130-…`) and is what `xcodebuild -destination
+ * id=` takes. Passing one where the other belongs fails in a way that names neither.
  */
 type Device = {
   identifier?: string
-  deviceProperties?: { name?: string }
-  hardwareProperties?: { platform?: string }
+  deviceProperties?: { name?: string; developerModeStatus?: string; ddiServicesAvailable?: boolean }
+  hardwareProperties?: { platform?: string; udid?: string }
 }
+
+/** The phone this run is talking to, in both of the names it answers to. */
+type Phone = { name: string; identifier: string; udid: string }
 
 function run(command: string, args: string[]): string {
   return execFileSync(command, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] })
@@ -79,7 +86,7 @@ function die(lines: string[]): never {
 }
 
 /** Every iOS device `devicectl` can see, named as a person would recognise it. */
-function pairedDevices(): { name: string; identifier: string }[] {
+function pairedDevices(): Phone[] {
   const out = path.join(mkdtempSync(path.join(tmpdir(), 'daybyday-')), 'devices.json')
   run('xcrun', ['devicectl', 'list', 'devices', '--json-output', out])
 
@@ -88,17 +95,32 @@ function pairedDevices(): { name: string; identifier: string }[] {
 
   return devices
     .filter((d) => (d.hardwareProperties?.platform ?? 'iOS').startsWith('iOS'))
-    .map((d) => ({ name: d.deviceProperties?.name ?? '(unnamed)', identifier: d.identifier ?? '' }))
-    .filter((d) => d.identifier !== '')
+    .map((d) => ({
+      name: d.deviceProperties?.name ?? '(unnamed)',
+      identifier: d.identifier ?? '',
+      udid: d.hardwareProperties?.udid ?? '',
+    }))
+    .filter((d) => d.identifier !== '' && d.udid !== '')
 }
 
 /** The device to install onto: the one asked for, or the only one there. */
-function chooseDevice(asked: string | undefined): string {
-  // An explicit name or identifier is passed through untouched — `devicectl` accepts either, and
-  // resolving it here would only add a way to be wrong about a device this script cannot see.
-  if (asked !== undefined && asked !== '') return asked
-
+function chooseDevice(asked: string | undefined): Phone {
   const devices = pairedDevices()
+
+  // An explicit argument is *resolved* rather than passed through. `devicectl` would accept a bare
+  // name, but the build needs this phone's udid as well, and only the listing can supply it.
+  if (asked !== undefined && asked !== '') {
+    const match = devices.find((d) => d.name === asked || d.identifier === asked || d.udid === asked)
+    if (match === undefined) {
+      die([
+        `No paired iPhone matches "${asked}".`,
+        devices.length === 0 ? 'Nothing is paired at all.' : 'What is paired:',
+        ...devices.map((d) => `  ${d.name}  ${d.identifier}  ${d.udid}`),
+      ])
+    }
+    console.log(`▸ device — ${match.name}`)
+    return match
+  }
 
   if (devices.length === 0) {
     die([
@@ -120,7 +142,46 @@ function chooseDevice(asked: string | undefined): string {
   }
 
   console.log(`▸ device — ${devices[0]!.name}`)
-  return devices[0]!.identifier
+  return devices[0]!
+}
+
+/**
+ * Says what is wrong with the phone before the build does, because the build says it badly.
+ *
+ * Both of these surfaced on 2026-09-07 getting the app onto its first real phone, and neither was
+ * legible from where it landed: Developer Mode off, and then the developer disk image unable to
+ * mount because the phone was locked. Each of them reached the terminal as *"Your team has no
+ * devices from which to generate a provisioning profile"*, pointing at a developer.apple.com page
+ * a free account cannot use. An hour went into the wrong question twice.
+ *
+ * Best effort, and deliberately never fatal: the two fields were read off a real payload, but
+ * `devicectl`'s output is documented as unstable, so a rename here must not stop a build that
+ * would otherwise work.
+ */
+function warnAboutThePhone(phone: Phone): void {
+  const out = path.join(mkdtempSync(path.join(tmpdir(), 'daybyday-')), 'details.json')
+  try {
+    run('xcrun', ['devicectl', 'device', 'info', 'details', '--device', phone.identifier, '--json-output', out])
+  } catch {
+    return
+  }
+
+  let properties: Device['deviceProperties']
+  try {
+    properties = (JSON.parse(readFileSync(out, 'utf8')) as { result?: Device }).result?.deviceProperties
+  } catch {
+    return
+  }
+
+  if (properties?.developerModeStatus === 'disabled') {
+    console.log('! Developer Mode is off on this phone, and the build below will fail because of it.')
+    console.log('  Settings → Privacy & Security → Developer Mode, then restart the phone.')
+  }
+
+  if (properties?.ddiServicesAvailable === false) {
+    console.log('! The developer disk image is not mounted, and the build below will fail because of it.')
+    console.log('  Almost always the phone being locked — unlock it and leave the screen on.')
+  }
 }
 
 /** Where `xcodebuild` says it put the .app, rather than where anyone assumes it did. */
@@ -148,8 +209,19 @@ function builtApp(destination: string): string {
   return path.join(dir, name)
 }
 
-const device = chooseDevice(process.argv[2])
-const destination = 'generic/platform=iOS'
+const phone = chooseDevice(process.argv[2])
+warnAboutThePhone(phone)
+
+/**
+ * **This phone, by udid — never `generic/platform=iOS`.** The generic destination was what this
+ * script shipped with, and it could not put the app on a phone at all: with no particular device
+ * named, automatic signing has no udid to register, so every failure — Developer Mode off, a
+ * locked phone, no phone — came out as *"Your team has no devices from which to generate a
+ * provisioning profile"* and a link to a page a free account cannot use. Aimed here, the same
+ * build reported the real reason each time and then succeeded. Do not put the generic destination
+ * back to make some other build work; add a destination instead.
+ */
+const destination = `platform=iOS,id=${phone.udid}`
 
 console.log('▸ building for the device — signing runs here, and is where a stale profile shows up')
 run('xcodebuild', [
@@ -157,20 +229,52 @@ run('xcodebuild', [
   '-scheme', SCHEME,
   '-destination', destination,
   ...SIGNING,
-  // Lets Xcode register a freshly plugged-in device and issue the profile without the GUI. A
-  // personal team cannot make one until a device exists, so without a phone attached this step
-  // ends in "Your team has no devices from which to generate a provisioning profile" — which is
-  // the missing phone, not a broken script.
+  // Lets Xcode register a freshly connected phone and issue the profile without the GUI.
   '-allowProvisioningUpdates',
   'build',
 ])
 
 const app = builtApp(destination)
 console.log(`▸ installing — ${app}`)
-run('xcrun', ['devicectl', 'device', 'install', 'app', '--device', device, app])
+run('xcrun', ['devicectl', 'device', 'install', 'app', '--device', phone.identifier, app])
 
+/** Blocks the thread for `ms`. Everything else here is synchronous; a retry has to be too. */
+function pause(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+}
+
+/**
+ * Launches, once retried.
+ *
+ * **The first launch straight after an install fails often enough to be the normal case**, and
+ * recovers on a second attempt seconds later — seen on 2026-09-07 against a phone that had already
+ * trusted the certificate, where the retry succeeded outright. Reporting the first failure would
+ * have sent someone to Settings to fix something that was not broken, which is the same class of
+ * mistake as the generic destination above.
+ *
+ * A launch that fails twice is worth a word, and it is still not a failure of this script: the app
+ * is installed by then. The likeliest cause on a phone that has never run this certificate is the
+ * untrusted-developer gate, which is a tap on the phone and nothing to do with the build.
+ */
 console.log('▸ launching')
-run('xcrun', ['devicectl', 'device', 'process', 'launch', '--device', device, BUNDLE_ID])
+const launch = (): void =>
+  run('xcrun', ['devicectl', 'device', 'process', 'launch', '--device', phone.identifier, BUNDLE_ID]) as unknown as void
+
+try {
+  launch()
+} catch {
+  pause(3000)
+  try {
+    launch()
+  } catch {
+    console.log('')
+    console.log('! Installed, and on the phone — iOS just would not open it from here.')
+    console.log('  If this phone has never run a build of yours: Settings → General →')
+    console.log('  VPN & Device Management → Developer App → Trust. Otherwise tap the icon;')
+    console.log('  a locked or sleeping phone refuses a remote launch and nothing is wrong.')
+    process.exit(0)
+  }
+}
 
 console.log('')
 console.log(`✓ ${BUNDLE_ID} is on the phone, and every tick it already held is still there.`)
