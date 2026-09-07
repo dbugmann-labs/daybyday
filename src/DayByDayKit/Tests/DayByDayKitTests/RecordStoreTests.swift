@@ -245,6 +245,34 @@ func aTickThatCannotBeKeptIsRefusedAndNotHeld() throws {
     #expect(later.history == History())
 }
 
+@Test("a number that cannot be kept is refused and not held")
+func aNumberThatCannotBeKeptIsRefusedAndNotHeld() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("store.json")
+
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let number = Number(70.5, for: commitment, on: monday)!
+
+    let store = try RecordStore(at: place)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try store.add(number)
+    }
+    #expect(store.history == History())
+
+    let later = try RecordStore(at: place)
+    #expect(later.history == History())
+}
+
 @Test("content that is not a store is refused and left as it was")
 func contentThatIsNotAStoreIsRefusedAndLeftAsItWas() throws {
     let place = freshPlace()
@@ -264,10 +292,10 @@ func aStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 3, "ticks": []}"#.utf8)
+    let bytes = Data(#"{"version": 4, "ticks": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RecordStoreError.laterForm(at: place, version: 3)) {
+    #expect(throws: RecordStoreError.laterForm(at: place, version: 4)) {
         try RecordStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -341,6 +369,265 @@ func aStoreHoldingWhatCouldNotBeATickIsRefused() throws {
     #expect(try Data(contentsOf: noSuchDayPlace) == noSuchDayBytes)
 }
 
+@Test("a number added to a store is held by a second store opened at the same place while the first is still open")
+func aNumberAddedToAStoreIsHeldByASecondStoreOpenedAtTheSamePlaceWhileTheFirstIsStillOpen() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let number = Number(70.5, for: commitment, on: monday)!
+
+    let first = try RecordStore(at: place)
+    try first.add(number)
+    let second = try RecordStore(at: place)
+
+    #expect(second.history.number(for: commitment, on: monday) == 70.5)
+    #expect(second.history.isKept(commitment, on: monday))
+}
+
+@Test("a number taken back is not held by a store opened afterwards at the same place")
+func aNumberTakenBackIsNotHeldByAStoreOpenedAfterwardsAtTheSamePlace() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let number = Number(70.5, for: commitment, on: monday)!
+
+    let first = try RecordStore(at: place)
+    try first.add(number)
+    try first.removeNumber(for: commitment, on: monday)
+    let later = try RecordStore(at: place)
+
+    #expect(later.history.number(for: commitment, on: monday) == nil)
+    #expect(later.history == History())
+}
+
+@Test("a number entered again is kept once by a store opened afterwards, as the later number")
+func aNumberEnteredAgainIsKeptOnceByAStoreOpenedAfterwardsAsTheLaterNumber() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let commitment = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let first = try RecordStore(at: place)
+    try first.add(Number(70.5, for: commitment, on: monday)!)
+    try first.add(Number(71.2, for: commitment, on: monday)!)
+    let later = try RecordStore(at: place)
+
+    var expected = History()
+    expected.add(Number(71.2, for: commitment, on: monday)!)
+    #expect(later.history == expected)
+    #expect(later.history.number(for: commitment, on: monday) == 71.2)
+}
+
+@Test("a number is read back exactly as it was given, whatever its digits")
+func aNumberIsReadBackExactlyAsItWasGivenWhateverItsDigits() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let veryLarge = Decimal(string: "98765432109876543210.5")!
+    let values: [Decimal] = [70.5, 0.000001, -12.75, 0, veryLarge]
+    let commitments = values.map { value in
+        Commitment(
+            name: "\(value)", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    }
+
+    let first = try RecordStore(at: place)
+    var expected = History()
+    for (commitment, value) in zip(commitments, values) {
+        let number = Number(value, for: commitment, on: monday)!
+        try first.add(number)
+        expected.add(number)
+    }
+
+    let later = try RecordStore(at: place)
+
+    for (commitment, value) in zip(commitments, values) {
+        #expect(later.history.number(for: commitment, on: monday) == value)
+    }
+    #expect(later.history == expected)
+}
+
+@Test("a store opened again holds exactly the ticks and numbers added and not taken back")
+func aStoreOpenedAgainHoldsExactlyTheTicksAndNumbersAddedAndNotTakenBack() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let gymOnMonday = Tick(gym, on: monday)!
+    let gymOnWednesday = Tick(gym, on: wednesday)!
+    let weightOnMonday = Number(70.5, for: weight, on: monday)!
+    let weightOnWednesday = Number(71, for: weight, on: wednesday)!
+
+    let store = try RecordStore(at: place)
+    try store.add(gymOnMonday)
+    try store.add(gymOnWednesday)
+    try store.add(weightOnMonday)
+    try store.add(weightOnWednesday)
+    try store.remove(gymOnWednesday)
+    try store.removeNumber(for: weight, on: monday)
+
+    let later = try RecordStore(at: place)
+
+    var expected = History()
+    expected.add(gymOnMonday)
+    expected.add(weightOnWednesday)
+    #expect(later.history == expected)
+    #expect(later.history.isKept(gym, on: monday))
+    #expect(!later.history.isKept(gym, on: wednesday))
+    #expect(later.history.number(for: weight, on: wednesday) == 71)
+    #expect(later.history.number(for: weight, on: monday) == nil)
+}
+
+@Test("a store holding a number its commitment would refuse is refused")
+func aStoreHoldingANumberItsCommitmentWouldRefuseIsRefused() throws {
+    let outOfRangePlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: outOfRangePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let outOfRangeBytes = Data(
+        """
+        {
+          "version": 3,
+          "ticks": [],
+          "numbers": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "number": { "lowest": 40, "highest": 150 } }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "number": 300
+            }
+          ]
+        }
+        """.utf8)
+    try outOfRangeBytes.write(to: outOfRangePlace)
+
+    let wrongKindPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: wrongKindPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let wrongKindBytes = Data(
+        """
+        {
+          "version": 3,
+          "ticks": [],
+          "numbers": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "tick": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "number": 70.5
+            }
+          ]
+        }
+        """.utf8)
+    try wrongKindBytes.write(to: wrongKindPlace)
+
+    let notDuePlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: notDuePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let notDueBytes = Data(
+        """
+        {
+          "version": 3,
+          "ticks": [],
+          "numbers": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "number": {} }
+              },
+              "date": { "year": 2026, "month": 9, "day": 1 },
+              "number": 70.5
+            }
+          ]
+        }
+        """.utf8)
+    try notDueBytes.write(to: notDuePlace)
+
+    #expect(throws: RecordStoreError.notAStore(at: outOfRangePlace)) {
+        try RecordStore(at: outOfRangePlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: wrongKindPlace)) {
+        try RecordStore(at: wrongKindPlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: notDuePlace)) {
+        try RecordStore(at: notDuePlace)
+    }
+    #expect(try Data(contentsOf: outOfRangePlace) == outOfRangeBytes)
+    #expect(try Data(contentsOf: wrongKindPlace) == wrongKindBytes)
+    #expect(try Data(contentsOf: notDuePlace) == notDueBytes)
+}
+
+@Test("a store whose shape and declared form disagree about numbers is refused")
+func aStoreWhoseShapeAndDeclaredFormDisagreeAboutNumbersIsRefused() throws {
+    let earlyFormWithNumbersPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: earlyFormWithNumbersPlace.deletingLastPathComponent(),
+        withIntermediateDirectories: true)
+    let earlyFormWithNumbersBytes = Data(
+        """
+        {
+          "version": 2,
+          "ticks": [],
+          "numbers": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "number": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "number": 70.5
+            }
+          ]
+        }
+        """.utf8)
+    try earlyFormWithNumbersBytes.write(to: earlyFormWithNumbersPlace)
+
+    let currentFormWithoutNumbersPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: currentFormWithoutNumbersPlace.deletingLastPathComponent(),
+        withIntermediateDirectories: true)
+    let currentFormWithoutNumbersBytes = Data(
+        #"{"version": 3, "ticks": []}"#.utf8)
+    try currentFormWithoutNumbersBytes.write(to: currentFormWithoutNumbersPlace)
+
+    #expect(throws: RecordStoreError.notAStore(at: earlyFormWithNumbersPlace)) {
+        try RecordStore(at: earlyFormWithNumbersPlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: currentFormWithoutNumbersPlace)) {
+        try RecordStore(at: currentFormWithoutNumbersPlace)
+    }
+    #expect(try Data(contentsOf: earlyFormWithNumbersPlace) == earlyFormWithNumbersBytes)
+    #expect(
+        try Data(contentsOf: currentFormWithoutNumbersPlace) == currentFormWithoutNumbersBytes)
+}
+
 @Test("a history kept before a commitment carried a kind is read with every commitment of the plain kind")
 func aHistoryKeptBeforeACommitmentCarriedAKindIsReadWithEveryCommitmentOfThePlainKind() throws {
     let place = freshPlace()
@@ -375,6 +662,94 @@ func aHistoryKeptBeforeACommitmentCarriedAKindIsReadWithEveryCommitmentOfThePlai
 
     #expect(store.history == expected)
     #expect(store.history.isKept(gym, on: monday))
+}
+
+@Test("a history kept before a day could hold a number is read, and no day in it holds a number")
+func aHistoryKeptBeforeADayCouldHoldANumberIsReadAndNoDayInItHoldsANumber() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 2,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "tick": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RecordStore(at: place)
+
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var expected = History()
+    expected.add(Tick(gym, on: monday)!)
+
+    #expect(store.history == expected)
+    #expect(store.history.isKept(gym, on: monday))
+    #expect(store.history.number(for: weight, on: monday) == nil)
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a number added over a history kept before a day could hold a number is read back beside the ticks already there")
+func aNumberAddedOverAHistoryKeptBeforeADayCouldHoldANumberIsReadBackBesideTheTicksAlreadyThere()
+    throws
+{
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 2,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "tick": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RecordStore(at: place)
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let number = Number(70.5, for: weight, on: monday)!
+    try store.add(number)
+
+    let later = try RecordStore(at: place)
+
+    var expected = History()
+    expected.add(Tick(gym, on: monday)!)
+    expected.add(number)
+    #expect(later.history == expected)
+    #expect(later.history.isKept(gym, on: monday))
+    #expect(later.history.number(for: weight, on: monday) == 70.5)
 }
 
 @Test("reading a history kept in an earlier form changes nothing at its place")

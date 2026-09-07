@@ -1,7 +1,11 @@
-# 1031. A store reads the form written before it, and rewrites the file only when something is kept
+# 1031. A store reads every form it has written, and rewrites the file only when something is kept
 
 - Status: accepted
 - Date: 2026-09-06
+- Amended: 2026-09-06 — this record's own reversal trigger fired at `add-number-record` (#138), one
+  day later. A store reads **every** form it has written rather than one step back, and in exchange
+  each form is read as the shape that form has rather than leniently. The title moved with the
+  decision; § *Reading three forms* is the new part and the new trigger is at the end.
 - Deciders: Diego Bugmann
 
 ## Context
@@ -32,8 +36,8 @@ That is the failure the product exists to remove, arriving by way of a version n
 
 ## Decision
 
-**A store reads the forms this app has written — the one it writes now and the one before it — and
-refuses everything else. It writes nothing when it opens.**
+**A store reads every form this app has written, reads each as the shape that form has, and refuses
+everything else. It writes nothing when it opens.**
 
 - The version guard widens from `version == currentVersion` to the closed range
   `1...currentVersion`. Above it: still `.laterForm`, unchanged. Below it: still `.notAStore`.
@@ -47,6 +51,38 @@ refuses everything else. It writes nothing when it opens.**
   change (ADR-1017).
 - **A form number no build ever wrote is refused as content that is not a store**, not as an earlier
   form. Version 0 says nothing about the shape of what follows it.
+
+## Reading three forms
+
+Added 2026-09-06 at `add-number-record` (#138), which gives the record document a `numbers` field and
+moves `RecordDocument.currentVersion` to `3`. The record file can now be in three forms and the
+roster file in two, independently, and every one of them opens.
+
+The range guard needed no change at all — `1...currentVersion` already covers a third form — so the
+part of this decision that cost something is the strictness it was written to require:
+
+**Each form is read as the shape that form has.** A store declares its form before anything else is
+read, so what may be in it is known rather than inferred. `numbers` is present exactly at the form
+that writes it: a document declaring form 1 or form 2 that carries one is refused as content that is
+not a store, and so is one declaring form 3 that does not.
+
+The cheap alternative was free and is rejected. JSON decoding ignores unknown keys, so an optional
+`numbers` meaning *none when absent* would read all three forms with no guard written at all — which
+is the "second optional field and infer" this record warned against when it named this trigger. It
+would make the declared form decorative, since every form would then accept every other form's shape,
+and the failure is silent: a file this app never wrote would be read as though it had, and the next
+change kept there would launder it into a current-form file.
+
+**One comparison, not three decode paths.** This record originally called for "a decode path per
+form, chosen off the version". What it wanted was that each form's shape is stated and enforced;
+three forms that differ from one another only by the presence of one array get exactly that from one
+check against a version already in hand, and three decode functions would be scaffolding around it.
+
+**The `kind` field's absence-means-tick rule is deliberately not tightened the same way.** It could
+be — form 1 has no `kind`, forms 2 and 3 always write one — but `kind` lives in `CommitmentRecord`,
+which the roster document shares and whose own form is not moving. Threading a version into the
+shared coding would edit the roster's read path to guard against a hand-edited file nobody has seen.
+The line is drawn here so the next person does not have to re-derive it.
 
 ## Alternatives considered
 
@@ -80,9 +116,9 @@ number this app never wrote is not evidence about the bytes after it.
 - **Two files move independently.** The roster and the record are at different places and are written
   by different acts, so a phone can sit with one at the new form and one at the old indefinitely.
   That is correct and is what the "changes nothing at its place" requirements say.
-- **The reversal trigger is a third form.** One optional field is what makes one step back free. A
-  form 3 that must read both form 1 and form 2 should say what each form means — a decode path per
-  form, chosen off the version — rather than adding a second optional field and inferring. Adding
-  optional fields indefinitely ends with a document whose shape nobody can state, which is the state
-  this decision is meant to keep the file out of. Amend this ADR in place when that day comes
-  (ADR-1020).
+- **The reversal trigger is now a fourth form, or a form that differs by more than a field.** Three
+  forms differing from one another only by a field being present or absent is what lets one document
+  type read all of them under one comparison. A form that renames a field, changes what one means, or
+  splits one into two cannot be told from its predecessors that way, and at that point the decode
+  path per form is owed for real. Amend this ADR in place when that day comes (ADR-1020); it has been
+  amended once already, on the trigger it named itself.
