@@ -77,6 +77,13 @@ struct CommitmentsView: View {
                         }
                     }
                 }
+                // The drag hands an `IndexSet` and a destination `Int`; a single-row drag in a
+                // `List` always produces one element, and `offset` passes through to `screen.move`
+                // untouched — `design.md` § *The seam* fixes the arithmetic there, not here.
+                .onMove { source, offset in
+                    guard let index = source.first else { return }
+                    screen.move(screen.kept[index], toOffset: offset)
+                }
             }
 
             if case .stopping(_, let stopRefusal) = screen.refusedChange {
@@ -87,6 +94,10 @@ struct CommitmentsView: View {
                 screen.kept.contains(removed)
             {
                 refusalText(removingRefusal)
+            }
+
+            if case .moving(_, let movingRefusal) = screen.refusedChange {
+                refusalText(movingRefusal)
             }
 
             Section("Stopped") {
@@ -181,6 +192,11 @@ struct CommitmentsView: View {
             }
         }
         .navigationTitle("Commitments")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                EditButton()
+            }
+        }
         .onChange(of: screen.dayToKeepFrom) { _, newValue in
             keptFromDate = date(from: newValue)
         }
