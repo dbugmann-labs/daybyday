@@ -257,7 +257,7 @@ diff, so these boxes confirm rather than write.
 - [x] 11.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 2, 6 and 8 actually ran red before the code that satisfies them was written. A
   prediction in a task is not evidence; this is.
-- [ ] 11.2 Re-run after § 14, which is why this box is open again — it has been ticked after § 12
+- [x] 11.2 Re-run after § 14, which is why this box is open again — it has been ticked after § 12
   and after § 13, and § 14 moves both code and test assertions underneath it: `pnpm run verify`
   green from the repo root, and `pnpm run checks` reporting `scenario coverage — 75/75`.
   `cd src/DayByDayKit && swift test` reports **592 tests passing** — 544 on the base this branch now
@@ -442,7 +442,7 @@ stays as § 11.2 states it. Every existing test stays green through all of § 14
 rule-5 stop rather than a licence to edit a test. § 14 runs **before** § 11.2, § 11.3 and § 11.5,
 all of which are open for it.
 
-- [ ] 14.1 Re-measure the one case finding 1 rests on before moving anything, and read the output
+- [x] 14.1 Re-measure the one case finding 1 rests on before moving anything, and read the output
   rather than this file. From anywhere, with the toolchain in `AGENTS.md` § *This machine* on PATH:
 
   ```bash
@@ -463,7 +463,7 @@ all of which are open for it.
   measurement is a stop and a report: § 14.2 rests on it, and this document has been wrong about
   this type twice before.
 
-- [ ] 14.2 Answer zero before the parse. In `Sources/DayByDayKit/DayScreen.swift`, replace
+- [x] 14.2 Answer zero before the parse. In `Sources/DayByDayKit/DayScreen.swift`, replace
   `hasAtMostThirtyEightSignificantDigits(_:)` with a function that gives back the *count* rather
   than a yes or no — the same counting, leading and trailing zeros dropped — and have `read(_:)` use
   it twice: a count above 38 is a value that is not a number, as today, and a count of **nought** is
@@ -479,7 +479,7 @@ all of which are open for it.
   values the test named `a number too long to be kept exactly keeps nothing and takes nothing back`
   commits all have significant digits of their own, so none of them takes the new branch.
 
-- [ ] 14.3 Rename the maker. In `Sources/DayByDayKit/DayView.swift`,
+- [x] 14.3 Rename the maker. In `Sources/DayByDayKit/DayView.swift`,
   `Row.number(_ decimal: Decimal, asOf: CalendarDate) -> Number?` becomes
   `Row.numberRecord(_ decimal: Decimal, asOf: CalendarDate) -> Number?`, body and doc comment
   otherwise unchanged, and the one call site at `DayScreen.swift:323` becomes
@@ -492,7 +492,7 @@ all of which are open for it.
   **Tick this on the grep**: from `src/DayByDayKit`,
   `grep -rn 'func number(\|row\.number(' Sources/` prints nothing at all. It prints two lines today.
 
-- [ ] 14.4 Give the two exactness tests an oracle that is not the thing under test. In
+- [x] 14.4 Give the two exactness tests an oracle that is not the thing under test. In
   `Tests/DayByDayKitTests/DayScreenTests.swift`, five assertions compare what came back to
   `Decimal(string: <the same text>)!`, so each one holds even if that call rounded the text — which
   is exactly the risk `design.md` § *Risks* records as accepted and unguarded, and the scenarios
@@ -513,7 +513,7 @@ all of which are open for it.
   five lines today. No `@Test` display name changes, no scenario changes, and no assertion is
   removed — each is replaced by a stronger one.
 
-- [ ] 14.5 Record in § *Notes*, under a heading of its own, what § 14.1 actually printed, that the
+- [x] 14.5 Record in § *Notes*, under a heading of its own, what § 14.1 actually printed, that the
   five mutations in § 14.4 each went red before being put back, and that
   `cd src/DayByDayKit && swift test` was run after each of §§ 14.2–14.4 with the same count as § 13
   left behind, no test failing and no `@Test` display name changed.
@@ -578,3 +578,42 @@ three scenarios § 13 touches most directly —
 `a number too long to be kept exactly keeps nothing and takes nothing back` and
 `a number of as many digits as can be kept is entered exactly` — were also run individually
 after § 13.5 and passed.
+
+## § 14 — the fourth review pass's moves
+
+§ 14.1's re-measurement, run on this machine on 2026-09-07 with the toolchain named in
+`design.md` § *Context* (Apple Swift 6.3.3, swiftlang-6.3.3.1.3,
+target `arm64-apple-macosx26.0`), printed:
+
+```
+0.00 … 130 chars → 0
+0.00 … 131 chars → nil
+-0.0 … 132 chars → nil
+.000 … 130 chars → nil
+0000 … 400 chars → 0
+```
+
+`0`, nil, nil, nil, `0`, in that order — exactly what § 14.1 and `design.md` § *Context*'s fourth
+measurement expect: four texts whose value is zero, three of which the type will not parse, and
+one long one it parses fine because it carries no separator and so forms no exponent to fail on.
+
+`cd src/DayByDayKit && swift test` was run after each of §§ 14.2, 14.3 and 14.4, each time
+reporting **592 tests passing, 0 failures**, the same count § 13 left behind, with no `@Test`
+display name changed and no test newly red at any of the three points.
+
+§ 14.4's five mutations — one digit changed in each of the five literals a test is compared
+against, run one at a time and reverted before the next — each went red before being put back:
+
+- `"70.5"` → `"70.6"` in `a number typed with a full stop is entered exactly as it was typed`:
+  red, `(→ "70.5") == "70.6"`.
+- `"0.000001"` → `"0.000002"`, same test: red, `(→ "0.000001") == "0.000002"`.
+- `"98765432109876543210.5"` → `"98765432109876543210.6"`, same test: red,
+  `(→ "98765432109876543210.5") == "98765432109876543210.6"`.
+- `thirtyEightNines` → a 38-digit string with its first digit changed, in the live screen's
+  assertion in `a number of as many digits as can be kept is entered exactly`: red,
+  `(→ "999…9" [38 nines]) == "899…9" [38 digits]`.
+- The same mutation in the reopened screen's assertion, same test: red, matching the live
+  screen's failure.
+
+Each mutation was reverted immediately after its red run; the file diffs to nothing against the
+state § 14.4 left it in once all five had been checked and undone.
