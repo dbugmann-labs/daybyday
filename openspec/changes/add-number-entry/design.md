@@ -77,6 +77,25 @@ and one question asked of the type, is the whole of it. `tasks.md` § 13.4 re-ru
 before the code moves; a measurement two review passes have now corrected is not something to take
 on this document's word.
 
+**A fourth measurement, taken at the fourth G7 pass, is why a `nil` from the parse is not by itself
+a refusal.** All three sets above read a `nil` as the type saying the number is past its ceiling or
+below its floor. That is true of every value they measured and false for one this reading can reach:
+text whose value is **zero**, written with more than 128 places after the point. Same machine, same
+day:
+
+```
+Decimal(string: "0."  + 128 x "0") -> 0      130 chars, and the value is zero
+Decimal(string: "0."  + 129 x "0") -> nil    131 chars, and the value is still zero
+Decimal(string: "-0." + 129 x "0") -> nil    the same with a sign
+Decimal(string: "."   + 129 x "0") -> nil    the same with no leading digit
+Decimal(string: 400 x "0")         -> 0      no separator, so no exponent to fail on
+```
+
+What fails there is not the number but its *written form*: the parse forms an exponent of −129 and
+gives up on text whose value is zero, which `Decimal` holds at any scale. So a `nil` says the type
+cannot hold the number **as written** — which, for text of the shape this reading admits, means a
+magnitude past its ceiling or below its floor in every case but one, and that one says zero.
+
 Every one of those is reachable from the shell — `ContentView.swift` binds an unbounded `TextField`,
 so a paste is enough — and every one is digits and nothing else, so a shape check on characters
 alone passes them. The `nil`s answer a parse this design had claimed could not fail; the rounding
@@ -135,7 +154,7 @@ extension DayView {
         /// The number record this row makes of `decimal` — this row's commitment, on this row's
         /// date — or `nil` when the row offers no number entry as of `today`, or its commitment
         /// refuses the value.
-        public func number(_ decimal: Decimal, asOf today: CalendarDate) -> Number?
+        public func numberRecord(_ decimal: Decimal, asOf today: CalendarDate) -> Number?
 
         /// The record a number for this row is kept under: this row's commitment on this row's
         /// date. Internal, and the only thing a take-back needs.
@@ -176,8 +195,9 @@ said nothing about which side makes the `Number`, so the code made it screen-sid
 through the row three times to do it. Nothing in the delta moves; the seam gains what it was short
 of, and each of the three reaches ends somewhere:
 
-- **`Row.number(_:asOf:)`** makes the record, refusing on the two conditions `numberEntry(asOf:)`
-  already refuses on plus the one `Number.init?` refuses on. It is `tick(asOf:)` with a value.
+- **`Row.numberRecord(_:asOf:)`** makes the record, refusing on the two conditions
+  `numberEntry(asOf:)` already refuses on plus the one `Number.init?` refuses on. It is
+  `tick(asOf:)` with a value.
 - **`NumberEntry.refusalCause`** is the range said as a sentence, formed in `numberEntry(asOf:)`
   beside `hint` off the one `case .number(let range)` binding there. `DayScreen.rangeRefusalCause`
   goes: it was a second place wording a bound, reading `commitment.kind` to do it, and two places
@@ -189,6 +209,24 @@ of, and each of the three reaches ends somewhere:
 
 `RecordedDay` is `record`'s own internal value for "a commitment on a day" — the key its history and
 its store already hold numbers under — so a row naming one invents nothing.
+
+**The maker is `numberRecord(_:asOf:)` and not `number(_:asOf:)`, and that is the fourth G7 pass's
+finding 3.** The first shape of this section called it `number(_:asOf:)`, for the parallel with
+`tick(asOf:)`. But a row *stores* `number: Decimal?`, so inside the module `row.number` was the
+number the day holds and `row.number(decimal, asOf: today)` was a record made of one — a `Decimal?`
+and a `Number?` answering to one word, which no reader can tell apart at the call site (Fowler,
+*Mysterious Name*). `tick(asOf:)` carries no such collision because nothing stores a tick. Paying
+for the name here is what makes the collision not happen twice more: #140's note and #141's total
+copy this shape and each of them stores what the day holds beside a maker for it, so what this
+leaves behind is a pair — **`<kind>Entry(asOf:)` for what a row offers, `<kind>Record(_:asOf:)` for
+what a row makes.**
+
+**Rejected: renaming the stored property instead**, to `heldNumber` or the like, leaving the maker
+as `number(_:asOf:)`. The stored property is the plain reading of the word — it is what
+`numberEntry(asOf:)` hands out, and the delta's own requirement is written about a row *holding* a
+number. The maker is the member that is not what its name says, so the maker is the one that moves.
+**Rejected: `record(_:asOf:)`.** Shorter, and it collides with the capability called `record` in
+every sentence written about either.
 
 **Rejected: an overload on `RecordStore` taking a row-made record, in `record`'s own file.** It
 reads better at the call site and it is this capability's convenience sitting in another
@@ -245,8 +283,8 @@ field must open holding the day's number, and the row must never draw it. The de
 by *where the number can be reached from* rather than by a rule anyone has to keep — the stored
 `Row.number` is internal, and the only way out is `numberEntry(asOf:)`, which the shell opens an
 alert from. A screen drawing a row has nothing to draw the number with; you cannot forget a rule
-that has no expression. `Row.number(_:asOf:)` takes a number *in* and gives back the record made of
-it, so it is no second way out: `Number`'s own value is internal to `record`.
+that has no expression. `Row.numberRecord(_:asOf:)` takes a number *in* and gives back the record
+made of it, so it is no second way out: `Number`'s own value is internal to `record`.
 
 That makes the number part of what a row **is**, which is why *A row is a commitment's line on a
 date* is modified rather than left alone. `Row` is `Hashable` with synthesized conformance, so a
@@ -273,17 +311,23 @@ second seam would buy nothing but a second place to test.
 The order is: trim surrounding whitespace; if what is left is empty, it is a take-back; otherwise
 check the shape in full (optional leading `-`, then characters that are `0`–`9` or one separator,
 at least one digit, at most one separator); then count the *significant digits*, which is the next
-section; if both hold, replace a `,` with a `.` and call `Decimal(string:)`, and read a `nil` from
-it as a value that is not a number. The whitespace trim is what makes `" "` a take-back rather than
-a `Decimal(string:)`-flavoured **0**, and it is why the delta says space is disregarded *before*
-anything else is decided.
+section; if that count is nought the number is **zero**, and it is answered without asking the type
+anything; otherwise, if the count is within the bound, replace a `,` with a `.` and call
+`Decimal(string:)`, and read a `nil` from it as a value that is not a number. The whitespace trim is
+what makes `" "` a take-back rather than a `Decimal(string:)`-flavoured **0**, and it is why the
+delta says space is disregarded *before* anything else is decided.
 
 **The parse is never force-unwrapped, and its `nil` is now load-bearing.** An earlier draft of this
 section said `Decimal(string:)` "cannot fail on text of that shape" and the code took a `!` on that
 word; the measurement in § *Context* shows the claim was false and the `!` a crash a paste could
 reach. The draft after it removed the `!` but called the `nil` unreachable, guarded by a bound of
 its own — and that bound was wrong, which is the third G7 pass's finding 2. A `nil` is reachable, it
-is *how the type says it cannot hold the number*, and it is read as a value that is not a number.
+is *how the type says it cannot hold the number as written*, and it is read as a value that is not a
+number. **"As written" is load-bearing, and was the fourth G7 pass's finding 1**: there is exactly
+one text of the shape this reading admits whose `nil` is not the type refusing the number, and that
+one says zero past the type's floor. Zero is therefore decided before the parse, and every `nil`
+that is left really is the type giving up on a magnitude — § *Context*'s fourth measurement, and the
+next section's rule.
 
 `Decimal` and not `Double`, which is ADR-1032 and not re-decided here.
 
@@ -295,10 +339,24 @@ honour that for every string of digits, so the delta says where the promise stop
 letting the type decide it silently.
 
 **The rule the reading applies**, on the text once space is disregarded: take the digits, drop the
-leading zeros and the trailing zeros, and count what is left. The number is kept when that count is
-at most **38**; text saying more digits than that is a value that is not a number. Then the parse
-answers the rest — `Decimal(string:)` returning `nil` is the type saying it cannot hold the number
-at all, and that too is a value that is not a number.
+leading zeros and the trailing zeros, and count what is left. Nothing left to count is **zero**, and
+zero is kept as it stands — that is the whole of that case and the parse is never asked about it.
+Otherwise the number is kept when that count is at most **38**; text saying more digits than that is
+a value that is not a number. Then the parse answers the rest — `Decimal(string:)` returning `nil`
+is the type saying it cannot hold the number **as written**, and that too is a value that is not a
+number.
+
+**Zero is answered before the parse, and this is the fourth G7 pass's finding 1.** The sentence that
+stood here read every `nil` as "the type saying it cannot hold the number at all", and the code took
+that word: a count of nought passed the digit bound — dropping every digit of `0.000…0` leaves none
+to count — and then `Decimal(string:)` was asked, and answered `nil`, and the person was told "Not a
+number" for a number this delta says SHALL be kept. `Decimal(string: "0." + 129 zeros)` is `nil`
+while `Decimal(string: "0." + 128 zeros)` is `0`; the value is zero either way and `Decimal` holds
+zero at every scale it has. What the parse gives up on there is the written exponent, not the
+number, which is why the premise was false for that one text and true for every other. Deciding
+zero first is also the smaller rule: it removes a question the type answers wrongly rather than
+adding a bound of our own, and it leaves § *Context*'s reading of a `nil` — a magnitude past the
+ceiling or below the floor — true of every text that still reaches the parse.
 
 **One bound of this system's own, and one question asked of the type.** The digits are ours because
 past 38 of them the type does not refuse, it *rounds*, and it does not say so: 39 nines come back as
@@ -385,6 +443,14 @@ weight on the phone and reading it back after a force-quit.
   this capability's, and a caller that parsed first would have to reimplement the separator rule to
   get the same answer. The shell holds a `TextField`'s text and hands it over unread, which is the
   only thing it can do without deciding something.
+- **Zero written past the type's floor is kept, and no scenario says so.** → Accepted, and it is
+  the reason § 14 writes no test. The delta's requirement covers it in words — zero is neither more
+  than thirty-eight significant digits nor a magnitude this system cannot hold — but every scenario
+  about a number that cannot be kept is about text that really cannot be kept, so nothing asserts
+  this one and nothing would catch it regressing. The case is reachable only by a paste of 131
+  characters, the fix is three lines and ticks on a grep, and adding a scenario is a delta edit the
+  fourth review pass did not ask for. `## Questions for you` question 1 puts the choice in front of
+  the owner rather than leaving it made here.
 - **The reading rests on a measured property of `Decimal(string:)` that Foundation does not
   document** — that at 38 significant digits or fewer it never rounds. → Accepted, and it is the
   cheaper of the two risks on offer: the alternative is restating the type's ceiling as a constant
@@ -399,19 +465,56 @@ Nothing to migrate. No store form moves, no file on a phone is read or written d
 record written by #138 reads back unchanged. The one public renaming is source-level inside this
 repository; `DayByDayKit` has no consumer outside it.
 
+## Questions for you
+
+Two, both raised while writing the fourth review pass's moves into this folder, and both
+**outstanding**. The folder below is written on the recommended answer to each; this section is
+deleted once they are answered and what was decided is recorded under *Open Questions*.
+
+1. **Zero written past the type's floor will be kept, and no scenario will say so.** The fix to
+   finding 1 changes behaviour — `"0."` followed by 129 zeros is told "Not a number" today and is
+   kept as zero afterwards — and not one of the delta's 75 scenarios asserts it, so nothing but a
+   measurement recorded in prose stands between it and a silent regression later. Add a scenario to
+   the delta, or leave the case carried by the requirement's words alone?
+   - *Recommended:* leave it. The requirement already says a number this system can hold SHALL be
+     kept and zero is one; the text that reaches this is a 131-character paste and nothing a person
+     types; the delta is otherwise finished and name-matched at 75/75; and the review pass that
+     measured this case asked for the code to move and not for a scenario. The behaviour is fenced
+     on the other side by the two scenarios § 12 added, which still refuse for the digit count and
+     for the floor.
+   - *If you say add one:* the delta gains one scenario under *A day screen reads what an entry is
+     committed with* — 76 in all — `tasks.md` § 14 gains a red-green cycle writing the acceptance
+     test named after it verbatim, § 11.2's expected count becomes 593, and the risk this document
+     now records as accepted goes away. Nothing else moves; the code is the same three lines either
+     way.
+
+2. **The maker's new name is `numberRecord(_:asOf:)`.** Finding 3 said rename it and did not name
+   the replacement, so this document chose one — and by the finding's own reasoning the choice is
+   what #140 and #141 will copy: `<kind>Entry(asOf:)` for what a row offers,
+   `<kind>Record(_:asOf:)` for what a row makes.
+   - *Recommended:* `numberRecord(_:asOf:)`. It says what it gives back, it keeps the parallel with
+     the `numberEntry(asOf:)` the row already has, and it generalises to `noteRecord` and
+     `totalRecord` without a second decision.
+   - *If you want another:* three files in this folder carry the name — `design.md` § *The seam*,
+     `tasks.md` §§ 13.2 and 14.3, `proposal.md` § *Impact* — and the edit is mechanical in all
+     three. Nothing in `specs/` carries it, so the delta does not move whichever way this goes.
+
 ## Open Questions
 
-**None.** `grill.md` § *Left open* says "None." with its reason, and writing the delta turned up
-nothing that must be answered before the code is written. **Nor did the review, in any of its three
-passes.** The first pass's finding that a long paste crashes the app is answered above by a rule
-this delta's own words already implied, and the one place it could have become a question — whether
-such a value earns a cause of its own — is decided against ADR-1036's stated test rather than by
-preference. **The third pass's two are the owner's decisions already taken**, both the same way: the
-requirements stand and the code moves. What was left for this document was where the seam is short
-(§ *The seam*) and where a measured claim was false (§ *Context*, § *A number this system cannot
-keep exactly is not a number here*), and neither is a preference — one is read off the requirement
-`tick(_:)` already honours, the other off a measurement anyone can re-run. Five things writing it
-turned up, and why each is settled here rather than asked:
+**Two, and both are in § *Questions for you* above rather than here**, because this section records
+what is settled and neither of them is yet. Nothing else is open: `grill.md` § *Left open* says
+"None." with its reason, writing the delta turned up nothing that must be answered before the code
+is written, and everything the review's four passes found was decided rather than asked. The first
+pass's finding that a long paste crashes the app is answered above by a rule this delta's own words
+already implied, and the one place it could have become a question — whether such a value earns a
+cause of its own — is decided against ADR-1036's stated test rather than by preference. **The third
+and fourth passes' five findings are the owner's decisions already taken**, and all five the same
+way: the requirements stand and the code moves. What was left for this document was where the seam
+is short (§ *The seam*), where a measured claim was false (§ *Context*, § *A number this system
+cannot keep exactly is not a number here*, twice over), and what to call a member whose name
+answered to two things (§ *The seam* again) — and none of those is a preference, except the name
+itself, which is question 2 above. Five things writing the delta turned up, and why each is settled
+here rather than asked:
 
 - **Whether text holding nothing but space is a take-back or a value that is not a number.** Settled
   as a take-back. A decimal keypad cannot print a space, so nothing a person can do reaches it; the

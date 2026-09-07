@@ -257,11 +257,12 @@ diff, so these boxes confirm rather than write.
 - [x] 11.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 2, 6 and 8 actually ran red before the code that satisfies them was written. A
   prediction in a task is not evidence; this is.
-- [x] 11.2 Re-run after § 13, which is why this box is open again — it was ticked after § 12 and
-  § 13 moves code underneath it: `pnpm run verify` green from the repo root, and `pnpm run checks`
-  reporting `scenario coverage — 75/75`. `cd src/DayByDayKit && swift test` reports **592 tests
-  passing** — 544 on the base this branch now sits on (§ 1.1), plus the forty-six written in §§ 2–8
-  and the two written in § 12, plus none removed and **none added by § 13**, which writes no test.
+- [ ] 11.2 Re-run after § 14, which is why this box is open again — it has been ticked after § 12
+  and after § 13, and § 14 moves both code and test assertions underneath it: `pnpm run verify`
+  green from the repo root, and `pnpm run checks` reporting `scenario coverage — 75/75`.
+  `cd src/DayByDayKit && swift test` reports **592 tests passing** — 544 on the base this branch now
+  sits on (§ 1.1), plus the forty-six written in §§ 2–8 and the two written in § 12, plus none
+  removed and **none added by § 13 or § 14**, neither of which writes a test.
   **Read the number the run prints and tick this against that, never against this arithmetic**: the
   first time this box was ticked it asserted 535, which had been right against the old base and was
   wrong by 55 the moment the branch was rebased, and nothing caught it until the review. A count
@@ -384,7 +385,9 @@ through all of it, and a red one is a rule-5 stop rather than a licence to edit 
   `Number(decimal, for: commitment, on: date)`; and an internal
   `var recordedDay: RecordedDay { RecordedDay(commitment: commitment, date: date) }`. Both are the
   row making what it is a line of, exactly as `tick(asOf:)` already does — `design.md` § *The seam*.
-  Nothing calls either yet, so `swift test` reports the same count as before this box.
+  Nothing calls either yet, so `swift test` reports the same count as before this box. **The maker's
+  name here is the one this box was written and ticked under; § 14.3 renames it to
+  `numberRecord(_:asOf:)`, which is the fourth review pass's finding 3.**
 
 - [x] 13.3 Move the refusal's words next to the hint's. Add an internal `let refusalCause: String?`
   to `DayView.NumberEntry` and form it in `numberEntry(asOf:)` off the same `case .number(let range)`
@@ -399,7 +402,7 @@ through all of it, and a red one is a rule-5 stop rather than a licence to edit 
   `try recordStore.removeNumber(on: row.recordedDay)`, through a `private extension RecordStore`
   added at the foot of `DayScreen.swift` that forwards to `removeNumber(for:on:)` — it goes in
   `day-screen`'s own file, not `record`'s, and `design.md` § *The seam* says why; the keep becomes
-  `guard let number = row.number(decimal, asOf: today)`; and the refusal reads
+  `guard let number = row.number(decimal, asOf: today)` — renamed by § 14.3 — and the refusal reads
   `Notice(row: row, cause: entry.refusalCause)`. **Tick this on the grep, not on the reading**: from
   `src/DayByDayKit`, `grep -n 'row\.commitment\|row\.date' Sources/DayByDayKit/DayScreen.swift`
   prints nothing at all. It prints three lines today, which is the finding.
@@ -422,6 +425,97 @@ through all of it, and a red one is a rule-5 stop rather than a licence to edit 
   `cd src/DayByDayKit && swift test` was run after each of §§ 13.2–13.5 with no test failing and no
   `@Test` display name changed. § 11.2 records the count; this records that nothing in a section
   which writes no test went red on the way.
+
+## 14. What the fourth review pass found
+
+Three findings, all accepted, **batched into one folder edit so a single fourth G4 covers them.**
+Two are this folder's — finding 1 corrected a premise sentence in `design.md` and finding 3 renamed
+a member it names — and the third is `tests/**` only. It is § 14.4 here all the same, because
+`tasks.md` is where the work of this Story is listed and a fix tracked nowhere is a fix nobody runs.
+A **fourth G4** is owed before a line of § 14 is written: `design.md` moved, so the digest moved.
+Run `pnpm run check:g4` first.
+
+**§ 14 writes no test and adds no scenario**, and that is a decision the owner has been asked to
+confirm — `design.md` § *Questions for you* question 1. If the answer is "add one", this section
+gains a red-green cycle under `AGENTS.md` rule 3 before § 14.5 and § 11.2's count becomes 593;
+until then every existing test stays green through all of § 14 and a red one is a rule-5 stop rather
+than a licence to edit a test. § 14 runs **before** § 11.2, § 11.3 and § 11.5, all of which are open
+for it.
+
+- [ ] 14.1 Re-measure the one case finding 1 rests on before moving anything, and read the output
+  rather than this file. From anywhere, with the toolchain in `AGENTS.md` § *This machine* on PATH:
+
+  ```bash
+  cat > /tmp/decimal-zero.swift <<'EOF'
+  import Foundation
+  func z(_ n: Int) -> String { String(repeating: "0", count: n) }
+  for t in ["0." + z(128), "0." + z(129), "-0." + z(129), "." + z(129), z(400)] {
+      let d = Decimal(string: t)
+      print(t.prefix(4), "…", t.count, "chars →", d == nil ? "nil" : d!.description)
+  }
+  EOF
+  swift /tmp/decimal-zero.swift
+  ```
+
+  Expect, in order: `0`, **nil**, **nil**, **nil**, `0` — four texts whose value is zero, three of
+  which the type will not parse, and one long one it parses fine because it carries no separator and
+  so forms no exponent to fail on. Any line disagreeing with `design.md` § *Context*'s fourth
+  measurement is a stop and a report: § 14.2 rests on it, and this document has been wrong about
+  this type twice before.
+
+- [ ] 14.2 Answer zero before the parse. In `Sources/DayByDayKit/DayScreen.swift`, replace
+  `hasAtMostThirtyEightSignificantDigits(_:)` with a function that gives back the *count* rather
+  than a yes or no — the same counting, leading and trailing zeros dropped — and have `read(_:)` use
+  it twice: a count above 38 is a value that is not a number, as today, and a count of **nought** is
+  `.number(0)`, returned without calling `Decimal(string:)` at all. The `Decimal(string:)` call and
+  its `nil` branch stay exactly as they are for everything else. Rewrite the doc comment against
+  `design.md` § *A number this system cannot keep exactly is not a number here*: the sentence
+  standing there today — "Zero is always kept, whatever its own digit count, since dropping every
+  one of its digits leaves none to count" — is the false premise this finding is about, since the
+  parse then refused it. **Tick this on the greps, not on the reading**: from `src/DayByDayKit`,
+  `grep -n 'hasAtMostThirtyEightSignificantDigits' Sources/DayByDayKit/DayScreen.swift` prints
+  nothing, and `grep -n 'Decimal(string:' Sources/DayByDayKit/DayScreen.swift` prints one line,
+  reached only where the count is between 1 and 38. Every existing test stays green: the three
+  values the test named `a number too long to be kept exactly keeps nothing and takes nothing back`
+  commits all have significant digits of their own, so none of them takes the new branch.
+
+- [ ] 14.3 Rename the maker. In `Sources/DayByDayKit/DayView.swift`,
+  `Row.number(_ decimal: Decimal, asOf: CalendarDate) -> Number?` becomes
+  `Row.numberRecord(_ decimal: Decimal, asOf: CalendarDate) -> Number?`, body and doc comment
+  otherwise unchanged, and the one call site at `DayScreen.swift:323` becomes
+  `guard let number = row.numberRecord(decimal, asOf: today)`. Nothing else in the package or the
+  shell names it — two sites in all, and no test does, so no `@Test` display name changes and the
+  count does not move. `design.md` § *The seam* says why the name moves and what it commits #140 and
+  #141 to. **If `design.md` § *Questions for you* question 2 came back with another name, that name
+  goes here and in the three places `design.md` lists — never a name chosen at the keyboard.**
+  **Tick this on the grep**: from `src/DayByDayKit`,
+  `grep -rn 'func number(\|row\.number(' Sources/` prints nothing at all. It prints two lines today.
+
+- [ ] 14.4 Give the two exactness tests an oracle that is not the thing under test. In
+  `Tests/DayByDayKitTests/DayScreenTests.swift`, five assertions compare what came back to
+  `Decimal(string: <the same text>)!`, so each one holds even if that call rounded the text — which
+  is exactly the risk `design.md` § *Risks* records as accepted and unguarded, and the scenarios
+  these two tests are named for say "digit for digit". Assert on the text instead:
+  `?.number?.description == <the literal>`. The five, by their lines today — the review named four,
+  and the fifth is the second of the pair in the 38-nines test:
+
+  - `:3007`, `:3012` and `:3017` in `a number typed with a full stop is entered exactly as it was
+    typed` — `"70.5"`, `"0.000001"`, `"98765432109876543210.5"`.
+  - `:3151` and `:3158` in `a number of as many digits as can be kept is entered exactly`, the live
+    screen and the reopened one — `thirtyEightNines`.
+
+  All four texts round-trip through `Decimal.description` exactly, measured on this machine on
+  2026-09-07, so all five assertions stay green. **Tick this on a mutation, not on the green run**:
+  a test that could not fail is what this box is fixing, so for each of the five, temporarily
+  compare against the same literal with one digit changed, watch it go red, and put it back. Then
+  `grep -n 'Decimal(string:' Tests/DayByDayKitTests/DayScreenTests.swift` prints nothing; it prints
+  five lines today. No `@Test` display name changes, no scenario changes, and no assertion is
+  removed — each is replaced by a stronger one.
+
+- [ ] 14.5 Record in § *Notes*, under a heading of its own, what § 14.1 actually printed, that the
+  five mutations in § 14.4 each went red before being put back, and that
+  `cd src/DayByDayKit && swift test` was run after each of §§ 14.2–14.4 with the same count as § 13
+  left behind, no test failing and no `@Test` display name changed.
 
 ## Notes
 

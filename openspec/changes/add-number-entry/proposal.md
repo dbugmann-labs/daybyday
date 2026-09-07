@@ -109,8 +109,10 @@ wrecked reading order in a 2,300-line spec is permanent.
 
 Every requirement restated under MODIFIED keeps its existing scenarios **verbatim**, and **no test
 written for one of them may be renamed or have an assertion changed** beyond the mechanical rename
-in `tasks.md` § 1. Twenty-seven of the delta's seventy-three scenarios are restatements already
-carried by passing tests; forty-six are new.
+in `tasks.md` § 1. Twenty-seven of the delta's **seventy-five** scenarios are restatements already
+carried by passing tests; forty-eight are new — forty-six as this was first written, and the two the
+first review pass added in `tasks.md` § 12. The number here said seventy-three until the fourth
+pass, which is what it counted before those two.
 
 `record`, `commitment`, `schedule` and `cli-version` are untouched.
 
@@ -118,8 +120,8 @@ carried by passing tests; forty-six are new.
 
 - **`src/DayByDayKit`** — no new file. `DayView.swift` gains `NumberEntry`, the number a row was
   formed with, `Row.numberEntry(asOf:)` beside `Row.tick(asOf:)`, and — beside `Row.tick(asOf:)`
-  for the same reason — `Row.number(_:asOf:)`, which makes the record so that a screen never has
-  to; `DayScreen.swift` gains `enter(_:on:)`, the reading of the committed text, and `Notice` in
+  for the same reason — `Row.numberRecord(_:asOf:)`, which makes the record so that a screen never
+  has to; `DayScreen.swift` gains `enter(_:on:)`, the reading of the committed text, and `Notice` in
   place of the bare `refusedChangeRow`. Nothing else in the package is edited — `Number`, `History`
   and `RecordStore` already carry everything this needs, which is what #138 was for, and the one
   adapter that spells `record`'s take-back for a row-made record sits in `DayScreen.swift` rather
