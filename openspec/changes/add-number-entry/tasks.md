@@ -245,7 +245,7 @@ diff, so these boxes confirm rather than write.
 
 ## 11. Closing the Story
 
-- [ ] 11.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
+- [x] 11.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 2, 6 and 8 actually ran red before the code that satisfies them was written. A
   prediction in a task is not evidence; this is.
 - [ ] 11.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
@@ -272,3 +272,23 @@ diff, so these boxes confirm rather than write.
   notice requirements last, in the order they are in today. Nothing here is `RENAMED`, so nothing
   should have moved. Any drift is a stop and a report, never a hand-edit: `openspec/specs/` is
   written by `/opsx:archive` and by nothing else (`AGENTS.md` rule 2).
+
+## Notes
+
+Which boxes predicted red in §§ 2, 6 and 8 actually ran red, checked at the moment each test was
+first run against the code that existed before it:
+
+- **2.1 ran red**, as predicted — `value of type 'DayView.Row' has no member 'numberEntry'` — before
+  `numberEntry(asOf:)` existed at all.
+- **2.2 and 2.4 did not run red.** Both guards `numberEntry(asOf:)` needed — the kind check and the
+  day-not-arrived check — were written together in 2.1's cycle, since both were one small function
+  and design.md fixed their shape already. 2.2 and 2.4 were green the moment they were written.
+- **6.2 ran red**, as predicted, and for the predicted reason: `Decimal(string: "70,5")` read as
+  `70`, so `screen.dayView.rows[0].numberEntry(asOf: monday)?.number → 70) == 70.5` failed before the
+  shape-checked reading replaced the naive one.
+- **6.3 and 6.6 did not run red.** Both were written after 6.2's fix landed, so the shape-checked
+  reading already handled leading zeros, a trailing separator, surrounding space and all seven
+  not-a-number values by the time either test existed.
+- **8.1 through 8.4 did not run red**, confirming the guards written in § 5 already run in the right
+  order — the record-store guard before the row-membership guard before the text is ever read — with
+  no reordering needed to satisfy any of the four.
