@@ -4,6 +4,10 @@
   recommendation that a Story could not carry it; everything below it is this record's own and is
   accepted by the chore PR that carries it
 - Date: 2026-09-06
+- Amended: 2026-09-07 — the cost this record booked was wrong within a day, and the first
+  consequence below is rewritten to say what it actually is. Nothing in the Decision moves: the
+  lane, the framework and the thin assertion are untouched, and so is the rule that this layer
+  asserts the shell drew and never what it drew.
 - Deciders: Diego Bugmann
 
 ## Context
@@ -95,10 +99,44 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
 
 ## Consequences
 
-- **The `swift` job grows a third step** and about four minutes: 3m45s on `macos-26`, against 50s
-  on this machine. A UI test spends most of that booting a simulator clone and installing the app,
-  not testing — the test case itself is 25s there and 7s here. The job went from about 90 seconds
-  to about five minutes.
+- **The `swift` job grows a third step.** This record first costed it at 3m45s on `macos-26`
+  against 50s here, and said a UI test spends most of that booting a simulator clone rather than
+  testing. The diagnosis was right and the number was not: **it was never a fixed price, and by
+  the following day it was 5m10s and 8m36s on two consecutive runs** (34120659274 and
+  34116245290). The job's own step logs, timestamped on 2026-09-07, put 19s of that on the build,
+  25-40s on the test case, and **260-450s on simulator setup** — all of it serial, all of it
+  after the build had finished and the runner had nothing else to do.
+
+  **Amended 2026-09-07: the step is about a minute, and this was a defect rather than a price.**
+  Two causes, both measured here before they were changed:
+
+  - `xcodebuild test` was **cloning the device** — `Clone 1 of iPhone 17 Pro` in both runs'
+    logs — because the scheme `xcodebuild` derives parallelises by default and there is no
+    `.xcscheme` in the tree to say otherwise. On a runner, whose devices have never been booted
+    since the image was built, that is a cold first boot of the clone stacked on a cold first
+    boot of the source. One test on one device buys nothing from a clone.
+    `-parallel-testing-enabled NO` declines it: 47.7s to 28.3s here, cold simulator, warm build.
+  - **The boot had nothing to overlap.** Split into `build-for-testing` and
+    `test-without-building`, with `simctl boot` started at the top of the job, the boot runs
+    underneath `swift test` and the build and `bootstatus -b` is the join — 28.3s to 17.0s here.
+    `simctl boot` returns in about half a second and the boot proceeds inside
+    `CoreSimulatorService`, so it is not a child of the step's shell and the runner's
+    orphan-process cleanup does not touch it.
+
+  The separate compile step folded into the same `build-for-testing` while this was being done.
+  It had been building a universal `x86_64 arm64` binary against `generic/platform=iOS Simulator`
+  — 43-48s on the runner, confirmed with `lipo -archs` — and the test step then compiled the same
+  sources again for the device it was about to run on. **That narrows the compile check twice**,
+  and the narrowings are stated rather than hidden: the shell is now compiled for arm64 only, and
+  compiled with testability enabled. For pure Swift against one SDK neither changes what "does the
+  shell still compile against the kit" can catch, and the runners are arm64. If a Story ever makes
+  the shell arch-sensitive, that is the trigger to split the step back out.
+
+  **What this record got wrong is worth naming, because the shape recurs.** It measured one cold
+  run of a step whose cost is dominated by a simulator boot, wrote the number down as a property
+  of the step, and built an argument on it. Simulator boot on a shared runner is variable by
+  nature — 260s and 450s in the same week — so a single measurement of it is a sample, not a
+  price. Nothing here was recalled rather than run; the error was treating one run as the answer.
 
   **So it is gated twice, and this is the part of the record most likely to be revisited.** It is
   skipped while a PR is a draft — the idiom checks 4, 5, 8 and 9 already use, and the reason

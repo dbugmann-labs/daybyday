@@ -253,9 +253,8 @@ is not given `-derivedDataPath`. It is gitignored (ADR-1019), so this is noise r
 
 **It builds the app, and it does not run it.** CI's `swift` job discovers `Package.swift` files and
 runs `swift test` — an `.xcodeproj` adds no manifest, so that half still cannot see the app target
-— and then compiles the shell explicitly, with the `-scheme` build above against
-`generic/platform=iOS Simulator`. Nothing boots a simulator, installs anything or takes a
-screenshot; the commands above are still the only way anyone sees the app.
+— and then compiles the shell explicitly. Nothing installs anything or takes a screenshot; the
+commands above are still the only way anyone *sees* the app.
 
 The compile step was added on 2026-09-06 and is deliberately narrow. It answers "does the shell
 still compile against the kit" — a renamed symbol, a misspelled binding, a body that no longer
@@ -263,18 +262,55 @@ type-checks — which had no answer before, because nothing in CI had ever built
 ADR-1019 named both the command and its own trigger for adding it, and left it out while the shell
 held nothing the kit did not; it now holds four such things.
 
-**Whether SwiftUI *draws* is answered too, since 2026-09-06.** A third step runs the
-`DayByDayUITests` bundle against a simulator the step discovers from `simctl` rather than names.
-It is deliberately thin — it asserts the shell drew, never what it drew — and ADR-1029 carries the
-reasoning. Run it yourself with:
+**Whether SwiftUI *draws* is answered too, since 2026-09-06.** A further step runs the
+`DayByDayUITests` bundle against a simulator the workflow discovers from `simctl` rather than
+names. It is deliberately thin — it asserts the shell drew, never what it drew — and ADR-1029
+carries the reasoning. Run it yourself with:
 
 ```bash
 device=$(xcrun simctl list devices available --json \
   | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next(d['udid'] for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')))")
 
-xcodebuild test -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
-  -destination "platform=iOS Simulator,id=${device}" -only-testing:DayByDayUITests
+xcrun simctl boot "$device" || true
+
+xcodebuild build-for-testing -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
+  -destination "platform=iOS Simulator,id=${device}" -only-testing:DayByDayUITests \
+  -enableCodeCoverage NO COMPILER_INDEX_STORE_ENABLE=NO
+
+xcrun simctl bootstatus "$device" -b
+
+xcodebuild test-without-building -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
+  -destination "platform=iOS Simulator,id=${device}" -only-testing:DayByDayUITests \
+  -parallel-testing-enabled NO -enableCodeCoverage NO
 ```
 
-That takes about 50 seconds cold and ends in `** TEST SUCCEEDED **`. It does not replace looking
-at the app: it proves the screen was not blank, and nothing about whether what is on it is right.
+That takes **38.8 seconds cold** here — no derived data, every simulator shut down — and ends in
+`** TEST SUCCEEDED **`. It does not replace looking at the app: it proves the screen was not
+blank, and nothing about whether what is on it is right.
+
+**It is five commands rather than one because of where the time goes, and it is worth knowing
+why before anyone simplifies it back.** The single `xcodebuild test` this replaced took 61.3s
+here and 5-8½ minutes on CI, and in both cases almost none of that was the test. Measured
+2026-09-07:
+
+| | here |
+|---|---|
+| the old one-liner, cold derived data, cold simulator | 61.3s |
+| its test phase, cold simulator, cloned — the default | 47.7s |
+| its test phase, cold simulator, **not** cloned | 28.3s |
+| its test phase, not cloned and **already booted** | 17.0s |
+| the test case itself | 5-8s |
+
+`xcodebuild test` clones the simulator before running a UI test — the log says
+`Clone 1 of iPhone 17 Pro` — because the scheme it derives parallelises by default and there is
+no `.xcscheme` in the tree to say otherwise. For one test on one device the clone is a second
+cold boot bought for nothing, and `-parallel-testing-enabled NO` is what declines it. Splitting
+`test` into `build-for-testing` and `test-without-building` is what lets the boot happen
+underneath the build instead of after it; `simctl boot` returns in about half a second and the
+boot carries on inside `CoreSimulatorService`, so it survives into a later shell, and
+`bootstatus -b` is the wait. Coverage is off because nothing reads it — the derived scheme was
+compiling the kit with `-profile-generate -profile-coverage-mapping` for no reader.
+
+**Not cloning means the app is left installed on that device**, with whatever it wrote under
+`Library/Application Support/DayByDay/`, exactly as `pnpm run phone` leaves it on a phone. The
+uninstall line at the top of this file is how you get a first launch back.

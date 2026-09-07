@@ -384,9 +384,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
   the recipe and the `-1719`-not-`-25211` correction about Accessibility grants came from. Keeping
   the harness is what ends the rebuild-and-discard cycle.
 
-  **It is gated so it does not cost five minutes a push**: skipped while a PR is a draft, and
-  skipped unless the diff reaches `src/DayByDay/`, `src/DayByDayKit/Sources/` or the workflow.
-  Nothing merges without it having run.
+  **It is gated twice**: skipped while a PR is a draft, and skipped unless the diff reaches
+  `src/DayByDay/`, `src/DayByDayKit/Sources/` or the workflow. Nothing merges without it having
+  run. The gates were put there because the step cost five minutes a push; on 2026-09-07 it was
+  found to be costing eight and a half, almost all of it a simulator being cloned and cold-booted
+  after the build rather than underneath it, and the rebuild took it to about a minute. The gates
+  stayed — at that price they are thrift rather than necessity.
   `docs/adr/1029-the-ui-smoke-layer-is-a-chore-and-it-is-xctest.md`.
 
 - 2026-09-06 — **the shell no longer swallows the one failure a tick reports.** `DayScreen` now
