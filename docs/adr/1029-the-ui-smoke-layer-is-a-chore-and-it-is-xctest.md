@@ -146,9 +146,18 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
   the job total honestly open — the defect fixed, the price not, and the `swift` job still five to
   nine minutes whenever the smoke test ran. The lever it named has now been pulled. `ui-smoke` is a
   separate job on its own `macos-26` runner, so the boot is paid on capacity that is not competing
-  with anything, `swift` is back to about 90 seconds, and the two run at the same time. Standard
-  runners are free and unlimited on public repositories (ADR 0007), so the second machine costs
-  nothing but a checkout.
+  with anything. Standard runners are free and unlimited on public repositories (ADR 0007), so the
+  second machine costs nothing but a checkout. Measured on the chore's own run:
+
+  | | before | after |
+  |---|---|---|
+  | `swift` | 7m11s - 12m32s | **1m13s** |
+  | `ui-smoke` | — | 4m21s: boot 72s, build 82s, test 81s |
+  | the whole run, longest job | 7m11s - 10m37s | **4m21s** |
+
+  The test step at 81s is the settling effect being taken deliberately: 106-139s was what it cost
+  on the runs where the device had been up for minutes, against 189-262s where it had just booted,
+  so the boot is placed in front of `build-for-testing` and the build is the settling time.
 
   **The gate that this does not close, and it is the important sentence in this record.** The
   `main` ruleset's required status checks are `verify` and `swift`, by name. `ui-smoke` is not one
