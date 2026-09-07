@@ -109,7 +109,7 @@ the reading out; until then, take the smallest reading that passes the scenario 
 - [x] 5.1 `entering a number on a row makes the day screen say the commitment is kept`
 - [x] 5.2 `a number entered on a day screen is held by a day screen opened afterwards at the same
   place`
-- [ ] 5.3 `the number entry a row offers says the number just entered on it` — the prefill, end to
+- [x] 5.3 `the number entry a row offers says the number just entered on it` — the prefill, end to
   end. This is the scenario the grill's answer 8 turns on.
 - [ ] 5.4 `a number entered on a day that already holds one replaces it` — `record`'s answer, asserted
   through the screen; no replacement logic belongs here.

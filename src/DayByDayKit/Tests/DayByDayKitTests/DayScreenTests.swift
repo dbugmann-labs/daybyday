@@ -2718,3 +2718,21 @@ func aNumberEnteredOnADayScreenIsHeldByADayScreenOpenedAfterwardsAtTheSamePlace(
     #expect(second.dayView.rows[0].isKept)
     #expect(second.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
 }
+
+@MainActor
+@Test("the number entry a row offers says the number just entered on it")
+func theNumberEntryARowOffersSaysTheNumberJustEnteredOnIt() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+}
