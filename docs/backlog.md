@@ -215,6 +215,25 @@ shape it lacks, not the quota.
 - **Re-judged 2026-09-06** — stands, and sharper: yuno 5× a week leaves two spare days where reading
   left four, so *is tonight one of them* is asked on more days, and a row that says the same thing
   all seven is wrong on more of them.
+- **Said again 2026-09-07, in the owner's own words.** The wording above is the sweep's; this is
+  the first time the want has been stated by the person who has it, and it names a form:
+
+  > "For the commitments that have the "n times a week" shape, it currently says something like "3x
+  > a week" next to the commitment. However, I would like to know how many times it was already
+  > kept this week (something like 1/3x a week)"
+
+- **Touches, from that wording** — the string it wants changed is `schedule`'s, not a screen's.
+  *A schedule says the rhythm it runs on in words* and *A weekly-quota schedule is said as a number
+  of times a week* are what produce "3x a week", and neither has ever been given a history. "1/3x a
+  week" is that string with a count of kept days put inside it, so either those words stop being the
+  schedule's alone or the count is drawn beside them and the words are left as they are. They are
+  said in two places since #144 — the commitments screen entry (`CommitmentsView`) and the day
+  screen row (`ContentView`) — and "next to the commitment" does not say which is meant, or whether
+  both are.
+- **Open, from that wording** — it asks for "how many times it was already kept", which is the
+  achieved side of the line the *Principle* above draws, and "one to go" is the asked side. The want
+  is now on record in the form that principle warns about. Whichever pass takes it has to put that
+  choice to the owner rather than quietly pick the safe half.
 
 ### B-028 — not be offered a way back to a day I am already on
 
@@ -360,6 +379,60 @@ shape it lacks, not the quota.
   those rows ordinary. "A row that cannot be tapped does not look tappable" is one rule for both;
   a message about a day that has not arrived leaves the number and note rows exactly as mute as
   they are now.
+
+### B-036 — build a rhythm without being told what it will say
+*Captured 2026-09-07.*
+
+> "The "preview" text when creating a commitment is not needed"
+
+- **Trigger** — every time a commitment is defined. The line sits under the rhythm controls for as
+  long as the form is open, and says what the controls immediately above it are already showing.
+- **Touches** — `commitment` (#26). It asks for a **shipped requirement to be taken back** rather
+  than for something new: *A commitments screen says in words the rhythm its form is building*, five
+  scenarios in `openspec/specs/commitment/spec.md`, drawn by `CommitmentsView.swift:167`. B-028 is
+  the nearest thing already captured and is not the same shape — it narrows when a control appears,
+  this deletes a requirement. Removing it is a delta on `commitment`, so it serialises behind the
+  #144–#148 chain and #142, which all delta that spec (`docs/process.md` §7). The words themselves
+  stay: the list entry says them, and B-025 wants more of them.
+- **Principle** — tested against *an iPhone, in your hand*: **passes by subtraction.** The form is a
+  name, a picker, up to seven toggles, a date and a button on a phone screen, and this is the one
+  row of it a person reads nothing new from.
+- **Open** — the preview earned its place on an argument still on the record: it exists "so that a
+  person reads what their rhythm will say before they commit to it". The owner has now used the form
+  and does not want it, which is evidence that argument did not survive contact — but nobody has said
+  whether that holds for all four rhythm shapes. A weekday set reads off its own toggles; "The 25th"
+  and "Every 14 days" are assembled from a stepper and a number field and arguably do not.
+- **Open** — that same requirement is the only place a rhythm the screen would refuse is described:
+  an empty weekday set says "No day", and a number no schedule can be built on says nothing at all.
+  Deleting the preview deletes both, and the screen then says nothing about such a rhythm until the
+  refusal at define time.
+
+### B-037 — reach the commitment form when I want it, not always under the list
+*Captured 2026-09-07.*
+
+> "Creation of a commitment is not needed as a fixed part of the commitment screen, it should be a
+> button which then opens the commitment creation screen"
+
+- **Trigger** — every visit to the commitments screen, most of which are to read or change what is
+  already kept rather than to add something. The form is a permanent section below both lists, so
+  every one of those visits scrolls past all of it.
+- **Touches** — `commitment` (#26). *A commitments screen defines a commitment from a name, a rhythm
+  and the day it is kept from* says what defining takes and what the roster does with it, and says
+  nothing about where the form sits — so whether this is a delta at all or a shell change under
+  `CONTEXT.md` § *App shell* is the first thing a grill would settle. If it is a delta it serialises
+  behind the #144–#148 chain (`docs/process.md` §7). It moves the same section B-036 wants a line out
+  of, so the two want reading together, and one of them may make the other free.
+- **Principle** — tested against *entered where you stand*: **passes, and it is that principle's own
+  exemption.** A want that puts a second screen in front of something usually loses here, but the
+  rule is about the five daily visits and defining a commitment is not one of them. The principle
+  says as much itself — "a screen for *looking* is not a daily visit and is not what this rules out"
+  — and a screen for defining is the same kind of rare, deliberate act.
+- **Open** — a pushed screen, or a sheet? The want says "screen"; on a phone a sheet is the cheaper
+  thing that reads the same way, and it is a real choice rather than an implementation detail,
+  because a sheet keeps the list behind it and a screen does not.
+- **Open** — does the form behind that button also serve editing? #148 `add-commitment-editing` will
+  need somewhere to put a name and a rhythm, and if it is this form then this want is the screen that
+  Story lands in rather than a thing of its own.
 
 ## Decided
 
