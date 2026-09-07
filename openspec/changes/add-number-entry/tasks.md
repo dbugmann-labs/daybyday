@@ -106,7 +106,7 @@ guards in the same order `tick(_:)` does — the row is held, the record is kept
 entry — then reads what was committed, then writes, then re-forms the day view. § 6 is what drives
 the reading out; until then, take the smallest reading that passes the scenario in front of you.
 
-- [ ] 5.1 `entering a number on a row makes the day screen say the commitment is kept`
+- [x] 5.1 `entering a number on a row makes the day screen say the commitment is kept`
 - [ ] 5.2 `a number entered on a day screen is held by a day screen opened afterwards at the same
   place`
 - [ ] 5.3 `the number entry a row offers says the number just entered on it` — the prefill, end to

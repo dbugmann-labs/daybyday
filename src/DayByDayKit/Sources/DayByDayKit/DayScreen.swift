@@ -214,6 +214,74 @@ public final class DayScreen {
             of: roster.commitments(on: shownDay), on: shownDay, in: recordStore.history)
     }
 
+    /// What `enter(_:on:)` reads a commit as: a number, a take-back, or a value that is not a
+    /// number. See `design.md` § *Reading what was committed*.
+    private enum CommittedText {
+        case number(Decimal)
+        case takeBack
+        case notANumber
+    }
+
+    /// Reads `text` as `enter(_:on:)` does, in this capability's own way and consulting no
+    /// locale.
+    private static func read(_ text: String) -> CommittedText {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            return .takeBack
+        }
+        guard let decimal = Decimal(string: trimmed) else {
+            return .notANumber
+        }
+        return .number(decimal)
+    }
+
+    /// Enters what `text` holds on `row`, or takes that day's number back where it holds
+    /// nothing, and keeps the change before `dayView` says so. Does nothing when `row` is not one
+    /// this screen's day view holds, when this screen is not keeping a record, or when `row`
+    /// offers no number entry as of `today`. Throws when the change could not be kept at the
+    /// record's place, leaving `dayView` as it was; a value the commitment refuses or a value
+    /// that is not a number keeps nothing and does not throw.
+    public func enter(_ text: String, on row: DayView.Row) throws {
+        guard dayView.rows.contains(row) else {
+            return
+        }
+        guard let recordStore else {
+            return
+        }
+        guard row.numberEntry(asOf: today) != nil else {
+            return
+        }
+
+        switch Self.read(text) {
+        case .takeBack:
+            do {
+                try recordStore.removeNumber(for: row.commitment, on: row.date)
+            } catch {
+                notice = Notice(row: row)
+                throw error
+            }
+        case .number(let decimal):
+            guard let number = Number(decimal, for: row.commitment, on: row.date) else {
+                notice = Notice(row: row)
+                return
+            }
+
+            do {
+                try recordStore.add(number)
+            } catch {
+                notice = Notice(row: row)
+                throw error
+            }
+        case .notANumber:
+            notice = Notice(row: row)
+            return
+        }
+        notice = nil
+
+        dayView = DayView(
+            of: roster.commitments(on: shownDay), on: shownDay, in: recordStore.history)
+    }
+
     /// The day view of `shownDay`, drawn from `roster` and `recordStore`'s history exactly as
     /// they stand now — asks neither again. Shared by every move that only steps the day already
     /// held: `showPreviousDay`, `showNextDay` and `showToday`.
