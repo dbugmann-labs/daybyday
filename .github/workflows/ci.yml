@@ -206,12 +206,22 @@ jobs:
       #
       # Unconditional, because the build below needs a concrete destination whether or
       # not anything runs on it. Naming a device does not boot one.
+      #
+      # **An already-booted iPhone wins, if there is one.** The boot below is the
+      # largest thing in this job at about 2m13s, and it is only owed on a device
+      # that is cold. Nothing promises the runner image leaves one up — this is
+      # written to take the saving if it is there and to change nothing if it is
+      # not, and it prints the booted list either way so the answer is on the
+      # record rather than assumed. Ordering is unchanged otherwise: newest
+      # runtime first, first iPhone in it.
       - name: which simulator?
         id: sim
         run: |
           set -eu
+          echo "Already booted on this runner:"
+          xcrun simctl list devices booted | sed 's/^/  /'
           device=$(xcrun simctl list devices available --json \
-            | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next(d['udid'] for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')))")
+            | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; ps=[d for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')]; b=[d for d in ps if d['state']=='Booted']; print((b or ps)[0]['udid'])")
           echo "Building against, and if it runs, testing on simulator ${device}."
           echo "device=$device" >> "$GITHUB_OUTPUT"
 
