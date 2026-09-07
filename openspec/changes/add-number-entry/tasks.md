@@ -248,7 +248,7 @@ diff, so these boxes confirm rather than write.
 - [x] 11.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 2, 6 and 8 actually ran red before the code that satisfies them was written. A
   prediction in a task is not evidence; this is.
-- [ ] 11.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
+- [x] 11.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
   `scenario coverage — 73/73`. `cd src/DayByDayKit && swift test` reports **535 tests passing** — 489
   at the branch point plus the forty-six written here, plus none removed. A different number means a
   test was added or lost outside rule 3; report it.
