@@ -223,16 +223,39 @@ public final class DayScreen {
     }
 
     /// Reads `text` as `enter(_:on:)` does, in this capability's own way and consulting no
-    /// locale.
+    /// locale. `Decimal(string:)` is a *prefix* parser, not a validator — `design.md` § *Context*
+    /// measures five ways it silently reads a value nobody typed — so the shape of what was
+    /// committed is checked in full before `Decimal(string:)` is ever called, and only on text
+    /// already proved to hold nothing it cannot parse.
     private static func read(_ text: String) -> CommittedText {
         let trimmed = text.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
             return .takeBack
         }
-        guard let decimal = Decimal(string: trimmed) else {
+
+        var digits = trimmed[...]
+        if digits.first == "-" {
+            digits.removeFirst()
+        }
+
+        var digitCount = 0
+        var separatorCount = 0
+        for character in digits {
+            if character.isASCII, character.isNumber {
+                digitCount += 1
+            } else if character == "." || character == "," {
+                separatorCount += 1
+            } else {
+                return .notANumber
+            }
+        }
+
+        guard digitCount >= 1, separatorCount <= 1 else {
             return .notANumber
         }
-        return .number(decimal)
+
+        let normalized = trimmed.replacingOccurrences(of: ",", with: ".")
+        return .number(Decimal(string: normalized)!)
     }
 
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
