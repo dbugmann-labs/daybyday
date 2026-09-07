@@ -75,19 +75,19 @@ holds*, in `Tests/DayByDayKitTests/RecordTests.swift`. `History` gains
 `removeNumber(for:on:)` per `design.md` § *A history holds numbers in a map keyed by the day*; the
 map is what makes 4.5 pass without an explicit remove-then-insert.
 
-- [ ] 4.1 `a history that has taken no number has no number for a commitment on a day`
-- [ ] 4.2 `a number added to a history is the number that commitment has on that day` — assert the
+- [x] 4.1 `a history that has taken no number has no number for a commitment on a day`
+- [x] 4.2 `a number added to a history is the number that commitment has on that day` — assert the
   value exactly, which is what stops a `Double` creeping in later.
-- [ ] 4.3 `a number on one date is not the number on another date the same commitment is due on`
-- [ ] 4.4 `a number of one commitment is not the number of another on the same date`
-- [ ] 4.5 `a number entered again on the same day replaces the one before it` — both halves: the
+- [x] 4.3 `a number on one date is not the number on another date the same commitment is due on`
+- [x] 4.4 `a number of one commitment is not the number of another on the same date`
+- [x] 4.5 `a number entered again on the same day replaces the one before it` — both halves: the
   later value reads back, and the history equals one the later number alone was added to.
-- [ ] 4.6 `a history has no number for a commitment whose kind is not a number` — answered rather
+- [x] 4.6 `a history has no number for a commitment whose kind is not a number` — answered rather
   than refused, for all three other kinds and for a date the commitment is not due on.
-- [ ] 4.7 `a number the commitment refuses leaves the number already on that day standing` — the
+- [x] 4.7 `a number the commitment refuses leaves the number already on that day standing` — the
   owner's own answer at the grill: 300 over 70.5 on a range of 40 to 150 leaves 70.5.
-- [ ] 4.8 `two histories holding the same numbers are the same history`
-- [ ] 4.9 `a history holds ticks and numbers side by side and answers each on its own`
+- [x] 4.8 `two histories holding the same numbers are the same history`
+- [x] 4.9 `a history holds ticks and numbers side by side and answers each on its own`
 
 ## 5. `record` — taking a number back
 
