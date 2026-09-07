@@ -189,7 +189,7 @@ in particular 8.1 is red if the text is read before the store is checked.
 - [x] 8.3 `a commit on a row that offers no number entry is told nothing on the row`
 - [x] 8.4 `a commit on a row a day screen's day view does not hold is told nothing and does not end
   what is already told`
-- [ ] 8.5 `what a day screen tells on a row ends when a number is entered and kept`
+- [x] 8.5 `what a day screen tells on a row ends when a number is entered and kept`
 - [ ] 8.6 `what a day screen tells on a row ends when a number is taken back and kept`
 - [ ] 8.7 `what a day screen tells about a refused value ends when the app is shown again`
 - [ ] 8.8 `what a day screen tells about a refused value ends when the day screen is moved to the day

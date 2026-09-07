@@ -3362,3 +3362,36 @@ func aCommitOnARowADayScreensDayViewDoesNotHoldIsToldNothingAndDoesNotEndWhatIsA
     #expect(firstScreen.notice?.row == firstScreen.dayView.rows[0])
     #expect(firstScreen.notice?.cause == "Must be between 40 and 150")
 }
+
+@MainActor
+@Test("what a day screen tells on a row ends when a number is entered and kept")
+func whatADayScreenTellsOnARowEndsWhenANumberIsEnteredAndKept() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let directory = place.deletingLastPathComponent()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let seedRoster = try RosterStore(at: rosterPlace)
+    try seedRoster.add(weight)
+
+    try makeReadOnly(directory)
+    defer { try? makeWritable(directory) }
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.enter("70.5", on: screen.dayView.rows[0])
+    }
+
+    try makeWritable(directory)
+
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.notice == nil)
+}
