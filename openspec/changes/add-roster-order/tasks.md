@@ -147,12 +147,12 @@ Under ADR-1019's 2026-09-04 amendment, whose three conditions `design.md` § *Th
 Story* checks off one by one. Every decision is behind the seam; the shell converts nothing, refuses
 nothing and orders nothing. Only `src/DayByDay/DayByDay/CommitmentsView.swift` changes.
 
-- [ ] 7.1 Add `.onMove(perform:)` to the **kept** `ForEach` only, and the `EditButton` in the
+- [x] 7.1 Add `.onMove(perform:)` to the **kept** `ForEach` only, and the `EditButton` in the
   navigation bar that reaches it. The closure resolves the `IndexSet`'s single element to
   `screen.kept[index]` and passes the `Int` destination through **untouched** — `design.md` § *The
   seam* and § 1.2's measurement are why there is no arithmetic here. Leave the stopped `ForEach`
   without one: that is what makes "the move is offered on the kept list alone" true on a phone.
-- [ ] 7.2 Add the fifth `RefusedChange` case to the shell's existing refusal rendering, beside
+- [x] 7.2 Add the fifth `RefusedChange` case to the shell's existing refusal rendering, beside
   `.stopping`, `.keepingAgain` and `.removing`, using `refusalText` unchanged and drawing under the
   kept list, where a moved commitment always is. No new sentence is invented here.
 - [ ] 7.3 Confirm the swipe actions `add-roster-removal` shipped still work while the list is in edit
@@ -168,7 +168,7 @@ nothing and orders nothing. Only `src/DayByDay/DayByDay/CommitmentsView.swift` c
 
 ## 8. The records
 
-- [ ] 8.1 Write `docs/adr/1037-a-rosters-order-is-the-persons.md` — the decision that a roster's
+- [x] 8.1 Write `docs/adr/1037-a-rosters-order-is-the-persons.md` — the decision that a roster's
   order stops being the order things were taken on and becomes the one its owner set, the
   alternative it beat (an arrangement held on the commitments screen, which the day screen would
   then have to read and apply and could disagree with), and the consequences: the order runs over
@@ -177,12 +177,12 @@ nothing and orders nothing. Only `src/DayByDay/DayByDay/CommitmentsView.swift` c
   `docs/adr/README.md` on `main` ends at 1035, and `origin/story/139-add-number-entry` already holds
   `1036-a-notice-names-a-cause-a-person-can-act-on.md`. Re-confirm with `git ls-tree -r --name-only
   <branch> -- docs/adr` over every remote branch before writing, as `add-rhythm-in-words` had to.
-- [ ] 8.2 Add the ADR-1037 row to `docs/adr/README.md`'s DayByDay table.
-- [ ] 8.3 Leave `docs/adr/1031-a-store-reads-the-form-before-it.md` alone, and confirm before the
+- [x] 8.2 Add the ADR-1037 row to `docs/adr/README.md`'s DayByDay table.
+- [x] 8.3 Leave `docs/adr/1031-a-store-reads-the-form-before-it.md` alone, and confirm before the
   review that leaving it alone is still right: no form moves in this change, so its trigger — *"a
   fourth form, or a form that differs by more than a field"* — does not fire. If the implementation
   needed a version bump, **stop**: that is § 1.2's finding, not an ADR amendment to slip in.
-- [ ] 8.4 Move the want off `docs/backlog.md` § *Wants* if it is still listed there, and check its
+- [x] 8.4 Move the want off `docs/backlog.md` § *Wants* if it is still listed there, and check its
   § *Decided* line for `add-roster-order` still describes what shipped — it says "a stopped
   commitment's place in it is its grill's", which settled answer 3 answered.
 
