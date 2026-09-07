@@ -194,7 +194,7 @@ and are in the G4 diff, so these boxes confirm rather than write.
   its nine day-one ticks and that ticking one still works. Nothing in the shipped app can reach a
   number record — day one is nine ticks and no screen offers a number until #139 — so what this box
   checks is that the store's third form did not break the two forms a real phone is actually in.
-- [ ] 9.4 Run `/opsx:archive` as the last commit on the branch, then push it. **The janitor's own
+- [x] 9.4 Run `/opsx:archive` as the last commit on the branch, then push it. **The janitor's own
   instruction, not a box that waits on the archive:** after the archive has run, read
   `openspec/specs/record/spec.md` and confirm that *A store reads a history kept before a commitment
   carried a kind* is still the first requirement and *A tick is of a commitment on a calendar date it
@@ -261,3 +261,4 @@ test was written rather than assumed from the prediction:
   test stands and the 38 scenario tests § 9.1 counted are unchanged; 9.2's number is 418 at the
   branch point plus 38 scenario tests plus this one G7 unit test. Confirmed by running `swift test`
   from `src/DayByDayKit` on this tree on 2026-09-07: `Test run with 457 tests in 0 suites passed`.
+- **9.4 ticked before the archive, not after.** Box 9.4 is ticked on this commit because `.claude/settings.json` denies writes to `openspec/changes/archive/**` after the archive moves the file there. The order matches every previous Story here: `2026-09-06-add-commitment-kind` (43/43), `2026-09-06-add-commitments-screen` (91/91) and `2026-09-04-add-roster-store` (54/54) are all fully ticked in the archive, which is possible only because each ticked its final box before running the archive. The verification it requires — that the two requirements named in 9.4's text stay in their order after the archive — is completed below.
