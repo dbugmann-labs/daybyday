@@ -117,16 +117,14 @@ public struct Roster: Hashable, Sendable {
 
         // `offset == keptBeforeMove.count` means "after the last of them"; every other offset
         // names the commitment that stood there before the move, before which the moved
-        // commitment is put back.
-        let target = offset == keptBeforeMove.count ? keptBeforeMove.last : keptBeforeMove[offset]
-        if let target,
-            let targetIndex = entries.firstIndex(where: { $0.commitment == target.commitment })
-        {
-            let destination = offset == keptBeforeMove.count ? targetIndex + 1 : targetIndex
-            entries.insert(entry, at: destination)
-        } else {
-            entries.insert(entry, at: sourceIndex)
-        }
+        // commitment is put back. Neither lookup can miss: the guard above ruled out `offset ==
+        // sourceKeptIndex` and `offset == sourceKeptIndex + 1`, so `target` is never the
+        // commitment just removed, and every other member of `keptBeforeMove` is still in
+        // `entries` after that one removal.
+        let target = offset == keptBeforeMove.count ? keptBeforeMove.last! : keptBeforeMove[offset]
+        let targetIndex = entries.firstIndex(where: { $0.commitment == target.commitment })!
+        let destination = offset == keptBeforeMove.count ? targetIndex + 1 : targetIndex
+        entries.insert(entry, at: destination)
 
         return true
     }
