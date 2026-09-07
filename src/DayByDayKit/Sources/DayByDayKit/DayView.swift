@@ -6,6 +6,10 @@ public struct DayView: Hashable, Sendable {
 
         public var name: String { commitment.name }
 
+        /// The rhythm this row's commitment runs on, in words. See
+        /// `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
+        public var rhythmInWords: String { commitment.rhythmInWords }
+
         /// The tick this row makes, or `nil` when the row's date is later than `today`.
         public func tick(asOf today: CalendarDate) -> Tick? {
             guard today.days(until: date) <= 0 else {

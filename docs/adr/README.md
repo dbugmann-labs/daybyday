@@ -98,3 +98,4 @@ DayByDay's own records start here.
 | [1030](1030-the-kind-is-a-commitments-fourth-part.md) | The kind its days take is a commitment's fourth part; a kind never changes and every commitment older than kinds is a tick, so ADR-1023's re-keying argument does not reach it |
 | [1031](1031-a-store-reads-the-form-before-it.md) | A store reads the form written before it and refuses every other, and rewrites the file only when a change is kept there; no migration pass, no rewrite on open |
 | [1032](1032-a-recorded-number-is-a-decimal.md) | Every number a person records is a `Decimal`; `Double` loses a total's sum, and `Decimal`'s not-a-number comparisons are asymmetric, so a refusal may never rest on one |
+| [1034](1034-a-schedule-says-its-rhythm-in-words.md) | A schedule says its rhythm in the package's own words — "Mon, Wed, Sat", "Every 14 days", "The 25th", "3x a week" — and no payload accessor becomes public; extends ADR-1022 from a date to a rule |

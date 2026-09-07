@@ -1017,6 +1017,86 @@ func twoRowsForTheSameCommitmentAndDateDifferingInWhetherItIsKeptAreDifferentRow
     #expect(notKeptView.rows[0] != keptView.rows[0])
 }
 
+@Test("a row says the rhythm its commitment runs on in words")
+func aRowSaysTheRhythmItsCommitmentRunsOnInWords() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let finances = Commitment(
+        name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 31)!), keptFrom: keptFrom)!
+    let contactLenses = Commitment(
+        name: "Contact lenses",
+        schedule: .everyNDays(DayInterval(days: 14)!, from: CalendarDate(year: 2026, month: 8, day: 31)!),
+        keptFrom: keptFrom)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, finances, contactLenses, reading], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.rhythmInWords) == [
+        "Mon, Wed, Sat", "The 31st", "Every 14 days", "3x a week",
+    ])
+}
+
+@Test("a row says its rhythm whether or not its commitment is kept")
+func aRowSaysItsRhythmWhetherOrNotItsCommitmentIsKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let unticked = History()
+    var ticked = History()
+    ticked.add(Tick(gym, on: monday)!)
+
+    let notKeptView = DayView(of: [gym], on: monday, in: unticked)
+    let keptView = DayView(of: [gym], on: monday, in: ticked)
+
+    #expect(!notKeptView.rows[0].isKept)
+    #expect(notKeptView.rows[0].rhythmInWords == "Mon, Wed, Sat")
+    #expect(keptView.rows[0].isKept)
+    #expect(keptView.rows[0].rhythmInWords == "Mon, Wed, Sat")
+}
+
+@Test("a row for a day that has not arrived says its rhythm")
+func aRowForADayThatHasNotArrivedSaysItsRhythm() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let friday = CalendarDate(year: 2026, month: 9, day: 4)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+    let history = History()
+
+    let dayView = DayView(of: [gym], on: friday, in: history)
+
+    #expect(dayView.rows[0].tick(asOf: thursday) == nil)
+    #expect(dayView.rows[0].rhythmInWords == "Every day")
+}
+
+@Test("two rows for commitments alike in name and not in rhythm say different rhythms")
+func twoRowsForCommitmentsAlikeInNameAndNotInRhythmSayDifferentRhythms() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let vitaminsMondayWednesday = Commitment(
+        name: "Vitamins", schedule: .weekdays([.monday, .wednesday]), keptFrom: keptFrom)!
+    let vitaminsDaily = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [vitaminsMondayWednesday, vitaminsDaily], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Vitamins", "Vitamins"])
+    #expect(dayView.rows[0].rhythmInWords == "Mon, Wed")
+    #expect(dayView.rows[1].rhythmInWords == "Every day")
+}
+
 @Test("a day view says its day as a weekday, a day of the month, a month and a year")
 func aDayViewSaysItsDayAsAWeekdayADayOfTheMonthAMonthAndAYear() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!

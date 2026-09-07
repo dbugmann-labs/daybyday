@@ -1,6 +1,34 @@
 import Testing
 import DayByDayKit
 
+@Test("a weekly-quota schedule says its number of times a week")
+func aWeeklyQuotaScheduleSaysItsNumberOfTimesAWeek() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+
+    #expect(schedule.inWords == "3x a week")
+}
+
+@Test("a weekly quota of seven times a week is not said as every day")
+func aWeeklyQuotaOfSevenTimesAWeekIsNotSaidAsEveryDay() {
+    let quotaSchedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 7)!)
+    let weekdaySchedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    #expect(quotaSchedule.inWords == "7x a week")
+    #expect(weekdaySchedule.inWords == "Every day")
+}
+
+@Test("every number of times a week from one to seven is said in its own words")
+func everyNumberOfTimesAWeekFromOneToSevenIsSaidInItsOwnWords() {
+    let schedules = (1...7).map { Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: $0)!) }
+
+    #expect(schedules.map(\.inWords) == [
+        "1x a week", "2x a week", "3x a week", "4x a week", "5x a week", "6x a week",
+        "7x a week",
+    ])
+}
+
 @Test("a weekly quota is due on every date of a week")
 func aWeeklyQuotaIsDueOnEveryDateOfAWeek() {
     let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)

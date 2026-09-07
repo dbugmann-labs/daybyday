@@ -81,6 +81,7 @@ Things that are built, or deliberately not built, in a state someone will trip o
   two readable and two not, and a screen that can say "a number from 1 to 10" still cannot say "every
   14 days". The widening is still owed by whichever Story first renders a rule, and B-021 is that want.
   Recorded 2026-09-06, at #137's G7.
+  **The ninth face's prediction has been answered and the gap is unchanged.** `add-rhythm-in-words` (#144) is the Story that entry has been naming since #9 as the one that would have to widen a schedule's payload — "the widening is still owed by whichever Story first renders a rule, and B-021 is that want" — and it renders every rule in the product without reading a single payload out. The package says the words (ADR-1034), so `Commitment.schedule`, `DayOfMonth.day`, `DayInterval.days` and `WeeklyQuota.timesPerWeek` are all still internal and all nine faces are still open. What changed is that nothing is now waiting on them: the next thing to need a payload will be something that must *compute* with one outside the package, not something that must *show* one. Recorded 2026-09-07.
 - **A commitment of a kind nothing can yet record is a row that does nothing when tapped.**
   `add-commitment-kind` (#137) makes a commitment of the number, note or total kind formable and has
   `record` refuse a tick for it, so `day-screen`'s row for one offers nothing — by requirement, and on
