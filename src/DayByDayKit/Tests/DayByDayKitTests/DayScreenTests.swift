@@ -3294,3 +3294,25 @@ func aCommitOnADayScreenThatIsNotKeepingARecordIsToldNothingOnTheRow() throws {
     try screen.enter("1.2.3", on: screen.dayView.rows[0])
     #expect(screen.notice == nil)
 }
+
+@MainActor
+@Test("a commit on a row for a day that has not arrived is told nothing on the row")
+func aCommitOnARowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showNextDay()
+    try screen.enter("300", on: screen.dayView.rows[0])
+
+    #expect(screen.notice == nil)
+    #expect(!screen.dayView.rows[0].isKept)
+}
