@@ -224,7 +224,7 @@ layer*. Do this after § 8 so that everything it draws already answers.
   not moved into the package — `design.md` § *The notice carries a cause* says why.
 - [x] 9.3 Add one number commitment to `dayOneCommitments` so the field is reachable on a fresh
   install: a weight with a range. **Day one is a seed, not the roster** — the comment in that file
-  says so — so this changes nothing on an install that has already run, and § 10.2 deletes the app
+  says so — so this changes nothing on an install that has already run, and § 11.3 deletes the app
   first for that reason.
 
 ## 10. The documents
@@ -257,12 +257,14 @@ diff, so these boxes confirm rather than write.
 - [x] 11.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 2, 6 and 8 actually ran red before the code that satisfies them was written. A
   prediction in a task is not evidence; this is.
-- [x] 11.2 Re-run after § 14, which is why this box is open again — it has been ticked after § 12
-  and after § 13, and § 14 moves both code and test assertions underneath it: `pnpm run verify`
-  green from the repo root, and `pnpm run checks` reporting `scenario coverage — 75/75`.
+- [ ] 11.2 Re-run after § 15, which is why this box is open again — it has been ticked after § 12,
+  after § 13 and after § 14, and § 15 moves the code underneath it: `pnpm run verify` green from the
+  repo root, and `pnpm run checks` reporting `scenario coverage — 75/75`.
   `cd src/DayByDayKit && swift test` reports **592 tests passing** — 544 on the base this branch now
   sits on (§ 1.1), plus the forty-six written in §§ 2–8 and the two written in § 12, plus none
-  removed and **none added by § 13 or § 14**, neither of which writes a test.
+  removed and **none added by § 13, § 14 or § 15**, none of which writes a test. The fifth review
+  pass added none either: its three fixes moved a doc, an ADR and five assertions, and left the
+  count where § 14 did.
   **Read the number the run prints and tick this against that, never against this arithmetic**: the
   first time this box was ticked it asserted 535, which had been right against the old base and was
   wrong by 55 the moment the branch was rebased, and nothing caught it until the review. A count
@@ -282,7 +284,7 @@ diff, so these boxes confirm rather than write.
   no tick out, so the same row answers one question with a value and the other with a yes or no. The
   review adds a third: § *No UI smoke layer* describes the shell as picking the notice with
   `row == screen.refusedChangeRow`, and § 1.2 renamed that property, so the line now reads
-  `row == screen.notice?.row` (`ContentView.swift:168`) and the document says otherwise.
+  `row == screen.notice?.row` (`ContentView.swift:169`) and the document says otherwise.
 - [ ] 11.5 Run `/opsx:archive` as the last commit on the branch, then push it. **The janitor's own
   instruction, not a box that waits on the archive:** after the archive has run, read
   `openspec/specs/day-screen/spec.md` and confirm that the four MODIFIED requirements are still in
@@ -420,6 +422,11 @@ through all of it, and a red one is a rule-5 stop rather than a licence to edit 
   long to be kept exactly keeps nothing and takes nothing back` commits are all still refused — 39
   nines and 200 ones on the digit count, the 129th place after the point on the type's floor — so
   that test stays green, and a red one is a stop.
+  **The sentence this box was ticked on — "`Decimal(string:)` returning `nil` is then the type
+  saying it cannot hold the number at all" — is the premise the sixth review pass found false**, and
+  § 15.2 replaces it: the type answers about the text it is given, so from § 15 on it is given the
+  number written out one way. The box stays ticked on the work it did, which was removing a bound of
+  ours that was wrong by thirty-eight powers of ten; nothing in it is undone.
 
 - [x] 13.6 Record in § *Notes*, under a heading of its own, what § 13.1 actually printed, and that
   `cd src/DayByDayKit && swift test` was run after each of §§ 13.2–13.5 with no test failing and no
@@ -517,6 +524,184 @@ all of which are open for it.
   five mutations in § 14.4 each went red before being put back, and that
   `cd src/DayByDayKit && swift test` was run after each of §§ 14.2–14.4 with the same count as § 13
   left behind, no test failing and no `@Test` display name changed.
+
+## 15. What the sixth review pass found
+
+One finding, accepted, and **the owner decided the shape of the fix along with it: close the class,
+not the instance.** `Decimal(string:)` answers about the text it is handed and not only about the
+number that text says, so a third magnitude fenced off would have been a seventh pass waiting. The
+reading writes the number out in one spelling — the digits it has already located — and asks the
+type about that. `specs/day-screen/spec.md` does not change: the requirement the finding breaks
+already says up to thirty-eight significant digits SHALL be kept "at every magnitude this system
+holds", and 10^-91 written in 131 characters is one of them. `design.md` does change, in § *Context*
+(a fifth measurement, and the false sentence at the end of the fourth), § *Reading what was
+committed* and § *A number this system cannot keep exactly is not a number here* — so a **fifth G4**
+is owed on this folder before a line of § 15 is written. Run `pnpm run check:g4` first; the digest
+moved when `design.md` did.
+
+**The two nits are done in this diff and have no box of their own**: § 9.3 said "§ 10.2 deletes the
+app first" where the box that deletes it is § 11.3, and § 11.4 cited `ContentView.swift:168` for
+`row == screen.notice?.row`, which the fifth pass's refactor moved to `:169` — checked by grep on
+2026-09-07, not by reading. § 13.5 also gained a paragraph saying which of its sentences the sixth
+pass found false; the box stays ticked, because what it did — removing a bound of ours that was
+wrong by thirty-eight powers of ten — still stands.
+
+**The fifth review pass has no section here, and that is not an omission.** Its three fixes moved a
+sentence in ADR-1036, some assertions in `DayScreenTests.swift` and a binding in the shell, and
+touched no file in this folder, so no G4 was owed and nothing had to be listed before it could be
+done: `437322d`, `f988fd2`, `973cabf`.
+
+**§ 15 leaves no test behind and adds no scenario**, on the precedent the owner set at the residual
+round — `design.md` § *Open Questions*, first entry — and for a reason of its own: a test here would
+pin one of the 2,418 spellings § 15.1 counts, and the point of this fix is that after it the parse
+cannot see a spelling at all. The exposure is recorded in `design.md` § *Risks / Trade-offs*,
+second-to-last bullet, where a scenario is still available and priced. So § 11.2's expected count
+does not move. The one test § 15.2 writes is temporary, is meant to go red, and is deleted inside
+that box; every test already on this branch stays green throughout, and a red one among those is a
+rule-5 stop rather than a licence to edit a test. § 15 runs **before** § 11.2, § 11.3 and § 11.5,
+all of which are open for it.
+
+- [ ] 15.1 Re-measure before moving anything, and read the output rather than this file. From
+  anywhere, with the toolchain in `AGENTS.md` § *This machine* on PATH — it takes about four
+  seconds:
+
+  ```bash
+  cat > /tmp/decimal-spelling.swift <<'EOF'
+  import Foundation
+  func z(_ n: Int) -> String { String(repeating: "0", count: n) }
+
+  /// One spelling per value: the sign, the whole part with no leading zeros, a full stop, the
+  /// fraction with no trailing zeros, and no separator where no fraction is left.
+  func written(_ text: String) -> String {
+      var body = Substring(text)
+      var sign = ""
+      if body.first == "-" { sign = "-"; body.removeFirst() }
+      let parts = body.replacingOccurrences(of: ",", with: ".")
+          .split(separator: ".", omittingEmptySubsequences: false)
+      var whole = parts[0]
+      var fraction = parts.count > 1 ? parts[1] : ""
+      while whole.first == "0" { whole.removeFirst() }
+      while fraction.last == "0" { fraction.removeLast() }
+      let head = sign + (whole.isEmpty ? "0" : String(whole))
+      return fraction.isEmpty ? head : head + "." + String(fraction)
+  }
+  func held(_ text: String) -> Bool { Decimal(string: text) != nil }
+
+  print("-- the sixth pass's case, and the same number written out --")
+  for (name, text) in [("A", "0." + z(90) + "1" + z(38)), ("B", "0." + z(90) + "1")] {
+      print(name, "raw", text.count, held(text) ? "held" : "nil",
+            "| written", written(text).count, held(written(text)) ? "held" : "nil")
+  }
+  print("A and B are written out the same:",
+        written("0." + z(90) + "1" + z(38)) == written("0." + z(90) + "1"))
+
+  print("-- the floor, written out: the 128th place held, the 129th not --")
+  let nines = String(repeating: "9", count: 38)
+  for text in ["0." + z(127) + "1", "0." + z(128) + "1", "0." + z(90) + nines, "0." + z(91) + nines] {
+      print("places", written(text).count - 2, held(written(text)) ? "held" : "nil")
+  }
+
+  print("-- the three the too-long test commits, still refused --")
+  for text in [String(repeating: "9", count: 39), String(repeating: "1", count: 200), "0." + z(128) + "1"] {
+      let digits = written(text).filter(\.isNumber).drop { $0 == "0" }
+      let significant = String(digits.reversed().drop { $0 == "0" }).count
+      print("chars", text.count, "significant", significant,
+            significant > 38 ? "refused on the count"
+                             : (held(written(text)) ? "HELD" : "refused on the type"))
+  }
+
+  print("-- one value, five spellings, one answer --")
+  var rng = SystemRandomNumberGenerator()
+  var spellingDependent = 0, kept = 0, printedBack = 0, rescued = 0
+  for _ in 0..<20_000 {
+      var significant = String(Int.random(in: 1...9, using: &rng))
+      for _ in 1..<Int.random(in: 1...38, using: &rng) {
+          significant += String(Int.random(in: 0...9, using: &rng))
+      }
+      while significant.last == "0" { significant.removeLast() }
+      let exponent = Int.random(in: -200...260, using: &rng)
+      let sign = Bool.random(using: &rng) ? "-" : ""
+
+      func spelling(_ leading: Int, _ trailing: Int) -> String {
+          var digits = significant + z(trailing)
+          let e = exponent - trailing
+          if e >= 0 { return sign + z(leading) + digits + z(e) }
+          if digits.count <= -e { digits = z(-e - digits.count + 1) + digits }
+          let point = digits.index(digits.endIndex, offsetBy: e)
+          return sign + z(leading) + digits[..<point] + "." + digits[point...]
+      }
+
+      let spellings = [(0, 0), (3, 0), (0, 40), (2, 130), (0, 200)].map { spelling($0.0, $0.1) }
+      let answers = Set(spellings.map { Decimal(string: written($0))?.description ?? "nil" })
+      if answers.count != 1 { spellingDependent += 1 }
+      for text in spellings where !held(text) && held(written(text)) { rescued += 1 }
+      if let answer = answers.first, answer != "nil" {
+          kept += 1
+          if answer == written(spellings[0]) { printedBack += 1 }
+      }
+  }
+  print("values 20000, spellings 100000")
+  print("answers that depended on the spelling:", spellingDependent)
+  print("kept:", kept, "of which printed back as the text handed in:", printedBack)
+  print("spellings refused as written and held once written out:", rescued)
+  EOF
+  swift /tmp/decimal-spelling.swift
+  ```
+
+  Four things must hold, and every one of them is a stop and a report if it does not
+  (`AGENTS.md` rule 5). **A**, 131 characters, is `nil` raw and **held** written out, B is held both
+  ways, and the two are written out the same — that is the finding, and the fix. The floor block
+  prints held, nil, held, nil: the 128th place after the point is the type's floor whether one
+  significant digit sits there or thirty-eight, which is `design.md` § *Context*'s reading of what a
+  `nil` is left meaning. The three values the test named `a number too long to be kept exactly keeps
+  nothing and takes nothing back` commits are all still refused — two on the count, one on the type
+  — so that test stays green through § 15.2. And **"answers that depended on the spelling" must be
+  `0`**, with the two numbers on the `kept:` line equal to each other. Those two totals move run to
+  run because the values are random; the `0` and the equality do not. `design.md` § *Context*'s
+  fifth measurement records the run of 2026-09-07: 11,975 kept and 2,418 rescued.
+
+- [ ] 15.2 Write the number out before the parse. In `Sources/DayByDayKit/DayScreen.swift`,
+  `read(_:)` ends by handing `Decimal(string:)` the text a person committed with the comma swapped
+  for a full stop and nothing else changed — `let normalized = trimmed.replacingOccurrences(...)`,
+  then the `guard let number = Decimal(string: normalized)`. Replace `significantDigitCount(_:)`
+  with one function that gives back **both** the written-out text and the count of what it wrote:
+  the sign, the whole part with its leading zeros dropped, a full stop where a `.` or a `,` was
+  typed, the fraction with its trailing zeros dropped, no separator where no fraction is left, and
+  `0` where nothing is left at all. `read(_:)` uses the count exactly as it uses it today — above 38
+  a value that is not a number, nought a `.number(0)` — and calls `Decimal(string:)` on the
+  written-out text and on nothing else. **One function and one stripping rule**: a second place that
+  drops a zero is a second thing to get wrong later, and the count must be what that function's own
+  stripping leaves. Rewrite its doc comment against `design.md` § *A number this system cannot keep
+  exactly is not a number here* — the sentence standing on it today, "that call returns `nil` for
+  some text whose value is zero, once its written form falls below the type's floor, **which is not
+  what a `nil` means for any other text `read(_:)` reaches**" (`DayScreen.swift:283`), is the false
+  premise this finding is about — and say in `read(_:)`'s own comment why the parse is given a text
+  it built rather than the one it was handed. The zero branch stays: `design.md` says why, and says
+  it is now a shortcut rather than a guard.
+
+  **Tick this on a red-then-green and a grep, never on the reading.** The finding is behaviour, so
+  it can be shown: in `Tests/DayByDayKitTests/DayScreenTests.swift`, write a **temporary** `@Test`
+  that opens a day screen on a number commitment with no range, commits `"0." + String(repeating:
+  "0", count: 90) + "1" + String(repeating: "0", count: 38)` on its one row, and expects
+  `rows[0].numberEntry(asOf:)?.number?.description` to equal `"0." + String(repeating: "0", count:
+  90) + "1"` — a literal, never a second `Decimal(string:)` of the same text, which is the oracle
+  § 14.4 put on the other exactness assertions and the reason they can fail. Run it
+  **before** touching `read(_:)` — it must go **red**, and a green there means the case was
+  misdiagnosed and is a stop — then make it green with the change above, then **delete it** so
+  `swift test` reports 592 again, unchanged from § 14. It is deleted because no scenario names it
+  and this Story adds none; if it should stay, that is a scenario, a delta edit and a sixth G4, and
+  the place to say so is G4 rather than this box. Then, from `src/DayByDayKit`,
+  `grep -n 'Decimal(string:' Sources/DayByDayKit/DayScreen.swift | grep -v '///'` prints exactly one
+  line — it prints one today too, `guard let number = Decimal(string: normalized)` at `:270` — and
+  its argument is the text the new function returned, not `trimmed` and nothing derived from
+  `trimmed` in place. `grep -n 'normalized' Sources/DayByDayKit/DayScreen.swift` prints two lines
+  today and none after this box. Every other test stays green, and a red one is a rule-5 stop.
+
+- [ ] 15.3 Record in § *Notes*, under a heading of its own, what § 15.1 actually printed — all four
+  blocks, and the two totals of the last one as they came out on the day — that § 15.2's temporary
+  test went red before the change and green after it, that it was deleted, and that
+  `cd src/DayByDayKit && swift test` reports 592 with no `@Test` display name changed once it is
+  gone.
 
 ## Notes
 

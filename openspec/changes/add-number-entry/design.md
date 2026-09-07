@@ -73,9 +73,10 @@ thirty-eight significant digits, `Decimal(string:)` never rounds — it is exact
 150,000 random values of 1 to 38 significant digits at powers of ten from −200 to 260: 89,492 read
 back digit for digit, 60,508 returned `nil`, **none** came back a different number. Above 38 digits
 it does round, silently, which is the row above. So one bound of this system's own — the digits —
-and one question asked of the type, is the whole of it. `tasks.md` § 13.4 re-runs the boundary cases
-before the code moves; a measurement two review passes have now corrected is not something to take
-on this document's word.
+and one question asked of the type, is the whole of it — asked, from § 15 on, about the number
+written out one way rather than about the text a paste carried. `tasks.md` § 13.1, § 14.1 and § 15.1
+each re-run the boundary cases before the code moves; a measurement three review passes have now
+corrected is not something to take on this document's word.
 
 **A fourth measurement, taken at the fourth G7 pass, is why a `nil` from the parse is not by itself
 a refusal.** All three sets above read a `nil` as the type saying the number is past its ceiling or
@@ -93,8 +94,34 @@ Decimal(string: 400 x "0")         -> 0      no separator, so no exponent to fai
 
 What fails there is not the number but its *written form*: the parse forms an exponent of −129 and
 gives up on text whose value is zero, which `Decimal` holds at any scale. So a `nil` says the type
-cannot hold the number **as written** — which, for text of the shape this reading admits, means a
-magnitude past its ceiling or below its floor in every case but one, and that one says zero.
+cannot hold the number **as written**, and "as written" is the whole of the measurement below.
+
+**A fifth measurement, taken at the sixth G7 pass, is why the parse is never asked about a
+spelling.** The sentence that stood here read a `nil` as a magnitude past the ceiling or below the
+floor in every case but one, "and that one says zero". Zero was not the exception. It was the first
+instance of a class, and here is a second, measured on the same machine on 2026-09-07:
+
+```
+Decimal(string: "0." + 90 x "0" + "1" + 38 x "0") -> nil    131 chars, one significant digit
+Decimal(string: "0." + 90 x "0" + "1")            -> exact  93 chars, and the same number
+```
+
+Trailing zeros in a fraction are places the value does not occupy. They push the written fraction to
+129 digits, past the exponent the parse can form, while the digit run from the first non-zero digit
+stays short enough that nothing forces the parse to normalise and strip them. So 10^-91 is refused
+in one spelling and held exactly in another. The type has no difficulty with that *number*; it has
+difficulty with that *text*, and this reading was handing it whatever a paste happened to contain.
+
+**Written one way, the parse answers about the value and nothing else.** Take the sign, drop the
+leading zeros of the whole part and the trailing zeros of the fraction, and drop a separator with
+nothing left after it: one spelling per value. 20,000 values of 1 to 38 significant digits at powers
+of ten from −200 to 260, each written five ways — plain, with leading zeros, and with 40, 130 and
+200 trailing zeros — written out that way and then parsed: **0** values whose answer depended on the
+spelling; 11,975 held, and **every one printed back by `Decimal.description` as the very text handed
+in**; 2,418 of the 100,000 spellings refused as they were written and held once written out. What is
+left of a `nil` is then a fact about the number — past the ceiling the third measurement locates, or
+below the floor, which is the 128th place after the point whether one significant digit sits there
+or thirty-eight.
 
 Every one of those is reachable from the shell — `ContentView.swift` binds an unbounded `TextField`,
 so a paste is enough — and every one is digits and nothing else, so a shape check on characters
@@ -312,22 +339,28 @@ The order is: trim surrounding whitespace; if what is left is empty, it is a tak
 check the shape in full (optional leading `-`, then characters that are `0`–`9` or one separator,
 at least one digit, at most one separator); then count the *significant digits*, which is the next
 section; if that count is nought the number is **zero**, and it is answered without asking the type
-anything; otherwise, if the count is within the bound, replace a `,` with a `.` and call
-`Decimal(string:)`, and read a `nil` from it as a value that is not a number. The whitespace trim is
-what makes `" "` a take-back rather than a `Decimal(string:)`-flavoured **0**, and it is why the
-delta says space is disregarded *before* anything else is decided.
+anything; otherwise, if the count is within the bound, **write the number out one way** — the sign,
+the whole part without its leading zeros, a full stop in place of whichever separator was typed, the
+fraction without its trailing zeros, and no separator at all where no fraction is left — and call
+`Decimal(string:)` on *that*, reading a `nil` from it as a value that is not a number. The whitespace
+trim is what makes `" "` a take-back rather than a `Decimal(string:)`-flavoured **0**, and it is why
+the delta says space is disregarded *before* anything else is decided.
 
 **The parse is never force-unwrapped, and its `nil` is now load-bearing.** An earlier draft of this
 section said `Decimal(string:)` "cannot fail on text of that shape" and the code took a `!` on that
 word; the measurement in § *Context* shows the claim was false and the `!` a crash a paste could
 reach. The draft after it removed the `!` but called the `nil` unreachable, guarded by a bound of
-its own — and that bound was wrong, which is the third G7 pass's finding 2. A `nil` is reachable, it
-is *how the type says it cannot hold the number as written*, and it is read as a value that is not a
-number. **"As written" is load-bearing, and was the fourth G7 pass's finding 1**: there is exactly
-one text of the shape this reading admits whose `nil` is not the type refusing the number, and that
-one says zero past the type's floor. Zero is therefore decided before the parse, and every `nil`
-that is left really is the type giving up on a magnitude — § *Context*'s fourth measurement, and the
-next section's rule.
+its own — and that bound was wrong, which is the third G7 pass's finding 2. A `nil` is reachable and
+it is read as a value that is not a number.
+
+**"As written" was load-bearing, and taking it out is the sixth G7 pass's finding.** Twice now a
+number this system holds was refused for the way it was spelled: a zero written past the type's
+floor, which the fourth pass found, and a number carrying trailing zeros into a 129-place fraction,
+which the sixth found. Neither is a magnitude, so no bound of ours could ever have caught them —
+which is why three passes each turned up one more. The reading already knows where the significant
+digits are, so it writes the number out in the one spelling that says exactly them and asks the type
+about *that*. A `nil` is then the type giving up on a number rather than on a text, and there is no
+second question to get wrong later. § *Context*'s fifth measurement, and the next section's rule.
 
 `Decimal` and not `Double`, which is ADR-1032 and not re-decided here.
 
@@ -342,21 +375,30 @@ letting the type decide it silently.
 leading zeros and the trailing zeros, and count what is left. Nothing left to count is **zero**, and
 zero is kept as it stands — that is the whole of that case and the parse is never asked about it.
 Otherwise the number is kept when that count is at most **38**; text saying more digits than that is
-a value that is not a number. Then the parse answers the rest — `Decimal(string:)` returning `nil`
-is the type saying it cannot hold the number **as written**, and that too is a value that is not a
-number.
+a value that is not a number. Then the number is **written out in one spelling** — the sign, the
+whole part without its leading zeros, a full stop where a separator was typed, the fraction without
+its trailing zeros, and no separator where nothing is left after it — and the parse answers the rest
+on that text alone: `Decimal(string:)` returning `nil` is the type saying it cannot hold the
+**number**, and that too is a value that is not a number.
 
-**Zero is answered before the parse, and this is the fourth G7 pass's finding 1.** The sentence that
-stood here read every `nil` as "the type saying it cannot hold the number at all", and the code took
-that word: a count of nought passed the digit bound — dropping every digit of `0.000…0` leaves none
-to count — and then `Decimal(string:)` was asked, and answered `nil`, and the person was told "Not a
-number" for a number this delta says SHALL be kept. `Decimal(string: "0." + 129 zeros)` is `nil`
-while `Decimal(string: "0." + 128 zeros)` is `0`; the value is zero either way and `Decimal` holds
-zero at every scale it has. What the parse gives up on there is the written exponent, not the
-number, which is why the premise was false for that one text and true for every other. Deciding
-zero first is also the smaller rule: it removes a question the type answers wrongly rather than
-adding a bound of our own, and it leaves § *Context*'s reading of a `nil` — a magnitude past the
-ceiling or below the floor — true of every text that still reaches the parse.
+**The parse is asked about a value and never about a spelling, and this is the sixth G7 pass's
+finding.** The counting rule above already locates the significant digits, so writing them out costs
+nothing, and it is the only thing that closes this: `Decimal(string:)` is sensitive to how a number
+is written, not only to what it is worth, and no bound on magnitude can compensate for that. A
+131-character text saying 10^-91 — one significant digit, followed by thirty-eight zeros the value
+does not occupy — is refused, while the same number in 93 characters is held exactly, because the
+129-place fraction is past the exponent the parse can form and the short digit run never forces it
+to strip the zeros. Written out, the two are the same text and get the same answer. § *Context*'s
+fifth measurement puts a number on that: across 100,000 spellings of 20,000 values, not one answer
+depended on the spelling, and everything held printed back as the text handed in.
+
+**Zero is still answered before the parse, and that was the fourth G7 pass's finding 1.** Its text —
+a `0.000…0` of more than 128 places, whose every digit the count drops — is the same class as the
+one above, and writing the number out would now answer it too, since every such text is written out
+as `0`. The branch stays all the same: it is three lines, it is already measured, and it keeps
+`read(_:)` from asking the type about a value it has itself decided. **It is a shortcut and no
+longer a guard**, which is the sentence to keep true — the guard is the spelling, and anyone
+removing the branch later should be able to see that its removal changes nothing.
 
 **One bound of this system's own, and one question asked of the type.** The digits are ours because
 past 38 of them the type does not refuse, it *rounds*, and it does not say so: 39 nines come back as
@@ -366,11 +408,15 @@ until the third G7 pass said the line "falls where the type's own does" and then
 which is thirty-eight powers of ten short: `1` followed by 165 zeros is held exactly, and a person
 pasting it was told "Not a number" for a number the delta says SHALL be kept. § *Context* measures
 where the line actually is, and the point of asking rather than restating is that the reading can no
-longer be wrong about it.
+longer be wrong about it. **The asking only works while the question is about the number**, which is
+what writing it out first buys: asked about a spelling, the type answers truthfully and about
+something this delta does not care about.
 
 **What makes the two safe together** is measured in § *Context* and is the whole load-bearing claim
 here: at 38 significant digits or fewer, `Decimal(string:)` never rounds — it is exact or it is
-`nil`. So nothing gets past the count and then comes back a different number.
+`nil`. So nothing gets past the count and then comes back a different number. The fifth measurement
+re-runs that claim on written-out text specifically — 11,975 held, every one printing back as the
+text handed in — because that, and not the raw text, is what the parse now sees.
 
 It is still deliberately a shade conservative, in the one direction that costs nothing: a 39-digit
 mantissa below 2^128 does in fact fit — `1` followed by 37 zeros and a `1` reads back exactly — and
@@ -451,6 +497,16 @@ weight on the phone and reading it back after a force-quit.
   characters, the fix is three lines and ticks on a grep, and adding a scenario is a delta edit the
   fourth review pass did not ask for. This was put to the owner rather than left made here, and the
   answer was to leave it — § *Open Questions*, first entry.
+- **A number refused for the way it was written is now held, and no scenario says so either.** →
+  Accepted on the same terms as the bullet above, and it is the reason § 15 writes no test. The
+  requirement already covers it in words — 10^-91 is neither more than thirty-eight significant
+  digits nor a magnitude this system cannot hold — but every scenario about a number that cannot be
+  kept is about text that really cannot be kept, so nothing asserts this one and nothing would catch
+  it regressing. What is different from that bullet is that the fix is not an instance: after § 15
+  the parse cannot see a spelling at all, so there is no next instance for a seventh pass to find,
+  and a test would pin one of the 2,418 the fifth measurement counted rather than the class. The
+  owner decided the shape of the fix at the sixth pass and asked for no delta change; a scenario is
+  still available and would be a delta edit, a sixth G4 and a red-green cycle.
 - **The reading rests on a measured property of `Decimal(string:)` that Foundation does not
   document** — that at 38 significant digits or fewer it never rounds. → Accepted, and it is the
   cheaper of the two risks on offer: the alternative is restating the type's ceiling as a constant
@@ -489,17 +545,19 @@ and 75 after, and nothing in `specs/` touched:
 
 Nothing else is open: `grill.md` § *Left open* says
 "None." with its reason, writing the delta turned up nothing that must be answered before the code
-is written, and everything the review's four passes found was decided rather than asked. The first
+is written, and everything the review's six passes found was decided rather than asked. The first
 pass's finding that a long paste crashes the app is answered above by a rule this delta's own words
 already implied, and the one place it could have become a question — whether such a value earns a
-cause of its own — is decided against ADR-1036's stated test rather than by preference. **The third
-and fourth passes' five findings are the owner's decisions already taken**, and all five the same
-way: the requirements stand and the code moves. What was left for this document was where the seam
-is short (§ *The seam*), where a measured claim was false (§ *Context*, § *A number this system
-cannot keep exactly is not a number here*, twice over), and what to call a member whose name
-answered to two things (§ *The seam* again) — and none of those was a preference, except the name
-itself, which was the second of the two answered at the top of this section. Five things writing the
-delta turned up, and why each is settled here rather than asked:
+cause of its own — is decided against ADR-1036's stated test rather than by preference. **The third,
+fourth and sixth passes' six findings are the owner's decisions already taken**, and all six the
+same way: the requirements stand and the code moves. The sixth added one word to how: **close the
+class rather than the instance**, which is why § *Reading what was committed* now writes the number
+out before the parse instead of fencing off one more magnitude. What was left for this document was
+where the seam is short (§ *The seam*), where a measured claim was false (§ *Context*, § *A number
+this system cannot keep exactly is not a number here*, three times over now), and what to call a
+member whose name answered to two things (§ *The seam* again) — and none of those was a preference,
+except the name itself, which was the second of the two answered at the top of this section. Five
+things writing the delta turned up, and why each is settled here rather than asked:
 
 - **Whether text holding nothing but space is a take-back or a value that is not a number.** Settled
   as a take-back. A decimal keypad cannot print a space, so nothing a person can do reaches it; the
