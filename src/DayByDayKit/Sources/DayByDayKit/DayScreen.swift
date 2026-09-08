@@ -73,7 +73,7 @@ public final class DayScreen {
         // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
         // back. The parameter holds the same value `shownDay` was just set to, two lines up.
         self.dayView = DayView(
-            of: openedRoster.roster.commitments(on: today), on: today,
+            of: openedRoster.roster.groups(on: today), on: today,
             in: opened.store?.history ?? History())
     }
 
@@ -440,7 +440,7 @@ public final class DayScreen {
     /// and `showToday` that only step the day already held.
     private func dayViewOfShownDay() -> DayView {
         DayView(
-            of: roster.commitments(on: shownDay), on: shownDay,
+            of: roster.groups(on: shownDay), on: shownDay,
             in: recordStore?.history ?? History())
     }
 
@@ -499,7 +499,7 @@ public final class DayScreen {
         self.roster = openedRoster.roster
 
         self.dayView = DayView(
-            of: openedRoster.roster.commitments(on: shownDay), on: shownDay,
+            of: openedRoster.roster.groups(on: shownDay), on: shownDay,
             in: opened.store?.history ?? History())
     }
 
@@ -512,7 +512,7 @@ public final class DayScreen {
         self.roster = openedRoster.roster
 
         self.dayView = DayView(
-            of: openedRoster.roster.commitments(on: shownDay), on: shownDay,
+            of: openedRoster.roster.groups(on: shownDay), on: shownDay,
             in: recordStore?.history ?? History())
     }
 }
