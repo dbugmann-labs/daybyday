@@ -339,11 +339,11 @@ what catches.
   implementation reusing the note branch's `Blank.saysNothing` → take-back shape.
 - [x] 12.8 `adding on a row the day screen's day view does not hold changes nothing`
 - [x] 12.9 `committing on a row that offers no total entry changes nothing`
-- [ ] 12.10 `a commit is read as the entry the row it was made on offers, for all four kinds` — "120"
+- [x] 12.10 `a commit is read as the entry the row it was made on offers, for all four kinds` — "120"
   on each of the four rows in turn: nothing, the number 120, the note "120", and "120 of 120". A
   screen that read the text before asking the row fails it.
-- [ ] 12.11 `adding on a day screen that is not keeping a record changes nothing and keeps nothing`
-- [ ] 12.12 `adding on one row leaves the other rows of the day as they were`
+- [x] 12.11 `adding on a day screen that is not keeping a record changes nothing and keeps nothing`
+- [x] 12.12 `adding on one row leaves the other rows of the day as they were`
 - [ ] 12.13 `adding on a day a day screen has moved back to keeps it on that day`
 - [ ] 12.14 `adding writes nothing to the roster's place`
 - [ ] 12.15 `an amount committed with space around it is added`
