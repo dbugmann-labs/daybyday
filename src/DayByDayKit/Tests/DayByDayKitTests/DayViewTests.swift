@@ -2133,3 +2133,66 @@ func aRowGoesOnOfferingTheTakeBackWhileTheDayStillHoldsAnAddition() {
     #expect(!twiceTakenBackView.rows[0].offersTakeBackLast(asOf: monday))
     #expect(twiceTakenBackView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "0 of 120")
 }
+
+@Test(
+    "two rows for the same total commitment and date whose days have added different amounts are different rows"
+)
+func twoRowsForTheSameTotalCommitmentAndDateWhoseDaysHaveAddedDifferentAmountsAreDifferentRows() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var historyWith30 = History()
+    historyWith30.add(Addition(30, for: protein, on: monday)!)
+    var historyWith90 = History()
+    historyWith90.add(Addition(90, for: protein, on: monday)!)
+
+    let firstView = DayView(of: [protein], on: monday, in: historyWith30)
+    let secondView = DayView(of: [protein], on: monday, in: historyWith90)
+
+    #expect(!firstView.rows[0].isKept)
+    #expect(!secondView.rows[0].isKept)
+    #expect(firstView.rows[0] != secondView.rows[0])
+}
+
+@Test(
+    "two rows for the same total commitment and date whose days have added the same amount are the same row"
+)
+func twoRowsForTheSameTotalCommitmentAndDateWhoseDaysHaveAddedTheSameAmountAreTheSameRow() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+
+    let firstView = DayView(of: [protein], on: monday, in: history)
+    let secondView = DayView(of: [protein], on: monday, in: history)
+
+    #expect(!firstView.rows[0].isKept)
+    #expect(!secondView.rows[0].isKept)
+    #expect(firstView.rows[0] == secondView.rows[0])
+}
+
+@Test("two rows whose days hold different additions summing alike are the same row")
+func twoRowsWhoseDaysHoldDifferentAdditionsSummingAlikeAreTheSameRow() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var historyWithTwoAdditions = History()
+    historyWithTwoAdditions.add(Addition(30, for: protein, on: monday)!)
+    historyWithTwoAdditions.add(Addition(30, for: protein, on: monday)!)
+    var historyWithOneAddition = History()
+    historyWithOneAddition.add(Addition(60, for: protein, on: monday)!)
+
+    let firstView = DayView(of: [protein], on: monday, in: historyWithTwoAdditions)
+    let secondView = DayView(of: [protein], on: monday, in: historyWithOneAddition)
+
+    #expect(firstView.rows[0] == secondView.rows[0])
+    #expect(firstView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "60 of 120")
+    #expect(secondView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "60 of 120")
+}

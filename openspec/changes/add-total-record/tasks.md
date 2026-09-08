@@ -253,11 +253,11 @@ Three scenarios from the MODIFIED § *A row is a commitment's line on a date*, i
 `Tests/DayByDayKitTests/DayViewTests.swift`. Expect 9.1 and 9.2 green once § 8's stored `total` is in,
 since `Row` is `Hashable` with synthesized conformance.
 
-- [ ] 9.1 `two rows for the same total commitment and date whose days have added different amounts are
+- [x] 9.1 `two rows for the same total commitment and date whose days have added different amounts are
   different rows`
-- [ ] 9.2 `two rows for the same total commitment and date whose days have added the same amount are
+- [x] 9.2 `two rows for the same total commitment and date whose days have added the same amount are
   the same row`
-- [ ] 9.3 `two rows whose days hold different additions summing alike are the same row` — the box that
+- [x] 9.3 `two rows whose days hold different additions summing alike are the same row` — the box that
   pins `design.md` § *The entry says the words*: a row holds the **sum** and never the list, so [30,
   30] and [60] give one row. A `Row` that stored the additions to tell them apart fails this, and that
   failure is the point.
