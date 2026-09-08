@@ -1324,3 +1324,58 @@ func aDaysLastAdditionTakenBackIsNotHeldByAStoreOpenedAfterwardsAtTheSamePlace()
     #expect(later.history.total(for: protein, on: monday) == 0)
     #expect(later.history == History())
 }
+
+@Test("two additions alike in every way on one day are both read back")
+func twoAdditionsAlikeInEveryWayOnOneDayAreBothReadBack() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let store = try RecordStore(at: place)
+    try store.add(Addition(30, for: protein, on: monday)!)
+    try store.add(Addition(30, for: protein, on: monday)!)
+
+    let later = try RecordStore(at: place)
+
+    #expect(later.history.total(for: protein, on: monday) == 60)
+
+    try later.removeLastAddition(for: protein, on: monday)
+    #expect(later.history.total(for: protein, on: monday) == 30)
+
+    try later.removeLastAddition(for: protein, on: monday)
+    #expect(later.history.total(for: protein, on: monday) == 0)
+}
+
+@Test("an amount is read back exactly as it was given, whatever its digits")
+func anAmountIsReadBackExactlyAsItWasGivenWhateverItsDigits() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let thirtyEightNines = Decimal(string: String(repeating: "9", count: 38))!
+    let amounts: [Decimal] = [0.000001, 30, 119.95, thirtyEightNines]
+    let target = Commitment.Target(120)!
+    let commitments = amounts.map { amount in
+        Commitment(
+            name: "\(amount)", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    }
+
+    let first = try RecordStore(at: place)
+    var expected = History()
+    for (commitment, amount) in zip(commitments, amounts) {
+        let addition = Addition(amount, for: commitment, on: monday)!
+        try first.add(addition)
+        expected.add(addition)
+    }
+
+    let later = try RecordStore(at: place)
+
+    for (commitment, amount) in zip(commitments, amounts) {
+        #expect(later.history.total(for: commitment, on: monday) == amount)
+    }
+    #expect(later.history == expected)
+}

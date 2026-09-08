@@ -212,8 +212,8 @@ suite before writing a test; then one scenario at a time as above.
   place` — including that taking the last one back leaves a store that reads as one that has taken no
   record. A day left as an empty array on disk fails that clause and is what § 7.9's fixture then
   refuses.
-- [ ] 7.5 `two additions alike in every way on one day are both read back`
-- [ ] 7.6 `an amount is read back exactly as it was given, whatever its digits`
+- [x] 7.5 `two additions alike in every way on one day are both read back`
+- [x] 7.6 `an amount is read back exactly as it was given, whatever its digits`
 - [ ] 7.7 `a store opened again holds exactly the ticks, numbers, notes and additions added and not
   taken back`
 - [ ] 7.8 `an addition that cannot be kept is refused and not held` — the unwritable place, and the
