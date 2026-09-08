@@ -1,6 +1,6 @@
 ## 1. Before a line is written
 
-- [ ] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
+- [x] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
   From `src/DayByDayKit`, `swift test` reports **885 tests passing** — measured 2026-09-08 twice: once
   with this branch cut from `main` at `264c5a7`, and again after it was rebased onto `fe540d5`, which
   is where it sits at G4 and which carries the day-swipe chore (#177) and B-041 (#178). The chore
@@ -16,7 +16,7 @@
   carried test needs so much as an added argument. A carried test that has to be edited at all is a
   sign the design was not followed: stop and report it.
 
-- [ ] 1.2 Confirm the two facts the delta rests on, before writing any test, and stop and report if
+- [x] 1.2 Confirm the two facts the delta rests on, before writing any test, and stop and report if
   either is false (`design.md` § *Context*, § *The seam*):
 
   **The category is already on the roster's entry and the form on disk already carries it.**
@@ -40,32 +40,32 @@ Rule 3 throughout: one scenario, one acceptance test named identically to it, on
 Every box in this section is driven at `Roster.move(group:toOffset:)` and lands in
 `src/DayByDayKit/Tests/DayByDayKitTests/RosterTests.swift`.
 
-- [ ] 2.1 *moving a group to the front draws it before every other group under a category* — the
+- [x] 2.1 *moving a group to the front draws it before every other group under a category* — the
   first cycle, and the one that introduces `Roster.move(group category: String?, toOffset offset: Int)
   -> Bool`.
-- [ ] 2.2 *moving a group to the end draws it after every other group under a category and before the
+- [x] 2.2 *moving a group to the end draws it after every other group under a category and before the
   commitments under none* — the `offset == count` branch.
-- [ ] 2.3 *an offset for a group is counted over the groups the roster is keeping that are under a
+- [x] 2.3 *an offset for a group is counted over the groups the roster is keeping that are under a
   category* — the count excludes the group under none, and no offset lands after it.
-- [ ] 2.4 *a group's stopped and removed commitments travel with it* — the block is every entry under
+- [x] 2.4 *a group's stopped and removed commitments travel with it* — the block is every entry under
   the category, whatever its state, and the dated group read is what proves it. This is the scenario
   ADR-1043 exists for.
-- [ ] 2.5 *a group's commitments are gathered into one block, keeping their order against each other*
+- [x] 2.5 *a group's commitments are gathered into one block, keeping their order against each other*
   — a scattered group comes back contiguous, and what lay between it lands on one side.
-- [ ] 2.6 *two offsets leave a group where it is, and both are accepted* — nothing is taken out of the
+- [x] 2.6 *two offsets leave a group where it is, and both are accepted* — nothing is taken out of the
   sequence, so a scattered group asked for its own place stays scattered. Check this **before**
   computing any destination, exactly as `Roster.move(_:toOffset:under:)` does: computing one from a
   post-removal position is what would gather it.
-- [ ] 2.7 *moving the group of the commitments under no category is refused* — including a category
+- [x] 2.7 *moving the group of the commitments under no category is refused* — including a category
   of nothing but blank space, which normalises to none through the same `Blank` test (ADR-1039).
-- [ ] 2.8 *moving a group no commitment the roster is keeping is under is refused* — one nothing has
+- [x] 2.8 *moving a group no commitment the roster is keeping is under is refused* — one nothing has
   ever been under, and one only a stopped or removed commitment is under.
-- [ ] 2.9 *an offset below zero and one above the number of groups under a category are both refused
+- [x] 2.9 *an offset below zero and one above the number of groups under a category are both refused
   for a group* — not clamped.
-- [ ] 2.10 *moving a group moves no day and changes no commitment* — no category is put under
+- [x] 2.10 *moving a group moves no day and changes no commitment* — no category is put under
   anything, no kept-until day moves, no state changes.
-- [ ] 2.11 *moving a group on a copy of a roster leaves the roster it was copied from unchanged*.
-- [ ] 2.12 *a roster keeping one group under a category accepts both the offsets it has*.
+- [x] 2.11 *moving a group on a copy of a roster leaves the roster it was copied from unchanged*.
+- [x] 2.12 *a roster keeping one group under a category accepts both the offsets it has*.
 
 ## 3. `commitment` — a roster store keeps a group move at its place
 

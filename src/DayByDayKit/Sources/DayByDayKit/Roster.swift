@@ -271,6 +271,92 @@ public struct Roster: Hashable, Sendable {
         return true
     }
 
+    /// Moves the **group** named by `category` to `offset`, a place counted over the groups this
+    /// roster is keeping that are under a category, as they stand before the move, running from 0
+    /// (before the first of them) to the number of them (after the last). Every commitment under
+    /// `category` — kept, stopped and removed alike — travels together as one block, keeping its
+    /// order against the others that travel; every commitment that does not travel stays in the
+    /// order it was in against every other commitment that does not travel. `design.md` § *A group
+    /// move is a block move*, ADR-1043.
+    ///
+    /// `category` goes through the same `Blank` test every other category does (ADR-1039), so a
+    /// category of nothing but blank space is the group under no category. Answers `false` and
+    /// changes nothing when `category` — normalized — names no group this roster is keeping under
+    /// a category: no category at all, one nothing it holds has ever been under, or one only a
+    /// stopped or removed commitment is under. Answers `false` and changes nothing when `offset` is
+    /// below 0 or above the number of groups kept under a category; not clamped.
+    ///
+    /// Two offsets name the place the group already has — the one it is at among the groups kept
+    /// under a category, and the one just after that — and on both nothing is taken out of
+    /// `entries` and nothing in it moves. Every other offset takes every commitment under
+    /// `category` out of the sequence and puts the block back immediately before the first
+    /// commitment under the category of the group that stood at `offset`, or immediately after the
+    /// last commitment under the category of the last group kept under one when `offset` is the
+    /// number of them — both counted over every commitment under that category, not only the ones
+    /// this roster is keeping. Both paths answer `true` and report that the roster moved the group.
+    public mutating func move(group category: String?, toOffset offset: Int) -> Bool {
+        guard let normalizedCategory = Self.normalized(category) else {
+            return false
+        }
+
+        // The groups this roster is keeping under a category, in the order they stand before the
+        // move — the same list `CommitmentsScreen.categoriesInUse` reads, `design.md` § *The
+        // offset counts the headed groups*.
+        var categorisedOrder: [String] = []
+        for entry in entries where entry.keptUntil == nil {
+            guard let entryCategory = entry.category, !categorisedOrder.contains(entryCategory)
+            else { continue }
+            categorisedOrder.append(entryCategory)
+        }
+
+        guard let sourceGroupIndex = categorisedOrder.firstIndex(of: normalizedCategory) else {
+            return false
+        }
+
+        guard (0...categorisedOrder.count).contains(offset) else {
+            return false
+        }
+
+        // Offset `sourceGroupIndex` names the moved group itself, and offset
+        // `sourceGroupIndex + 1` names the group that already follows it among the ones kept under
+        // a category — or, where the moved group is the last of them, is the number of them,
+        // again where it already stands. Neither asks a kept group to stand anywhere new, so
+        // nothing in the sequence moves — the carve-out that keeps a scattered group from being
+        // gathered by a no-op, `design.md` § *The two offsets that gather nothing*.
+        guard offset != sourceGroupIndex, offset != sourceGroupIndex + 1 else {
+            return true
+        }
+
+        var moving: [Entry] = []
+        var remaining: [Entry] = []
+        for entry in entries {
+            if entry.category == normalizedCategory {
+                moving.append(entry)
+            } else {
+                remaining.append(entry)
+            }
+        }
+
+        // `offset == categorisedOrder.count` means "after the last of them"; every other offset
+        // names the group that stood there before the move, before whose first commitment the
+        // block is put back. Neither lookup can miss: the guard above ruled out `offset ==
+        // sourceGroupIndex` and `offset == sourceGroupIndex + 1`, so `targetCategory` is never
+        // `normalizedCategory`, and `remaining` still holds every commitment under it.
+        let targetCategory =
+            offset == categorisedOrder.count ? categorisedOrder.last! : categorisedOrder[offset]
+
+        if offset == categorisedOrder.count {
+            let lastUnderTarget = remaining.lastIndex(where: { $0.category == targetCategory })!
+            remaining.insert(contentsOf: moving, at: lastUnderTarget + 1)
+        } else {
+            let firstUnderTarget = remaining.firstIndex(where: { $0.category == targetCategory })!
+            remaining.insert(contentsOf: moving, at: firstUnderTarget)
+        }
+
+        entries = remaining
+        return true
+    }
+
     /// The commitments this roster had not stopped keeping on `date`, in the order it holds
     /// them. It applies no other rule: a commitment's own day it is kept from and its
     /// schedule are the commitment's answer, not the roster's. A removed commitment answers
