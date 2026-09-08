@@ -115,9 +115,9 @@ holds*, in `Tests/DayByDayKitTests/RecordTests.swift`. `History` gains
   replacing map alike.
 - [x] 4.4 `the additions of one day are not counted in another day's total`
 - [x] 4.5 `the additions of one commitment are not counted in another's total on the same date`
-- [ ] 4.6 `a history answers a total of zero for a commitment whose kind is not a total` — answered
+- [x] 4.6 `a history answers a total of zero for a commitment whose kind is not a total` — answered
   rather than refused, for all three other kinds and for a date the commitment is not due on.
-- [ ] 4.7 `an amount the system refuses leaves the day's additions standing`
+- [x] 4.7 `an amount the system refuses leaves the day's additions standing`
 - [ ] 4.8 `two histories holding the same additions in the same order are the same history`
 - [ ] 4.9 `two histories holding one day's additions in different orders are different histories` —
   the box that pins order as part of what a history *is*. An implementation sorting the day's amounts,

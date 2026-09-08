@@ -1700,3 +1700,43 @@ func theAdditionsOfOneCommitmentAreNotCountedInAnothersTotalOnTheSameDate() {
     #expect(history.total(for: protein, on: monday) == 30)
     #expect(history.total(for: water, on: monday) == 45)
 }
+
+@Test("a history answers a total of zero for a commitment whose kind is not a total")
+func aHistoryAnswersATotalOfZeroForACommitmentWhoseKindIsNotATotal() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let numberKind = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let noteKind = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+
+    #expect(history.total(for: gym, on: monday) == 0)
+    #expect(history.total(for: numberKind, on: monday) == 0)
+    #expect(history.total(for: noteKind, on: monday) == 0)
+    #expect(history.total(for: protein, on: tuesday) == 0)
+}
+
+@Test("an amount the system refuses leaves the day's additions standing")
+func anAmountTheSystemRefusesLeavesTheDaysAdditionsStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(60, for: protein, on: monday)!)
+    let historyBefore = history
+
+    #expect(Addition(0, for: protein, on: monday) == nil)
+    #expect(Addition(-30, for: protein, on: monday) == nil)
+    #expect(history.total(for: protein, on: monday) == 60)
+    #expect(history == historyBefore)
+}
