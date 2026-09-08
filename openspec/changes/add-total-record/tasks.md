@@ -118,8 +118,8 @@ holds*, in `Tests/DayByDayKitTests/RecordTests.swift`. `History` gains
 - [x] 4.6 `a history answers a total of zero for a commitment whose kind is not a total` — answered
   rather than refused, for all three other kinds and for a date the commitment is not due on.
 - [x] 4.7 `an amount the system refuses leaves the day's additions standing`
-- [ ] 4.8 `two histories holding the same additions in the same order are the same history`
-- [ ] 4.9 `two histories holding one day's additions in different orders are different histories` —
+- [x] 4.8 `two histories holding the same additions in the same order are the same history`
+- [x] 4.9 `two histories holding one day's additions in different orders are different histories` —
   the box that pins order as part of what a history *is*. An implementation sorting the day's amounts,
   or holding them in a multiset, passes 4.3 and fails this.
 - [ ] 4.10 `a history holds ticks, numbers, notes and additions side by side and answers each on its

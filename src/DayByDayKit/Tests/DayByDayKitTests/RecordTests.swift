@@ -1740,3 +1740,46 @@ func anAmountTheSystemRefusesLeavesTheDaysAdditionsStanding() {
     #expect(history.total(for: protein, on: monday) == 60)
     #expect(history == historyBefore)
 }
+
+@Test("two histories holding the same additions in the same order are the same history")
+func twoHistoriesHoldingTheSameAdditionsInTheSameOrderAreTheSameHistory() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    var first = History()
+    first.add(Addition(30, for: protein, on: monday)!)
+    first.add(Addition(45, for: protein, on: wednesday)!)
+
+    var second = History()
+    second.add(Addition(45, for: protein, on: wednesday)!)
+    second.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(first == second)
+}
+
+@Test("two histories holding one day's additions in different orders are different histories")
+func twoHistoriesHoldingOneDaysAdditionsInDifferentOrdersAreDifferentHistories() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    var first = History()
+    first.add(Addition(30, for: protein, on: monday)!)
+    first.add(Addition(45, for: protein, on: monday)!)
+
+    var second = History()
+    second.add(Addition(45, for: protein, on: monday)!)
+    second.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(first != second)
+    #expect(first.total(for: protein, on: monday) == 75)
+    #expect(second.total(for: protein, on: monday) == 75)
+}
