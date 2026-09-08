@@ -112,6 +112,31 @@ func aRosterHoldsACommitmentKeptFromTheLastSupportedDateLikeAnyOther() {
     #expect(roster.commitments == [gym, run])
 }
 
+@Test("two rosters differing only in the category one commitment is under are different rosters")
+func twoRostersDifferingOnlyInTheCategoryOneCommitmentIsUnderAreDifferentRosters() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+
+    var first = Roster()
+    _ = first.add(gym)
+    _ = first.add(run)
+    _ = first.put(gym, under: "Sport")
+
+    var second = Roster()
+    _ = second.add(gym)
+    _ = second.add(run)
+
+    var third = Roster()
+    _ = third.add(gym)
+    _ = third.add(run)
+    _ = third.put(gym, under: "Sport")
+
+    #expect(first != second)
+    #expect(third == first)
+}
+
 @Test("adding a commitment a roster does not hold places it after the ones already there and says it was added")
 func addingACommitmentARosterDoesNotHoldPlacesItAfterTheOnesAlreadyThereAndSaysItWasAdded() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -866,7 +891,7 @@ func movingACommitmentToTheFrontPutsItBeforeEveryCommitmentTheRosterIsKeeping() 
     _ = roster.add(gym)
     _ = roster.add(journaling)
 
-    let moved = roster.move(journaling, toOffset: 0)
+    let moved = roster.move(journaling, toOffset: 0, under: nil)
 
     #expect(moved)
     #expect(roster.commitments == [journaling, waterPlants, gym])
@@ -885,7 +910,7 @@ func movingACommitmentToTheEndPutsItAfterEveryCommitmentTheRosterIsKeeping() {
     _ = roster.add(gym)
     _ = roster.add(journaling)
 
-    let moved = roster.move(waterPlants, toOffset: 3)
+    let moved = roster.move(waterPlants, toOffset: 3, under: nil)
 
     #expect(moved)
     #expect(roster.commitments == [gym, journaling, waterPlants])
@@ -903,7 +928,7 @@ func anOffsetIsCountedOverTheCommitmentsTheRosterIsKeepingAsTheyStandBeforeTheMo
     _ = roster.add(waterPlants)
     _ = roster.add(gym)
     _ = roster.add(journaling)
-    _ = roster.move(waterPlants, toOffset: 2)
+    _ = roster.move(waterPlants, toOffset: 2, under: nil)
 
     #expect(roster.commitments == [gym, waterPlants, journaling])
 
@@ -911,7 +936,7 @@ func anOffsetIsCountedOverTheCommitmentsTheRosterIsKeepingAsTheyStandBeforeTheMo
     _ = alike.add(waterPlants)
     _ = alike.add(gym)
     _ = alike.add(journaling)
-    _ = alike.move(waterPlants, toOffset: 3)
+    _ = alike.move(waterPlants, toOffset: 3, under: nil)
 
     #expect(alike.commitments == [gym, journaling, waterPlants])
 }
@@ -932,7 +957,7 @@ func aStoppedCommitmentBetweenTheTwoPlacesIsPassedRatherThanPushed() {
     _ = roster.add(reading)
     _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
 
-    let moved = roster.move(waterPlants, toOffset: 2)
+    let moved = roster.move(waterPlants, toOffset: 2, under: nil)
 
     #expect(moved)
     #expect(roster.commitments == [journaling, waterPlants, reading])
@@ -946,7 +971,7 @@ func aStoppedCommitmentBetweenTheTwoPlacesIsPassedRatherThanPushed() {
     _ = removedInstead.add(journaling)
     _ = removedInstead.add(reading)
     _ = removedInstead.remove(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
-    _ = removedInstead.move(waterPlants, toOffset: 2)
+    _ = removedInstead.move(waterPlants, toOffset: 2, under: nil)
 
     #expect(
         removedInstead.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
@@ -967,7 +992,7 @@ func anOffsetOfNothingAtAllPutsACommitmentBeforeTheFirstOneKeptAndNotBeforeAStop
     _ = roster.add(journaling)
     _ = roster.retire(waterPlants, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
 
-    let moved = roster.move(journaling, toOffset: 0)
+    let moved = roster.move(journaling, toOffset: 0, under: nil)
 
     #expect(moved)
     #expect(roster.commitments == [journaling, gym])
@@ -993,10 +1018,10 @@ func twoOffsetsLeaveACommitmentWhereItAlreadyIsAndBothAreAccepted() {
     }
 
     var atItsOwnOffset = neverAsked()
-    let movedAtItsOwnOffset = atItsOwnOffset.move(gym, toOffset: 1)
+    let movedAtItsOwnOffset = atItsOwnOffset.move(gym, toOffset: 1, under: nil)
 
     var atOffsetJustAfter = neverAsked()
-    let movedAtOffsetJustAfter = atOffsetJustAfter.move(gym, toOffset: 2)
+    let movedAtOffsetJustAfter = atOffsetJustAfter.move(gym, toOffset: 2, under: nil)
 
     #expect(movedAtItsOwnOffset)
     #expect(movedAtOffsetJustAfter)
@@ -1036,13 +1061,13 @@ func theOffsetJustAfterACommitmentsOwnPassesNothingWithAStoppedOrRemovedCommitme
     // Offset 2 names "Reading", the offset just after "Gym"'s own, so this is a no-op: nothing
     // passes "Journaling", stopped or removed alike.
     var withStopped = neverAsked(removingJournaling: false)
-    let movedWithStopped = withStopped.move(gym, toOffset: 2)
+    let movedWithStopped = withStopped.move(gym, toOffset: 2, under: nil)
 
     #expect(movedWithStopped)
     #expect(withStopped == neverAsked(removingJournaling: false))
 
     var withRemoved = neverAsked(removingJournaling: true)
-    let movedWithRemoved = withRemoved.move(gym, toOffset: 2)
+    let movedWithRemoved = withRemoved.move(gym, toOffset: 2, under: nil)
 
     #expect(movedWithRemoved)
     #expect(withRemoved == neverAsked(removingJournaling: true))
@@ -1061,10 +1086,10 @@ func aRosterKeepingOneCommitmentAcceptsBothTheOffsetsItHas() {
     }
 
     var atOffsetZero = neverAsked()
-    let movedAtOffsetZero = atOffsetZero.move(gym, toOffset: 0)
+    let movedAtOffsetZero = atOffsetZero.move(gym, toOffset: 0, under: nil)
 
     var atOffsetOne = neverAsked()
-    let movedAtOffsetOne = atOffsetOne.move(gym, toOffset: 1)
+    let movedAtOffsetOne = atOffsetOne.move(gym, toOffset: 1, under: nil)
 
     #expect(movedAtOffsetZero)
     #expect(movedAtOffsetOne)
@@ -1072,7 +1097,7 @@ func aRosterKeepingOneCommitmentAcceptsBothTheOffsetsItHas() {
     #expect(atOffsetOne == neverAsked())
 
     var atOffsetTwo = neverAsked()
-    let movedAtOffsetTwo = atOffsetTwo.move(gym, toOffset: 2)
+    let movedAtOffsetTwo = atOffsetTwo.move(gym, toOffset: 2, under: nil)
 
     #expect(!movedAtOffsetTwo)
 }
@@ -1097,16 +1122,16 @@ func movingACommitmentTheRosterIsNotKeepingSaysItWasNotMovedAndLeavesTheRosterAs
     }
 
     var roster = neverAsked()
-    let movedGym = roster.move(gym, toOffset: 0)
+    let movedGym = roster.move(gym, toOffset: 0, under: nil)
 
     #expect(!movedGym)
     #expect(roster == neverAsked())
 
     var alsoJournaling = neverAsked()
-    let movedJournaling = alsoJournaling.move(journaling, toOffset: 0)
+    let movedJournaling = alsoJournaling.move(journaling, toOffset: 0, under: nil)
 
     var alsoRun = neverAsked()
-    let movedRun = alsoRun.move(run, toOffset: 0)
+    let movedRun = alsoRun.move(run, toOffset: 0, under: nil)
 
     #expect(!movedJournaling)
     #expect(alsoJournaling == neverAsked())
@@ -1129,13 +1154,13 @@ func anOffsetBelowZeroAndOneAboveTheNumberOfCommitmentsKeptAreBothRefused() {
     }
 
     var roster = neverAsked()
-    let movedBelowZero = roster.move(gym, toOffset: -1)
+    let movedBelowZero = roster.move(gym, toOffset: -1, under: nil)
 
     #expect(!movedBelowZero)
     #expect(roster == neverAsked())
 
     var alsoAbove = neverAsked()
-    let movedAboveTheCount = alsoAbove.move(gym, toOffset: 3)
+    let movedAboveTheCount = alsoAbove.move(gym, toOffset: 3, under: nil)
 
     #expect(!movedAboveTheCount)
     #expect(alsoAbove == neverAsked())
@@ -1159,7 +1184,7 @@ func movingACommitmentMovesNoDayAndChangesNoCommitment() {
     _ = roster.add(journaling)
     _ = roster.retire(waterPlants, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
 
-    let moved = roster.move(journaling, toOffset: 0)
+    let moved = roster.move(journaling, toOffset: 0, under: nil)
     let onNextDay = roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!)
 
     #expect(moved)
@@ -1185,7 +1210,7 @@ func movingACommitmentOnACopyOfARosterLeavesTheRosterItWasCopiedFromUnchanged() 
     _ = original.add(gym)
 
     var copy = original
-    _ = copy.move(gym, toOffset: 0)
+    _ = copy.move(gym, toOffset: 0, under: nil)
 
     #expect(copy.commitments == [gym, waterPlants])
     #expect(original.commitments == [waterPlants, gym])
@@ -1205,7 +1230,7 @@ func aCommitmentMovedAndThenStoppedIsTakenUpAgainInThePlaceItWasMovedTo() {
     _ = roster.add(waterPlants)
     _ = roster.add(gym)
     _ = roster.add(journaling)
-    _ = roster.move(journaling, toOffset: 0)
+    _ = roster.move(journaling, toOffset: 0, under: nil)
     _ = roster.retire(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
 
     let takenUp = roster.add(journalingAgain)
@@ -1227,7 +1252,7 @@ func aRosterAnswersAboutADateInTheOrderItWasMovedInto() {
     _ = roster.add(gym)
     _ = roster.add(journaling)
     _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
-    _ = roster.move(journaling, toOffset: 0)
+    _ = roster.move(journaling, toOffset: 0, under: nil)
 
     #expect(
         roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
@@ -1249,7 +1274,7 @@ func removingACommitmentThatHasBeenMovedKeepsItInThePlaceItWasMovedTo() {
     _ = roster.add(waterPlants)
     _ = roster.add(gym)
     _ = roster.add(journaling)
-    _ = roster.move(journaling, toOffset: 0)
+    _ = roster.move(journaling, toOffset: 0, under: nil)
 
     let removed = roster.remove(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
 
@@ -1258,4 +1283,621 @@ func removingACommitmentThatHasBeenMovedKeepsItInThePlaceItWasMovedTo() {
         roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!)
             == [journaling, waterPlants, gym])
     #expect(roster.commitments == [waterPlants, gym])
+}
+
+@Test("a commitment a roster is keeping is put under the category it was given")
+func aCommitmentARosterIsKeepingIsPutUnderTheCategoryItWasGiven() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(gym)
+
+    let put = roster.put(creatine, under: "Supplements")
+
+    #expect(put)
+    #expect(
+        roster.groups
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine]),
+                Roster.Group(category: nil, commitments: [gym]),
+            ])
+}
+
+@Test("a roster none of whose commitments is under a category reads back one group")
+func aRosterNoneOfWhoseCommitmentsIsUnderACategoryReadsBackOneGroup() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+
+    #expect(
+        roster.groups
+            == [Roster.Group(category: nil, commitments: [waterPlants, gym, journaling])])
+}
+
+@Test("a category of nothing but blank space puts a commitment under none, and is not refused")
+func aCategoryOfNothingButBlankSpacePutsACommitmentUnderNoneAndIsNotRefused() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.put(creatine, under: "Supplements")
+
+    let put = roster.put(creatine, under: "   ")
+
+    #expect(put)
+    #expect(roster.groups == [Roster.Group(category: nil, commitments: [creatine])])
+
+    var emptied = Roster()
+    _ = emptied.add(creatine)
+    _ = emptied.put(creatine, under: "Supplements")
+    _ = emptied.put(creatine, under: "")
+
+    #expect(emptied.groups == [Roster.Group(category: nil, commitments: [creatine])])
+}
+
+@Test("a category is held exactly as it was given, blank space at its ends and all")
+func aCategoryIsHeldExactlyAsItWasGivenBlankSpaceAtItsEndsAndAll() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(magnesium)
+    _ = roster.put(creatine, under: " Supplements ")
+    _ = roster.put(magnesium, under: "Supplements")
+
+    #expect(
+        roster.groups
+            == [
+                Roster.Group(category: " Supplements ", commitments: [creatine]),
+                Roster.Group(category: "Supplements", commitments: [magnesium]),
+            ])
+
+    var bothSame = Roster()
+    _ = bothSame.add(creatine)
+    _ = bothSame.add(magnesium)
+    _ = bothSame.put(creatine, under: " Supplements ")
+    _ = bothSame.put(magnesium, under: " Supplements ")
+
+    #expect(
+        bothSame.groups
+            == [Roster.Group(category: " Supplements ", commitments: [creatine, magnesium])])
+}
+
+@Test("putting a commitment under the category it is already under is accepted and changes nothing")
+func puttingACommitmentUnderTheCategoryItIsAlreadyUnderIsAcceptedAndChangesNothing() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+
+    var onceRoster = Roster()
+    _ = onceRoster.add(creatine)
+    _ = onceRoster.put(creatine, under: "Supplements")
+
+    var twiceRoster = onceRoster
+    let put = twiceRoster.put(creatine, under: "Supplements")
+
+    #expect(put)
+    #expect(twiceRoster == onceRoster)
+}
+
+@Test("putting a commitment the roster is not keeping under a category is refused")
+func puttingACommitmentTheRosterIsNotKeepingUnderACategoryIsRefused() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    _ = roster.remove(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let neverAsked = roster
+
+    let stoppedPut = roster.put(gym, under: "Sport")
+    let removedPut = roster.put(journaling, under: "Sport")
+    let neverHeldPut = roster.put(run, under: "Sport")
+
+    #expect(!stoppedPut)
+    #expect(!removedPut)
+    #expect(!neverHeldPut)
+    #expect(roster == neverAsked)
+}
+
+@Test("a commitment the roster has stopped keeping is still under the category it was under")
+func aCommitmentTheRosterHasStoppedKeepingIsStillUnderTheCategoryItWasUnder() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(gym)
+    _ = roster.put(creatine, under: "Supplements")
+    _ = roster.retire(creatine, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    _ = roster.add(creatine)
+
+    #expect(
+        roster.groups
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine]),
+                Roster.Group(category: nil, commitments: [gym]),
+            ])
+
+    var neverStopped = Roster()
+    _ = neverStopped.add(creatine)
+    _ = neverStopped.add(gym)
+    _ = neverStopped.put(creatine, under: "Supplements")
+
+    #expect(roster == neverStopped)
+}
+
+@Test("putting a commitment under a category changes no day, no commitment and no order")
+func puttingACommitmentUnderACategoryChangesNoDayNoCommitmentAndNoOrder() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let creatine = Commitment(
+        name: "Creatine", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let gym = Commitment(
+        name: "Gym", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
+    let journaling = Commitment(
+        name: "Journaling", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 6, day: 1)!)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.retire(creatine, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    _ = roster.put(journaling, under: "Evening")
+
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!).contains(creatine))
+    #expect(
+        !roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!).contains(creatine))
+
+    // Each of the three reads back exactly the commitment it was given — an equal value,
+    // day it is kept from included — and "Gym" answers due on its own schedule unmoved.
+    #expect(gym.isDue(on: CalendarDate(year: 2026, month: 3, day: 2)!))
+    #expect(!gym.isDue(on: CalendarDate(year: 2026, month: 3, day: 3)!))
+
+    #expect(roster.commitments == [gym, journaling])
+}
+
+@Test("putting a commitment under a category on a copy of a roster leaves the roster it was copied from unchanged")
+func puttingACommitmentUnderACategoryOnACopyOfARosterLeavesTheRosterItWasCopiedFromUnchanged() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var original = Roster()
+    _ = original.add(creatine)
+    _ = original.add(gym)
+
+    var copy = original
+    _ = copy.put(creatine, under: "Supplements")
+
+    #expect(
+        copy.groups
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine]),
+                Roster.Group(category: nil, commitments: [gym]),
+            ])
+    #expect(original.groups == [Roster.Group(category: nil, commitments: [creatine, gym])])
+    #expect(original != copy)
+}
+
+@Test("a roster that has been given no commitment reads back no groups at all")
+func aRosterThatHasBeenGivenNoCommitmentReadsBackNoGroupsAtAll() {
+    let roster = Roster()
+
+    #expect(roster.groups.isEmpty)
+
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+
+    var stoppedRoster = Roster()
+    _ = stoppedRoster.add(gym)
+    _ = stoppedRoster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(stoppedRoster.groups.isEmpty)
+}
+
+@Test("a group sits where its first commitment sits in the order the roster holds them")
+func aGroupSitsWhereItsFirstCommitmentSitsInTheOrderTheRosterHoldsThem() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: schedule, keptFrom: keptFrom)!
+    let finances = Commitment(name: "Finances", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(gym)
+    _ = roster.add(magnesium)
+    _ = roster.add(finances)
+    _ = roster.put(creatine, under: "Supplements")
+    _ = roster.put(magnesium, under: "Supplements")
+    _ = roster.put(gym, under: "Sport")
+
+    let groups = roster.groups
+
+    #expect(
+        groups
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine, magnesium]),
+                Roster.Group(category: "Sport", commitments: [gym]),
+                Roster.Group(category: nil, commitments: [finances]),
+            ])
+    #expect(groups.map(\.category) != groups.map(\.category).sorted { ($0 ?? "") < ($1 ?? "") })
+}
+
+@Test("the commitments under no category come last however early the first of them sits")
+func theCommitmentsUnderNoCategoryComeLastHoweverEarlyTheFirstOfThemSits() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let finances = Commitment(name: "Finances", schedule: schedule, keptFrom: keptFrom)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(finances)
+    _ = roster.add(creatine)
+    _ = roster.add(gym)
+    _ = roster.put(creatine, under: "Supplements")
+    _ = roster.put(gym, under: "Sport")
+
+    #expect(
+        roster.groups
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine]),
+                Roster.Group(category: "Sport", commitments: [gym]),
+                Roster.Group(category: nil, commitments: [finances]),
+            ])
+
+    var financesCategorised = roster
+    _ = financesCategorised.put(finances, under: "Supplements")
+
+    #expect(
+        financesCategorised.groups
+            == [
+                Roster.Group(category: "Supplements", commitments: [finances, creatine]),
+                Roster.Group(category: "Sport", commitments: [gym]),
+            ])
+}
+
+@Test("a category whose last commitment is put under another is no longer a group")
+func aCategoryWhoseLastCommitmentIsPutUnderAnotherIsNoLongerAGroup() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(gym)
+    _ = roster.put(gym, under: "Sport")
+    _ = roster.put(gym, under: "Supplements")
+
+    let groups = roster.groups
+
+    #expect(
+        groups
+            == [
+                Roster.Group(category: "Supplements", commitments: [gym]),
+                Roster.Group(category: nil, commitments: [creatine]),
+            ])
+    #expect(!groups.contains { $0.category == "Sport" })
+}
+
+@Test("reading in groups and reading flat answer with the same commitments in different orders")
+func readingInGroupsAndReadingFlatAnswerWithTheSameCommitmentsInDifferentOrders() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(gym)
+    _ = roster.add(magnesium)
+    _ = roster.put(creatine, under: "Supplements")
+    _ = roster.put(magnesium, under: "Supplements")
+
+    #expect(roster.commitments == [creatine, gym, magnesium])
+    #expect(
+        roster.groups
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine, magnesium]),
+                Roster.Group(category: nil, commitments: [gym]),
+            ])
+}
+
+@Test("a roster answers about a date in groups, with what it had not stopped keeping on it")
+func aRosterAnswersAboutADateInGroupsWithWhatItHadNotStoppedKeepingOnIt() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.put(creatine, under: "Supplements")
+    _ = roster.put(gym, under: "Sport")
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(
+        roster.groups(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine]),
+                Roster.Group(category: "Sport", commitments: [gym]),
+                Roster.Group(category: nil, commitments: [journaling]),
+            ])
+    #expect(
+        roster.groups(on: CalendarDate(year: 2026, month: 2, day: 1)!)
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine]),
+                Roster.Group(category: nil, commitments: [journaling]),
+            ])
+}
+
+@Test("a removed commitment is in the groups a roster answers a date with, under its category")
+func aRemovedCommitmentIsInTheGroupsARosterAnswersADateWithUnderItsCategory() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(gym)
+    _ = roster.put(gym, under: "Sport")
+    _ = roster.remove(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(
+        roster.groups(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+            == [
+                Roster.Group(category: "Sport", commitments: [gym]),
+                Roster.Group(category: nil, commitments: [creatine]),
+            ])
+    #expect(
+        roster.groups(on: CalendarDate(year: 2026, month: 2, day: 1)!)
+            == [Roster.Group(category: nil, commitments: [creatine])])
+}
+
+@Test("a commitment a roster does not hold is added under the category it was offered under")
+func aCommitmentARosterDoesNotHoldIsAddedUnderTheCategoryItWasOfferedUnder() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    let addedCreatine = roster.add(creatine, under: "Supplements")
+    let addedGym = roster.add(gym, under: nil)
+    let addedJournaling = roster.add(journaling)
+
+    #expect(addedCreatine)
+    #expect(addedGym)
+    #expect(addedJournaling)
+    #expect(
+        roster.groups
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine]),
+                Roster.Group(category: nil, commitments: [gym, journaling]),
+            ])
+}
+
+@Test("a commitment offered again with no category said keeps the category it was under")
+func aCommitmentOfferedAgainWithNoCategorySaidKeepsTheCategoryItWasUnder() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine, under: "Supplements")
+    _ = roster.retire(creatine, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let takenUpAgain = roster.add(creatine)
+
+    #expect(takenUpAgain)
+    #expect(roster.groups == [Roster.Group(category: "Supplements", commitments: [creatine])])
+}
+
+@Test("a commitment taken up again is put under the category it was offered under")
+func aCommitmentTakenUpAgainIsPutUnderTheCategoryItWasOfferedUnder() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine, under: "Supplements")
+    _ = roster.retire(creatine, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let takenUpAgain = roster.add(creatine, under: "Morning")
+
+    #expect(takenUpAgain)
+    #expect(roster.groups == [Roster.Group(category: "Morning", commitments: [creatine])])
+
+    var takenUpUnderNone = Roster()
+    _ = takenUpUnderNone.add(creatine, under: "Supplements")
+    _ = takenUpUnderNone.retire(creatine, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    _ = takenUpUnderNone.add(creatine, under: nil)
+
+    #expect(
+        takenUpUnderNone.groups == [Roster.Group(category: nil, commitments: [creatine])])
+}
+
+@Test("a commitment a roster is already keeping is refused whatever category it is offered under")
+func aCommitmentARosterIsAlreadyKeepingIsRefusedWhateverCategoryItIsOfferedUnder() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(creatine, under: "Supplements")
+    let onceOnly = roster
+
+    let refused = roster.add(creatine, under: "Morning")
+
+    #expect(!refused)
+    #expect(roster.groups == [Roster.Group(category: "Supplements", commitments: [creatine])])
+    #expect(roster == onceOnly)
+}
+
+@Test("a move puts a commitment under the category it was moved under")
+func aMovePutsACommitmentUnderTheCategoryItWasMovedUnder() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+
+    let moved = roster.move(journaling, toOffset: 0, under: "Sport")
+
+    #expect(moved)
+    #expect(
+        roster.groups
+            == [
+                Roster.Group(category: "Sport", commitments: [journaling]),
+                Roster.Group(category: nil, commitments: [waterPlants, gym]),
+            ])
+}
+
+@Test("a move under no category takes a commitment's category off")
+func aMoveUnderNoCategoryTakesACommitmentsCategoryOff() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.put(gym, under: "Sport")
+
+    let moved = roster.move(gym, toOffset: 2, under: nil)
+
+    #expect(moved)
+    #expect(
+        roster.groups == [Roster.Group(category: nil, commitments: [journaling, gym])])
+}
+
+@Test("a move to the place a commitment already has still puts it under the category it was moved under")
+func aMoveToThePlaceACommitmentAlreadyHasStillPutsItUnderTheCategoryItWasMovedUnder() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    let neverAsked = roster
+
+    let moved = roster.move(gym, toOffset: 0, under: "Sport")
+
+    #expect(moved)
+    #expect(
+        roster.groups
+            == [
+                Roster.Group(category: "Sport", commitments: [gym]),
+                Roster.Group(category: nil, commitments: [journaling]),
+            ])
+    #expect(roster != neverAsked)
+}
+
+@Test("a refused move puts a commitment under no category at all")
+func aRefusedMovePutsACommitmentUnderNoCategoryAtAll() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    let neverAsked = roster
+
+    let movedGym = roster.move(gym, toOffset: 0, under: "Sport")
+
+    #expect(!movedGym)
+    #expect(roster == neverAsked)
+
+    let movedJournaling = roster.move(journaling, toOffset: -1, under: "Sport")
+
+    #expect(!movedJournaling)
+    #expect(roster == neverAsked)
 }
