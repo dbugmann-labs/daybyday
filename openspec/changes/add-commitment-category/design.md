@@ -238,20 +238,22 @@ follow. That is settled answer 11 read at its edge, not a defect, and it has a s
 
 ### The mark a live drag leaves, and what the shell can draw
 
-Settled answer 21, added after the residual round: while a drag is live the screen marks the group
-the row would land under. It exists because the answer to residual question 1 is a rule that had to
-pick a side — a drop on the seam between two groups joins the one below — and a rule that picks a
-side is only fair if a person can see which side before they let go.
+Settled answer 21, added after the residual round: while a drag is live the screen answers which
+group the row would land under. It exists because the answer to residual question 1 is a rule that
+had to pick a side — a drop on the seam between two groups joins the one below — and a rule that
+picks a side is only fair once a person can see which side before they let go. That is what a mark
+drawn from this answer would give them, and it is what nothing on the phone gives them today.
 
-**The screen owes the answer and the shell draws it.** `landing(dropping:at:)` is the same
-arithmetic `move` acts on, read instead of acted: the same two carve-out offsets, the same
-"category of the entry drawn there", the same "last entry drawn" at the end. It is one rule read
-twice and never two rules, which is why the delta carries the scenario *the group a commitments
-screen says a drop would join is the group the drop puts the commitment in* — a mark that could
-disagree with the drop would be worse than no mark.
+**The screen owes the answer, and drawing anything for it would be the shell's.**
+`landing(dropping:at:)` is the same arithmetic `move` acts on, read instead of acted: the same two
+carve-out offsets, the same "category of the entry drawn there", the same "last entry drawn" at the
+end. It is one rule read twice and never two rules, which is why the delta carries the scenario *the
+group a commitments screen says a drop would join is the group the drop puts the commitment in* — a
+mark that could disagree with the drop would be worse than no mark.
 
-**Marking the heading rather than the dragged row** is the owner's choice, and the reason is the
-thumb: the row is the thing being moved and the thing a hand is covering. The heading stands still.
+**A mark would go on the heading rather than on the dragged row**, which is the owner's choice and
+holds for whenever one can be drawn. The reason is the thumb: the row is the thing being moved and
+the thing a hand is covering. The heading stands still.
 
 **One fact was measured here and it is the one to re-check before § 9.6 is attempted.** Read out of
 `iPhoneOS26.5.sdk`'s `SwiftUI.swiftinterface`, 2026-09-08: `onMove(perform:)` takes

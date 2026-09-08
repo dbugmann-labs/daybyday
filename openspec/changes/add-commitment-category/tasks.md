@@ -280,8 +280,8 @@ section before writing 7.1.
   — the case the return type exists for. Assert the two answers are told apart; a seam that returned
   an optional category could not do it.
 - [x] 7.12 `the two offsets that leave a commitment where it is drawn would join the group it is
-  already in` — the carve-out read rather than acted, and the answer that stops the mark promising a
-  refiling that will not happen.
+  already in` — the carve-out read rather than acted, and the answer that stops any mark drawn from
+  it promising a refiling that will not happen.
 - [x] 7.13 `a commitments screen says no group where the offset is one the list it draws does not
   have` — both ends, past the end and below zero.
 - [x] 7.14 `a commitments screen says no group for a commitment it does not keep` — a stopped one and

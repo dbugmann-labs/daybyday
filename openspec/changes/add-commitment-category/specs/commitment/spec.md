@@ -2619,9 +2619,9 @@ is under a moving thumb and text that moves with a drag is the hardest thing on 
 
 **This exists because a drop on the seam between two groups is arithmetic a person cannot see.** The
 place after the last row of one group and before the first of the next is one offset, and it joins
-the group below; without a mark, a person learns which group they landed in only after the drop has
-happened. The mark is what makes a rule that has to pick a side legible while there is still time to
-move the thumb.
+the group below, and with nothing drawn for the answer a person still learns which group they landed
+in only after the drop has happened. The answer is what a mark would be drawn from, and a mark is
+what would make a rule that has to pick a side legible while there is still time to move the thumb.
 
 #### Scenario: a commitments screen says which group a drop at an offset would join
 

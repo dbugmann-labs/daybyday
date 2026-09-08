@@ -855,7 +855,7 @@ commitments screen also says **the group a drop would join** — the group the r
 it were let go at the offset it is over now, or that there is no such group. It is the same
 arithmetic the drop performs, read rather than acted, so the two can never disagree; and it exists
 because a drop on the seam between two groups joins the one below, a rule that had to pick a side
-and that a person would otherwise learn only after letting go. It is a thing the screen answers and
+and whose result a person still learns only after letting go. It is a thing the screen answers and
 the **app shell** draws no mark for: the answer is asked for mid-drag, and a live drag publishes no
 destination the shell could read, so the group a drop would join is known and not yet shown.
 
