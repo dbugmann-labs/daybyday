@@ -297,9 +297,13 @@ have been unticked; what was written for them is a starting point and not an ans
   and says nothing` — **new**, and the case the third argument creates: a category nothing kept is
   under, and no category at all where everything kept is under one. Byte-for-byte on the file again.
   It must not answer by making the group.
-- [x] 7.7 `dragging a group's only entry into another group leaves one heading fewer` — the
+- [x] 7.7 `moving a group's only entry into another group leaves one heading fewer` — the
   consequence named in the requirement: a group whose first commitment leaves is drawn somewhere
-  else, and a group with nothing left in it is not drawn at all. Title unchanged.
+  else, and a group with nothing left in it is not drawn at all. **The title was renamed after this
+  box was ticked**: it read `dragging a group's only entry into another group leaves one heading
+  fewer` until settled answer 27 took that gesture away. Nothing this box asks for moved — not an
+  assertion, not the call, not the behaviour — and the test is renamed in § 9.0 rather than here,
+  because the code pass that box already owns is the cheapest place for it.
 - [x] 7.8 Re-run the twelve carried scenarios under § *A commitments screen moves a commitment among
   the ones it keeps* and confirm each is still green with **no assertion and no title changed** —
   only `under: nil` added to each `move` call. They all describe a roster with nothing under a
@@ -363,9 +367,10 @@ Story's inheritance rather than this one's conclusion. **ADR-1019 is untouched**
 stronger reason than before: with the drop path gone there is no line in the shell that could compute
 anything, correctly or otherwise.
 
-- [ ] 9.0 **Take the dead drag plumbing out of `CommitmentsView.swift`.** This box used to add it;
-  settled answer 27 makes it the box that removes it, and everything it names reaches nothing in the
-  shipped app today. Five things go and no sixth:
+- [ ] 9.0 **Take the dead drag plumbing out of `CommitmentsView.swift`, and rename the one test
+  whose title named the gesture.** This box used to add the plumbing; settled answer 27 makes it the
+  box that removes it, and everything it names reaches nothing in the shipped app today. Five things
+  go out of the shell and no sixth:
   `.draggable(DraggedRow(...))` from the row, `.dropDestination(for: DraggedRow.self)` from each
   section's `ForEach`, the `private struct DraggedRow: Codable, Transferable`, the
   `private func kept(_ dragged: DraggedRow) -> Commitment?` resolver that only it called, and
@@ -380,10 +385,22 @@ anything, correctly or otherwise.
   all — `.onMove` reorders through Edit mode, so the `EditButton` is load-bearing and not decoration
   — and the last is what settled answer 27 keeps the requirement reachable by.
 
-  **The `implementer` ticks this**, in the commit that removes the code, once
+  **And rename one test, in this same commit.** Settled answer 27 made a scenario title false as well
+  as four paragraphs of prose, and the delta now reads
+  `moving a group's only entry into another group leaves one heading fewer` where it read
+  `dragging a group's only entry into another group leaves one heading fewer`. Rename the `@Test`
+  that carries it in `src/DayByDayKit/Tests/DayByDayKitTests/CommitmentsScreenTests.swift` —
+  `:3755` today — so that it matches the new title **verbatim**. **Nothing else in that test
+  changes**, and no other test title is touched: the behaviour is the same behaviour, and the only
+  false word was the gesture. Until the rename lands, `pnpm run check:scenarios` reports
+  **205/206** and names this very scenario as the next one; that is expected from the gate until
+  this commit, and it is how you know the rename is still owed.
+
+  **The `implementer` ticks this**, in the commit that removes the code and renames that test, once
   `grep -n 'draggable\|dropDestination\|DraggedRow\|UniformTypeIdentifiers' src/DayByDay/DayByDay/CommitmentsView.swift`
-  finds nothing and the target still builds. **If anything else turns out to reference `DraggedRow`,
-  stop and report it** rather than widening the removal.
+  finds nothing, `pnpm run check:scenarios` is back to **206/206**, and the target still builds.
+  **If anything else turns out to reference `DraggedRow`, stop and report it** rather than widening
+  the removal.
 - [x] 9.1 `CommitmentsView.swift` — draw the kept list as **a `Section` per group over
   `screen.keptGroups`**: the category as the section's header, no header on the group with none, and
   one `ForEach` per section over that group's commitments carrying **`.onMove`**. **This reverses
@@ -505,8 +522,9 @@ The boxes below confirm rather than write, and each is tickable while reading wh
 ## 11. Before the review, and what the janitor does at the archive
 
 **11.1, 11.2 and 11.4 are unticked again, because § 9.0 changes the tree they were ticked over.**
-Nothing they measure is expected to move — the kit is untouched by settled answer 27, so the count is
-still 782 and the coverage still 206/206, and `pnpm run verify` is the TypeScript tooling and never
+Nothing they measure is expected to move — settled answer 27 reaches the kit only as the one test
+rename § 9.0 carries, which changes a name and no count, so the count is still 782 and the coverage
+back to 206/206 once that rename lands, and `pnpm run verify` is the TypeScript tooling and never
 saw the shell at all — but a ticked box saying "every test green" is a claim about a working tree,
 and after § 9.0 it is a claim about a different one. **A number that comes back different is a stop**
 (rule 5), not a number to write down: it would mean the removal reached the kit.

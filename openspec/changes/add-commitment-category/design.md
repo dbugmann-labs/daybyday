@@ -7,9 +7,12 @@ mark was for, and what draws it now* and § *The shell rides this Story*; § *Op
 the reversal beside the answer it replaced. **Settled answer 26 then kept the cross-group drag** that
 the reversal put at risk — and **settled answer 27 gave it up**, on the same day, after it had been
 built twice and walked on the phone twice. What that moves is § *The shell rides this Story*,
-§ *Risks* and `tasks.md` § 9, **and nothing in the delta**: the requirement is about the ask a screen
-is given — a commitment, a group and an offset inside it — and it reads the same whichever gesture
-delivers it. § *Open Questions* 6 records the reversal beside the answer it replaces, and
+§ *Risks* and `tasks.md` § 9, and in the delta itself **four passages of prose and one scenario title
+and nothing else** — no requirement, no `SHALL`, no scenario clause, no signature — because the
+requirement is about the ask a screen is given, a commitment, a group and an offset inside it, and it
+reads the same whichever gesture delivers it. What moves is the prose that said a person *drags* a
+row from one group into another, which is a thing this app does not do; § *Open Questions* 6 names
+all five, records the reversal beside the answer it replaces, and
 § *The shell rides this Story* carries the two facts that were measured on the way, because they are
 what the next Story inherits rather than what this one concluded.
 What matters here is that a **category** is a word the person chose, held by the roster against a
@@ -661,12 +664,37 @@ settled to:
    gives the gesture up.** What ships is `.onMove` inside a group through Edit mode and the row's
    **Category** action across groups.
 
-   **Nothing in the delta moves, and that is the point worth reading at this gate.** The requirement
-   is the ask a screen is given — a commitment, a group, an offset counted inside it — so it reads
-   the same whichever gesture delivers it; the kit is untouched, all 206 scenarios stand and all 782
-   tests are green. What moved is `design.md` § *The shell rides this Story*, § *Risks*, this entry,
-   `proposal.md` and `CONTEXT.md`, and **`tasks.md` § 9.0 takes the dead plumbing out**. ADR-1019 is
-   still untouched, and now for a stronger reason: there is no drop path in the shell to guard.
+   **No requirement moves, and that is the point worth reading at this gate.** The requirement is the
+   ask a screen is given — a commitment, a group, an offset counted inside it — so it reads the same
+   whichever gesture delivers it; the kit is untouched, all 206 scenarios stand, one of them under a
+   new title, and all 782 tests are green.
+
+   **What does move in the delta is prose that claimed the gesture, and one scenario title.** This
+   folder archives into `openspec/specs/commitment/spec.md`, where a reader has only what it says, so
+   a sentence telling them a row is dragged from one group into another is evidence of a feature that
+   does not exist. Five passages said it and all five are corrected: in
+   § *A roster moves a commitment among the ones it keeps*, the paragraph on why a move carries a
+   category; in § *A commitments screen moves a commitment among the ones it keeps*, the paragraph on
+   what a drop says the row is now under and the one on a group's first commitment taking the group
+   with it; in § *A commitments screen puts a commitment under a category*, the second of the two ways
+   a category changes; and the scenario title
+   `moving a group's only entry into another group leaves one heading fewer`, which read `dragging …`
+   until this pass. **A scenario title is the worst of the five places for a false word** — it is what
+   `check:scenarios` prints and what a test is named for — which is why it is renamed even though the
+   behaviour it pins is unchanged and reachable through **Category**, and why `tasks.md` § 9.0 carries
+   the matching test rename rather than leaving it to be noticed.
+
+   **One passage that names a drag is deliberately left standing**: the sentence in
+   § *A commitments screen moves a commitment among the ones it keeps* that calls the gesture a drag,
+   a drag its own confirmation and dragging back the undo. It is carried verbatim from the spec
+   `add-roster-order` (#146) shipped, and it is still true of the drag inside a group, which is the
+   only drag left. Correcting it would be rewriting a shipped requirement for a word that is not
+   wrong.
+
+   What moved outside the delta is `design.md` § *The shell rides this Story*, § *Risks*, this entry,
+   `proposal.md` and `CONTEXT.md`, and **`tasks.md` § 9.0 takes the dead plumbing out** and renames
+   the one test. ADR-1019 is still untouched, and now for a stronger reason: there is no drop path in
+   the shell to guard.
    **The lesson is which measurement was made**: a header file answers what a shell would be asked to
    compute, and this question was about what a finger reaches. Only the phone answers that one, and
    settled answer 28 records that nothing in this repository can stand in for it.

@@ -364,11 +364,12 @@ from 0, before the first of them, to the number it is keeping, which is after th
 and SHALL report that the roster moved the commitment. This is the only thing that ever changes a
 roster's order.
 
-**A move carries a category because the gesture does.** A row dropped into another group's rows has
-been moved and recategorised by one drag, and a roster that took the two separately would keep one of
-them where the other could not be kept. Where a move is asked for with the category the commitment
-is already under, the category is the one it already had and nothing about it changes; the category
-is applied on every move rather than only on some, so there is no move that silently leaves it alone.
+**A move carries a category because the ask above it does.** A commitment moved into another group's
+rows has been moved and recategorised by one act, and a roster that took the two separately would
+keep one of them where the other could not be kept. Where a move is asked for with the category the
+commitment is already under, the category is the one it already had and nothing about it changes; the
+category is applied on every move rather than only on some, so there is no move that silently leaves
+it alone.
 
 **The moved commitment is put where the offset points, and nothing else is picked up.** Unless the
 offset is one of the two that ask for the place the commitment already has — the offset it is at
@@ -1579,10 +1580,10 @@ grouping rule.
 
 **A drop also says what the row is now under.** The commitment SHALL be put under the category of the
 group it was dropped in. A row dropped into another group is therefore moved **and** put under that
-group's category by one drag, and a row dropped among the entries under no category is moved and has
-its category taken off. One gesture doing what it looks like it does was chosen over a drag that only
-ever reordered, and the price is stated rather than hidden: a drag is now the second way a category
-changes, beside the field.
+group's category by one act, and a row dropped among the entries under no category is moved and has
+its category taken off. One ask doing both was chosen over a move that only ever reordered, and the
+price is stated rather than hidden: a move is now the second way a category changes, beside the
+field.
 
 **The place the commitment comes to stand in the roster's order is immediately before the entry drawn
 at that offset in that group**, or immediately after the last entry drawn in that group where the
@@ -1600,10 +1601,9 @@ offset each.
 **Moving a group's first commitment away moves the group**, and that follows from where a group sits
 rather than from anything this requirement adds: a group sits where its first commitment sits, so a
 group whose first commitment has gone somewhere else is afterwards drawn where its next commitment
-sits. A person who drags the only row of a group into another group therefore sees one heading fewer,
-and a person who drags a group's top row to the bottom of the screen may see that group follow it up
-the list. It is stated here because it is the one result of a drag that is not the row that was
-dragged.
+sits. A person who moves the only row of a group into another group therefore sees one heading fewer,
+and a person who moves a group's top row to the bottom of the list may see that group follow it. It
+is stated here because it is the one result of a move that is not the row that was moved.
 
 **Two offsets leave a commitment where it is drawn, and on those the screen SHALL change nothing at
 all** — not the order, and not the category. They are the offset the entry is drawn at within its own
@@ -1811,7 +1811,7 @@ arithmetic rather than a rule this screen makes.
   leaves that true again
 - **AND** the content at that place is byte-for-byte what was read before either move
 
-#### Scenario: dragging a group's only entry into another group leaves one heading fewer
+#### Scenario: moving a group's only entry into another group leaves one heading fewer
 
 - **WHEN** a commitment named "Creatine", then one named "Gym", then one named "Journaling", all on
   a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster
@@ -2489,7 +2489,7 @@ A commitments screen SHALL put a commitment on the list of what it keeps under a
 being given that commitment and the category, and SHALL keep that at the roster place before either
 list says so. It SHALL ask for no confirmation: a category is one word, changing it is one act, and
 changing it back is the undo. This is one of the two ways a category changes on this screen; the
-other is a **drag**, which carries a category because a drop lands in a group.
+other is a **move**, which carries a category because the place it names is inside a group.
 
 A commitments screen asked to put a commitment it does not keep under a category — one on the list
 of what it has stopped, or one neither of its lists holds — SHALL do nothing and SHALL say nothing,
