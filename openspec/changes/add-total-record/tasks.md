@@ -134,8 +134,8 @@ Seven scenarios from § *The last addition a day holds can be taken back*, in
 take-back and the first that removes one thing rather than the record — ADR-1033 as amended by this
 change, and § 16.2.
 
-- [ ] 5.1 `the last addition taken back leaves the day short by exactly that amount`
-- [ ] 5.2 `taking back the last addition twice removes the two most recent, in the order they were
+- [x] 5.1 `the last addition taken back leaves the day short by exactly that amount`
+- [x] 5.2 `taking back the last addition twice removes the two most recent, in the order they were
   made` — both clauses, including that the history then equals one the first addition alone was added
   to. An implementation removing the *smallest* or the *first* passes 5.1 and fails this.
 - [ ] 5.3 `taking back the only addition a day holds leaves the day holding none` — including that the
