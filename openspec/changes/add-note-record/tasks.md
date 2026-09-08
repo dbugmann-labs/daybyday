@@ -327,17 +327,17 @@ kit does not specify. It is not tested (`docs/open-questions.md` § *No UI smoke
 the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments to **Note** and **Row**
 — are **written with this folder** and are in the G4 diff, so these boxes confirm rather than write.
 
-- [ ] 15.1 Confirm before the review that 1039 is still the lowest free ADR number:
+- [x] 15.1 Confirm before the review that 1039 is still the lowest free ADR number:
   `for r in $(git for-each-ref --format='%(refname)' refs/heads refs/remotes); do git ls-tree --name-only $r docs/adr/; done | sort -u`.
   1038 was the highest on any local or remote ref on 2026-09-08, taken by
   `story/147-add-commitment-category`. **Report rather than renumber** if another branch has taken
   1039 (`AGENTS.md` rule 5).
-- [ ] 15.2 Confirm 1033's amendment still says what the code does, now that the code exists — in
+- [x] 15.2 Confirm 1033's amendment still says what the code does, now that the code exists — in
   particular that `History` takes a note back by `for:on:` as it takes a number back, that nothing
   acquired an overload of `remove(_:)` taking a `Note`, and that its filename is unchanged, since
   `openspec/changes/archive/2026-09-07-add-number-record/tasks.md` § 8 names that path and the
   archive may not be edited.
-- [ ] 15.3 Confirm 1039 describes the code that was actually written: one `Blank`, called by
+- [x] 15.3 Confirm 1039 describes the code that was actually written: one `Blank`, called by
   `Commitment.init?`, by `Note.init?`, by `DayScreen.enter(_:on:)`'s note branch and by
   `DayScreen.read(_:)`'s number trim, with **no exception** — and that the one `CharacterSet` still
   in the package is `CommitmentsScreen.nameTypedBackMatches`, which 1039 names and excuses by reason
@@ -345,7 +345,7 @@ the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments t
   check, and it should return `Blank.swift` and that one line and nothing else. An ADR that has
   drifted from the implementation is edited in place and stamped, per `docs/adr/README.md`; a
   decision that has actually changed is a stop, not an edit.
-- [ ] 15.4 Confirm `CONTEXT.md` gained **Note entry** and three amendments — to **Note**, to **Row**
+- [x] 15.4 Confirm `CONTEXT.md` gained **Note entry** and three amendments — to **Note**, to **Row**
   and to **Number entry**, the last of them the residual round's — and **no other term**. A new term
   appearing here means something was decided that should have been asked.
 
