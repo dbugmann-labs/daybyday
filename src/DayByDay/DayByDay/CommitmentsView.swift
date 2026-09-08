@@ -74,7 +74,16 @@ struct CommitmentsView: View {
             // `design.md` § *The shell rides this Story*. It passes that offset straight through
             // to `screen.move` beside the section's own `group.category`: nothing here adds,
             // subtracts, counts rows or asks where a finger is.
-            ForEach(screen.keptGroups, id: \.category) { group in
+            //
+            // `.sectionActions` draws `Move up` and `Move down` below a categorised section's
+            // content in Edit mode, the one documented per-section action surface — `design.md`
+            // § *The shell rides this Story*. `index` is the group's own position in
+            // `screen.keptGroups`, which is `screen.categoriesInUse`'s position too: the group
+            // under no category, where there is one, is always last, so every categorised group
+            // sits at the same index in both. Up is `index - 1`, down is `index + 2`, and each is
+            // drawn only where that offset is one `screen.categoriesInUse` has, so no tap can
+            // reach a refusal; nothing here counts rows or asks where a finger is.
+            ForEach(Array(screen.keptGroups.enumerated()), id: \.element.category) { index, group in
                 Section {
                     ForEach(Array(group.commitments.enumerated()), id: \.offset) {
                         index, commitment in
@@ -107,6 +116,20 @@ struct CommitmentsView: View {
                         // owner's ask was about the gap above a category.
                         Text(category)
                             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
+                    }
+                }
+                .sectionActions {
+                    if let category = group.category {
+                        if index > 0 {
+                            Button("Move up") {
+                                screen.move(group: category, toOffset: index - 1)
+                            }
+                        }
+                        if index + 2 <= screen.categoriesInUse.count {
+                            Button("Move down") {
+                                screen.move(group: category, toOffset: index + 2)
+                            }
+                        }
                     }
                 }
             }

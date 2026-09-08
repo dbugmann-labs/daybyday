@@ -133,7 +133,7 @@ ADR-1019's 2026-09-04 exception, and `design.md` § *The shell rides this Story*
 attached to any box here**, and none may be added by one: a box that finds itself needing a scenario
 is a stop.
 
-- [ ] 6.1 Draw `Move up` and `Move down` on each categorised section of the kept list with
+- [x] 6.1 Draw `Move up` and `Move down` on each categorised section of the kept list with
   `sectionActions(content:)`, in Edit mode only, calling `screen.move(group:toOffset:)` with the
   section's own category and an offset computed from its index in `screen.categoriesInUse` — up is
   `index - 1`, down is `index + 2`. Draw an action only where its offset is one the screen has, so no
