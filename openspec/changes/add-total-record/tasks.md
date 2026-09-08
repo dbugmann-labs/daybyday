@@ -165,10 +165,10 @@ kept.
   requirement #137 shipped that this Story reverses, for the last kind.
 - [x] 6.3 `a total commitment whose day's additions fall short of its target was not kept on it` —
   all three clauses, the third of which crosses the target by 0.01 and must flip the answer.
-- [ ] 6.4 `additions past the target keep the day and change nothing else about it` — kept, **and**
+- [x] 6.4 `additions past the target keep the day and change nothing else about it` — kept, **and**
   the day answers 150 rather than 120. An implementation clamping the sum at the target passes the
   first clause and fails the second.
-- [ ] 6.5 `a total commitment is kept on one day and not on another from each day's own additions`
+- [x] 6.5 `a total commitment is kept on one day and not on another from each day's own additions`
 - [ ] 6.6 *(not a new test)* Confirm the archived scenario `a commitment of the note kind and one of
   the total kind were not kept on a date they are due on` is still green and its body unchanged: its
   total clause asks a history holding no addition, which is still *not kept*. If it is red, the kept

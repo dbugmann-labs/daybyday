@@ -2021,3 +2021,38 @@ func aTotalCommitmentWhoseDaysAdditionsFallShortOfItsTargetWasNotKeptOnIt() {
     history.add(Addition(0.01, for: protein, on: monday)!)
     #expect(history.isKept(protein, on: monday))
 }
+
+@Test("additions past the target keep the day and change nothing else about it")
+func additionsPastTheTargetKeepTheDayAndChangeNothingElseAboutIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(120, for: protein, on: monday)!)
+    history.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(history.isKept(protein, on: monday))
+    #expect(history.total(for: protein, on: monday) == 150)
+}
+
+@Test("a total commitment is kept on one day and not on another from each day's own additions")
+func aTotalCommitmentIsKeptOnOneDayAndNotOnAnotherFromEachDaysOwnAdditions() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(120, for: protein, on: monday)!)
+    history.add(Addition(30, for: protein, on: wednesday)!)
+
+    #expect(history.isKept(protein, on: monday))
+    #expect(!history.isKept(protein, on: wednesday))
+    #expect(!history.isKept(protein, on: saturday))
+}
