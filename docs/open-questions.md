@@ -54,6 +54,33 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   early and add a check that fails the PR when the number is taken — is the one this recurrence
   argues for, the convention having now failed on its second outing.
 
+- **The general record reader all four kinds would share.** Deferred by `add-number-record` (#138)
+  at its grill's Q5 — "rather than fix the shape of two records nobody has grilled yet" — and
+  `add-note-record` (#140)'s `design.md` named `add-total-record` (#141) as the change where that
+  reason expires. **It has expired.** All four kinds exist: `History.isKept(_:on:)`,
+  `number(for:on:)`, `note(for:on:)` and `total(for:on:)` are four members answering one question
+  each, with `DayView.Row`'s four entry-shaped members above them. #141 did not fold them, and its
+  grill (answer 3) and `design.md` § *Open Questions* give two reasons that outlive that Story:
+
+  - **It is a no-behaviour refactor across two capabilities.** Folding four readers into one
+    rewrites requirements that three merged Stories have already signed, in `record` and in
+    `day-screen` both. Done inside a Story about totals it would have produced a G4 diff in which
+    the new kind and the rewrite of the other three were indistinguishable.
+  - **The four are not the same shape, and that is what the fourth kind taught.** Three answer *a
+    value or nothing*; the sum answers *a value, always*, because a day with no additions sums to
+    zero rather than to nothing (#141's grill answer 14, and answer 9 reads take-back-last off
+    exactly that). One reader has to pick one of those two answers for all four, and either choice
+    changes what one of the existing three means.
+
+  So the deferral has stopped being "not yet" and become "not like this": it is a design question
+  and its own change rather than a mechanical merge. Nothing forces it — every kind's record and
+  every kind's row work as they stand — and the standing cost is a package with four members where
+  a reader coming to it fresh expects one, plus a fifth kind, if there ever is one, arriving as a
+  fifth member. Whoever takes it inherits the thirteenth and fourteenth faces in § *Known gaps*
+  below as the surface it would move, and `add-total-record`'s rejection of a `Records` struct for
+  the writer — recorded in § *Settled* — as the half of the shape that is already argued.
+  Recorded 2026-09-08, at #141's G7.
+
 ## Known gaps
 
 Things that are built, or deliberately not built, in a state someone will trip over.
@@ -124,25 +151,57 @@ Things that are built, or deliberately not built, in a state someone will trip o
   The widening stays number-shaped — #140's note and #141's total will each face it again — and
   `Commitment.schedule`, `Commitment.keptFrom` and the four schedule payloads are all still internal.
   Recorded 2026-09-08, at #139's G7.
-- **A commitment of a kind nothing can yet record is a row that does nothing when tapped.**
-  `add-commitment-kind` (#137) makes a commitment of the number, note or total kind formable and has
-  `record` refuse a tick for it, so `day-screen`'s row for one offers nothing — by requirement, and on
-  purpose, since a due commitment does not leave the day. Nothing in the shipped app can reach that
-  state: day one is nine ticks and the commitments screen defines only the plain kind. Two Stories
-  change that, in different lanes: `add-kind-to-commitments-screen` (#142) lets a person choose
-  "number", and `add-number-entry` (#139) gives the row a number to offer. If #142 lands first, a
-  person who defines a weight sees a row that answers nothing to a tap until #139 merges. No requirement
-  forbids the ordering and no edge on the tracker prevents it; the fix belongs to whichever lands first,
-  and the cheapest one is an edge from #139 to #142. Recorded 2026-09-06, at #137's G7, from that
-  change's `design.md` § *Impact*.
-  **Closed for the number kind, still open for the note and the total. 2026-09-08.**
-  `add-number-entry` (#139) gives a number commitment's row a number entry to offer in place of the
-  tick it cannot form, so a weight defined on the commitments screen is no longer a line that answers
-  nothing. A row of the **note** or **total** kind still offers nothing and still answers a tap with
-  silence, and nothing in the shipped app can reach that state — the commitments screen defines only
-  the plain kind until #142 lands. The ordering hazard this entry named is therefore half spent: if
-  #142 lands before #140 and #141, a person who defines a note or a total sees exactly the dead row
-  described above. The cheapest fix is the same one, an edge on the tracker from those two to #142.
+- **A row now gives a note out, while still giving no tick out** — the twelfth face of the
+  public-surface gap. `add-number-entry` (#139) gave a `DayView.Row` a way to give a number
+  out through the `NumberEntry` its `numberEntry(asOf:)` offers, while `tick(asOf:)` still
+  hands back a `Tick` that answers nothing about itself. `add-note-record` (#140) does the same
+  for notes: a row gives a note out through the `NoteEntry` its `noteEntry(asOf:)` offers,
+  while a note-kind commitment still cannot form a tick at all, so the row offers nothing for that
+  entry. Like #139's widening, this is authorised by a requirement rather than an oversight: the
+  entry has to carry the note so the field opens holding what the day already holds, and the row
+  still never *draws* it, which is answer 7 of this Story's grill.
+  `History.note(for:on:)` lets a note out at the record level and answers a third question with
+  a value, exactly as `History.number(for:on:)` does — so a history now answers three questions
+  three ways: ticks as a boolean from `isKept(_:on:)`, numbers as a value from
+  `number(for:on:)`, and notes as a value from `note(for:on:)`, while a tick still gives back
+  neither its commitment nor its date, and a number and note still give back none of their three.
+  The widening stays note-shaped — #141's total will face it again — and `Commitment.schedule`,
+  `Commitment.keptFrom` and the four schedule payloads are all still internal.
+  **Half of *A commitment of a kind nothing can yet record is a row that does nothing when
+  tapped* is spent by this Story:** a row for a note commitment now offers a note entry,
+  ending the case where a person defines a note and sees a dead row. A row for a total
+  commitment still offers nothing, and nothing in the shipped app can reach that state — the
+  commitments screen defines only the plain kind until #142 lands. The fix is unchanged and
+  still an edge on the tracker from #141 to #142.
+  Recorded 2026-09-08, at #140's close-out.
+  **The thirteenth and fourteenth faces, and the thirteenth widens less than either of the two
+  before it.** `add-total-record` (#141) gives a row two new things. The first is the same widening one
+  kind further along: a row gives its day's sum out through the `TotalEntry` its
+  `totalEntry(asOf:)` offers (`DayView.swift:131`) — but as **words** rather than as a number,
+  `TotalEntry.soFarOfTarget` being the single string `"150 of 120"` (`DayView.swift:24`), because
+  `CONTEXT.md` § *App shell* forbids the shell composing that sentence and ADR-1022 and ADR-1036
+  had each already decided it once. So the sum leaves the package readable and not computable,
+  which is narrower than the number's and the note's: those hand out the value itself.
+  The fourteenth is a new shape rather than a fourth of the same. `offersTakeBackLast(asOf:)`
+  (`DayView.swift:164`) is the first thing a row gives out that depends on what the **history**
+  says rather than on the commitment and the date alone — `true` exactly where the row offers a
+  total entry and its day's sum is above zero, which is ADR-1041's decision that a take-back is
+  its own act and comes and goes with what there is to take back. Every other affordance a row
+  publishes is there, or not there, by the kind alone.
+  One level down, `History.total(for:on:)` (`History.swift:74`) lets a sum out, so a history now
+  answers **four questions four ways**: ticks as a boolean from `isKept(_:on:)`, numbers and notes
+  as a value **or nothing** from `number(for:on:)` and `note(for:on:)`, and additions as a value
+  **always** — zero for every commitment on every date, whatever its kind (#141's grill answers 14
+  and 16). What still does not come out is unchanged and grew by one: a tick gives back neither its
+  commitment nor its date, a number, a note and an addition give back none of their three, the
+  day's additions themselves never leave the package at all (answer 6 — a history gives out the sum
+  and not the list), and `Commitment.schedule`, `Commitment.keptFrom` and the four schedule payloads
+  are all still internal. The four readers this leaves are the subject of a new entry under
+  § *Open technical decisions* above; the widening itself is authorised by requirements rather than
+  an oversight, exactly as the ninth through twelfth were. Recorded 2026-09-08, at #141's G7.
+  **#141 has not merged** — this chore lands ahead of that Story's archive, on its own `tasks.md`
+  § 17.5 — so `main` does not carry any of this yet and both faces are a forward reference until it
+  does.
 - **Two of #137's tests do not match their scenarios clause for clause, and check 4 cannot see it.**
   Found at `add-commitment-kind`'s second review, 2026-09-06. The G7 fix for a half-written range
   added a fourth malformed place to the test named *a roster store holding what could not be a roster
@@ -334,7 +393,57 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `public var refusal: Refusal` accessor, and **it did not ship**. Had it, the shell would have had a
   way to read the refusal without discarding the commitment. Design-to-code drift, unreviewed.
 
+- **One decimal is split into a whole part and a fraction in two places.** Raised at
+  `add-total-record` (#141)'s second G7 pass, 2026-09-08, as finding 3, and **declined by the repo
+  owner as a judgement call rather than a defect** — recorded here rather than fixed on that
+  branch. `Digits.swift:18-20` and `DayScreen.swift:298-301` run the same step: split on `"."`
+  with `omittingEmptySubsequences: false`, take `parts[0]` as the whole part and
+  `parts.count > 1 ? parts[1] : Substring()` as the fraction, then hand both to the same
+  `Digits.stripped(whole:fraction:)` — which is where #141's first G7 pass put the counting, so
+  that the two could not drift on what a significant digit is. The two are not one input copied: `Digits.significant(in:)` splits a `Decimal`'s
+  own description, after stripping a leading `-`; `DayScreen.writtenOut(_:)` splits text a person
+  typed, after normalising `","` to `"."`. `Digits.swift:28-30`'s doc comment defends exactly that
+  — "Read off `whole` and `fraction` exactly as each caller split them … so the two callers can
+  never drift apart on what counts as a significant digit" — and the defence is true of the
+  counting, which is shared, rather than of the getting there, which is not.
+
+  **The residual risk is that the two splitters recognise different things and nothing says so.**
+  `DayScreen` accepts `","` as a separator and `Digits.significant(in:)` does not, and that is
+  correct today for a measured reason: a `Decimal`'s own description never uses a comma and never
+  uses exponent notation — checked on this toolchain 2026-09-08, where `Decimal(string: "1e40")`
+  prints as forty-one digits and `Decimal.greatestFiniteMagnitude` as a hundred and sixty-six. But
+  if a third separator, or an exponent form, is ever taught to one splitter and not the other, then
+  `read(_:)`'s refusal of typed text (`DayScreen.swift:240`) and `canAdd`'s refusal of a sum
+  (`Digits.swift:60`) stop being the same rule, and the same value becomes a number when typed and
+  not a number when summed — which is the one thing ADR-1040 says must not happen, its own words
+  being that the two "must agree or the same value is a number when typed and not a number when
+  summed". Nothing would go red: the only test reading both paths against one value is the single
+  free-form unit test at `DayScreenTests.swift:3291`, *Digits.significant(in:) and a typed value's
+  own significant-digit count agree on 10^38*, and it pins one value at one magnitude.
+
+  **What would close it:** `Digits` owning the split as well as the counting — one member,
+  `Digits.stripped(_:)`, taking text that its caller has already normalised and already stripped the
+  sign from, and doing the split itself. Each caller keeps the part that is genuinely its own — a
+  `Decimal`'s description and its `-` on one side, a comma and a person's typing on the other — and
+  neither keeps a splitter. It is below the seam and changes no behaviour, so it needs no delta and
+  no G4: a chore, or whatever next touches `Digits`. `Digits.swift` arrives with #141 and is not on
+  `main` yet.
+
 ## Settled
+
+- 2026-09-08 — **every kind's row now offers something, so a commitment of a kind nothing can
+  record is a state nothing can reach.** Open since #137's G7 as *A commitment of a kind nothing can
+  yet record is a row that does nothing when tapped*: `add-commitment-kind` made a commitment of the
+  number, note or total kind formable and had `record` refuse a tick for it, so `day-screen`'s row
+  for one offered nothing — by requirement, and on purpose, since a due commitment does not leave
+  the day. `add-number-entry` (#139) gave the number kind its entry, `add-note-record` (#140) the
+  note kind its own, and `add-total-record` (#141) spends the last of it: a total row offers a total
+  entry, and a take-back besides. **The ordering hazard the entry named is spent with it.** It
+  warned that `add-kind-to-commitments-screen` (#142) could land first and let a person define a
+  kind whose row answers a tap with silence; there is now no kind #142 can offer that lands on a
+  dead row, and the tracker edge the entry kept asking for is no longer owed. It closes on a Story
+  that has **not merged** — this chore lands ahead of #141's archive on that Story's `tasks.md`
+  § 17.5 — so the closure is true of `story/141-add-total-record` and reaches `main` when it does.
 
 - 2026-09-06 — **`RecordStore.write` no longer throws outside `RecordStoreError`.** `write(_:)`'s
   `try encoder.encode(document)` sat outside the `do` block that wraps everything else it does, so an
@@ -481,29 +590,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   names out of the source text, because no Swift tool reports them without going through
   unpublished internals. One of the two things ADR-1001 left open.
 
-- **A row now gives a note out, while still giving no tick out** — the twelfth face of the
-  public-surface gap. `add-number-entry` (#139) gave a `DayView.Row` a way to give a number
-  out through the `NumberEntry` its `numberEntry(asOf:)` offers, while `tick(asOf:)` still
-  hands back a `Tick` that answers nothing about itself. `add-note-record` (#140) does the same
-  for notes: a row gives a note out through the `NoteEntry` its `noteEntry(asOf:)` offers,
-  while a note-kind commitment still cannot form a tick at all, so the row offers nothing for that
-  entry. Like #139's widening, this is authorised by a requirement rather than an oversight: the
-  entry has to carry the note so the field opens holding what the day already holds, and the row
-  still never *draws* it, which is answer 7 of this Story's grill.
-  `History.note(for:on:)` lets a note out at the record level and answers a third question with
-  a value, exactly as `History.number(for:on:)` does — so a history now answers three questions
-  three ways: ticks as a boolean from `isKept(_:on:)`, numbers as a value from
-  `number(for:on:)`, and notes as a value from `note(for:on:)`, while a tick still gives back
-  neither its commitment nor its date, and a number and note still give back none of their three.
-  The widening stays note-shaped — #141's total will face it again — and `Commitment.schedule`,
-  `Commitment.keptFrom` and the four schedule payloads are all still internal.
-  **Half of *A commitment of a kind nothing can yet record is a row that does nothing when
-  tapped* is spent by this Story:** a row for a note commitment now offers a note entry,
-  ending the case where a person defines a note and sees a dead row. A row for a total
-  commitment still offers nothing, and nothing in the shipped app can reach that state — the
-  commitments screen defines only the plain kind until #142 lands. The fix is unchanged and
-  still an edge on the tracker from #141 to #142.
-  Recorded 2026-09-08, at #140's close-out.
 - **`RecordStore.write` and `RecordDocument` carry an unlabelled data clump.** `(ticks,
   numbers, notes)` travels as three positional parameters across the boundary between the
   screen and the store. `RecordStore.write(_:_:_:)` at `RecordStore.swift:148` and
@@ -520,3 +606,18 @@ Things that are built, or deliberately not built, in a state someone will trip o
   on the store, or some other shape — and either way the current signature is in the debt for a
   reason: it is deliberately not being designed until all three exist. Recorded 2026-09-08,
   at #140's close-out.
+  **Closed by `add-total-record` (#141), 2026-09-08, at the moment it came due.** That Story's
+  `tasks.md` § 1.3 labels both parameter lists instead of adding a fourth positional parameter of
+  the same shape: `RecordStore.write(ticks:numbers:notes:additions:)` (`RecordStore.swift:183`) and
+  `RecordDocument(ticks:numbers:notes:additions:)` (`RecordDocument.swift:61`), with every call site
+  moved with them. No behaviour moved and no requirement moved — `design.md` § *`RecordStore.write`
+  and `RecordDocument.init` take labels* records it as a mechanical box in § 1 rather than a
+  refactor pass, on the ground that the debt was paid at the moment it was recorded to come due
+  rather than one kind later, when there would be nothing left to add and no reason to open the
+  file. **A `Records` struct holding all four was rejected there rather than deferred**: it is half
+  of the general-record shape that is now its own entry under § *Open technical decisions*, and
+  taking the writer's half while the reader stays four members would leave the package with two
+  answers to what a record is and neither complete. #141 has not merged, so `main` does not carry
+  the labels yet. This entry and the note-reader one above it were appended past the `## Settled`
+  heading at #140's close-out, which was a mistake; the other has been moved up to § *Known gaps*
+  where it belongs, and this one stays here, which as of this closure is where it belongs.
