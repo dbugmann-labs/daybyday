@@ -363,8 +363,8 @@ MODIFIED requirements, plus one rewrite, in `Tests/DayByDayKitTests/DayScreenTes
 `DayScreen.takeBackLast(on:)` arrives here, and `RecordStore.removeLastAddition(on:)` joins its two
 private twins at the foot of `DayScreen.swift`.
 
-- [ ] 13.1 `taking back the last addition on a row leaves the day short by exactly that amount`
-- [ ] 13.2 `taking back the last addition twice removes the two most recent`
+- [x] 13.1 `taking back the last addition on a row leaves the day short by exactly that amount`
+- [x] 13.2 `taking back the last addition twice removes the two most recent`
 - [ ] 13.3 `a take-back is held by a day screen opened afterwards at the same place`
 - [ ] 13.4 `a take-back that cannot be kept is refused and leaves the day view as it was` — refused
   with an error **and** told on the row naming no cause. The place's refusal never names a cause,
