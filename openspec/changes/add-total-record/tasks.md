@@ -277,13 +277,13 @@ prefilled field would break, and there is no way to write it if the value is not
   of 120".
 - [x] 10.4 `a row for a total commitment says its name, its rhythm and whether the day is kept, and
   never its sum`
-- [ ] 10.5 `a row whose day holds an addition offers taking the last one back` — `Row` gains
+- [x] 10.5 `a row whose day holds an addition offers taking the last one back` — `Row` gains
   `offersTakeBackLast(asOf:)`, read off the day's sum being above zero and never off a count.
-- [ ] 10.6 `a row whose day holds no addition offers no take-back`
-- [ ] 10.7 `a row for a commitment whose kind is not a total offers no take-back` — all three other
+- [x] 10.6 `a row whose day holds no addition offers no take-back`
+- [x] 10.7 `a row for a commitment whose kind is not a total offers no take-back` — all three other
   kinds, each with a record on the day, so a row that read *kept* rather than *sum* fails it.
-- [ ] 10.8 `a row for a date later than the day it is asked as of offers no take-back`
-- [ ] 10.9 `a row goes on offering the take-back while the day still holds an addition`
+- [x] 10.8 `a row for a date later than the day it is asked as of offers no take-back`
+- [x] 10.9 `a row goes on offering the take-back while the day still holds an addition`
 
 ## 11. `day-screen` — the sum cap, at the row
 

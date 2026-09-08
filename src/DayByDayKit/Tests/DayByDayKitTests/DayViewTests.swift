@@ -2030,3 +2030,106 @@ func aRowForATotalCommitmentSaysItsNameItsRhythmAndWhetherTheDayIsKeptAndNeverIt
     #expect(view90.rows[0].rhythmInWords == "Mon, Wed, Sat")
     #expect(!view90.rows[0].isKept)
 }
+
+@Test("a row whose day holds an addition offers taking the last one back")
+func aRowWhoseDayHoldsAnAdditionOffersTakingTheLastOneBack() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history30 = History()
+    history30.add(Addition(30, for: protein, on: monday)!)
+    var historyPastTarget = History()
+    historyPastTarget.add(Addition(120, for: protein, on: monday)!)
+    historyPastTarget.add(Addition(30, for: protein, on: monday)!)
+
+    let view30 = DayView(of: [protein], on: monday, in: history30)
+    let viewPastTarget = DayView(of: [protein], on: monday, in: historyPastTarget)
+
+    #expect(view30.rows[0].offersTakeBackLast(asOf: monday))
+    #expect(viewPastTarget.rows[0].isKept)
+    #expect(viewPastTarget.rows[0].offersTakeBackLast(asOf: monday))
+}
+
+@Test("a row whose day holds no addition offers no take-back")
+func aRowWhoseDayHoldsNoAdditionOffersNoTakeBack() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let neverRecorded = History()
+    var addedThenTakenBack = History()
+    addedThenTakenBack.add(Addition(30, for: protein, on: monday)!)
+    addedThenTakenBack.removeLastAddition(for: protein, on: monday)
+
+    let neverRecordedView = DayView(of: [protein], on: monday, in: neverRecorded)
+    let addedThenTakenBackView = DayView(of: [protein], on: monday, in: addedThenTakenBack)
+
+    #expect(!neverRecordedView.rows[0].offersTakeBackLast(asOf: monday))
+    #expect(!addedThenTakenBackView.rows[0].offersTakeBackLast(asOf: monday))
+    #expect(neverRecordedView.rows[0].totalEntry(asOf: monday) != nil)
+    #expect(addedThenTakenBackView.rows[0].totalEntry(asOf: monday) != nil)
+}
+
+@Test("a row for a commitment whose kind is not a total offers no take-back")
+func aRowForACommitmentWhoseKindIsNotATotalOffersNoTakeBack() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    history.add(Number(70.5, for: weight, on: monday)!)
+    history.add(Note("Ran 8k.", for: journal, on: monday)!)
+
+    let dayView = DayView(of: [gym, weight, journal], on: monday, in: history)
+
+    #expect(dayView.rows.allSatisfy { !$0.offersTakeBackLast(asOf: monday) })
+}
+
+@Test("a row for a date later than the day it is asked as of offers no take-back")
+func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoTakeBack() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Addition(30, for: protein, on: wednesday)!)
+
+    let dayView = DayView(of: [protein], on: wednesday, in: history)
+
+    #expect(!dayView.rows[0].offersTakeBackLast(asOf: monday))
+    #expect(dayView.rows[0].offersTakeBackLast(asOf: wednesday))
+}
+
+@Test("a row goes on offering the take-back while the day still holds an addition")
+func aRowGoesOnOfferingTheTakeBackWhileTheDayStillHoldsAnAddition() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+    history.removeLastAddition(for: protein, on: monday)
+
+    let onceTakenBackView = DayView(of: [protein], on: monday, in: history)
+
+    #expect(onceTakenBackView.rows[0].offersTakeBackLast(asOf: monday))
+    #expect(onceTakenBackView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "30 of 120")
+
+    history.removeLastAddition(for: protein, on: monday)
+    let twiceTakenBackView = DayView(of: [protein], on: monday, in: history)
+
+    #expect(!twiceTakenBackView.rows[0].offersTakeBackLast(asOf: monday))
+    #expect(twiceTakenBackView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "0 of 120")
+}

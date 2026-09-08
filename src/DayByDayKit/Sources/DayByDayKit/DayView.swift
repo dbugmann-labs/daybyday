@@ -132,6 +132,12 @@ public struct DayView: Hashable, Sendable {
 
             return TotalEntry(soFarOfTarget: "\(total) of \(target.amount)")
         }
+
+        /// Whether this row offers taking its day's last addition back: exactly when it offers
+        /// a total entry as of `today` and its day's sum is above zero.
+        public func offersTakeBackLast(asOf today: CalendarDate) -> Bool {
+            totalEntry(asOf: today) != nil && total > 0
+        }
     }
 
     /// What this day view says its day is: the weekday, the day of the month, the month and the
