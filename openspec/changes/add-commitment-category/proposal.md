@@ -49,11 +49,12 @@ left to infer one.
   a commitments screen's offset is counted over **what it draws** — the grouped list — and the
   screen turns that into the roster's own offset and the category, which is the one conversion this
   change adds and it is behind the seam.
-- **While a drag is live, the screen says which group the row would land under**, and the app shell
-  marks that group's heading. It is the same arithmetic the drop itself uses, read instead of acted,
-  so the mark cannot promise something the drop then does not do. It exists because a drop on the
-  seam between two groups joins the one below, which is a rule that had to pick a side and which a
-  person cannot see until they have let go.
+- **While a drag is live, the screen answers which group the row would land under**, and nothing is
+  drawn for that answer today: a live drag publishes no destination the app shell could read, so the
+  group a drop would join is known and not yet shown. It is the same arithmetic the drop itself
+  uses, read instead of acted, so the answer can never promise something the drop then does not do.
+  It exists because a drop on the seam between two groups joins the one below, which is a rule that
+  had to pick a side and which a person cannot see until they have let go.
 - **The form's category wins when a commitment is defined again.** Taking a stopped or a removed
   commitment up again *through the form* takes the category typed on the form, including none;
   taking one up again from the stopped list in one tap asks for nothing and so keeps the category it

@@ -2610,9 +2610,11 @@ and where the screen keeps nothing at all — including a screen that cannot rea
 keeps nothing. Each of those is an ask no drop could satisfy, and each is answered with no group
 rather than with a guess.
 
-**The heading of the group is what is marked, and the mark is the app shell's to draw.** The screen
-decides which group; the shell decides nothing, exactly as it decides nothing about an order or a
-refusal. Marking the heading was chosen over saying the category on the row itself, because the row
+**The screen answers which group, and nothing is drawn for that answer today.** Which group a drop
+would join is the screen's to work out, exactly as an order and a refusal are, and drawing anything
+for it would be the app shell's, which decides nothing — but a live drag publishes no destination
+the shell could read, so the group a drop would join is known and not yet shown. Were it drawn it is
+the group's heading that would carry it, rather than the category on the row itself, because the row
 is under a moving thumb and text that moves with a drag is the hardest thing on a phone to read.
 
 **This exists because a drop on the seam between two groups is arithmetic a person cannot see.** The
