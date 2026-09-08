@@ -434,9 +434,15 @@ Things that are built, or deliberately not built, in a state someone will trip o
   change. The obvious cause is dead: `RosterStore.write` measures 13ms and the whole of
   `CommitmentsScreen.move` 16ms, so it is not the disk write. A recorded simulator reorder settles
   in 0.2–0.4s, and the lag has never reproduced off the phone. The remaining candidate nobody has
-  excluded is that the rows are keyed by position. It belongs to #168, which will hold a drag on a
-  real device — not fixed here, because no requirement in this delta is about how long a list takes
-  to settle. Recorded 2026-09-08, at #147's close-out.
+  excluded is that the rows are keyed by position — and that keying is not something #147
+  inherited: G7 review found it introduced inside this diff, at `CommitmentsView.swift:79`, where
+  the kept list's per-group `ForEach` reads `id: \.offset`. On `main` before this Story the same
+  list was one flat `ForEach(screen.kept, id: \.self)` — keyed on the commitment's own value, not
+  its position — so #168 starts from a narrower place than "rows are keyed by position somewhere
+  upstream": the candidate sits inside the change that surfaced the lag. It still belongs to #168,
+  which will hold a drag on a real device — not fixed here, because no requirement in this delta is
+  about how long a list takes to settle, and no fix is proposed on the strength of where the keying
+  came from alone. Recorded 2026-09-08, at #147's close-out; corrected 2026-09-08 at G7.
 
 ## Settled
 
