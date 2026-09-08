@@ -1,6 +1,6 @@
 ## 1. Before a line is written
 
-- [ ] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
+- [x] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
   From `src/DayByDayKit`, `swift test` reports **885 tests passing** — measured 2026-09-08 with this
   branch cut from `main` at `264c5a7`, which includes `add-commitment-category` (#167). **The branch
   has since been rebased onto `fe540d5`**, which adds the day swipe (#177) and a backlog capture and
@@ -13,7 +13,7 @@
   may be renamed, moved, or have an assertion changed by a box below**: that requirement changes in
   prose only.
 
-- [ ] 1.2 Confirm the four facts the derived answer rests on, before writing any test, and stop and
+- [x] 1.2 Confirm the four facts the derived answer rests on, before writing any test, and stop and
   report if any is false (`design.md` § *Context*):
   `Commitment.Kind` still has exactly four cases; `Tick.init?` still refuses a commitment whose kind
   is not a tick, so `tick(asOf:)` needs no kind guard of its own; `offersTakeBackLast(asOf:)` is still
@@ -23,7 +23,7 @@
   arrived, that is a **stop and a G4 question** — the row requirement is written on the offers exactly
   so that such a kind is answered, but the delta's scenarios do not cover one.
 
-- [ ] 1.3 Re-read this box before § 2 and again before § 4. `day-screen` is a busy capability: if
+- [x] 1.3 Re-read this box before § 2 and again before § 4. `day-screen` is a busy capability: if
   another Story delta-ing it merges to `main` while this branch is open, a clean rebase can still
   leave this delta's MODIFIED requirement quoting text that no longer exists. Check with
   `git fetch origin && git log --oneline origin/main -- openspec/specs/day-screen/spec.md`. A change
