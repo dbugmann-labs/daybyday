@@ -100,6 +100,19 @@ because the owner's reply to it opened a frontier node the grill had not reached
     commitment lying between two members does), which is exactly what folding it into a
     205-scenario delta would have skipped.*
 
+24. **The seam answer is reversed: a drop carries the group it landed *in*, not the group below.**
+    *Overturned 2026-09-08 at the §9.5 walkthrough, on the phone, by the owner. § Residual 1 chose
+    "the group below" on my recommendation, and its stated cost — "one unreachable slot" — was
+    under-priced: the offset it makes unreachable is the end of a group, so a person cannot append
+    a row to a group at all. The alternative `spec-author` had already priced is taken instead:
+    `CommitmentsScreen.move` gains a category argument, the four boundary scenarios are rewritten,
+    and the shell draws a `Section` per group. Costs a third G4, taken deliberately.*
+25. **Two drawing defects found on the phone and fixed, neither of them a requirement.** The
+    category heading was drawn inside the row cell, so it dragged with the row; and the group of
+    commitments under no category, having no heading by § Settled 11, ran on continuously from the
+    last group so that neither screen showed where a category ended. *A divider is not a word the
+    app invented, so § Settled 11 stands — what was missing was a boundary, not a name.*
+
 ## The residual round
 
 `spec-author` returned two questions that writing the delta made visible. Both answered
@@ -146,5 +159,9 @@ appears once a grouped drag is expressed as a single offset.
 3. **The draggable group heading is a Story of its own** — § Settled 23 — to be written after this
    Story's G4 and taken before #148 `add-commitment-editing`. Nothing in this delta depends on it,
    and this delta's grouping rule is what it will be grilled against.
+
+4. **§ Settled 14 and § Residual 1 are superseded by § Settled 24.** They are left standing rather
+   than edited, because what they record is a decision that was made, tested in the hand and
+   reversed — and the reversal is only legible next to them.
 
 Everything the frontier raised was answered.
