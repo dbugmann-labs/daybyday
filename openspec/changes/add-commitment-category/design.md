@@ -1,6 +1,6 @@
 ## Context
 
-See `proposal.md` § *Why*, and `grill.md`, whose twenty settled answers this delta is written on.
+See `proposal.md` § *Why*, and `grill.md`, whose twenty-three settled answers this delta is written on.
 What matters here is that a **category** is a word the person chose, held by the roster against a
 commitment, and that **grouping is a second reading of the order the roster already holds**. Once
 those two are fixed everything else follows: the commitment gains nothing, the day view gains no
@@ -34,14 +34,16 @@ document; the last two decide how big the change is and are the ones to re-check
   screen takes is over what it draws* keeps.
 - **580 tests pass**, `swift test` from `src/DayByDayKit`, this branch cut from `main` at `f8236be`
   which includes `add-roster-order` (#161).
-- **`pnpm run check:scenarios` reports `129/205 scenario(s) covered`** for this change. Those 129
+- **`pnpm run check:scenarios` reports `129/214 scenario(s) covered`** for this change. Those 129
   are the scenarios this delta carries verbatim from the current specs; **no test behind any of them
-  may be renamed, moved, or have an assertion changed.** Seventy-six are new.
+  may be renamed, moved, or have an assertion changed.** Eighty-five are new.
 
 `CONTEXT.md` fixes the vocabulary — the new **category**, and the amendments to **roster**, **roster
 store**, **commitments screen**, **day view** and **move** — and the grill landed all of it before
 this folder existed. One line of it is corrected here; § *The day view is handed its groups, and
-`CONTEXT.md` is corrected* says which and why. Writing the delta turned up no new term.
+`CONTEXT.md` is corrected* says which and why. Writing the delta turned up no new headword: the
+drag mark of settled answer 21 is one more sentence under **commitments screen** — *the group a drop
+would join* — because it is a thing that screen says and not a thing of its own.
 
 ## Goals / Non-Goals
 
@@ -110,6 +112,13 @@ types are added beside them. Every scenario in the delta is driven at one of the
   now counted over `kept` as drawn, and the screen derives both the roster's offset and the category
   from it. This is the one signature in the change that is unchanged and not behaviour-preserving,
   which is why it is called out here rather than left to a reader of the diff.
+- **`CommitmentsScreen.landing(dropping:at:) -> Landing`**, where **`Landing`** is a nested
+  `enum` of `.under(String)`, `.underNoCategory` and `.nowhere` — the drag mark, and the read half
+  of the same arithmetic `move` acts on. Three cases and not an `Optional`, for the reason the
+  `move` signature above gives: a `nil` that meant both "the group under no category" and "no group
+  at all" is exactly the seam this change could be silently wrong at. `Landing` is a type's name for
+  the domain's *the group a drop would join*, not a term of its own; `CONTEXT.md` § *Commitments
+  screen* carries the phrase.
 - **`DayView.Group`** — `public let category: String?` and `public let rows: [Row]`.
   **`DayView.groups: [Group]`**, and **`DayView.rows`** stays as every row read across the groups,
   in drawing order.
@@ -212,10 +221,54 @@ turn a drop-where-you-picked-it-up into a refiling. It is carved out at the scre
 roster, because at the roster the offset says *where* and the category says *what*, and only the
 first has anything to carve out.
 
+**Writing the mark caught two of this delta's own scenarios getting that arithmetic wrong**, and
+they are corrected in this diff rather than left for the implementer to trip over. *A commitment
+dropped past the last entry drawn takes the last group's category* dragged a row that was itself
+drawn last, so the offset it used was one of that row's two carve-outs and the scenario asked for
+a change the requirement forbids; it now drags a row out of a group of its own. And *an offset a
+commitments screen is given is counted over what it draws and not over the roster's own order*
+counted its offset from one rather than from zero, which made it a carve-out too. Both are new
+scenarios, so no carried test is touched. That a read-only mark, checked against the act, found
+them the same afternoon it was written is the argument for the mark in miniature.
+
 **One consequence is stated in the requirement rather than hidden:** dragging a group's *first*
 commitment away moves the group, because a group sits where its first commitment sits. A person who
 drags the top row of "Supplements" to the bottom of the screen may see the whole "Supplements" block
 follow. That is settled answer 11 read at its edge, not a defect, and it has a scenario.
+
+### The mark a live drag leaves, and what the shell can draw
+
+Settled answer 21, added after the residual round: while a drag is live the screen marks the group
+the row would land under. It exists because the answer to residual question 1 is a rule that had to
+pick a side — a drop on the seam between two groups joins the one below — and a rule that picks a
+side is only fair if a person can see which side before they let go.
+
+**The screen owes the answer and the shell draws it.** `landing(dropping:at:)` is the same
+arithmetic `move` acts on, read instead of acted: the same two carve-out offsets, the same
+"category of the entry drawn there", the same "last entry drawn" at the end. It is one rule read
+twice and never two rules, which is why the delta carries the scenario *the group a commitments
+screen says a drop would join is the group the drop puts the commitment in* — a mark that could
+disagree with the drop would be worse than no mark.
+
+**Marking the heading rather than the dragged row** is the owner's choice, and the reason is the
+thumb: the row is the thing being moved and the thing a hand is covering. The heading stands still.
+
+**One fact was measured here and it is the one to re-check before § 9.6 is attempted.** Read out of
+`iPhoneOS26.5.sdk`'s `SwiftUI.swiftinterface`, 2026-09-08: `onMove(perform:)` takes
+`Optional<(IndexSet, Int) -> Void>` and is the whole of the reorder surface — SwiftUI publishes
+**no in-flight destination** for a `List`'s edit-mode reorder. `DragSession` carries `phase`,
+`draggedItemIndex` and a `location: CGPoint`, and nothing that says which offset a drop would take;
+`dropDestination(for:action:isTargeted:)` and `DropDelegate.dropEntered(info:)` do give live hover,
+but they belong to a custom `draggable`/`dropDestination` drag, not to `.onMove`.
+
+**So the kit ships the answer, and whether the shell can draw the mark is an open measurement, not
+a design this document takes.** Turning `.onMove` into a custom drag would move "which row am I
+over" into `CommitmentsView.swift` — arithmetic in the shell, which is the one thing ADR-1019's
+guard forbids and the same argument § *The shell rides this Story* used against a `Section` per
+group. `tasks.md` § 9.6 is therefore written as a measurement with a **stop**: find out whether the
+mark can be drawn without moving any arithmetic across the seam, and if it cannot, draw nothing and
+report it. The requirement is about what the screen says, and it is true and tested either way; a
+mark nobody can draw yet is a want, and a shell rewrite to reach it is a Story with its own G4.
 
 ### The form on disk moves to form 4, and ADR-1031 is amended
 
@@ -290,6 +343,11 @@ question this design has to answer, and `tasks.md` § 9 does not ask it.
 **The stopped list keeps its `Section` and gains nothing**, which is what makes "the stopped list is
 not grouped" true on a phone rather than only in a requirement.
 
+**The drag mark is the one shell box that may end in a report instead of a line of code**, and
+§ *The mark a live drag leaves* is why: the kit's answer is tested at the seam, and whether SwiftUI
+will hand the shell a live offset without arithmetic crossing the seam is measured at `tasks.md`
+§ 9.6 rather than assumed here.
+
 ### The day view is handed its groups, and `CONTEXT.md` is corrected
 
 `CONTEXT.md` § *Day view*'s 2026-09-08 amendment reads *"A day view draws its rows in **groups**,
@@ -314,7 +372,7 @@ correcting one is worth a paragraph.
   failure shows up at `openspec validate --strict`. `tasks.md` § 1.3 measures it before anything is
   written and § 10.3 re-measures it before the review. **The cheapest order is to merge #158 first**,
   and that is a recommendation to the owner rather than a decision this Story can take.
-- **The delta is the largest this repo has shipped — 205 scenarios, 129 of them carried verbatim.**
+- **The delta is the largest this repo has shipped — 214 scenarios, 129 of them carried verbatim.**
   → Unavoidable at this scope: `openspec` replaces a MODIFIED requirement whole, and twelve
   `commitment` requirements have a sentence that is false once a category exists. The saving that
   was available has been taken — § *The stale titles* names the three requirements deliberately not
@@ -331,6 +389,18 @@ correcting one is worth a paragraph.
 - **Dragging a group's first row moves the group.** → § *The offset a screen takes* names it, and it
   is the price of "a group sits where its first commitment sits". Uncategorised-first and
   alphabetical groups were both offered at the grill and declined.
+- **A drag alone can never lift one group above another, and this Story accepts that** — settled
+  answer 22. Dragging every row of "Sport" above "Supplements" dissolves "Sport" instead of lifting
+  it, because each of those drops joins the group it lands in. What does work is two steps: drag the
+  row into place, then set its category back with the field, which changes no order. → Possible and
+  not discoverable, and the answer is settled answer 23's own Story, taken straight after this one.
+  It is recorded here and **not designed for**: nothing in this delta anticipates it, and the
+  grouping rule written here is what that Story will be grilled against.
+- **The mark may have nowhere to be drawn on the phone in this Story.** SwiftUI publishes no
+  in-flight destination for a `List` reorder — measured, § *The mark a live drag leaves*. → The kit
+  answers regardless and the requirement is tested at the seam; `tasks.md` § 9.6 measures the shell
+  side and stops rather than moving arithmetic across the seam to get it. Worth knowing at G4: this
+  is the one part of the Story whose visible result is not guaranteed.
 - **The form-4 shape guard rests on a `Codable` detail.** `contains(key)` telling `null` from absent
   is measured, not remembered, and the measurement is in § *Context*. → If it stops holding, the
   guard silently weakens rather than failing loudly, so `tasks.md` § 5 writes the two refusal
@@ -340,54 +410,41 @@ correcting one is worth a paragraph.
 
 ## Open Questions
 
-**None.** `grill.md` § *Left open* named two, both `spec-author`'s to settle rather than the
-human's, and both are settled above:
+**None.** `grill.md` § *Left open* named three and the residual round asked two more; all five are
+settled, and the two residual questions were answered by the owner on 2026-09-08, both on the
+recommendation. What each one settled to:
 
-1. **B-030 is answered by this Story and is still a want in `docs/backlog.md`.** Nothing in the
+1. **A drop on the seam between two groups joins the group *below*.** Residual question 1, answered
+   on the recommendation: a row takes the category of the entry it comes to stand before, and of the
+   last entry drawn when it goes to the end. The seam stays the single offset `add-roster-order`
+   fixed and the shell converts nothing. The cost is one unreachable slot — a row already last in
+   "Supplements" cannot be dropped onto the very top of "Sport", because that offset is one of the
+   two that mean "where you picked it up" — and it is reached in two drops instead. § *The offset a
+   screen takes is over what it draws* carries the rule.
+2. **The form offers the categories the commitments the screen is *keeping* are under**, and not
+   ones only a stopped commitment carries. Residual question 2, answered on the recommendation. The
+   offering exists so a typed word lands on an existing heading, the stopped list draws no headings,
+   and a stopped commitment brings its own category back when it is taken up again in one tap.
+   `grill.md` records that this one is a finding about the grill rather than a question only the
+   delta could raise: settled answer 7 says "the roster's commitments" where a roster holds three
+   states.
+3. **B-030 is answered by this Story and is still a want in `docs/backlog.md`.** Nothing in the
    delta depends on it; moving it to *Decided* is the next grooming pass's work, and `tasks.md`
    § 10.6 leaves a line for it rather than reaching into the backlog from a Story branch.
-2. **An ADR is owed for a category being the roster's** — decided as **ADR-1038** in § *A category is
+4. **An ADR is owed for a category being the roster's** — decided as **ADR-1038** in § *A category is
    the roster's, and ADR-1038*, numbered against every remote branch rather than against `main`
    alone: `main` ends at 1037 and `origin/story/139-add-number-entry` holds 1036, checked with
    `git ls-tree -r --name-only <branch> -- docs/adr` over every remote, 2026-09-08. A second record
    is owed that the grill did not foresee — **ADR-1031 amended in place**, because this change fires
    the reversal trigger that ADR wrote for itself.
+5. **A draggable group heading is a Story of its own**, written after this Story's G4 and taken
+   before #148 `add-commitment-editing` — settled answers 22 and 23, and `grill.md` § *Left open* 3.
+   Nothing in this delta depends on it and **nothing in this delta designs for it**: a group's
+   members need not be adjacent in the roster's order, so moving one gathers and relocates a block,
+   which is the first act in this product that would move more than one commitment at once. That
+   needs a grill of its own, against the grouping rule written here.
 
-## Questions for you
-
-Two questions came up while the delta was being written that the grill could not have reached from
-the answers it had. **The delta is written on the recommended answer to each**, so what follows is
-read against the diff rather than in the abstract.
-
-1. **A drop that lands exactly on the seam between two groups — which group has it joined?** The
-   place immediately after the last row of "Supplements" and immediately before the first row of
-   "Sport" is one offset, and it can mean either group. The offset alone cannot say, so something has
-   to decide.
-   - *Recommended:* **the group below** — a row takes the category of the entry it comes to stand
-     before, and of the last entry drawn when it goes to the end. The seam stays exactly the shape
-     `add-roster-order` fixed: one offset, the gesture's own arithmetic, no conversion in the shell.
-     The cost is one unreachable slot — a row already last in "Supplements" cannot be dropped onto
-     the very top of "Sport", because that offset is one of the two that mean "where you picked it
-     up"; a person gets there by dropping it below "Sport"'s first row instead.
-   - *If you say the drop should carry the group it landed in:*
-     `CommitmentsScreen.move(_:toOffset:)` gains a category argument, the four boundary scenarios in
-     *A commitments screen moves a commitment among the ones it keeps* are rewritten, the shell has
-     to name the section a drop landed in — which means a `Section` per group after all, and § *The
-     shell rides this Story* is rewritten with it. Nothing else in the delta moves.
-   - **The grill could not plainly have asked this.** It only becomes visible when a grouped drag is
-     expressed as a single offset, which is a question about the seam rather than about the product.
-
-2. **Which categories does the form offer — the ones commitments you are *keeping* are under, or
-   also ones only a *stopped* commitment is under?** Settled answer 7 says "the categories in use are
-   exactly the words on the roster's commitments", and a roster holds commitments in three states.
-   - *Recommended:* **the ones you are keeping.** The offering exists so a typed word lands on an
-     existing heading, the stopped list draws no headings, and a stopped commitment brings its own
-     category back with it when it is taken up again in one tap — so nothing is lost by leaving it
-     out, and a word from a list nobody is looking at is not offered.
-   - *If you say stopped ones too:* the offering rule in *A commitments screen puts a commitment
-     under a category* changes, three of its scenarios are rewritten, and the roster gains a read
-     over the commitments it *holds* rather than the ones it keeps. A removed commitment's category
-     would still be left out, which then needs saying.
-   - **The grill could plainly have asked this**, and that is worth recording for the next one: the
-     answer says "the roster's commitments" at a point where the roster holds three states, and the
-     ambiguity is visible in the answer's own words.
+Two things are settled but not yet *known*, and neither is a question for the owner. Whether the app
+shell can draw the drag mark at all is a measurement with a stop (§ *The mark a live drag leaves*,
+`tasks.md` § 9.6), and whether `add-number-entry` (#139) lands on `day-screen` first is a fact the
+implementer re-measures at `tasks.md` § 1.3.

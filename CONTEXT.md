@@ -290,7 +290,10 @@ among the commitments under no category is moved and has its category cleared. O
 what it looks like it does. The category field on the **commitments screen** remains the other way to
 change one, and it changes no order — a commitment given a category is drawn in that category's group
 while staying exactly where the roster holds it, so clearing the category draws it back where it
-never stopped being.
+never stopped being. One thing a drag cannot do, and this is deliberate as far as #147: it cannot
+lift a whole **group** above another, because every drop joins the group it lands in, so dragging a
+group's rows upward dissolves the group rather than moving it. Setting the category back with the
+field afterwards does it in two steps, and moving a group in one gesture is a Story of its own.
 
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
@@ -846,6 +849,14 @@ dropped into another group is moved *and* recategorised, and one dropped among t
 its category cleared. A category it will not change is a **refused change** like every other, and
 the categories it offers are read off the roster it is drawing, so a word its last commitment lets
 go is gone from the form as well.
+
+**Amended again 2026-09-08**, after the residual round of the same Story. While a drag is live, a
+commitments screen also says **the group a drop would join** — the group the row would be under if
+it were let go at the offset it is over now, or that there is no such group. The **app shell** marks
+that group's heading, and marks nothing on the row itself, which is the thing under a person's
+thumb. It is the same arithmetic the drop performs, read rather than acted, so the two can never
+disagree; and it exists because a drop on the seam between two groups joins the one below, a rule
+that had to pick a side and that a person would otherwise learn only after letting go.
 
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most

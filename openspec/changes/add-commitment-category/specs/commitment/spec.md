@@ -1747,14 +1747,14 @@ screen makes.
 
 #### Scenario: an offset a commitments screen is given is counted over what it draws and not over the roster's own order
 
-- **WHEN** a commitment named "Creatine", then one named "Gym", then one named "Magnesium", all on
+- **WHEN** a commitment named "Gym", then one named "Creatine", then one named "Magnesium", all on
   a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster
   place; "Creatine" and "Magnesium" are put under the category "Supplements" there; a commitments
   screen is opened at that roster place as of Monday 31 August 2026; and "Gym" is moved to the
-  offset 2
+  offset 1
 - **THEN** what it keeps is one group, "Supplements", holding "Creatine", then "Gym", then
-  "Magnesium", the offset naming the second entry drawn — "Magnesium" — and not the second
-  commitment the roster holds
+  "Magnesium" — the offset naming the entry drawn at it, "Magnesium", and not the commitment the
+  roster holds at it, which is "Creatine"
 - **AND** a roster store opened afterwards at that place reads back "Creatine", then "Gym", then
   "Magnesium", all three under "Supplements"
 
@@ -1773,11 +1773,12 @@ screen makes.
 
 - **WHEN** a commitment named "Gym", then one named "Creatine", then one named "Magnesium", all on
   a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster
-  place; "Creatine" and "Magnesium" are put under the category "Supplements" there; a commitments
-  screen is opened at that roster place as of Monday 31 August 2026; and "Gym" is moved to the
-  offset 3
+  place; "Gym" is put under the category "Sport" there and "Creatine" and "Magnesium" under
+  "Supplements"; a commitments screen is opened at that roster place as of Monday 31 August 2026;
+  and "Gym" is moved to the offset 3, which is the number of entries it draws
 - **THEN** what it keeps is one group, "Supplements", holding "Creatine", then "Magnesium", then
   "Gym"
+- **AND** no group is drawn under "Sport"
 
 #### Scenario: dragging a group's only entry into another group leaves one heading fewer
 
@@ -2583,3 +2584,134 @@ is looking at.
 - **AND** what it keeps is one group, with no category, holding "Creatine" and then "Gym", and what
   it has stopped is nothing
 - **AND** the categories it offers are none
+
+### Requirement: A commitments screen says which group a drop would join, while a drag is live
+
+A commitments screen SHALL say **which group a drop would join**, on being given a commitment on the
+list of what it keeps and an offset counted over what it draws. The answer SHALL be a category, or
+that the drop would join the commitments under no category, or that there is no group it would join
+at all — three answers and not two, because "under none" is a group a person can drop into and "no
+group" is the absence of an answer.
+
+**It SHALL be the answer the drop itself would give**, worked out by the same rule and in the same
+place: the category of the entry drawn at that offset, or of the last entry drawn where the offset is
+the number of entries drawn, and the group the commitment is already in on the two offsets that leave
+it where it is drawn. A screen that answered one thing and then did another would be worse than a
+screen that said nothing, so this is one rule read twice and never two rules.
+
+Saying it SHALL change nothing. It is a question and not an act: no order, no category, no refused
+change, nothing written at the roster place, and no answer given to a refused change the screen is
+already holding. It SHALL be answerable while the drag is still live and before anything has moved,
+as often as the offset under a person's thumb changes.
+
+**There is no group a drop would join** where the offset is one the list the screen draws does not
+have, where the commitment is on the list of what it has stopped, where it is one neither list holds,
+and where the screen keeps nothing at all — including a screen that cannot read its roster, which
+keeps nothing. Each of those is an ask no drop could satisfy, and each is answered with no group
+rather than with a guess.
+
+**The heading of the group is what is marked, and the mark is the app shell's to draw.** The screen
+decides which group; the shell decides nothing, exactly as it decides nothing about an order or a
+refusal. Marking the heading was chosen over saying the category on the row itself, because the row
+is under a moving thumb and text that moves with a drag is the hardest thing on a phone to read.
+
+**This exists because a drop on the seam between two groups is arithmetic a person cannot see.** The
+place after the last row of one group and before the first of the next is one offset, and it joins
+the group below; without a mark, a person learns which group they landed in only after the drop has
+happened. The mark is what makes a rule that has to pick a side legible while there is still time to
+move the thumb.
+
+#### Scenario: a commitments screen says which group a drop at an offset would join
+
+- **WHEN** a commitment named "Creatine", then one named "Magnesium", then one named "Gym", all on a
+  schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster place;
+  "Creatine" and "Magnesium" are put under the category "Supplements" there; a commitments screen is
+  opened at that roster place as of Monday 31 August 2026; and it is asked which group a drop of
+  "Gym" at the offset 1 would join
+- **THEN** it says "Supplements"
+- **AND** asked about the offset 0 it says "Supplements" again
+
+#### Scenario: a drop past the last entry drawn would join the last group drawn
+
+- **WHEN** a commitment named "Gym", then one named "Creatine", then one named "Magnesium", all on a
+  schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster place;
+  "Gym" is put under the category "Sport" there and "Creatine" and "Magnesium" under "Supplements";
+  a commitments screen is opened at that roster place as of Monday 31 August 2026; and it is asked
+  which group a drop of "Gym" at the offset 3, which is the number of entries it draws, would join
+- **THEN** it says "Supplements", which is the group the last entry drawn is in
+- **AND** it does not say "Sport", which is the group "Gym" is drawn in
+
+#### Scenario: a drop among the entries under no category would join no category, which is not no group
+
+- **WHEN** a commitment named "Creatine", then one named "Gym", then one named "Journaling", all on a
+  schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster place;
+  "Creatine" is put under the category "Supplements" there; a commitments screen is opened at that
+  roster place as of Monday 31 August 2026; and it is asked which group a drop of "Creatine" at the
+  offset 3 would join
+- **THEN** it says the group under no category
+- **AND** that answer is told apart from there being no group a drop would join
+
+#### Scenario: the two offsets that leave a commitment where it is drawn would join the group it is already in
+
+- **WHEN** a commitment named "Creatine", then one named "Magnesium", then one named "Gym", all on a
+  schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster place;
+  "Creatine" and "Magnesium" are put under the category "Supplements" there and "Gym" under "Sport";
+  a commitments screen is opened at that roster place as of Monday 31 August 2026; and it is asked
+  which group a drop of "Magnesium" at the offset 1 would join
+- **THEN** it says "Supplements", which is the group "Magnesium" is already in
+- **AND** asked about the offset 2 it says "Supplements" again, and not "Sport", whose first entry is
+  drawn there
+
+#### Scenario: a commitments screen says no group where the offset is one the list it draws does not have
+
+- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is put under the
+  category "Supplements" there; a commitments screen is opened at that roster place as of Monday
+  31 August 2026; and it is asked which group a drop of "Gym" at the offset 3, which a list of two
+  does not have, would join
+- **THEN** it says there is no group a drop would join
+- **AND** asked about the offset -1 it says there is no group a drop would join again
+
+#### Scenario: a commitments screen says no group for a commitment it does not keep
+
+- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is put under the
+  category "Supplements" there and "Gym" is stopped there as of Sunday 30 August 2026; a commitments
+  screen is opened at that roster place as of Monday 31 August 2026; and it is asked which group a
+  drop of "Gym" at the offset 0 would join
+- **THEN** it says there is no group a drop would join
+- **AND** asked about a commitment named "Journaling" on that same schedule and kept-from day, formed
+  directly and never taken on, at the offset 0, it says there is no group a drop would join
+
+#### Scenario: a commitments screen that cannot read its roster says no group a drop would join
+
+- **WHEN** a run of bytes that is not a roster store is written at a roster place; a commitments
+  screen is opened at that place as of Monday 31 August 2026; and it is asked which group a drop of a
+  commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January 2026, formed
+  directly, at the offset 0 would join
+- **THEN** it says there is no group a drop would join
+- **AND** it says it is not keeping a roster, and what it keeps is no groups at all
+
+#### Scenario: the group a commitments screen says a drop would join is the group the drop puts the commitment in
+
+- **WHEN** a commitment named "Creatine", then one named "Magnesium", then one named "Gym", all on a
+  schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster place;
+  "Creatine" and "Magnesium" are put under the category "Supplements" there; a commitments screen is
+  opened at that roster place as of Monday 31 August 2026; it is asked which group a drop of "Gym" at
+  the offset 1 would join; and "Gym" is then moved to that same offset
+- **THEN** the group it said and the group "Gym" is drawn in afterwards are the same group,
+  "Supplements"
+- **AND** a screen alike in every way answers and then moves alike at the offset 2, at the offset 3
+  and at the offset 0
+
+#### Scenario: asking which group a drop would join changes nothing at the roster place
+
+- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is put under the
+  category "Supplements" there; a commitments screen is opened at that roster place as of Monday
+  31 August 2026; the content at that place is read; and the screen is asked which group a drop of
+  "Gym" would join at the offset 0, then at the offset 1, then at the offset 2
+- **THEN** nothing is refused and the screen holds no refused change
+- **AND** what it keeps is two groups, "Supplements" holding "Creatine" and then a group with no
+  category holding "Gym"
+- **AND** the content at that place is byte-for-byte what was read before it was asked

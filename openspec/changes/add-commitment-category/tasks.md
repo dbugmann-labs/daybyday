@@ -3,7 +3,7 @@
 - [ ] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
   From `src/DayByDayKit`, `swift test` reports **580 tests passing** — measured 2026-09-08 with this
   branch cut from `main` at `f8236be`, which includes `add-roster-order` (#161). From the repo root,
-  `pnpm run check:scenarios` reports `scenario coverage — 129/205 scenario(s) covered` for this
+  `pnpm run check:scenarios` reports `scenario coverage — 129/214 scenario(s) covered` for this
   change and names `"two rosters differing only in the category one commitment is under are
   different rosters"` as next. Those 129 are the scenarios this delta carries verbatim from the
   current specs; **no test behind any of them may be renamed, moved, or have an assertion changed by
@@ -232,16 +232,20 @@ carried scenarios saying "what it keeps is three entries" true.
 - [ ] 6.22 `a commitments screen that cannot read its roster does nothing when it is asked to put a
   commitment under a category` — and offers no categories at all.
 
-## 7. `commitment` — the drag carries a category
+## 7. `commitment` — the drag carries a category, and says where it would land
 
-Eight scenarios in `Tests/DayByDayKitTests/CommitmentsScreenTests.swift`, and the sharpest part of
+Six scenarios for the drag and nine for the mark, all in
+`Tests/DayByDayKitTests/CommitmentsScreenTests.swift`, and the sharpest part of
 the change. `design.md` § *The offset a screen takes is over what it draws* fixes the conversion, and
 **`CommitmentsScreen.move`'s signature does not change while its offset's meaning does** — read that
 section before writing 7.1.
 
 - [ ] 7.1 `an offset a commitments screen is given is counted over what it draws and not over the
   roster's own order` — the scenario that pins the conversion. Write it first: the two other
-  orderings a reader might assume both fail it.
+  orderings a reader might assume both fail it. **Count the offset from zero and check it against
+  the carve-out before you start** — this scenario and § 7.4's were both written with an offset that
+  was one of the dragged row's two no-op offsets, and both were corrected while the drag mark was
+  being written (`design.md` § *The offset a screen takes is over what it draws*).
 - [ ] 7.2 `a commitment dropped among another group's entries is put under that group's category` —
   settled answer 14. One drag, two changes, one write.
 - [ ] 7.3 `a commitment dropped among the entries under no category has its category taken off` —
@@ -249,9 +253,8 @@ section before writing 7.1.
 - [ ] 7.4 `a commitment dropped past the last entry drawn takes the last group's category` — the
   past-the-end offset, where there is no entry at the offset to read a category off.
 - [ ] 7.5 `a drop where a commitment is already drawn changes neither its place nor its category` —
-  the carve-out, and the recommended answer to `design.md` § *Questions for you* 1. Asserted
-  byte-for-byte on the file, because nothing may be written. **If the owner answers that question the
-  other way, this box and § 7.4's are the ones that change**, along with the seam.
+  the carve-out, and the settled answer at `design.md` § *Open Questions* 1. Asserted
+  byte-for-byte on the file, because nothing may be written.
 - [ ] 7.6 `dragging a group's only entry into another group leaves one heading fewer` — the
   consequence named in the requirement: a group whose first commitment leaves is drawn somewhere
   else, and a group with nothing left in it is not drawn at all.
@@ -266,6 +269,33 @@ section before writing 7.1.
   scenarios that pin it (*what a commitments screen holds about a refused change ends when a move is
   kept* and *… stands when a move drops a commitment where it already is*) are checked by § 7.7,
   which cannot see whether the line is right for the *reason* it is right.
+
+- [ ] 7.9 `a commitments screen says which group a drop at an offset would join` — the first test of
+  `landing(dropping:at:)`, and red until the seam exists. `design.md` § *The mark a live drag leaves*
+  says what it is for; **write it against the same helper `move` uses**, because one rule read twice
+  is the whole requirement.
+- [ ] 7.10 `a drop past the last entry drawn would join the last group drawn` — the past-the-end
+  offset, on a row that is not itself drawn last, so the offset is not one of its carve-outs.
+- [ ] 7.11 `a drop among the entries under no category would join no category, which is not no group`
+  — the case the return type exists for. Assert the two answers are told apart; a seam that returned
+  an optional category could not do it.
+- [ ] 7.12 `the two offsets that leave a commitment where it is drawn would join the group it is
+  already in` — the carve-out read rather than acted, and the answer that stops the mark promising a
+  refiling that will not happen.
+- [ ] 7.13 `a commitments screen says no group where the offset is one the list it draws does not
+  have` — both ends, past the end and below zero.
+- [ ] 7.14 `a commitments screen says no group for a commitment it does not keep` — a stopped one and
+  one neither list holds.
+- [ ] 7.15 `a commitments screen that cannot read its roster says no group a drop would join` — it
+  keeps nothing, so there is no group to name, and it must not be reached by way of an empty list
+  crashing.
+- [ ] 7.16 `the group a commitments screen says a drop would join is the group the drop puts the
+  commitment in` — **the load-bearing one.** Ask, then move, at four offsets including both
+  carve-outs, and assert the answer and the result agree each time. A mark that can disagree with the
+  drop is worse than no mark, and this is the test that stops it.
+- [ ] 7.17 `asking which group a drop would join changes nothing at the roster place` — asserted
+  byte-for-byte on the file and on the refused change the screen holds. Asking is a question, not an
+  act.
 
 ## 8. `day-screen` — a day view is handed its groups
 
@@ -330,9 +360,23 @@ nothing, orders nothing and groups nothing.
   open the day screen and find the same groups in the same places. Note what was seen in the PR.
   **This is the box the ADR-1019 exception exists for**, and `design.md` § *Risks* names the two
   things to judge: whether a group whose first row is dragged away moving on screen reads as a bug,
-  and whether the drop-on-the-seam answer in § *Questions for you* 1 feels right in the hand. If
+  and whether the drop-on-the-seam answer in § *Open Questions* 1 feels right in the hand. If
   either reads badly, that is a want in `docs/backlog.md` or a question for the owner, **not** a
   change to this delta without a second G4.
+- [ ] 9.6 **Find out whether the shell can draw the drag mark, and report either way.** The kit
+  answers `landing(dropping:at:)` whatever happens here; this box is about whether a person can see
+  it. Read `design.md` § *The mark a live drag leaves* first — measured on 2026-09-08 against
+  `iPhoneOS26.5.sdk`, SwiftUI's `onMove(perform:)` is the whole of the reorder surface and publishes
+  **no in-flight destination**, and `DragSession` carries a `CGPoint` and no offset.
+
+  So: re-read that interface for the SDK actually installed, and if something now hands a live
+  destination offset to a `List` reorder, draw the mark — the heading of the group
+  `screen.landing(dropping:at:)` names, and nothing on the dragged row — and note in the PR what the
+  API was. **If nothing does, draw nothing and say so in the PR.** Do **not** replace `.onMove` with
+  a `draggable`/`dropDestination` drag to get there: that puts "which row am I over" in
+  `CommitmentsView.swift`, which is arithmetic in the shell and the one thing ADR-1019's guard
+  forbids (`design.md` § *The shell rides this Story*). A shell rewrite to reach the mark is a Story
+  of its own with its own G4, and the box is ticked by the report, not by the mark.
 
 ## 10. The records
 
@@ -369,9 +413,9 @@ boxes below confirm rather than write, and each is tickable while reading what i
 
 ## 11. Before the review, and what the janitor does at the archive
 
-- [ ] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 580 plus the 76
+- [ ] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 580 plus the 85
   scenarios above. From the repo root, `pnpm run verify` green and `pnpm run checks` reporting
-  `205/205 scenario(s) covered`.
+  `214/214 scenario(s) covered`.
 - [ ] 11.2 `openspec validate add-commitment-category --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [ ] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
@@ -391,10 +435,11 @@ boxes below confirm rather than write, and each is tickable while reading what i
   `## MODIFIED Requirements` — five about the roster and its store (hold-order, refusal, move,
   keep-across-restart, and reading an earlier form) and seven about the commitments screen
   (kept-list, stopped-list, define, move, holds-a-refused-change, what it holds lasting until the app
-  is shown again or a change is kept, and cannot-read) — plus three `## ADDED Requirements`
+  is shown again or a change is kept, and cannot-read) — plus four `## ADDED Requirements`
   (*A roster puts a commitment under a category*, *A roster reads the commitments it is keeping in
-  groups, one per category*, and *A commitments screen puts a commitment under a category, and offers
-  the categories in use*). `specs/day-screen/spec.md` carries two `## MODIFIED Requirements`
+  groups, one per category*, *A commitments screen puts a commitment under a category, and offers
+  the categories in use*, and *A commitments screen says which group a drop would join, while a drag
+  is live*). `specs/day-screen/spec.md` carries two `## MODIFIED Requirements`
   (*A day view is a value* and *A day screen draws the commitments its roster had not stopped keeping
   on the day it is showing*) and one `## ADDED Requirement` (*A day view draws its rows in the groups
   it was handed, and draws no group with nothing due*). **None of these fourteen MODIFIED
@@ -402,7 +447,7 @@ boxes below confirm rather than write, and each is tickable while reading what i
   is dropped or retitled. So after `/opsx:archive` runs, read the recomposed
   `openspec/specs/commitment/spec.md` and `openspec/specs/day-screen/spec.md` and confirm that each
   of those fourteen still sits at the same place in requirement order it held before this archive,
-  that the three ADDED `commitment` requirements landed in `commitment` and nowhere else and the one
+  that the four ADDED `commitment` requirements landed in `commitment` and nowhere else and the one
   ADDED `day-screen` requirement in `day-screen`, and that `openspec validate --archived` exits 0.
   Any drift — a requirement moved, dropped, or reworded beyond this delta's own MODIFIED text — is
   **a stop and a report, never a hand-edit** (rule 2): `openspec/specs/` is written by

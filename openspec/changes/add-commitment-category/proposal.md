@@ -49,6 +49,11 @@ left to infer one.
   a commitments screen's offset is counted over **what it draws** — the grouped list — and the
   screen turns that into the roster's own offset and the category, which is the one conversion this
   change adds and it is behind the seam.
+- **While a drag is live, the screen says which group the row would land under**, and the app shell
+  marks that group's heading. It is the same arithmetic the drop itself uses, read instead of acted,
+  so the mark cannot promise something the drop then does not do. It exists because a drop on the
+  seam between two groups joins the one below, which is a rule that had to pick a side and which a
+  person cannot see until they have let go.
 - **The form's category wins when a commitment is defined again.** Taking a stopped or a removed
   commitment up again *through the form* takes the category typed on the form, including none;
   taking one up again from the stopped list in one tap asks for nothing and so keeps the category it
@@ -74,8 +79,8 @@ None.
   and reads its commitments back in groups; the roster store keeps the category at a fourth form
   and reads all three earlier forms; the commitments screen draws its kept list in groups, offers
   the categories in use, gives and takes off a category, counts a move's offset over what it draws,
-  and holds a refused category change as its sixth kind. Two requirements are added and twelve are
-  modified.
+  says which group a drop at an offset would join, and holds a refused category change as its sixth
+  kind. Three requirements are added and twelve are modified.
 - `day-screen`: a day view is handed its commitments in groups, draws them in the order it was
   handed them, and draws no group with nothing due on the date; a day screen hands over the groups
   its roster answers with. One requirement is added and two are modified.
@@ -84,10 +89,13 @@ None.
 
 - `src/DayByDayKit/Sources/DayByDayKit/` — `Roster` (a category on its entry, `put`, `groups`,
   and a category on `move`), `RosterDocument` (form 4, a `category` field), `RosterStore`,
-  `CommitmentsScreen`, `DayView`, `DayScreen`. One new nested type, `Roster.Group`, and one new
-  nested type, `DayView.Group`. No new file.
+  `CommitmentsScreen` (which also answers where a drop would land), `DayView`, `DayScreen`. Three
+  new nested types — `Roster.Group`, `DayView.Group` and `CommitmentsScreen.Landing`. No new file.
 - `src/DayByDay/DayByDay/CommitmentsView.swift` and `ContentView.swift` — the category field, the
-  categories offered, and both grouped lists, under ADR-1019's exception.
+  categories offered, and both grouped lists, under ADR-1019's exception. **The drag mark is the one
+  shell task that may end in a report rather than a line**: SwiftUI publishes no in-flight
+  destination for a `List` reorder — measured — so `tasks.md` § 9.6 finds out and stops rather than
+  moving the drop arithmetic into the shell to get there.
 - `docs/adr/` — **ADR-1038** written, and **ADR-1031 amended in place** on the trigger it named
   itself. **Not** amended: ADR-1030 (the kind is still the commitment's fourth part and still never
   changes; ADR-1038 says why a category is not a fifth), ADR-1037 (a move still changes the order
