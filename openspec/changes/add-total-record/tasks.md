@@ -143,8 +143,8 @@ change, and § 16.2.
   than no entry at all fails the last clause, and that is the point: it is also what would let § 7.1
   write an empty day to disk.
 - [x] 5.4 `taking back the last addition leaves the same commitment's other days standing`
-- [ ] 5.5 `taking back the last addition leaves another commitment's day standing`
-- [ ] 5.6 `taking back where the day holds no addition leaves the history unchanged` — three cases: a
+- [x] 5.5 `taking back the last addition leaves another commitment's day standing`
+- [x] 5.6 `taking back where the day holds no addition leaves the history unchanged` — three cases: a
   day with nothing on it, a commitment of the wrong kind, and a date it is not due on. None is an
   error.
 - [ ] 5.7 `a history given additions and taken back one by one is the same as one never given any` —

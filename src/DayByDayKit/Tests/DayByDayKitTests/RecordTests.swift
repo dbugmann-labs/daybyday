@@ -1897,3 +1897,47 @@ func takingBackTheLastAdditionLeavesTheSameCommitmentsOtherDaysStanding() {
     #expect(history.total(for: protein, on: saturday) == 45)
     #expect(history.total(for: protein, on: monday) == 0)
 }
+
+@Test("taking back the last addition leaves another commitment's day standing")
+func takingBackTheLastAdditionLeavesAnotherCommitmentsDayStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let water = Commitment(
+        name: "Water", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45, for: water, on: monday)!)
+    history.removeLastAddition(for: protein, on: monday)
+
+    #expect(history.total(for: water, on: monday) == 45)
+    #expect(history.total(for: protein, on: monday) == 0)
+}
+
+@Test("taking back where the day holds no addition leaves the history unchanged")
+func takingBackWhereTheDayHoldsNoAdditionLeavesTheHistoryUnchanged() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let tickKind = Commitment(name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    var history = History()
+    history.add(Addition(30, for: protein, on: saturday)!)
+    let historyBefore = history
+
+    history.removeLastAddition(for: protein, on: monday)
+    #expect(history == historyBefore)
+
+    history.removeLastAddition(for: tickKind, on: saturday)
+    #expect(history == historyBefore)
+
+    history.removeLastAddition(for: protein, on: tuesday)
+    #expect(history == historyBefore)
+}
