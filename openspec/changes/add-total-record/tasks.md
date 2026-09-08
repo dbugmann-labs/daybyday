@@ -169,7 +169,7 @@ kept.
   the day answers 150 rather than 120. An implementation clamping the sum at the target passes the
   first clause and fails the second.
 - [x] 6.5 `a total commitment is kept on one day and not on another from each day's own additions`
-- [ ] 6.6 *(not a new test)* Confirm the archived scenario `a commitment of the note kind and one of
+- [x] 6.6 *(not a new test)* Confirm the archived scenario `a commitment of the note kind and one of
   the total kind were not kept on a date they are due on` is still green and its body unchanged: its
   total clause asks a history holding no addition, which is still *not kept*. If it is red, the kept
   rule reads the wrong way round; that is a rule-5 stop, not a test to update.
@@ -218,7 +218,7 @@ suite before writing a test; then one scenario at a time as above.
   taken back`
 - [x] 7.8 `an addition that cannot be kept is refused and not held` — the unwritable place, and the
   store's history left as it was.
-- [ ] 7.9 `a store holding what could not be an addition is refused` — a hand-written form-5 fixture,
+- [x] 7.9 `a store holding what could not be an addition is refused` — a hand-written form-5 fixture,
   five ways: zero, a negative amount, the wrong kind, a date it is not due on, and a day carrying an
   empty list of amounts. All five come from `formAdditions()` returning `nil`, so expect this green
   once 7.1 is in; a red test is a finding.

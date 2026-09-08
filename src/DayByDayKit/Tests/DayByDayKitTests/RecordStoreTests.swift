@@ -1654,3 +1654,157 @@ func aStoreWhoseShapeAndDeclaredFormDisagreeAboutAdditionsIsRefused() throws {
             == currentFormWithoutAdditionsBytes)
     #expect(try Data(contentsOf: earlyFormNeitherPlace) == earlyFormNeitherBytes)
 }
+
+@Test("a store holding what could not be an addition is refused")
+func aStoreHoldingWhatCouldNotBeAnAdditionIsRefused() throws {
+    let zeroPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: zeroPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let zeroBytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [],
+          "numbers": [],
+          "notes": [],
+          "additions": [
+            {
+              "commitment": {
+                "name": "Protein",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "total": { "target": 120 } }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "amounts": [0]
+            }
+          ]
+        }
+        """.utf8)
+    try zeroBytes.write(to: zeroPlace)
+
+    let negativePlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: negativePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let negativeBytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [],
+          "numbers": [],
+          "notes": [],
+          "additions": [
+            {
+              "commitment": {
+                "name": "Protein",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "total": { "target": 120 } }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "amounts": [-30]
+            }
+          ]
+        }
+        """.utf8)
+    try negativeBytes.write(to: negativePlace)
+
+    let wrongKindPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: wrongKindPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let wrongKindBytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [],
+          "numbers": [],
+          "notes": [],
+          "additions": [
+            {
+              "commitment": {
+                "name": "Protein",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "tick": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "amounts": [30]
+            }
+          ]
+        }
+        """.utf8)
+    try wrongKindBytes.write(to: wrongKindPlace)
+
+    let notDuePlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: notDuePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let notDueBytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [],
+          "numbers": [],
+          "notes": [],
+          "additions": [
+            {
+              "commitment": {
+                "name": "Protein",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "total": { "target": 120 } }
+              },
+              "date": { "year": 2026, "month": 9, "day": 1 },
+              "amounts": [30]
+            }
+          ]
+        }
+        """.utf8)
+    try notDueBytes.write(to: notDuePlace)
+
+    let emptyDayPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: emptyDayPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let emptyDayBytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [],
+          "numbers": [],
+          "notes": [],
+          "additions": [
+            {
+              "commitment": {
+                "name": "Protein",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "total": { "target": 120 } }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "amounts": []
+            }
+          ]
+        }
+        """.utf8)
+    try emptyDayBytes.write(to: emptyDayPlace)
+
+    #expect(throws: RecordStoreError.notAStore(at: zeroPlace)) {
+        try RecordStore(at: zeroPlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: negativePlace)) {
+        try RecordStore(at: negativePlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: wrongKindPlace)) {
+        try RecordStore(at: wrongKindPlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: notDuePlace)) {
+        try RecordStore(at: notDuePlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: emptyDayPlace)) {
+        try RecordStore(at: emptyDayPlace)
+    }
+    #expect(try Data(contentsOf: zeroPlace) == zeroBytes)
+    #expect(try Data(contentsOf: negativePlace) == negativeBytes)
+    #expect(try Data(contentsOf: wrongKindPlace) == wrongKindBytes)
+    #expect(try Data(contentsOf: notDuePlace) == notDueBytes)
+    #expect(try Data(contentsOf: emptyDayPlace) == emptyDayBytes)
+}
