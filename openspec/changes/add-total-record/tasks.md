@@ -333,12 +333,12 @@ what catches.
 - [x] 12.4 `an addition past the target keeps the day and says the true sum`
 - [x] 12.5 `an addition entered on a day screen is held by a day screen opened afterwards at the same
   place`
-- [ ] 12.6 `an addition that cannot be kept is refused and leaves the day view as it was`
-- [ ] 12.7 `committing nothing at all in a total entry keeps nothing and takes nothing back` — empty,
+- [x] 12.6 `an addition that cannot be kept is refused and leaves the day view as it was`
+- [x] 12.7 `committing nothing at all in a total entry keeps nothing and takes nothing back` — empty,
   two spaces and three line breaks, none of which may remove the last addition. The box that fails an
   implementation reusing the note branch's `Blank.saysNothing` → take-back shape.
-- [ ] 12.8 `adding on a row the day screen's day view does not hold changes nothing`
-- [ ] 12.9 `committing on a row that offers no total entry changes nothing`
+- [x] 12.8 `adding on a row the day screen's day view does not hold changes nothing`
+- [x] 12.9 `committing on a row that offers no total entry changes nothing`
 - [ ] 12.10 `a commit is read as the entry the row it was made on offers, for all four kinds` — "120"
   on each of the four rows in turn: nothing, the number 120, the note "120", and "120 of 120". A
   screen that read the text before asking the row fails it.
