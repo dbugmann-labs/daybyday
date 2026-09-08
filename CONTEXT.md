@@ -568,14 +568,23 @@ caller's to remember; the day view keeps the answer. Corrected 2026-09-02 at #70
 requirement had claimed identity followed the arguments.
 
 **Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). A day view draws its rows
-in **groups**, one per **category**, and this is the one ordering it makes that is not the order it
-was handed: a group sits where its first commitment sits in that order, and the commitments under no
-category come last, under no heading. It is not a rule the day view invented — the order is still
-the person's, read off the roster, and grouping by anything the system worked out was refused for
-the reason it has always been refused. A group whose commitments are none of them due is not drawn
-at all, because a day view shows what a date asks of you and an empty heading would be a claim about
-the day rather than about what a person keeps. A day view still changes nothing: the groups are
-drawn, and the gesture that sets a category is the **commitments screen**'s.
+in **groups**, one per **category**: a group sits where its first commitment sits in the person's
+order, and the commitments under no category come last, under no heading. It is not a rule the day
+view invented — the order is still the person's, read off the roster, and grouping by anything the
+system worked out was refused for the reason it has always been refused. A group whose commitments
+are none of them due is not drawn at all, because a day view shows what a date asks of you and an
+empty heading would be a claim about the day rather than about what a person keeps. A day view still
+changes nothing: the groups are drawn, and the gesture that sets a category is the **commitments
+screen**'s.
+
+**Corrected 2026-09-08**, while the delta of #147 was being written. The amendment above first
+called the grouping *"the one ordering it makes that is not the order it was handed"*, and a day view
+makes none: it is **handed** its commitments already in groups, by the **roster** that holds both the
+order and the categories, and draws them in the order it was handed them. Placing a group is the
+roster's rule and so is putting the uncategorised last; the day view's own contribution is the one
+thing about a date — a group with nothing due is not drawn. That leaves *"a day view orders nothing
+of its own"* true without an exception, which is what ADR-1038 records and what let the requirement
+saying so stay out of #147's delta entirely.
 
 **Row** — one commitment's line in a day view: its name, the **rhythm in words** it runs on, whether
 it is kept, and the place a tick is made. Ticking belongs to the row and therefore to `day-screen`:
