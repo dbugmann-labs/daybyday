@@ -142,7 +142,7 @@ Ten scenarios across the three MODIFIED store requirements, all in
 `Tests/DayByDayKitTests/RecordStoreTests.swift`. Do 7.1 first as one mechanical step and verify the
 suite before writing a test; then one scenario at a time as above.
 
-- [ ] 7.1 In `Sources/DayByDayKit/RecordDocument.swift`, add `NoteRecord` — `commitment`, `date` and
+- [x] 7.1 In `Sources/DayByDayKit/RecordDocument.swift`, add `NoteRecord` — `commitment`, `date` and
   `text` — conforming to `DatedCommitmentRecord` so it sorts on the same five-part key; give
   `RecordDocument` a `notes` field, move `currentVersion` from `3` to `4`, and add
   `notesIntroducedInVersion = 4` beside `numbersIntroducedInVersion`. `formNotes()` re-forms every
@@ -153,26 +153,26 @@ suite before writing a test; then one scenario at a time as above.
   is not edited** — the roster store shares it and does not move. `swift test` reports no new failures
   after this box beyond whatever § 1.2's count already was plus the tests §§ 3–6 added; a red test
   among the ones already passing is a rule-5 stop.
-- [ ] 7.2 `a note added to a store is held by a second store opened at the same place while the first
+- [x] 7.2 `a note added to a store is held by a second store opened at the same place while the first
   is still open`
-- [ ] 7.3 `a note taken back is not held by a store opened afterwards at the same place`
-- [ ] 7.4 `a note written again is kept once by a store opened afterwards, as the later note`
-- [ ] 7.5 `a note is read back exactly as it was written, whatever it contains` — six notes through a
+- [x] 7.3 `a note taken back is not held by a store opened afterwards at the same place`
+- [x] 7.4 `a note written again is kept once by a store opened afterwards, as the later note`
+- [x] 7.5 `a note is read back exactly as it was written, whatever it contains` — six notes through a
   real file, compared **as characters and not only as equal strings**: the clause about a plain
   letter followed by a separate accent mark is the one that fails an implementation reaching for
   `precomposedStringWithCanonicalMapping`, and Swift's own `==` will not catch it because it compares
   canonically (`design.md` § *Context* measurement 4). Assert on `Array(text.unicodeScalars)`.
-- [ ] 7.6 `a store opened again holds exactly the ticks, numbers and notes added and not taken back`
-- [ ] 7.7 `a note that cannot be kept is refused and not held` — the unwritable place, and the store's
+- [x] 7.6 `a store opened again holds exactly the ticks, numbers and notes added and not taken back`
+- [x] 7.7 `a note that cannot be kept is refused and not held` — the unwritable place, and the store's
   history left as it was.
-- [ ] 7.8 `a store holding a note that could not be a note is refused` — a hand-written form-4
+- [x] 7.8 `a store holding a note that could not be a note is refused` — a hand-written form-4
   fixture, three ways: a blank text, the wrong kind, and a date it is not due on. All three come from
   `formNotes()` returning `nil`, so expect this green once 7.1 is in; a red test is a finding.
-- [ ] 7.9 `a history kept before a day could hold a note is read, and no day in it holds a note` — a
+- [x] 7.9 `a history kept before a day could hold a note is read, and no day in it holds a note` — a
   form-3 fixture. Expect green once 7.1 is in: the version guard reads `1...4`.
-- [ ] 7.10 `a note added over a history kept before a day could hold a note is read back beside the
+- [x] 7.10 `a note added over a history kept before a day could hold a note is read back beside the
   records already there` — a form-3 fixture written over, then reopened at form 4.
-- [ ] 7.11 `a store whose shape and declared form disagree about notes is refused` — both directions,
+- [x] 7.11 `a store whose shape and declared form disagree about notes is refused` — both directions,
   plus the third clause that is the real point: a **form-2** fixture holding neither numbers nor
   notes must still be read without error. That clause is what fails a guard written against
   `currentVersion` instead of against each field's own introduced-at constant, which is the mistake

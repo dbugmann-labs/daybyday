@@ -12,7 +12,7 @@ import Foundation
 struct RecordDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 3
+    static let currentVersion = 4
 
     /// The form `numbers` was introduced at: forms at or after this one carry the key, forms
     /// before it never do. Kept apart from `currentVersion` on purpose — a fourth form would move
@@ -20,6 +20,11 @@ struct RecordDocument: Codable {
     /// guard reads against this constant precisely so raising `currentVersion` alone cannot
     /// silently change which forms are expected to carry `numbers`.
     static let numbersIntroducedInVersion = 3
+
+    /// The form `notes` was introduced at, on the same footing as `numbersIntroducedInVersion`:
+    /// judged against the form each part was first written at, never against whichever form
+    /// happens to be the newest (`design.md` § *The form on disk moves to 4*).
+    static let notesIntroducedInVersion = 4
 
     var version: Int
     var ticks: [TickRecord]
@@ -31,6 +36,10 @@ struct RecordDocument: Codable {
     /// an `Optional` property and omits the key on encoding one, both without help here.
     var numbers: [NumberRecord]?
 
+    /// `nil` exactly when the document held no `notes` key at all — forms 1 through 3 never write
+    /// one, on the same footing as `numbers` above.
+    var notes: [NoteRecord]?
+
     /// Builds the document that exactly represents `ticks` and `numbers`, in the stable order
     /// `design.md` fixes: by commitment name, then kept-from day, then date, then schedule, then
     /// kind as the final tiebreaker — so two equal sets of ticks and numbers produce
@@ -40,7 +49,7 @@ struct RecordDocument: Codable {
     /// kept-from day) can each hold a number on the same date and tie on the first four, which is
     /// what `kind` is for. A tick's commitment is always of the tick kind, so `kind` never
     /// actually discriminates two ticks.
-    init(_ ticks: Set<Tick>, _ numbers: [RecordedDay: Decimal]) {
+    init(_ ticks: Set<Tick>, _ numbers: [RecordedDay: Decimal], _ notes: [RecordedDay: String]) {
         version = Self.currentVersion
         self.ticks = ticks.map(TickRecord.init).sorted(by: Self.isOrderedBefore)
         self.numbers = numbers
@@ -49,6 +58,14 @@ struct RecordDocument: Codable {
                     commitment: CommitmentRecord($0.key.commitment),
                     date: DateRecord($0.key.date),
                     number: $0.value)
+            }
+            .sorted(by: Self.isOrderedBefore)
+        self.notes = notes
+            .map {
+                NoteRecord(
+                    commitment: CommitmentRecord($0.key.commitment),
+                    date: DateRecord($0.key.date),
+                    text: $0.value)
             }
             .sorted(by: Self.isOrderedBefore)
     }
@@ -82,6 +99,20 @@ struct RecordDocument: Codable {
                 return nil
             }
             result.append(number)
+        }
+        return result
+    }
+
+    /// Re-forms every note this document holds, exactly as `formNumbers()` does for numbers. `nil`
+    /// here means one of the notes present could not be formed — the whole document refused, not
+    /// the bad ones dropped.
+    func formNotes() -> [Note]? {
+        var result: [Note] = []
+        for record in notes ?? [] {
+            guard let note = record.formed() else {
+                return nil
+            }
+            result.append(note)
         }
         return result
     }
@@ -173,5 +204,18 @@ struct NumberRecord: Codable, DatedCommitmentRecord {
             return nil
         }
         return Number(number, for: commitment, on: date)
+    }
+}
+
+struct NoteRecord: Codable, DatedCommitmentRecord {
+    var commitment: CommitmentRecord
+    var date: DateRecord
+    var text: String
+
+    func formed() -> Note? {
+        guard let commitment = commitment.commitment(), let date = date.calendarDate() else {
+            return nil
+        }
+        return Note(text, for: commitment, on: date)
     }
 }

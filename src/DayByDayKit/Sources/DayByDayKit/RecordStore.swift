@@ -11,6 +11,7 @@ public final class RecordStore {
     /// a write needs that `history` itself cannot give back out.
     private var ticks: Set<Tick>
     private var numbers: [RecordedDay: Decimal]
+    private var notes: [RecordedDay: String]
 
     /// Opens the store kept at `place`, reading what is there. A place where nothing has been
     /// kept opens empty; a place holding something that cannot be read as a store throws.
@@ -20,6 +21,7 @@ public final class RecordStore {
         guard FileManager.default.fileExists(atPath: place.path) else {
             self.ticks = []
             self.numbers = [:]
+            self.notes = [:]
             self.history = History()
             return
         }
@@ -39,17 +41,21 @@ public final class RecordStore {
             throw RecordStoreError.notAStore(at: place)
         }
         // Each form is read as the shape that form has, per `design.md` § *Each form is read as
-        // the shape that form has*: the `numbers` field is present at the form that introduced it
-        // and at every form since, so its presence must agree with the declared version in both
-        // directions. Checked against `numbersIntroducedInVersion`, not `currentVersion` — the two
-        // agree today only because form 3 is both, and a later form raising `currentVersion` alone
-        // must not move which forms this check accepts.
+        // the shape that form has*: the `numbers` and `notes` fields are each present at the form
+        // that introduced them and at every form since, so their presence must agree with the
+        // declared version in both directions. Checked against each field's own
+        // `...IntroducedInVersion` constant, not `currentVersion` — judged against the form each
+        // part was first written at, never against whichever form happens to be the newest.
         guard (document.numbers != nil)
-            == (document.version >= RecordDocument.numbersIntroducedInVersion)
+            == (document.version >= RecordDocument.numbersIntroducedInVersion),
+            (document.notes != nil)
+                == (document.version >= RecordDocument.notesIntroducedInVersion)
         else {
             throw RecordStoreError.notAStore(at: place)
         }
-        guard let ticks = document.formTicks(), let formedNumbers = document.formNumbers() else {
+        guard let ticks = document.formTicks(), let formedNumbers = document.formNumbers(),
+            let formedNotes = document.formNotes()
+        else {
             throw RecordStoreError.notAStore(at: place)
         }
 
@@ -64,6 +70,12 @@ public final class RecordStore {
             history.add(number)
         }
         self.numbers = numbers
+        var notes: [RecordedDay: String] = [:]
+        for note in formedNotes {
+            notes[RecordedDay(commitment: note.commitment, date: note.date)] = note.text
+            history.add(note)
+        }
+        self.notes = notes
         self.history = history
     }
 
@@ -75,7 +87,7 @@ public final class RecordStore {
     public func add(_ tick: Tick) throws {
         var nextTicks = ticks
         nextTicks.insert(tick)
-        try write(nextTicks, numbers)
+        try write(nextTicks, numbers, notes)
 
         ticks = nextTicks
         history.add(tick)
@@ -84,7 +96,7 @@ public final class RecordStore {
     public func remove(_ tick: Tick) throws {
         var nextTicks = ticks
         nextTicks.remove(tick)
-        try write(nextTicks, numbers)
+        try write(nextTicks, numbers, notes)
 
         ticks = nextTicks
         history.remove(tick)
@@ -94,7 +106,7 @@ public final class RecordStore {
     public func add(_ number: Number) throws {
         var nextNumbers = numbers
         nextNumbers[RecordedDay(commitment: number.commitment, date: number.date)] = number.number
-        try write(ticks, nextNumbers)
+        try write(ticks, nextNumbers, notes)
 
         numbers = nextNumbers
         history.add(number)
@@ -103,18 +115,41 @@ public final class RecordStore {
     public func removeNumber(for commitment: Commitment, on date: CalendarDate) throws {
         var nextNumbers = numbers
         nextNumbers[RecordedDay(commitment: commitment, date: date)] = nil
-        try write(ticks, nextNumbers)
+        try write(ticks, nextNumbers, notes)
 
         numbers = nextNumbers
         history.removeNumber(for: commitment, on: date)
     }
 
-    /// Writes `nextTicks` and `nextNumbers` as the whole document, in the byte-stable form
-    /// `design.md` § *The form on disk* fixes: `.sortedKeys` so a keyed container's keys do not
-    /// follow Foundation's per-process hash order, on top of `RecordDocument`'s own stable order,
-    /// so two equal sets of ticks and numbers always produce byte-identical files.
-    private func write(_ nextTicks: Set<Tick>, _ nextNumbers: [RecordedDay: Decimal]) throws {
-        let document = RecordDocument(nextTicks, nextNumbers)
+    /// Kept at `place` before this returns; on failure throws and leaves `history` as it was.
+    public func add(_ note: Note) throws {
+        var nextNotes = notes
+        nextNotes[RecordedDay(commitment: note.commitment, date: note.date)] = note.text
+        try write(ticks, numbers, nextNotes)
+
+        notes = nextNotes
+        history.add(note)
+    }
+
+    public func removeNote(for commitment: Commitment, on date: CalendarDate) throws {
+        var nextNotes = notes
+        nextNotes[RecordedDay(commitment: commitment, date: date)] = nil
+        try write(ticks, numbers, nextNotes)
+
+        notes = nextNotes
+        history.removeNote(for: commitment, on: date)
+    }
+
+    /// Writes `nextTicks`, `nextNumbers` and `nextNotes` as the whole document, in the
+    /// byte-stable form `design.md` § *The form on disk* fixes: `.sortedKeys` so a keyed
+    /// container's keys do not follow Foundation's per-process hash order, on top of
+    /// `RecordDocument`'s own stable order, so two equal sets of ticks, numbers and notes always
+    /// produce byte-identical files.
+    private func write(
+        _ nextTicks: Set<Tick>, _ nextNumbers: [RecordedDay: Decimal],
+        _ nextNotes: [RecordedDay: String]
+    ) throws {
+        let document = RecordDocument(nextTicks, nextNumbers, nextNotes)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
 
