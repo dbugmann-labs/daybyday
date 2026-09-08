@@ -443,6 +443,40 @@ shape it lacks, not the quota.
   need somewhere to put a name and a rhythm, and if it is this form then this want is the screen that
   Story lands in rather than a thing of its own.
 
+### B-038 — get to the day before or after without aiming at a chevron
+*Captured 2026-09-08.*
+
+> "Swiping left / right on a day should move the day"
+
+- **Trigger** — every visit that looks at a day other than the one the app opened on: checking
+  whether yesterday was ticked, moving forward to see what tomorrow asks. Today that movement is
+  two chevrons at the top of the list, `ContentView.swift:108` and `:117`, each calling
+  `screen.showPreviousDay()` or `screen.showNextDay()`.
+- **Touches** — `day-screen` (#27), and possibly nothing but the app shell. The two methods a swipe
+  would call are already public and already wired to the chevrons, which is the `chore/draw-kept`
+  reading — and the spec has already anticipated a gesture without requiring one: *What a day screen
+  tells on a row lasts until…* says the rule "SHALL be the day being shown **changing** and never
+  the gesture that was made". So the kit may owe nothing at all here, which would make this the
+  second chore-shaped want after B-028 and B-035, both of which are still arguing the same
+  Story-or-chore question.
+- **Principle** — tested against *an iPhone, in your hand*: **passes, and sharply.** Two small
+  targets at the top of a list are a reach on a phone held one-handed; a swipe across the screen is
+  the same movement in the idiom the device already has. It adds no screen and no navigation — it
+  is a second way into navigation that already exists. Tested against *five percent of seven
+  things*: **fails** — it deepens a screen that works rather than making a new record possible.
+  Both are written down because the second is why a pass might reasonably not take it.
+- **Open** — does the swipe replace the chevrons or sit beside them? A gesture with no visible
+  control is a movement nobody is told about, and B-028 is already about a navigation control that
+  should not be drawn; the two want reading together.
+- **Open** — the day screen's rows sit in a `List` and nothing on it uses `swipeActions` today, but
+  B-030 groups those rows and #145/#146 put swipe-shaped roster operations on the *other* screen. A
+  horizontal swipe claimed by the screen is a swipe a row can never claim later, and that ordering
+  is worth deciding before it is spent.
+- **Open** — which way is forward? Swiping left to move to the next day and swiping left to drag
+  the day leftwards are opposite mappings, and both are common enough that only the owner can say.
+- **Open** — it makes the day that has not arrived one thumb-flick away rather than one tap, which
+  sharpens B-035 rather than changing it.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
