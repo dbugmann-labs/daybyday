@@ -74,16 +74,16 @@ date (`design.md` § *Why the row's answer is derived from the offers and not fr
 thing on a day that has arrived — `design.md` § *Risks* says so out loud. Write it as the four offers
 anyway: that is what the requirement says is normative, and it is what a fifth kind will inherit.
 
-- [ ] 3.1 `a row of every kind offers something on a day that has arrived` — adds the member, over
+- [x] 3.1 `a row of every kind offers something on a day that has arrived` — adds the member, over
   `tick(asOf:)`, `numberEntry(asOf:)`, `noteEntry(asOf:)` and `totalEntry(asOf:)`.
-- [ ] 3.2 `no row of a day view whose date has not arrived offers anything`
-- [ ] 3.3 `a row for a date earlier than the day it is asked as of offers something`
-- [ ] 3.4 `a row's answer about offering anything follows the day it is asked as of`
-- [ ] 3.5 `a row offers something whether or not its day says the commitment is kept`
-- [ ] 3.6 `a total row whose day holds no addition offers something` — the take-back is not a fifth
+- [x] 3.2 `no row of a day view whose date has not arrived offers anything`
+- [x] 3.3 `a row for a date earlier than the day it is asked as of offers something`
+- [x] 3.4 `a row's answer about offering anything follows the day it is asked as of`
+- [x] 3.5 `a row offers something whether or not its day says the commitment is kept`
+- [x] 3.6 `a total row whose day holds no addition offers something` — the take-back is not a fifth
   thing asked about. If `offersTakeBackLast(asOf:)` appears in the implementation, stop: it can
   change no answer, and consulting it would make a row's tappability depend on the history.
-- [ ] 3.7 `a row offers something on its own date in the first supported year and in the last`
+- [x] 3.7 `a row offers something on its own date in the first supported year and in the last`
 
 ## 4. The app shell and the smoke layer
 

@@ -164,6 +164,13 @@ public struct DayView: Hashable, Sendable {
         public func offersTakeBackLast(asOf today: CalendarDate) -> Bool {
             totalEntry(asOf: today) != nil && total > 0
         }
+
+        /// Whether this row offers anything at all as of `today`: a tick, a number entry, a
+        /// note entry or a total entry. Read off those four and never off the date.
+        public func offersAnything(asOf today: CalendarDate) -> Bool {
+            tick(asOf: today) != nil || numberEntry(asOf: today) != nil
+                || noteEntry(asOf: today) != nil || totalEntry(asOf: today) != nil
+        }
     }
 
     /// What this day view says its day is: the weekday, the day of the month, the month and the
