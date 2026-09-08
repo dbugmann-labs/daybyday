@@ -125,6 +125,15 @@ shape it lacks, not the quota.
   tick, a line for a number — and B-008's principle test travels with it: a count is one step
   from a streak, and it stays on the right side only while it is looked at deliberately and
   never shown unasked. B-008's other half, navigating to a past day, is B-016.
+- **Open** — *folded in 2026-09-08, at the grill of `add-note-record` (#140), at the owner's
+  direction rather than from a want of his own, so there is nothing to quote.* That grill settled
+  that a row says **nothing** about a note: a note is reachable only through the entry its row
+  offers, so the only way to read what you wrote on Tuesday is to move to Tuesday and open that
+  row's field. Nothing in the product draws a note anywhere else, and nothing is planned to. The
+  note is therefore a third thing this page would be for, beside the count for a tick and the line
+  for a number the Open above already names — and it is the one that is least like an aggregate,
+  because what you want back is the words themselves rather than a shape they add up to. Whether
+  that is the same page or a different one is part of what "a page *per* what" has to settle.
 
 ### B-009 — carry my history to a new phone
 *Captured 2026-08-28, migrated 2026-09-02.*
@@ -215,59 +224,25 @@ shape it lacks, not the quota.
 - **Re-judged 2026-09-06** — stands, and sharper: yuno 5× a week leaves two spare days where reading
   left four, so *is tonight one of them* is asked on more days, and a row that says the same thing
   all seven is wrong on more of them.
+- **Said again 2026-09-07, in the owner's own words.** The wording above is the sweep's; this is
+  the first time the want has been stated by the person who has it, and it names a form:
 
-### B-028 — not be offered a way back to a day I am already on
+  > "For the commitments that have the "n times a week" shape, it currently says something like "3x
+  > a week" next to the commitment. However, I would like to know how many times it was already
+  > kept this week (something like 1/3x a week)"
 
-*Captured 2026-09-04, from the repo owner running #93's shell on the Simulator.*
-
-> "the "Today" button should not exist when I am looking at today, because there is nowhere to
-> route to."
-
-- **Trigger** — every time the app opens, which is the common case: a day screen lands on today
-  and the control that returns it there has nothing to do.
-- **Touches** — `day-screen` (#27). It needs a **new answer from `DayScreen`** — whether the day
-  it is showing is the today it was handed — which `add-screen-navigation` (#93) deliberately does
-  not give. That is what makes it a Story rather than a chore, and it is the exact opposite of the
-  kept-flag entry at the head of *Decided*, which became `chore/draw-kept` precisely because
-  `Row.isKept` was already public and drawing it carried no requirement. Nothing public here can
-  be drawn from, and the shell may not work it out for itself (`CONTEXT.md` § *App shell*).
-- **Principle** — tested against *Entered where you stand*: passes, and unusually it passes by
-  subtraction. The day screen is where every daily visit happens, so a control that does nothing
-  on the day you land on is clutter in the one place the principle protects. It removes
-  interaction rather than adding a screen.
-- **Open** — hidden, or present but disabled? Hiding removes a target; disabling keeps the layout
-  from moving under a thumb as the day changes. The want says "should not exist", which reads as
-  hidden, but it was said about a button that also looked tickable, and that half was fixed
-  separately under #93's task 3.1.
-- **Open** — this does **not** reopen why #93 left the calendar's ends silent. `design.md` §
-  *Why the ends are silent* refused `canShowPreviousDay` on the grounds that it would answer
-  `true` on every day anyone will ever look at. *Am I showing my today?* genuinely varies, so the
-  argument does not carry across — but whoever grills this should say so out loud rather than
-  letting the two look alike.
-
-### B-030 — see the day's commitments in separated groups rather than one list
-*Captured 2026-09-04. Said under the heading "Categories:", with B-029.*
-
-> "Categories should be separated on the screen"
-
-- **Trigger** — every daily visit, on the screen the app opens on.
-- **Touches** — `day-screen` (#27), and B-029 for the key it would group by. `CONTEXT.md` § *Day
-  view* says a day view *"orders nothing of its own … in the order it was handed them"*, so
-  grouping is either a second ordering it is newly allowed to make, or something the caller does
-  before handing the rows over — and the roster's own order is the order things were taken on.
-- **Principle** — tested against *an iPhone, in your hand*: **passes**, and it is the want the
-  phone judges most sharply. "supplements and habits daily" is one line of the day-one week and a
-  dozen rows on a small screen; separation is what stops that scroll reading as one undifferentiated
-  list. It adds no screen and no navigation.
-- **Open** — which screen? The braindump says "the screen". The day screen (#27) is where the five
-  daily visits happen; `add-commitments-screen` (#104) is the list a person manages commitments
-  through. Both are candidates, only one is a capability that orders anything today, and wanting it
-  in both is a plausible answer.
-- **Open** — what order do the groups come in, and where does a commitment in no category go?
-- **Open** — does a group with nothing due today appear at all, appear empty, or vanish? A day view
-  already shows only what is due, so an empty group is a claim about the day rather than about the
-  commitments a person keeps.
-- **Open** — cannot be taken before B-029: without it there is no key to group by.
+- **Touches, from that wording** — the string it wants changed is `schedule`'s, not a screen's.
+  *A schedule says the rhythm it runs on in words* and *A weekly-quota schedule is said as a number
+  of times a week* are what produce "3x a week", and neither has ever been given a history. "1/3x a
+  week" is that string with a count of kept days put inside it, so either those words stop being the
+  schedule's alone or the count is drawn beside them and the words are left as they are. They are
+  said in two places since #144 — the commitments screen entry (`CommitmentsView`) and the day
+  screen row (`ContentView`) — and "next to the commitment" does not say which is meant, or whether
+  both are.
+- **Open, from that wording** — it asks for "how many times it was already kept", which is the
+  achieved side of the line the *Principle* above draws, and "one to go" is the asked side. The want
+  is now on record in the form that principle warns about. Whichever pass takes it has to put that
+  choice to the owner rather than quietly pick the safe half.
 
 ### B-032 — start a weight entry from the last weight I gave
 *Captured 2026-09-06.*
@@ -322,12 +297,124 @@ shape it lacks, not the quota.
 - **Open** — the *Decided* line of 2026-09-06 already sends the mood's one tap to the Story that
   enters a number (#139). This entry is that line's missing half: what the affordance actually is.
 
+### B-036 — build a rhythm without being told what it will say
+*Captured 2026-09-07.*
+
+> "The "preview" text when creating a commitment is not needed"
+
+- **Trigger** — every time a commitment is defined. The line sits under the rhythm controls for as
+  long as the form is open, and says what the controls immediately above it are already showing.
+- **Touches** — `commitment` (#26). It asks for a **shipped requirement to be taken back** rather
+  than for something new: *A commitments screen says in words the rhythm its form is building*, five
+  scenarios in `openspec/specs/commitment/spec.md`, drawn by `CommitmentsView.swift:167`. B-028 is
+  the nearest thing already captured and is not the same shape — it narrows when a control appears,
+  this deletes a requirement. Removing it is a delta on `commitment`, so it serialises behind the
+  #144–#148 chain and #142, which all delta that spec (`docs/process.md` §7). The words themselves
+  stay: the list entry says them, and B-025 wants more of them.
+- **Principle** — tested against *an iPhone, in your hand*: **passes by subtraction.** The form is a
+  name, a picker, up to seven toggles, a date and a button on a phone screen, and this is the one
+  row of it a person reads nothing new from.
+- **Open** — the preview earned its place on an argument still on the record: it exists "so that a
+  person reads what their rhythm will say before they commit to it". The owner has now used the form
+  and does not want it, which is evidence that argument did not survive contact — but nobody has said
+  whether that holds for all four rhythm shapes. A weekday set reads off its own toggles; "The 25th"
+  and "Every 14 days" are assembled from a stepper and a number field and arguably do not.
+- **Open** — that same requirement is the only place a rhythm the screen would refuse is described:
+  an empty weekday set says "No day", and a number no schedule can be built on says nothing at all.
+  Deleting the preview deletes both, and the screen then says nothing about such a rhythm until the
+  refusal at define time.
+
+### B-037 — reach the commitment form when I want it, not always under the list
+*Captured 2026-09-07.*
+
+> "Creation of a commitment is not needed as a fixed part of the commitment screen, it should be a
+> button which then opens the commitment creation screen"
+
+- **Trigger** — every visit to the commitments screen, most of which are to read or change what is
+  already kept rather than to add something. The form is a permanent section below both lists, so
+  every one of those visits scrolls past all of it.
+- **Touches** — `commitment` (#26). *A commitments screen defines a commitment from a name, a rhythm
+  and the day it is kept from* says what defining takes and what the roster does with it, and says
+  nothing about where the form sits — so whether this is a delta at all or a shell change under
+  `CONTEXT.md` § *App shell* is the first thing a grill would settle. If it is a delta it serialises
+  behind the #144–#148 chain (`docs/process.md` §7). It moves the same section B-036 wants a line out
+  of, so the two want reading together, and one of them may make the other free.
+- **Principle** — tested against *entered where you stand*: **passes, and it is that principle's own
+  exemption.** A want that puts a second screen in front of something usually loses here, but the
+  rule is about the five daily visits and defining a commitment is not one of them. The principle
+  says as much itself — "a screen for *looking* is not a daily visit and is not what this rules out"
+  — and a screen for defining is the same kind of rare, deliberate act.
+- **Open** — a pushed screen, or a sheet? The want says "screen"; on a phone a sheet is the cheaper
+  thing that reads the same way, and it is a real choice rather than an implementation detail,
+  because a sheet keeps the list behind it and a screen does not.
+- **Open** — does the form behind that button also serve editing? #148 `add-commitment-editing` will
+  need somewhere to put a name and a rhythm, and if it is this form then this want is the screen that
+  Story lands in rather than a thing of its own.
+
+### B-039 — be reminded to record a day before it is gone
+*Captured 2026-09-08, from the sixth grooming sweep. The wording is the sweep's.*
+
+> "Be reminded to record a day before it is gone — every line of the week depends on remembering
+> to open the app."
+
+- **Trigger** — a day that ends unopened. All nine lines of the day-one week are recorded only if
+  the app is opened, and the failure the whole product is built against is *"a gap a few days old
+  that cannot be reconstructed"* (`docs/open-questions.md` § *Settled*, 2026-08-29).
+- **Touches** — unclaimed, and probably nothing that exists. No capability holds a clock: ADR-1004
+  says a commitment due "at 07:00" would be *"a notification concern, not a due-ness"* one, which
+  parks the idea without deciding it. `EPIC: Daily commitments` (#1) does not exclude it, unlike
+  graphs, restore and prefill.
+- **Principle** — tested against *nothing congratulates you*: **passes on the letter and strains on
+  the spirit.** A reminder is not a streak and celebrates nothing, but the same settled note that
+  makes this want urgent also says what disqualifies Apple Reminders on its own terms — it *"nags
+  and forgets"*. This product is the half that does not forget; whether it may also be the half
+  that nags is the question, and it is the owner's alone.
+- **Open** — is this a notification at all, or something quieter: a badge, or a day screen that
+  says the last day you recorded nothing on? The want is "do not lose a day", and a notification is
+  only the loudest of the answers to it.
+- **Open** — per commitment, or per day? "creatine daily" and "finances every 25th" ask for
+  different things: one is a time of day, the other is a date that comes round once a month and is
+  easy to miss entirely.
+- **Open** — a time of day is a thing no schedule holds. ADR-1004 bounded the rule engine to
+  calendar dates on purpose, so this is either a fifth thing beside a schedule or a property of the
+  reminder rather than of the commitment.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-08 — not be offered a way back to a day I am already on → `FEAT: day-screen` (#27),
+  reopened under `EPIC: Daily commitments` (#1), a fourth round against that capability. The Today
+  button is **hidden** on the day the screen is showing as today, not drawn-and-inert: it carries
+  nothing there, and the want said "should not exist". Half of one Story with B-035, because the
+  grill settled that both are the same rule — **offered**, landed in `CONTEXT.md` at that grill and
+  product-wide rather than this screen's.
+- 2026-09-08 — know that a commitment on a future day cannot be ticked yet → the same
+  `FEAT: day-screen` (#27), the other half of that Story, and **against the want's own words**:
+  no message. A row for a day that has not arrived is drawn — it still says what the day will ask —
+  but it is not a target, which is what `day-screen`'s own prose already argued for. Since #141
+  every kind's entry refuses a future day, so this is one rule over every row rather than four. It
+  amends a shipped requirement, *A day screen tells nothing on a row where there was no tick to
+  refuse*, whose third silent case stops being reachable.
+- 2026-09-08 — get to a day weeks back without stepping through every day between → the same
+  `FEAT: day-screen` (#27), a Story of its own and the only one here needing new kit surface. A date
+  picker as **its own control** rather than the day title, so the Today button survives beside it;
+  floored at the earliest kept-from day on the roster and **open forward**. Deliberately not a
+  calendar month grid: that is a look-back view, Epic #1 excludes those by name, and it stays with
+  B-007.
+- 2026-09-08 — get to the day before or after without aiming at a chevron → **a chore on the app
+  shell**, not a Story, under ADR-1019: `showPreviousDay` and `showNextDay` are already public and
+  already wired to the chevrons, so the gesture carries no requirement. It sits **beside** them
+  rather than replacing them, and **swiping left goes to the next day**. It owes an ADR all the
+  same, because the grill claimed the horizontal swipe for the screen permanently — no row on a day
+  screen can ever take a swipe action, which is the opposite of the commitments screen (#145, #146).
+- 2026-09-08 — see the day's commitments in separated groups rather than one list →
+  `FEAT: commitment` (#26), Story #147 `add-commitment-category`, whose delta carries *A day view
+  draws its rows in the groups it was handed, and draws no group with nothing due* and has passed
+  G4. Promoted by that Story's own grill rather than by a pass; the sixth pass verified it on the
+  branch and moved the entry, as the fourth pass had to verify the third's claim.
 - 2026-09-06 — see what rhythm a commitment runs on, in words → `FEAT: commitment` (#26),
   reopened, as Story #144 `add-rhythm-in-words`, the head of cluster B's chain. One change with two
   delta specs: `schedule` gives its payloads back and says each shape in words, and `commitment`
@@ -649,3 +736,48 @@ found nothing.
     - **E**, restore: B-009. The phone install is runnable since today and its record is one
       deleted app from gone — the strongest reason yet to take it.
     - **F**, quota spans: B-017, blocked on *Week turnover*.
+
+- 2026-09-08 — pass over 16 wants, the sixth.
+  - **Sweep** — run first against a stale file and corrected mid-pass: `main`'s `docs/backlog.md`
+    held ten wants while four more (B-035..B-038) sat on the open `chore/backlog` PR #155, so the
+    sweep was re-run against the branch. That is the second time a pass has had to verify a claim
+    about the backlog's own contents before believing it. Three silences found and put to the
+    owner; two captured. B-039, nothing reminds you to record a day before it is gone — not
+    excluded by Epic #1, and the settled note that makes it urgent is the same one calling nagging
+    what disqualifies Apple Reminders. B-040, reaching a day weeks back costs one tap per day
+    between. The third was **declined**: `record` has no retire verb at all — `add-roster-removal`'s
+    Non-goals say "no tick leaves a record" in as many words — and that is a consequence #145 chose
+    deliberately, with nothing in the week asking for it. Day-one week: every line has a spec and
+    the shell seeds it; the one partly served is *yuno 5× a week*, whose row says the same thing all
+    seven days, which is B-025. Lifecycle verbs: `commitment` all claimed or in flight; `record`
+    create and take-back shipped for all four kinds once #141 merged mid-pass, retire declined
+    above; `day-screen` had create and move shipped, and its **controls** were the gap.
+    `docs/open-questions.md` held no want in disguise — its new entry, the one reader all four kinds
+    would share, is a technical decision and unowned.
+  - **Taken forward** — cluster A, the day screen's controls: B-028, B-035, B-038, B-040, grilled
+    and taken to `FEAT: day-screen` (#27), reopened. Three rounds, eleven questions, no fact sent to
+    the owner. Settled: a row for a day that has not arrived is drawn but is not a target, against
+    the want's own request for a message; the Today button is hidden on today; the date picker is
+    its own control, floored at the earliest kept-from day and open forward, and not a calendar
+    grid; the swipe sits beside the chevrons and left goes forward; the calendar's two ends stay
+    exactly as #93 left them, said out loud rather than left to look alike. One term landed in
+    `CONTEXT.md` — **offered**, product-wide rather than this screen's. One ADR owed, for claiming
+    the horizontal swipe. One shipped requirement to amend. Proposed for G2: the offered rule first,
+    as one Story over both controls, then the date picker; the chore can land at any time.
+  - **Not taken**, each with its disposition:
+    - **B**, the commitments form: B-036, B-037. Both delta `commitment` and queue behind #147,
+      #168, #148 and #142 (`docs/process.md` §7). Worth taking together — one may make the other
+      free, since both move the same section of that screen.
+    - **C**, looking back: B-007, B-011. Epic #1 excludes graphs and detail pages by name, and
+      B-040's answer deliberately left the calendar grid here rather than taking it.
+    - **D**, restore: B-009. **Recommended at the cluster stop and not taken.** It is the only want
+      whose absence costs the record rather than comfort, and the phone now holds real ticks,
+      numbers and notes.
+    - **E**, standing in a quota: B-025, B-017. **Recommended at the cluster stop and not taken.**
+      #141 shipped *A total entry says the day's sum and the commitment's target* — "150 of 120" —
+      so B-025's form is now argued and past a G4, and what is left of the objection is whether that
+      grammar may cross a day boundary, which is *Week turnover*.
+    - **F**, entry affordances: B-034; B-032, which Epic #1 excludes by name.
+    - **Singleton**: B-005, whose drop the fifth pass told this one to propose. Proposed at the
+      cluster stop and **not taken** — the reply named a cluster and not the drop — so it stays a
+      want and the seventh pass should propose it again.
