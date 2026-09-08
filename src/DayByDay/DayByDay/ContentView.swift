@@ -104,21 +104,6 @@ struct ContentView: View {
         }
     }
 
-    /// The row offset (into `screen.dayView.rows`, flat) each group's heading is drawn above —
-    /// only where the group is under a category, since the group with none draws no heading.
-    /// The day view says the groups; this reads them, converting nothing about what is in each.
-    private var groupHeadings: [Int: String] {
-        var headings: [Int: String] = [:]
-        var offset = 0
-        for group in screen.dayView.groups {
-            if let category = group.category {
-                headings[offset] = category
-            }
-            offset += group.rows.count
-        }
-        return headings
-    }
-
     private var dayList: some View {
         List {
             HStack {
@@ -164,62 +149,70 @@ struct ContentView: View {
                 Text("The roster was written by a newer version of DayByDay and must not be deleted.")
             }
 
-            // `Row` carries no identity of its own beyond `isKept` and `name` (`DayView.swift`
-            // keeps `commitment` and `date` internal to the kit), and `isKept` is exactly what a
-            // tap flips — keying `ForEach` on the row's value would make SwiftUI see a tap as one
-            // row removed and another inserted. The array's position is stable across a tap, so
-            // it stands in as the identity instead.
-            ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset) { offset, row in
-                if let heading = groupHeadings[offset] {
-                    Text(heading)
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                }
-                let entry = row.numberEntry(asOf: today())
-                let noteEntry = row.noteEntry(asOf: today())
-                let totalEntry = row.totalEntry(asOf: today())
-                Button {
-                    if let entry {
-                        enteringText = entry.number.map { "\($0)" } ?? ""
-                        enteringRow = row
-                    } else if let noteEntry {
-                        enteringNoteText = noteEntry.note ?? ""
-                        enteringNoteRow = row
-                    } else if totalEntry != nil {
-                        enteringTotalText = ""
-                        enteringTotalRow = row
-                    } else {
-                        try? screen.tick(row)
+            // A `Section` per group, the category as its header and none where there is no
+            // category — the same arrangement `CommitmentsView`'s kept list takes, and where this
+            // screen's own half of the boundary before the ungrouped rows comes from.
+            // `design.md` § *The shell rides this Story*.
+            ForEach(screen.dayView.groups, id: \.category) { group in
+                Section {
+                    // `Row` carries no identity of its own beyond `isKept` and `name`
+                    // (`DayView.swift` keeps `commitment` and `date` internal to the kit), and
+                    // `isKept` is exactly what a tap flips — keying `ForEach` on the row's value
+                    // would make SwiftUI see a tap as one row removed and another inserted. The
+                    // offset within this group's own `ForEach` is stable across a tap, exactly as
+                    // the flat offset was, so it stands in as the identity instead.
+                    ForEach(Array(group.rows.enumerated()), id: \.offset) { _, row in
+                        let entry = row.numberEntry(asOf: today())
+                        let noteEntry = row.noteEntry(asOf: today())
+                        let totalEntry = row.totalEntry(asOf: today())
+                        Button {
+                            if let entry {
+                                enteringText = entry.number.map { "\($0)" } ?? ""
+                                enteringRow = row
+                            } else if let noteEntry {
+                                enteringNoteText = noteEntry.note ?? ""
+                                enteringNoteRow = row
+                            } else if totalEntry != nil {
+                                enteringTotalText = ""
+                                enteringTotalRow = row
+                            } else {
+                                try? screen.tick(row)
+                            }
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    commitmentLine(
+                                        Text(row.name)
+                                            .foregroundStyle(row.isKept ? .secondary : .primary),
+                                        rhythmInWords: row.rhythmInWords)
+                                    if let totalEntry {
+                                        Text(totalEntry.soFarOfTarget)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    if row == screen.notice?.row {
+                                        Text(screen.notice?.cause ?? "Not saved. Try again.")
+                                            .font(.caption)
+                                            .foregroundStyle(.red)
+                                    }
+                                }
+                                if row.isKept || entry != nil || noteEntry != nil || totalEntry != nil {
+                                    Spacer()
+                                }
+                                if row.isKept {
+                                    Image(systemName: "checkmark")
+                                }
+                                if entry != nil || noteEntry != nil || totalEntry != nil {
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
                     }
-                } label: {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            commitmentLine(
-                                Text(row.name)
-                                    .foregroundStyle(row.isKept ? .secondary : .primary),
-                                rhythmInWords: row.rhythmInWords)
-                            if let totalEntry {
-                                Text(totalEntry.soFarOfTarget)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            if row == screen.notice?.row {
-                                Text(screen.notice?.cause ?? "Not saved. Try again.")
-                                    .font(.caption)
-                                    .foregroundStyle(.red)
-                            }
-                        }
-                        if row.isKept || entry != nil || noteEntry != nil || totalEntry != nil {
-                            Spacer()
-                        }
-                        if row.isKept {
-                            Image(systemName: "checkmark")
-                        }
-                        if entry != nil || noteEntry != nil || totalEntry != nil {
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                } header: {
+                    if let category = group.category {
+                        Text(category)
                     }
                 }
             }

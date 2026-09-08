@@ -1,6 +1,21 @@
 import Foundation
 import SwiftUI
+import UniformTypeIdentifiers
 import DayByDayKit
+
+/// What a drag carries: the source section's own `category` and the row's own `offset` within
+/// that section's `ForEach` — two values the shell already holds when it draws the row, and no
+/// third. A `Commitment` cannot be the payload: `.draggable` needs a `Transferable`, and neither
+/// it nor the kit's internal `CommitmentRecord` is one. `design.md` § *The shell rides this
+/// Story*.
+private struct DraggedRow: Codable, Transferable {
+    let category: String?
+    let offset: Int
+
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(contentType: .content)
+    }
+}
 
 /// Which rhythm shape the form is currently offering. A UI-only selector: the rule each shape
 /// names lives behind the seam, in `Rhythm` and the screen that refuses what it cannot form.
@@ -61,63 +76,69 @@ struct CommitmentsView: View {
         _keptFromDate = State(initialValue: date(from: screen.dayToKeepFrom))
     }
 
-    /// The index into `screen.kept` (flat) each group's heading is drawn above — only where the
-    /// group is under a category, since the group with none draws no heading. `screen.keptGroups`
-    /// says the groups; this reads them, converting nothing about what is in each.
-    private var keptGroupHeadings: [Int: String] {
-        var headings: [Int: String] = [:]
-        var offset = 0
-        for group in screen.keptGroups {
-            if let category = group.category {
-                headings[offset] = category
-            }
-            offset += group.commitments.count
+    /// The commitment a drag payload names: the entry at `dragged.offset` in the group
+    /// `dragged.category` names, or nothing where that group no longer has an entry there — a
+    /// lookup by an identity the shell was handed, not a computation of where a drop landed.
+    /// `design.md` § *The shell rides this Story*.
+    private func kept(_ dragged: DraggedRow) -> Commitment? {
+        guard let group = screen.keptGroups.first(where: { $0.category == dragged.category }),
+            group.commitments.indices.contains(dragged.offset)
+        else {
+            return nil
         }
-        return headings
+        return group.commitments[dragged.offset]
     }
 
     var body: some View {
         List {
-            Section("Kept") {
-                if screen.kept.isEmpty {
+            if screen.keptGroups.isEmpty {
+                Section("Kept") {
                     Text("Nothing is being kept.")
                 }
-                // One flat `ForEach` over `screen.kept`, not a `Section` per group — a per-section
-                // `.onMove` would hand this shell an offset counted within that section, which is
-                // arithmetic ADR-1019's guard forbids. The group a row is under is drawn as a
-                // heading above the first entry of that group, read off `screen.keptGroups`;
-                // `.onMove`'s offset passes through untouched, over `screen.kept` exactly as
-                // `design.md` § *The seam* fixes it.
-                ForEach(Array(screen.kept.enumerated()), id: \.element) { index, commitment in
-                    if let heading = keptGroupHeadings[index] {
-                        Text(heading)
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
+            }
+            // A `Section` per group, not one flat list: the category is the section's own
+            // header, and the group with none draws no header. Each section's `ForEach` keeps
+            // `.onMove` for a drag that starts and ends inside the section, and gains
+            // `.draggable`/`.dropDestination(for:)` for one that crosses into another —
+            // `design.md` § *The shell rides this Story*. Both hand the shell an offset already
+            // counted over that section's own entries, and both pass it straight through to
+            // `screen.move` beside the section's own `group.category`: nothing here adds,
+            // subtracts, counts rows or asks where a finger is.
+            ForEach(screen.keptGroups, id: \.category) { group in
+                Section {
+                    ForEach(Array(group.commitments.enumerated()), id: \.offset) {
+                        index, commitment in
+                        commitmentLine(
+                            Text(commitment.name), rhythmInWords: commitment.rhythmInWords
+                        )
+                        .draggable(DraggedRow(category: group.category, offset: index))
+                        .swipeActions {
+                            Button("Stop") {
+                                screen.askToStopKeeping(commitment)
+                            }
+                            Button("Remove", role: .destructive) {
+                                screen.askToRemove(commitment)
+                            }
+                            Button("Category") {
+                                categorising = commitment
+                                categoryTyped = group.category ?? ""
+                            }
+                        }
                     }
-                    commitmentLine(
-                        Text(commitment.name), rhythmInWords: commitment.rhythmInWords
-                    )
-                    .swipeActions {
-                        Button("Stop") {
-                            screen.askToStopKeeping(commitment)
-                        }
-                        Button("Remove", role: .destructive) {
-                            screen.askToRemove(commitment)
-                        }
-                        Button("Category") {
-                            categorising = commitment
-                            categoryTyped =
-                                screen.keptGroups.first { $0.commitments.contains(commitment) }?
-                                .category ?? ""
-                        }
+                    .onMove { source, offset in
+                        guard let index = source.first else { return }
+                        screen.move(group.commitments[index], toOffset: offset, under: group.category)
                     }
-                }
-                // The drag hands an `IndexSet` and a destination `Int`; a single-row drag in a
-                // `List` always produces one element, and `offset` passes through to `screen.move`
-                // untouched — `design.md` § *The seam* fixes the arithmetic there, not here.
-                .onMove { source, offset in
-                    guard let index = source.first else { return }
-                    screen.move(screen.kept[index], toOffset: offset)
+                    .dropDestination(for: DraggedRow.self) { dropped, offset in
+                        guard let dragged = dropped.first, let commitment = kept(dragged) else {
+                            return
+                        }
+                        screen.move(commitment, toOffset: offset, under: group.category)
+                    }
+                } header: {
+                    if let category = group.category {
+                        Text(category)
+                    }
                 }
             }
 
