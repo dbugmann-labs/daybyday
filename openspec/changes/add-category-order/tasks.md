@@ -171,11 +171,11 @@ and these boxes **confirm rather than write**.
 
 ## 8. Before the review, and what the janitor does at the archive
 
-- [ ] 8.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **913**: the 885
+- [x] 8.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **913**: the 885
   measured at § 1.1 plus the 28 scenarios § 2 to § 5 add. From the repo root, `pnpm run verify` green
   and `pnpm run checks` reporting `121/121 scenario(s) covered`. **A number that comes back different
   is a stop** (rule 5), not a number to write down.
-- [ ] 8.2 `openspec validate add-category-order --strict` exits 0, and `openspec validate --all
+- [x] 8.2 `openspec validate add-category-order --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [ ] 8.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-category-order/` or anywhere under `openspec/specs/` is a **stop**, not a
