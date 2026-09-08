@@ -3,23 +3,6 @@ import SwiftUI
 import UniformTypeIdentifiers
 import DayByDayKit
 
-/// The row drag's own content type, declared and exported by this app rather than borrowed from
-/// the system. `UTType.content` (`public.content`) is catalogued in Apple's own
-/// `UTCoreTypes.h` under `#pragma mark - Abstract base types`, and Apple's own canonical
-/// `Transferable` example for this exact use case — reordering rows by drag — declares its own
-/// exported type (`UTType(exportedAs: "com.example.layer")`) rather than reusing one, with an
-/// explicit warning against the `public` prefix `.content` carries. That is the lead behind
-/// Story #147 defect-2, where every drop snapped a row back to its start, in its own section and
-/// across sections alike, once `.dropDestination(for:)` became the only path a reorder had. Not
-/// independently confirmed by instrumentation the way defect-1 was — this machine cannot drive a
-/// drag — so treat the fix as unverified until it is walked on a phone. `Info.plist` carries the
-/// matching `UTExportedTypeDeclarations` entry.
-extension UTType {
-    fileprivate static let draggedCommitmentRow = UTType(
-        exportedAs: "com.dbugmann.daybyday.dragged-commitment-row"
-    )
-}
-
 /// What a drag carries: the source section's own `category` and the row's own `offset` within
 /// that section's `ForEach` — two values the shell already holds when it draws the row, and no
 /// third. A `Commitment` cannot be the payload: `.draggable` needs a `Transferable`, and neither
@@ -30,7 +13,7 @@ private struct DraggedRow: Codable, Transferable {
     let offset: Int
 
     static var transferRepresentation: some TransferRepresentation {
-        CodableRepresentation(contentType: .draggedCommitmentRow)
+        CodableRepresentation(contentType: .content)
     }
 }
 
