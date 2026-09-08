@@ -450,6 +450,7 @@ Neither box writes a test of its own; both check something a test cannot, and bo
 `docs/adr/1041-a-total-entrys-blank-commit-means-nothing.md`, the 2026-09-08 amendment on
 `docs/adr/1033-a-number-is-taken-back-by-naming-the-day.md`, and their rows in `docs/adr/README.md`
 are **written with this folder** and are in the G4 diff, so these boxes confirm rather than write.
+§ 16.5 is the exception and says so: it was added after the review and it writes.
 `CONTEXT.md` needs nothing: the grill landed **Addition** and **Total entry** and amended **Total**
 and **Row**, and writing the delta turned up no further term.
 
@@ -472,6 +473,23 @@ and **Row**, and writing the delta turned up no further term.
 - [x] 16.4 Confirm 1041 describes what `enter(_:on:)` actually does on a total row: a blank commit
   returns having kept nothing, taken nothing back and told nothing, and `takeBackLast(on:)` is the
   only way an addition leaves a day.
+- [x] 16.5 **Amend `docs/adr/1036-a-notice-names-a-cause-a-person-can-act-on.md` in place and correct
+  its `docs/adr/README.md` row**, so both read the named set of causes as four rather than two. This
+  box is the G7 review's finding 1, accepted by the owner, and it is the one box in this section that
+  writes rather than confirms. 1036 says "Two causes are named and no third may be added without a
+  decision that says so" and its index row ends "and nothing else", while this change's delta says
+  *Exactly four causes SHALL be named* and the code ships `"Must be more than 0"` and
+  `"Too large to add"` — so a reader deciding at the next Story whether a fifth cause is admissible
+  consults 1036 and is told the set is closed at two. Leaving the move recorded only in ADR-1040's
+  consequences ("ADR-1036's set goes from two to four") is the superseding-record pattern
+  `docs/adr/README.md` forbids in its own opening paragraph; fold it into 1036 under an
+  `- Amended: 2026-09-08 — …` stamp, per that file's three rules, exactly as 1033 was amended by this
+  same change. `docs/adr/**` is outside the change folder, so this costs no second G4 approval —
+  `scripts/lib/g4.ts` digests the change folder alone and excludes `tasks.md` within it — and for
+  that reason **`proposal.md` and `design.md` MUST NOT be touched for it**, which is why neither of
+  them names 1036 and why this box is where the amendment is recorded instead. **Ticked by whoever
+  writes the amendment, in the same commit that carries it**, on the evidence of that commit's own
+  diff: it is not the janitor's, and it waits on nothing.
 
 ## 17. Closing the Story
 
