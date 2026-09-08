@@ -1423,3 +1423,31 @@ func aStoreOpenedAgainHoldsExactlyTheTicksNumbersNotesAndAdditionsAddedAndNotTak
     #expect(later.history.total(for: protein, on: monday) == 30)
     #expect(later.history.total(for: protein, on: wednesday) == 0)
 }
+
+@Test("an addition that cannot be kept is refused and not held")
+func anAdditionThatCannotBeKeptIsRefusedAndNotHeld() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let place = blocker.appendingPathComponent("store.json")
+
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let addition = Addition(30, for: protein, on: monday)!
+
+    let store = try RecordStore(at: place)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try store.add(addition)
+    }
+    #expect(store.history == History())
+
+    let later = try RecordStore(at: place)
+    #expect(later.history == History())
+}

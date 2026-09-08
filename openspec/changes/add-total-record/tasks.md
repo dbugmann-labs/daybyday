@@ -216,7 +216,7 @@ suite before writing a test; then one scenario at a time as above.
 - [x] 7.6 `an amount is read back exactly as it was given, whatever its digits`
 - [x] 7.7 `a store opened again holds exactly the ticks, numbers, notes and additions added and not
   taken back`
-- [ ] 7.8 `an addition that cannot be kept is refused and not held` — the unwritable place, and the
+- [x] 7.8 `an addition that cannot be kept is refused and not held` — the unwritable place, and the
   store's history left as it was.
 - [ ] 7.9 `a store holding what could not be an addition is refused` — a hand-written form-5 fixture,
   five ways: zero, a negative amount, the wrong kind, a date it is not due on, and a day carrying an
