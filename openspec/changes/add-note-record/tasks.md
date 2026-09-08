@@ -362,7 +362,7 @@ the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments t
   `scenario coverage — 194/194`. `cd src/DayByDayKit && swift test` reports **705 tests passing** —
   628 at the branch point plus the seventy-seven written here, plus none removed. A different number
   means a test was added or lost outside rule 3; report it.
-- [ ] 16.3 Open the app on a phone or the simulator with `pnpm run phone`, **without deleting and
+- [x] 16.3 Open the app on a phone or the simulator with `pnpm run phone`, **without deleting and
   reinstalling it first** — the existing install holds a record file in the store's third form,
   this branch's code writes the fourth, and a fresh install would write form 4 from the start,
   proving nothing about reading form 3. Confirm by hand that the day screen still draws whatever
