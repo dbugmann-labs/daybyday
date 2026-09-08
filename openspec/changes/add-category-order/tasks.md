@@ -158,14 +158,14 @@ is a stop.
 `docs/adr/**` and `CONTEXT.md` are `spec-author`'s to write, so all three land in the diff G4 signs
 and these boxes **confirm rather than write**.
 
-- [ ] 7.1 Confirm `docs/adr/1043-a-group-move-carries-the-whole-group.md` is present, is in
+- [x] 7.1 Confirm `docs/adr/1043-a-group-move-carries-the-whole-group.md` is present, is in
   `docs/adr/README.md`'s table in numeric order, and says what `design.md` § *A group move is a block
   move* says.
-- [ ] 7.2 Confirm ADR-1037 is amended in place and stamped — a move is still the only thing that
+- [x] 7.2 Confirm ADR-1037 is amended in place and stamped — a move is still the only thing that
   changes a roster's order, and it now takes a group as well as a commitment — and that **ADR-1038 is
   untouched**. A diff touching 1038 is a stop: its rule surviving the block move intact is why the
   block move was chosen.
-- [ ] 7.3 Confirm `CONTEXT.md` § *Move* and § *Commitments screen* carry this Story's amendments, and
+- [x] 7.3 Confirm `CONTEXT.md` § *Move* and § *Commitments screen* carry this Story's amendments, and
   that § *Move*'s 2026-09-08 clause saying a group move "is a Story of its own" has been rewritten
   rather than left standing beside its own answer.
 
