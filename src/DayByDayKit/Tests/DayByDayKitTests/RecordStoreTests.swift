@@ -1305,3 +1305,22 @@ func aDaysAdditionsAreReadBackInTheOrderTheyWereMade() throws {
     let evenLater = try RecordStore(at: place)
     #expect(evenLater.history.total(for: protein, on: monday) == 45)
 }
+
+@Test("a day's last addition taken back is not held by a store opened afterwards at the same place")
+func aDaysLastAdditionTakenBackIsNotHeldByAStoreOpenedAfterwardsAtTheSamePlace() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let first = try RecordStore(at: place)
+    try first.add(Addition(30, for: protein, on: monday)!)
+    try first.removeLastAddition(for: protein, on: monday)
+    let later = try RecordStore(at: place)
+
+    #expect(later.history.total(for: protein, on: monday) == 0)
+    #expect(later.history == History())
+}

@@ -208,7 +208,7 @@ suite before writing a test; then one scenario at a time as above.
   which takes the last addition back **on the reopened store** and so proves the order survived the
   file rather than only the process. A document sorting a day's amounts passes the sum clause and
   fails this one.
-- [ ] 7.4 `a day's last addition taken back is not held by a store opened afterwards at the same
+- [x] 7.4 `a day's last addition taken back is not held by a store opened afterwards at the same
   place` — including that taking the last one back leaves a store that reads as one that has taken no
   record. A day left as an empty array on disk fails that clause and is what § 7.9's fixture then
   refuses.
