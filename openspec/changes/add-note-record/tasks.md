@@ -313,7 +313,7 @@ This section rides this Story's branch under `CONTEXT.md` § *App shell*'s third
 only to make the Story usable, its consumer lands in the same PR, and it introduces no behaviour the
 kit does not specify. It is not tested (`docs/open-questions.md` § *No UI smoke layer*).
 
-- [ ] 14.1 In `src/DayByDay/ContentView.swift`, give a row that offers a note entry a tap that opens a
+- [x] 14.1 In `src/DayByDay/ContentView.swift`, give a row that offers a note entry a tap that opens a
   sheet holding one multi-line text field, prefilled from `entry.note` and with no placeholder at
   all; Save calls `try? screen.enter(text, on: row)` and closes; Cancel closes and calls nothing.
   Draw the same disclosure affordance a number row already carries. **No character limit on the
