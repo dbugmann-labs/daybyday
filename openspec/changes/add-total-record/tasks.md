@@ -346,13 +346,13 @@ what catches.
 - [x] 12.12 `adding on one row leaves the other rows of the day as they were`
 - [x] 12.13 `adding on a day a day screen has moved back to keeps it on that day`
 - [x] 12.14 `adding writes nothing to the roster's place`
-- [ ] 12.15 `an amount committed with space around it is added`
-- [ ] 12.16 `an amount typed with a comma is added as the same amount as one typed with a full stop` —
+- [x] 12.15 `an amount committed with space around it is added`
+- [x] 12.16 `an amount typed with a comma is added as the same amount as one typed with a full stop` —
   both clauses. This is the box that proves `read(_:)` is shared rather than reimplemented.
-- [ ] 12.17 `a value that is not a number committed in a total entry is refused and told on the row` —
+- [x] 12.17 `a value that is not a number committed in a total entry is refused and told on the row` —
   six texts including a lone zero-width space, which `Blank` does not call blank and `read(_:)` calls
   not a number.
-- [ ] 12.18 `a commit saying nothing in a total entry changes nothing and tells nothing` — including
+- [x] 12.18 `a commit saying nothing in a total entry changes nothing and tells nothing` — including
   that it leaves a standing notice standing, which is the fifth case of *A day screen tells nothing on
   a row where there was no tick to refuse*.
 
