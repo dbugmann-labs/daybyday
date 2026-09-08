@@ -147,7 +147,7 @@ change, and § 16.2.
 - [x] 5.6 `taking back where the day holds no addition leaves the history unchanged` — three cases: a
   day with nothing on it, a commitment of the wrong kind, and a date it is not due on. None is an
   error.
-- [ ] 5.7 `a history given additions and taken back one by one is the same as one never given any` —
+- [x] 5.7 `a history given additions and taken back one by one is the same as one never given any` —
   including the fourth take-back, which must change nothing.
 
 ## 6. `record` — what the four existing answers say now
