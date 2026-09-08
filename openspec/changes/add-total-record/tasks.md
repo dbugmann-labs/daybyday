@@ -416,7 +416,7 @@ This section rides this Story's branch under `CONTEXT.md` § *App shell*'s third
 only to make the Story usable, its consumer lands in the same PR, and it introduces no behaviour the
 kit does not specify. It is not tested (`docs/open-questions.md` § *No UI smoke layer*).
 
-- [ ] 14.1 In `src/DayByDay/ContentView.swift`, give a row that offers a total entry a tap that opens
+- [x] 14.1 In `src/DayByDay/ContentView.swift`, give a row that offers a total entry a tap that opens
   a sheet holding **one decimal field that opens empty every time**, a Save that calls
   `try? screen.enter(text, on: row)` and closes, a Cancel that closes and calls nothing, and — only
   where `row.offersTakeBackLast(asOf: today())` — a *Take back last* button calling
@@ -429,12 +429,12 @@ kit does not specify. It is not tested (`docs/open-questions.md` § *No UI smoke
 Neither box writes a test of its own; both check something a test cannot, and both are named in
 `design.md`.
 
-- [ ] 15.1 Confirm the branch-point measurement in `design.md` § *Context* still holds on the
+- [x] 15.1 Confirm the branch-point measurement in `design.md` § *Context* still holds on the
   toolchain the work was actually done on: `swift --version` reports Apple Swift 6.3.3
   (swiftlang-6.3.3.1.3), target `arm64-apple-macosx26.0`. A different toolchain does not invalidate
   the delta, but it does invalidate the measurement tables, and that is a report rather than a
   silent edit (`AGENTS.md` rule 5).
-- [ ] 15.2 Re-run measurement B's ten cases **through `DayByDayKit`** — driving the real
+- [x] 15.2 Re-run measurement B's ten cases **through `DayByDayKit`** — driving the real
   `Digits.canAdd(_:to:)` from a temporary test in
   `Tests/DayByDayKitTests/DayViewTests.swift`, never from a re-implementation of it beside the
   package. `0 + 30`, `30 + 90`, `70.5 + 0.25`, `0.000001 + 0.000001`, `1e38 + 1e38`, `37 nines + 0.5`
@@ -475,12 +475,12 @@ and **Row**, and writing the delta turned up no further term.
 
 ## 17. Closing the Story
 
-- [ ] 17.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
+- [x] 17.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 3, 6, 7, 9, 11 and 13 actually ran red before the code that satisfies them was
   written — 11.2, 11.3 and 13.18 above all, since each is predicted red for a *stated* reason and a
   green one means the reason was wrong. Record § 15.2's ten answers here too. A prediction in a task
   is not evidence; this is.
-- [ ] 17.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
+- [x] 17.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
   `scenario coverage — 248/248`. `cd src/DayByDayKit && swift test` reports **807 tests passing** —
   705 at the branch point plus the hundred and two written here, plus none removed and none left
   behind by § 15.2. A different number means a test was added or lost outside rule 3; report it.
@@ -530,3 +530,60 @@ and **Row**, and writing the delta turned up no further term.
   **The data clump entry is closed rather than carried**, by § 1.3: `RecordStore.write` and
   `RecordDocument.init` take labels, so the fourth kind arrived without four unlabelled positional
   parameters of the same shape. Say so where the entry stands, rather than deleting it silently.
+
+## Notes
+
+**Which predicted-red boxes actually ran red (§ 17.1).** Work proceeded in the coverage checker's
+own order — day-screen's scenarios first, alphabetically, then record's — not in this file's section
+order, so several boxes whose bodies (`Addition`, `Digits`, `RecordDocument`'s additions field, the
+version move) were needed by an earlier day-screen scenario already existed by the time their own
+numbered box was reached. That reordering is `tasks.md` § 1.4's own mismatch showing up a second
+time, in the tasks rather than only in the scenario order, and it is noted at §§ 2.1, 2.2 and 7.1
+where it happened.
+
+- **3.1** — predicted red on its first assertion (`Addition.init?`'s `fatalError`). Ran **green**:
+  the real body landed while making § 8.5 green, well before § 3.1 was written. Noted at § 2.1.
+- **11.2** (`38 nines + 0.5` refused) — predicted red on any predicate reading digits off `soFar +
+  amount` alone. Ran **green** on the first pass: `Digits.canAdd(_:to:)` was written directly against
+  measurement B's two-subtraction shape from `design.md`, before this test existed, so the trap it
+  names was never actually laid.
+- **11.3** (`38 nines + 1` admitted) — predicted red on any predicate written on magnitude rather
+  than on significant digits. **Ran red, for exactly the stated reason.** `Digits.significant(in:)`
+  stripped a fraction's trailing zeros but not a whole number's own, so `10^38` counted as
+  thirty-nine significant digits instead of one and the sum was wrongly refused as too large to add.
+  Fixed by stripping the concatenated whole-and-fraction digits' own leading and trailing zeros too —
+  the same fourth step `DayScreen.writtenOut(_:)` already takes for typed text — and both 11.2 and
+  11.3 stayed green afterward. This is the one place the delta's own predictions caught a real bug
+  before it shipped.
+- **13.18** (the rewritten "offers no entry at all" test) — predicted red once § 12 landed, because a
+  total row now answers "Not a number" to text it used to ignore. **Ran red, for exactly the stated
+  reason**, then fixed by rewriting the test against a tick row per the MODIFIED scenario.
+- **6.1, 6.7, 6.8** — each predicted green ("a red test... is a real finding, not a licence to edit
+  further"), since `Tick.swift`, `Number.swift` and `Note.swift` already refuse a total-kind
+  commitment. All three ran **green** on the first pass; none of the three files was touched.
+- **9.1, 9.2** — predicted green once § 8's stored `total` landed, from `Row`'s synthesized
+  `Hashable`. Both ran **green** on the first pass.
+- **7.9** (the five-way hand-written refusal fixture) — predicted green once § 7.1 landed, from
+  `formAdditions()` returning `nil`. Ran **green** on the first pass.
+
+**§ 15.2's ten answers**, run through `DayView.Row.totalRecord(_:asOf:)` — the public seam
+`Digits.canAdd(_:to:)` is actually called from — rather than through a reimplementation, from a
+temporary test in `DayViewTests.swift` deleted immediately after recording these:
+
+| `soFar` | `amount` | admitted? | predicted |
+|---|---|---|---|
+| 0 | 30 | yes | yes |
+| 30 | 90 | yes | yes |
+| 70.5 | 0.25 | yes | yes |
+| 0.000001 | 0.000001 | yes | yes |
+| 1e38 | 1e38 | yes | yes |
+| 37 nines | 0.5 | yes | yes |
+| 38 nines | 1 | yes | yes |
+| 38 nines | 0.5 | no | no |
+| 1e38 | 0.5 | no | no |
+| 38 nines | 38 nines | no | no |
+
+All ten matched `design.md`'s measurement B exactly. Measured on this machine on 2026-09-08, Apple
+Swift 6.3.3 (swiftlang-6.3.3.1.3), `arm64-apple-macosx26.0` — the same toolchain § 15.1 confirmed.
+`swift test` reported 807 tests passing both before the temporary test was added and after it and
+its supporting `import Foundation` were removed.

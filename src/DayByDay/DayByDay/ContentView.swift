@@ -70,6 +70,8 @@ struct ContentView: View {
     @State private var enteringText = ""
     @State private var enteringNoteRow: DayView.Row?
     @State private var enteringNoteText = ""
+    @State private var enteringTotalRow: DayView.Row?
+    @State private var enteringTotalText = ""
 
     var body: some View {
         NavigationStack {
@@ -155,6 +157,7 @@ struct ContentView: View {
             ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset) { _, row in
                 let entry = row.numberEntry(asOf: today())
                 let noteEntry = row.noteEntry(asOf: today())
+                let totalEntry = row.totalEntry(asOf: today())
                 Button {
                     if let entry {
                         enteringText = entry.number.map { "\($0)" } ?? ""
@@ -162,6 +165,9 @@ struct ContentView: View {
                     } else if let noteEntry {
                         enteringNoteText = noteEntry.note ?? ""
                         enteringNoteRow = row
+                    } else if totalEntry != nil {
+                        enteringTotalText = ""
+                        enteringTotalRow = row
                     } else {
                         try? screen.tick(row)
                     }
@@ -172,19 +178,24 @@ struct ContentView: View {
                                 Text(row.name)
                                     .foregroundStyle(row.isKept ? .secondary : .primary),
                                 rhythmInWords: row.rhythmInWords)
+                            if let totalEntry {
+                                Text(totalEntry.soFarOfTarget)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                             if row == screen.notice?.row {
                                 Text(screen.notice?.cause ?? "Not saved. Try again.")
                                     .font(.caption)
                                     .foregroundStyle(.red)
                             }
                         }
-                        if row.isKept || entry != nil || noteEntry != nil {
+                        if row.isKept || entry != nil || noteEntry != nil || totalEntry != nil {
                             Spacer()
                         }
                         if row.isKept {
                             Image(systemName: "checkmark")
                         }
-                        if entry != nil || noteEntry != nil {
+                        if entry != nil || noteEntry != nil || totalEntry != nil {
                             Image(systemName: "chevron.right")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -244,6 +255,48 @@ struct ContentView: View {
                                 }
                             }
                         }
+                }
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { enteringTotalRow != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        enteringTotalRow = nil
+                    }
+                }
+            )
+        ) {
+            if let row = enteringTotalRow {
+                NavigationStack {
+                    VStack {
+                        TextField("Amount", text: $enteringTotalText)
+                            .keyboardType(.decimalPad)
+                            .padding()
+                        if row.offersTakeBackLast(asOf: today()) {
+                            Button("Take back last", role: .destructive) {
+                                try? screen.takeBackLast(on: row)
+                                enteringTotalRow = nil
+                            }
+                        }
+                        Spacer()
+                    }
+                    .navigationTitle(row.name)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                enteringTotalRow = nil
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Save") {
+                                try? screen.enter(enteringTotalText, on: row)
+                                enteringTotalRow = nil
+                            }
+                        }
+                    }
                 }
             }
         }
