@@ -37,7 +37,7 @@ of the implementation is one computed property, `DayScreen.offersGoingBackToToda
 (`design.md` § *The seam*); if any box below asks for a stored field, a second today, or a clock read,
 that is a stop.
 
-- [ ] 2.1 `a day screen showing the today it was handed offers no way back to today` — adds the
+- [x] 2.1 `a day screen showing the today it was handed offers no way back to today` — adds the
   member. Answered off `shownDay` and `today`, both already held.
 - [ ] 2.2 `a day screen moved into the past offers the way back to today`
 - [ ] 2.3 `a day screen moved into the future offers the way back to today`

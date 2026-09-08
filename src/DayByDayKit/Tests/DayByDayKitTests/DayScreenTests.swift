@@ -5385,3 +5385,21 @@ func aDayScreenDrawsAGroupAgainAfterACategoryIsChangedAtItsRosterPlace() throws 
     #expect(screen.dayView.groups.map(\.category) == ["Supplements", nil])
     #expect(screen.dayView.rows.map(\.name) == ["Creatine", "Gym"])
 }
+
+@MainActor
+@Test("a day screen showing the today it was handed offers no way back to today")
+func aDayScreenShowingTheTodayItWasHandedOffersNoWayBackToToday() {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(!screen.offersGoingBackToToday)
+    #expect(screen.title == "Today · Monday 31 August 2026")
+}
