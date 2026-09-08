@@ -413,7 +413,8 @@ boxes below confirm rather than write, and each is tickable while reading what i
 
 ## 11. Before the review, and what the janitor does at the archive
 
-- [x] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 580 plus the 85
+- [x] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 713: the 628
+  `85ca63b` carries — § 11.3's rebase moved the base there from `f8236be`'s 580 — plus the 85
   scenarios above. From the repo root, `pnpm run verify` green and `pnpm run checks` reporting
   `214/214 scenario(s) covered`.
 - [x] 11.2 `openspec validate add-commitment-category --strict` exits 0, and `openspec validate --all
