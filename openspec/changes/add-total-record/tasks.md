@@ -106,11 +106,11 @@ holds*, in `Tests/DayByDayKitTests/RecordTests.swift`. `History` gains
 `total(for:on:)` per `design.md` § *The seam*. The list, rather than a value, is what makes 4.3 and
 4.9 pass; a `Set` fails both, and a dictionary of `Decimal` fails 4.3.
 
-- [ ] 4.1 `a history that has taken no addition answers a total of zero for a commitment on a day` —
+- [x] 4.1 `a history that has taken no addition answers a total of zero for a commitment on a day` —
   both clauses, including that it answers **zero rather than nothing**. A reader typed `Decimal?`
   fails the second clause and is the shape this box exists to refuse.
-- [ ] 4.2 `an addition added to a history is the total that commitment has on that day`
-- [ ] 4.3 `additions made on one day accumulate rather than replace one another` — three additions,
+- [x] 4.2 `an addition added to a history is the total that commitment has on that day`
+- [x] 4.3 `additions made on one day accumulate rather than replace one another` — three additions,
   two of them alike, and the day is 105.5 rather than 75.5. The box that fails a `Set` and a
   replacing map alike.
 - [ ] 4.4 `the additions of one day are not counted in another day's total`

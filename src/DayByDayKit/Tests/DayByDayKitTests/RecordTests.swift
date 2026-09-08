@@ -1620,3 +1620,46 @@ func twoAdditionsAreTheSameExactlyWhenTheirCommitmentDateAndAmountAllAre() {
     #expect(first != differentDate)
     #expect(first != differentCommitment)
 }
+
+@Test("a history that has taken no addition answers a total of zero for a commitment on a day")
+func aHistoryThatHasTakenNoAdditionAnswersATotalOfZeroForACommitmentOnADay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let history = History()
+
+    #expect(history.total(for: protein, on: monday) == 0)
+}
+
+@Test("an addition added to a history is the total that commitment has on that day")
+func anAdditionAddedToAHistoryIsTheTotalThatCommitmentHasOnThatDay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(history.total(for: protein, on: monday) == 30)
+}
+
+@Test("additions made on one day accumulate rather than replace one another")
+func additionsMadeOnOneDayAccumulateRatherThanReplaceOneAnother() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45.5, for: protein, on: monday)!)
+    history.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(history.total(for: protein, on: monday) == 105.5)
+}
