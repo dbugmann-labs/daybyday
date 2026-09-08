@@ -82,9 +82,9 @@ the shape the earlier kinds already had. Expect the same here. **Record which bo
 as you go, in § 17**; a prediction is not evidence.
 
 - [x] 3.1 `an addition is recorded for a total commitment on a date it is due on`
-- [ ] 3.2 `a total commitment takes no addition on a date it is not due on` — all three clauses: not
+- [x] 3.2 `a total commitment takes no addition on a date it is not due on` — all three clauses: not
   due, before the day it is kept from, and a schedule due on no date across seven days.
-- [ ] 3.3 `a commitment whose kind is not a total takes no addition on a date it is due on` — the
+- [x] 3.3 `a commitment whose kind is not a total takes no addition on a date it is due on` — the
   tick kind, both number kinds and the note kind, plus the total-kind control that must still record.
 - [ ] 3.4 `an amount that is not above zero is not an addition` — zero, a plainly negative amount, a
   negative amount too small to see, and the smallest positive control. This is the guard that has no

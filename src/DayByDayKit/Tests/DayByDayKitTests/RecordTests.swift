@@ -1487,3 +1487,62 @@ func anAdditionIsRecordedForATotalCommitmentOnADateItIsDueOn() {
 
     #expect(Addition(30, for: protein, on: monday) != nil)
 }
+
+@Test("a total commitment takes no addition on a date it is not due on")
+func aTotalCommitmentTakesNoAdditionOnADateItIsNotDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let target = Commitment.Target(120)!
+    let commitment = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    let laterFloor = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let beforeFloor = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: laterFloor, kind: .total(target: target))!
+
+    let noWeekday = Commitment(
+        name: "Protein", schedule: Schedule.weekdays([]), keptFrom: keptFrom,
+        kind: .total(target: target))!
+    let week = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ]
+
+    #expect(Addition(30, for: commitment, on: tuesday) == nil)
+    #expect(schedule.isDue(on: monday))
+    #expect(Addition(30, for: beforeFloor, on: monday) == nil)
+    for date in week {
+        #expect(Addition(30, for: noWeekday, on: date) == nil)
+    }
+}
+
+@Test("a commitment whose kind is not a total takes no addition on a date it is due on")
+func aCommitmentWhoseKindIsNotATotalTakesNoAdditionOnADateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+
+    let tickKind = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let note = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let numberNoRange = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let numberWithRange = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let totalKind = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    #expect(Addition(30, for: tickKind, on: monday) == nil)
+    #expect(Addition(30, for: numberNoRange, on: monday) == nil)
+    #expect(Addition(30, for: numberWithRange, on: monday) == nil)
+    #expect(Addition(30, for: note, on: monday) == nil)
+    #expect(Addition(30, for: totalKind, on: monday) != nil)
+}
