@@ -459,7 +459,7 @@ boxes below confirm rather than write, and each is tickable while reading what i
   green and `pnpm run checks` reporting `206/206 scenario(s) covered`.
 - [x] 11.2 `openspec validate add-commitment-category --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
-- [ ] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+- [x] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-commitment-category/` or anywhere under `openspec/specs/` is a **stop**, not
   a merge to resolve (rule 5). **And so is a clean rebase that then fails § 11.2** — that is another
   Story having landed on `day-screen`, which § 1.3 warned about and which needs a further G4 rather
