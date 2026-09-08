@@ -385,7 +385,7 @@ private twins at the foot of `DayScreen.swift`.
 - [x] 13.15 `a commit on a total row on a day screen that is not keeping a record is told nothing on
   the row` — four clauses, including the take-back.
 - [x] 13.16 `a commit on a total row for a day that has not arrived is told nothing on the row`
-- [ ] 13.17 `taking back on a row that offers no take-back is told nothing on the row` — and does not
+- [x] 13.17 `taking back on a row that offers no take-back is told nothing on the row` — and does not
   end what is already told on another row.
 - [x] 13.18 **Not a new test, and it is a rewrite.** The existing test named `a commit on a row that
   offers no entry at all is told nothing on the row` is written against a **total** row today, and a

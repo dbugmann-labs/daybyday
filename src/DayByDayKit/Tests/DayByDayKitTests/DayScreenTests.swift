@@ -5251,6 +5251,32 @@ func aCommitOnATotalRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
 }
 
 @MainActor
+@Test("taking back on a row that offers no take-back is told nothing on the row")
+func takingBackOnARowThatOffersNoTakeBackIsToldNothingOnTheRow() throws {
+    let (place, rosterPlace) = try blockerPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym, protein], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    try screen.takeBackLast(on: screen.dayView.rows[1])
+
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(screen.notice?.cause == nil)
+}
+
+@MainActor
 @Test("a commit on a note row for a day that has not arrived is told nothing on the row")
 func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
     let (place, rosterPlace) = freshPlaces()
