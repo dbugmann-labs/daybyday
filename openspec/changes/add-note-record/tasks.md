@@ -231,16 +231,16 @@ day view says so*, in `Tests/DayByDayKitTests/DayScreenTests.swift`. `DayScreen.
 number branch is not touched. `RecordStore.removeNote(on:)` joins its private twin at the foot of
 `DayScreen.swift`.
 
-- [ ] 11.1 `entering a note on a row makes the day screen say the commitment is kept`
-- [ ] 11.2 `a note entered on a day screen is held by a day screen opened afterwards at the same
+- [x] 11.1 `entering a note on a row makes the day screen say the commitment is kept`
+- [x] 11.2 `a note entered on a day screen is held by a day screen opened afterwards at the same
   place`
-- [ ] 11.3 `the note entry a row offers says the note just entered on it`
-- [ ] 11.4 `a note entered on a day that already holds one replaces it`
-- [ ] 11.5 `committing an empty note entry takes the note back`
-- [ ] 11.6 `committing an empty note entry on a day that holds no note leaves the day as it was`
-- [ ] 11.7 `a note that cannot be kept is refused and leaves the day view as it was`
-- [ ] 11.8 `entering a note on a row the day screen's day view does not hold changes nothing`
-- [ ] 11.9 `committing on a row that offers no note entry changes nothing`
+- [x] 11.3 `the note entry a row offers says the note just entered on it`
+- [x] 11.4 `a note entered on a day that already holds one replaces it`
+- [x] 11.5 `committing an empty note entry takes the note back`
+- [x] 11.6 `committing an empty note entry on a day that holds no note leaves the day as it was`
+- [x] 11.7 `a note that cannot be kept is refused and leaves the day view as it was`
+- [x] 11.8 `entering a note on a row the day screen's day view does not hold changes nothing`
+- [x] 11.9 `committing on a row that offers no note entry changes nothing`
 - [ ] 11.10 `a commit is read as the entry the row it was made on offers` — the one that pins the
   dispatch: "70.5" on a number row is the number 70.5 and on a note row is the note "70.5". A screen
   that read the text before asking the row fails it.
