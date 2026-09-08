@@ -184,7 +184,7 @@ Twelve scenarios across the three MODIFIED store requirements, all in
 `Tests/DayByDayKitTests/RecordStoreTests.swift`. Do 7.1 first as one mechanical step and verify the
 suite before writing a test; then one scenario at a time as above.
 
-- [ ] 7.1 In `Sources/DayByDayKit/RecordDocument.swift`, add `AdditionsRecord` — `commitment`,
+- [x] 7.1 In `Sources/DayByDayKit/RecordDocument.swift`, add `AdditionsRecord` — `commitment`,
   `date` and `amounts: [Decimal]` — conforming to `DatedCommitmentRecord` so it sorts on the same
   five-part key with **no sixth key**, because one record per commitment-day cannot tie
   (`design.md` § *A day's additions are a list*); give `RecordDocument` an `additions` field, move
@@ -197,7 +197,12 @@ suite before writing a test; then one scenario at a time as above.
   labelled parameter lists § 1.3 created. **`CommitmentCoding.swift` is not edited** — the roster
   store shares it and does not move. `swift test` reports no new failures after this box beyond
   whatever §§ 3–6 added; a red test among the ones already passing is a rule-5 stop.
-- [ ] 7.2 `an addition made in a store is held by a second store opened at the same place while the
+
+  Done out of predicted order, for the same reason 2.1 and 2.2 were: `day-screen`'s § 12.1 needed
+  `RecordStore.add(_:Addition)` to actually keep an addition before this box's number was reached, so
+  the whole of this box — `AdditionsRecord`, the version move, both stores' guards — landed there
+  instead.
+- [x] 7.2 `an addition made in a store is held by a second store opened at the same place while the
   first is still open`
 - [ ] 7.3 `a day's additions are read back in the order they were made` — including the last clause,
   which takes the last addition back **on the reopened store** and so proves the order survived the

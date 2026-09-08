@@ -1256,3 +1256,26 @@ func aStoreWhoseShapeAndDeclaredFormDisagreeAboutNotesIsRefused() throws {
         try Data(contentsOf: currentFormWithoutNotesPlace) == currentFormWithoutNotesBytes)
     #expect(try Data(contentsOf: earlyFormNeitherPlace) == earlyFormNeitherBytes)
 }
+
+@Test(
+    "an addition made in a store is held by a second store opened at the same place while the first is still open"
+)
+func anAdditionMadeInAStoreIsHeldByASecondStoreOpenedAtTheSamePlaceWhileTheFirstIsStillOpen()
+    throws
+{
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let addition = Addition(30, for: protein, on: monday)!
+
+    let first = try RecordStore(at: place)
+    try first.add(addition)
+    let second = try RecordStore(at: place)
+
+    #expect(second.history.total(for: protein, on: monday) == 30)
+    #expect(!second.history.isKept(protein, on: monday))
+}
