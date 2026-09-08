@@ -36,10 +36,13 @@ public final class RosterStore {
         // every form since, so its presence must agree with the declared version in both
         // directions. Checked against `removalIntroducedInVersion`, not `currentVersion` — the
         // two agree today only because form 3 is both, and a later form raising `currentVersion`
-        // alone must not move which forms this check accepts.
+        // alone must not move which forms this check accepts. `category` is checked the same
+        // way, against `categoryIntroducedInVersion`.
         guard
             document.commitments.allSatisfy({
                 ($0.removed != nil) == (document.version >= RosterDocument.removalIntroducedInVersion)
+                    && $0.categoryKeyPresent
+                        == (document.version >= RosterDocument.categoryIntroducedInVersion)
             })
         else {
             throw RosterStoreError.notAStore(at: place)
@@ -60,6 +63,21 @@ public final class RosterStore {
     public func add(_ commitment: Commitment) throws -> Bool {
         var nextRoster = roster
         guard nextRoster.add(commitment) else {
+            return false
+        }
+        try write(nextRoster)
+
+        roster = nextRoster
+        return true
+    }
+
+    /// Kept at `place` before this returns. Answers what `Roster.add(_:under:)` answers —
+    /// `false`, without throwing and without writing, when the roster is already keeping
+    /// `commitment`.
+    @discardableResult
+    public func add(_ commitment: Commitment, under category: String?) throws -> Bool {
+        var nextRoster = roster
+        guard nextRoster.add(commitment, under: category) else {
             return false
         }
         try write(nextRoster)
@@ -123,9 +141,29 @@ public final class RosterStore {
     /// change made, and a no-op made nothing, so this is the one call that can answer `true`
     /// without writing.
     @discardableResult
-    public func move(_ commitment: Commitment, toOffset offset: Int) throws -> Bool {
+    public func move(_ commitment: Commitment, toOffset offset: Int, under category: String?)
+        throws -> Bool
+    {
         var nextRoster = roster
-        guard nextRoster.move(commitment, toOffset: offset) else {
+        guard nextRoster.move(commitment, toOffset: offset, under: category) else {
+            return false
+        }
+        if nextRoster != roster {
+            try write(nextRoster)
+        }
+
+        roster = nextRoster
+        return true
+    }
+
+    /// Kept at `place` before this returns, unless putting `commitment` under `category` left
+    /// the roster exactly as it was. Answers what `Roster.put` answers — `true` even where
+    /// nothing changed, and `false`, without throwing and without writing, when the roster is
+    /// not currently keeping `commitment`.
+    @discardableResult
+    public func put(_ commitment: Commitment, under category: String?) throws -> Bool {
+        var nextRoster = roster
+        guard nextRoster.put(commitment, under: category) else {
             return false
         }
         if nextRoster != roster {
