@@ -1964,3 +1964,22 @@ func aHistoryGivenAdditionsAndTakenBackOneByOneIsTheSameAsOneNeverGivenAny() {
 
     #expect(history == History())
 }
+
+@Test("a total commitment whose day is at its target still takes no tick on it")
+func aTotalCommitmentWhoseDayIsAtItsTargetStillTakesNoTickOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+
+    #expect(Tick(protein, on: monday) == nil)
+    #expect(history.total(for: protein, on: monday) == 120)
+    #expect(history.isKept(protein, on: monday))
+    #expect(Tick(protein, on: wednesday) == nil)
+}

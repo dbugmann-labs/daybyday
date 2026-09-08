@@ -159,7 +159,7 @@ finding, not a licence to edit further: `Tick.swift`, `Number.swift` and `Note.s
 a total-kind commitment, and these boxes pin that they stay refused now that such a commitment can be
 kept.
 
-- [ ] 6.1 `a total commitment whose day is at its target still takes no tick on it` — from § *A tick
+- [x] 6.1 `a total commitment whose day is at its target still takes no tick on it` — from § *A tick
   is of a commitment on a calendar date it is due on*. `Tick.swift` is **not** edited.
 - [ ] 6.2 `a total commitment whose day's additions reach its target was kept on that date` — the
   requirement #137 shipped that this Story reverses, for the last kind.
