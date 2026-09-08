@@ -368,10 +368,45 @@ commitment's **target**; additions past the target are allowed and change nothin
 2026-09-06, same grill — the owner chose accumulation over a number typed once, and a target over
 kept-on-first-addition, against the recommendation both times.
 
+**Amended 2026-09-08**, at the grill of `add-total-record` (#141). The thing added is an
+**addition** and it must be **above zero**. A day's sum is capped where every other decimal in
+this system is: at **thirty-eight significant digits**, so an addition that would take the sum past
+it is refused and the day's additions stand. That is not the type's own ceiling, which is 137
+orders of magnitude further out and unreachable — it is where a `Decimal` sum silently stops being
+the sum, truncating rather than rounding, measured on this toolchain at that grill. A total whose
+sum quietly stops equalling what was added is a false record, which is what this product exists to
+remove; the cap also makes the additions' *order* irrelevant to the sum, while it stays meaningful
+for taking one back. A day with **no additions sums to zero**, not to nothing, and so does a day of
+any other kind asked the same question — the sum of no additions really is zero, whatever the
+commitment. A row says the **true** sum once it has passed the target — "150 of 120" — because
+showing 120 of 120 would be the app editing a person's record down to look tidy. There is no way to
+clear a whole day in one act: repeated take-back is the only way back.
+
 **Target** — the sum a total has to reach for its day to be kept, declared with a commitment of that
 kind and required by it: 120 grams, two doses. A total without a target is not a total — a number
 you only want to watch is a number. It is within one day and never across days, which is what keeps
 it on the right side of *Nothing congratulates you*. Agreed 2026-09-06, same grill.
+
+**Addition** — one thing added to a total's day, and the record `record` actually holds: a
+commitment, a calendar date and one decimal **above zero**. Zero and below are refused where the
+record is formed, the same refusal that stops a number outside its range — a negative addition
+would be a second way back, competing with the take-back that already exists. A day holds many, in
+the order they were made, and the day's **total** is their sum, derived and never stored. It is
+deliberately not the **total**, which is the *kind*: an addition is what a person makes, and a
+total is what a day has. Agreed 2026-09-08 at the grill of `add-total-record` (#141).
+
+**Total entry** — what a total commitment's row offers in a tick's place: one **addition** for that
+day. It is deliberately not an **addition**, which is the record `record` holds — this is the place
+one is made, the way a tick is made in the row. It says **two** things: the day's sum so far and
+the commitment's **target**, so the row can say *so far of target*; and unlike a **number entry**
+its field opens **empty** every time, because a commit is an addition rather than a replacement and
+a field opening on 90 committed unread would make the day 180. It is the first entry whose value is
+for reading rather than for editing. It teaches nothing before it refuses — "above zero" is the
+same rule for every total there will ever be, where a range is a bound one commitment declares —
+and committing something **blank keeps nothing and takes nothing back**, which is where it parts
+from the other two entries: their blank commit is the take-back, and a total's take-back removes
+only the *last* addition, so the same gesture would silently delete something a person would have
+to remember to miss. Agreed 2026-09-08, same grill.
 
 **Store** — where a value survives the app being closed and opened again: kept at a *place* the app
 names, so that whatever opens a store at that place next holds the same value. A change is kept the
@@ -513,6 +548,18 @@ number — two rows of one note commitment on one date holding different notes o
 and neither can stand in for the other. Not saying the note matters more than not saying the number
 did: a note is the one record long enough that drawing it in the daily list would change what the
 list is for.
+
+**Amended 2026-09-08**, at the grill of `add-total-record` (#141). A row offers **a tick, a number
+entry, a note entry or a total entry**, according to the **kind** its commitment declares, and
+never more than one; there is no longer a kind whose row offers nothing. The total's row is the one
+that offers a **second** thing besides — taking back its last addition — and it offers that only
+where the day holds an addition to take back, which it reads off the sum being above zero. Every
+other kind's take-back is the same gesture as its record: a tick's tap, an entry committed blank. A
+total's is not, because a blank commit would delete the last addition silently, so it is its own
+act and the only row affordance in this system that appears and disappears with what the day holds.
+What a row **is** grows by the day's sum, for the third time and for the reason it grew by the
+number and by the note. It still never *draws* the sum itself: that reaches a person through the
+**total entry**, the way the number and the note reach one through theirs.
 
 **Today** — the day a screen is being looked at on, and the only thing in the system that does not
 come from the calendar. It is always handed in and never asked for: nothing in the rule engine reads

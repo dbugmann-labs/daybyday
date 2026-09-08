@@ -3,6 +3,7 @@
 - Status: accepted
 - Date: 2026-09-06
 - Deciders: Diego Bugmann
+- Amended: 2026-09-08 — the reversal trigger fired at `add-total-record` (#141) and was declined; a general take-back over a shared record type is still not taken, and why is now written down
 - Amended: 2026-09-08 — widened from the number to any record taken back by naming its day; the note follows this shape, and the total is now the only kind that will not
 
 ## Context
@@ -25,11 +26,20 @@ wants gone. That is the whole of the question this record answers, and it was pu
 Story grill on 2026-09-06 because it decides a public signature that #140's note and #141's total
 will each copy or contradict.
 
-**#140's note copied it, on 2026-09-08**, and that is what this record was amended for. A note has a
-third part too — its text — and it is longer and less memorable than a number, so every argument
-below reads more strongly for it than for the number it was written about. A record reading as
-number-specific while two kinds follow it is one a later reader has to reconstruct, so it is written
-here as what it always was: a rule about **a record whose day names it**.
+**#140's note copied it, on 2026-09-08**, and that is what this record was first amended for. A note
+has a third part too — its text — and it is longer and less memorable than a number, so every
+argument below reads more strongly for it than for the number it was written about. A record reading
+as number-specific while two kinds follow it is one a later reader has to reconstruct, so it is
+written here as what it always was: a rule about **a record whose day names it**.
+
+**`add-total-record` (#141) is the reversal trigger this record named, and it fired on 2026-09-08.**
+The trigger was "the fourth kind, and only the fourth": when the total became recordable, a single
+take-back over a shared record type might be worth having and the tick would move with it. The
+question was asked, and **the answer is still no**. What the fourth kind actually showed is set out
+under *Consequences* below; the short of it is that a total's take-back removes its **last addition**
+rather than the record, so a shared member would mean *clear the day* for three kinds and *remove one
+thing* for the fourth — the very "reads as more general than it is" this record already rejects
+`History.clear(for:on:)` for.
 
 ## Decision
 
@@ -68,12 +78,14 @@ argument above. Symmetry of signature is worth less than a caller that can clear
 and the symmetry is false anyway: the two types do not have the same number of parts.
 
 **One `remove(_ record: Record)` over a shared record type, taking the whole record for every
-kind.** Rejected as premature when this was written, because two of the four kinds did not exist;
-still rejected after #140, and the reason has narrowed to one kind. A total's take-back is *removing
-its last addition* rather than removing the record at all, and its record is a list rather than one
-value, so a general signature designed over a tick, a number and a note would be designed over three
-records that are all "one value keyed by day" and would have to be redesigned the moment the fourth
-arrived. Fixing it now would fix it around a record nobody has grilled.
+kind.** Rejected as premature when this was written, because two of the four kinds did not exist.
+**Rejected again on 2026-09-08 with all four in front of it, and this time on evidence rather than on
+prematurity.** A total's take-back removes its *last addition* rather than the record, and its record
+is a list rather than one value, so the fourth kind did not turn out to be a fourth instance of the
+same shape — it turned out to be the one that does not fit. A single member over all four would have
+to mean two different things depending on the kind of the commitment handed to it, which is a member
+whose behaviour a call site cannot read. The three that *do* share a shape already share a name
+pattern and differ only in the noun, which is as much generality as they have earned.
 
 **`History.clear(for:on:)`, taking back whatever the day holds of any kind.** Rejected: it would take
 back a tick and a number through one call, and a commitment has one kind, so the call could only ever
@@ -81,21 +93,24 @@ reach one of them. It reads as more general than it is.
 
 ## Consequences
 
-- **`History` carries three take-back shapes**, `remove(_ tick:)`, `removeNumber(for:on:)` and
-  `removeNote(for:on:)`, and will carry a fourth as #141 lands. That is the cost, and it is visible
-  in one file.
-- **#140 copied this shape and #141 is expected to**: a note is taken back by naming the day, and a
-  total loses its last addition — which is `for:on:` again, with a different verb. When all four
-  exist, the general shape they share is worth naming, and the tick will be the one that has to be
-  brought into line.
+- **`History` carries four take-back shapes**, `remove(_ tick:)`, `removeNumber(for:on:)`,
+  `removeNote(for:on:)` and `removeLastAddition(for:on:)`. That is the cost, and it is visible in one
+  file.
+- **All four are named by the day, and three of the four mean the same thing by it.** #140's note
+  copied the shape; #141's total copied the *signature* — `for:on:` again — and gave it a different
+  verb, because what it removes is one addition rather than the day's record. So the pattern held and
+  the meaning did not, which is exactly the distinction a single shared member would have erased.
 - **A screen never has to read a record in order to remove it.** That is what #139's row needed and
   what #140's needs more, and it is what makes "take it back" one gesture on a day rather than a read
   followed by a write.
-- **The reversal trigger is the fourth kind, and only the fourth.** #140 was not it: a note is a
-  third record of the same shape and moving to a general take-back over three lookalikes would have
-  been the premature fix rejected above. When the **total** is recordable, a single take-back over a
-  shared record type may be worth having, and the tick would move with it. Amend this record in place
-  when that day comes (ADR-1020); do not add a fifth signature quietly.
+- **The trigger has fired and is spent; there is no fifth kind to fire it again.** It was the fourth
+  kind and only the fourth, `add-total-record` (#141) was it, and the answer was to keep four
+  signatures. What would now have to change for the answer to become yes is a *reason to unify*
+  rather than another kind: a caller that has to take a record back without knowing its kind. None
+  exists — every take-back in this system is made from a row, and a row already knows what its
+  commitment declares. If one ever appears, amend this record in place (ADR-1020) and expect the
+  general member to need a second answer for the total; do not add a fifth signature quietly, and do
+  not unify the three that fit while leaving the fourth outside, which is the worst of both.
 - **The filename says `a-number-is-taken-back` and the title no longer does.** Deliberate:
   `openspec/changes/archive/2026-09-07-add-number-record/tasks.md` § 8 names that path, and
   `.claude/settings.json` denies editing anything under `openspec/changes/archive/`, so a rename
