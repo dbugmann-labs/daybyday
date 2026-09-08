@@ -480,3 +480,43 @@ Things that are built, or deliberately not built, in a state someone will trip o
 - 2026-08-29 — **test enumeration reads Swift source.** CI check 4 reads `@Test("...")` display
   names out of the source text, because no Swift tool reports them without going through
   unpublished internals. One of the two things ADR-1001 left open.
+
+- **A row now gives a note out, while still giving no tick out** — the twelfth face of the
+  public-surface gap. `add-number-entry` (#139) gave a `DayView.Row` a way to give a number
+  out through the `NumberEntry` its `numberEntry(asOf:)` offers, while `tick(asOf:)` still
+  hands back a `Tick` that answers nothing about itself. `add-note-record` (#140) does the same
+  for notes: a row gives a note out through the `NoteEntry` its `noteEntry(asOf:)` offers,
+  while a note-kind commitment still cannot form a tick at all, so the row offers nothing for that
+  entry. Like #139's widening, this is authorised by a requirement rather than an oversight: the
+  entry has to carry the note so the field opens holding what the day already holds, and the row
+  still never *draws* it, which is answer 7 of this Story's grill.
+  `History.note(for:on:)` lets a note out at the record level and answers a third question with
+  a value, exactly as `History.number(for:on:)` does — so a history now answers three questions
+  three ways: ticks as a boolean from `isKept(_:on:)`, numbers as a value from
+  `number(for:on:)`, and notes as a value from `note(for:on:)`, while a tick still gives back
+  neither its commitment nor its date, and a number and note still give back none of their three.
+  The widening stays note-shaped — #141's total will face it again — and `Commitment.schedule`,
+  `Commitment.keptFrom` and the four schedule payloads are all still internal.
+  **Half of *A commitment of a kind nothing can yet record is a row that does nothing when
+  tapped* is spent by this Story:** a row for a note commitment now offers a note entry,
+  ending the case where a person defines a note and sees a dead row. A row for a total
+  commitment still offers nothing, and nothing in the shipped app can reach that state — the
+  commitments screen defines only the plain kind until #142 lands. The fix is unchanged and
+  still an edge on the tracker from #141 to #142.
+  Recorded 2026-09-08, at #140's close-out.
+- **`RecordStore.write` and `RecordDocument` carry an unlabelled data clump.** `(ticks,
+  numbers, notes)` travels as three positional parameters across the boundary between the
+  screen and the store. `RecordStore.write(_:_:_:)` at `RecordStore.swift:148` and
+  `RecordDocument.init(_:_:_:)` at `RecordDocument.swift:52` take them in that order; the
+  pattern recurs at six call sites across the two modules, plus a bare
+  `RecordDocument([], numbers, [:])`  in `RecordDocumentTests.swift:52`. The compiler catches a
+  swap today only because the two dictionaries differ in value type — one maps to `Decimal?` and
+  one to `String`. `add-total-record` (#141) makes it four kinds, and unlabelled positional
+  parameters of the same shape stop being distinguishable by the compiler at all. `design.md` §
+  *`History` grows a third one-off reader, knowingly* covers the reader surface and the deferral
+  of a general record reader; it does not cover the writer's parameter list, which is where the
+  fourth kind will actually hurt. `#141`'s grill will be forced to answer whether four kinds
+  justify a `Record` struct holding all four, or a `records(ticks:numbers:notes:totals:)` method
+  on the store, or some other shape — and either way the current signature is in the debt for a
+  reason: it is deliberately not being designed until all three exist. Recorded 2026-09-08,
+  at #140's close-out.
