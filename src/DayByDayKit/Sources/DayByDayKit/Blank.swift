@@ -7,13 +7,13 @@ enum Blank {
     }
 
     static func trimmed(_ text: String) -> String {
-        var scalars = Substring(text)
-        while let first = scalars.first, first.isWhitespace {
-            scalars.removeFirst()
+        var remaining = Substring(text)
+        while let first = remaining.first, first.isWhitespace {
+            remaining.removeFirst()
         }
-        while let last = scalars.last, last.isWhitespace {
-            scalars.removeLast()
+        while let last = remaining.last, last.isWhitespace {
+            remaining.removeLast()
         }
-        return String(scalars)
+        return String(remaining)
     }
 }

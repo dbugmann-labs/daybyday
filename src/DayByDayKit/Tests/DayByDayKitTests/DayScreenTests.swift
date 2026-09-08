@@ -1670,7 +1670,7 @@ func aRosterWrittenInALaterFormThanThisAppKnowsMakesADayScreenThatSaysTheRosterI
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 4, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -1828,7 +1828,7 @@ func aDayScreenThatWasKeepingARosterStopsWhenItIsShownAgainAndTheRosterCannotBeR
     let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 4, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     screen.shown(asOf: monday)
 

@@ -1065,6 +1065,10 @@ func aTextHoldingOneCharacterThatIsNotBlankSpaceIsANoteKeptWithTheBlankSpaceArou
 
     #expect(withSpaceAround != nil)
     #expect(withSpaceAround != trimmed)
+
+    var history = History()
+    history.add(withSpaceAround!)
+    #expect(history.note(for: commitment, on: monday) == " \n x \t ")
 }
 
 @Test("a note takes any length, any script and a line break")
@@ -1087,9 +1091,17 @@ func aNoteTakesAnyLengthAnyScriptAndALineBreak() {
         #expect(Note(text, for: commitment, on: monday) != nil)
     }
 
-    // Each note holds the text it was given, character for character: a note formed from a text
-    // differing by exactly one trailing scalar is a different note, at every one of these lengths
-    // and scripts.
+    // Each note holds the text it was given, character for character: read back through a
+    // history, the text answers exactly what it was given, at every one of these lengths and
+    // scripts.
+    for text in texts {
+        var history = History()
+        history.add(Note(text, for: commitment, on: monday)!)
+        #expect(history.note(for: commitment, on: monday) == text)
+    }
+
+    // A note formed from a text differing by exactly one trailing scalar is a different note, at
+    // every one of these lengths and scripts.
     for text in texts {
         let note = Note(text, for: commitment, on: monday)!
         let alteredNote = Note(text + "!", for: commitment, on: monday)!

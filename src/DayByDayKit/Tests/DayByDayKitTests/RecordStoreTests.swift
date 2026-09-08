@@ -614,7 +614,24 @@ func aStoreWhoseShapeAndDeclaredFormDisagreeAboutNumbersIsRefused() throws {
         at: currentFormWithoutNumbersPlace.deletingLastPathComponent(),
         withIntermediateDirectories: true)
     let currentFormWithoutNumbersBytes = Data(
-        #"{"version": 3, "ticks": []}"#.utf8)
+        """
+        {
+          "version": 4,
+          "ticks": [],
+          "notes": [
+            {
+              "commitment": {
+                "name": "Journal",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "note": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "text": "Ran 8k."
+            }
+          ]
+        }
+        """.utf8)
     try currentFormWithoutNumbersBytes.write(to: currentFormWithoutNumbersPlace)
 
     #expect(throws: RecordStoreError.notAStore(at: earlyFormWithNumbersPlace)) {

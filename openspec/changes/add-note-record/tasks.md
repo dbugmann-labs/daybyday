@@ -14,17 +14,19 @@ measured against a number rather than a memory.
   reports **628 tests passing**. Measured on this machine on 2026-09-08, Apple Swift 6.3.3
   (swiftlang-6.3.3.1.3), target `arm64-apple-macosx26.0`. A different number means `main` moved under
   the branch; report it rather than working around it (`AGENTS.md` rule 5).
-- [x] 1.2 Edit the eleven sites that say `4` to mean *a later form* so they say `5`. Nine JSON
-  fixtures — `RecordStoreTests.swift:295`, `RosterStoreTests.swift:323`,
-  `CommitmentsScreenTests.swift:1129`, and `DayScreenTests.swift:370`, `:454`, `:585`, `:1673`,
-  `:1831`, `:2471` — and two assertions, `RecordStoreTests.swift:298` and `RosterStoreTests.swift:326`,
-  whose `laterForm(at:version: 4)` becomes `version: 5`. **No `@Test` display name, no other
-  assertion, no date and no commitment may change**, and no test may be added or removed here. Five
-  of those eleven are the *roster* store's — `RosterStoreTests.swift:323` and `:326`,
-  `CommitmentsScreenTests.swift:1129`, and `DayScreenTests.swift:1673` and `:1831` — and they move to
-  `5` for the same reason the record's six do, and on the same precedent `add-number-record` set: the
-  roster document does not move in this change, and `5` is above its `currentVersion` of `2` as
-  surely as `4` was, so one number goes on meaning *a later form* everywhere in the suite.
+- [x] 1.2 Edit the seven sites that say `4` to mean *a later form* so they say `5`, and leave the
+  other four of the eleven exactly as they were. Six JSON fixtures move — `RecordStoreTests.swift:295`,
+  `CommitmentsScreenTests.swift:1129`, and `DayScreenTests.swift:370`, `:454`, `:585`, `:2471` — and
+  one assertion, `RecordStoreTests.swift:298`, whose `laterForm(at:version: 4)` becomes `version: 5`.
+  **No `@Test` display name, no other assertion, no date and no commitment may change**, and no test
+  may be added or removed here. Four of the eleven are the *roster* store's own and do **not** move:
+  `RosterStoreTests.swift:323` and `:326`, and `DayScreenTests.swift:1673` and `:1831` stay at `4`,
+  because `RosterDocument.currentVersion` is `3` — not `2` — and this change does not move it, so *one
+  later* than it is `4`, exactly what these four already said. The record's six move because
+  `RecordDocument.currentVersion` moved `3` → `4` in this change, making `5` the correct *one later*
+  there. `CommitmentsScreenTests.swift:1129` is the one roster-side site that does move to `5`: its own
+  scenario says only "later than this app writes", not "one later", and `5` is later than the roster's
+  `3` exactly as `4` was, so it is unaffected by which of the two is closer.
   `swift test` still reports **628 passing** after this box — a red test is a rule-5 stop, because
   nothing in this box was supposed to change an answer.
 - [x] 1.3 Confirm the coverage tool agrees before writing a test: from the repo root,
@@ -381,6 +383,17 @@ the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments t
   offers while still giving no tick out, and `History` answers three questions three ways. Also close
   the half of *A commitment of a kind nothing can yet record is a row that does nothing when tapped*
   that this Story spends, leaving it open for the total alone.
+
+  A second entry, beside the twelfth face and for the same grill: a data clump is forming ahead of
+  `add-total-record`. `(ticks, numbers, notes)` travels as three unlabelled positional parameters
+  through `RecordStore.write(_:_:_:)` (`RecordStore.swift:148`) and `RecordDocument.init(_:_:_:)`
+  (`RecordDocument.swift:52`), across six call sites, plus a bare `RecordDocument([], numbers, [:])`
+  in `RecordDocumentTests.swift:52`. The compiler catches a swap today only because the two
+  dictionaries differ in value type; `add-total-record` makes it four, and unlabelled positional
+  parameters of the same shape stop being distinguishable by the compiler at all.
+  `design.md` § *`History` grows a third one-off reader, knowingly* covers the reader surface and
+  the deferral of a general record reader; it does not cover the writer's parameter list, which is
+  where the fourth kind will actually hurt.
 
   **The whitespace defect is deliberately not among them.** The delta as first written owed this file
   a second entry recording that a lone U+200B silently takes a day's number back; the residual round
