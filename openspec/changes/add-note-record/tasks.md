@@ -110,12 +110,12 @@ Five scenarios from § *A note can be taken back*, in `Tests/DayByDayKitTests/Re
 take-back names the commitment and the date, never the text — `docs/adr/1033` as amended by this
 change, and § 15.2.
 
-- [ ] 5.1 `a note taken back leaves the day holding no note and the commitment not kept on it`
-- [ ] 5.2 `taking back a note leaves the same commitment's notes on other days standing`
-- [ ] 5.3 `taking back a note leaves another commitment's note on the same day standing`
-- [ ] 5.4 `taking back a note where the history holds none leaves it unchanged` — three cases: a day
+- [x] 5.1 `a note taken back leaves the day holding no note and the commitment not kept on it`
+- [x] 5.2 `taking back a note leaves the same commitment's notes on other days standing`
+- [x] 5.3 `taking back a note leaves another commitment's note on the same day standing`
+- [x] 5.4 `taking back a note where the history holds none leaves it unchanged` — three cases: a day
   with nothing on it, a commitment of the wrong kind, and a date it is not due on. None is an error.
-- [ ] 5.5 `a history given a note and then taken back is the same as one never given one`
+- [x] 5.5 `a history given a note and then taken back is the same as one never given one`
 
 ## 6. `record` — what the three existing answers say now
 
@@ -123,16 +123,16 @@ Five scenarios across three MODIFIED requirements, in `Tests/DayByDayKitTests/Re
 Expect 6.2 to be already satisfied by § 4.9's widening and the rest green on first write; a red test
 at 6.1, 6.4 or 6.5 is a real finding, not a licence to edit further.
 
-- [ ] 6.1 `a note commitment with a note on a date still takes no tick on it` — from § *A tick is of
+- [x] 6.1 `a note commitment with a note on a date still takes no tick on it` — from § *A tick is of
   a commitment on a calendar date it is due on*. `Tick.swift` is **not** edited: its kind guard
   already refuses this, and the test is what pins that it stays refused now that such a commitment
   can be kept.
-- [ ] 6.2 `a note commitment with a note recorded on a date was kept on that date` — the requirement
+- [x] 6.2 `a note commitment with a note recorded on a date was kept on that date` — the requirement
   #137 shipped that this Story reverses in part, for the last kind but one.
-- [ ] 6.3 `a note commitment due on a date with no note recorded was not kept on it`
-- [ ] 6.4 `every note a commitment accepts keeps its day, whatever it says` — four texts including one
+- [x] 6.3 `a note commitment due on a date with no note recorded was not kept on it`
+- [x] 6.4 `every note a commitment accepts keeps its day, whatever it says` — four texts including one
   that says the day went badly. What a person wrote is not something this system grades.
-- [ ] 6.5 `a note commitment with a note on a date still takes no number on it` — from § *A number is
+- [x] 6.5 `a note commitment with a note on a date still takes no number on it` — from § *A number is
   of a number commitment on a calendar date it is due on*. `Number.swift` is **not** edited, for the
   reason 6.1 gives.
 

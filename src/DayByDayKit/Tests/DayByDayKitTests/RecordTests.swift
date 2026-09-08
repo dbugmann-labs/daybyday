@@ -1294,3 +1294,172 @@ func aHistoryHoldsTicksNumbersAndNotesSideBySideAndAnswersEachOnItsOwn() {
     #expect(history.number(for: weight, on: monday) == 70.5)
     #expect(history.note(for: journal, on: monday) == "Ran 8k.")
 }
+
+@Test("a note taken back leaves the day holding no note and the commitment not kept on it")
+func aNoteTakenBackLeavesTheDayHoldingNoNoteAndTheCommitmentNotKeptOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: commitment, on: monday)!)
+    history.removeNote(for: commitment, on: monday)
+
+    #expect(history.note(for: commitment, on: monday) == nil)
+    #expect(!history.isKept(commitment, on: monday))
+}
+
+@Test("taking back a note leaves the same commitment's notes on other days standing")
+func takingBackANoteLeavesTheSameCommitmentsNotesOnOtherDaysStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: commitment, on: monday)!)
+    history.add(Note("Rested.", for: commitment, on: saturday)!)
+    history.removeNote(for: commitment, on: monday)
+
+    #expect(history.note(for: commitment, on: saturday) == "Rested.")
+    #expect(history.note(for: commitment, on: monday) == nil)
+}
+
+@Test("taking back a note leaves another commitment's note on the same day standing")
+func takingBackANoteLeavesAnotherCommitmentsNoteOnTheSameDayStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let sleep = Commitment(name: "Sleep", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: journal, on: monday)!)
+    history.add(Note("Slept badly.", for: sleep, on: monday)!)
+    history.removeNote(for: journal, on: monday)
+
+    #expect(history.note(for: sleep, on: monday) == "Slept badly.")
+    #expect(history.note(for: journal, on: monday) == nil)
+}
+
+@Test("taking back a note where the history holds none leaves it unchanged")
+func takingBackANoteWhereTheHistoryHoldsNoneLeavesItUnchanged() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let tickKind = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: commitment, on: saturday)!)
+    let before = history
+
+    history.removeNote(for: commitment, on: monday)
+    #expect(history == before)
+
+    history.removeNote(for: tickKind, on: saturday)
+    #expect(history == before)
+
+    history.removeNote(for: commitment, on: tuesday)
+    #expect(history == before)
+}
+
+@Test("a history given a note and then taken back is the same as one never given one")
+func aHistoryGivenANoteAndThenTakenBackIsTheSameAsOneNeverGivenOne() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: commitment, on: monday)!)
+    history.removeNote(for: commitment, on: monday)
+
+    #expect(history == History())
+}
+
+@Test("a note commitment with a note on a date still takes no tick on it")
+func aNoteCommitmentWithANoteOnADateStillTakesNoTickOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: commitment, on: monday)!)
+
+    #expect(Tick(commitment, on: monday) == nil)
+    #expect(history.note(for: commitment, on: monday) == "Ran 8k.")
+}
+
+@Test("a note commitment with a note recorded on a date was kept on that date")
+func aNoteCommitmentWithANoteRecordedOnADateWasKeptOnThatDate() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k before work. Knee held up.", for: commitment, on: monday)!)
+
+    #expect(history.isKept(commitment, on: monday))
+}
+
+@Test("a note commitment due on a date with no note recorded was not kept on it")
+func aNoteCommitmentDueOnADateWithNoNoteRecordedWasNotKeptOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let sleep = Commitment(name: "Sleep", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: journal, on: monday)!)
+
+    #expect(!history.isKept(journal, on: wednesday))
+    #expect(!history.isKept(sleep, on: monday))
+}
+
+@Test("every note a commitment accepts keeps its day, whatever it says")
+func everyNoteACommitmentAcceptsKeepsItsDayWhateverItSays() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var ran = History()
+    ran.add(Note("Ran 8k.", for: commitment, on: monday)!)
+
+    var missed = History()
+    missed.add(Note("Missed it, too tired.", for: commitment, on: monday)!)
+
+    var fullStop = History()
+    fullStop.add(Note(".", for: commitment, on: monday)!)
+
+    var long = History()
+    long.add(Note(String(repeating: "a", count: 100_000), for: commitment, on: monday)!)
+
+    #expect(ran.isKept(commitment, on: monday))
+    #expect(missed.isKept(commitment, on: monday))
+    #expect(fullStop.isKept(commitment, on: monday))
+    #expect(long.isKept(commitment, on: monday))
+}
+
+@Test("a note commitment with a note on a date still takes no number on it")
+func aNoteCommitmentWithANoteOnADateStillTakesNoNumberOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: commitment, on: monday)!)
+
+    #expect(Number(70.5, for: commitment, on: monday) == nil)
+    #expect(history.note(for: commitment, on: monday) == "Ran 8k.")
+}
