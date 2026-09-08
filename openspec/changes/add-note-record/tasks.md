@@ -90,18 +90,18 @@ holds*, in `Tests/DayByDayKitTests/RecordTests.swift`. `History` gains
 `removeNote(for:on:)` per `design.md` § *The seam*; the map is what makes 4.5 pass without an
 explicit remove-then-insert, exactly as the numbers map does.
 
-- [ ] 4.1 `a history that has taken no note has no note for a commitment on a day`
-- [ ] 4.2 `a note added to a history is the note that commitment has on that day` — assert the text
+- [x] 4.1 `a history that has taken no note has no note for a commitment on a day`
+- [x] 4.2 `a note added to a history is the note that commitment has on that day` — assert the text
   character for character, which is what stops anything normalising it later.
-- [ ] 4.3 `a note on one date is not the note on another date the same commitment is due on`
-- [ ] 4.4 `a note of one commitment is not the note of another on the same date`
-- [ ] 4.5 `a note entered again on the same day replaces the one before it` — both halves: the later
+- [x] 4.3 `a note on one date is not the note on another date the same commitment is due on`
+- [x] 4.4 `a note of one commitment is not the note of another on the same date`
+- [x] 4.5 `a note entered again on the same day replaces the one before it` — both halves: the later
   text reads back, and the history equals one the later note alone was added to.
-- [ ] 4.6 `a history has no note for a commitment whose kind is not a note` — answered rather than
+- [x] 4.6 `a history has no note for a commitment whose kind is not a note` — answered rather than
   refused, for all three other kinds and for a date the commitment is not due on.
-- [ ] 4.7 `a text the system refuses leaves the note already on that day standing`
-- [ ] 4.8 `two histories holding the same notes are the same history`
-- [ ] 4.9 `a history holds ticks, numbers and notes side by side and answers each on its own` — the
+- [x] 4.7 `a text the system refuses leaves the note already on that day standing`
+- [x] 4.8 `two histories holding the same notes are the same history`
+- [x] 4.9 `a history holds ticks, numbers and notes side by side and answers each on its own` — the
   box that drives out `isKept`'s third widening, exactly as #138's 4.9 drove out its second.
 
 ## 5. `record` — taking a note back

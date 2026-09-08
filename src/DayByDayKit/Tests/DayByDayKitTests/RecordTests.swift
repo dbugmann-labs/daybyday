@@ -1118,3 +1118,179 @@ func twoNotesAreTheSameExactlyWhenTheirCommitmentDateAndTextAllAre() {
     #expect(first != differentDate)
     #expect(first != differentCommitment)
 }
+
+@Test("a history that has taken no note has no note for a commitment on a day")
+func aHistoryThatHasTakenNoNoteHasNoNoteForACommitmentOnADay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    let history = History()
+
+    #expect(history.note(for: commitment, on: monday) == nil)
+}
+
+@Test("a note added to a history is the note that commitment has on that day")
+func aNoteAddedToAHistoryIsTheNoteThatCommitmentHasOnThatDay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let text = "Ran 8k before work. Knee held up."
+    let note = Note(text, for: commitment, on: monday)!
+
+    var history = History()
+    history.add(note)
+
+    #expect(history.note(for: commitment, on: monday) == text)
+}
+
+@Test("a note on one date is not the note on another date the same commitment is due on")
+func aNoteOnOneDateIsNotTheNoteOnAnotherDateTheSameCommitmentIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: commitment, on: monday)!)
+
+    #expect(history.note(for: commitment, on: wednesday) == nil)
+
+    history.add(Note("Rested.", for: commitment, on: wednesday)!)
+
+    #expect(history.note(for: commitment, on: monday) == "Ran 8k.")
+}
+
+@Test("a note of one commitment is not the note of another on the same date")
+func aNoteOfOneCommitmentIsNotTheNoteOfAnotherOnTheSameDate() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let sleep = Commitment(name: "Sleep", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: journal, on: monday)!)
+    history.add(Note("Slept badly.", for: sleep, on: monday)!)
+
+    #expect(history.note(for: journal, on: monday) == "Ran 8k.")
+    #expect(history.note(for: sleep, on: monday) == "Slept badly.")
+}
+
+@Test("a note entered again on the same day replaces the one before it")
+func aNoteEnteredAgainOnTheSameDayReplacesTheOneBeforeIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var enteredTwice = History()
+    enteredTwice.add(Note("Ran 8k.", for: commitment, on: monday)!)
+    enteredTwice.add(Note("Ran 8k. Knee held up.", for: commitment, on: monday)!)
+
+    var enteredOnceAtTheLaterText = History()
+    enteredOnceAtTheLaterText.add(Note("Ran 8k. Knee held up.", for: commitment, on: monday)!)
+
+    #expect(enteredTwice.note(for: commitment, on: monday) == "Ran 8k. Knee held up.")
+    #expect(enteredTwice == enteredOnceAtTheLaterText)
+}
+
+@Test("a history has no note for a commitment whose kind is not a note")
+func aHistoryHasNoNoteForACommitmentWhoseKindIsNotANote() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let target = Commitment.Target(120)!
+
+    let tickKind = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let numberKind = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let total = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let noteKind = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Tick(tickKind, on: monday)!)
+
+    #expect(history.note(for: tickKind, on: monday) == nil)
+    #expect(history.note(for: numberKind, on: monday) == nil)
+    #expect(history.note(for: total, on: monday) == nil)
+    #expect(history.note(for: noteKind, on: tuesday) == nil)
+}
+
+@Test("a text the system refuses leaves the note already on that day standing")
+func aTextTheSystemRefusesLeavesTheNoteAlreadyOnThatDayStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: commitment, on: monday)!)
+    let before = history
+
+    let refused = Note("   ", for: commitment, on: monday)
+
+    #expect(refused == nil)
+    #expect(history.note(for: commitment, on: monday) == "Ran 8k.")
+    #expect(history == before)
+}
+
+@Test("two histories holding the same notes are the same history")
+func twoHistoriesHoldingTheSameNotesAreTheSameHistory() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let onMonday = Note("Ran 8k.", for: commitment, on: monday)!
+    let onSaturday = Note("Rested.", for: commitment, on: saturday)!
+
+    var first = History()
+    first.add(onMonday)
+    first.add(onSaturday)
+
+    var second = History()
+    second.add(onSaturday)
+    second.add(onMonday)
+
+    #expect(first == second)
+}
+
+@Test("a history holds ticks, numbers and notes side by side and answers each on its own")
+func aHistoryHoldsTicksNumbersAndNotesSideBySideAndAnswersEachOnItsOwn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let tick = Tick(gym, on: monday)!
+    let number = Number(70.5, for: weight, on: monday)!
+    let note = Note("Ran 8k.", for: journal, on: monday)!
+
+    var history = History()
+    history.add(tick)
+    history.add(number)
+    history.add(note)
+
+    #expect(history.number(for: gym, on: monday) == nil)
+    #expect(history.note(for: gym, on: monday) == nil)
+    #expect(history.isKept(gym, on: monday))
+    #expect(history.number(for: weight, on: monday) == 70.5)
+    #expect(history.note(for: weight, on: monday) == nil)
+    #expect(history.isKept(weight, on: monday))
+    #expect(history.note(for: journal, on: monday) == "Ran 8k.")
+    #expect(history.number(for: journal, on: monday) == nil)
+    #expect(history.isKept(journal, on: monday))
+
+    history.remove(tick)
+
+    #expect(history.number(for: weight, on: monday) == 70.5)
+    #expect(history.note(for: journal, on: monday) == "Ran 8k.")
+}
