@@ -326,6 +326,14 @@ draws one. Committing something that is not a number keeps nothing and takes not
 entry half typed must not erase the day it is being typed on. Agreed 2026-09-07 at the grill of
 `add-number-entry` (#139).
 
+**Amended 2026-09-08**, at the residual round of `add-note-record` (#140). "Committed empty" means
+committed **blank**, and blank means what it means everywhere else in this system: whitespace in the
+full sense, spaces, tabs and line breaks alike, decided by the one test this package uses for the
+question (ADR-1039). A character that occupies no width is not blank space — a zero-width space is a
+character like any other here, so an entry committed with one alone is *not a number* rather than a
+take-back. It had been the reverse, and it was measurably how a paste of one invisible character
+deleted the number a day held.
+
 **Note entry** — what a note commitment's row offers in a tick's place: the note a person gives for
 that day, kept once it is committed and taken back when it is committed blank. It is deliberately
 not a **note**, which is the record `record` holds — this is the place one is made, the way a tick is

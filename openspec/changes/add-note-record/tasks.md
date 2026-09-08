@@ -28,7 +28,9 @@ measured against a number rather than a memory.
   `swift test` still reports **628 passing** after this box — a red test is a rule-5 stop, because
   nothing in this box was supposed to change an answer.
 - [ ] 1.3 Confirm the coverage tool agrees before writing a test: from the repo root,
-  `pnpm run checks` reports `scenario coverage — 109/184 scenario(s) covered` for this change. A
+  `pnpm run checks` reports `scenario coverage — 117/194 scenario(s) covered` for this change.
+  Measured on 2026-09-08 after the residual round folded in the number entry's MODIFIED requirement,
+  whose eight archived scenarios already have tests of those names and so arrive already covered. A
   different number means something else moved; report it rather than working around it. The scenario
   it names as *next* is a `day-screen` one, because the checker walks the delta's spec files in
   alphabetical order; the task order below is `record` first, because a row cannot offer an entry for
@@ -41,8 +43,10 @@ measured against a number rather than a memory.
   else — and change `Commitment.init?`'s own guard to read `guard !Blank.saysNothing(name)`. That is
   a **refactor with no behaviour in it**: `Blank.saysNothing` is `allSatisfy(\.isWhitespace)`, which
   is character for character what `Commitment.init?` says today, and the point of moving it is that
-  there is then exactly one place in the package that decides what blank means (`docs/adr/1039`).
-  `swift test` still reports 628 passing after this box; a red test is a rule-5 stop.
+  there is then one place in the package that decides what blank means (`docs/adr/1039`). Two callers
+  join it later — `Note.init?` at § 3.4 and `DayScreen.enter(_:on:)`'s note branch at § 12 — and
+  § 12.7 moves the last one, `DayScreen.read(_:)`, off `CharacterSet.whitespaces`. `swift test` still
+  reports 628 passing after this box; a red test is a rule-5 stop.
 - [ ] 2.2 Add `Sources/DayByDayKit/Note.swift` declaring exactly what `design.md` § *The seam* gives:
   `public struct Note: Hashable, Sendable` with internal `commitment`, `date` and `text`, and
   `public init?(_ text: String, for commitment: Commitment, on date: CalendarDate)`. **The
@@ -246,12 +250,20 @@ number branch is not touched. `RecordStore.removeNote(on:)` joins its private tw
 - [ ] 11.13 `entering a note on a day a day screen has moved back to keeps it on that day`
 - [ ] 11.14 `entering a note writes nothing to the roster's place`
 
-## 12. `day-screen` — reading what was committed
+## 12. `day-screen` — reading what was committed, in both entries
 
 Six scenarios from § *A day screen reads what is committed in a note entry as a note or as a
-take-back*, in `Tests/DayByDayKitTests/DayScreenTests.swift`. The reading is two lines and both of
-them call `Blank` — `design.md` § *One whitespace test, in one place, and it is Swift's*. Do not
-reach for a `CharacterSet` here; 12.4 is the box that catches it.
+take-back* and two from the MODIFIED § *A day screen reads what an entry is committed with as a
+number, as a take-back, or as neither*, all in `Tests/DayByDayKitTests/DayScreenTests.swift`. The
+note's reading is two lines and both of them call `Blank` — `design.md` § *One whitespace test, in
+one place, and it is Swift's*. Do not reach for a `CharacterSet` here; 12.4 is the box that catches
+it.
+
+12.7 and 12.8 are the residual round's answer, settled with the owner on 2026-09-08 before G4 and
+recorded in `grill.md` answer 5 and `design.md` § *Open Questions*. Between them they change **one
+expression** in a requirement `add-number-entry` signed four days earlier, and 12.7 carries the
+regression check that the whole argument for making the edit rests on: the eight archived scenarios
+of that requirement must answer exactly as they did.
 
 - [ ] 12.1 `a note committed with space around it is kept without that space and unchanged within it`
 - [ ] 12.2 `a note committed with space inside it keeps every character of that space`
@@ -262,6 +274,23 @@ reach for a `CharacterSet` here; 12.4 is the box that catches it.
   (`design.md` § *Context* measurement 1).
 - [ ] 12.5 `a note of one visible character among blank space is written rather than taken back`
 - [ ] 12.6 `a note of any length, any script and any number of lines is entered whole`
+- [ ] 12.7 `an entry committed with line breaks alone takes the number back` — expected **red** on
+  the trim that ships today, which leaves `"\n\n\n"` standing and reads it as *not a number*. The
+  smallest change that makes it pass is `read(_:)`'s first line becoming `Blank.trimmed(text)` in
+  place of `text.trimmingCharacters(in: .whitespaces)`, and **nothing else in `read(_:)` may move** —
+  not the sign handling, not the digit loop, not the separator count, not the
+  thirty-eight-significant-digit guard, not the `Decimal(string:)` call. Then run the whole suite: the
+  eight tests named for the archived scenarios of *A day screen reads what an entry is committed with
+  as a number, as a take-back, or as neither* must all still be green, and so must every other test
+  already passing. **A red one there is a rule-5 stop, never a test to update** — it would mean
+  `design.md` § *Context* measurement 2a is wrong about which texts change answer, and that
+  measurement is the evidence the owner settled the residual round on.
+- [ ] 12.8 `an entry committed with a zero-width space alone keeps nothing and takes nothing back` —
+  the direction the fix exists for. Write the character as `"\u{200B}"` and assert all four clauses:
+  the number 70.5 still stands, the day is still kept, the row is told "Not a number", and a day
+  screen opened afterwards at the same place says the same. Expect this **green as soon as 12.7's one
+  expression is in**, since it is the other direction of that expression; record in § 16.1 whether it
+  actually ran red, and do not edit `read(_:)` again to make it red.
 
 ## 13. `day-screen` — what is told on a row
 
@@ -308,22 +337,28 @@ the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments t
   acquired an overload of `remove(_:)` taking a `Note`, and that its filename is unchanged, since
   `openspec/changes/archive/2026-09-07-add-number-record/tasks.md` § 8 names that path and the
   archive may not be edited.
-- [ ] 15.3 Confirm 1039 describes the code that was actually written: one `Blank` used by
-  `Commitment.init?`, by `Note.init?` and by `DayScreen.enter(_:on:)`'s note branch, and
-  `DayScreen.read(_:)`'s number trim deliberately left on `CharacterSet.whitespaces`. An ADR that
-  has drifted from the implementation is edited in place and stamped, per `docs/adr/README.md`; a
+- [ ] 15.3 Confirm 1039 describes the code that was actually written: one `Blank`, called by
+  `Commitment.init?`, by `Note.init?`, by `DayScreen.enter(_:on:)`'s note branch and by
+  `DayScreen.read(_:)`'s number trim, with **no exception** — and that the one `CharacterSet` still
+  in the package is `CommitmentsScreen.nameTypedBackMatches`, which 1039 names and excuses by reason
+  rather than by omission. `grep -rn "whitespaces\|isWhitespace" src/DayByDayKit/Sources/` is the
+  check, and it should return `Blank.swift` and that one line and nothing else. An ADR that has
+  drifted from the implementation is edited in place and stamped, per `docs/adr/README.md`; a
   decision that has actually changed is a stop, not an edit.
-- [ ] 15.4 Confirm `CONTEXT.md` gained **Note entry** and the two amendments and **no other term**.
-  A new term appearing here means something was decided that should have been asked.
+- [ ] 15.4 Confirm `CONTEXT.md` gained **Note entry** and three amendments — to **Note**, to **Row**
+  and to **Number entry**, the last of them the residual round's — and **no other term**. A new term
+  appearing here means something was decided that should have been asked.
 
 ## 16. Closing the Story
 
 - [ ] 16.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 3, 6, 7, 9 and 12 actually ran red before the code that satisfies them was
-  written. A prediction in a task is not evidence; this is.
+  written — 12.7 and 12.8 among them, since 12.8 is predicted green on 12.7's edit and that
+  prediction is the claim that one expression closes both directions. A prediction in a task is not
+  evidence; this is.
 - [ ] 16.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
-  `scenario coverage — 184/184`. `cd src/DayByDayKit && swift test` reports **703 tests passing** —
-  628 at the branch point plus the seventy-five written here, plus none removed. A different number
+  `scenario coverage — 194/194`. `cd src/DayByDayKit && swift test` reports **705 tests passing** —
+  628 at the branch point plus the seventy-seven written here, plus none removed. A different number
   means a test was added or lost outside rule 3; report it.
 - [ ] 16.3 Open the app on a phone or the simulator with `pnpm run phone` and confirm by hand what
   nothing tests: define a note commitment, type a paragraph with a line break in it, save, force-quit
@@ -338,17 +373,17 @@ the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments t
   view is the commitments due on a date, each with whether it is kept*. Any drift there is a stop and
   a report, never a hand-edit: `openspec/specs/` is written by `/opsx:archive` and by nothing else
   (`AGENTS.md` rule 2).
-- [ ] 16.5 Land two entries in `docs/open-questions.md` as a **chore commit that merges before this
+- [ ] 16.5 Land one entry in `docs/open-questions.md` as a **chore commit that merges before this
   Story's archive**, not on this branch — `AGENTS.md` § *Agent roles* puts that file outside a
   Story's reach, and landing it first is what lets this box be ticked on evidence rather than in
-  anticipation of a merge still to come (the ordering `add-number-record` § 9.5 settled). The two
-  entries: **(a)** the public-surface gap has a twelfth face, in that a row now gives a note out
-  through the entry it offers while still giving no tick out, and `History` answers three questions
-  three ways; **(b)** the measured defect in `add-number-entry`'s reading — a lone U+200B committed in
-  a number entry is trimmed away by `CharacterSet.whitespaces` and silently takes the day's number
-  back — with `design.md` § *Context* measurement 2 as its evidence and the one-line fix priced in
-  § *Questions for you*. Entry (b) is owed **whatever the owner answers** at that question: if the
-  answer is *fix it*, (b) records instead that the inconsistency's other direction (a lone line break
-  told "Not a number") is what remains open. Also close the half of *A commitment of a kind nothing
-  can yet record is a row that does nothing when tapped* that this Story spends, leaving it open for
-  the total alone.
+  anticipation of a merge still to come (the ordering `add-number-record` § 9.5 settled). The entry:
+  the public-surface gap has a twelfth face, in that a row now gives a note out through the entry it
+  offers while still giving no tick out, and `History` answers three questions three ways. Also close
+  the half of *A commitment of a kind nothing can yet record is a row that does nothing when tapped*
+  that this Story spends, leaving it open for the total alone.
+
+  **The whitespace defect is deliberately not among them.** The delta as first written owed this file
+  a second entry recording that a lone U+200B silently takes a day's number back; the residual round
+  settled on fixing it instead, both directions close in § 12.7, and a known gap that is not a gap
+  any more is noise in the one file that is meant to be read as the live list. `grill.md` answer 5,
+  `design.md` § *Open Questions* and ADR-1039 carry the history between them.

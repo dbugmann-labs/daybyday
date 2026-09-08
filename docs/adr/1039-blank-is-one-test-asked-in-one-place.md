@@ -6,15 +6,17 @@
 
 ## Context
 
-Three things in `DayByDayKit` have to answer "does this text say anything?", and by
-`add-note-record` (#140) all three are live:
+Four things in `DayByDayKit` have to answer "does this text say anything?", and by
+`add-note-record` (#140) all four are live:
 
 - `Commitment.init?` refuses a name that is empty or made only of blank space, and has since
   `add-commitment-type` — `guard !name.allSatisfy(\.isWhitespace)`.
 - `Note.init?` refuses a text that says nothing, on the grill's settled answer that a note is judged
   exactly as a commitment name is.
-- `DayScreen.enter(_:on:)` reads a commit as a **take-back** when what was committed says nothing,
-  and otherwise trims the blank space around it before the record is formed.
+- `DayScreen.enter(_:on:)` reads a commit in a **note** entry as a take-back when what was committed
+  says nothing, and otherwise trims the blank space around it before the record is formed.
+- `DayScreen.read(_:)` reads a commit in a **number** entry as a take-back when nothing is left once
+  the blank space around it is disregarded, and has since `add-number-entry` (#139).
 
 There are two obvious tests to reach for and **they disagree, in both directions**. Measured through
 the real package on 2026-09-08, Apple Swift 6.3.3 (swiftlang-6.3.3.1.3), target
@@ -51,8 +53,10 @@ enum Blank {
 }
 ```
 
-`Commitment.init?`, `Note.init?` and `DayScreen.enter(_:on:)`'s note branch all call `Blank` and
-none of them spells the predicate out. Three consequences follow, and they are the decision:
+`Commitment.init?`, `Note.init?`, `DayScreen.enter(_:on:)`'s note branch and `DayScreen.read(_:)`'s
+number trim all call `Blank`, and none of them spells the predicate out. **There is no exception, and
+the absence of one is half the decision** — the defect above is what an exception costs, and a rule
+with one carve-out in it is a rule nobody can apply to the fifth caller. Three consequences follow:
 
 - **Swift's test, not Foundation's**, because it is the one already shipped in `Commitment.init?`
   and because the alternative silently swallows a zero-width space. A note of one U+200B is
@@ -60,19 +64,25 @@ none of them spells the predicate out. Three consequences follow, and they are t
   accepted. That edge is pinned by a scenario so it stays a decision rather than becoming an
   accident.
 - **A line break is blank space.** `CharacterSet.whitespaces` does not contain one, which is why the
-  number's reading calls a lone newline "Not a number" rather than a take-back. For a note, where a
-  person types into a multi-line field, that answer would be wrong on sight.
+  number's reading called a lone newline "Not a number" rather than a take-back until `add-note-record`
+  moved it. For a note, where a person types into a multi-line field, that answer would be wrong on
+  sight; for a number it was merely odd, and the two are now one answer.
 - **The same function answers both questions**, so the state "a commit that is neither a record nor a
   take-back" is unrepresentable rather than merely untested: after `Blank.trimmed`, what is left
   begins with a character `Blank.saysNothing` does not accept, so `Note.init?`'s blank guard cannot
   fire on text the screen decided was a note.
 
-**`DayScreen.read(_:)`'s number trim is deliberately left on `CharacterSet.whitespaces`.** The Story
-grill settled that the inconsistency between the two entries stands and is not fixed by #140, and
-the measurement above was put to the owner at that Story's residual round rather than acted on
-here. This record exists partly to stop the *wrong* resolution: someone finding two whitespace tests
-in `DayScreen.swift` and making the note match the number would import the deletion path into the
-note, where a multi-line field makes it far easier to reach.
+**`DayScreen.read(_:)` moves onto `Blank` in the same change.** #140's grill first settled that the
+inconsistency between the two entries would stand and be recorded rather than fixed, on the reading
+that the harm was a lone newline told "Not a number". The measurement above showed the harm ran the
+other way and cost a record, so it was put to the owner at that Story's residual round and the
+settled answer was reversed before G4. The edit is one expression, every text the number entry's
+archived scenarios name answers exactly as it did, and the two texts that change answer are the two
+this record is about. **The one `CharacterSet` left in the package is
+`CommitmentsScreen.nameTypedBackMatches`**, which trims both sides of a name a person types back to
+confirm a removal. It is deliberately not `Blank`'s: it asks whether two names are the same, not
+whether a text says anything, and it guards a gesture rather than a record. Anything that asks
+*this* question and does not call `Blank` is a review finding.
 
 ## Alternatives considered
 
@@ -81,10 +91,16 @@ the wider, safer set. It contains U+200B, so `"\u{200B}"` would be a take-back a
 perfectly good note at `Note.init?` — the exact two-answers state this record exists to prevent —
 and it would put the deletion path into the note as well.
 
-**Match the number's `CharacterSet.whitespaces`, so the whole package agrees today.** It buys
-agreement by adopting the worse test: notes would stop trimming line breaks, a note typed with a
-trailing newline would keep it, and a commit of one newline would be neither a note nor a take-back.
-The grill also said in as many words not to widen the number's trim.
+**Move the note onto the number's `CharacterSet.whitespaces`, so the whole package agrees without
+touching signed behaviour.** It buys agreement by adopting the worse test: notes would stop trimming
+line breaks, a note typed with a trailing newline would keep it, a commit of one newline would be
+neither a note nor a take-back, and the deletion path would follow the trim into the note — where a
+multi-line field makes a pasted zero-width space far easier to reach than a decimal keypad does.
+
+**Leave `read(_:)` alone and record the defect in `docs/open-questions.md`.** This was the decision
+for one day. It was reversed once the harm was measured rather than assumed: it is cheaper to change
+one expression under a gate that has not closed yet than to carry a known deletion path into an
+archived spec and hope the follow-up Story gets written.
 
 **Define our own set — Unicode's `White_Space` property plus the zero-width characters.** Wider than
 either, and it would refuse a commitment name that is accepted today, which is a behaviour change to
@@ -97,9 +113,13 @@ purpose.
 
 ## Consequences
 
-- **A note of one zero-width space is a note that draws as nothing.** Accepted, and inherited: the
-  same is already true of a commitment name. Closing it here alone would mean two definitions of
-  blank in one package.
+- **A note of one zero-width space is a note that draws as nothing, and a number entry committed with
+  one is told "Not a number".** Accepted, and inherited: the same is already true of a commitment
+  name. Closing it would take a second, wider definition of blank than the commitment has. Neither
+  answer loses a record, which is the property that was missing.
+- **A number entry committed with a line break alone is now a take-back rather than "Not a number".**
+  The second direction of the same disagreement, closed in the same edit. A decimal keypad produces
+  neither character, so both paths are a paste.
 - **`Commitment.init?` is refactored with no behaviour change** — the same predicate, moved. The
   suite is expected to report the same count before and after, and a red test there is a stop.
 - **The package now has one blank test and one trim, and a second one is a review finding.** Anything
@@ -107,7 +127,8 @@ purpose.
   `Blank` or explains why not.
 - **The reversal trigger is a text this rule gets visibly wrong**: a person reporting that something
   they typed was neither kept nor cleared. Amend this record in place if that arrives (ADR-1020).
-- **It does not fix `add-number-entry`.** The measurement is recorded in
-  `openspec/changes/archive/…/add-note-record/design.md` § *Context* and in
-  `docs/open-questions.md`; the fix, if the owner takes it, is `read(_:)`'s trim moving to `Blank`,
-  after which this record describes the whole package rather than everything but one function.
+- **It reaches back into `add-number-entry`.** One MODIFIED requirement in #140's `day-screen` delta
+  restates *A day screen reads what an entry is committed with as a number, as a take-back, or as
+  neither* on this test, carrying all eight of its archived scenarios forward unchanged and adding
+  one scenario per direction. That is the whole cost, and it was paid before G4 rather than as a
+  second Story.

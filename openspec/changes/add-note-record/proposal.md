@@ -39,6 +39,12 @@ four kinds are recordable and the deferral #138's grill took on a general record
 - **The store's form moves to 4.** A store goes on reading every form this app has written — now
   four of them — and a history kept before a day could hold a note reads back with no note on any
   day.
+- **A number entry disregards the same blank space a note entry does.** Writing the delta measured a
+  live defect in `add-number-entry`: `read(_:)` trims with `CharacterSet.whitespaces`, which contains
+  a zero-width space, so a paste of that one invisible character over a day holding 70.5 silently
+  took the number back. The owner settled the residual round on **fix it**, so that trim moves onto
+  the same test the note uses. One expression changes, no archived scenario changes answer, and the
+  package ends with one definition of blank rather than two.
 
 ## Capabilities
 
@@ -53,21 +59,25 @@ None. Both capabilities this change touches already exist.
   and reads, and what a store refuses.
 - `day-screen`: adds the note entry a row offers, what that entry says, and what a day screen does
   with what is committed in one; modifies what a row is, what a row offers at most one of, what a
-  notice names, how long a notice lasts, and where a commit is told nothing at all.
+  notice names, how long a notice lasts, where a commit is told nothing at all, and what blank space
+  means when a number entry is read.
 
 ## Impact
 
 - **`DayByDayKit`.** A new `Note` type beside `Number`; `History` gains a third one-off reader and a
   third store of its own; `RecordDocument` gains `notes` and moves to form 4; `DayView.Row` gains
-  `noteEntry(asOf:)` and `noteRecord(_:asOf:)`; `DayScreen.enter(_:on:)` widens to read a note.
+  `noteEntry(asOf:)` and `noteRecord(_:asOf:)`; `DayScreen.enter(_:on:)` widens to read a note; a new
+  internal `Blank` holds the one whitespace test, and `Commitment.init?` and `DayScreen.read(_:)`
+  move onto it.
 - **The app shell.** `ContentView.swift` gains a multi-line field for a note row's entry — the shell
   decides nothing, and none of it is tested (`docs/open-questions.md` § *No UI smoke layer*).
 - **`docs/adr/1033`** is amended in place to be about a record taken back by naming the day.
-  **`docs/adr/1039`** is new: blank is Swift's own whitespace test, asked in one place.
-- **`CONTEXT.md`** gains **Note entry** and amends **Note** and **Row**.
+  **`docs/adr/1039`** is new: blank is Swift's own whitespace test, asked in one place, with no
+  exception anywhere in the package.
+- **`CONTEXT.md`** gains **Note entry** and amends **Note**, **Row** and **Number entry**.
 - **Nothing on any phone moves.** A record written at form 3 reads back unchanged and is rewritten
   at form 4 only when the next change is kept there.
-- **A measured defect in #139's number reading, found while writing this delta and deliberately not
-  fixed here** — a lone U+200B committed in a number entry silently takes the day's number back.
-  `design.md` § *Impact* carries the measurement, and § *Questions for you* puts the scope decision
-  to the owner.
+- **A measured defect in #139's number reading, found while writing this delta and fixed here** — a
+  lone U+200B committed in a number entry silently took the day's number back. `design.md` § *Context*
+  measurements 2 and 2a carry the evidence and the proof that no archived scenario changes answer;
+  the owner settled the residual round on fixing it, and `grill.md` answer 5 records the reversal.

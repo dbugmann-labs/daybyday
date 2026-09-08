@@ -384,8 +384,12 @@ between is theirs and is not touched, so a note deliberately written as three pa
 three paragraphs.
 
 This reading SHALL NOT be the number entry's reading, and neither SHALL be applied to the other. A
-number entry's reading is its own requirement, its answers are three rather than two, and what it
-disregards around a committed number is a question that requirement answers for itself.
+number entry's reading is its own requirement and its answers are three rather than two, because a
+number has a shape a text can fail and a note has none. What the two share is exactly one thing, and
+they SHALL share it: what counts as blank space, asked of the `record` capability by both and decided
+by neither. A number entry disregarding one blank space and a note entry another would be two answers
+to one question living a few lines apart, which is the shape that produced the defect the number
+entry's own requirement now closes.
 
 #### Scenario: a note committed with space around it is kept without that space and unchanged within it
 
@@ -1236,3 +1240,157 @@ one; this requirement covers only a commit that was never read at all.
   kept from 1 January 2026; it is moved to the day after; and "Ran 8k." is committed on its one row
 - **THEN** the day screen tells nothing on any row
 - **AND** its day view still says the commitment is not kept on Tuesday 1 September 2026
+
+### Requirement: A day screen reads what an entry is committed with as a number, as a take-back, or as neither
+
+A day screen SHALL read what is committed in a number entry as exactly one of three things: a
+number, a take-back, or a value that is not a number. It SHALL read it itself, and MUST NOT consult
+the device's locale, its region or its keyboard to do so — nothing in this system reads a locale,
+and reading one here would make the same typing mean two things on two phones.
+
+**Blank space** around what is committed SHALL be disregarded before it is read, and **blank space
+SHALL mean whatever the `record` capability means by it**. This capability SHALL NOT decide it a
+second time, and SHALL NOT decide it one way for a number entry and another for a note entry: one
+question asked in one place is what keeps a number entry and a note entry from disagreeing about
+which texts are a take-back. Blank space is therefore spaces, tabs and line breaks alike, and a
+character that occupies no width is **not** blank space — a zero-width space is a character like any
+other here, is not disregarded, and what is committed still holds it once the blank space around it
+is gone.
+
+What holds nothing once blank space is disregarded — the empty text among them — SHALL be a
+**take-back**. Nothing else SHALL be one. A value that is not a number MUST NOT be read as a
+take-back, because an entry a person had half typed would then erase the day they were entering it
+on; and a text of characters a person cannot see MUST NOT be read as one, for that reason and more
+sharply, because nothing on the row would tell them the day had been cleared and nothing they can
+see would tell them why.
+
+What is committed SHALL be a **number** when, once blank space around it is disregarded, it holds in
+this order and holds nothing else: an optional minus sign, then digits and at most one decimal
+separator, with at least one digit among them. The separator SHALL be a full stop or a comma, and
+both SHALL be read the same way, because an iPhone's decimal keypad prints whichever the region it is
+set to says and a field that refuses the key on its own keyboard is broken. The number it holds SHALL
+be the number those digits say, exactly, with no digit added and none dropped.
+
+A day screen SHALL therefore keep only a number it can keep **exactly**, and text saying one it
+cannot SHALL be a value that is not a number here. Up to **thirty-eight significant digits** SHALL
+be kept — counted from the first digit that is not a zero to the last that is not a zero — at every
+magnitude this system holds. Text saying more digits than that, or a number too large or too near
+zero for this system to hold at all, MUST NOT be rounded, shortened or otherwise fitted to what can
+be held: a number nobody typed, kept under a person's name and never mentioned, is exactly the false
+record this product exists to remove, and it is worse than a refusal because nothing tells them it
+happened. Nor SHALL such text be read as a take-back, for the reason no value that is not a number
+is one. The bound is this system's own rather than a rule about weights — no number a commitment in
+this product asks a person for comes near it, and what reaches it is a paste.
+
+Everything else SHALL be a value that is not a number: two separators, a separator with no digit
+beside it, a sign anywhere but the front, an exponent, letters or spaces among the digits, a
+character of no width anywhere in it, a digit that is not one of the ten this package reads, and
+digits saying a number that cannot be kept exactly. Such a value SHALL keep nothing and SHALL take
+nothing back, and the day SHALL be left exactly as it was.
+
+#### Scenario: a number typed with a full stop is entered exactly as it was typed
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, and "70.5" is committed on its one row
+- **THEN** the entry the row the day screen then holds offers says the number 70.5
+- **AND** committing "0.000001" and then "98765432109876543210.5" on that row leaves it saying
+  each of those numbers in turn, digit for digit
+
+#### Scenario: a number typed with a comma is entered as the same number as one typed with a full stop
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026, and "70,5" is committed on its
+  one row
+- **THEN** the entry the row the day screen then holds offers says the number 70.5
+
+#### Scenario: a number typed with leading zeros or a trailing separator is entered as the number it says
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, and "0000070.50" is committed on its
+  one row
+- **THEN** the entry the row the day screen then holds offers says the number 70.5
+- **AND** committing "70." on that row leaves it saying the number 70
+- **AND** committing " 70.5 " on that row leaves it saying the number 70.5
+
+#### Scenario: a negative number is entered where the commitment declares no range
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Balance" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, and "-12.75" is committed on its one
+  row
+- **THEN** the entry the row the day screen then holds offers says the number -12.75
+- **AND** the day view says the commitment is kept on that date
+
+#### Scenario: an entry committed empty takes the number back, and one holding nothing but space does the same
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with a range of 40 to 150 and a
+  commitment named "Mood" of the number kind with a range of 1 to 10, both on a schedule listing
+  Monday, Wednesday and Saturday and both kept from 1 January 2026; "70.5" is committed on the
+  first row and "8" on the second; and then nothing at all is committed on the first row and two
+  spaces on the second
+- **THEN** the day screen's day view says neither commitment is kept on that date
+- **AND** the entry each of its rows offers says no number
+
+#### Scenario: an entry committed with line breaks alone takes the number back
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026; "70.5" is committed on its one
+  row; and a text of three line breaks is then committed on the row it then holds
+- **THEN** the day screen's day view says the commitment is not kept on that date
+- **AND** the entry its row offers says no number
+- **AND** the day screen tells nothing on any row
+- **AND** committing "70.5" again and then a text of one tab followed by one line break leaves it
+  saying no number too
+- **AND** a day screen opened afterwards at the same place as of the same day says the same
+
+#### Scenario: an entry committed with a zero-width space alone keeps nothing and takes nothing back
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026; "70.5" is committed on its one
+  row; and a text of one zero-width space is then committed on the row it then holds
+- **THEN** the entry the row the day screen then holds offers says the number 70.5
+- **AND** the day view says the commitment is kept on that date
+- **AND** the day screen tells, on that row, that it is not a number
+- **AND** a day screen opened afterwards at the same place as of the same day says the same
+
+#### Scenario: a value that is not a number keeps nothing and takes nothing back
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026; "70.5" is committed on its one row;
+  and each of "1.2.3", ".", "-", "12abc", "1e3", "7-0" and "٧٠" is then committed in turn on the
+  row it then holds
+- **THEN** the entry the row the day screen then holds offers says the number 70.5 after every one
+  of them
+- **AND** the day view says the commitment is kept on that date
+- **AND** a day screen opened afterwards at the same place as of the same day says the same
+
+#### Scenario: a number of as many digits as can be kept is entered exactly
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, and a whole number of thirty-eight
+  nines is committed on its one row
+- **THEN** the entry the row the day screen then holds offers says that number, digit for digit
+- **AND** the day view says the commitment is kept on that date
+- **AND** a day screen opened afterwards at the same place as of the same day says the same
+
+#### Scenario: a number too long to be kept exactly keeps nothing and takes nothing back
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026; "70.5" is committed on its one row; and
+  a whole number of thirty-nine nines, a whole number of two hundred ones, and a number whose only
+  digit that is not a zero is at the hundred-and-twenty-ninth place after the point are each then
+  committed in turn on the row it then holds
+- **THEN** the entry the row the day screen then holds offers says the number 70.5 after every one
+  of them
+- **AND** the day screen tells, on that row, that it is not a number
+- **AND** the day view says the commitment is kept on that date
+- **AND** a day screen opened afterwards at the same place as of the same day says the same

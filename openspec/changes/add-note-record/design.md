@@ -77,10 +77,43 @@ the number kept for that day, and the screen then draws the day as not kept with
 It is reachable only by a paste, because a decimal keypad prints no such character, and it is
 `add-number-entry`'s behaviour rather than anything this change introduces.
 
-**This change does not fix it.** The grill settled (answer 5) that the whitespace inconsistency is
-recorded and deliberately left, and "do not widen the number's trim" is the settled answer.
-§ *Questions for you* puts the new fact in front of the owner, because it was not the fact the
-answer was given against; the delta as it stands is written on the settled answer.
+**This change fixes it, and both directions close together.** The measurement was put to the owner
+as a residual round, because it was not the fact the grill's answer 5 was given against — that answer
+weighed the harmless direction and two figures that turned out to be wrong, and it was reversed in
+`grill.md` on 2026-09-08, before G4. So `read(_:)`'s trim moves onto the same `Blank` the note uses,
+one MODIFIED requirement joins the `day-screen` delta, and the package ends with one blank test
+rather than one blank test and an exception.
+
+### Measurement 2a — what the widened trim does to every text an archived scenario names
+
+The fix is a trim swap on a requirement that is already archived, so what matters is not that the two
+new texts answer differently but that **nothing else does**. Every text named in the archived
+scenarios of *A day screen reads what an entry is committed with as a number, as a take-back, or as
+neither* was put through both trims and through the rest of `read(_:)`'s reading, which the fix does
+not touch. Unlike measurements 1, 3 and 4 this one cannot yet be driven through `DayByDayKit` —
+`Blank` does not exist until § 12 of `tasks.md` — so the two predicates were compiled and run
+side by side, on this machine on 2026-09-08, Apple Swift 6.3.3 (swiftlang-6.3.3.1.3):
+
+```
+committed                    .whitespaces        Character.isWhitespace   same answer
+" 70.5 "                     "70.5"              "70.5"                   yes
+"  " (two spaces)            "" — take-back      "" — take-back           yes
+""  (the empty text)         "" — take-back      "" — take-back           yes
+"1.2.3" "." "-" "12abc"      unchanged           unchanged                yes
+"1e3" "7-0" "٧٠"             unchanged           unchanged                yes
+"0000070.50"  "70."          unchanged           unchanged                yes
+"70,5"  "-12.75"             unchanged           unchanged                yes
+─── and the three texts the fix is about, for contrast ───
+U+200B alone                 "" — take-back      "<ZWSP>" — not a number  NO
+"\n\n\n"                     unchanged — n.a.n.  "" — take-back           NO
+"\t\n"                       "\n" — n.a.n.       "" — take-back           NO
+```
+
+**No archived scenario changes answer**, so none is rewritten and none is deleted: the MODIFIED
+requirement carries all eight of them forward word for word and adds two. The thirty-eight-digit and
+thirty-nine-digit texts are digits throughout and cannot be touched by a trim at all. `tasks.md`
+§ 12.7 re-runs the eight tests named for those scenarios against the real edit, because a predicate
+measured beside the package is weaker evidence than the suite, and a red one there is a stop.
 
 ### Measurement 3 — what a text survives, through a real `RecordStore`
 
@@ -140,13 +173,20 @@ implementation reaching for `precomposedStringWithCanonicalMapping`.
 - One `Note` record that copies `Number`'s shape exactly, so #141's total copies one shape and not
   two.
 - One whitespace test in this package's answer to "does this text say anything", asked in one place
-  and used by both the record and the screen.
+  and used by the record, by the note entry **and by the number entry** — no exception, because an
+  exception is what measurement 2 found and what it cost.
 - One way in for a commit, whatever entry the row offers, so a caller cannot pick the wrong door.
 
 **Non-Goals**
 
-- Any change to what a number entry does. Measurement 2 found a defect there; § *Questions for you*
-  relays it and the delta leaves it alone.
+- Any change to what a number entry does **beyond the trim**. Its three answers stay three, its parse
+  table is untouched, its two causes stay two, and no scenario of its own is rewritten (measurement
+  2a). What moves is one expression: which characters are disregarded before the text is read.
+- Any change to `CommitmentsScreen.nameTypedBackMatches`, the third `CharacterSet` in this package.
+  It trims both sides of a name a person is typing back to confirm a removal, which is *are these two
+  names the same* rather than *does this text say anything*; it guards a gesture rather than a record,
+  and widening it would be a delta against a third capability nobody grilled. Named in ADR-1039 so
+  that the claim "one blank test" stays a true claim rather than a tidy one.
 - The general record reader `History` will eventually have. #138's grill deferred it and named this
   Story and #141 as the point at which the deferral runs out; the grill (answer 6) took the third
   one-off reader knowingly, because the **total** is the record whose shape would actually decide
@@ -162,7 +202,8 @@ implementation reaching for `precomposedStringWithCanonicalMapping`.
 ### The seam
 
 **Widened, not new.** One new type in `record`, mirroring `Number`; two members on an existing row;
-one existing screen member widened. Every scenario in this delta is driven through `Note`, `History`,
+one existing screen member widened, and one private reading behind it moved onto `Blank` without its
+signature or its answers changing. Every scenario in this delta is driven through `Note`, `History`,
 `RecordStore`, `DayView` or `DayScreen`, and no test spawns a process or captures a stream.
 
 ```swift
@@ -216,6 +257,10 @@ extension DayView {
     /// Unchanged signature. Enters what `text` holds in whichever entry `row` offers, or takes
     /// that day's record back where it holds nothing.
     public func enter(_ text: String, on row: DayView.Row) throws
+
+    /// Unchanged signature, unchanged three answers, unchanged parse. Its first line stops being
+    /// `text.trimmingCharacters(in: .whitespaces)` and becomes `Blank.trimmed(text)`.
+    private static func read(_ text: String) -> CommittedText
 }
 
 /// The one place this package decides whether a text says anything. Internal.
@@ -247,16 +292,24 @@ wrong; the cost is real.
 ### One whitespace test, in one place, and it is Swift's
 
 Measurement 1 shows the two tests already in this package disagree in both directions. The rule the
-delta takes: **`Character.isWhitespace`, everywhere a note is judged or trimmed.**
+delta takes: **`Character.isWhitespace`, everywhere this package asks whether a text says anything.**
 
-- `Note.init?` refuses `text` when `Blank.saysNothing(text)` — `text.allSatisfy(\.isWhitespace)`,
-  which is `Commitment.init?`'s own guard character for character. That is the grill's answer 5 and
-  it is what "judged exactly as a commitment name is" means when written down.
+- `Commitment.init?` refuses `name` when `Blank.saysNothing(name)`. A refactor with no behaviour in
+  it — `Blank.saysNothing` is `allSatisfy(\.isWhitespace)`, which is what that guard already spells
+  out inline — and the point of moving it is that there is then one place to change and one place to
+  read.
+- `Note.init?` refuses `text` when `Blank.saysNothing(text)`, the same guard character for character.
+  That is the grill's answer 5 and it is what "judged exactly as a commitment name is" means when
+  written down.
 - `DayScreen.enter(_:on:)`, on a note row, asks **the same function**: `Blank.saysNothing(text)` is
   the take-back, everything else is trimmed by `Blank.trimmed` — `drop(while:\.isWhitespace)` at
   each end — and handed to `row.noteRecord(_:asOf:)`.
+- `DayScreen.read(_:)`, on a number row, trims with `Blank.trimmed` instead of
+  `trimmingCharacters(in: .whitespaces)`. **One expression, and it is the whole of the fix**: the
+  reading's three answers, its parse table, its thirty-eight-digit bound and its two causes are
+  untouched, and measurement 2a shows every text an archived scenario names answers as it did.
 
-The two asks being one function is the whole of the decision. It makes the state the delta forbids —
+The four asks being one function is the whole of the decision. It makes the state the delta forbids —
 a commit that is neither a note nor a take-back — **unrepresentable rather than merely tested for**:
 after the trim, what is left has a first character that is not whitespace, so `Note.init?`'s blank
 guard cannot fire, and `noteRecord` can only return `nil` for a reason `enter` has already guarded.
@@ -284,18 +337,25 @@ that nobody switches to a `CharacterSet` later and changes the answer without no
 reach. It contains U+200B (measurement 1), so `"\u{200B}"` would trim to empty and be a take-back at
 the screen while `Note.init?` would accept it as a note — the two answers this section exists to
 prevent, and the very shape of the live defect measurement 2 found in the number.
-**Rejected: matching the number's `CharacterSet.whitespaces`** so that both entries agree. It agrees
-by adopting the worse test: the note would stop trimming line breaks, so a note typed with a trailing
-newline would keep it, and a commit of one newline would be neither. The grill's answer 5 also says
-in as many words not to widen the number's trim.
+**Rejected: moving the note onto the number's `CharacterSet.whitespaces`** so that both entries agree
+without touching signed behaviour. It agrees by adopting the worse test: the note would stop trimming
+line breaks, so a note typed with a trailing newline would keep it, and a commit of one newline would
+be neither a note nor a take-back — and it would carry the deletion path into the note, where a
+multi-line field makes a pasted zero-width space far easier to reach than a decimal keypad does.
+**Rejected: leaving `read(_:)` alone and recording the defect.** That is what the grill settled and
+what this delta said until the residual round; the owner reversed it once the measurement was in
+front of them. The reasons it was reversed are worth keeping, because they are the reasons a similar
+call gets made again: the harm was measured in the direction nobody had weighed, no archived scenario
+breaks (measurement 2a), and the folder was not yet signed, so there was no second G4 to pay for.
 **Rejected: trimming in `Note.init?` instead of at the screen.** `commitment`'s own requirement says
 "Tidying what a person typed belongs where they typed it, not in the rule that decides what a
 commitment is", and a note is judged as a name is. The record keeps what it is given; the screen,
 which is where a person typed, is what tidies.
 
-`docs/adr/1039` carries this decision, because a later reader finding two whitespace tests in
-`DayScreen.swift` will otherwise "fix" the note to match the number and import measurement 2's
-defect into it.
+`docs/adr/1039` carries this decision. It is written about the whole package rather than about the
+note, because after this change `DayScreen.swift` holds no second whitespace test to be "fixed"
+towards — and the one `CharacterSet` left in the package, `CommitmentsScreen.nameTypedBackMatches`,
+is named there with the reason it is a different question.
 
 ### A note entry says one thing, and a row still says none
 
@@ -395,18 +455,28 @@ which `.claude/settings.json` denies editing. Title-and-filename drift is normal
 
 ## Risks / Trade-offs
 
-- **A live defect in `add-number-entry` is now measured and is being left.** → Not mitigated in this
-  change, on the grill's settled answer 5. Measurement 2 records it, § *Questions for you* relays it
-  to the owner with the fix priced, and `tasks.md` § 16.5 lands it in `docs/open-questions.md` as a
-  chore beside the merge whatever the owner decides — so it is on the record either way rather than
-  only in this folder.
-- **75 new scenarios in one change folder.** → Accepted, and it is the arithmetic of the grill's
-  answer 1: this Story is #138's half plus #139's half, which were 38 and 37. The alternative was two
-  Stories and two G4s for one kind, which G2 already weighed and declined.
-- **A note of one zero-width space is a note that draws as nothing.** → Accepted, pinned by a
-  scenario and explained in § *One whitespace test*. It is inherited from `Commitment`, where the
-  same is true of a name today, and closing it here alone would be two definitions of blank in one
-  package — which is exactly the failure measurement 2 exhibits.
+- **This change edits behaviour a signed requirement describes.** → `read(_:)`'s trim is a
+  requirement `add-number-entry` shipped four days ago, and reopening one is not free. Mitigated
+  three ways: the edit is one expression, the MODIFIED requirement carries all eight archived
+  scenarios forward unchanged, and measurement 2a puts every text they name through both trims and
+  shows none answers differently. What is left is the two texts the fix exists for. The alternative
+  was leaving a measured path by which a paste deletes a day's record, in a product whose whole
+  argument is that a record is not lost.
+- **A number entry now reads a lone line break as a take-back rather than as "Not a number".** →
+  Accepted and pinned by a scenario. It is the second direction of the same inconsistency, and it is
+  the answer a person would want: a text of three newlines says nothing, so it clears the day. A
+  decimal keypad cannot produce it, so the path is a paste in both directions.
+- **77 new scenarios in one change folder.** → Accepted, and it is the arithmetic of the grill's
+  answer 1: this Story is #138's half plus #139's half, which were 38 and 37, plus the two the
+  residual round added. The alternative was two Stories and two G4s for one kind, which G2 already
+  weighed and declined.
+- **A note of one zero-width space is a note that draws as nothing, and a number entry committed with
+  one is now told "Not a number".** → Accepted, both pinned by scenarios and explained in § *One
+  whitespace test*. It is inherited from `Commitment`, where the same is true of a name today, and
+  closing it would take a second, wider definition of blank than the commitment has — which is
+  exactly the two-definitions failure measurement 2 exhibits. A person who cannot see what they
+  pasted is told something in the number entry and keeps something invisible in the note; neither
+  loses a record, which is the property that was missing before.
 - **Two spellings of one word are one note, so writing the day again with the other spelling is not
   a change.** → Accepted. Measurement 4: it is Swift's canonical equality, it is already how a
   commitment name behaves, and it is the answer a person would want. What is fenced is the other
@@ -428,52 +498,33 @@ rewritten whole at form 4 the next time anything is kept at that place — ADR-1
 eleven test fixtures that say `4` to mean *a form later than this app writes* move to `5`, which is
 a mechanical step with no behaviour in it (`tasks.md` § 1).
 
-## Questions for you
-
-One question, and it is the only one writing this delta turned up. **It is a scope decision, and the
-delta as written takes the recommendation** — so answering "leave it" changes nothing at all, and
-answering "fix it" changes what is listed under *If you say fix it*.
-
-1. **A paste of one invisible character silently deletes a number a day already holds.** Measurement
-   2: committing `U+200B` (zero-width space) in a **number** entry over a day holding 70.5 takes the
-   number back and says nothing, because `read(_:)` trims with `CharacterSet.whitespaces`, which
-   contains U+200B, leaving the empty text — which is the take-back. The grill settled at answer 5
-   that the whitespace inconsistency between the two entries stands and is not fixed here, but the
-   direction it settled against was the harmless one: a lone newline told "Not a number". This
-   direction loses a record. Do we fix it in this Story, or leave it?
-   - *Recommended:* **leave it**, and land it in `docs/open-questions.md` as a chore beside the merge
-     (`tasks.md` § 16.5 does this either way). Three reasons. The grill settled it explicitly and the
-     reasons it gave still hold — a fix is a delta against `day-screen` requirements already archived
-     and signed, and costs a second G4 on this folder. The path needs a paste of an invisible
-     character; nothing a person types on an iPhone decimal keypad reaches it. And the same
-     inconsistency has a second face (the newline), so fixing one direction here is fixing half a bug
-     in one kind of entry — which is the reasoning #139 itself used to decline B-035, and it says the
-     honest fix is one Story that closes both directions at once.
-   - *If you say fix it:* `read(_:)`'s trim moves from `CharacterSet.whitespaces` to
-     `Character.isWhitespace` — the same `Blank` this change introduces, so the two entries end up on
-     one test after all. **One MODIFIED requirement is added to the `day-screen` delta** (*A day
-     screen reads what an entry is committed with as a number, as a take-back, or as neither*, whose
-     "space around what is committed" sentence changes meaning) and **two scenarios**: a lone
-     zero-width space is told "Not a number" rather than taken back, and a lone line break is a
-     take-back rather than "Not a number". No archived scenario breaks — the existing ones use two
-     spaces and a list of non-blank texts, both of which answer the same way under either test — and
-     nothing else in either delta moves. It also means ADR-1039 is written about the whole package
-     rather than about the note alone.
-
 ## Open Questions
 
 **None.** `grill.md` § *Left open* says "None." with its reason — twelve questions over four rounds,
-every one answered — and writing the delta turned up nothing that must be settled before the code is
-written. The one thing it turned up that the owner should see is § *Questions for you* above, which
-is a **scope** decision taken on the recommendation rather than a question the delta is waiting on.
+every one answered. Writing the delta turned up exactly one thing the owner had to decide, it was put
+to them as a residual round, and it is settled below. Nothing is outstanding.
+
+**Settled at the residual round, 2026-09-08, before G4 — a paste of one invisible character silently
+deleted a number a day already held.** Measurement 2 found that committing `U+200B` in a **number**
+entry over a day holding 70.5 took the number back and said nothing, because `read(_:)` trimmed with
+`CharacterSet.whitespaces`, which contains U+200B. The delta as first written left it, on the grill's
+answer 5, and asked whether to fix it. **The owner answered: fix it.** So `read(_:)`'s trim moved onto
+the same `Blank` this change introduces, the `day-screen` delta gained one MODIFIED requirement —
+*A day screen reads what an entry is committed with as a number, as a take-back, or as neither* — and
+that requirement gained two scenarios, one for each direction the two tests disagreed in. Nothing
+else in either delta moved, and no archived scenario was rewritten (measurement 2a). `grill.md`
+answer 5 was amended in place to record the reversal; the half of it that still stands is that blank
+is `Character.isWhitespace`, in one place, for the whole package. ADR-1039 is written on the whole
+package rather than on the note alone, and `tasks.md` § 16.5 no longer owes
+`docs/open-questions.md` an entry about the defect, because it is closed here rather than recorded.
 
 The two things `grill.md` § *Left open* carried rather than left open are both discharged here.
-The whitespace inconsistency (answer 5) is § *Context* measurement 2 and § *Questions for you*.
-The requirement that every claim about what a note may hold carry a measurement through
-`DayByDayKit` beside it is measurements 1, 3 and 4, each run against the real package rather than a
-re-implementation of it.
+The whitespace inconsistency (answer 5) is § *Context* measurements 2 and 2a, and it is fixed rather
+than only recorded. The requirement that every claim about what a note may hold carry a measurement
+through `DayByDayKit` beside it is measurements 1, 3 and 4, each run against the real package rather
+than a re-implementation of it.
 
-Six things writing the delta turned up and settled here rather than asking, and why each was not a
+Seven things writing the delta turned up and settled here rather than asking, and why each was not a
 question:
 
 - **Which whitespace test.** Not a preference: the grill named `Commitment.init?`'s test by name at
@@ -482,6 +533,10 @@ question:
 - **Whether a note of one zero-width space is a note.** A consequence of the answer above rather
   than a decision of its own; the same is already true of a commitment name, measured. Pinned by a
   scenario so that it stays a decision.
+- **Whether `CommitmentsScreen.nameTypedBackMatches` moves onto `Blank` too.** Not a preference and
+  not this Story's: it asks *are these two names the same*, not *does this text say anything*, and it
+  guards a confirmation gesture rather than a record. Named in § *Goals / Non-Goals* and in ADR-1039
+  so the "one blank test" claim stays true rather than tidy.
 - **Whether the screen gets a second way in for a note.** Settled against, on a stated hazard —
   two members of one signature answering each other's rows with silence — and it changes no scenario
   either way, since every one of them observes the day and the entry rather than which member was

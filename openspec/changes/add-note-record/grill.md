@@ -37,6 +37,17 @@
    fixed here: fixing it is a delta against `day-screen` requirements that are already archived and
    signed. Record it in `design.md` § Impact and at G7; do not widen the number's trim.*
 
+   **Reversed at the residual round, 2026-09-08, before G4. The number's trim moves onto the same
+   test after all, and both directions close here.** *The half of this answer that said "do not
+   widen" was decided on two figures the conductor gave and both were wrong: that fixing it would
+   rewrite an archived scenario — `spec-author` measured that none breaks — and that the harm was a
+   newline told "Not a number", which is cosmetic. The measured harm is the other direction and it
+   is not cosmetic: a lone `U+200B` committed in a **number** entry is inside
+   `CharacterSet.whitespaces`, so it trims to empty, so it is read as a take-back, so it silently
+   deletes the number that day holds. There was no second G4 to weigh either — this folder was not
+   signed when the question was asked. What survives unchanged is the first half: blank is
+   `Character.isWhitespace`, in one place, for the whole package.*
+
 6. **`History` grows a third one-off reader, `note(for:on:)`, and a third store beside its ticks and
    its numbers.** *#138's Q5 deferred the general record reader "rather than fix the shape of two
    records nobody has grilled yet". The note is now one of those two; the total is not, and the
