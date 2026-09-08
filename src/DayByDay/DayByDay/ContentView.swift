@@ -220,6 +220,7 @@ struct ContentView: View {
         // Same measured value as `CommitmentsView`'s kept list — see the comment there for how
         // it was determined.
         .listSectionSpacing(12)
+        .simultaneousGesture(daySwipeGesture)
         .alert(
             enteringRow?.name ?? "",
             isPresented: Binding(
@@ -316,5 +317,26 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    /// ADR-1042: a horizontal swipe on the day screen moves the day it is showing, beside the
+    /// chevrons rather than instead of them — the same `showPreviousDay()` and `showNextDay()`
+    /// they call, so a move with nowhere to go behaves exactly as a chevron tap already does.
+    /// `minimumDistance` keeps a plain tap on a row or a button from ever reaching `onEnded`, and
+    /// comparing the two axes keeps an ordinary vertical scroll from being read as a day move.
+    /// `.simultaneousGesture` is what lets the list's own scrolling and its rows' own taps keep
+    /// working underneath it — this recognizer only ever acts on release.
+    private var daySwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 40)
+            .onEnded { value in
+                guard abs(value.translation.width) > abs(value.translation.height) else {
+                    return
+                }
+                if value.translation.width < 0 {
+                    screen.showNextDay()
+                } else {
+                    screen.showPreviousDay()
+                }
+            }
     }
 }
