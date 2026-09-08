@@ -4542,6 +4542,58 @@ func addingOnOneRowLeavesTheOtherRowsOfTheDayAsTheyWere() throws {
 }
 
 @MainActor
+@Test("adding on a day a day screen has moved back to keeps it on that day")
+func addingOnADayADayScreenHasMovedBackToKeepsItOnThatDay() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let protein = Commitment(
+        name: "Protein", schedule: daily, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+
+    let screen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showPreviousDay()
+    try screen.enter("120", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+
+    let laterOnSunday = DayScreen(
+        startingFrom: [protein], asOf: sunday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(laterOnSunday.dayView.rows[0].isKept)
+
+    let laterOnMonday = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!laterOnMonday.dayView.rows[0].isKept)
+    #expect(laterOnMonday.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "0 of 120")
+}
+
+@MainActor
+@Test("adding writes nothing to the roster's place")
+func addingWritesNothingToTheRostersPlace() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let bytesAfterOpen = try Data(contentsOf: rosterPlace)
+
+    try screen.enter("30", on: screen.dayView.rows[0])
+    try screen.enter("", on: screen.dayView.rows[0])
+
+    #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
+    #expect(screen.rosterState == .kept)
+}
+
+@MainActor
 @Test("a commit on a note row for a day that has not arrived is told nothing on the row")
 func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
     let (place, rosterPlace) = freshPlaces()

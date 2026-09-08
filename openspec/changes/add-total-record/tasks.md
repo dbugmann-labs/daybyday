@@ -344,8 +344,8 @@ what catches.
   screen that read the text before asking the row fails it.
 - [x] 12.11 `adding on a day screen that is not keeping a record changes nothing and keeps nothing`
 - [x] 12.12 `adding on one row leaves the other rows of the day as they were`
-- [ ] 12.13 `adding on a day a day screen has moved back to keeps it on that day`
-- [ ] 12.14 `adding writes nothing to the roster's place`
+- [x] 12.13 `adding on a day a day screen has moved back to keeps it on that day`
+- [x] 12.14 `adding writes nothing to the roster's place`
 - [ ] 12.15 `an amount committed with space around it is added`
 - [ ] 12.16 `an amount typed with a comma is added as the same amount as one typed with a full stop` —
   both clauses. This is the box that proves `read(_:)` is shared rather than reimplemented.
