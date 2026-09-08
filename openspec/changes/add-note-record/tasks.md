@@ -351,12 +351,12 @@ the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments t
 
 ## 16. Closing the Story
 
-- [ ] 16.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
+- [x] 16.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 3, 6, 7, 9 and 12 actually ran red before the code that satisfies them was
   written — 12.7 and 12.8 among them, since 12.8 is predicted green on 12.7's edit and that
   prediction is the claim that one expression closes both directions. A prediction in a task is not
   evidence; this is.
-- [ ] 16.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
+- [x] 16.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
   `scenario coverage — 194/194`. `cd src/DayByDayKit && swift test` reports **705 tests passing** —
   628 at the branch point plus the seventy-seven written here, plus none removed. A different number
   means a test was added or lost outside rule 3; report it.
@@ -387,3 +387,50 @@ the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments t
   settled on fixing it instead, both directions close in § 12.7, and a known gap that is not a gap
   any more is noise in the one file that is meant to be read as the live list. `grill.md` answer 5,
   `design.md` § *Open Questions* and ADR-1039 carry the history between them.
+
+## Notes
+
+Which boxes predicted red in §§ 3, 6, 7, 9 and 12 actually ran red, checked as each was written
+rather than assumed from the prediction:
+
+- **§ 3.1** ran **red**, as predicted: `swift test --filter` reported `Fatal error: not implemented`
+  from `Note.swift`'s `fatalError` before the guard was written.
+- **§ 3.4** ran **green**, not red as design.md expected. `Note.init?`'s whole guard — due, kind and
+  `!Blank.saysNothing(text)` — was written in one pass at § 3.1, copying `Number.init?`'s shape whole
+  rather than adding the blank guard incrementally; there was no point at which a text of only blank
+  space would have been accepted. The prediction assumed the guard would be built up scenario by
+  scenario; it was not, because the whole shape was already known from the number's own seam. No
+  behaviour gap follows from this — § 3.2 through § 3.7 also ran green on first write for the same
+  reason — but it is recorded here because a prediction is not evidence and this one did not hold.
+- **§§ 6.1–6.5** all ran **green** on first write, not only § 6.2 as predicted. `Tick.swift` and
+  `Number.swift` already refused a note-kind commitment, and `History.isKept` already read notes
+  after § 4.9's widening, so none of the three boxes design.md flagged as "a real finding" if red
+  (6.1, 6.4, 6.5) was in fact red.
+- **§ 7.11** ran **green**, not red as design.md expected ("Expect red before the guard is written").
+  The two-clause shape guard — `(document.numbers != nil) == …`, `(document.notes != nil) == …` — was
+  written whole at § 7.1, before any of §§ 7.2–7.11's tests existed, on the same reasoning as § 3.4
+  above: the shape was specified completely in `design.md` § *The form on disk moves to 4* and there
+  was no smaller correct step. The form-2-fixture-holding-neither clause this box exists to catch
+  never had an incorrect guard to catch it against.
+- **§§ 9.1–9.2** ran **green**, as predicted: `Row`'s synthesized `Hashable` already included the
+  `note` field once § 8 added it, so equality told two notes on the same day apart without any hand
+  edit to exclude or include it.
+- **§ 12.1–12.6** all ran **green** on first write: `DayScreen.enter(_:on:)`'s note branch was built
+  at § 11 already calling `Blank.saysNothing` and `Blank.trimmed`, so every clause these six scenarios
+  pin — leading and trailing space, interior space, empty and blank take-backs, line breaks alone, one
+  visible character among blank space, and any length or script — was already correct when each test
+  was written.
+- **§ 12.7** ran **red**, as predicted: before the edit, `swift test --filter
+  anEntryCommittedWithLineBreaksAloneTakesTheNumberBack` failed with seven issues — the row stayed
+  kept at 70.5, the notice read `"Not a number"`, and the number entry still answered 70.5 after a
+  text of three line breaks, none of which the scenario allows. `read(_:)`'s first line moved from
+  `text.trimmingCharacters(in: .whitespaces)` to `Blank.trimmed(text)`, and nothing else in the
+  function changed.
+- **§ 12.8** ran **green** immediately after § 12.7's edit, as predicted: the same one expression
+  closed both directions, and no second change was needed to make a lone zero-width space read as
+  "Not a number" rather than a silent take-back.
+
+`swift test` reported no regression at any point in this Story: every full-suite run from § 1.1's
+628 through the final 705 showed only the expected count moving, and the eight archived scenarios of
+*A day screen reads what an entry is committed with as a number, as a take-back, or as neither* were
+green throughout § 12.7's edit, confirming `design.md` § *Context* measurement 2a.
