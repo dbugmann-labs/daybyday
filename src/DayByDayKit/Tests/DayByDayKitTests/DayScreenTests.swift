@@ -4717,6 +4717,66 @@ func anAmountOfZeroOrBelowIsRefusedAndToldOnTheRow() throws {
 }
 
 @MainActor
+@Test("an amount that would take the day's sum past what can be kept exactly is refused and told on the row")
+func anAmountThatWouldTakeTheDaysSumPastWhatCanBeKeptExactlyIsRefusedAndToldOnTheRow() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let thirtyEightNines = String(repeating: "9", count: 38)
+
+    let screen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter(thirtyEightNines, on: screen.dayView.rows[0])
+    try screen.enter("0.5", on: screen.dayView.rows[0])
+
+    #expect(
+        screen.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget
+            == "\(thirtyEightNines) of 120")
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(screen.notice?.cause == "Too large to add")
+
+    let laterForThirtyEight = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(
+        laterForThirtyEight.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget
+            == "\(thirtyEightNines) of 120")
+}
+
+@MainActor
+@Test("an amount that takes the day's sum to a number that can be kept exactly is added")
+func anAmountThatTakesTheDaysSumToANumberThatCanBeKeptExactlyIsAdded() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let thirtyEightNines = String(repeating: "9", count: 38)
+    let oneFollowedByThirtyEightZeros = "1" + String(repeating: "0", count: 38)
+
+    let screen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter(thirtyEightNines, on: screen.dayView.rows[0])
+    try screen.enter("1", on: screen.dayView.rows[0])
+
+    #expect(
+        screen.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget
+            == "\(oneFollowedByThirtyEightZeros) of 120")
+    #expect(screen.notice == nil)
+
+    try screen.enter("0.5", on: screen.dayView.rows[0])
+
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(screen.notice?.cause == "Too large to add")
+    #expect(
+        screen.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget
+            == "\(oneFollowedByThirtyEightZeros) of 120")
+}
+
+@MainActor
 @Test("a commit on a note row for a day that has not arrived is told nothing on the row")
 func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
     let (place, rosterPlace) = freshPlaces()

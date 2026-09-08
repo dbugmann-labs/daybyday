@@ -4,10 +4,11 @@ import Foundation
 /// day may take an amount. Internal; `design.md` § *Where the sum cap lives* fixes the rule.
 enum Digits {
     /// The count of significant digits `decimal` holds, read off its exact value — leading zeros
-    /// in the whole part and trailing zeros in the fraction do not count, and a value of exactly
-    /// zero holds none. Read off `decimal`'s own description rather than off any typed text:
-    /// `design.md` § *Measured, not recalled*, measurement A is why a sum must be counted this
-    /// way and never off a value already rounded or truncated to fit some other bound.
+    /// in the whole part and trailing zeros in the fraction do not count, a whole number's own
+    /// trailing zeros do not count either (10^38 holds one, not thirty-nine), and a value of
+    /// exactly zero holds none. Read off `decimal`'s own description rather than off any typed
+    /// text: `design.md` § *Measured, not recalled*, measurement A is why a sum must be counted
+    /// this way and never off a value already rounded or truncated to fit some other bound.
     static func significant(in decimal: Decimal) -> Int {
         var digits = Substring("\(decimal)")
         if digits.first == "-" {
@@ -24,7 +25,15 @@ enum Digits {
             fraction.removeLast()
         }
 
-        return whole.count + fraction.count
+        var counted = String(whole) + String(fraction)
+        while counted.first == "0" {
+            counted.removeFirst()
+        }
+        while counted.last == "0" {
+            counted.removeLast()
+        }
+
+        return counted.count
     }
 
     /// Whether a day that has so far taken `soFar` may take `amount` too, judged on the sum

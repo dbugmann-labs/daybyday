@@ -300,11 +300,11 @@ the sum, and a rule read off the first accepts exactly the case it exists to ref
   refuses the amount, `.tooLargeToAdd` when `Digits.canAdd(_:to:)` says the day cannot take it, and
   `.addition` otherwise. No test is written in this box; §§ 11.2–11.5 and 13 are what prove it. It is
   its own box because the three answers must exist before any of them can be told apart.
-- [ ] 11.2 `an amount that would take the day's sum past what can be kept exactly is refused and told
+- [x] 11.2 `an amount that would take the day's sum past what can be kept exactly is refused and told
   on the row` — a day at thirty-eight nines refusing 0.5, and the day's additions standing. **Expect
   red on any predicate that reads the digits off `soFar + amount` alone**, which is measurement A row
   two.
-- [ ] 11.3 `an amount that takes the day's sum to a number that can be kept exactly is added` — the
+- [x] 11.3 `an amount that takes the day's sum to a number that can be kept exactly is added` — the
   same day taking 1, which sums to 1 followed by thirty-eight zeros: one significant digit, held
   exactly. **Expect red on any predicate written on magnitude rather than on significant digits.**
   Together with 11.2 these two are the whole rule, and neither alone pins it.
