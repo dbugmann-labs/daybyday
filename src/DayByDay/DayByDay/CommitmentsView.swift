@@ -97,11 +97,16 @@ struct CommitmentsView: View {
                 }
             }
             // A `Section` per group, not one flat list: the category is the section's own
-            // header, and the group with none draws no header. Each section's `ForEach` keeps
-            // `.onMove` for a drag that starts and ends inside the section, and gains
-            // `.draggable`/`.dropDestination(for:)` for one that crosses into another —
-            // `design.md` § *The shell rides this Story*. Both hand the shell an offset already
-            // counted over that section's own entries, and both pass it straight through to
+            // header, and the group with none draws no header. Each section's `ForEach` carries
+            // `.draggable` on its rows and `.dropDestination(for:)` on itself, for a drag that
+            // starts and ends inside the section and for one that crosses into another alike —
+            // `design.md` § *The shell rides this Story*. `.onMove` is deliberately absent: on
+            // this SDK, when it is attached to the same `ForEach` as `.draggable` rows, it wins
+            // every long-press unconditionally (confirmed by instrumenting both closures — see
+            // the Story #147 defect-1 diagnosis) and, being scoped to its own `ForEach`, drops a
+            // drag that crosses into another section on the floor rather than handing it to
+            // `.dropDestination`. `.dropDestination(for:)` hands the shell an offset already
+            // counted over that section's own entries, and passes it straight through to
             // `screen.move` beside the section's own `group.category`: nothing here adds,
             // subtracts, counts rows or asks where a finger is.
             ForEach(screen.keptGroups, id: \.category) { group in
@@ -124,10 +129,6 @@ struct CommitmentsView: View {
                                 categoryTyped = group.category ?? ""
                             }
                         }
-                    }
-                    .onMove { source, offset in
-                        guard let index = source.first else { return }
-                        screen.move(group.commitments[index], toOffset: offset, under: group.category)
                     }
                     .dropDestination(for: DraggedRow.self) { dropped, offset in
                         guard let dragged = dropped.first, let commitment = kept(dragged) else {
@@ -263,11 +264,6 @@ struct CommitmentsView: View {
             }
         }
         .navigationTitle("Commitments")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                EditButton()
-            }
-        }
         .onChange(of: screen.dayToKeepFrom) { _, newValue in
             keptFromDate = date(from: newValue)
         }
