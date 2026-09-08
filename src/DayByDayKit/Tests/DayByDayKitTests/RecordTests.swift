@@ -1546,3 +1546,30 @@ func aCommitmentWhoseKindIsNotATotalTakesNoAdditionOnADateItIsDueOn() {
     #expect(Addition(30, for: note, on: monday) == nil)
     #expect(Addition(30, for: totalKind, on: monday) != nil)
 }
+
+@Test("an amount that is not above zero is not an addition")
+func anAmountThatIsNotAboveZeroIsNotAnAddition() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    #expect(Addition(0, for: protein, on: monday) == nil)
+    #expect(Addition(-30, for: protein, on: monday) == nil)
+    #expect(Addition(-0.000001, for: protein, on: monday) == nil)
+    #expect(Addition(0.000001, for: protein, on: monday) != nil)
+}
+
+@Test("a value that is not a number is not an addition")
+func aValueThatIsNotANumberIsNotAnAddition() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    #expect(Addition(Decimal.nan, for: protein, on: monday) == nil)
+}

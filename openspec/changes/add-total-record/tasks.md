@@ -86,10 +86,10 @@ as you go, in § 17**; a prediction is not evidence.
   due, before the day it is kept from, and a schedule due on no date across seven days.
 - [x] 3.3 `a commitment whose kind is not a total takes no addition on a date it is due on` — the
   tick kind, both number kinds and the note kind, plus the total-kind control that must still record.
-- [ ] 3.4 `an amount that is not above zero is not an addition` — zero, a plainly negative amount, a
+- [x] 3.4 `an amount that is not above zero is not an addition` — zero, a plainly negative amount, a
   negative amount too small to see, and the smallest positive control. This is the guard that has no
   counterpart in `Number` or `Note`.
-- [ ] 3.5 `a value that is not a number is not an addition` — refused where the record is formed and
+- [x] 3.5 `a value that is not a number is not an addition` — refused where the record is formed and
   never left to the comparison with zero, which answers *false* in both directions.
 - [ ] 3.6 `an addition takes any amount above zero, at either end of what this system holds` — four
   amounts read back exactly, plus the clause that an amount past the target is still an addition.
