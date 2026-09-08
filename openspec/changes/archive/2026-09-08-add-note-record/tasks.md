@@ -372,7 +372,7 @@ the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments t
   paragraph with a line break, save, force-quit, reopen, read it back whole, then clear it and
   confirm the day goes back to not kept — is deliberately not here, because no note commitment can
   exist on a phone until `add-kind-to-commitments-screen` (#142) lands, and it is carried there.
-- [ ] 16.4 Run `/opsx:archive` as the last commit on the branch, then push it. **The janitor's own
+- [x] 16.4 Run `/opsx:archive` as the last commit on the branch, then push it. **The janitor's own
   instruction, not a box that waits on the archive:** after the archive has run, read
   `openspec/specs/record/spec.md` and confirm that *A store reads a history kept before a commitment
   carried a kind* is still the first requirement and *A tick is of a commitment on a calendar date it
@@ -380,7 +380,7 @@ the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments t
   view is the commitments due on a date, each with whether it is kept*. Any drift there is a stop and
   a report, never a hand-edit: `openspec/specs/` is written by `/opsx:archive` and by nothing else
   (`AGENTS.md` rule 2).
-- [ ] 16.5 Land one entry in `docs/open-questions.md` as a **chore commit that merges before this
+- [x] 16.5 Land one entry in `docs/open-questions.md` as a **chore commit that merges before this
   Story's archive**, not on this branch — `AGENTS.md` § *Agent roles* puts that file outside a
   Story's reach, and landing it first is what lets this box be ticked on evidence rather than in
   anticipation of a merge still to come (the ordering `add-number-record` § 9.5 settled). The entry:
