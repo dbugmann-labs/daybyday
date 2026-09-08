@@ -533,7 +533,7 @@ and **Row**, and writing the delta turned up no further term.
   kept, take the last one back, force-quit and reopen — is deliberately **not** here, because no
   total commitment can exist on a phone until `add-kind-to-commitments-screen` (#142) lands, and it
   is carried there.
-- [ ] 17.4 Run `/opsx:archive` as the last commit on the branch, then push it. **This box is the
+- [x] 17.4 Run `/opsx:archive` as the last commit on the branch, then push it. **This box is the
   `implementer`'s to tick, in its last commit before the archive, on the evidence that everything
   above it is in place — not the janitor's, and not a box that waits on the archive.** What follows
   is the janitor's instruction: after the archive has run, read `openspec/specs/record/spec.md` and
@@ -542,7 +542,7 @@ and **Row**, and writing the delta turned up no further term.
   that `openspec/specs/day-screen/spec.md` still opens with *A day view is the commitments due on a
   date, each with whether it is kept*. Any drift there is a stop and a report, never a hand-edit:
   `openspec/specs/` is written by `/opsx:archive` and by nothing else (`AGENTS.md` rule 2).
-- [ ] 17.5 Land the `docs/open-questions.md` entries as a **chore commit that merges before this
+- [x] 17.5 Land the `docs/open-questions.md` entries as a **chore commit that merges before this
   Story's archive**, not on this branch — `AGENTS.md` § *Agent roles* puts that file outside a
   Story's reach, and landing it first is what lets this box be ticked on evidence rather than in
   anticipation of a merge still to come. Three edits:
