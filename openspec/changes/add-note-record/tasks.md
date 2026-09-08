@@ -365,12 +365,13 @@ the three edits to `CONTEXT.md` — the new **Note entry**, and the amendments t
 - [ ] 16.3 Open the app on a phone or the simulator with `pnpm run phone`, **without deleting and
   reinstalling it first** — the existing install holds a record file in the store's third form,
   this branch's code writes the fourth, and a fresh install would write form 4 from the start,
-  proving nothing about reading form 3. Confirm by hand that the day screen still draws its nine
-  day-one commitments, that ticking one still works, and that the tick survives a force-quit and
-  reopen. The note hand-check — type a paragraph with a line break, save, force-quit, reopen, read
-  it back whole, then clear it and confirm the day goes back to not kept — is deliberately not
-  here, because no note commitment can exist on a phone until `add-kind-to-commitments-screen`
-  (#142) lands, and it is carried there.
+  proving nothing about reading form 3. Confirm by hand that the day screen still draws whatever
+  commitments the install already holds, that ticking one still works, and that the tick survives
+  a force-quit and reopen — the point is that a form-3 file is read correctly by this branch's
+  form-4 code, not how many commitments the install happens to hold. The note hand-check — type a
+  paragraph with a line break, save, force-quit, reopen, read it back whole, then clear it and
+  confirm the day goes back to not kept — is deliberately not here, because no note commitment can
+  exist on a phone until `add-kind-to-commitments-screen` (#142) lands, and it is carried there.
 - [ ] 16.4 Run `/opsx:archive` as the last commit on the branch, then push it. **The janitor's own
   instruction, not a box that waits on the archive:** after the archive has run, read
   `openspec/specs/record/spec.md` and confirm that *A store reads a history kept before a commitment
