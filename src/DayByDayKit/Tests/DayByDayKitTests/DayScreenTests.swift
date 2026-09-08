@@ -5403,3 +5403,223 @@ func aDayScreenShowingTheTodayItWasHandedOffersNoWayBackToToday() {
     #expect(!screen.offersGoingBackToToday)
     #expect(screen.title == "Today · Monday 31 August 2026")
 }
+
+@MainActor
+@Test("a day screen moved into the past offers the way back to today")
+func aDayScreenMovedIntoThePastOffersTheWayBackToToday() {
+    let (place, rosterPlace) = freshPlaces()
+    let (otherPlace, otherRosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showPreviousDay()
+
+    #expect(screen.offersGoingBackToToday)
+
+    let other = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: otherPlace, keepingRosterAt: otherRosterPlace)
+    for _ in 0..<3 {
+        other.showPreviousDay()
+    }
+
+    #expect(other.offersGoingBackToToday)
+}
+
+@MainActor
+@Test("a day screen moved into the future offers the way back to today")
+func aDayScreenMovedIntoTheFutureOffersTheWayBackToToday() {
+    let (place, rosterPlace) = freshPlaces()
+    let (otherPlace, otherRosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showNextDay()
+
+    #expect(screen.offersGoingBackToToday)
+
+    let other = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: otherPlace, keepingRosterAt: otherRosterPlace)
+    for _ in 0..<3 {
+        other.showNextDay()
+    }
+
+    #expect(other.offersGoingBackToToday)
+}
+
+@MainActor
+@Test("a day screen offers no way back to today once it has gone back")
+func aDayScreenOffersNoWayBackToTodayOnceItHasGoneBack() {
+    let (place, rosterPlace) = freshPlaces()
+    let (otherPlace, otherRosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showPreviousDay()
+    screen.showPreviousDay()
+    screen.showToday()
+
+    #expect(!screen.offersGoingBackToToday)
+
+    let other = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: otherPlace, keepingRosterAt: otherRosterPlace)
+    other.showPreviousDay()
+    other.showNextDay()
+
+    #expect(!other.offersGoingBackToToday)
+}
+
+@MainActor
+@Test("going back to today on a day screen that offers no way back leaves it showing that today")
+func goingBackToTodayOnADayScreenThatOffersNoWayBackLeavesItShowingThatToday() {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showToday()
+
+    #expect(screen.title == "Today · Monday 31 August 2026")
+    #expect(!screen.offersGoingBackToToday)
+}
+
+@MainActor
+@Test("a day screen shown again on a later day offers the way back to today from the day it stayed on")
+func aDayScreenShownAgainOnALaterDayOffersTheWayBackToTodayFromTheDayItStayedOn() {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showPreviousDay()
+    screen.shown(asOf: wednesday)
+
+    #expect(screen.offersGoingBackToToday)
+
+    screen.showToday()
+
+    #expect(screen.title == "Today · Wednesday 2 September 2026")
+    #expect(!screen.offersGoingBackToToday)
+}
+
+@MainActor
+@Test("a day screen showing its today when the app is shown again on a later day offers no way back to today")
+func aDayScreenShowingItsTodayWhenTheAppIsShownAgainOnALaterDayOffersNoWayBackToToday() {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.shown(asOf: wednesday)
+
+    #expect(!screen.offersGoingBackToToday)
+    #expect(screen.title == "Today · Wednesday 2 September 2026")
+}
+
+@MainActor
+@Test("a day screen the day it is showing has caught up with offers no way back to today")
+func aDayScreenTheDayItIsShowingHasCaughtUpWithOffersNoWayBackToToday() {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showNextDay()
+    screen.shown(asOf: tuesday)
+
+    #expect(!screen.offersGoingBackToToday)
+    #expect(screen.title == "Today · Tuesday 1 September 2026")
+}
+
+@MainActor
+@Test("a day screen whose move had nowhere to go offers no way back to today")
+func aDayScreenWhoseMoveHadNowhereToGoOffersNoWayBackToToday() {
+    let (firstPlace, firstRosterPlace) = freshPlaces()
+    let (secondPlace, secondRosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let firstSupported = CalendarDate(year: 1583, month: 1, day: 1)!
+    let lastSupported = CalendarDate(year: 9999, month: 12, day: 31)!
+
+    let first = DayScreen(startingFrom: [journaling], asOf: firstSupported, keepingRecordAt: firstPlace, keepingRosterAt: firstRosterPlace)
+    first.showPreviousDay()
+
+    let second = DayScreen(startingFrom: [journaling], asOf: lastSupported, keepingRecordAt: secondPlace, keepingRosterAt: secondRosterPlace)
+    second.showNextDay()
+
+    #expect(!first.offersGoingBackToToday)
+    #expect(!second.offersGoingBackToToday)
+
+    first.showNextDay()
+
+    #expect(first.offersGoingBackToToday)
+}
+
+@MainActor
+@Test("a day screen that cannot read its record says whether it offers the way back to today like any other")
+func aDayScreenThatCannotReadItsRecordSaysWhetherItOffersTheWayBackToTodayLikeAnyOther() throws {
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a record".utf8).write(to: place)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showPreviousDay()
+
+    #expect(screen.offersGoingBackToToday)
+    #expect(screen.recordState == .unreadable)
+
+    screen.showToday()
+
+    #expect(!screen.offersGoingBackToToday)
+    #expect(screen.recordState == .unreadable)
+}

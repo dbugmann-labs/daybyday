@@ -39,28 +39,28 @@ that is a stop.
 
 - [x] 2.1 `a day screen showing the today it was handed offers no way back to today` — adds the
   member. Answered off `shownDay` and `today`, both already held.
-- [ ] 2.2 `a day screen moved into the past offers the way back to today`
-- [ ] 2.3 `a day screen moved into the future offers the way back to today`
-- [ ] 2.4 `a day screen offers no way back to today once it has gone back` — and a screen moved away
+- [x] 2.2 `a day screen moved into the past offers the way back to today`
+- [x] 2.3 `a day screen moved into the future offers the way back to today`
+- [x] 2.4 `a day screen offers no way back to today once it has gone back` — and a screen moved away
   and back by two moves offers none either. This is what makes the answer about the day being shown
   rather than about how many moves were made; an implementation counting moves passes 2.2 and 2.3 and
   fails here.
-- [ ] 2.5 `going back to today on a day screen that offers no way back leaves it showing that today`
+- [x] 2.5 `going back to today on a day screen that offers no way back leaves it showing that today`
   — `showToday()` is untouched by this change (`grill.md` § *Settled* 3). If this box needs an edit to
   `showToday()`, stop and report it: offered governs what is drawn as a target and never what the seam
   accepts.
-- [ ] 2.6 `a day screen shown again on a later day offers the way back to today from the day it
+- [x] 2.6 `a day screen shown again on a later day offers the way back to today from the day it
   stayed on`
-- [ ] 2.7 `a day screen showing its today when the app is shown again on a later day offers no way
+- [x] 2.7 `a day screen showing its today when the app is shown again on a later day offers no way
   back to today` — the screen follows onto the new today, so it is showing it again.
-- [ ] 2.8 `a day screen the day it is showing has caught up with offers no way back to today` — the
+- [x] 2.8 `a day screen the day it is showing has caught up with offers no way back to today` — the
   screen was moved and offers nothing all the same, because the today it is measured against has
   since become the day it is showing. An implementation holding "has it been moved" rather than
   comparing the two days passes every box above and fails this one.
-- [ ] 2.9 `a day screen whose move had nowhere to go offers no way back to today` — at both ends of
+- [x] 2.9 `a day screen whose move had nowhere to go offers no way back to today` — at both ends of
   the calendar. The move left `shownDay` alone, so the answer is unchanged; nothing about this needs a
   rule of its own.
-- [ ] 2.10 `a day screen that cannot read its record says whether it offers the way back to today
+- [x] 2.10 `a day screen that cannot read its record says whether it offers the way back to today
   like any other` — the answer is about the two days and about nothing else.
 
 ## 3. `day-screen` — a row says whether it offers anything at all
