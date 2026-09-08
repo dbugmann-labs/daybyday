@@ -1573,3 +1573,50 @@ func aValueThatIsNotANumberIsNotAnAddition() {
 
     #expect(Addition(Decimal.nan, for: protein, on: monday) == nil)
 }
+
+@Test("an addition takes any amount above zero, at either end of what this system holds")
+func anAdditionTakesAnyAmountAboveZeroAtEitherEndOfWhatThisSystemHolds() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let thirtyEightNines = Decimal(string: String(repeating: "9", count: 38))!
+
+    for amount: Decimal in [0.000001, 30, 119.95, thirtyEightNines] {
+        var history = History()
+        history.add(Addition(amount, for: protein, on: monday)!)
+        #expect(history.total(for: protein, on: monday) == amount)
+    }
+
+    var historyPastTarget = History()
+    historyPastTarget.add(Addition(500, for: protein, on: monday)!)
+    #expect(historyPastTarget.total(for: protein, on: monday) == 500)
+}
+
+@Test("two additions are the same exactly when their commitment, date and amount all are")
+func twoAdditionsAreTheSameExactlyWhenTheirCommitmentDateAndAmountAllAre() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let proteinAfterTraining = Commitment(
+        name: "Protein after training", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: target))!
+
+    let first = Addition(30, for: protein, on: monday)!
+    let second = Addition(30, for: protein, on: monday)!
+    let differentAmount = Addition(45, for: protein, on: monday)!
+    let differentDate = Addition(30, for: protein, on: wednesday)!
+    let differentCommitment = Addition(30, for: proteinAfterTraining, on: monday)!
+
+    #expect(first == second)
+    #expect(first != differentAmount)
+    #expect(second != differentAmount)
+    #expect(first != differentDate)
+    #expect(first != differentCommitment)
+}

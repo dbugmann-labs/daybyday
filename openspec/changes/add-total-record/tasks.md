@@ -91,10 +91,10 @@ as you go, in § 17**; a prediction is not evidence.
   counterpart in `Number` or `Note`.
 - [x] 3.5 `a value that is not a number is not an addition` — refused where the record is formed and
   never left to the comparison with zero, which answers *false* in both directions.
-- [ ] 3.6 `an addition takes any amount above zero, at either end of what this system holds` — four
+- [x] 3.6 `an addition takes any amount above zero, at either end of what this system holds` — four
   amounts read back exactly, plus the clause that an amount past the target is still an addition.
   `record` has no ceiling of its own; § 11 is where the day's does.
-- [ ] 3.7 `two additions are the same exactly when their commitment, date and amount all are` — all
+- [x] 3.7 `two additions are the same exactly when their commitment, date and amount all are` — all
   four clauses. Two additions of 30 on one day being the *same addition* is what § 4.3 then has to
   hold a day of 60 against, so write this one before that one.
 
