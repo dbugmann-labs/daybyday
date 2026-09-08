@@ -4263,6 +4263,90 @@ func addingOnATotalRowMakesTheDayScreenSayWhatTheDayHasAdded() throws {
 }
 
 @MainActor
+@Test("a day's additions accumulate rather than replace one another")
+func aDaysAdditionsAccumulateRatherThanReplaceOneAnother() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("30", on: screen.dayView.rows[0])
+    try screen.enter("30", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "60 of 120")
+
+    try screen.enter("45.5", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "105.5 of 120")
+}
+
+@MainActor
+@Test("reaching the target makes the day screen say the commitment is kept")
+func reachingTheTargetMakesTheDayScreenSayTheCommitmentIsKept() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("30", on: screen.dayView.rows[0])
+    try screen.enter("90", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "120 of 120")
+}
+
+@MainActor
+@Test("an addition past the target keeps the day and says the true sum")
+func anAdditionPastTheTargetKeepsTheDayAndSaysTheTrueSum() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("120", on: screen.dayView.rows[0])
+    try screen.enter("30", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "150 of 120")
+}
+
+@MainActor
+@Test(
+    "an addition entered on a day screen is held by a day screen opened afterwards at the same place"
+)
+func anAdditionEnteredOnADayScreenIsHeldByADayScreenOpenedAfterwardsAtTheSamePlace() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let first = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try first.enter("30", on: first.dayView.rows[0])
+    try first.enter("90", on: first.dayView.rows[0])
+
+    let second = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(second.dayView.rows[0].isKept)
+    #expect(second.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "120 of 120")
+}
+
+@MainActor
 @Test("a commit on a note row for a day that has not arrived is told nothing on the row")
 func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
     let (place, rosterPlace) = freshPlaces()

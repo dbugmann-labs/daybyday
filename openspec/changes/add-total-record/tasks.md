@@ -326,12 +326,12 @@ copied**: a second reading here would make "Not a number" two causes instead of 
 what catches.
 
 - [x] 12.1 `adding on a total row makes the day screen say what the day has added`
-- [ ] 12.2 `a day's additions accumulate rather than replace one another` — "30" twice leaves 60.
+- [x] 12.2 `a day's additions accumulate rather than replace one another` — "30" twice leaves 60.
   The single most important box in this section: an implementation copying the number branch replaces
   and leaves 30.
-- [ ] 12.3 `reaching the target makes the day screen say the commitment is kept`
-- [ ] 12.4 `an addition past the target keeps the day and says the true sum`
-- [ ] 12.5 `an addition entered on a day screen is held by a day screen opened afterwards at the same
+- [x] 12.3 `reaching the target makes the day screen say the commitment is kept`
+- [x] 12.4 `an addition past the target keeps the day and says the true sum`
+- [x] 12.5 `an addition entered on a day screen is held by a day screen opened afterwards at the same
   place`
 - [ ] 12.6 `an addition that cannot be kept is refused and leaves the day view as it was`
 - [ ] 12.7 `committing nothing at all in a total entry keeps nothing and takes nothing back` — empty,
