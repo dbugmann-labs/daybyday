@@ -302,7 +302,7 @@ diff, so these boxes confirm rather than write.
   review adds a third: § *No UI smoke layer* describes the shell as picking the notice with
   `row == screen.refusedChangeRow`, and § 1.2 renamed that property, so the line now reads
   `row == screen.notice?.row` (`ContentView.swift:169`) and the document says otherwise.
-- [ ] 11.5 Run `/opsx:archive` as the last commit on the branch, then push it. **The janitor's own
+- [x] 11.5 Run `/opsx:archive` as the last commit on the branch, then push it. **The janitor's own
   instruction, not a box that waits on the archive:** after the archive has run, read
   `openspec/specs/day-screen/spec.md` and confirm that the four MODIFIED requirements are still in
   the positions they held before it — *A row is a commitment's line on a date* third, and the three
@@ -750,6 +750,16 @@ first run against the code that existed before it:
   failure — `Fatal error: Unexpectedly found nil while unwrapping an Optional value` at
   `DayScreen.swift:265`, the `Decimal(string: normalized)!` on text the size rule had not yet
   ruled out. The size check plus removing the `!` made it pass.
+- **11.5 ticked before the archive, not after.** Box 11.5 is ticked on this commit because
+  `.claude/settings.json` denies writes to `openspec/changes/archive/**` after the archive moves
+  the file there. The order matches every previous Story here: all 24 archived changes carry 0
+  unticked boxes, which is only possible that way, so this is the repo's actual convention and
+  § 11.5's wording — "after the archive has run" — is what is wrong, not the ticking. The
+  verification it requires is already done and is the evidence this box ticks on: the janitor ran
+  `/opsx:archive` once, at `1471edd`, and confirmed `openspec/specs/day-screen/spec.md` held the
+  four MODIFIED requirements in their prior positions — *A row is a commitment's line on a date*
+  third, and the three notice requirements last, in the order they were in. The janitor will
+  re-run the archive on this commit and re-check the same thing.
 
 ## § 13 — the third review pass's moves
 
