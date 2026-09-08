@@ -1,21 +1,6 @@
 import Foundation
 import SwiftUI
-import UniformTypeIdentifiers
 import DayByDayKit
-
-/// What a drag carries: the source section's own `category` and the row's own `offset` within
-/// that section's `ForEach` — two values the shell already holds when it draws the row, and no
-/// third. A `Commitment` cannot be the payload: `.draggable` needs a `Transferable`, and neither
-/// it nor the kit's internal `CommitmentRecord` is one. `design.md` § *The shell rides this
-/// Story*.
-private struct DraggedRow: Codable, Transferable {
-    let category: String?
-    let offset: Int
-
-    static var transferRepresentation: some TransferRepresentation {
-        CodableRepresentation(contentType: .content)
-    }
-}
 
 /// Which rhythm shape the form is currently offering. A UI-only selector: the rule each shape
 /// names lives behind the seam, in `Rhythm` and the screen that refuses what it cannot form.
@@ -76,19 +61,6 @@ struct CommitmentsView: View {
         _keptFromDate = State(initialValue: date(from: screen.dayToKeepFrom))
     }
 
-    /// The commitment a drag payload names: the entry at `dragged.offset` in the group
-    /// `dragged.category` names, or nothing where that group no longer has an entry there — a
-    /// lookup by an identity the shell was handed, not a computation of where a drop landed.
-    /// `design.md` § *The shell rides this Story*.
-    private func kept(_ dragged: DraggedRow) -> Commitment? {
-        guard let group = screen.keptGroups.first(where: { $0.category == dragged.category }),
-            group.commitments.indices.contains(dragged.offset)
-        else {
-            return nil
-        }
-        return group.commitments[dragged.offset]
-    }
-
     var body: some View {
         List {
             if screen.keptGroups.isEmpty {
@@ -97,12 +69,10 @@ struct CommitmentsView: View {
                 }
             }
             // A `Section` per group, not one flat list: the category is the section's own
-            // header, and the group with none draws no header. Each section's `ForEach` keeps
-            // `.onMove` for a drag that starts and ends inside the section, and gains
-            // `.draggable`/`.dropDestination(for:)` for one that crosses into another —
-            // `design.md` § *The shell rides this Story*. Both hand the shell an offset already
-            // counted over that section's own entries, and both pass it straight through to
-            // `screen.move` beside the section's own `group.category`: nothing here adds,
+            // header, and the group with none draws no header. Each section's `ForEach` carries
+            // one `.onMove`, over an offset already counted inside that section's own entries —
+            // `design.md` § *The shell rides this Story*. It passes that offset straight through
+            // to `screen.move` beside the section's own `group.category`: nothing here adds,
             // subtracts, counts rows or asks where a finger is.
             ForEach(screen.keptGroups, id: \.category) { group in
                 Section {
@@ -111,7 +81,6 @@ struct CommitmentsView: View {
                         commitmentLine(
                             Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                         )
-                        .draggable(DraggedRow(category: group.category, offset: index))
                         .swipeActions {
                             Button("Stop") {
                                 screen.askToStopKeeping(commitment)
@@ -128,12 +97,6 @@ struct CommitmentsView: View {
                     .onMove { source, offset in
                         guard let index = source.first else { return }
                         screen.move(group.commitments[index], toOffset: offset, under: group.category)
-                    }
-                    .dropDestination(for: DraggedRow.self) { dropped, offset in
-                        guard let dragged = dropped.first, let commitment = kept(dragged) else {
-                            return
-                        }
-                        screen.move(commitment, toOffset: offset, under: group.category)
                     }
                 } header: {
                     if let category = group.category {

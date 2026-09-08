@@ -50,7 +50,7 @@
   altogether**, tests and all. Tick this box once those three sections have been read; every
   unticked box below is one this rewrite reopened.
 
-- [ ] 1.5 **It was rewritten a second time on 2026-09-08, and § 9 is the only place.** At the second
+- [x] 1.5 **It was rewritten a second time on 2026-09-08, and § 9 is the only place.** At the second
   § 9.5 walkthrough the owner gave up the cross-group drag after it had been built twice and walked
   twice (`grill.md` § *Settled* 27): `.onMove` wins every long press it shares a `ForEach` with, and
   moving the payload off `public.content` onto an exported type changed nothing. **Nothing in the
@@ -367,7 +367,7 @@ Story's inheritance rather than this one's conclusion. **ADR-1019 is untouched**
 stronger reason than before: with the drop path gone there is no line in the shell that could compute
 anything, correctly or otherwise.
 
-- [ ] 9.0 **Take the dead drag plumbing out of `CommitmentsView.swift`, and rename the one test
+- [x] 9.0 **Take the dead drag plumbing out of `CommitmentsView.swift`, and rename the one test
   whose title named the gesture.** This box used to add the plumbing; settled answer 27 makes it the
   box that removes it, and everything it names reaches nothing in the shipped app today. Five things
   go out of the shell and no sixth:
@@ -508,7 +508,7 @@ The boxes below confirm rather than write, and each is tickable while reading wh
   **The same holds for the cross-group drag** that settled answer 27 gave up: `grill.md` says
   `docs/backlog.md` is where it goes if it is still wanted, and writing it there is the next grooming
   pass's act or #168's, not this branch's.
-- [ ] 10.7 Confirm `CONTEXT.md` § *Move*'s **Corrected 2026-09-08** paragraph and
+- [x] 10.7 Confirm `CONTEXT.md` § *Move*'s **Corrected 2026-09-08** paragraph and
   § *Commitments screen*'s **Corrected again 2026-09-08** paragraph are true of what shipped, after
   § 9.0 has run: a drag reorders within one group and no further, and refiling across groups is the
   row's *Category* action. **The domain in both terms is unchanged and must stay unchanged** — a move
@@ -529,12 +529,12 @@ saw the shell at all — but a ticked box saying "every test green" is a claim a
 and after § 9.0 it is a claim about a different one. **A number that comes back different is a stop**
 (rule 5), not a number to write down: it would mean the removal reached the kit.
 
-- [ ] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 782: `main` at
+- [x] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 782: `main` at
   `c39e1f8` carries 705 — § 11.3's rebase moved the base there from `85ca63b`'s 628 — plus the 77
   scenarios above. **That is eight fewer than the 713 this box asked for before 2026-09-08**: nine
   mark tests are deleted at § 7.0 and one is added at § 7.6. From the repo root, `pnpm run verify`
   green and `pnpm run checks` reporting `206/206 scenario(s) covered`.
-- [ ] 11.2 `openspec validate add-commitment-category --strict` exits 0, and `openspec validate --all
+- [x] 11.2 `openspec validate add-commitment-category --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [x] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-commitment-category/` or anywhere under `openspec/specs/` is a **stop**, not
@@ -551,7 +551,7 @@ and after § 9.0 it is a claim about a different one. **A number that comes back
   was validated against `main`'s specs on 2026-09-08 with all fourteen MODIFIED requirements intact
   (`design.md` § *Risks*). It is ordinary merge work, it is `implementer`'s and not
   `spec-author`'s, and it is why the branch handed over at G4 sits two commits behind `main`.
-- [ ] 11.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+- [x] 11.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff and do not act on findings until they come back
   through the conductor. This box is ticked when the hand-back is written. **It is unticked again
   because there is a second review to hold**: the diff `reviewer` read on 2026-09-08 still had the

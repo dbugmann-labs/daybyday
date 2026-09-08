@@ -3752,8 +3752,8 @@ func aCommitmentsScreenAskedToMoveACommitmentIntoAGroupItDrawsNoneOfDoesNothingA
 }
 
 @MainActor
-@Test("dragging a group's only entry into another group leaves one heading fewer")
-func draggingAGroupsOnlyEntryIntoAnotherGroupLeavesOneHeadingFewer() throws {
+@Test("moving a group's only entry into another group leaves one heading fewer")
+func movingAGroupsOnlyEntryIntoAnotherGroupLeavesOneHeadingFewer() throws {
     let rosterPlace = freshRosterPlace()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let daily: Schedule = .weekdays([
