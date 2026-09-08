@@ -365,8 +365,8 @@ private twins at the foot of `DayScreen.swift`.
 
 - [x] 13.1 `taking back the last addition on a row leaves the day short by exactly that amount`
 - [x] 13.2 `taking back the last addition twice removes the two most recent`
-- [ ] 13.3 `a take-back is held by a day screen opened afterwards at the same place`
-- [ ] 13.4 `a take-back that cannot be kept is refused and leaves the day view as it was` — refused
+- [x] 13.3 `a take-back is held by a day screen opened afterwards at the same place`
+- [x] 13.4 `a take-back that cannot be kept is refused and leaves the day view as it was` — refused
   with an error **and** told on the row naming no cause. The place's refusal never names a cause,
   whichever act asked.
 - [ ] 13.5 `taking back on a row that offers no take-back changes nothing`
