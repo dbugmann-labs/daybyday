@@ -4,6 +4,8 @@
   2026-09-07; this record is written by that change, which reverses the sentence it replaces
 - Date: 2026-09-07
 - Deciders: Diego Bugmann
+- Amended: 2026-09-08 — the named set goes from two causes to four; `add-total-record` (#141) adds
+  "Must be more than 0" and "Too large to add" (ADR-1040), both argued on this record's own test
 
 ## Context
 
@@ -40,11 +42,19 @@ than reverse it**. The rule was never "say nothing"; it was "say nothing a perso
 names nothing otherwise.** The test is what the person does next, and it is the same test ADR-1021
 applies to a record that could not be opened, where it yields exactly one named reason out of many.
 
-**Two causes are named and no third may be added without a decision that says so.** A value that is
-not a number is told as "Not a number". A number the commitment refuses is told by naming the bounds
-it broke — "Must be between 40 and 150". Every other refusal on this screen names nothing: a tick
-refused by the place, a take-back refused by the place, a number refused by the place, whatever went
-wrong underneath.
+**Four causes are named and no fifth may be added without a decision that says so.** A value that is
+not a number is told as "Not a number" — the same wording whether it was committed in a number entry
+or in a total entry, because the person's next act is the same one in both. A number the commitment
+refuses is told by naming the bounds it broke — "Must be between 40 and 150". An amount committed in
+a total entry that is not above zero is told as "Must be more than 0". An amount that would take its
+day's additions past what this system can keep exactly is told as "Too large to add" (ADR-1040).
+Every other refusal on this screen names nothing: a tick refused by the place, a take-back refused by
+the place, a number refused by the place, an addition or its take-back refused by the place, a note
+refused for any reason at all, whatever went wrong underneath.
+
+The set was two when this record was written, and moved to four at the next Story that asked. It is
+enumerated here and in the requirement rather than left to a reader's sense of the principle, which
+is what makes a fifth a decision someone has to take rather than a sentence someone adds.
 
 **The words are the package's own, composed inside `DayByDayKit`.** Not an enum for the shell to
 render. "Must be between 40 and 150" interpolates two bounds into English, which is a formatting
@@ -72,15 +82,25 @@ had over-applied it.
   the commitments screen's, and `CommitmentsScreen.RefusedChange` already exists as a different type.
 - **The rule is now a judgement, and judgements drift.** "Can a person act on it differently" has to
   be asked of every future refusal rather than answered once by "no". That is the real cost of this
-  record, and it is why the two causes are enumerated in the requirement itself rather than left to a
-  reader's sense of the principle: adding a third means editing a spec that has passed G4.
+  record, and it is why the causes are enumerated in the requirement itself rather than left to a
+  reader's sense of the principle: adding one means editing a spec that has passed G4. The set has
+  moved once already, from two to four.
 - **The rule met its first candidate before the change had even merged, and declined it.** The
   review of this change's own code found that a pasted number too long for the type to hold exactly
   is refused, and asked what it should say. It says "Not a number", because the person's next act is
   the one "1.2.3" calls for — type a plainer number — and that act is the whole of the test above. A
   third cause was not added. This is what the rule costs and what it is worth: the question has to
   be asked each time, and asking it took one paragraph rather than a new sentence in a spec.
-- **Two more strings are pinned by scenarios, and localising the app later rewrites them.** The same
+- **The set moved from two to four at the next Story, and both arrivals were argued on this test.**
+  `add-total-record` (#141) puts an amount into the same entry mechanism. An amount that is not above
+  zero is refused for ever however often it is committed, and what the person does next is give a
+  different amount; an amount that would take the day's sum past thirty-eight significant digits
+  (ADR-1040) is answered by giving a smaller one. Neither is anything "try again" would fix and
+  neither is the place's doing, so both are named — and the second names no headroom, because the
+  number it could quote is thirty-eight digits long and a message nobody can use teaches a person to
+  ignore the next one. A total commitment declares no bound of its own, so its row meets no range
+  refusal and no fifth cause came with them.
+- **Four strings are now pinned by scenarios, and localising the app later rewrites them.** The same
   was already true of every day title (ADR-1022) and every rhythm in words (ADR-1034). The trigger is
   unchanged: a second person using the app in another language.
 - **A range that exists only as a refusal is no longer how a person meets it.** The same grill put a

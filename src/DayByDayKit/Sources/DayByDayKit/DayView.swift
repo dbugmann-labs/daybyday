@@ -20,6 +20,20 @@ public struct DayView: Hashable, Sendable {
         public let note: String?
     }
 
+    /// What a total commitment's row offers in a tick's place.
+    public struct TotalEntry: Hashable, Sendable {
+        /// The day's sum and the commitment's target, in this package's own words — "150 of
+        /// 120".
+        public let soFarOfTarget: String
+    }
+
+    /// What a row makes of an amount committed in its total entry.
+    public enum TotalRecord: Hashable, Sendable {
+        case addition(Addition)
+        case notAboveZero
+        case tooLargeToAdd
+    }
+
     public struct Row: Hashable, Sendable {
         let commitment: Commitment
         let date: CalendarDate
@@ -35,6 +49,10 @@ public struct DayView: Hashable, Sendable {
         /// this row's date, or `nil` where it holds none. Not given back by anything but
         /// `noteEntry(asOf:)`.
         let note: String?
+
+        /// The sum the history the day view was formed from has added for this row's commitment
+        /// on this row's date. Not given back by anything but `totalEntry(asOf:)`.
+        let total: Decimal
 
         public var name: String { commitment.name }
 
@@ -107,6 +125,45 @@ public struct DayView: Hashable, Sendable {
 
             return Note(text, for: commitment, on: date)
         }
+
+        /// The total entry this row offers, or `nil` when its commitment's kind is not a total
+        /// or the row's date is later than `today`.
+        public func totalEntry(asOf today: CalendarDate) -> TotalEntry? {
+            guard today.days(until: date) <= 0 else {
+                return nil
+            }
+
+            guard case .total(let target) = commitment.kind else {
+                return nil
+            }
+
+            return TotalEntry(soFarOfTarget: "\(total) of \(target.amount)")
+        }
+
+        /// What this row makes of `amount` — an addition of this row's commitment on this row's
+        /// date, or the reason it makes none. `nil` when the row offers no total entry as of
+        /// `today`.
+        public func totalRecord(_ amount: Decimal, asOf today: CalendarDate) -> TotalRecord? {
+            guard totalEntry(asOf: today) != nil else {
+                return nil
+            }
+
+            guard let addition = Addition(amount, for: commitment, on: date) else {
+                return .notAboveZero
+            }
+
+            guard Digits.canAdd(amount, to: total) else {
+                return .tooLargeToAdd
+            }
+
+            return .addition(addition)
+        }
+
+        /// Whether this row offers taking its day's last addition back: exactly when it offers
+        /// a total entry as of `today` and its day's sum is above zero.
+        public func offersTakeBackLast(asOf today: CalendarDate) -> Bool {
+            totalEntry(asOf: today) != nil && total > 0
+        }
     }
 
     /// What this day view says its day is: the weekday, the day of the month, the month and the
@@ -136,7 +193,8 @@ public struct DayView: Hashable, Sendable {
                 Row(
                     commitment: $0, date: date, isKept: history.isKept($0, on: date),
                     number: history.number(for: $0, on: date),
-                    note: history.note(for: $0, on: date))
+                    note: history.note(for: $0, on: date),
+                    total: history.total(for: $0, on: date))
             }
     }
 

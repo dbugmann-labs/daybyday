@@ -4,11 +4,13 @@ public struct History: Hashable, Sendable {
     private var ticks: Set<Tick>
     private var numbers: [RecordedDay: Decimal]
     private var notes: [RecordedDay: String]
+    private var additions: [RecordedDay: [Decimal]]
 
     public init() {
         ticks = []
         numbers = [:]
         notes = [:]
+        additions = [:]
     }
 
     public mutating func add(_ tick: Tick) {
@@ -36,10 +38,15 @@ public struct History: Hashable, Sendable {
     ///
     /// A commitment is kept by a tick, by a number or by a note, whichever its kind can produce:
     /// a tick keeps its day by being there, and every number and every note does too, whatever
-    /// either holds.
+    /// either holds. A total is kept when the day's sum has reached its commitment's target —
+    /// the comparison is the sum against the target, in that order, never the reverse.
     public func isKept(_ commitment: Commitment, on date: CalendarDate) -> Bool {
         if let tick = Tick(commitment, on: date), ticks.contains(tick) {
             return true
+        }
+
+        if case .total(let target) = commitment.kind {
+            return total(for: commitment, on: date) >= target.amount
         }
 
         let day = RecordedDay(commitment: commitment, date: date)
@@ -60,5 +67,30 @@ public struct History: Hashable, Sendable {
 
     public func note(for commitment: Commitment, on date: CalendarDate) -> String? {
         notes[RecordedDay(commitment: commitment, date: date)]
+    }
+
+    /// What that day has added: the sum of the additions it holds, and zero where it holds
+    /// none — for every commitment, on every date, whatever its kind.
+    public func total(for commitment: Commitment, on date: CalendarDate) -> Decimal {
+        let day = RecordedDay(commitment: commitment, date: date)
+        return (additions[day] ?? []).reduce(0, +)
+    }
+
+    /// Appends to the day `addition` is for. A day holds many, in the order they were made, and
+    /// a second addition alike in every way to the first is held beside it.
+    public mutating func add(_ addition: Addition) {
+        let day = RecordedDay(commitment: addition.commitment, date: addition.date)
+        additions[day, default: []].append(addition.amount)
+    }
+
+    /// Removes the last addition of that day, leaving the history unchanged where it holds none.
+    public mutating func removeLastAddition(for commitment: Commitment, on date: CalendarDate) {
+        let day = RecordedDay(commitment: commitment, date: date)
+        guard var amounts = additions[day], !amounts.isEmpty else {
+            return
+        }
+
+        amounts.removeLast()
+        additions[day] = amounts.isEmpty ? nil : amounts
     }
 }

@@ -1475,3 +1475,616 @@ func aNoteCommitmentWithANoteOnADateStillTakesNoNumberOnIt() {
     #expect(Number(70.5, for: commitment, on: monday) == nil)
     #expect(history.note(for: commitment, on: monday) == "Ran 8k.")
 }
+
+@Test("an addition is recorded for a total commitment on a date it is due on")
+func anAdditionIsRecordedForATotalCommitmentOnADateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    #expect(Addition(30, for: protein, on: monday) != nil)
+}
+
+@Test("a total commitment takes no addition on a date it is not due on")
+func aTotalCommitmentTakesNoAdditionOnADateItIsNotDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let target = Commitment.Target(120)!
+    let commitment = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    let laterFloor = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let beforeFloor = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: laterFloor, kind: .total(target: target))!
+
+    let noWeekday = Commitment(
+        name: "Protein", schedule: Schedule.weekdays([]), keptFrom: keptFrom,
+        kind: .total(target: target))!
+    let week = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ]
+
+    #expect(Addition(30, for: commitment, on: tuesday) == nil)
+    #expect(schedule.isDue(on: monday))
+    #expect(Addition(30, for: beforeFloor, on: monday) == nil)
+    for date in week {
+        #expect(Addition(30, for: noWeekday, on: date) == nil)
+    }
+}
+
+@Test("a commitment whose kind is not a total takes no addition on a date it is due on")
+func aCommitmentWhoseKindIsNotATotalTakesNoAdditionOnADateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+
+    let tickKind = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let note = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let numberNoRange = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let numberWithRange = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let totalKind = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    #expect(Addition(30, for: tickKind, on: monday) == nil)
+    #expect(Addition(30, for: numberNoRange, on: monday) == nil)
+    #expect(Addition(30, for: numberWithRange, on: monday) == nil)
+    #expect(Addition(30, for: note, on: monday) == nil)
+    #expect(Addition(30, for: totalKind, on: monday) != nil)
+}
+
+@Test("an amount that is not above zero is not an addition")
+func anAmountThatIsNotAboveZeroIsNotAnAddition() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    #expect(Addition(0, for: protein, on: monday) == nil)
+    #expect(Addition(-30, for: protein, on: monday) == nil)
+    #expect(Addition(-0.000001, for: protein, on: monday) == nil)
+    #expect(Addition(0.000001, for: protein, on: monday) != nil)
+}
+
+@Test("a value that is not a number is not an addition")
+func aValueThatIsNotANumberIsNotAnAddition() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    #expect(Addition(Decimal.nan, for: protein, on: monday) == nil)
+}
+
+@Test("an addition takes any amount above zero, at either end of what this system holds")
+func anAdditionTakesAnyAmountAboveZeroAtEitherEndOfWhatThisSystemHolds() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let thirtyEightNines = Decimal(string: String(repeating: "9", count: 38))!
+
+    for amount: Decimal in [0.000001, 30, 119.95, thirtyEightNines] {
+        var history = History()
+        history.add(Addition(amount, for: protein, on: monday)!)
+        #expect(history.total(for: protein, on: monday) == amount)
+    }
+
+    var historyPastTarget = History()
+    historyPastTarget.add(Addition(500, for: protein, on: monday)!)
+    #expect(historyPastTarget.total(for: protein, on: monday) == 500)
+}
+
+@Test("two additions are the same exactly when their commitment, date and amount all are")
+func twoAdditionsAreTheSameExactlyWhenTheirCommitmentDateAndAmountAllAre() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let proteinAfterTraining = Commitment(
+        name: "Protein after training", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: target))!
+
+    let first = Addition(30, for: protein, on: monday)!
+    let second = Addition(30, for: protein, on: monday)!
+    let differentAmount = Addition(45, for: protein, on: monday)!
+    let differentDate = Addition(30, for: protein, on: wednesday)!
+    let differentCommitment = Addition(30, for: proteinAfterTraining, on: monday)!
+
+    #expect(first == second)
+    #expect(first != differentAmount)
+    #expect(second != differentAmount)
+    #expect(first != differentDate)
+    #expect(first != differentCommitment)
+}
+
+@Test("a history that has taken no addition answers a total of zero for a commitment on a day")
+func aHistoryThatHasTakenNoAdditionAnswersATotalOfZeroForACommitmentOnADay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let history = History()
+
+    #expect(history.total(for: protein, on: monday) == 0)
+}
+
+@Test("an addition added to a history is the total that commitment has on that day")
+func anAdditionAddedToAHistoryIsTheTotalThatCommitmentHasOnThatDay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(history.total(for: protein, on: monday) == 30)
+}
+
+@Test("additions made on one day accumulate rather than replace one another")
+func additionsMadeOnOneDayAccumulateRatherThanReplaceOneAnother() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45.5, for: protein, on: monday)!)
+    history.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(history.total(for: protein, on: monday) == 105.5)
+}
+
+@Test("the additions of one day are not counted in another day's total")
+func theAdditionsOfOneDayAreNotCountedInAnotherDaysTotal() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45, for: protein, on: wednesday)!)
+
+    #expect(history.total(for: protein, on: monday) == 30)
+    #expect(history.total(for: protein, on: wednesday) == 45)
+    #expect(history.total(for: protein, on: saturday) == 0)
+}
+
+@Test("the additions of one commitment are not counted in another's total on the same date")
+func theAdditionsOfOneCommitmentAreNotCountedInAnothersTotalOnTheSameDate() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let water = Commitment(
+        name: "Water", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45, for: water, on: monday)!)
+
+    #expect(history.total(for: protein, on: monday) == 30)
+    #expect(history.total(for: water, on: monday) == 45)
+}
+
+@Test("a history answers a total of zero for a commitment whose kind is not a total")
+func aHistoryAnswersATotalOfZeroForACommitmentWhoseKindIsNotATotal() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let numberKind = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let noteKind = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+
+    #expect(history.total(for: gym, on: monday) == 0)
+    #expect(history.total(for: numberKind, on: monday) == 0)
+    #expect(history.total(for: noteKind, on: monday) == 0)
+    #expect(history.total(for: protein, on: tuesday) == 0)
+}
+
+@Test("an amount the system refuses leaves the day's additions standing")
+func anAmountTheSystemRefusesLeavesTheDaysAdditionsStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(60, for: protein, on: monday)!)
+    let historyBefore = history
+
+    #expect(Addition(0, for: protein, on: monday) == nil)
+    #expect(Addition(-30, for: protein, on: monday) == nil)
+    #expect(history.total(for: protein, on: monday) == 60)
+    #expect(history == historyBefore)
+}
+
+@Test("two histories holding the same additions in the same order are the same history")
+func twoHistoriesHoldingTheSameAdditionsInTheSameOrderAreTheSameHistory() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    var first = History()
+    first.add(Addition(30, for: protein, on: monday)!)
+    first.add(Addition(45, for: protein, on: wednesday)!)
+
+    var second = History()
+    second.add(Addition(45, for: protein, on: wednesday)!)
+    second.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(first == second)
+}
+
+@Test("two histories holding one day's additions in different orders are different histories")
+func twoHistoriesHoldingOneDaysAdditionsInDifferentOrdersAreDifferentHistories() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    var first = History()
+    first.add(Addition(30, for: protein, on: monday)!)
+    first.add(Addition(45, for: protein, on: monday)!)
+
+    var second = History()
+    second.add(Addition(45, for: protein, on: monday)!)
+    second.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(first != second)
+    #expect(first.total(for: protein, on: monday) == 75)
+    #expect(second.total(for: protein, on: monday) == 75)
+}
+
+@Test("a history holds ticks, numbers, notes and additions side by side and answers each on its own")
+func aHistoryHoldsTicksNumbersNotesAndAdditionsSideBySideAndAnswersEachOnItsOwn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    history.add(Number(70.5, for: weight, on: monday)!)
+    history.add(Note("Ran 8k.", for: journal, on: monday)!)
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+
+    #expect(history.total(for: gym, on: monday) == 0)
+    #expect(history.isKept(gym, on: monday))
+    #expect(history.number(for: weight, on: monday) == 70.5)
+    #expect(history.total(for: weight, on: monday) == 0)
+    #expect(history.isKept(weight, on: monday))
+    #expect(history.note(for: journal, on: monday) == "Ran 8k.")
+    #expect(history.total(for: journal, on: monday) == 0)
+    #expect(history.isKept(journal, on: monday))
+    #expect(history.total(for: protein, on: monday) == 120)
+    #expect(history.number(for: protein, on: monday) == nil)
+    #expect(history.note(for: protein, on: monday) == nil)
+    #expect(history.isKept(protein, on: monday))
+
+    history.remove(Tick(gym, on: monday)!)
+
+    #expect(history.number(for: weight, on: monday) == 70.5)
+    #expect(history.note(for: journal, on: monday) == "Ran 8k.")
+    #expect(history.total(for: protein, on: monday) == 120)
+}
+
+@Test("the last addition taken back leaves the day short by exactly that amount")
+func theLastAdditionTakenBackLeavesTheDayShortByExactlyThatAmount() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+    history.removeLastAddition(for: protein, on: monday)
+
+    #expect(history.total(for: protein, on: monday) == 30)
+    #expect(!history.isKept(protein, on: monday))
+}
+
+@Test("taking back the last addition twice removes the two most recent, in the order they were made")
+func takingBackTheLastAdditionTwiceRemovesTheTwoMostRecentInTheOrderTheyWereMade() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45, for: protein, on: monday)!)
+    history.add(Addition(50, for: protein, on: monday)!)
+    history.removeLastAddition(for: protein, on: monday)
+    history.removeLastAddition(for: protein, on: monday)
+
+    var justThirty = History()
+    justThirty.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(history.total(for: protein, on: monday) == 30)
+    #expect(history == justThirty)
+}
+
+@Test("taking back the only addition a day holds leaves the day holding none")
+func takingBackTheOnlyAdditionADayHoldsLeavesTheDayHoldingNone() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(120, for: protein, on: monday)!)
+    history.removeLastAddition(for: protein, on: monday)
+
+    #expect(history.total(for: protein, on: monday) == 0)
+    #expect(!history.isKept(protein, on: monday))
+    #expect(history == History())
+}
+
+@Test("taking back the last addition leaves the same commitment's other days standing")
+func takingBackTheLastAdditionLeavesTheSameCommitmentsOtherDaysStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45, for: protein, on: saturday)!)
+    history.removeLastAddition(for: protein, on: monday)
+
+    #expect(history.total(for: protein, on: saturday) == 45)
+    #expect(history.total(for: protein, on: monday) == 0)
+}
+
+@Test("taking back the last addition leaves another commitment's day standing")
+func takingBackTheLastAdditionLeavesAnotherCommitmentsDayStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let water = Commitment(
+        name: "Water", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45, for: water, on: monday)!)
+    history.removeLastAddition(for: protein, on: monday)
+
+    #expect(history.total(for: water, on: monday) == 45)
+    #expect(history.total(for: protein, on: monday) == 0)
+}
+
+@Test("taking back where the day holds no addition leaves the history unchanged")
+func takingBackWhereTheDayHoldsNoAdditionLeavesTheHistoryUnchanged() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let tickKind = Commitment(name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    var history = History()
+    history.add(Addition(30, for: protein, on: saturday)!)
+    let historyBefore = history
+
+    history.removeLastAddition(for: protein, on: monday)
+    #expect(history == historyBefore)
+
+    history.removeLastAddition(for: tickKind, on: saturday)
+    #expect(history == historyBefore)
+
+    history.removeLastAddition(for: protein, on: tuesday)
+    #expect(history == historyBefore)
+}
+
+@Test("a history given additions and taken back one by one is the same as one never given any")
+func aHistoryGivenAdditionsAndTakenBackOneByOneIsTheSameAsOneNeverGivenAny() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45, for: protein, on: monday)!)
+    history.add(Addition(50, for: protein, on: monday)!)
+    history.removeLastAddition(for: protein, on: monday)
+    history.removeLastAddition(for: protein, on: monday)
+    history.removeLastAddition(for: protein, on: monday)
+
+    #expect(history == History())
+
+    history.removeLastAddition(for: protein, on: monday)
+
+    #expect(history == History())
+}
+
+@Test("a total commitment whose day is at its target still takes no tick on it")
+func aTotalCommitmentWhoseDayIsAtItsTargetStillTakesNoTickOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+
+    #expect(Tick(protein, on: monday) == nil)
+    #expect(history.total(for: protein, on: monday) == 120)
+    #expect(history.isKept(protein, on: monday))
+    #expect(Tick(protein, on: wednesday) == nil)
+}
+
+@Test("a total commitment whose day's additions reach its target was kept on that date")
+func aTotalCommitmentWhoseDaysAdditionsReachItsTargetWasKeptOnThatDate() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+
+    var historyOfOneAddition = History()
+    historyOfOneAddition.add(Addition(120, for: protein, on: monday)!)
+
+    #expect(history.isKept(protein, on: monday))
+    #expect(historyOfOneAddition.isKept(protein, on: monday))
+}
+
+@Test("a total commitment whose day's additions fall short of its target was not kept on it")
+func aTotalCommitmentWhoseDaysAdditionsFallShortOfItsTargetWasNotKeptOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(89.99, for: protein, on: monday)!)
+
+    #expect(!history.isKept(protein, on: monday))
+    #expect(!History().isKept(protein, on: monday))
+
+    history.add(Addition(0.01, for: protein, on: monday)!)
+    #expect(history.isKept(protein, on: monday))
+}
+
+@Test("additions past the target keep the day and change nothing else about it")
+func additionsPastTheTargetKeepTheDayAndChangeNothingElseAboutIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(120, for: protein, on: monday)!)
+    history.add(Addition(30, for: protein, on: monday)!)
+
+    #expect(history.isKept(protein, on: monday))
+    #expect(history.total(for: protein, on: monday) == 150)
+}
+
+@Test("a total commitment is kept on one day and not on another from each day's own additions")
+func aTotalCommitmentIsKeptOnOneDayAndNotOnAnotherFromEachDaysOwnAdditions() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(120, for: protein, on: monday)!)
+    history.add(Addition(30, for: protein, on: wednesday)!)
+
+    #expect(history.isKept(protein, on: monday))
+    #expect(!history.isKept(protein, on: wednesday))
+    #expect(!history.isKept(protein, on: saturday))
+}
+
+@Test("a total commitment with additions on a date still takes no number on it")
+func aTotalCommitmentWithAdditionsOnADateStillTakesNoNumberOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+
+    #expect(Number(70.5, for: protein, on: monday) == nil)
+    #expect(history.total(for: protein, on: monday) == 120)
+}
+
+@Test("a total commitment with additions on a date still takes no note on it")
+func aTotalCommitmentWithAdditionsOnADateStillTakesNoNoteOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+
+    #expect(Note("Ran 8k.", for: protein, on: monday) == nil)
+    #expect(history.total(for: protein, on: monday) == 120)
+}

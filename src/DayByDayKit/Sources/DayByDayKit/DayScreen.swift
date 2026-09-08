@@ -281,9 +281,11 @@ public final class DayScreen {
     /// already removed — and gives back the count of significant digits that spelling holds: the
     /// whole part with its leading zeros dropped, a full stop where a `.` or `,` was typed, the
     /// fraction with its trailing zeros dropped, and no separator where nothing is left after it.
-    /// The count is read off that same stripping, not off `digits` directly, because a leading
-    /// zero the whole part loses can still open the fraction (`"0.08"` holds one significant
-    /// digit, not two).
+    /// The count is `Digits.stripped(whole:fraction:)`'s, read off that same stripping and not
+    /// off `digits` directly, because a leading zero the whole part loses can still open the
+    /// fraction (`"0.08"` holds one significant digit, not two) — `Digits` is where this counting
+    /// is decided, so this and `Digits.significant(in:)` cannot drift apart on what a significant
+    /// digit is.
     ///
     /// `design.md` § *A number this system cannot keep exactly is not a number here*: a count
     /// above thirty-eight is a value that is not a number, and a count of zero is answered as
@@ -295,29 +297,15 @@ public final class DayScreen {
     private static func writtenOut(_ digits: Substring) -> (text: String, significantDigits: Int) {
         let parts = String(digits).replacingOccurrences(of: ",", with: ".")
             .split(separator: ".", omittingEmptySubsequences: false)
-        var whole = parts[0]
-        var fraction = parts.count > 1 ? parts[1] : Substring()
-        while whole.first == "0" {
-            whole.removeFirst()
-        }
-        while fraction.last == "0" {
-            fraction.removeLast()
-        }
-
-        var counted = String(whole) + String(fraction)
-        while counted.first == "0" {
-            counted.removeFirst()
-        }
-        while counted.last == "0" {
-            counted.removeLast()
-        }
-        guard !counted.isEmpty else {
+        let stripped = Digits.stripped(
+            whole: parts[0], fraction: parts.count > 1 ? parts[1] : Substring())
+        guard stripped.significantDigits > 0 else {
             return ("0", 0)
         }
 
-        let head = whole.isEmpty ? "0" : String(whole)
-        let text = fraction.isEmpty ? head : head + "." + String(fraction)
-        return (text, counted.count)
+        let head = stripped.whole.isEmpty ? "0" : String(stripped.whole)
+        let text = stripped.fraction.isEmpty ? head : head + "." + String(stripped.fraction)
+        return (text, stripped.significantDigits)
     }
 
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
@@ -379,8 +367,66 @@ public final class DayScreen {
                     throw error
                 }
             }
+        } else if row.totalEntry(asOf: today) != nil {
+            guard !Blank.saysNothing(text) else {
+                return
+            }
+
+            switch Self.read(text) {
+            case .takeBack:
+                return
+            case .notANumber:
+                notice = Notice(row: row, cause: "Not a number")
+                return
+            case .number(let decimal):
+                guard let record = row.totalRecord(decimal, asOf: today) else {
+                    return
+                }
+
+                switch record {
+                case .addition(let addition):
+                    do {
+                        try recordStore.add(addition)
+                    } catch {
+                        notice = Notice(row: row)
+                        throw error
+                    }
+                case .notAboveZero:
+                    notice = Notice(row: row, cause: "Must be more than 0")
+                    return
+                case .tooLargeToAdd:
+                    notice = Notice(row: row, cause: "Too large to add")
+                    return
+                }
+            }
         } else {
             return
+        }
+        notice = nil
+
+        dayView = dayViewOfShownDay()
+    }
+
+    /// Takes back the last addition `row`'s day holds, and keeps the change before `dayView`
+    /// says so. Does nothing when `row` is not one this screen's day view holds, when this screen
+    /// is not keeping a record, or when `row` offers no take-back as of `today`. Throws when the
+    /// change could not be kept at the record's place, leaving `dayView` as it was.
+    public func takeBackLast(on row: DayView.Row) throws {
+        guard dayView.rows.contains(row) else {
+            return
+        }
+        guard let recordStore else {
+            return
+        }
+        guard row.offersTakeBackLast(asOf: today) else {
+            return
+        }
+
+        do {
+            try recordStore.removeLastAddition(on: row.recordedDay)
+        } catch {
+            notice = Notice(row: row)
+            throw error
         }
         notice = nil
 
@@ -481,5 +527,9 @@ private extension RecordStore {
 
     func removeNote(on day: RecordedDay) throws {
         try removeNote(for: day.commitment, on: day.date)
+    }
+
+    func removeLastAddition(on day: RecordedDay) throws {
+        try removeLastAddition(for: day.commitment, on: day.date)
     }
 }
