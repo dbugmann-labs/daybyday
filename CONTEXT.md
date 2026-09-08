@@ -475,6 +475,21 @@ what a **roster store** holds is only ever what it was given. Agreed 2026-09-04 
 **Day** — the unit the product is organised around. The landing screen is one day, and every
 record is keyed to a date rather than to the time it was entered.
 
+**Offered** — a control is offered when the screen can honour it, and a screen draws as a target
+only what it offers. A *Today* button on the day already showing as today has nowhere to route to;
+a row for a day that has not arrived has no record it can take. Neither is drawn as something to
+tap — though the row itself stays, because it still says what that day will ask of you, and only
+its tap goes. This is **one rule and not two**, agreed 2026-09-08 at the Feature grill that
+reopened `FEAT: day-screen` (#27), and it is the **product's** rule rather than one screen's: every
+control added anywhere after it is judged by the same sentence instead of re-arguing it.
+
+**What bounds it is what the screen holds the answer to.** A day screen was handed a **today**, so
+it knows whether it is showing that day; a **row** knows whether its date has arrived. Neither
+knows it has reached the first or the last supported calendar date, so the chevrons at those two
+ends stay drawn. That is not an exception grudgingly made to the rule — it is the rule read
+carefully, and it is the decision `add-screen-navigation` (#93) already took when it refused
+`canShowPreviousDay` on the ground that it would answer true on every day anyone will ever look at.
+
 **Day view** — what one calendar date asks of you and what you did about it: the commitments due
 on that date, each with whether it is kept, in the order it was handed them. Like due-ness, it is a
 question asked *of a date* rather than of the present moment, so it answers for every date the

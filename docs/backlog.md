@@ -244,59 +244,6 @@ shape it lacks, not the quota.
   is now on record in the form that principle warns about. Whichever pass takes it has to put that
   choice to the owner rather than quietly pick the safe half.
 
-### B-028 — not be offered a way back to a day I am already on
-
-*Captured 2026-09-04, from the repo owner running #93's shell on the Simulator.*
-
-> "the "Today" button should not exist when I am looking at today, because there is nowhere to
-> route to."
-
-- **Trigger** — every time the app opens, which is the common case: a day screen lands on today
-  and the control that returns it there has nothing to do.
-- **Touches** — `day-screen` (#27). It needs a **new answer from `DayScreen`** — whether the day
-  it is showing is the today it was handed — which `add-screen-navigation` (#93) deliberately does
-  not give. That is what makes it a Story rather than a chore, and it is the exact opposite of the
-  kept-flag entry at the head of *Decided*, which became `chore/draw-kept` precisely because
-  `Row.isKept` was already public and drawing it carried no requirement. Nothing public here can
-  be drawn from, and the shell may not work it out for itself (`CONTEXT.md` § *App shell*).
-- **Principle** — tested against *Entered where you stand*: passes, and unusually it passes by
-  subtraction. The day screen is where every daily visit happens, so a control that does nothing
-  on the day you land on is clutter in the one place the principle protects. It removes
-  interaction rather than adding a screen.
-- **Open** — hidden, or present but disabled? Hiding removes a target; disabling keeps the layout
-  from moving under a thumb as the day changes. The want says "should not exist", which reads as
-  hidden, but it was said about a button that also looked tickable, and that half was fixed
-  separately under #93's task 3.1.
-- **Open** — this does **not** reopen why #93 left the calendar's ends silent. `design.md` §
-  *Why the ends are silent* refused `canShowPreviousDay` on the grounds that it would answer
-  `true` on every day anyone will ever look at. *Am I showing my today?* genuinely varies, so the
-  argument does not carry across — but whoever grills this should say so out loud rather than
-  letting the two look alike.
-
-### B-030 — see the day's commitments in separated groups rather than one list
-*Captured 2026-09-04. Said under the heading "Categories:", with B-029.*
-
-> "Categories should be separated on the screen"
-
-- **Trigger** — every daily visit, on the screen the app opens on.
-- **Touches** — `day-screen` (#27), and B-029 for the key it would group by. `CONTEXT.md` § *Day
-  view* says a day view *"orders nothing of its own … in the order it was handed them"*, so
-  grouping is either a second ordering it is newly allowed to make, or something the caller does
-  before handing the rows over — and the roster's own order is the order things were taken on.
-- **Principle** — tested against *an iPhone, in your hand*: **passes**, and it is the want the
-  phone judges most sharply. "supplements and habits daily" is one line of the day-one week and a
-  dozen rows on a small screen; separation is what stops that scroll reading as one undifferentiated
-  list. It adds no screen and no navigation.
-- **Open** — which screen? The braindump says "the screen". The day screen (#27) is where the five
-  daily visits happen; `add-commitments-screen` (#104) is the list a person manages commitments
-  through. Both are candidates, only one is a capability that orders anything today, and wanting it
-  in both is a plausible answer.
-- **Open** — what order do the groups come in, and where does a commitment in no category go?
-- **Open** — does a group with nothing due today appear at all, appear empty, or vanish? A day view
-  already shows only what is due, so an empty group is a claim about the day rather than about the
-  commitments a person keeps.
-- **Open** — cannot be taken before B-029: without it there is no key to group by.
-
 ### B-032 — start a weight entry from the last weight I gave
 *Captured 2026-09-06.*
 
@@ -349,45 +296,6 @@ shape it lacks, not the quota.
   record takes 5.5. Is that a deliberate narrowing, or does the row need both ways in?
 - **Open** — the *Decided* line of 2026-09-06 already sends the mood's one tap to the Story that
   enters a number (#139). This entry is that line's missing half: what the affordance actually is.
-
-### B-035 — know that a commitment on a future day cannot be ticked yet
-*Captured 2026-09-07, from the repo owner running main's build on the phone.*
-
-> "I just installed the most recent version (the one that is on main) onto the phone, and I cannot
-> see any message when I try to click a commitment on a day in the future
-> Is that on purpose, or a bug?"
-
-- **Trigger** — every time the day screen is moved forward, which is one tap from the day every
-  visit lands on. The row for tomorrow is drawn exactly like the row for today and answers a tap
-  with nothing at all.
-- **Touches** — `day-screen` (#27), and **the spec has already named the answer without writing
-  it**. The requirement *A day screen tells nothing on a row where there was no tick to refuse*
-  makes a tap on a row for a day that has not arrived one of its three silent cases, because "what
-  is told on a row means a change did not reach the place, and here there was no change" — and
-  then, in the same paragraph, "the honest answer to a day that has not arrived is a row that does
-  not invite the tap at all, and that is not this capability's answer here". So the silence is
-  specified and the kit is right; the row that does not invite the tap is the half nobody has
-  written. Same shape as B-028 — a control offering a target it cannot honour.
-- **Principle** — tested against *Entered where you stand*: **passes, by subtraction**, exactly as
-  B-028 does. The day screen is where all five daily visits happen, and a dead target sits in the
-  middle of it. Tested against *five percent of seven things*: **fails** — it deepens a screen that
-  already works rather than making a new kind of record possible. Both are written down because the
-  second is why a pass might reasonably not take it, and the first is why it is worth having.
-- **Open** — which of three answers: the row not drawn at all on a day that has not arrived, the
-  row drawn but not tappable, or the tap answered with a message. The want asks for the third —
-  "I cannot see any message" — and the spec's own sentence argues for the second. Only one of the
-  three puts words on the screen, and they are not the same product decision.
-- **Open** — Story or chore, and B-028 does not settle it either way. `DayView.Row.tick(asOf:)` is
-  public and already answers `nil` for a day that has not arrived, and `ContentView` reads its own
-  `today()`, so the shell *could* work it out — which is the `chore/draw-kept` reading. Against
-  that: a refusal is exactly what `CONTEXT.md` § *App shell* says owes a Story, and having the
-  shell try to form a tick in order to learn whether it may offer one is the rule being re-derived
-  outside the seam.
-- **Open** — does one answer cover the other silent row? A row whose commitment's kind is not a
-  tick offers nothing on **every** day, under the same requirement, and #139–#142 are about to make
-  those rows ordinary. "A row that cannot be tapped does not look tappable" is one rule for both;
-  a message about a day that has not arrived leaves the number and note rows exactly as mute as
-  they are now.
 
 ### B-036 — build a rhythm without being told what it will say
 *Captured 2026-09-07.*
@@ -443,40 +351,6 @@ shape it lacks, not the quota.
   need somewhere to put a name and a rhythm, and if it is this form then this want is the screen that
   Story lands in rather than a thing of its own.
 
-### B-038 — get to the day before or after without aiming at a chevron
-*Captured 2026-09-08.*
-
-> "Swiping left / right on a day should move the day"
-
-- **Trigger** — every visit that looks at a day other than the one the app opened on: checking
-  whether yesterday was ticked, moving forward to see what tomorrow asks. Today that movement is
-  two chevrons at the top of the list, `ContentView.swift:108` and `:117`, each calling
-  `screen.showPreviousDay()` or `screen.showNextDay()`.
-- **Touches** — `day-screen` (#27), and possibly nothing but the app shell. The two methods a swipe
-  would call are already public and already wired to the chevrons, which is the `chore/draw-kept`
-  reading — and the spec has already anticipated a gesture without requiring one: *What a day screen
-  tells on a row lasts until…* says the rule "SHALL be the day being shown **changing** and never
-  the gesture that was made". So the kit may owe nothing at all here, which would make this the
-  second chore-shaped want after B-028 and B-035, both of which are still arguing the same
-  Story-or-chore question.
-- **Principle** — tested against *an iPhone, in your hand*: **passes, and sharply.** Two small
-  targets at the top of a list are a reach on a phone held one-handed; a swipe across the screen is
-  the same movement in the idiom the device already has. It adds no screen and no navigation — it
-  is a second way into navigation that already exists. Tested against *five percent of seven
-  things*: **fails** — it deepens a screen that works rather than making a new record possible.
-  Both are written down because the second is why a pass might reasonably not take it.
-- **Open** — does the swipe replace the chevrons or sit beside them? A gesture with no visible
-  control is a movement nobody is told about, and B-028 is already about a navigation control that
-  should not be drawn; the two want reading together.
-- **Open** — the day screen's rows sit in a `List` and nothing on it uses `swipeActions` today, but
-  B-030 groups those rows and #145/#146 put swipe-shaped roster operations on the *other* screen. A
-  horizontal swipe claimed by the screen is a swipe a row can never claim later, and that ordering
-  is worth deciding before it is spent.
-- **Open** — which way is forward? Swiping left to move to the next day and swiping left to drag
-  the day leftwards are opposite mappings, and both are common enough that only the owner can say.
-- **Open** — it makes the day that has not arrived one thumb-flick away rather than one tap, which
-  sharpens B-035 rather than changing it.
-
 ### B-039 — be reminded to record a day before it is gone
 *Captured 2026-09-08, from the sixth grooming sweep. The wording is the sweep's.*
 
@@ -505,41 +379,42 @@ shape it lacks, not the quota.
   calendar dates on purpose, so this is either a fifth thing beside a schedule or a property of the
   reminder rather than of the commitment.
 
-### B-040 — get to a day weeks back without stepping through every day between
-*Captured 2026-09-08, from the sixth grooming sweep. The wording is the sweep's.*
-
-> "Get to a day weeks back without stepping through every day between — recording the Thursday you
-> missed should not cost twenty-one taps."
-
-- **Trigger** — rare and specific: coming back to a stretch that went unrecorded, or checking what
-  a commitment did last month. Not one of the five daily visits.
-- **Touches** — `day-screen` (#27). *A move is one calendar day, and never more* is a shipped
-  requirement, and *Decided* (2026-09-02, B-016 → #72) records the consequence in as many words:
-  how far back the past stays writable is *"as far back as the calendar goes, bounded by navigation
-  rather than by a rule"*. That bound is the want. The kept-from day is the real floor
-  (ADR-1013), and nothing offers a way to reach it.
-- **Not B-038, and the two want reading together.** B-038 makes the step from one day to the day
-  beside it cheaper; this asks for a day that is not beside it at all, and a swipe costs twenty-one
-  swipes where a chevron costs twenty-one taps. Either is worth having without the other, which is
-  why this is its own entry rather than a fold. B-028 is the third of the same cluster — all three
-  are about the controls that move a day screen.
-- **Principle** — tested against *an iPhone, in your hand*: **passes.** A date picker is the
-  idiom the phone already has, and `add-commitments-screen` (#104) already put one in the product
-  for the kept-from day, so the affordance exists and is not a new kind of screen. Tested against
-  *five percent of seven things*: **fails** — it deepens navigation that works rather than making a
-  new kind of record possible.
-- **Open** — a date picker, a jump straight back to today, or a calendar month you tap a day in?
-  The third is the most useful and the closest to the graphs `EPIC: Daily commitments` excludes by
-  name, because a month grid with days marked *is* a look back.
-- **Open** — does anything bound how far it may go? The day screen answers for every supported
-  date, so a picker with no floor offers years in which the person kept nothing.
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-08 — not be offered a way back to a day I am already on → `FEAT: day-screen` (#27),
+  reopened under `EPIC: Daily commitments` (#1), a fourth round against that capability. The Today
+  button is **hidden** on the day the screen is showing as today, not drawn-and-inert: it carries
+  nothing there, and the want said "should not exist". Half of one Story with B-035, because the
+  grill settled that both are the same rule — **offered**, landed in `CONTEXT.md` at that grill and
+  product-wide rather than this screen's.
+- 2026-09-08 — know that a commitment on a future day cannot be ticked yet → the same
+  `FEAT: day-screen` (#27), the other half of that Story, and **against the want's own words**:
+  no message. A row for a day that has not arrived is drawn — it still says what the day will ask —
+  but it is not a target, which is what `day-screen`'s own prose already argued for. Since #141
+  every kind's entry refuses a future day, so this is one rule over every row rather than four. It
+  amends a shipped requirement, *A day screen tells nothing on a row where there was no tick to
+  refuse*, whose third silent case stops being reachable.
+- 2026-09-08 — get to a day weeks back without stepping through every day between → the same
+  `FEAT: day-screen` (#27), a Story of its own and the only one here needing new kit surface. A date
+  picker as **its own control** rather than the day title, so the Today button survives beside it;
+  floored at the earliest kept-from day on the roster and **open forward**. Deliberately not a
+  calendar month grid: that is a look-back view, Epic #1 excludes those by name, and it stays with
+  B-007.
+- 2026-09-08 — get to the day before or after without aiming at a chevron → **a chore on the app
+  shell**, not a Story, under ADR-1019: `showPreviousDay` and `showNextDay` are already public and
+  already wired to the chevrons, so the gesture carries no requirement. It sits **beside** them
+  rather than replacing them, and **swiping left goes to the next day**. It owes an ADR all the
+  same, because the grill claimed the horizontal swipe for the screen permanently — no row on a day
+  screen can ever take a swipe action, which is the opposite of the commitments screen (#145, #146).
+- 2026-09-08 — see the day's commitments in separated groups rather than one list →
+  `FEAT: commitment` (#26), Story #147 `add-commitment-category`, whose delta carries *A day view
+  draws its rows in the groups it was handed, and draws no group with nothing due* and has passed
+  G4. Promoted by that Story's own grill rather than by a pass; the sixth pass verified it on the
+  branch and moved the entry, as the fourth pass had to verify the third's claim.
 - 2026-09-06 — see what rhythm a commitment runs on, in words → `FEAT: commitment` (#26),
   reopened, as Story #144 `add-rhythm-in-words`, the head of cluster B's chain. One change with two
   delta specs: `schedule` gives its payloads back and says each shape in words, and `commitment`
@@ -861,3 +736,48 @@ found nothing.
     - **E**, restore: B-009. The phone install is runnable since today and its record is one
       deleted app from gone — the strongest reason yet to take it.
     - **F**, quota spans: B-017, blocked on *Week turnover*.
+
+- 2026-09-08 — pass over 16 wants, the sixth.
+  - **Sweep** — run first against a stale file and corrected mid-pass: `main`'s `docs/backlog.md`
+    held ten wants while four more (B-035..B-038) sat on the open `chore/backlog` PR #155, so the
+    sweep was re-run against the branch. That is the second time a pass has had to verify a claim
+    about the backlog's own contents before believing it. Three silences found and put to the
+    owner; two captured. B-039, nothing reminds you to record a day before it is gone — not
+    excluded by Epic #1, and the settled note that makes it urgent is the same one calling nagging
+    what disqualifies Apple Reminders. B-040, reaching a day weeks back costs one tap per day
+    between. The third was **declined**: `record` has no retire verb at all — `add-roster-removal`'s
+    Non-goals say "no tick leaves a record" in as many words — and that is a consequence #145 chose
+    deliberately, with nothing in the week asking for it. Day-one week: every line has a spec and
+    the shell seeds it; the one partly served is *yuno 5× a week*, whose row says the same thing all
+    seven days, which is B-025. Lifecycle verbs: `commitment` all claimed or in flight; `record`
+    create and take-back shipped for all four kinds once #141 merged mid-pass, retire declined
+    above; `day-screen` had create and move shipped, and its **controls** were the gap.
+    `docs/open-questions.md` held no want in disguise — its new entry, the one reader all four kinds
+    would share, is a technical decision and unowned.
+  - **Taken forward** — cluster A, the day screen's controls: B-028, B-035, B-038, B-040, grilled
+    and taken to `FEAT: day-screen` (#27), reopened. Three rounds, eleven questions, no fact sent to
+    the owner. Settled: a row for a day that has not arrived is drawn but is not a target, against
+    the want's own request for a message; the Today button is hidden on today; the date picker is
+    its own control, floored at the earliest kept-from day and open forward, and not a calendar
+    grid; the swipe sits beside the chevrons and left goes forward; the calendar's two ends stay
+    exactly as #93 left them, said out loud rather than left to look alike. One term landed in
+    `CONTEXT.md` — **offered**, product-wide rather than this screen's. One ADR owed, for claiming
+    the horizontal swipe. One shipped requirement to amend. Proposed for G2: the offered rule first,
+    as one Story over both controls, then the date picker; the chore can land at any time.
+  - **Not taken**, each with its disposition:
+    - **B**, the commitments form: B-036, B-037. Both delta `commitment` and queue behind #147,
+      #168, #148 and #142 (`docs/process.md` §7). Worth taking together — one may make the other
+      free, since both move the same section of that screen.
+    - **C**, looking back: B-007, B-011. Epic #1 excludes graphs and detail pages by name, and
+      B-040's answer deliberately left the calendar grid here rather than taking it.
+    - **D**, restore: B-009. **Recommended at the cluster stop and not taken.** It is the only want
+      whose absence costs the record rather than comfort, and the phone now holds real ticks,
+      numbers and notes.
+    - **E**, standing in a quota: B-025, B-017. **Recommended at the cluster stop and not taken.**
+      #141 shipped *A total entry says the day's sum and the commitment's target* — "150 of 120" —
+      so B-025's form is now argued and past a G4, and what is left of the objection is whether that
+      grammar may cross a day boundary, which is *Week turnover*.
+    - **F**, entry affordances: B-034; B-032, which Epic #1 excludes by name.
+    - **Singleton**: B-005, whose drop the fifth pass told this one to propose. Proposed at the
+      cluster stop and **not taken** — the reply named a cluster and not the drop — so it stays a
+      want and the seventh pass should propose it again.
