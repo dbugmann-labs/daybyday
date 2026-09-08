@@ -1291,11 +1291,15 @@ func aRowOffersATickOrANumberEntryAndNeverBoth() {
     let weight = Commitment(
         name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
     let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let weightTotal = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let history = History()
 
     let dayView = DayView(of: [gym, weight], on: monday, in: history)
     let noteDayView = DayView(of: [journal], on: monday, in: history)
+    let totalDayView = DayView(of: [weightTotal], on: monday, in: history)
 
     #expect(dayView.rows.map(\.name) == ["Gym", "Weight"])
     #expect(dayView.rows[0].tick(asOf: monday) != nil)
@@ -1304,6 +1308,8 @@ func aRowOffersATickOrANumberEntryAndNeverBoth() {
     #expect(dayView.rows[1].tick(asOf: monday) == nil)
     #expect(noteDayView.rows[0].tick(asOf: monday) == nil)
     #expect(noteDayView.rows[0].numberEntry(asOf: monday) == nil)
+    #expect(totalDayView.rows[0].tick(asOf: monday) == nil)
+    #expect(totalDayView.rows[0].numberEntry(asOf: monday) == nil)
 }
 
 @Test("a row for a date later than the day it is asked as of offers no number entry")
@@ -1579,10 +1585,14 @@ func aRowOffersATickANumberEntryOrANoteEntryAndNeverTwoOfThem() {
     let weight = Commitment(
         name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
     let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let water = Commitment(
+        name: "Water", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let history = History()
 
     let dayView = DayView(of: [gym, weight, journal], on: monday, in: history)
+    let totalDayView = DayView(of: [water], on: monday, in: history)
 
     #expect(dayView.rows.map(\.name) == ["Gym", "Weight", "Journal"])
     #expect(dayView.rows[0].tick(asOf: monday) != nil)
@@ -1594,6 +1604,9 @@ func aRowOffersATickANumberEntryOrANoteEntryAndNeverTwoOfThem() {
     #expect(dayView.rows[2].noteEntry(asOf: monday) != nil)
     #expect(dayView.rows[2].tick(asOf: monday) == nil)
     #expect(dayView.rows[2].numberEntry(asOf: monday) == nil)
+    #expect(totalDayView.rows[0].tick(asOf: monday) == nil)
+    #expect(totalDayView.rows[0].numberEntry(asOf: monday) == nil)
+    #expect(totalDayView.rows[0].noteEntry(asOf: monday) == nil)
 }
 
 @Test("a row for a date later than the day it is asked as of offers no note entry")
@@ -1783,4 +1796,152 @@ func aRowForANoteCommitmentHoldingANoteSaysItsNameItsRhythmAndThatTheDayIsKept()
     #expect(restedView.rows[0].name == "Journal")
     #expect(restedView.rows[0].rhythmInWords == "Mon, Wed, Sat")
     #expect(restedView.rows[0].isKept)
+}
+
+@Test("a row offers the total entry for its commitment on the date the day view is of")
+func aRowOffersTheTotalEntryForItsCommitmentOnTheDateTheDayViewIsOf() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [protein], on: monday, in: history)
+
+    #expect(dayView.rows.count == 1)
+    #expect(dayView.rows[0].name == "Protein")
+    #expect(dayView.rows[0].totalEntry(asOf: monday) != nil)
+}
+
+@Test("a row for a commitment whose kind is not a total offers no total entry")
+func aRowForACommitmentWhoseKindIsNotATotalOffersNoTotalEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, weight, journal], on: monday, in: history)
+    let totalDayView = DayView(of: [protein], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Weight", "Journal"])
+    #expect(dayView.rows.allSatisfy { $0.totalEntry(asOf: monday) == nil })
+    #expect(totalDayView.rows[0].totalEntry(asOf: monday) != nil)
+}
+
+@Test("a row offers a tick, a number entry, a note entry or a total entry and never two of them")
+func aRowOffersATickANumberEntryANoteEntryOrATotalEntryAndNeverTwoOfThem() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, weight, journal, protein], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Weight", "Journal", "Protein"])
+    #expect(dayView.rows[0].tick(asOf: monday) != nil)
+    #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
+    #expect(dayView.rows[0].noteEntry(asOf: monday) == nil)
+    #expect(dayView.rows[0].totalEntry(asOf: monday) == nil)
+    #expect(dayView.rows[1].numberEntry(asOf: monday) != nil)
+    #expect(dayView.rows[1].tick(asOf: monday) == nil)
+    #expect(dayView.rows[1].noteEntry(asOf: monday) == nil)
+    #expect(dayView.rows[1].totalEntry(asOf: monday) == nil)
+    #expect(dayView.rows[2].noteEntry(asOf: monday) != nil)
+    #expect(dayView.rows[2].tick(asOf: monday) == nil)
+    #expect(dayView.rows[2].numberEntry(asOf: monday) == nil)
+    #expect(dayView.rows[2].totalEntry(asOf: monday) == nil)
+    #expect(dayView.rows[3].totalEntry(asOf: monday) != nil)
+    #expect(dayView.rows[3].tick(asOf: monday) == nil)
+    #expect(dayView.rows[3].numberEntry(asOf: monday) == nil)
+    #expect(dayView.rows[3].noteEntry(asOf: monday) == nil)
+}
+
+@Test("a row for a date later than the day it is asked as of offers no total entry")
+func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoTotalEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [protein], on: wednesday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Protein"])
+    #expect(dayView.rows[0].totalEntry(asOf: monday) == nil)
+    #expect(dayView.rows[0].noteEntry(asOf: monday) == nil)
+    #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
+    #expect(dayView.rows[0].tick(asOf: monday) == nil)
+}
+
+@Test("a row for a date later than the day it is asked as of offers no total entry even where the day holds additions")
+func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoTotalEntryEvenWhereTheDayHoldsAdditions() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Addition(30, for: protein, on: wednesday)!)
+    history.add(Addition(90, for: protein, on: wednesday)!)
+
+    let dayView = DayView(of: [protein], on: wednesday, in: history)
+
+    #expect(dayView.rows[0].isKept)
+    #expect(dayView.rows[0].totalEntry(asOf: monday) == nil)
+}
+
+@Test("a row for a date earlier than the day it is asked as of offers the total entry")
+func aRowForADateEarlierThanTheDayItIsAskedAsOfOffersTheTotalEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let history = History()
+
+    let dayView = DayView(of: [protein], on: monday, in: history)
+
+    #expect(dayView.rows[0].totalEntry(asOf: saturday) != nil)
+}
+
+@Test("a row offers the total entry whether or not the day is already kept")
+func aRowOffersTheTotalEntryWhetherOrNotTheDayIsAlreadyKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var notKeptHistory = History()
+    notKeptHistory.add(Addition(30, for: protein, on: monday)!)
+    var keptHistory = History()
+    keptHistory.add(Addition(120, for: protein, on: monday)!)
+
+    let notKeptView = DayView(of: [protein], on: monday, in: notKeptHistory)
+    let keptView = DayView(of: [protein], on: monday, in: keptHistory)
+
+    #expect(!notKeptView.rows[0].isKept)
+    #expect(keptView.rows[0].isKept)
+    #expect(notKeptView.rows[0].totalEntry(asOf: monday) != nil)
+    #expect(keptView.rows[0].totalEntry(asOf: monday) != nil)
 }

@@ -20,6 +20,13 @@ public struct DayView: Hashable, Sendable {
         public let note: String?
     }
 
+    /// What a total commitment's row offers in a tick's place.
+    public struct TotalEntry: Hashable, Sendable {
+        /// The day's sum and the commitment's target, in this package's own words — "150 of
+        /// 120".
+        public let soFarOfTarget: String
+    }
+
     public struct Row: Hashable, Sendable {
         let commitment: Commitment
         let date: CalendarDate
@@ -35,6 +42,10 @@ public struct DayView: Hashable, Sendable {
         /// this row's date, or `nil` where it holds none. Not given back by anything but
         /// `noteEntry(asOf:)`.
         let note: String?
+
+        /// The sum the history the day view was formed from has added for this row's commitment
+        /// on this row's date. Not given back by anything but `totalEntry(asOf:)`.
+        let total: Decimal
 
         public var name: String { commitment.name }
 
@@ -107,6 +118,20 @@ public struct DayView: Hashable, Sendable {
 
             return Note(text, for: commitment, on: date)
         }
+
+        /// The total entry this row offers, or `nil` when its commitment's kind is not a total
+        /// or the row's date is later than `today`.
+        public func totalEntry(asOf today: CalendarDate) -> TotalEntry? {
+            guard today.days(until: date) <= 0 else {
+                return nil
+            }
+
+            guard case .total(let target) = commitment.kind else {
+                return nil
+            }
+
+            return TotalEntry(soFarOfTarget: "\(total) of \(target.amount)")
+        }
     }
 
     /// What this day view says its day is: the weekday, the day of the month, the month and the
@@ -136,7 +161,8 @@ public struct DayView: Hashable, Sendable {
                 Row(
                     commitment: $0, date: date, isKept: history.isKept($0, on: date),
                     number: history.number(for: $0, on: date),
-                    note: history.note(for: $0, on: date))
+                    note: history.note(for: $0, on: date),
+                    total: history.total(for: $0, on: date))
             }
     }
 

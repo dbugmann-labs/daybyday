@@ -227,19 +227,19 @@ and offers none for a day that has not arrived*, in `Tests/DayByDayKitTests/DayV
 two edits to existing tests. `DayView.Row` gains the internal `total` and the public
 `totalEntry(asOf:)`, per `design.md` § *The seam*.
 
-- [ ] 8.1 `a row offers the total entry for its commitment on the date the day view is of`
-- [ ] 8.2 `a row for a commitment whose kind is not a total offers no total entry`
-- [ ] 8.3 `a row offers a tick, a number entry, a note entry or a total entry and never two of them`
-- [ ] 8.4 `a row for a date later than the day it is asked as of offers no total entry`
-- [ ] 8.5 `a row for a date later than the day it is asked as of offers no total entry even where the
+- [x] 8.1 `a row offers the total entry for its commitment on the date the day view is of`
+- [x] 8.2 `a row for a commitment whose kind is not a total offers no total entry`
+- [x] 8.3 `a row offers a tick, a number entry, a note entry or a total entry and never two of them`
+- [x] 8.4 `a row for a date later than the day it is asked as of offers no total entry`
+- [x] 8.5 `a row for a date later than the day it is asked as of offers no total entry even where the
   day holds additions`
-- [ ] 8.6 `a row for a date earlier than the day it is asked as of offers the total entry`
-- [ ] 8.7 `a row offers the total entry whether or not the day is already kept`
-- [ ] 8.8 **Not a new test.** The existing test named `a row offers a tick or a number entry and never
+- [x] 8.6 `a row for a date earlier than the day it is asked as of offers the total entry`
+- [x] 8.7 `a row offers the total entry whether or not the day is already kept`
+- [x] 8.8 **Not a new test.** The existing test named `a row offers a tick or a number entry and never
   both` gains the one clause the delta added to that scenario: a row for a commitment of the total
   kind offers neither of them either. Its `@Test` display name does not change, and no other
   assertion in it changes.
-- [ ] 8.9 **Not a new test.** The existing test named `a row offers a tick, a number entry or a note
+- [x] 8.9 **Not a new test.** The existing test named `a row offers a tick, a number entry or a note
   entry and never two of them` gains the one clause the delta added: a row for a commitment of the
   total kind offers none of those three. Its `@Test` display name does not change.
 
