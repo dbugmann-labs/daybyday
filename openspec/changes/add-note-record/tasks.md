@@ -298,14 +298,14 @@ Six scenarios across three MODIFIED requirements, in `Tests/DayByDayKitTests/Day
 No new cause is named anywhere in this section: a note has no refusal of its own, so every one of
 these is either the place's silent refusal or nothing told at all.
 
-- [ ] 13.1 `a note refused by the place is told on the row and names no cause` — including the
+- [x] 13.1 `a note refused by the place is told on the row and names no cause` — including the
   hundred-thousand-character clause, which is what pins that length is never a cause.
-- [ ] 13.2 `what a day screen tells on a row ends when a note is written and kept`
-- [ ] 13.3 `what a day screen tells on a row ends when a note is taken back and kept`
-- [ ] 13.4 `a commit on a row that offers no entry at all is told nothing on the row`
-- [ ] 13.5 `a commit on a note row on a day screen that is not keeping a record is told nothing on the
+- [x] 13.2 `what a day screen tells on a row ends when a note is written and kept`
+- [x] 13.3 `what a day screen tells on a row ends when a note is taken back and kept`
+- [x] 13.4 `a commit on a row that offers no entry at all is told nothing on the row`
+- [x] 13.5 `a commit on a note row on a day screen that is not keeping a record is told nothing on the
   row`
-- [ ] 13.6 `a commit on a note row for a day that has not arrived is told nothing on the row`
+- [x] 13.6 `a commit on a note row for a day that has not arrived is told nothing on the row`
 
 ## 14. The app shell
 
