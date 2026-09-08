@@ -55,7 +55,9 @@ supplement taken twice a day, and creatine and magnesium are two supplements whe
 line reading "supplements and habits", which is a different question about categories than the one
 B-029 was capturing. **Re-judged 2026-09-06, at the fifth pass, ahead of its sweep: all five
 stand**, and each entry carries the result under a *Re-judged* line — B-005 too, which argued from
-the same line without being counted. Nothing cited water plants.
+the same line without being counted. B-005 has since been dropped, on 2026-09-08, and its
+re-judgment reads in *Decided*; the other four entries still carry theirs. Nothing cited water
+plants.
 
 **Whether to build any of this at all is settled and is not to be re-argued.** Checked against
 what already exists on 2026-08-29: nothing found does all four rule shapes without streak
@@ -67,31 +69,6 @@ quota and is built on the streaks the owner abandoned apps for; a specific calen
 shape it lacks, not the quota.
 
 ## Wants
-
-### B-005 — tick a habit phrased as a negative, where ticking records that it was *not* done
-*Captured 2026-08-28, migrated 2026-09-02.*
-
-> "a habit phrased as a negative, where ticking it records that the thing was *not* done"
-
-*Folded in 2026-09-02:*
-
-> "Same for sticking to habits (did I NOT byte my nails today -> check)"
-
-- **Trigger** — daily, alongside supplements.
-- **Touches** — `commitment`. Supplements and habits arrived as one line, and this is the half
-  that is not a supplement: the tick means the opposite thing.
-- **Principle** — tested against *nothing congratulates you*: passes narrowly. Ticking that a
-  thing was *not* done records an absence, and a run of absences is a streak by another
-  name; it survives as long as the tick stays a record and never becomes a count.
-- **Open** — is the negation a property of the commitment, or only of how its row is worded?
-- **Answered 2026-09-06**, at the Feature grill that reopened `FEAT: record` (#53): a name. A
-  commitment called "No nail biting" takes a plain tick and its name says the rest; nothing in the
-  record knows the difference, and an absence is never counted. Left behind by that G1 on purpose,
-  and the next pass should propose the drop rather than carry it.
-- **Re-judged 2026-09-06** — the week no longer has a line reading "supplements and habits"; what it
-  has is *nails every 4 days*, a positive rhythm on the very thing this want's example phrases as a
-  negative. Whether that is this want said the other way round, or a different commitment about the
-  same nails, only the owner can say — and it is the first question a grill of this entry asks.
 
 ### B-007 — look at one commitment on its own, deliberately and rarely
 *Captured 2026-08-28, migrated 2026-09-02.*
@@ -385,6 +362,16 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-08 — **dropped**: tick a habit phrased as a negative, where ticking records that it was
+  *not* done (B-005). Already covered: the Feature grill that reopened `FEAT: record` (#53) on
+  2026-09-06 settled that negation is **a name**. A commitment called "No nail biting" takes a
+  plain tick and its name says the rest; nothing in the record knows the difference and an absence
+  is never counted, which is also what keeps it clear of *nothing congratulates you*. The fifth
+  pass left it behind on purpose and told the sixth to propose the drop; the sixth proposed it and
+  got no answer. Dropped by the owner directly on 2026-09-08, outside a pass. Re-capture it only if
+  a negative turns out to need something a name cannot carry — the open question the entry ended
+  on, whether *nails every 4 days* is this want said the other way round, is a question for that
+  commitment's own rhythm and not for a want.
 - 2026-09-08 — not be offered a way back to a day I am already on → `FEAT: day-screen` (#27),
   reopened under `EPIC: Daily commitments` (#1), a fourth round against that capability. The Today
   button is **hidden** on the day the screen is showing as today, not drawn-and-inert: it carries
