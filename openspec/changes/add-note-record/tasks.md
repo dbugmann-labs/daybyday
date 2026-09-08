@@ -64,22 +64,22 @@ is due on*, all in `Tests/DayByDayKitTests/RecordTests.swift`.
 blank guard**, which nothing before it needs) to run red on their own. **Record which ones actually
 ran red as you go, in § 16**; a prediction here is not evidence.
 
-- [ ] 3.1 `a note is recorded for a note commitment on a date it is due on`
-- [ ] 3.2 `a note commitment takes no note on a date it is not due on` — all three clauses: not due,
+- [x] 3.1 `a note is recorded for a note commitment on a date it is due on`
+- [x] 3.2 `a note commitment takes no note on a date it is not due on` — all three clauses: not due,
   before the day it is kept from, and a schedule due on no date across seven days.
-- [ ] 3.3 `a commitment whose kind is not a note takes no note on a date it is due on` — the tick
+- [x] 3.3 `a commitment whose kind is not a note takes no note on a date it is due on` — the tick
   kind, both number kinds and the total kind, plus the note-kind control that must still record.
-- [ ] 3.4 `a text that says nothing is not a note` — the empty text, three spaces, three line breaks,
+- [x] 3.4 `a text that says nothing is not a note` — the empty text, three spaces, three line breaks,
   a tab followed by a line break, and one no-break space, plus the control. This is the box that
   drives out `Blank.saysNothing`; a `CharacterSet.whitespaces` implementation fails the line-break
   clauses, which is the point.
-- [ ] 3.5 `a text holding one character that is not blank space is a note, kept with the blank space
+- [x] 3.5 `a text holding one character that is not blank space is a note, kept with the blank space
   around it` — what stops `Note.init?` acquiring a trim of its own. `record` keeps what it is given;
   the screen is what tidies (`design.md` § *One whitespace test*).
-- [ ] 3.6 `a note takes any length, any script and a line break` — six texts, each read back
+- [x] 3.6 `a note takes any length, any script and a line break` — six texts, each read back
   character for character. `design.md` § *Context* measurement 3 is what says a hundred thousand
   characters is a real number and not a hopeful one.
-- [ ] 3.7 `two notes are the same exactly when their commitment, date and text all are` — all four
+- [x] 3.7 `two notes are the same exactly when their commitment, date and text all are` — all four
   clauses, which is what pins that the text is part of the record rather than beside it.
 
 ## 4. `record` — what a history holds and answers about notes

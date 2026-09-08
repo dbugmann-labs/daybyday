@@ -969,3 +969,152 @@ func aNumberCommitmentWithANumberOnADateStillTakesNoTickOnIt() {
     #expect(Tick(commitment, on: monday) == nil)
     #expect(history.number(for: commitment, on: monday) == 70.5)
 }
+
+@Test("a note is recorded for a note commitment on a date it is due on")
+func aNoteIsRecordedForANoteCommitmentOnADateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let note = Note("Ran 8k before work. Knee held up.", for: commitment, on: monday)
+
+    #expect(note != nil)
+}
+
+@Test("a note commitment takes no note on a date it is not due on")
+func aNoteCommitmentTakesNoNoteOnADateItIsNotDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    let laterFloor = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let beforeFloor = Commitment(
+        name: "Journal", schedule: schedule, keptFrom: laterFloor, kind: .note)!
+
+    let noWeekday = Commitment(
+        name: "Journal", schedule: Schedule.weekdays([]), keptFrom: keptFrom, kind: .note)!
+    let week = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ]
+
+    #expect(Note("Ran 8k.", for: commitment, on: tuesday) == nil)
+    #expect(schedule.isDue(on: monday))
+    #expect(Note("Ran 8k.", for: beforeFloor, on: monday) == nil)
+    for date in week {
+        #expect(Note("Ran 8k.", for: noWeekday, on: date) == nil)
+    }
+}
+
+@Test("a commitment whose kind is not a note takes no note on a date it is due on")
+func aCommitmentWhoseKindIsNotANoteTakesNoNoteOnADateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let target = Commitment.Target(120)!
+
+    let tickKind = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let numberNoRange = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let numberWithRange = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let total = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let noteKind = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    #expect(Note("Ran 8k.", for: tickKind, on: monday) == nil)
+    #expect(Note("Ran 8k.", for: numberNoRange, on: monday) == nil)
+    #expect(Note("Ran 8k.", for: numberWithRange, on: monday) == nil)
+    #expect(Note("Ran 8k.", for: total, on: monday) == nil)
+    #expect(Note("Ran 8k.", for: noteKind, on: monday) != nil)
+}
+
+@Test("a text that says nothing is not a note")
+func aTextThatSaysNothingIsNotANote() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    #expect(Note("", for: commitment, on: monday) == nil)
+    #expect(Note("   ", for: commitment, on: monday) == nil)
+    #expect(Note("\n\n\n", for: commitment, on: monday) == nil)
+    #expect(Note("\t\n", for: commitment, on: monday) == nil)
+    #expect(Note("\u{00A0}", for: commitment, on: monday) == nil)
+    #expect(Note("Ran 8k.", for: commitment, on: monday) != nil)
+}
+
+@Test("a text holding one character that is not blank space is a note, kept with the blank space around it")
+func aTextHoldingOneCharacterThatIsNotBlankSpaceIsANoteKeptWithTheBlankSpaceAroundIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    let withSpaceAround = Note(" \n x \t ", for: commitment, on: monday)
+    let trimmed = Note("x", for: commitment, on: monday)
+
+    #expect(withSpaceAround != nil)
+    #expect(withSpaceAround != trimmed)
+}
+
+@Test("a note takes any length, any script and a line break")
+func aNoteTakesAnyLengthAnyScriptAndALineBreak() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    let texts = [
+        "Ran 8k before work. Knee held up.",
+        String(repeating: "a", count: 100_000),
+        "שלום עולם",
+        "𐐷 𝔘𝔫𝔦𝔠𝔬𝔡𝔢",
+        "🏃",
+        "Line one\nLine two\nLine three",
+    ]
+
+    for text in texts {
+        #expect(Note(text, for: commitment, on: monday) != nil)
+    }
+
+    // Each note holds the text it was given, character for character: a note formed from a text
+    // differing by exactly one trailing scalar is a different note, at every one of these lengths
+    // and scripts.
+    for text in texts {
+        let note = Note(text, for: commitment, on: monday)!
+        let alteredNote = Note(text + "!", for: commitment, on: monday)!
+        #expect(note != alteredNote)
+    }
+}
+
+@Test("two notes are the same exactly when their commitment, date and text all are")
+func twoNotesAreTheSameExactlyWhenTheirCommitmentDateAndTextAllAre() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let otherCommitment = Commitment(
+        name: "Training journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    let first = Note("Ran 8k.", for: commitment, on: monday)!
+    let second = Note("Ran 8k.", for: commitment, on: monday)!
+    let differentText = Note("Rested.", for: commitment, on: monday)!
+    let differentDate = Note("Ran 8k.", for: commitment, on: wednesday)!
+    let differentCommitment = Note("Ran 8k.", for: otherCommitment, on: monday)!
+
+    #expect(first == second)
+    #expect(first != differentText)
+    #expect(first != differentDate)
+    #expect(first != differentCommitment)
+}

@@ -10,6 +10,20 @@ public struct Note: Hashable, Sendable {
     /// `nil` when the commitment is not due on `date`, when its kind is not a note, or when
     /// `text` says nothing — `Blank.saysNothing(_:)`.
     public init?(_ text: String, for commitment: Commitment, on date: CalendarDate) {
-        fatalError("not implemented")
+        guard commitment.isDue(on: date) else {
+            return nil
+        }
+
+        guard case .note = commitment.kind else {
+            return nil
+        }
+
+        guard !Blank.saysNothing(text) else {
+            return nil
+        }
+
+        self.commitment = commitment
+        self.date = date
+        self.text = text
     }
 }
