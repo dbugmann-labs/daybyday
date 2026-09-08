@@ -356,6 +356,38 @@ shape it lacks, not the quota.
   calendar dates on purpose, so this is either a fifth thing beside a schedule or a property of the
   reminder rather than of the commitment.
 
+### B-041 — put a commitment in another group by dragging it there
+
+*Captured 2026-09-08, at the grill of `add-category-order` (#168). The wording is the grill's; the
+decision it records is the owner's, twice.*
+
+> "The drop into another group is the gesture § Settled 14 was chosen for, and the owner has not
+> changed their mind about it." — `add-commitment-category`'s `grill.md` § *Settled* 26
+
+- **Trigger** — reorganising the list after a few commitments have piled up under the wrong words,
+  with a thumb, on the phone.
+- **Touches** — `commitment`, and only the app shell. **The requirement already exists and is
+  tested**: *a commitment dropped among another group's entries is put under that group's category*
+  and its neighbours are shipped scenarios of the commitments screen, reached at
+  `CommitmentsScreen.move(_:toOffset:under:)`. Nothing is owed below the seam — what is missing is
+  a gesture that reaches them.
+- **Principle** — tested against *five percent of seven things*: **it loses.** The row's *Category*
+  action already refiles across groups in one tap, so this deepens something that works rather than
+  making a new thing possible. *An iPhone, in your hand* is the principle that argues for it — a
+  drag is what a thumb reaches for — and it is not enough on its own.
+- **Open** — is it buildable at all? Two things were measured rather than guessed at #147, and any
+  future attempt starts from them: **`.onMove` and `.dropDestination(for:)` cannot share a
+  `ForEach`** — instrumented, `.onMove` won every long press and `.dropDestination` never fired —
+  and **an abstract `UTType` was not what was missing**, the payload having been moved to an
+  exported type of the app's own with no change. Apple documents nothing either way.
+- **Open** — is it testable? **No, on this machine.** The Simulator has no GUI here and XCUITest's
+  synthetic touch never triggered `.dropDestination` in any configuration, so every attempt is a
+  round trip through the owner's phone. Two evenings went that way. Price the want with that in it.
+- **Open** — does iOS 27 make it free? `DynamicViewContent.reorderable(collectionID:)` is documented
+  as moving items *within and between sections*, which is exactly this want — but it is beta, it is
+  not in the SDK this project builds against, and its `sources` are item ids. Worth re-reading
+  before anyone hand-writes a gesture again.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
