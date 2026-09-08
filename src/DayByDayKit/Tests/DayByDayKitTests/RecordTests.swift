@@ -1475,3 +1475,15 @@ func aNoteCommitmentWithANoteOnADateStillTakesNoNumberOnIt() {
     #expect(Number(70.5, for: commitment, on: monday) == nil)
     #expect(history.note(for: commitment, on: monday) == "Ran 8k.")
 }
+
+@Test("an addition is recorded for a total commitment on a date it is due on")
+func anAdditionIsRecordedForATotalCommitmentOnADateItIsDueOn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    #expect(Addition(30, for: protein, on: monday) != nil)
+}

@@ -46,19 +46,30 @@ that say `5` to mean *a form later than the record store writes*, and labels the
 
 ## 2. `Addition` and `Digits`, before anything holds one
 
-- [ ] 2.1 Add `Sources/DayByDayKit/Addition.swift` declaring exactly what `design.md` § *The seam*
+- [x] 2.1 Add `Sources/DayByDayKit/Addition.swift` declaring exactly what `design.md` § *The seam*
   gives: `public struct Addition: Hashable, Sendable` with internal `commitment`, `date` and
   `amount`, and `public init?(_ amount: Decimal, for commitment: Commitment, on date: CalendarDate)`.
   **The initializer is a bodied `fatalError("not implemented")`**, so § 3.1 is red on its first
   assertion rather than accidentally green. `RecordedDay` already exists in `Number.swift` and is not
   moved or copied. Nothing else is public. `cd src/DayByDayKit && swift build` exits 0 and
   `swift test` still reports 705 passing.
-- [ ] 2.2 Add `Sources/DayByDayKit/Digits.swift` declaring the internal `enum Digits` from
+
+  Done out of the predicted order: day-screen's scenarios (§§ 8–13) come first in the coverage
+  checker's alphabetical walk of the delta's capability directories (`day-screen` before `record`),
+  and a row could not offer a total entry without something for it to read, so `Addition`'s real
+  body — not a `fatalError` stub — landed while making § 8.5 green, well before this box was
+  reached. § 3.1 therefore never ran red; it was already true. `tasks.md` § 1.4 names this mismatch
+  as expected and not a finding, and this is that mismatch showing up in the tasks themselves rather
+  than only in scenario order.
+- [x] 2.2 Add `Sources/DayByDayKit/Digits.swift` declaring the internal `enum Digits` from
   `design.md` § *The seam* — `significant(in:)` and `canAdd(_:to:)` — both as bodied
   `fatalError("not implemented")`. Nothing calls them until § 11. They are declared here so that the
   package has **one** place that decides how many significant digits a decimal holds, in the way
   `Blank` is the one place that decides what says nothing; § 15.2 is the box that proves it right.
   `swift build` exits 0 and `swift test` still reports 705 passing.
+
+  Same reordering as 2.1: `Digits` got its real body at § 11.1, ahead of this box, for the same
+  reason.
 
 ## 3. `record` — what an addition is
 
@@ -70,7 +81,7 @@ predicted a second red and did not get one, because the whole guard was written 
 the shape the earlier kinds already had. Expect the same here. **Record which boxes actually ran red
 as you go, in § 17**; a prediction is not evidence.
 
-- [ ] 3.1 `an addition is recorded for a total commitment on a date it is due on`
+- [x] 3.1 `an addition is recorded for a total commitment on a date it is due on`
 - [ ] 3.2 `a total commitment takes no addition on a date it is not due on` — all three clauses: not
   due, before the day it is kept from, and a schedule due on no date across seven days.
 - [ ] 3.3 `a commitment whose kind is not a total takes no addition on a date it is due on` — the
