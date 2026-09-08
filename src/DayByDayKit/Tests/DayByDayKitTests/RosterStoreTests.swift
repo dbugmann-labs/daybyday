@@ -1317,3 +1317,83 @@ func aCommitmentMovedUnderACategoryThroughARosterStoreIsReadBackMovedAndUnderIt(
                 Roster.Group(category: nil, commitments: [waterPlants, gym]),
             ])
 }
+
+@Test("a group moved through a roster store is read back in the order it was moved into")
+func aGroupMovedThroughARosterStoreIsReadBackInTheOrderItWasMovedInto() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.add(creatine)
+    try store.add(magnesium)
+    try store.put(gym, under: "Sport")
+    try store.put(creatine, under: "Supplements")
+    try store.put(magnesium, under: "Supplements")
+    let moved = try store.move(group: "Supplements", toOffset: 0)
+
+    let later = try RosterStore(at: place)
+
+    #expect(moved)
+    #expect(
+        later.roster.groups
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine, magnesium]),
+                Roster.Group(category: "Sport", commitments: [gym]),
+            ])
+    #expect(later.roster.commitments == [creatine, magnesium, gym])
+}
+
+@Test("a group move a roster store refuses keeps nothing at its place")
+func aGroupMoveARosterStoreRefusesKeepsNothingAtItsPlace() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.add(creatine)
+    try store.put(creatine, under: "Supplements")
+    let bytesBeforeMove = try Data(contentsOf: place)
+
+    let movedNoSuchGroup = try store.move(group: "Sport", toOffset: 0)
+
+    #expect(!movedNoSuchGroup)
+    #expect(try Data(contentsOf: place) == bytesBeforeMove)
+
+    let movedOutOfRange = try store.move(group: "Supplements", toOffset: 2)
+
+    #expect(!movedOutOfRange)
+    #expect(try Data(contentsOf: place) == bytesBeforeMove)
+}
+
+@Test("a group move that leaves a group where it is keeps nothing at a roster store's place")
+func aGroupMoveThatLeavesAGroupWhereItIsKeepsNothingAtARosterStoresPlace() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(creatine)
+    try store.add(gym)
+    try store.put(creatine, under: "Supplements")
+    let bytesBeforeMove = try Data(contentsOf: place)
+
+    let movedAtItsOwnOffset = try store.move(group: "Supplements", toOffset: 0)
+
+    #expect(movedAtItsOwnOffset)
+    #expect(try Data(contentsOf: place) == bytesBeforeMove)
+
+    let movedAtOffsetJustAfter = try store.move(group: "Supplements", toOffset: 1)
+
+    #expect(movedAtOffsetJustAfter)
+    #expect(try Data(contentsOf: place) == bytesBeforeMove)
+}

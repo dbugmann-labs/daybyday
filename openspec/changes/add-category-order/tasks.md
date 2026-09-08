@@ -74,10 +74,10 @@ Driven at `RosterStore.move(group:toOffset:)`, in
 `move(_:toOffset:under:)`'s: write before reporting, report what the roster reports, write nothing
 when the roster came back unchanged.
 
-- [ ] 3.1 *a group moved through a roster store is read back in the order it was moved into*.
-- [ ] 3.2 *a group move a roster store refuses keeps nothing at its place* — both of the roster's
+- [x] 3.1 *a group moved through a roster store is read back in the order it was moved into*.
+- [x] 3.2 *a group move a roster store refuses keeps nothing at its place* — both of the roster's
   refusals pass through as `false`, without an error and without a write.
-- [ ] 3.3 *a group move that leaves a group where it is keeps nothing at a roster store's place* —
+- [x] 3.3 *a group move that leaves a group where it is keeps nothing at a roster store's place* —
   `true`, and the file byte-for-byte what it was.
 
 ## 4. `commitment` — a commitments screen moves a group among the groups it draws

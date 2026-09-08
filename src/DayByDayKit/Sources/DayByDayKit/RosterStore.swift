@@ -156,6 +156,25 @@ public final class RosterStore {
         return true
     }
 
+    /// Kept at `place` before this returns, unless the move left the roster exactly as it was.
+    /// Answers what `Roster.move(group:toOffset:)` answers — `true` even for a move that
+    /// changed nothing, and `false`, without throwing and without writing, when `category` —
+    /// normalized — names no group this roster is keeping under a category, or `offset` is
+    /// outside the groups it is keeping under one.
+    @discardableResult
+    public func move(group category: String?, toOffset offset: Int) throws -> Bool {
+        var nextRoster = roster
+        guard nextRoster.move(group: category, toOffset: offset) else {
+            return false
+        }
+        if nextRoster != roster {
+            try write(nextRoster)
+        }
+
+        roster = nextRoster
+        return true
+    }
+
     /// Kept at `place` before this returns, unless putting `commitment` under `category` left
     /// the roster exactly as it was. Answers what `Roster.put` answers — `true` even where
     /// nothing changed, and `false`, without throwing and without writing, when the roster is
