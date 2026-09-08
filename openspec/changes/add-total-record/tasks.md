@@ -524,7 +524,7 @@ and **Row**, and writing the delta turned up no further term.
   move with it. This box read 807 until the G7 second pass found the arithmetic stale; the number is
   corrected here in the commit that carries the correction, and the box was not re-ticked. A number
   other than 808 now means a test was added or lost outside rule 3; report it.
-- [ ] 17.3 Open the app on a phone or the simulator with `pnpm run phone`, **without deleting and
+- [x] 17.3 Open the app on a phone or the simulator with `pnpm run phone`, **without deleting and
   reinstalling it first** — the existing install holds a record file in the store's fourth form, this
   branch's code writes the fifth, and a fresh install would write form 5 from the start, proving
   nothing about reading form 4. Confirm by hand that the day screen still draws whatever commitments
