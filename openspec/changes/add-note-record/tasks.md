@@ -208,18 +208,18 @@ Two scenarios from the MODIFIED § *A row is a commitment's line on a date*, in
 `Row` is `Hashable` with synthesized conformance; a red test here means the note was excluded from
 equality by hand, which `design.md` rejects.
 
-- [ ] 9.1 `two rows for the same note commitment and date holding different notes are different rows`
-- [ ] 9.2 `two rows for the same note commitment and date holding the same note are the same row`
+- [x] 9.1 `two rows for the same note commitment and date holding different notes are different rows`
+- [x] 9.2 `two rows for the same note commitment and date holding the same note are the same row`
 
 ## 10. `day-screen` — what a note entry says
 
 Four scenarios from § *A note entry says the note the day already holds, and says nothing else*, in
 `Tests/DayByDayKitTests/DayViewTests.swift`.
 
-- [ ] 10.1 `a note entry says the note the history holds for that commitment on that date`
-- [ ] 10.2 `a note entry says a note of many lines and many characters whole`
-- [ ] 10.3 `a note entry says no note where the day holds none`
-- [ ] 10.4 `a row for a note commitment holding a note says its name, its rhythm and that the day is
+- [x] 10.1 `a note entry says the note the history holds for that commitment on that date`
+- [x] 10.2 `a note entry says a note of many lines and many characters whole`
+- [x] 10.3 `a note entry says no note where the day holds none`
+- [x] 10.4 `a row for a note commitment holding a note says its name, its rhythm and that the day is
   kept` — the row still says nothing about the note, which is the grill's answer 7 and the whole of
   what makes a note reachable only through the entry.
 

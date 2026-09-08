@@ -1665,3 +1665,122 @@ func aRowOffersTheNoteEntryWhetherOrNotTheDayIsAlreadyKept() {
     #expect(notKeptView.rows[0].noteEntry(asOf: monday) != nil)
     #expect(keptView.rows[0].noteEntry(asOf: monday) != nil)
 }
+
+@Test("two rows for the same note commitment and date holding different notes are different rows")
+func twoRowsForTheSameNoteCommitmentAndDateHoldingDifferentNotesAreDifferentRows() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var historyWithRan = History()
+    historyWithRan.add(Note("Ran 8k.", for: journal, on: monday)!)
+    var historyWithRested = History()
+    historyWithRested.add(Note("Rested.", for: journal, on: monday)!)
+
+    let firstView = DayView(of: [journal], on: monday, in: historyWithRan)
+    let secondView = DayView(of: [journal], on: monday, in: historyWithRested)
+
+    #expect(firstView.rows[0].isKept)
+    #expect(secondView.rows[0].isKept)
+    #expect(firstView.rows[0] != secondView.rows[0])
+}
+
+@Test("two rows for the same note commitment and date holding the same note are the same row")
+func twoRowsForTheSameNoteCommitmentAndDateHoldingTheSameNoteAreTheSameRow() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Note("Ran 8k.", for: journal, on: monday)!)
+
+    let firstView = DayView(of: [journal], on: monday, in: history)
+    let secondView = DayView(of: [journal], on: monday, in: history)
+
+    #expect(firstView.rows[0].isKept)
+    #expect(secondView.rows[0].isKept)
+    #expect(firstView.rows[0] == secondView.rows[0])
+}
+
+@Test("a note entry says the note the history holds for that commitment on that date")
+func aNoteEntrySaysTheNoteTheHistoryHoldsForThatCommitmentOnThatDate() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Note("Ran 8k before work. Knee held up.", for: journal, on: monday)!)
+
+    let dayView = DayView(of: [journal], on: monday, in: history)
+
+    let entry = dayView.rows[0].noteEntry(asOf: monday)
+
+    #expect(entry?.note == "Ran 8k before work. Knee held up.")
+}
+
+@Test("a note entry says a note of many lines and many characters whole")
+func aNoteEntrySaysANoteOfManyLinesAndManyCharactersWhole() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let threeLines = "Line one\nLine two\nLine three"
+    let long = String(repeating: "a", count: 100_000)
+    var threeLinesHistory = History()
+    threeLinesHistory.add(Note(threeLines, for: journal, on: monday)!)
+    var longHistory = History()
+    longHistory.add(Note(long, for: journal, on: monday)!)
+
+    let threeLinesView = DayView(of: [journal], on: monday, in: threeLinesHistory)
+    let longView = DayView(of: [journal], on: monday, in: longHistory)
+
+    #expect(threeLinesView.rows[0].noteEntry(asOf: monday)?.note == threeLines)
+    #expect(longView.rows[0].noteEntry(asOf: monday)?.note == long)
+}
+
+@Test("a note entry says no note where the day holds none")
+func aNoteEntrySaysNoNoteWhereTheDayHoldsNone() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let neverRecorded = History()
+    var addedThenRemoved = History()
+    addedThenRemoved.add(Note("Ran 8k.", for: journal, on: monday)!)
+    addedThenRemoved.removeNote(for: journal, on: monday)
+
+    let neverRecordedView = DayView(of: [journal], on: monday, in: neverRecorded)
+    let addedThenRemovedView = DayView(of: [journal], on: monday, in: addedThenRemoved)
+
+    #expect(neverRecordedView.rows[0].noteEntry(asOf: monday)?.note == nil)
+    #expect(addedThenRemovedView.rows[0].noteEntry(asOf: monday)?.note == nil)
+}
+
+@Test("a row for a note commitment holding a note says its name, its rhythm and that the day is kept")
+func aRowForANoteCommitmentHoldingANoteSaysItsNameItsRhythmAndThatTheDayIsKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var ranHistory = History()
+    ranHistory.add(Note("Ran 8k.", for: journal, on: monday)!)
+    var restedHistory = History()
+    restedHistory.add(Note("Rested.", for: journal, on: monday)!)
+
+    let ranView = DayView(of: [journal], on: monday, in: ranHistory)
+    let restedView = DayView(of: [journal], on: monday, in: restedHistory)
+
+    #expect(ranView.rows.count == 1)
+    #expect(ranView.rows[0].name == "Journal")
+    #expect(ranView.rows[0].rhythmInWords == "Mon, Wed, Sat")
+    #expect(ranView.rows[0].isKept)
+    #expect(restedView.rows[0].name == "Journal")
+    #expect(restedView.rows[0].rhythmInWords == "Mon, Wed, Sat")
+    #expect(restedView.rows[0].isKept)
+}
