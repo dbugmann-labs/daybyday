@@ -1945,3 +1945,88 @@ func aRowOffersTheTotalEntryWhetherOrNotTheDayIsAlreadyKept() {
     #expect(notKeptView.rows[0].totalEntry(asOf: monday) != nil)
     #expect(keptView.rows[0].totalEntry(asOf: monday) != nil)
 }
+
+@Test("a total entry says the day's sum and the commitment's target")
+func aTotalEntrySaysTheDaysSumAndTheCommitmentsTarget() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let protein120 = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let protein0_5 = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(0.5)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history120 = History()
+    history120.add(Addition(30, for: protein120, on: monday)!)
+    history120.add(Addition(45.5, for: protein120, on: monday)!)
+    var history0_5 = History()
+    history0_5.add(Addition(30, for: protein0_5, on: monday)!)
+    history0_5.add(Addition(45.5, for: protein0_5, on: monday)!)
+
+    let view120 = DayView(of: [protein120], on: monday, in: history120)
+    let view0_5 = DayView(of: [protein0_5], on: monday, in: history0_5)
+
+    #expect(view120.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "75.5 of 120")
+    #expect(view0_5.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "75.5 of 0.5")
+}
+
+@Test("a total entry of a day holding no addition says a sum of zero")
+func aTotalEntryOfADayHoldingNoAdditionSaysASumOfZero() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let neverRecorded = History()
+    var addedThenTakenBack = History()
+    addedThenTakenBack.add(Addition(30, for: protein, on: monday)!)
+    addedThenTakenBack.removeLastAddition(for: protein, on: monday)
+
+    let neverRecordedView = DayView(of: [protein], on: monday, in: neverRecorded)
+    let addedThenTakenBackView = DayView(of: [protein], on: monday, in: addedThenTakenBack)
+
+    #expect(neverRecordedView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "0 of 120")
+    #expect(addedThenTakenBackView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "0 of 120")
+}
+
+@Test("a total entry says the true sum once it has passed the target")
+func aTotalEntrySaysTheTrueSumOnceItHasPassedTheTarget() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Addition(120, for: protein, on: monday)!)
+    history.add(Addition(30, for: protein, on: monday)!)
+
+    let dayView = DayView(of: [protein], on: monday, in: history)
+
+    #expect(dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "150 of 120")
+    #expect(dayView.rows[0].isKept)
+}
+
+@Test("a row for a total commitment says its name, its rhythm and whether the day is kept, and never its sum")
+func aRowForATotalCommitmentSaysItsNameItsRhythmAndWhetherTheDayIsKeptAndNeverItsSum() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history30 = History()
+    history30.add(Addition(30, for: protein, on: monday)!)
+    var history90 = History()
+    history90.add(Addition(90, for: protein, on: monday)!)
+
+    let view30 = DayView(of: [protein], on: monday, in: history30)
+    let view90 = DayView(of: [protein], on: monday, in: history90)
+
+    #expect(view30.rows.count == 1)
+    #expect(view30.rows[0].name == "Protein")
+    #expect(view30.rows[0].rhythmInWords == "Mon, Wed, Sat")
+    #expect(!view30.rows[0].isKept)
+    #expect(view90.rows[0].name == "Protein")
+    #expect(view90.rows[0].rhythmInWords == "Mon, Wed, Sat")
+    #expect(!view90.rows[0].isKept)
+}

@@ -82,4 +82,15 @@ public struct History: Hashable, Sendable {
         let day = RecordedDay(commitment: addition.commitment, date: addition.date)
         additions[day, default: []].append(addition.amount)
     }
+
+    /// Removes the last addition of that day, leaving the history unchanged where it holds none.
+    public mutating func removeLastAddition(for commitment: Commitment, on date: CalendarDate) {
+        let day = RecordedDay(commitment: commitment, date: date)
+        guard var amounts = additions[day], !amounts.isEmpty else {
+            return
+        }
+
+        amounts.removeLast()
+        additions[day] = amounts.isEmpty ? nil : amounts
+    }
 }

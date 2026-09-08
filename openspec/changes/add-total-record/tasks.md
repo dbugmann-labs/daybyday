@@ -269,13 +269,13 @@ Nine scenarios across two ADDED requirements, in `Tests/DayByDayKitTests/DayView
 § *The entry says the words*. Do not add a `Decimal` for a field to bind to; § 12.2 is what a
 prefilled field would break, and there is no way to write it if the value is not there.
 
-- [ ] 10.1 `a total entry says the day's sum and the commitment's target` — both clauses, the second
+- [x] 10.1 `a total entry says the day's sum and the commitment's target` — both clauses, the second
   with a fractional target, so `"0.5"` is pinned rather than `"0.500000"`.
-- [ ] 10.2 `a total entry of a day holding no addition says a sum of zero` — "0 of 120" from an empty
+- [x] 10.2 `a total entry of a day holding no addition says a sum of zero` — "0 of 120" from an empty
   history and from one taken back to empty.
-- [ ] 10.3 `a total entry says the true sum once it has passed the target` — "150 of 120", never "120
+- [x] 10.3 `a total entry says the true sum once it has passed the target` — "150 of 120", never "120
   of 120".
-- [ ] 10.4 `a row for a total commitment says its name, its rhythm and whether the day is kept, and
+- [x] 10.4 `a row for a total commitment says its name, its rhythm and whether the day is kept, and
   never its sum`
 - [ ] 10.5 `a row whose day holds an addition offers taking the last one back` — `Row` gains
   `offersTakeBackLast(asOf:)`, read off the day's sum being above zero and never off a count.
