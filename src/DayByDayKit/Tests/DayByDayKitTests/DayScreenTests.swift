@@ -5100,6 +5100,74 @@ func anAdditionRefusedByThePlaceIsToldOnTheRowAndNamesNoCause() throws {
 }
 
 @MainActor
+@Test("what a day screen tells on a row ends when an addition is made and kept")
+func whatADayScreenTellsOnARowEndsWhenAnAdditionIsMadeAndKept() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let directory = place.deletingLastPathComponent()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let seedRoster = try RosterStore(at: rosterPlace)
+    try seedRoster.add(protein)
+
+    try makeReadOnly(directory)
+    defer { try? makeWritable(directory) }
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.enter("30", on: screen.dayView.rows[0])
+    }
+
+    try makeWritable(directory)
+
+    try screen.enter("30", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "30 of 120")
+    #expect(screen.notice == nil)
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when a last addition is taken back and kept")
+func whatADayScreenTellsOnARowEndsWhenALastAdditionIsTakenBackAndKept() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let directory = place.deletingLastPathComponent()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, kind: .tick)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [protein, gym], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    try screen.enter("30", on: screen.dayView.rows[0])
+
+    try makeReadOnly(directory)
+    defer { try? makeWritable(directory) }
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[1])
+    }
+
+    try makeWritable(directory)
+
+    try screen.takeBackLast(on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "0 of 120")
+    #expect(screen.notice == nil)
+}
+@MainActor
 @Test("a commit on a note row for a day that has not arrived is told nothing on the row")
 func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
     let (place, rosterPlace) = freshPlaces()
