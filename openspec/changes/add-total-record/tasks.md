@@ -113,8 +113,8 @@ holds*, in `Tests/DayByDayKitTests/RecordTests.swift`. `History` gains
 - [x] 4.3 `additions made on one day accumulate rather than replace one another` — three additions,
   two of them alike, and the day is 105.5 rather than 75.5. The box that fails a `Set` and a
   replacing map alike.
-- [ ] 4.4 `the additions of one day are not counted in another day's total`
-- [ ] 4.5 `the additions of one commitment are not counted in another's total on the same date`
+- [x] 4.4 `the additions of one day are not counted in another day's total`
+- [x] 4.5 `the additions of one commitment are not counted in another's total on the same date`
 - [ ] 4.6 `a history answers a total of zero for a commitment whose kind is not a total` — answered
   rather than refused, for all three other kinds and for a date the commitment is not due on.
 - [ ] 4.7 `an amount the system refuses leaves the day's additions standing`

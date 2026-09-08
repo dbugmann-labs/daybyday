@@ -1663,3 +1663,40 @@ func additionsMadeOnOneDayAccumulateRatherThanReplaceOneAnother() {
 
     #expect(history.total(for: protein, on: monday) == 105.5)
 }
+
+@Test("the additions of one day are not counted in another day's total")
+func theAdditionsOfOneDayAreNotCountedInAnotherDaysTotal() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45, for: protein, on: wednesday)!)
+
+    #expect(history.total(for: protein, on: monday) == 30)
+    #expect(history.total(for: protein, on: wednesday) == 45)
+    #expect(history.total(for: protein, on: saturday) == 0)
+}
+
+@Test("the additions of one commitment are not counted in another's total on the same date")
+func theAdditionsOfOneCommitmentAreNotCountedInAnothersTotalOnTheSameDate() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let water = Commitment(
+        name: "Water", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45, for: water, on: monday)!)
+
+    #expect(history.total(for: protein, on: monday) == 30)
+    #expect(history.total(for: water, on: monday) == 45)
+}
