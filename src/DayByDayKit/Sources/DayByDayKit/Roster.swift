@@ -104,10 +104,12 @@ public struct Roster: Hashable, Sendable {
     }
 
     /// `category` with nothing but blank space, or nothing at all, normalized to `nil` — "under
-    /// none" — and every other category kept exactly as given.
+    /// none" — and every other category kept exactly as given. `Blank` is the one test this
+    /// package uses to decide whether a text says anything; `docs/adr/1039-blank-is-one-test
+    /// -asked-in-one-place.md`.
     private static func normalized(_ category: String?) -> String? {
         category.flatMap {
-            $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0
+            Blank.saysNothing($0) ? nil : $0
         }
     }
 

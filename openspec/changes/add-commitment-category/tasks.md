@@ -452,8 +452,8 @@ boxes below confirm rather than write, and each is tickable while reading what i
 
 ## 11. Before the review, and what the janitor does at the archive
 
-- [x] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 705: the 628
-  `85ca63b` carries — § 11.3's rebase moved the base there from `f8236be`'s 580 — plus the 77
+- [x] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 782: `main` at
+  `c39e1f8` carries 705 — § 11.3's rebase moved the base there from `85ca63b`'s 628 — plus the 77
   scenarios above. **That is eight fewer than the 713 this box asked for before 2026-09-08**: nine
   mark tests are deleted at § 7.0 and one is added at § 7.6. From the repo root, `pnpm run verify`
   green and `pnpm run checks` reporting `206/206 scenario(s) covered`.
@@ -474,8 +474,9 @@ boxes below confirm rather than write, and each is tickable while reading what i
   was validated against `main`'s specs on 2026-09-08 with all fourteen MODIFIED requirements intact
   (`design.md` § *Risks*). It is ordinary merge work, it is `implementer`'s and not
   `spec-author`'s, and it is why the branch handed over at G4 sits two commits behind `main`.
-- [x] 11.4 Ask for the review (**G7**) with `mattpocock-skills:code-review`, and fix what it finds on
-  this branch before the archive.
+- [x] 11.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+  `mattpocock-skills:code-review` on your own diff and do not act on findings until they come back
+  through the conductor. This box is ticked when the hand-back is written.
 - [x] 11.5 Write the archive handover for the janitor, into the PR or the handover message, saying
   what it must check **after** `/opsx:archive` has run. This box is ticked when the instruction has
   been written, which is before the archive; the checking itself is the janitor's step and has no box

@@ -207,17 +207,7 @@ public struct DayView: Hashable, Sendable {
     public var rows: [Row] { groups.flatMap(\.rows) }
 
     public init(of commitments: [Commitment], on date: CalendarDate, in history: History) {
-        self.date = date
-        let rows = commitments
-            .filter { $0.isDue(on: date) }
-            .map {
-                Row(
-                    commitment: $0, date: date, isKept: history.isKept($0, on: date),
-                    number: history.number(for: $0, on: date),
-                    note: history.note(for: $0, on: date),
-                    total: history.total(for: $0, on: date))
-            }
-        self.groups = rows.isEmpty ? [] : [Group(category: nil, rows: rows)]
+        self.init(of: [Roster.Group(category: nil, commitments: commitments)], on: date, in: history)
     }
 
     /// Forms a day view from `groups` — the same shape a roster reads its commitments back in —
