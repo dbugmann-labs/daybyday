@@ -186,15 +186,15 @@ and offers none for a day that has not arrived*, in `Tests/DayByDayKitTests/DayV
 one edit to an existing test. `DayView.Row` gains the internal `note` and the public
 `noteEntry(asOf:)` and `noteRecord(_:asOf:)`, per `design.md` § *The seam*.
 
-- [ ] 8.1 `a row offers the note entry for its commitment on the date the day view is of`
-- [ ] 8.2 `a row for a commitment whose kind is not a note offers no note entry`
-- [ ] 8.3 `a row offers a tick, a number entry or a note entry and never two of them`
-- [ ] 8.4 `a row for a date later than the day it is asked as of offers no note entry`
-- [ ] 8.5 `a row for a date later than the day it is asked as of offers no note entry even where the
+- [x] 8.1 `a row offers the note entry for its commitment on the date the day view is of`
+- [x] 8.2 `a row for a commitment whose kind is not a note offers no note entry`
+- [x] 8.3 `a row offers a tick, a number entry or a note entry and never two of them`
+- [x] 8.4 `a row for a date later than the day it is asked as of offers no note entry`
+- [x] 8.5 `a row for a date later than the day it is asked as of offers no note entry even where the
   day holds a note`
-- [ ] 8.6 `a row for a date earlier than the day it is asked as of offers the note entry`
-- [ ] 8.7 `a row offers the note entry whether or not the day is already kept`
-- [ ] 8.8 **Not a new test.** The existing test named `a row offers a tick or a number entry and
+- [x] 8.6 `a row for a date earlier than the day it is asked as of offers the note entry`
+- [x] 8.7 `a row offers the note entry whether or not the day is already kept`
+- [x] 8.8 **Not a new test.** The existing test named `a row offers a tick or a number entry and
   never both` gains the one clause the delta added to that scenario: a row for a commitment alike in
   every way but of the note kind offers neither of them. Its `@Test` display name does not change,
   and no other assertion in it changes. This box exists because the scenario is already *covered* by

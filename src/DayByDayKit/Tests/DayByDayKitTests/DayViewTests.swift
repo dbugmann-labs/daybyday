@@ -1290,16 +1290,20 @@ func aRowOffersATickOrANumberEntryAndNeverBoth() {
     let range = Commitment.Range(lowest: 40, highest: 150)!
     let weight = Commitment(
         name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let history = History()
 
     let dayView = DayView(of: [gym, weight], on: monday, in: history)
+    let noteDayView = DayView(of: [journal], on: monday, in: history)
 
     #expect(dayView.rows.map(\.name) == ["Gym", "Weight"])
     #expect(dayView.rows[0].tick(asOf: monday) != nil)
     #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
     #expect(dayView.rows[1].numberEntry(asOf: monday) != nil)
     #expect(dayView.rows[1].tick(asOf: monday) == nil)
+    #expect(noteDayView.rows[0].tick(asOf: monday) == nil)
+    #expect(noteDayView.rows[0].numberEntry(asOf: monday) == nil)
 }
 
 @Test("a row for a date later than the day it is asked as of offers no number entry")
@@ -1525,4 +1529,139 @@ func twoRowsForTheSameNumberCommitmentAndDateHoldingTheSameNumberAreTheSameRow()
     #expect(firstView.rows[0].isKept)
     #expect(secondView.rows[0].isKept)
     #expect(firstView.rows[0] == secondView.rows[0])
+}
+
+@Test("a row offers the note entry for its commitment on the date the day view is of")
+func aRowOffersTheNoteEntryForItsCommitmentOnTheDateTheDayViewIsOf() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [journal], on: monday, in: history)
+
+    #expect(dayView.rows.count == 1)
+    #expect(dayView.rows[0].name == "Journal")
+    #expect(dayView.rows[0].noteEntry(asOf: monday) != nil)
+}
+
+@Test("a row for a commitment whose kind is not a note offers no note entry")
+func aRowForACommitmentWhoseKindIsNotANoteOffersNoNoteEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let water = Commitment(
+        name: "Water", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, weight, water], on: monday, in: history)
+    let noteDayView = DayView(of: [journal], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Weight", "Water"])
+    #expect(dayView.rows.allSatisfy { $0.noteEntry(asOf: monday) == nil })
+    #expect(noteDayView.rows[0].noteEntry(asOf: monday) != nil)
+}
+
+@Test("a row offers a tick, a number entry or a note entry and never two of them")
+func aRowOffersATickANumberEntryOrANoteEntryAndNeverTwoOfThem() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, weight, journal], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Weight", "Journal"])
+    #expect(dayView.rows[0].tick(asOf: monday) != nil)
+    #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
+    #expect(dayView.rows[0].noteEntry(asOf: monday) == nil)
+    #expect(dayView.rows[1].numberEntry(asOf: monday) != nil)
+    #expect(dayView.rows[1].tick(asOf: monday) == nil)
+    #expect(dayView.rows[1].noteEntry(asOf: monday) == nil)
+    #expect(dayView.rows[2].noteEntry(asOf: monday) != nil)
+    #expect(dayView.rows[2].tick(asOf: monday) == nil)
+    #expect(dayView.rows[2].numberEntry(asOf: monday) == nil)
+}
+
+@Test("a row for a date later than the day it is asked as of offers no note entry")
+func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoNoteEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [journal], on: wednesday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Journal"])
+    #expect(dayView.rows[0].noteEntry(asOf: monday) == nil)
+    #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
+    #expect(dayView.rows[0].tick(asOf: monday) == nil)
+}
+
+@Test("a row for a date later than the day it is asked as of offers no note entry even where the day holds a note")
+func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoNoteEntryEvenWhereTheDayHoldsANote() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Note("Ran 8k.", for: journal, on: wednesday)!)
+
+    let dayView = DayView(of: [journal], on: wednesday, in: history)
+
+    #expect(dayView.rows[0].isKept)
+    #expect(dayView.rows[0].noteEntry(asOf: monday) == nil)
+}
+
+@Test("a row for a date earlier than the day it is asked as of offers the note entry")
+func aRowForADateEarlierThanTheDayItIsAskedAsOfOffersTheNoteEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let history = History()
+
+    let dayView = DayView(of: [journal], on: monday, in: history)
+
+    #expect(dayView.rows[0].noteEntry(asOf: saturday) != nil)
+}
+
+@Test("a row offers the note entry whether or not the day is already kept")
+func aRowOffersTheNoteEntryWhetherOrNotTheDayIsAlreadyKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let notKeptHistory = History()
+    var keptHistory = History()
+    keptHistory.add(Note("Ran 8k.", for: journal, on: monday)!)
+
+    let notKeptView = DayView(of: [journal], on: monday, in: notKeptHistory)
+    let keptView = DayView(of: [journal], on: monday, in: keptHistory)
+
+    #expect(!notKeptView.rows[0].isKept)
+    #expect(keptView.rows[0].isKept)
+    #expect(notKeptView.rows[0].noteEntry(asOf: monday) != nil)
+    #expect(keptView.rows[0].noteEntry(asOf: monday) != nil)
 }
