@@ -1521,8 +1521,8 @@ any way the calendar does not.
   as of Monday 31 August 2026; and a commitment named "Creatine" on a weekday-set rhythm of all
   seven weekdays, kept from that same day, under the category "Supplements", is defined through it
 - **THEN** nothing is refused
-- **AND** what it keeps is two groups, one with no category holding "Gym" and then "Supplements"
-  holding "Creatine"
+- **AND** what it keeps is two groups, "Supplements" holding "Creatine" and then a group with no
+  category holding "Gym"
 - **AND** a roster store opened afterwards at that place reads back "Creatine" under "Supplements"
 
 #### Scenario: a commitment defined under a category of nothing but blank space is under none and is not refused

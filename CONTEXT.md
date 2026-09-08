@@ -852,11 +852,12 @@ go is gone from the form as well.
 
 **Amended again 2026-09-08**, after the residual round of the same Story. While a drag is live, a
 commitments screen also says **the group a drop would join** — the group the row would be under if
-it were let go at the offset it is over now, or that there is no such group. The **app shell** marks
-that group's heading, and marks nothing on the row itself, which is the thing under a person's
-thumb. It is the same arithmetic the drop performs, read rather than acted, so the two can never
-disagree; and it exists because a drop on the seam between two groups joins the one below, a rule
-that had to pick a side and that a person would otherwise learn only after letting go.
+it were let go at the offset it is over now, or that there is no such group. It is the same
+arithmetic the drop performs, read rather than acted, so the two can never disagree; and it exists
+because a drop on the seam between two groups joins the one below, a rule that had to pick a side
+and that a person would otherwise learn only after letting go. It is a thing the screen answers and
+the **app shell** draws no mark for: the answer is asked for mid-drag, and a live drag publishes no
+destination the shell could read, so the group a drop would join is known and not yet shown.
 
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
