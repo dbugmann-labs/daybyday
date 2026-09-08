@@ -477,6 +477,63 @@ shape it lacks, not the quota.
 - **Open** — it makes the day that has not arrived one thumb-flick away rather than one tap, which
   sharpens B-035 rather than changing it.
 
+### B-039 — be reminded to record a day before it is gone
+*Captured 2026-09-08, from the sixth grooming sweep. The wording is the sweep's.*
+
+> "Be reminded to record a day before it is gone — every line of the week depends on remembering
+> to open the app."
+
+- **Trigger** — a day that ends unopened. All nine lines of the day-one week are recorded only if
+  the app is opened, and the failure the whole product is built against is *"a gap a few days old
+  that cannot be reconstructed"* (`docs/open-questions.md` § *Settled*, 2026-08-29).
+- **Touches** — unclaimed, and probably nothing that exists. No capability holds a clock: ADR-1004
+  says a commitment due "at 07:00" would be *"a notification concern, not a due-ness"* one, which
+  parks the idea without deciding it. `EPIC: Daily commitments` (#1) does not exclude it, unlike
+  graphs, restore and prefill.
+- **Principle** — tested against *nothing congratulates you*: **passes on the letter and strains on
+  the spirit.** A reminder is not a streak and celebrates nothing, but the same settled note that
+  makes this want urgent also says what disqualifies Apple Reminders on its own terms — it *"nags
+  and forgets"*. This product is the half that does not forget; whether it may also be the half
+  that nags is the question, and it is the owner's alone.
+- **Open** — is this a notification at all, or something quieter: a badge, or a day screen that
+  says the last day you recorded nothing on? The want is "do not lose a day", and a notification is
+  only the loudest of the answers to it.
+- **Open** — per commitment, or per day? "creatine daily" and "finances every 25th" ask for
+  different things: one is a time of day, the other is a date that comes round once a month and is
+  easy to miss entirely.
+- **Open** — a time of day is a thing no schedule holds. ADR-1004 bounded the rule engine to
+  calendar dates on purpose, so this is either a fifth thing beside a schedule or a property of the
+  reminder rather than of the commitment.
+
+### B-040 — get to a day weeks back without stepping through every day between
+*Captured 2026-09-08, from the sixth grooming sweep. The wording is the sweep's.*
+
+> "Get to a day weeks back without stepping through every day between — recording the Thursday you
+> missed should not cost twenty-one taps."
+
+- **Trigger** — rare and specific: coming back to a stretch that went unrecorded, or checking what
+  a commitment did last month. Not one of the five daily visits.
+- **Touches** — `day-screen` (#27). *A move is one calendar day, and never more* is a shipped
+  requirement, and *Decided* (2026-09-02, B-016 → #72) records the consequence in as many words:
+  how far back the past stays writable is *"as far back as the calendar goes, bounded by navigation
+  rather than by a rule"*. That bound is the want. The kept-from day is the real floor
+  (ADR-1013), and nothing offers a way to reach it.
+- **Not B-038, and the two want reading together.** B-038 makes the step from one day to the day
+  beside it cheaper; this asks for a day that is not beside it at all, and a swipe costs twenty-one
+  swipes where a chevron costs twenty-one taps. Either is worth having without the other, which is
+  why this is its own entry rather than a fold. B-028 is the third of the same cluster — all three
+  are about the controls that move a day screen.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** A date picker is the
+  idiom the phone already has, and `add-commitments-screen` (#104) already put one in the product
+  for the kept-from day, so the affordance exists and is not a new kind of screen. Tested against
+  *five percent of seven things*: **fails** — it deepens navigation that works rather than making a
+  new kind of record possible.
+- **Open** — a date picker, a jump straight back to today, or a calendar month you tap a day in?
+  The third is the most useful and the closest to the graphs `EPIC: Daily commitments` excludes by
+  name, because a month grid with days marked *is* a look back.
+- **Open** — does anything bound how far it may go? The day screen answers for every supported
+  date, so a picker with no floor offers years in which the person kept nothing.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
