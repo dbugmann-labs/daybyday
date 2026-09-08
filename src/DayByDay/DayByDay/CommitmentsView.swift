@@ -46,16 +46,34 @@ struct CommitmentsView: View {
     let screen: CommitmentsScreen
 
     @State private var name = ""
+    @State private var category = ""
     @State private var rhythmKind: RhythmKind = .weekdays
     @State private var selectedWeekdays: Set<Weekday> = []
     @State private var dayOfMonth = 1
     @State private var intervalDays = 1
     @State private var timesPerWeek = 1
     @State private var keptFromDate: Date
+    @State private var categorising: Commitment?
+    @State private var categoryTyped = ""
 
     init(screen: CommitmentsScreen) {
         self.screen = screen
         _keptFromDate = State(initialValue: date(from: screen.dayToKeepFrom))
+    }
+
+    /// The index into `screen.kept` (flat) each group's heading is drawn above — only where the
+    /// group is under a category, since the group with none draws no heading. `screen.keptGroups`
+    /// says the groups; this reads them, converting nothing about what is in each.
+    private var keptGroupHeadings: [Int: String] {
+        var headings: [Int: String] = [:]
+        var offset = 0
+        for group in screen.keptGroups {
+            if let category = group.category {
+                headings[offset] = category
+            }
+            offset += group.commitments.count
+        }
+        return headings
     }
 
     var body: some View {
@@ -64,7 +82,18 @@ struct CommitmentsView: View {
                 if screen.kept.isEmpty {
                     Text("Nothing is being kept.")
                 }
-                ForEach(screen.kept, id: \.self) { commitment in
+                // One flat `ForEach` over `screen.kept`, not a `Section` per group — a per-section
+                // `.onMove` would hand this shell an offset counted within that section, which is
+                // arithmetic ADR-1019's guard forbids. The group a row is under is drawn as a
+                // heading above the first entry of that group, read off `screen.keptGroups`;
+                // `.onMove`'s offset passes through untouched, over `screen.kept` exactly as
+                // `design.md` § *The seam* fixes it.
+                ForEach(Array(screen.kept.enumerated()), id: \.element) { index, commitment in
+                    if let heading = keptGroupHeadings[index] {
+                        Text(heading)
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                    }
                     commitmentLine(
                         Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                     )
@@ -74,6 +103,12 @@ struct CommitmentsView: View {
                         }
                         Button("Remove", role: .destructive) {
                             screen.askToRemove(commitment)
+                        }
+                        Button("Category") {
+                            categorising = commitment
+                            categoryTyped =
+                                screen.keptGroups.first { $0.commitments.contains(commitment) }?
+                                .category ?? ""
                         }
                     }
                 }
@@ -98,6 +133,10 @@ struct CommitmentsView: View {
 
             if case .moving(_, let movingRefusal) = screen.refusedChange {
                 refusalText(movingRefusal)
+            }
+
+            if case .categorising(_, let categorisingRefusal) = screen.refusedChange {
+                refusalText(categorisingRefusal)
             }
 
             Section("Stopped") {
@@ -182,6 +221,17 @@ struct CommitmentsView: View {
 
                 DatePicker("Kept from", selection: $keptFromDate, displayedComponents: [.date])
 
+                TextField("Category (optional)", text: $category)
+                if !screen.categoriesInUse.isEmpty {
+                    Menu("Use an existing category") {
+                        ForEach(screen.categoriesInUse, id: \.self) { existing in
+                            Button(existing) {
+                                category = existing
+                            }
+                        }
+                    }
+                }
+
                 Button("Add") {
                     define()
                 }
@@ -259,6 +309,51 @@ struct CommitmentsView: View {
                 }
             }
         }
+        .sheet(
+            isPresented: Binding(
+                get: { categorising != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        categorising = nil
+                    }
+                }
+            )
+        ) {
+            if let commitment = categorising {
+                NavigationStack {
+                    Form {
+                        Section {
+                            TextField("Category (blank for none)", text: $categoryTyped)
+                        }
+                        if !screen.categoriesInUse.isEmpty {
+                            Section("Already in use") {
+                                ForEach(screen.categoriesInUse, id: \.self) { existing in
+                                    Button(existing) {
+                                        categoryTyped = existing
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .navigationTitle("Category for \(commitment.name)")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                categorising = nil
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Save") {
+                                screen.put(
+                                    commitment,
+                                    under: categoryTyped.isEmpty ? nil : categoryTyped)
+                                categorising = nil
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /// The words a person reads for a refused change, in the shell's own vocabulary — the same
@@ -308,10 +403,13 @@ struct CommitmentsView: View {
                 year: components.year!, month: components.month!, day: components.day!)
         else { return }
 
-        let refusal = screen.define(name: name, on: rhythmBeingBuilt, keptFrom: keptFrom)
+        let refusal = screen.define(
+            name: name, on: rhythmBeingBuilt, keptFrom: keptFrom,
+            under: category.isEmpty ? nil : category)
 
         if refusal == nil {
             name = ""
+            category = ""
             selectedWeekdays = []
         }
     }

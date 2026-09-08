@@ -104,6 +104,21 @@ struct ContentView: View {
         }
     }
 
+    /// The row offset (into `screen.dayView.rows`, flat) each group's heading is drawn above —
+    /// only where the group is under a category, since the group with none draws no heading.
+    /// The day view says the groups; this reads them, converting nothing about what is in each.
+    private var groupHeadings: [Int: String] {
+        var headings: [Int: String] = [:]
+        var offset = 0
+        for group in screen.dayView.groups {
+            if let category = group.category {
+                headings[offset] = category
+            }
+            offset += group.rows.count
+        }
+        return headings
+    }
+
     private var dayList: some View {
         List {
             HStack {
@@ -154,7 +169,12 @@ struct ContentView: View {
             // tap flips — keying `ForEach` on the row's value would make SwiftUI see a tap as one
             // row removed and another inserted. The array's position is stable across a tap, so
             // it stands in as the identity instead.
-            ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset) { _, row in
+            ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset) { offset, row in
+                if let heading = groupHeadings[offset] {
+                    Text(heading)
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                }
                 let entry = row.numberEntry(asOf: today())
                 let noteEntry = row.noteEntry(asOf: today())
                 let totalEntry = row.totalEntry(asOf: today())
