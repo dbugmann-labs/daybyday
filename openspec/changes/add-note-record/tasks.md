@@ -10,11 +10,11 @@ This section changes no behaviour and adds no test. It pins the starting point a
 sites that say `4` to mean *a form later than this app writes*, so that everything after it is
 measured against a number rather than a memory.
 
-- [ ] 1.1 Confirm the branch point before touching anything: from `src/DayByDayKit`, `swift test`
+- [x] 1.1 Confirm the branch point before touching anything: from `src/DayByDayKit`, `swift test`
   reports **628 tests passing**. Measured on this machine on 2026-09-08, Apple Swift 6.3.3
   (swiftlang-6.3.3.1.3), target `arm64-apple-macosx26.0`. A different number means `main` moved under
   the branch; report it rather than working around it (`AGENTS.md` rule 5).
-- [ ] 1.2 Edit the eleven sites that say `4` to mean *a later form* so they say `5`. Nine JSON
+- [x] 1.2 Edit the eleven sites that say `4` to mean *a later form* so they say `5`. Nine JSON
   fixtures — `RecordStoreTests.swift:295`, `RosterStoreTests.swift:323`,
   `CommitmentsScreenTests.swift:1129`, and `DayScreenTests.swift:370`, `:454`, `:585`, `:1673`,
   `:1831`, `:2471` — and two assertions, `RecordStoreTests.swift:298` and `RosterStoreTests.swift:326`,
@@ -27,7 +27,7 @@ measured against a number rather than a memory.
   surely as `4` was, so one number goes on meaning *a later form* everywhere in the suite.
   `swift test` still reports **628 passing** after this box — a red test is a rule-5 stop, because
   nothing in this box was supposed to change an answer.
-- [ ] 1.3 Confirm the coverage tool agrees before writing a test: from the repo root,
+- [x] 1.3 Confirm the coverage tool agrees before writing a test: from the repo root,
   `pnpm run checks` reports `scenario coverage — 117/194 scenario(s) covered` for this change.
   Measured on 2026-09-08 after the residual round folded in the number entry's MODIFIED requirement,
   whose eight archived scenarios already have tests of those names and so arrive already covered. A
@@ -38,7 +38,7 @@ measured against a number rather than a memory.
 
 ## 2. `Note` and `Blank`, before anything holds one
 
-- [ ] 2.1 Add `Sources/DayByDayKit/Blank.swift` declaring the internal `enum Blank` from `design.md`
+- [x] 2.1 Add `Sources/DayByDayKit/Blank.swift` declaring the internal `enum Blank` from `design.md`
   § *The seam* — `saysNothing(_:)` and `trimmed(_:)`, both on `Character.isWhitespace` and nothing
   else — and change `Commitment.init?`'s own guard to read `guard !Blank.saysNothing(name)`. That is
   a **refactor with no behaviour in it**: `Blank.saysNothing` is `allSatisfy(\.isWhitespace)`, which
@@ -47,7 +47,7 @@ measured against a number rather than a memory.
   join it later — `Note.init?` at § 3.4 and `DayScreen.enter(_:on:)`'s note branch at § 12 — and
   § 12.7 moves the last one, `DayScreen.read(_:)`, off `CharacterSet.whitespaces`. `swift test` still
   reports 628 passing after this box; a red test is a rule-5 stop.
-- [ ] 2.2 Add `Sources/DayByDayKit/Note.swift` declaring exactly what `design.md` § *The seam* gives:
+- [x] 2.2 Add `Sources/DayByDayKit/Note.swift` declaring exactly what `design.md` § *The seam* gives:
   `public struct Note: Hashable, Sendable` with internal `commitment`, `date` and `text`, and
   `public init?(_ text: String, for commitment: Commitment, on date: CalendarDate)`. **The
   initializer is a bodied `fatalError("not implemented")`**, so § 3.1 is red on its first assertion

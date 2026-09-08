@@ -320,10 +320,10 @@ func aRosterStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 4, "commitments": []}"#.utf8)
+    let bytes = Data(#"{"version": 5, "commitments": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.laterForm(at: place, version: 4)) {
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 5)) {
         try RosterStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)

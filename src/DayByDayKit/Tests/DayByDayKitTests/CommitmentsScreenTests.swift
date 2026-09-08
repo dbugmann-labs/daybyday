@@ -1126,7 +1126,7 @@ func aRosterWrittenInALaterFormThanThisAppKnowsMakesACommitmentsScreenThatSaysTh
     let rosterPlace = freshRosterPlace()
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 4, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: rosterPlace)
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
