@@ -4924,6 +4924,36 @@ func takingBackOnARowForADayThatHasNotArrivedChangesNothing() throws {
 }
 
 @MainActor
+@Test("taking back on a row the day screen's day view does not hold changes nothing")
+func takingBackOnARowTheDayScreensDayViewDoesNotHoldChangesNothing() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let protein = Commitment(
+        name: "Protein", schedule: daily, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let mondayScreen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let tuesdayScreen = DayScreen(
+        startingFrom: [protein], asOf: tuesday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    try mondayScreen.enter("30", on: mondayScreen.dayView.rows[0])
+    try tuesdayScreen.enter("30", on: tuesdayScreen.dayView.rows[0])
+
+    try mondayScreen.takeBackLast(on: tuesdayScreen.dayView.rows[0])
+
+    let laterOnTuesday = DayScreen(
+        startingFrom: [protein], asOf: tuesday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    #expect(laterOnTuesday.dayView.rows[0].totalEntry(asOf: tuesday)?.soFarOfTarget == "30 of 120")
+}
+
+@MainActor
 @Test("a commit on a note row for a day that has not arrived is told nothing on the row")
 func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
     let (place, rosterPlace) = freshPlaces()
