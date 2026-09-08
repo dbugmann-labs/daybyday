@@ -138,11 +138,11 @@ change, and § 16.2.
 - [x] 5.2 `taking back the last addition twice removes the two most recent, in the order they were
   made` — both clauses, including that the history then equals one the first addition alone was added
   to. An implementation removing the *smallest* or the *first* passes 5.1 and fails this.
-- [ ] 5.3 `taking back the only addition a day holds leaves the day holding none` — including that the
+- [x] 5.3 `taking back the only addition a day holds leaves the day holding none` — including that the
   history is then the same as one that has taken no record. A day left holding an empty list rather
   than no entry at all fails the last clause, and that is the point: it is also what would let § 7.1
   write an empty day to disk.
-- [ ] 5.4 `taking back the last addition leaves the same commitment's other days standing`
+- [x] 5.4 `taking back the last addition leaves the same commitment's other days standing`
 - [ ] 5.5 `taking back the last addition leaves another commitment's day standing`
 - [ ] 5.6 `taking back where the day holds no addition leaves the history unchanged` — three cases: a
   day with nothing on it, a commitment of the wrong kind, and a date it is not due on. None is an

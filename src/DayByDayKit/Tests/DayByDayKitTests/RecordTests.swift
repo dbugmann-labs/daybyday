@@ -1862,3 +1862,38 @@ func takingBackTheLastAdditionTwiceRemovesTheTwoMostRecentInTheOrderTheyWereMade
     #expect(history.total(for: protein, on: monday) == 30)
     #expect(history == justThirty)
 }
+
+@Test("taking back the only addition a day holds leaves the day holding none")
+func takingBackTheOnlyAdditionADayHoldsLeavesTheDayHoldingNone() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(120, for: protein, on: monday)!)
+    history.removeLastAddition(for: protein, on: monday)
+
+    #expect(history.total(for: protein, on: monday) == 0)
+    #expect(!history.isKept(protein, on: monday))
+    #expect(history == History())
+}
+
+@Test("taking back the last addition leaves the same commitment's other days standing")
+func takingBackTheLastAdditionLeavesTheSameCommitmentsOtherDaysStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(45, for: protein, on: saturday)!)
+    history.removeLastAddition(for: protein, on: monday)
+
+    #expect(history.total(for: protein, on: saturday) == 45)
+    #expect(history.total(for: protein, on: monday) == 0)
+}
