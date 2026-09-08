@@ -1494,8 +1494,11 @@ func puttingACommitmentUnderACategoryChangesNoDayNoCommitmentAndNoOrder() {
 
     // Each of the three reads back exactly the commitment it was given — an equal value,
     // day it is kept from included — and "Gym" answers due on its own schedule unmoved.
-    #expect(gym.isDue(on: CalendarDate(year: 2026, month: 3, day: 2)!))
-    #expect(!gym.isDue(on: CalendarDate(year: 2026, month: 3, day: 3)!))
+    // Read "Gym" back out of the roster rather than off the local value, so a `put` that
+    // dropped or altered it would be caught here.
+    let keptGym = roster.commitments.first { $0.name == "Gym" }
+    #expect(keptGym?.isDue(on: CalendarDate(year: 2026, month: 3, day: 2)!) == true)
+    #expect(keptGym?.isDue(on: CalendarDate(year: 2026, month: 3, day: 3)!) == false)
 
     #expect(roster.commitments == [gym, journaling])
 }
