@@ -3919,6 +3919,14 @@ func theGroupACommitmentsScreenSaysADropWouldJoinIsTheGroupTheDropPutsTheCommitm
         _ = screen.move(gym, toOffset: offset)
         let group = screen.keptGroups.first { $0.commitments.contains(gym) }
 
+        // The offset the scenario names: pinned to "Supplements" on its own, independent of
+        // `group` below, so a `landingPlace` that answered the same wrong group on both sides
+        // of the drop would still be caught.
+        if offset == 1 {
+            #expect(said == .under("Supplements"))
+            #expect(group?.category == "Supplements")
+        }
+
         if let category = group?.category {
             #expect(said == .under(category))
         } else {
