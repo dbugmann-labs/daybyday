@@ -850,14 +850,17 @@ its category cleared. A category it will not change is a **refused change** like
 the categories it offers are read off the roster it is drawing, so a word its last commitment lets
 go is gone from the form as well.
 
-**Amended again 2026-09-08**, after the residual round of the same Story. While a drag is live, a
-commitments screen also says **the group a drop would join** — the group the row would be under if
-it were let go at the offset it is over now, or that there is no such group. It is the same
-arithmetic the drop performs, read rather than acted, so the two can never disagree; and it exists
-because a drop on the seam between two groups joins the one below, a rule that had to pick a side
-and whose result a person still learns only after letting go. It is a thing the screen answers and
-the **app shell** draws no mark for: the answer is asked for mid-drag, and a live drag publishes no
-destination the shell could read, so the group a drop would join is known and not yet shown.
+**Corrected 2026-09-08**, at the § 9.5 walkthrough of the same Story, replacing a paragraph written
+after its residual round that said a commitments screen answers *the group a drop would join* while
+a drag is live. **A drop carries the group it landed in**, and the offset it carries is counted over
+the entries drawn in that group rather than over the whole list the screen draws. The rule it
+replaces — a drop on the seam between two groups joins the one below — was tried on the phone and
+failed on the case it was cheapest about: over a flat list the place after a group's last row and
+the place before the next group's first are one offset, so the end of a group was unreachable and a
+row could not be appended to one at all. Counting inside the group gives those two places one offset
+each. There is then no seam between groups for a drop to be ambiguous about, so the screen answers
+nothing extra about where a drag would land: what a person sees is the group they are dragging in,
+which the **app shell** draws as a section and which cannot move with the row.
 
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most

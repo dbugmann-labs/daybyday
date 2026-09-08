@@ -1,6 +1,10 @@
 ## Context
 
-See `proposal.md` § *Why*, and `grill.md`, whose twenty-three settled answers this delta is written on.
+See `proposal.md` § *Why*, and `grill.md`, whose twenty-five settled answers this delta is written on.
+**Settled answer 24 reversed settled answer 14's seam rule on the phone, on 2026-09-08**, and the
+sections it moved are § *The offset a screen takes is over the group it was dropped in*, § *What the
+mark was for, and what draws it now* and § *The shell rides this Story*; § *Open Questions* 1 records
+the reversal beside the answer it replaced.
 What matters here is that a **category** is a word the person chose, held by the roster against a
 commitment, and that **grouping is a second reading of the order the roster already holds**. Once
 those two are fixed everything else follows: the commitment gains nothing, the day view gains no
@@ -28,22 +32,28 @@ document; the last two decide how big the change is and are the ones to re-check
   `roster.commitments(on:)` at three call sites.** `DayView.swift:42`, `:51`, `:61` and
   `DayScreen.swift:76`, `:209`, `:217`. Nothing between the roster and the rows reorders anything
   today, which is why handing groups down that path costs one type and no rule.
-- **`CommitmentsView.swift:62` draws the kept list as a `ForEach` inside `Section("Kept")` with
-  `.onMove` attached**, and `screen.kept[index]` resolves the dragged row. The offset is passed
-  through untouched, which is the arrangement `add-roster-order` fixed and which § *The offset a
-  screen takes is over what it draws* keeps.
+- **`CommitmentsView.swift` draws the kept list as one flat `ForEach` inside `Section("Kept")` with
+  `.onMove` attached**, and `screen.kept[index]` resolves the dragged row. That arrangement is what
+  the 2026-09-08 walkthrough found wanting, and § *The shell rides this Story* replaces it with a
+  `Section` per group.
+- **`onMove(perform:)` is declared on `DynamicViewContent`** — read out of `iPhoneOS26.5.sdk`'s
+  `SwiftUI.swiftinterface`, 2026-09-08, at line 10353 — and takes `Optional<(IndexSet, Int) -> Void>`.
+  Its `IndexSet` and its `Int` are both over the `ForEach`'s **own** data, and no overload names two
+  collections, so **a `Section` per group means every offset `.onMove` hands the shell is already
+  counted inside one group.** That is the fact the new seam is shaped to, and it is also why
+  § *Questions for you* 1 exists.
 - **580 tests pass**, `swift test` from `src/DayByDayKit`, this branch cut from `main` at `f8236be`
   which includes `add-roster-order` (#161).
-- **`pnpm run check:scenarios` reports `129/214 scenario(s) covered`** for this change. Those 129
+- **`pnpm run check:scenarios` reports `129/206 scenario(s) covered`** for this change. Those 129
   are the scenarios this delta carries verbatim from the current specs; **no test behind any of them
-  may be renamed, moved, or have an assertion changed.** Eighty-five are new.
+  may be renamed, moved, or have an assertion changed.** Seventy-seven are new.
 
 `CONTEXT.md` fixes the vocabulary — the new **category**, and the amendments to **roster**, **roster
 store**, **commitments screen**, **day view** and **move** — and the grill landed all of it before
-this folder existed. One line of it is corrected here; § *The day view is handed its groups, and
-`CONTEXT.md` is corrected* says which and why. Writing the delta turned up no new headword: the
-drag mark of settled answer 21 is one more sentence under **commitments screen** — *the group a drop
-would join* — because it is a thing that screen says and not a thing of its own.
+this folder existed. Two lines of it are corrected here; § *The day view is handed its groups, and
+`CONTEXT.md` is corrected* says which and why, and the second correction is the drag-mark paragraph
+settled answer 21 landed, which settled answer 24 has since made false. Writing the delta turned up
+no new headword.
 
 ## Goals / Non-Goals
 
@@ -108,17 +118,14 @@ types are added beside them. Every scenario in the delta is driven at one of the
   same shape as `keepAgain`. `RefusedChange` gains a sixth case, `categorising(Commitment, Refusal)`.
 - **`CommitmentsScreen.define(name:on:keptFrom:under:)`** — a fourth argument, no default. The form
   always has a category field, so it always has something to say.
-- **`CommitmentsScreen.move(_:toOffset:)` keeps its shape and changes what its offset means.** It is
-  now counted over `kept` as drawn, and the screen derives both the roster's offset and the category
-  from it. This is the one signature in the change that is unchanged and not behaviour-preserving,
-  which is why it is called out here rather than left to a reader of the diff.
-- **`CommitmentsScreen.landing(dropping:at:) -> Landing`**, where **`Landing`** is a nested
-  `enum` of `.under(String)`, `.underNoCategory` and `.nowhere` — the drag mark, and the read half
-  of the same arithmetic `move` acts on. Three cases and not an `Optional`, for the reason the
-  `move` signature above gives: a `nil` that meant both "the group under no category" and "no group
-  at all" is exactly the seam this change could be silently wrong at. `Landing` is a type's name for
-  the domain's *the group a drop would join*, not a term of its own; `CONTEXT.md` § *Commitments
-  screen* carries the phrase.
+- **`CommitmentsScreen.move(_ commitment: Commitment, toOffset offset: Int, under category: String?)
+  -> Refusal?`** — replacing the two-argument form outright rather than defaulting it, for the reason
+  `Roster.move` gives one line above, and **the offset is counted over the entries drawn in the group
+  named by `category`**, not over `kept`. Every existing caller and every carried test gains the
+  third argument; because every carried scenario describes a roster with nothing under a category,
+  the group they mean is the one under none and `nil` is what they pass. This is the signature
+  settled answer 24 reversed, and § *The offset a screen takes is over the group it was dropped in*
+  is the whole of it.
 - **`DayView.Group`** — `public let category: String?` and `public let rows: [Row]`.
   **`DayView.groups: [Group]`**, and **`DayView.rows`** stays as every row read across the groups,
   in drawing order.
@@ -195,82 +202,87 @@ optional would; two overloads say it in the domain's own words instead, and the 
 the two asks rather than the two signatures. `DayScreen`'s day-one take-on uses the form that says
 nothing, which is right: day one has no categories to give.
 
-### The offset a screen takes is over what it draws
+### The offset a screen takes is over the group it was dropped in
 
 Until this change the commitments screen's kept list and the roster's own order were the same
-sequence, so one offset meant one thing. Grouping makes them two sequences, and the delta picks the
-drawn one: **a drag happens on what a person is looking at.**
+sequence, so one offset meant one thing. Grouping makes them two sequences and the drop has to say
+which group it landed in, so the delta takes **a place inside a group**: a commitment, the group,
+and an offset counted over the entries drawn in that group.
 
-That puts one conversion into `CommitmentsScreen.move` and nowhere else. Given an offset *k* over
-the drawn list:
+**This is the reversal, and the thing it buys is the end of a group.** The delta first took an
+offset counted over the whole drawn list, with the category read off the entry standing at it — the
+answer to residual question 1, taken on my recommendation. On the phone on 2026-09-08 it was wrong
+in the hand and the reason is arithmetic: the place after a group's last row and the place before
+the next group's first row are **one offset** on a flat list, so one of the two must be unreachable,
+and the one that was given up was the end of a group. A person could not append a row to a group at
+all — every attempt fell into the group below. Counting the offset inside the group gives those two
+places one offset each, and `grill.md` § *Settled* 24 is where the owner reversed it.
 
-- **the category** is the category of the entry drawn at *k*, or of the last entry drawn where *k*
-  is the number drawn;
-- **the roster's offset** is the place immediately before that same entry among the commitments the
-  roster is keeping, or the number it is keeping where *k* is the number drawn.
+Given a group *g* and an offset *k* over the entries drawn in it:
 
-Because the moved commitment is under that entry's category once the drop is made, and a group's
-entries are drawn in the roster's own order, inserting it immediately before that entry draws it
-where it was dropped. The shell still converts nothing and still passes `onMove`'s `Int` through
-untouched, which is what ADR-1019's guard requires.
+- **the category** is *g*'s own, whatever *k* is — the drop carries the group it landed in;
+- **the roster's offset** is the place immediately before the entry drawn at *k* in *g* among the
+  commitments the roster is keeping, or immediately after the last entry drawn in *g* where *k* is
+  the number drawn in it.
 
-**Two offsets change nothing at all, and the carve-out now covers the category too.** The offset an
-entry is drawn at and the one just after it both leave it where it is drawn; the second of the two
-names the entry that follows, which may belong to the next group, so applying its category would
-turn a drop-where-you-picked-it-up into a refiling. It is carved out at the screen and not at the
-roster, because at the roster the offset says *where* and the category says *what*, and only the
-first has anything to carve out.
+Because the moved commitment is under *g*'s category once the drop is made, and a group's entries
+are drawn in the roster's own order, that is the place that draws it where it was dropped.
 
-**Writing the mark caught two of this delta's own scenarios getting that arithmetic wrong**, and
-they are corrected in this diff rather than left for the implementer to trip over. *A commitment
-dropped past the last entry drawn takes the last group's category* dragged a row that was itself
-drawn last, so the offset it used was one of that row's two carve-outs and the scenario asked for
-a change the requirement forbids; it now drags a row out of a group of its own. And *an offset a
-commitments screen is given is counted over what it draws and not over the roster's own order*
-counted its offset from one rather than from zero, which made it a carve-out too. Both are new
-scenarios, so no carried test is touched. That a read-only mark, checked against the act, found
-them the same afternoon it was written is the argument for the mark in miniature.
+**The shell still converts nothing**, which is what ADR-1019's guard requires and what makes a
+`Section` per group affordable at all. It passes two things it already holds: the section's own
+identity, which is a constant it drew the heading from, and `onMove`'s `Int` untouched. There is no
+line in `CommitmentsView.swift` that adds, subtracts or counts — strictly less than the flat
+arrangement needed, which had to work out which drawn offset each heading sat above.
+
+**Two offsets change nothing at all, and the carve-out is now entirely inside one group.** The
+offset an entry is drawn at within its own group and the one just after it both leave it where it is
+drawn, and both leave its category alone because the group it was dropped in is the group it was
+already in. Dropped in any other group there is nothing to carve out: the category changes at every
+offset that group has, even where the drawn order would not move. That is simpler than the rule it
+replaces, which had to carve the category out too because the second of the two offsets named an
+entry that might belong to the next group.
+
+**A group nobody is in is a group no drop can land in.** A category no kept commitment is under —
+including no category at all, where everything kept is under one — is drawn nowhere, so the shell
+cannot produce the ask; the screen answers it as it answers every other ask for no change, by doing
+nothing and saying nothing. Answering it by creating the group would be the screen inventing a place
+a person could not have pointed at, and it would move a commitment in the roster's order as a side
+effect of a gesture nobody made.
 
 **One consequence is stated in the requirement rather than hidden:** dragging a group's *first*
 commitment away moves the group, because a group sits where its first commitment sits. A person who
 drags the top row of "Supplements" to the bottom of the screen may see the whole "Supplements" block
 follow. That is settled answer 11 read at its edge, not a defect, and it has a scenario.
 
-### The mark a live drag leaves, and what the shell can draw
+### What the mark was for, and what draws it now
 
-Settled answer 21, added after the residual round: while a drag is live the screen answers which
-group the row would land under. It exists because the answer to residual question 1 is a rule that
-had to pick a side — a drop on the seam between two groups joins the one below — and a rule that
-picks a side is only fair once a person can see which side before they let go. That is what a mark
-drawn from this answer would give them, and it is what nothing on the phone gives them today.
+**The requirement *A commitments screen says which group a drop would join, while a drag is live* is
+out of this delta, with all nine of its scenarios**, and `CommitmentsScreen.landing(dropping:at:)`
+and its `Landing` enum are off the seam. This is the second thing settled answer 24 moves, and it is
+a consequence of the reversal rather than a decision taken beside it, so it is set out here for the
+gate to read.
 
-**The screen owes the answer, and drawing anything for it would be the shell's.**
-`landing(dropping:at:)` is the same arithmetic `move` acts on, read instead of acted: the same two
-carve-out offsets, the same "category of the entry drawn there", the same "last entry drawn" at the
-end. It is one rule read twice and never two rules, which is why the delta carries the scenario *the
-group a commitments screen says a drop would join is the group the drop puts the commitment in* — a
-mark that could disagree with the drop would be worse than no mark.
+Settled answer 21 asked for the mark, and it said what it was for in its own words: the seam rule at
+residual question 1 was *"ambiguous by construction, and this is what makes it legible"*. The
+ambiguity was that one offset on a flat drawn list stood between two groups and had to pick one, with
+nothing on screen to say which. Counting the offset inside a group **removes the offset that was
+ambiguous.** There is no longer a place between two groups: there are places inside Supplements and
+places inside Sport, and which one a finger is in is drawn on the phone as the section it is in,
+permanently and before the drag starts. **The `Section` per group is the mark**, and it is drawn by
+the arrangement rather than answered by the kit.
 
-**A mark would go on the heading rather than on the dragged row**, which is the owner's choice and
-holds for whenever one can be drawn. The reason is the thumb: the row is the thing being moved and
-the thing a hand is covering. The heading stands still.
+Keeping the requirement would cost more than deleting it and leave less. Its rule was *"the same
+arithmetic `move` acts on, read instead of acted"* — and `move`'s arithmetic now begins with a group
+the caller names, so a `landing(dropping:at:under:)` could only hand back the group it was just
+given. Six of its nine scenarios, including the load-bearing *the group a commitments screen says a
+drop would join is the group the drop puts the commitment in*, would be rewritten into tautologies,
+and `openspec/specs/commitment/spec.md` would carry them permanently under rule 2. A requirement
+that cannot be got wrong is not a requirement.
 
-**One fact was measured here and it is the one to re-check before § 9.6 is attempted.** Read out of
-`iPhoneOS26.5.sdk`'s `SwiftUI.swiftinterface`, 2026-09-08: `onMove(perform:)` takes
-`Optional<(IndexSet, Int) -> Void>` and is the whole of the reorder surface — SwiftUI publishes
-**no in-flight destination** for a `List`'s edit-mode reorder. `DragSession` carries `phase`,
-`draggedItemIndex` and a `location: CGPoint`, and nothing that says which offset a drop would take;
-`dropDestination(for:action:isTargeted:)` and `DropDelegate.dropEntered(info:)` do give live hover,
-but they belong to a custom `draggable`/`dropDestination` drag, not to `.onMove`.
-
-**So the kit ships the answer, and whether the shell can draw the mark is an open measurement, not
-a design this document takes.** Turning `.onMove` into a custom drag would move "which row am I
-over" into `CommitmentsView.swift` — arithmetic in the shell, which is the one thing ADR-1019's
-guard forbids and the same argument § *The shell rides this Story* used against a `Section` per
-group. `tasks.md` § 9.6 is therefore written as a measurement with a **stop**: find out whether the
-mark can be drawn without moving any arithmetic across the seam, and if it cannot, draw nothing and
-report it. The requirement is about what the screen says, and it is true and tested either way; a
-mark nobody can draw yet is a want, and a shell rewrite to reach it is a Story with its own G4.
+**What settled answer 21 chose is kept where it still applies.** It said a mark belongs on the
+heading and never on the dragged row, because the row is under a moving thumb; a section header is
+exactly that, and it is the one thing on the screen that now cannot move with the row. § *The shell
+rides this Story* is where that lands.
 
 ### The form on disk moves to form 4, and ADR-1031 is amended
 
@@ -334,21 +346,49 @@ conditions hold: the shell is the immediate consumer, landing in the same PR; it
 behaviour the kit does not specify — every group, every order, every refusal and the whole meaning
 of a drop is behind the seam; and it is `tasks.md` § 9, its own section, for the reviewer.
 
-**The kept list becomes one flat `ForEach` over `screen.kept`, not a `Section` per group.** A
-`ForEach` per `Section` would hand `.onMove` an offset counted within that section, and the shell
-would then have to convert it into an offset over the whole drawn list — a line that can be wrong in
-a way a test would catch, which is the one thing ADR-1019's guard forbids. So the group's category
-is drawn as a header row inside the same `ForEach`, and the offset passes through untouched exactly
-as it does today. Whether SwiftUI's `.onMove` can cross a `Section` at all is therefore not a
-question this design has to answer, and `tasks.md` § 9 does not ask it.
+**The kept list becomes a `Section` per group**, each with its category as the section's header and
+the group with no category as a section with none, each holding one `ForEach` over that group's
+commitments with `.onMove` attached. **This reverses what this section said before 2026-09-08**, and
+the reversal is settled answer 24's: the flat `ForEach` was chosen to keep `.onMove`'s offset
+counted over the whole drawn list, and that list is the thing that made the end of a group
+unreachable.
 
-**The stopped list keeps its `Section` and gains nothing**, which is what makes "the stopped list is
-not grouped" true on a phone rather than only in a requirement.
+**Nothing crosses the seam to buy it.** `.onMove` is declared on `DynamicViewContent`, so the `Int`
+it hands a section's `ForEach` is already counted over that group's own entries — the shape
+`CommitmentsScreen.move(_:toOffset:under:)` now takes. The shell passes it untouched, beside the
+section's own identity, which is the `Roster.Group` it is drawing and not something it worked out.
+That is **less** arithmetic than the flat arrangement, which had to build a map of drawn offsets to
+know which entry each heading sat above; a shell that computes nothing cannot compute it wrongly,
+which is ADR-1019's guard read forwards.
 
-**The drag mark is the one shell box that may end in a report instead of a line of code**, and
-§ *The mark a live drag leaves* is why: the kit's answer is tested at the seam, and whether SwiftUI
-will hand the shell a live offset without arithmetic crossing the seam is measured at `tasks.md`
-§ 9.6 rather than assumed here.
+**Two things the phone found are drawn right by this arrangement and are not requirements** —
+`grill.md` § *Settled* 25, recorded so nobody solves them twice:
+
+- **The heading no longer drags with its row.** It dragged because a heading and its row were one
+  `ForEach` element; a section header is outside the `ForEach` entirely and there is no gesture that
+  can pick it up. Nothing has to be written to get this, and `.moveDisabled` is not the answer to it.
+- **There is a visible boundary before the commitments under no category, on both screens.** A
+  `Section` with no header still draws a section break in a grouped `List`, so the last category ends
+  somewhere a person can see. **No heading is invented for that group** — settled answer 11 stands,
+  and what was missing was a boundary and not a name.
+
+**`ContentView.swift` takes the same shape for the same second reason.** The day view's groups become
+a `Section` each, header where there is a category and none where there is not, which is where the
+day screen's half of that boundary comes from; it has no drag, so the first defect never reached it.
+Two things to keep: a row's identity must stay stable across a tap — the offset within its own
+group's `ForEach` is, exactly as the flat offset was — and the day view's `rows` stays the flat read
+across the groups for everything else that uses it.
+
+**The stopped list keeps its own single `Section` and gains nothing**, which is what makes "the
+stopped list is not grouped" true on a phone rather than only in a requirement. It is now one section
+among several rather than the second of two, so it wants a header that says so.
+
+**One thing about this arrangement is not yet known, and it is § *Questions for you* 1.** `.onMove`
+names one collection, so a drag that starts in one section may well not be deliverable into another
+— which would leave settled answers 14 and 15 specified, tested at the seam, and unreachable by drag
+on the phone until a Story rewrites the gesture. `tasks.md` § 9.5 measures it at the walkthrough and
+**stops** rather than reaching for a custom `draggable`/`dropDestination` drag, which would put
+"which row am I over" in `CommitmentsView.swift` and is the one thing ADR-1019's guard forbids.
 
 ### The day view is handed its groups, and `CONTEXT.md` is corrected
 
@@ -374,7 +414,7 @@ correcting one is worth a paragraph.
   failure shows up at `openspec validate --strict`. `tasks.md` § 1.3 measures it before anything is
   written and § 10.3 re-measures it before the review. **The cheapest order is to merge #158 first**,
   and that is a recommendation to the owner rather than a decision this Story can take.
-- **The delta is the largest this repo has shipped — 214 scenarios, 129 of them carried verbatim.**
+- **The delta is the largest this repo has shipped — 206 scenarios, 129 of them carried verbatim.**
   → Unavoidable at this scope: `openspec` replaces a MODIFIED requirement whole, and twelve
   `commitment` requirements have a sentence that is false once a category exists. The saving that
   was available has been taken — § *The stale titles* names the three requirements deliberately not
@@ -392,17 +432,24 @@ correcting one is worth a paragraph.
   is the price of "a group sits where its first commitment sits". Uncategorised-first and
   alphabetical groups were both offered at the grill and declined.
 - **A drag alone can never lift one group above another, and this Story accepts that** — settled
-  answer 22. Dragging every row of "Sport" above "Supplements" dissolves "Sport" instead of lifting
-  it, because each of those drops joins the group it lands in. What does work is two steps: drag the
-  row into place, then set its category back with the field, which changes no order. → Possible and
-  not discoverable, and the answer is settled answer 23's own Story, taken straight after this one.
-  It is recorded here and **not designed for**: nothing in this delta anticipates it, and the
-  grouping rule written here is what that Story will be grilled against.
-- **The mark may have nowhere to be drawn on the phone in this Story.** SwiftUI publishes no
-  in-flight destination for a `List` reorder — measured, § *The mark a live drag leaves*. → The kit
-  answers regardless and the requirement is tested at the seam; `tasks.md` § 9.6 measures the shell
-  side and stops rather than moving arithmetic across the seam to get it. Worth knowing at G4: this
-  is the one part of the Story whose visible result is not guaranteed.
+  answer 22. What does work is two steps: drag the row into place, then set its category back with
+  the field, which changes no order. → Possible and not discoverable, and the answer is settled
+  answer 23's own Story, taken straight after this one. It is recorded here and **not designed
+  for**: nothing in this delta anticipates it, and the grouping rule written here is what that Story
+  will be grilled against.
+- **A drag may not be able to leave its section, which would make settled answers 14 and 15
+  unreachable on the phone in this Story.** `.onMove` names one collection and the SDK publishes no
+  overload that names two — § *Context*. → § *Questions for you* 1 puts it to the owner, `tasks.md`
+  § 9.5 measures it at the walkthrough, and the requirement is true and tested at the seam either
+  way. Worth knowing at G4: this is the one part of the Story whose visible result is not guaranteed,
+  and the reason it is here at all is that the arrangement that guaranteed it is the one that made
+  the end of a group unreachable.
+- **This delta has been rewritten once after implementation, and the second G4 is the price.**
+  Settled answer 24 reversed a seam rule the owner had already approved, after seeing it on the
+  phone. → Taken deliberately, and cheap by comparison: what changes is one signature, one
+  requirement's prose, six scenario bodies, two scenario titles and a requirement that is deleted
+  rather than rewritten into a tautology. Every carried scenario and every other requirement in the
+  delta is untouched.
 - **The form-4 shape guard rests on a `Codable` detail.** `contains(key)` telling `null` from absent
   is measured, not remembered, and the measurement is in § *Context*. → If it stops holding, the
   guard silently weakens rather than failing loudly, so `tasks.md` § 5 writes the two refusal
@@ -412,17 +459,25 @@ correcting one is worth a paragraph.
 
 ## Open Questions
 
-**None.** `grill.md` § *Left open* named three and the residual round asked two more; all five are
-settled, and the two residual questions were answered by the owner on 2026-09-08, both on the
-recommendation. What each one settled to:
+**One is outstanding — § *Questions for you* 1, raised on 2026-09-08 and about what the shell can
+draw rather than about what the delta says.** The rest are settled: `grill.md` § *Left open* named
+three, the residual round asked two more, and settled answer 24 has since reversed the first of
+those. What each one settled to:
 
-1. **A drop on the seam between two groups joins the group *below*.** Residual question 1, answered
-   on the recommendation: a row takes the category of the entry it comes to stand before, and of the
-   last entry drawn when it goes to the end. The seam stays the single offset `add-roster-order`
-   fixed and the shell converts nothing. The cost is one unreachable slot — a row already last in
-   "Supplements" cannot be dropped onto the very top of "Sport", because that offset is one of the
-   two that mean "where you picked it up" — and it is reached in two drops instead. § *The offset a
-   screen takes is over what it draws* carries the rule.
+1. **A drop carries the group it landed in — reversed 2026-09-08, and the answer it replaces is left
+   standing here on purpose.** Residual question 1 was answered on my recommendation: a drop on the
+   seam between two groups joins the group *below*, the offset stays the single one
+   `add-roster-order` fixed, and the cost was priced as "one unreachable slot, reached in two drops
+   instead". **That price was wrong.** The unreachable offset is the end of a group, so a person
+   could not append a row to a group at all — every drop meant for the bottom of Supplements landed
+   in Sport. The owner found it by hand at the § 9.5 walkthrough (`grill.md` § *Settled* 24) and
+   reversed it: the offset is now counted inside the group the drop landed in, and the drop carries
+   that group's category. § *The offset a screen takes is over the group it was dropped in* carries
+   the rule, § *What the mark was for, and what draws it now* carries what it takes out with it, and
+   `grill.md` § *Left open* 4 says why settled answer 14 and residual answer 1 are left standing in
+   that file rather than edited. **The lesson is the pricing and not the choice**: "one unreachable
+   slot" was counted as a slot when it was a *kind* of slot, one per group, and the one a person
+   reaches for most.
 2. **The form offers the categories the commitments the screen is *keeping* are under**, and not
    ones only a stopped commitment carries. Residual question 2, answered on the recommendation. The
    offering exists so a typed word lands on an existing heading, the stopped list draws no headings,
@@ -446,7 +501,32 @@ recommendation. What each one settled to:
    which is the first act in this product that would move more than one commitment at once. That
    needs a grill of its own, against the grouping rule written here.
 
-Two things are settled but not yet *known*, and neither is a question for the owner. Whether the app
-shell can draw the drag mark at all is a measurement with a stop (§ *The mark a live drag leaves*,
-`tasks.md` § 9.6), and whether `add-number-entry` (#139) lands on `day-screen` first is a fact the
-implementer re-measures at `tasks.md` § 1.3.
+One thing is settled but not yet *known*, and it is not a question for the owner: whether
+`add-number-entry` (#139) lands on `day-screen` first is a fact the implementer re-measures at
+`tasks.md` § 1.3.
+
+## Questions for you
+
+One question, raised while rewriting the delta for settled answer 24 and outstanding at the time
+this was written. **The delta is written on the recommended answer** and does not change either way;
+what changes is `tasks.md` § 9 and what you should expect to see at the next walkthrough.
+
+1. **A `Section` per group probably costs the cross-group drag.** `.onMove` is declared on
+   `DynamicViewContent` and its `IndexSet` and `Int` are both over one `ForEach`'s own data
+   (`iPhoneOS26.5.sdk`, `SwiftUI.swiftinterface:10353`); no overload names two collections. So a
+   drag that starts in the Supplements section may simply not be deliverable into the Sport one, and
+   settled answers 14 and 15 — a drop into another group files it there, a drop among the
+   uncategorised clears it — would be reachable at the seam and by the category field, but not by
+   dragging. It could not have been asked before, because it only exists once the shell is fixed as
+   a `Section` per group, which is what the reversal fixed it as.
+   - *Recommended:* **take it.** The defect you reported is the one being fixed and it is fixed
+     either way; refiling already has a one-tap route on the row; and the gesture that would restore
+     the cross-group drag is a custom `draggable`/`dropDestination` drag, which is a shell rewrite
+     with arithmetic in it, an ADR-1019 question, and naturally part of settled answer 23's
+     draggable-group-heading Story rather than this one.
+   - *If you say the cross-group drag has to work in this Story:* nothing in the delta moves — the
+     requirement is written the same way whichever gesture drives it — but `tasks.md` § 9 grows a
+     shell rewrite, ADR-1019's guard has to be re-argued for it, and the Story stops being one an
+     implementer can finish from the delta alone.
+   - *Either way:* `tasks.md` § 9.5 measures it on the phone and reports what it found, and a
+     surprise there is a stop and not a quiet fix.

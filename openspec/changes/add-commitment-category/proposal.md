@@ -43,18 +43,17 @@ left to infer one.
 - **Its kept list is drawn in groups; its stopped list is not.** The stopped list is one flat list,
   as today, because it is not what a person reads daily and grouping would double the structure of
   the list that needs it least.
-- **The drag now means two things.** A row dropped into another group's block is moved to where it
-  was dropped **and** put under that group's category; a row dropped among the commitments under no
+- **The drag now means two things.** A row dropped into another group is moved to where it was
+  dropped **and** put under that group's category; a row dropped among the commitments under no
   category is moved and has its category taken off. One gesture doing what it looks like it does. So
-  a commitments screen's offset is counted over **what it draws** — the grouped list — and the
-  screen turns that into the roster's own offset and the category, which is the one conversion this
-  change adds and it is behind the seam.
-- **While a drag is live, the screen answers which group the row would land under**, and nothing is
-  drawn for that answer today: a live drag publishes no destination the app shell could read, so the
-  group a drop would join is known and not yet shown. It is the same arithmetic the drop itself
-  uses, read instead of acted, so the answer can never promise something the drop then does not do.
-  It exists because a drop on the seam between two groups joins the one below, which is a rule that
-  had to pick a side and which a person cannot see until they have let go.
+  a commitments screen's move takes **the group the drop landed in** and an offset counted over the
+  entries drawn **in that group**, and turns the two into the roster's own offset and the
+  commitment's category — the one conversion this change adds, and it is behind the seam.
+- **Counting the offset inside the group is what makes the end of a group reachable**, and it is a
+  reversal made on the phone on 2026-09-08 (`grill.md` § *Settled* 24). Over the whole drawn list
+  the place after a group's last row and the place before the next group's first row are one offset,
+  so one of the two has to be unreachable — and it was the end of the group, which meant a row could
+  not be appended to a group at all.
 - **The form's category wins when a commitment is defined again.** Taking a stopped or a removed
   commitment up again *through the form* takes the category typed on the form, including none;
   taking one up again from the stopped list in one tap asks for nothing and so keeps the category it
@@ -79,9 +78,9 @@ None.
 - `commitment`: the roster holds a category against each commitment, puts a commitment under one,
   and reads its commitments back in groups; the roster store keeps the category at a fourth form
   and reads all three earlier forms; the commitments screen draws its kept list in groups, offers
-  the categories in use, gives and takes off a category, counts a move's offset over what it draws,
-  says which group a drop at an offset would join, and holds a refused category change as its sixth
-  kind. Three requirements are added and twelve are modified.
+  the categories in use, gives and takes off a category, counts a move's offset over the group the
+  drop landed in, and holds a refused category change as its sixth kind. Three requirements are
+  added and twelve are modified.
 - `day-screen`: a day view is handed its commitments in groups, draws them in the order it was
   handed them, and draws no group with nothing due on the date; a day screen hands over the groups
   its roster answers with. One requirement is added and two are modified.
@@ -90,13 +89,14 @@ None.
 
 - `src/DayByDayKit/Sources/DayByDayKit/` — `Roster` (a category on its entry, `put`, `groups`,
   and a category on `move`), `RosterDocument` (form 4, a `category` field), `RosterStore`,
-  `CommitmentsScreen` (which also answers where a drop would land), `DayView`, `DayScreen`. Three
-  new nested types — `Roster.Group`, `DayView.Group` and `CommitmentsScreen.Landing`. No new file.
+  `CommitmentsScreen` (whose move takes a group as well as an offset), `DayView`, `DayScreen`. Two
+  new nested types — `Roster.Group` and `DayView.Group`. No new file.
 - `src/DayByDay/DayByDay/CommitmentsView.swift` and `ContentView.swift` — the category field, the
-  categories offered, and both grouped lists, under ADR-1019's exception. **The drag mark is the one
-  shell task that may end in a report rather than a line**: SwiftUI publishes no in-flight
-  destination for a `List` reorder — measured — so `tasks.md` § 9.6 finds out and stops rather than
-  moving the drop arithmetic into the shell to get there.
+  categories offered, and both grouped lists drawn as a `Section` per group, under ADR-1019's
+  exception. The shell passes each section's own identity and `.onMove`'s offset untouched, and
+  computes nothing. **Whether a drag can leave its section is the one shell question this Story
+  cannot answer from a header file**: `design.md` § *Questions for you* 1 puts it to the owner and
+  `tasks.md` § 9.5 measures it on the phone.
 - `docs/adr/` — **ADR-1038** written, and **ADR-1031 amended in place** on the trigger it named
   itself. **Not** amended: ADR-1030 (the kind is still the commitment's fourth part and still never
   changes; ADR-1038 says why a category is not a fifth), ADR-1037 (a move still changes the order
