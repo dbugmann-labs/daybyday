@@ -232,6 +232,7 @@ public struct DayView: Hashable, Sendable {
                     Row(
                         commitment: $0, date: date, isKept: history.isKept($0, on: date),
                         number: history.number(for: $0, on: date),
+                        note: history.note(for: $0, on: date),
                         total: history.total(for: $0, on: date))
                 }
             guard !rows.isEmpty else {
