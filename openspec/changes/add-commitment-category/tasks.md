@@ -40,7 +40,7 @@
   (rule 1). **Stop and report it**; do not refresh the delta and carry on. It is not a git conflict
   and the rebase will look clean, which is exactly why this box exists.
 
-- [ ] 1.4 **This delta was rewritten after it was first implemented, and § 7 and § 9 are where.**
+- [x] 1.4 **This delta was rewritten after it was first implemented, and § 7 and § 9 are where.**
   On 2026-09-08 the owner ran the § 9.5 walkthrough on the phone and reversed the seam rule of
   `design.md` § *Open Questions* 1 (`grill.md` § *Settled* 24): a drop now carries the group it
   landed in, and `CommitmentsScreen.move` takes that group as well as an offset counted inside it.
@@ -256,45 +256,45 @@ default — a defaulted `nil` would read as "leave the category alone" and mean 
 **§ 7.0 first, then the rest.** The boxes below were all ticked once against the reversed rule and
 have been unticked; what was written for them is a starting point and not an answer.
 
-- [ ] 7.0 **Take `landing(dropping:at:)` and the `Landing` enum out of `CommitmentsScreen`, and
+- [x] 7.0 **Take `landing(dropping:at:)` and the `Landing` enum out of `CommitmentsScreen`, and
   delete the nine tests that drove them** — the ones named in `design.md` § *What the mark was for,
   and what draws it now*. The requirement they belonged to is out of the delta, so a test carrying
   one of those names is a test with no scenario behind it and `pnpm run checks` will say so. Delete
   rather than adapt: the rule they read is the rule that was reversed.
-- [ ] 7.1 `an offset a commitments screen is given is counted over the group a drop landed in and not
+- [x] 7.1 `an offset a commitments screen is given is counted over the group a drop landed in and not
   over the roster's own order` — **the scenario that pins the conversion, and a rename**: it was
   `… counted over what it draws and not over the roster's own order` and the test behind it must be
   renamed with it. Write it first; the two other orderings a reader might assume both fail it. Its
   last clause is the boundary that most needs pinning — an offset the whole drawn list has and the
   group does not is an offset the screen does not have.
-- [ ] 7.2 `a commitment dropped among another group's entries is put under that group's category` —
+- [x] 7.2 `a commitment dropped among another group's entries is put under that group's category` —
   settled answer 14. One drag, two changes, one write. Title unchanged; the call gains its group.
-- [ ] 7.3 `a commitment dropped among the entries under no category has its category taken off` —
+- [x] 7.3 `a commitment dropped among the entries under no category has its category taken off` —
   settled answer 15, and the only drag that undoes a drag. Title unchanged, and the offset is now
   counted over the group under no category rather than over the whole list.
-- [ ] 7.4 `a commitment dropped after the last entry of a group is drawn at the end of that group` —
+- [x] 7.4 `a commitment dropped after the last entry of a group is drawn at the end of that group` —
   **the reversal's own scenario, and a rename**: it was `a commitment dropped past the last entry
   drawn takes the last group's category`, and the test behind it must be renamed with it. This is
   the slot the old rule made unreachable and the defect the owner reported. Assert both halves: the
   row lands at the end of the group it was dropped in, **and** it is not under the group drawn
   immediately after it.
-- [ ] 7.5 `a drop where a commitment is already drawn changes neither its place nor its category` —
+- [x] 7.5 `a drop where a commitment is already drawn changes neither its place nor its category` —
   the carve-out, now entirely inside the row's own group. Asserted byte-for-byte on the file, because
   nothing may be written. Title unchanged.
-- [ ] 7.6 `a commitments screen asked to move a commitment into a group it draws none of does nothing
+- [x] 7.6 `a commitments screen asked to move a commitment into a group it draws none of does nothing
   and says nothing` — **new**, and the case the third argument creates: a category nothing kept is
   under, and no category at all where everything kept is under one. Byte-for-byte on the file again.
   It must not answer by making the group.
-- [ ] 7.7 `dragging a group's only entry into another group leaves one heading fewer` — the
+- [x] 7.7 `dragging a group's only entry into another group leaves one heading fewer` — the
   consequence named in the requirement: a group whose first commitment leaves is drawn somewhere
   else, and a group with nothing left in it is not drawn at all. Title unchanged.
-- [ ] 7.8 Re-run the twelve carried scenarios under § *A commitments screen moves a commitment among
+- [x] 7.8 Re-run the twelve carried scenarios under § *A commitments screen moves a commitment among
   the ones it keeps* and confirm each is still green with **no assertion and no title changed** —
   only `under: nil` added to each `move` call. They all describe a roster with nothing under a
   category, where the one group is the whole drawn list, so they should be. **A carried move scenario
   that goes red is a stop and a report**: it would mean the conversion is wrong in the case where
   there is nothing to convert.
-- [ ] 7.9 Confirm by reading `CommitmentsScreen.move` that `refusedChange = nil` is still written
+- [x] 7.9 Confirm by reading `CommitmentsScreen.move` that `refusedChange = nil` is still written
   only where the store actually kept something. The comparison moves in this change — the roster it
   is compared against now differs in a category as well as in an order — and the two carried
   scenarios that pin it (*what a commitments screen holds about a refused change ends when a move is
@@ -347,7 +347,7 @@ written and is in `design.md` § *Context*: **ADR-1019 stands untouched and no r
 because `dropDestination` hands the shell an index and the shell already holds the group. Nothing
 below computes anything, and § 9.1's stop says what to do if that stops being true.
 
-- [ ] 9.0 `CommitmentsView.swift` — add the drag payload, a shell-local
+- [x] 9.0 `CommitmentsView.swift` — add the drag payload, a shell-local
   `struct DraggedRow: Codable, Transferable` holding **the source section's `category: String?` and
   the row's `offset: Int` within that section's `ForEach`** — two values the shell is handed when it
   draws the row, and no third. A `Commitment` cannot be the payload: `.draggable` needs
@@ -358,7 +358,7 @@ below computes anything, and § 9.1's stop says what to do if that stops being t
   `screen.keptGroups.first { $0.category == dragged.category }?.commitments[dragged.offset]`,
   **guarded against an offset the group no longer has**, returning nothing rather than clamping.
   A lookup that finds nothing does nothing and says nothing.
-- [ ] 9.1 `CommitmentsView.swift` — draw the kept list as **a `Section` per group over
+- [x] 9.1 `CommitmentsView.swift` — draw the kept list as **a `Section` per group over
   `screen.keptGroups`**: the category as the section's header, no header on the group with none, and
   one `ForEach` per section over that group's commitments carrying **three** things — `.draggable`
   on each row with § 9.0's payload, and `.onMove` and `.dropDestination(for: DraggedRow.self)` on
@@ -383,7 +383,7 @@ below computes anything, and § 9.1's stop says what to do if that stops being t
   `screen.put(_:under:)`, and add the sixth `RefusedChange` case to the existing refusal rendering
   beside `.stopping`, `.keepingAgain`, `.removing` and `.moving`, using `refusalText` unchanged. No
   new sentence is invented here.
-- [ ] 9.4 `ContentView.swift` — draw the day view's `groups` as **a `Section` each**, the category as
+- [x] 9.4 `ContentView.swift` — draw the day view's `groups` as **a `Section` each**, the category as
   the header and no header on the group with none, and **delete `groupHeadings`** for the same
   reason § 9.1 deletes its twin. The tick behaviour on a row does not change, and neither does the
   reason its `ForEach` is keyed on position rather than on the row's value: the offset within its own
@@ -452,12 +452,12 @@ boxes below confirm rather than write, and each is tickable while reading what i
 
 ## 11. Before the review, and what the janitor does at the archive
 
-- [ ] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 705: the 628
+- [x] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 705: the 628
   `85ca63b` carries — § 11.3's rebase moved the base there from `f8236be`'s 580 — plus the 77
   scenarios above. **That is eight fewer than the 713 this box asked for before 2026-09-08**: nine
   mark tests are deleted at § 7.0 and one is added at § 7.6. From the repo root, `pnpm run verify`
   green and `pnpm run checks` reporting `206/206 scenario(s) covered`.
-- [ ] 11.2 `openspec validate add-commitment-category --strict` exits 0, and `openspec validate --all
+- [x] 11.2 `openspec validate add-commitment-category --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [ ] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-commitment-category/` or anywhere under `openspec/specs/` is a **stop**, not
