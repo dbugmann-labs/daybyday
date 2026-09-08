@@ -107,7 +107,7 @@ it — that is the one thing this Story exists to prevent.
   if the button is hidden everywhere. **That assertion goes red the moment 4.1 lands**, which is
   expected and is the whole reason this box exists; ADR-1029's rule that this layer says nothing about
   *what* was drawn is unchanged, and no second assertion is added.
-- [ ] 4.4 Walk it on the phone: `pnpm run phone`. Confirm five things and report anything else you
+- [x] 4.4 Walk it on the phone: `pnpm run phone`. Confirm five things and report anything else you
   find rather than fixing it here — today has no *Today* button; a day back has one and it returns;
   a future day's rows are drawn, say what they say, and do not respond to a tap; a past day's rows
   still tick, enter and take back exactly as before; and **the horizontal swipe still moves the day
@@ -117,27 +117,44 @@ it — that is the one thing this Story exists to prevent.
   does, stop and report it — ADR-1042 says that gesture is the screen's permanently, and a Story that
   quietly narrowed it would be the wrong place to find out.
 
+  **Method, said plainly.** `pnpm run phone` built, installed and launched on the paired
+  `DiegoiPhone`. The five confirmations themselves were driven and screenshotted on the Simulator,
+  against the identical `ContentView.swift`, through a throwaway `scratchWalkthrough` XCUITest
+  method written, run and then deleted (never committed — `git diff --stat` shows
+  `WalkthroughUITests.swift` unchanged by this box). An agent has no way to operate a physical
+  device's touchscreen; the Simulator run is the substitute and is named here rather than left
+  implied. All five held: today drew no *Today* button; a day back drew one and tapping it
+  returned and hid it again; a future day's rows drew (name, rhythm, no checkmark) and a tap on
+  one changed nothing and opened no sheet; swiping three more days into the future — every row
+  along the way offering nothing — still moved the day each time; and moving back onto a past day
+  restored the tappable (blue) rows, where a tap ticked one as before. One incidental, unplanned
+  and worth naming rather than fixing here: a row that stops being a `Button` also stops taking
+  the List's default blue tint, so an offering row reads blue and a non-offering one reads the
+  primary black — nothing in this Story's diff sets that color, it is `List`'s own default styling
+  for a `Button` label versus plain content, and it happens to read as a small, unplanned bonus
+  toward "only the tap goes" rather than against it.
+
 ## 5. The records
 
 **Nothing is written under `docs/` or in `CONTEXT.md` by this Story**, and that is a decision rather
 than an omission (`grill.md` § *Settled* 10, § *Terms landed in CONTEXT.md*). These boxes confirm
 rather than write, and each is tickable while reading what is already there:
 
-- [ ] 5.1 Confirm `CONTEXT.md` § *Offered* still describes what shipped — a control offered when the
+- [x] 5.1 Confirm `CONTEXT.md` § *Offered* still describes what shipped — a control offered when the
   screen can honour it, a screen drawing as a target only what it offers, the row that stays while its
   tap goes, and the chevrons at the calendar's two ends left drawn. If the implementation needed a
   rule that paragraph does not carry, that is a **stop and a G4 question**, not an edit to slip in.
-- [ ] 5.2 Confirm no ADR was written or amended by this branch:
+- [x] 5.2 Confirm no ADR was written or amended by this branch:
   `git diff --stat origin/main... -- docs/` reports nothing under `docs/adr/`. ADR-1019 and ADR-1029
   are **used** here, not amended — the shell work is exactly the first's 2026-09-04 exception and the
   walkthrough change is exactly the second's one-tap smoke assertion. If either needed amending, stop
   and report it.
-- [ ] 5.3 Confirm `openspec/specs/day-screen/spec.md` was not hand-edited on this branch (rule 2):
+- [x] 5.3 Confirm `openspec/specs/day-screen/spec.md` was not hand-edited on this branch (rule 2):
   `git diff --stat origin/main... -- openspec/specs/` reports nothing.
-- [ ] 5.4 Leave `docs/backlog.md` alone. B-028 and B-035 are both answered by this Story, and moving a
+- [x] 5.4 Leave `docs/backlog.md` alone. B-028 and B-035 are both answered by this Story, and moving a
   want to *Decided* is a grooming pass's act rather than a Story branch's. Confirm neither has been
   moved by this branch before the review.
-- [ ] 5.5 Leave `docs/open-questions.md` alone, and **carry its text into the hand-back instead**.
+- [x] 5.5 Leave `docs/open-questions.md` alone, and **carry its text into the hand-back instead**.
   `grill.md` § *Left open* settles that *the shell reads its own clock per row while the screen holds
   a today it was handed* belongs there as an open technical decision; `docs/open-questions.md` is
   written by neither `spec-author` nor `implementer` (`AGENTS.md` § *Agent roles and model routing*),
@@ -149,12 +166,12 @@ rather than write, and each is tickable while reading what is already there:
 
 ## 6. Before the review, and what the janitor does at the archive
 
-- [ ] 6.1 `cd src/DayByDayKit && swift test` — every test green, and the count is **902**: 885 at
+- [x] 6.1 `cd src/DayByDayKit && swift test` — every test green, and the count is **902**: 885 at
   `264c5a7` plus the seventeen scenarios of § 2 and § 3. A count that comes back different is a
   **stop** (rule 5), not a number to write down — it would mean a test was renamed or removed by a box
   above, which § 1.1 forbids. From the repo root, `pnpm run verify` green and `pnpm run checks`
   reporting `20/20 scenario(s) covered`.
-- [ ] 6.2 `openspec validate add-offered-today-control --strict` exits 0, and `openspec validate --all
+- [x] 6.2 `openspec validate add-offered-today-control --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [ ] 6.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-offered-today-control/` or anywhere under `openspec/specs/` is a **stop**, not
