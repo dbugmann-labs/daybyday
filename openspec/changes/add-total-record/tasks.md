@@ -310,7 +310,7 @@ the sum, and a rule read off the first accepts exactly the case it exists to ref
   Together with 11.2 these two are the whole rule, and neither alone pins it.
 - [x] 11.4 `an amount of zero or below is refused and told on the row` — three amounts, each leaving
   the day's additions standing, and the cause "Must be more than 0", word for word.
-- [ ] 11.5 `an amount that is not above zero is told on the row, saying so` — from the MODIFIED
+- [x] 11.5 `an amount that is not above zero is told on the row, saying so` — from the MODIFIED
   § *A day screen tells on the row that was tapped that a change could not be kept*: the cause is
   told on the row committed on last and on no other, which is what 11.4 does not pin.
 - [ ] 11.6 `an amount too large to add to the day is told on the row, saying so` — the cause "Too

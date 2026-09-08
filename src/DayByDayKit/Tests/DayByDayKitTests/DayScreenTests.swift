@@ -5000,6 +5000,34 @@ func takingBackWritesNothingToTheRostersPlace() throws {
 }
 
 @MainActor
+@Test("an amount that is not above zero is told on the row, saying so")
+func anAmountThatIsNotAboveZeroIsToldOnTheRowSayingSo() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let water = Commitment(
+        name: "Water", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(2)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [protein, water], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    try screen.enter("0", on: screen.dayView.rows[0])
+
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(screen.notice?.cause == "Must be more than 0")
+
+    try screen.enter("-1", on: screen.dayView.rows[1])
+
+    #expect(screen.notice?.row == screen.dayView.rows[1])
+    #expect(screen.notice?.cause == "Must be more than 0")
+}
+
+@MainActor
 @Test("a commit on a note row for a day that has not arrived is told nothing on the row")
 func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
     let (place, rosterPlace) = freshPlaces()
