@@ -281,9 +281,11 @@ public final class DayScreen {
     /// already removed — and gives back the count of significant digits that spelling holds: the
     /// whole part with its leading zeros dropped, a full stop where a `.` or `,` was typed, the
     /// fraction with its trailing zeros dropped, and no separator where nothing is left after it.
-    /// The count is read off that same stripping, not off `digits` directly, because a leading
-    /// zero the whole part loses can still open the fraction (`"0.08"` holds one significant
-    /// digit, not two).
+    /// The count is `Digits.stripped(whole:fraction:)`'s, read off that same stripping and not
+    /// off `digits` directly, because a leading zero the whole part loses can still open the
+    /// fraction (`"0.08"` holds one significant digit, not two) — `Digits` is where this counting
+    /// is decided, so this and `Digits.significant(in:)` cannot drift apart on what a significant
+    /// digit is.
     ///
     /// `design.md` § *A number this system cannot keep exactly is not a number here*: a count
     /// above thirty-eight is a value that is not a number, and a count of zero is answered as
@@ -295,29 +297,15 @@ public final class DayScreen {
     private static func writtenOut(_ digits: Substring) -> (text: String, significantDigits: Int) {
         let parts = String(digits).replacingOccurrences(of: ",", with: ".")
             .split(separator: ".", omittingEmptySubsequences: false)
-        var whole = parts[0]
-        var fraction = parts.count > 1 ? parts[1] : Substring()
-        while whole.first == "0" {
-            whole.removeFirst()
-        }
-        while fraction.last == "0" {
-            fraction.removeLast()
-        }
-
-        var counted = String(whole) + String(fraction)
-        while counted.first == "0" {
-            counted.removeFirst()
-        }
-        while counted.last == "0" {
-            counted.removeLast()
-        }
-        guard !counted.isEmpty else {
+        let stripped = Digits.stripped(
+            whole: parts[0], fraction: parts.count > 1 ? parts[1] : Substring())
+        guard stripped.significantDigits > 0 else {
             return ("0", 0)
         }
 
-        let head = whole.isEmpty ? "0" : String(whole)
-        let text = fraction.isEmpty ? head : head + "." + String(fraction)
-        return (text, counted.count)
+        let head = stripped.whole.isEmpty ? "0" : String(stripped.whole)
+        let text = stripped.fraction.isEmpty ? head : head + "." + String(stripped.fraction)
+        return (text, stripped.significantDigits)
     }
 
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds

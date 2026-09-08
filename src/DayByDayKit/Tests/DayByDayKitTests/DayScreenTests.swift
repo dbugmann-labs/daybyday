@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-import DayByDayKit
+@testable import DayByDayKit
 
 /// A fresh pair of places under one fresh temporary directory — a record file and a roster file
 /// beside it — so tests are independent and need no teardown: a UUID names the directory, and
@@ -3280,6 +3280,35 @@ func aNumberTooLongToBeKeptExactlyKeepsNothingAndTakesNothingBack() throws {
     let later = DayScreen(
         startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     #expect(later.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+}
+
+/// Below `DayScreen`'s public seam (AGENTS.md rule 3 — free-form unit test below the seam, traces
+/// to nothing in `specs/day-screen/spec.md`): `Digits.significant(in:)` and the significant-digit
+/// count a typed value is read with (`read(_:)`, behind `writtenOut(_:)`) now share one algorithm
+/// — G7 review finding 3 on this Story's PR — so this pins the two to agreeing on the value that
+/// exposed their drift before the fix: 10^38 holds one significant digit, not thirty-nine.
+@MainActor
+@Test("Digits.significant(in:) and a typed value's own significant-digit count agree on 10^38")
+func digitsSignificantAndATypedValuesOwnSignificantDigitCountAgreeOnTenToTheThirtyEighth() throws {
+    let oneFollowedByThirtyEightZeros = "1" + String(repeating: "0", count: 38)
+    let decimal = try #require(Decimal(string: oneFollowedByThirtyEightZeros))
+    #expect(Digits.significant(in: decimal) == 1)
+
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter(oneFollowedByThirtyEightZeros, on: screen.dayView.rows[0])
+
+    #expect(
+        screen.dayView.rows[0].numberEntry(asOf: monday)?.number?.description
+            == oneFollowedByThirtyEightZeros)
+    #expect(screen.notice == nil)
 }
 
 @MainActor

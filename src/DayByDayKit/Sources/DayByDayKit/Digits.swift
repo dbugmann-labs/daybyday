@@ -16,8 +16,23 @@ enum Digits {
         }
 
         let parts = digits.split(separator: ".", omittingEmptySubsequences: false)
-        var whole = parts[0]
-        var fraction = parts.count > 1 ? parts[1] : Substring()
+        let whole = parts[0]
+        let fraction = parts.count > 1 ? parts[1] : Substring()
+        return stripped(whole: whole, fraction: fraction).significantDigits
+    }
+
+    /// The one counting step behind `significant(in:)` above and `DayScreen.writtenOut(_:)`:
+    /// strips `whole`'s leading zeros and `fraction`'s trailing zeros, then counts what is left
+    /// of the two joined together once *its own* leading and trailing zeros are stripped too — a
+    /// whole number's own trailing zeros do not count on their own (10^38 holds one significant
+    /// digit, not thirty-nine). Read off `whole` and `fraction` exactly as each caller split
+    /// them — a `Decimal`'s own description there, an already-validated typed text here — so the
+    /// two callers can never drift apart on what counts as a significant digit.
+    static func stripped(
+        whole: Substring, fraction: Substring
+    ) -> (whole: Substring, fraction: Substring, significantDigits: Int) {
+        var whole = whole
+        var fraction = fraction
         while whole.first == "0" {
             whole.removeFirst()
         }
@@ -33,7 +48,7 @@ enum Digits {
             counted.removeLast()
         }
 
-        return counted.count
+        return (whole, fraction, counted.count)
     }
 
     /// Whether a day that has so far taken `soFar` may take `amount` too, judged on the sum
