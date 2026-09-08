@@ -1783,3 +1783,43 @@ func twoHistoriesHoldingOneDaysAdditionsInDifferentOrdersAreDifferentHistories()
     #expect(first.total(for: protein, on: monday) == 75)
     #expect(second.total(for: protein, on: monday) == 75)
 }
+
+@Test("a history holds ticks, numbers, notes and additions side by side and answers each on its own")
+func aHistoryHoldsTicksNumbersNotesAndAdditionsSideBySideAndAnswersEachOnItsOwn() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    history.add(Number(70.5, for: weight, on: monday)!)
+    history.add(Note("Ran 8k.", for: journal, on: monday)!)
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+
+    #expect(history.total(for: gym, on: monday) == 0)
+    #expect(history.isKept(gym, on: monday))
+    #expect(history.number(for: weight, on: monday) == 70.5)
+    #expect(history.total(for: weight, on: monday) == 0)
+    #expect(history.isKept(weight, on: monday))
+    #expect(history.note(for: journal, on: monday) == "Ran 8k.")
+    #expect(history.total(for: journal, on: monday) == 0)
+    #expect(history.isKept(journal, on: monday))
+    #expect(history.total(for: protein, on: monday) == 120)
+    #expect(history.number(for: protein, on: monday) == nil)
+    #expect(history.note(for: protein, on: monday) == nil)
+    #expect(history.isKept(protein, on: monday))
+
+    history.remove(Tick(gym, on: monday)!)
+
+    #expect(history.number(for: weight, on: monday) == 70.5)
+    #expect(history.note(for: journal, on: monday) == "Ran 8k.")
+    #expect(history.total(for: protein, on: monday) == 120)
+}

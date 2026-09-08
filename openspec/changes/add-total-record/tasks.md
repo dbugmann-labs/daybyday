@@ -122,7 +122,7 @@ holds*, in `Tests/DayByDayKitTests/RecordTests.swift`. `History` gains
 - [x] 4.9 `two histories holding one day's additions in different orders are different histories` —
   the box that pins order as part of what a history *is*. An implementation sorting the day's amounts,
   or holding them in a multiset, passes 4.3 and fails this.
-- [ ] 4.10 `a history holds ticks, numbers, notes and additions side by side and answers each on its
+- [x] 4.10 `a history holds ticks, numbers, notes and additions side by side and answers each on its
   own` — the box that drives out `isKept`'s third and last widening, exactly as #138's and #140's did
   theirs. `isKept` reads `total(for:on:) >= target` for a total commitment, **in that order**
   (`design.md` § *`kept` stops being "is there a record"*).
