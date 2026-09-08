@@ -308,7 +308,7 @@ the sum, and a rule read off the first accepts exactly the case it exists to ref
   same day taking 1, which sums to 1 followed by thirty-eight zeros: one significant digit, held
   exactly. **Expect red on any predicate written on magnitude rather than on significant digits.**
   Together with 11.2 these two are the whole rule, and neither alone pins it.
-- [ ] 11.4 `an amount of zero or below is refused and told on the row` — three amounts, each leaving
+- [x] 11.4 `an amount of zero or below is refused and told on the row` — three amounts, each leaving
   the day's additions standing, and the cause "Must be more than 0", word for word.
 - [ ] 11.5 `an amount that is not above zero is told on the row, saying so` — from the MODIFIED
   § *A day screen tells on the row that was tapped that a change could not be kept*: the cause is
