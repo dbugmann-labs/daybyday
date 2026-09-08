@@ -308,6 +308,9 @@ public final class DayScreen {
         while counted.first == "0" {
             counted.removeFirst()
         }
+        while counted.last == "0" {
+            counted.removeLast()
+        }
         guard !counted.isEmpty else {
             return ("0", 0)
         }
