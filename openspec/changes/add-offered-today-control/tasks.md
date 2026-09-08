@@ -173,15 +173,15 @@ rather than write, and each is tickable while reading what is already there:
   reporting `20/20 scenario(s) covered`.
 - [x] 6.2 `openspec validate add-offered-today-control --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
-- [ ] 6.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+- [x] 6.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-offered-today-control/` or anywhere under `openspec/specs/` is a **stop**, not
   a merge to resolve (rule 5) — and so is a clean rebase that then fails 6.2, which is § 1.3's hazard
   arriving late.
-- [ ] 6.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+- [x] 6.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff and do not act on findings until they come back
   through the conductor. This box is ticked when the hand-back is written, and § 5.5's entry is part
   of it.
-- [ ] 6.5 Write the archive handover for the janitor, into the PR or the hand-back message, saying
+- [x] 6.5 Write the archive handover for the janitor, into the PR or the hand-back message, saying
   what it must check **after** `/opsx:archive` has run. **The `implementer` ticks this box, in its
   last commit before the archive**, on the evidence that the instruction has been written — the
   checking itself is the janitor's step and has no box of its own, deliberately: a box whose tick
