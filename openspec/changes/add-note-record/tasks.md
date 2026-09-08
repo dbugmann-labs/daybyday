@@ -241,14 +241,14 @@ number branch is not touched. `RecordStore.removeNote(on:)` joins its private tw
 - [x] 11.7 `a note that cannot be kept is refused and leaves the day view as it was`
 - [x] 11.8 `entering a note on a row the day screen's day view does not hold changes nothing`
 - [x] 11.9 `committing on a row that offers no note entry changes nothing`
-- [ ] 11.10 `a commit is read as the entry the row it was made on offers` — the one that pins the
+- [x] 11.10 `a commit is read as the entry the row it was made on offers` — the one that pins the
   dispatch: "70.5" on a number row is the number 70.5 and on a note row is the note "70.5". A screen
   that read the text before asking the row fails it.
-- [ ] 11.11 `entering a note on a day screen that is not keeping a record changes nothing and keeps
+- [x] 11.11 `entering a note on a day screen that is not keeping a record changes nothing and keeps
   nothing`
-- [ ] 11.12 `entering a note on one row leaves the other rows of the day as they were`
-- [ ] 11.13 `entering a note on a day a day screen has moved back to keeps it on that day`
-- [ ] 11.14 `entering a note writes nothing to the roster's place`
+- [x] 11.12 `entering a note on one row leaves the other rows of the day as they were`
+- [x] 11.13 `entering a note on a day a day screen has moved back to keeps it on that day`
+- [x] 11.14 `entering a note writes nothing to the roster's place`
 
 ## 12. `day-screen` — reading what was committed, in both entries
 
