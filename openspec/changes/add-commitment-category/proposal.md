@@ -43,12 +43,15 @@ left to infer one.
 - **Its kept list is drawn in groups; its stopped list is not.** The stopped list is one flat list,
   as today, because it is not what a person reads daily and grouping would double the structure of
   the list that needs it least.
-- **The drag now means two things.** A row dropped into another group is moved to where it was
-  dropped **and** put under that group's category; a row dropped among the commitments under no
-  category is moved and has its category taken off. One gesture doing what it looks like it does. So
-  a commitments screen's move takes **the group the drop landed in** and an offset counted over the
-  entries drawn **in that group**, and turns the two into the roster's own offset and the
-  commitment's category — the one conversion this change adds, and it is behind the seam.
+- **A move now carries a group as well as a place.** A commitments screen's move takes **the group
+  the drop landed in** and an offset counted over the entries drawn **in that group**, and turns the
+  two into the roster's own offset and the commitment's category — the one conversion this change
+  adds, and it is behind the seam. A commitment moved into another group's entries is moved **and**
+  put under that group's category; one moved among the commitments under no category is moved and has
+  its category taken off. **This is the ask and not a gesture.** What a person does on the phone is
+  drag a row within its own group, and use the row's **Category** action to file it under another
+  word — the cross-group drag was specified, built twice and given up (`grill.md` § *Settled* 27),
+  and giving it up moved no requirement.
 - **Counting the offset inside the group is what makes the end of a group reachable**, and it is a
   reversal made on the phone on 2026-09-08 (`grill.md` § *Settled* 24). Over the whole drawn list
   the place after a group's last row and the place before the next group's first row are one offset,
@@ -93,14 +96,13 @@ None.
   new nested types — `Roster.Group` and `DayView.Group`. No new file.
 - `src/DayByDay/DayByDay/CommitmentsView.swift` and `ContentView.swift` — the category field, the
   categories offered, and both grouped lists drawn as a `Section` per group, under ADR-1019's
-  exception. **A drag out of one group and into another is `.draggable` on the row and
-  `.dropDestination(for:)` on each section's `ForEach`**, because `.onMove` names one collection and
-  a `Section` per group is what makes the end of a group reachable at all. The shell passes each
-  section's own identity and the offset it is handed untouched, and computes nothing:
-  `dropDestination`'s `Int` is the SDK's own *"offset relative to the dynamic view's underlying
-  collection of data"*, and the geometric overload that would make a shell work out where a drop
-  landed is `unavailable` on `DynamicViewContent` by name. Measured 2026-09-08 —
-  **ADR-1019 is untouched and no record is owed** (`design.md` § *Context*, § *Open Questions* 6).
+  exception. **Each section's `ForEach` carries `.onMove` and nothing else**, so a drag reorders
+  within its own group through Edit mode; `.onMove` names one collection, so it cannot carry a row
+  out of one group and into another, and **refiling across groups is the row's Category action**. The
+  `.draggable`/`.dropDestination(for:)` pair written to close that gap does not work and is taken out
+  — `.onMove` wins every long press it shares a `ForEach` with (`design.md` § *The shell rides this
+  Story*, § *Open Questions* 6). The shell passes each section's own identity and the offset it is
+  handed untouched, and computes nothing: **ADR-1019 is untouched and no record is owed.**
 - `docs/adr/` — **ADR-1038** written, and **ADR-1031 amended in place** on the trigger it named
   itself. **Not** amended: ADR-1030 (the kind is still the commitment's fourth part and still never
   changes; ADR-1038 says why a category is not a fifth), ADR-1037 (a move still changes the order

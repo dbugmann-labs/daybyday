@@ -284,16 +284,27 @@ stopped commitment's place is one it already has. Agreed 2026-09-07 at the grill
 `add-roster-order` (#146).
 
 **Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). It is still the only thing
-that changes a roster's order, and it is no longer only a move: a commitment dropped into another
-**category**'s group is moved to where it was dropped *and* put under that category, and one dropped
-among the commitments under no category is moved and has its category cleared. One gesture, doing
-what it looks like it does. The category field on the **commitments screen** remains the other way to
-change one, and it changes no order — a commitment given a category is drawn in that category's group
-while staying exactly where the roster holds it, so clearing the category draws it back where it
-never stopped being. One thing a drag cannot do, and this is deliberate as far as #147: it cannot
-lift a whole **group** above another, because every drop joins the group it lands in, so dragging a
-group's rows upward dissolves the group rather than moving it. Setting the category back with the
-field afterwards does it in two steps, and moving a group in one gesture is a Story of its own.
+that changes a roster's order, and it is no longer only a move: a move is asked for with a place
+*inside a* **group**, so a commitment moved into another **category**'s group is put where it was
+moved to *and* put under that category, and one moved among the commitments under no category is
+moved and has its category cleared. The category field on the **commitments screen** remains the
+other way to change one, and it changes no order — a commitment given a category is drawn in that
+category's group while staying exactly where the roster holds it, so clearing the category draws it
+back where it never stopped being. One thing no move can do, and this is deliberate as far as #147:
+it cannot lift a whole **group** above another, because every move joins the group it names, so
+moving a group's rows upward dissolves the group rather than moving it. Setting the category back
+afterwards does it in two steps, and moving a group as one act is a Story of its own.
+
+**Corrected 2026-09-08**, at the second § 9.5 walkthrough of the same Story, and the amendment above
+is written in terms of a *move* because of it. As first written it said a person delivers this by
+**dragging** a row into another group's rows. **What a move is has not changed** — it still carries a
+group and a place inside it, and the roster still moves and recategorises in one act — but **that
+gesture does not exist**: a drag reorders within one group and no further, because `.onMove` names
+one collection, and the hand-written drop that was to cross groups was built twice, walked on the
+phone twice and given up. Refiling across groups is the **commitments screen**'s *Category* action on
+the row. The correction is to the clause and not to the decision, which is why it is stamped here
+rather than made quietly: the domain is the same and only what a person can *do* is narrower. The
+gesture is a want again, and it has a Story of its own (#168).
 
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
@@ -844,8 +855,8 @@ neither writes anything nor answers a notice already standing.
 list afterwards, and it **offers the categories already in use** rather than asking for the word
 twice. Its kept list is drawn in groups, placed as a **day view** places them — a group where its
 first commitment sits, the uncategorised last and unheaded — while the stopped list stays one flat
-list, since it is not what a person reads daily. Its drag now carries a second meaning: a row
-dropped into another group is moved *and* recategorised, and one dropped among the uncategorised has
+list, since it is not what a person reads daily. Its **move** now carries a second meaning: a row
+moved into another group is moved *and* recategorised, and one moved among the uncategorised has
 its category cleared. A category it will not change is a **refused change** like every other, and
 the categories it offers are read off the roster it is drawing, so a word its last commitment lets
 go is gone from the form as well.
@@ -861,6 +872,18 @@ row could not be appended to one at all. Counting inside the group gives those t
 each. There is then no seam between groups for a drop to be ambiguous about, so the screen answers
 nothing extra about where a drag would land: what a person sees is the group they are dragging in,
 which the **app shell** draws as a section and which cannot move with the row.
+
+**Corrected again 2026-09-08**, at the second walkthrough, and this one is about the gesture and not
+about the screen; the amendment above reads *move* where it first read *drag*. A commitments screen
+still moves a commitment by being given a commitment, a group and an offset counted inside that
+group, and it still puts one under a category; both are what its requirements say and both are
+tested. **What a person does with them is narrower than was written.**
+A drag on the kept list reorders a row **within its own group** and no further, because `.onMove`
+names one collection and a group is a section; **refiling across groups is the row's *Category*
+action**, which is offered on the kept list beside *Stop* and *Remove*. The drag that was to cross
+groups was specified, built, walked on the phone, rebuilt and walked again, and given up
+(`add-commitment-category`'s `grill.md` § *Settled* 27). It is a want again, and the Story that gives
+group headings a drag of their own (#168) is where it is cheapest.
 
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most

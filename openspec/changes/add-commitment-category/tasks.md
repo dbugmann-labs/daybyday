@@ -50,6 +50,18 @@
   altogether**, tests and all. Tick this box once those three sections have been read; every
   unticked box below is one this rewrite reopened.
 
+- [ ] 1.5 **It was rewritten a second time on 2026-09-08, and § 9 is the only place.** At the second
+  § 9.5 walkthrough the owner gave up the cross-group drag after it had been built twice and walked
+  twice (`grill.md` § *Settled* 27): `.onMove` wins every long press it shares a `ForEach` with, and
+  moving the payload off `public.content` onto an exported type changed nothing. **Nothing in the
+  delta moved** — no requirement, no scenario, no signature, no test — because the requirement is the
+  ask and not the gesture. What ships is `.onMove` inside a group and the row's **Category** action
+  across groups, and `.draggable`, `.dropDestination(for:)`, `DraggedRow`, its `kept(_:)` resolver
+  and `import UniformTypeIdentifiers` are dead code sitting in `CommitmentsView.swift` right now.
+  Read `design.md` § *The shell rides this Story* and § *Open Questions* 6 before touching that file.
+  **The `implementer` ticks this** once both sections have been read; § 9.0 and § 9.5 are the two
+  boxes it reopens, and they are the only two.
+
 **The order below is not the order the delta reads in.** The roster comes first because everything
 else asks it something, the store second because the screen writes through it, the commitments
 screen third, the day view fourth because it is handed what the roster answers, and the day screen
@@ -139,7 +151,7 @@ new `move`.
   move tests gain `under: nil`** and nothing else; any carried move test whose assertions have to
   change is a stop (§ 1.1).
 - [x] 4.6 `a move under no category takes a commitment's category off` — the other direction, and
-  what makes the drag into the uncategorised rows work.
+  what a move into the group under no category rests on.
 - [x] 4.7 `a move to the place a commitment already has still puts it under the category it was moved
   under` — the carve-out is about the sequence and not about the category. `design.md` § *The offset
   a screen takes is over the group it was dropped in* is why the screen answers this differently.
@@ -183,7 +195,7 @@ that fails silently if the `null`-versus-absent measurement stops holding, so it
 - [x] 5.10 `a commitment moved under a category through a roster store is read back moved and under
   it` — adds the category to `RosterStore.move`. **One write, not two**: if this needs the store to
   call the roster twice and write twice, the move's category has been split off and a failure would
-  leave half a drag kept.
+  leave half a move kept.
 
 ## 6. `commitment` — a commitments screen draws groups, offers categories, and files a commitment
 
@@ -268,9 +280,9 @@ have been unticked; what was written for them is a starting point and not an ans
   last clause is the boundary that most needs pinning — an offset the whole drawn list has and the
   group does not is an offset the screen does not have.
 - [x] 7.2 `a commitment dropped among another group's entries is put under that group's category` —
-  settled answer 14. One drag, two changes, one write. Title unchanged; the call gains its group.
+  settled answer 14. One ask, two changes, one write. Title unchanged; the call gains its group.
 - [x] 7.3 `a commitment dropped among the entries under no category has its category taken off` —
-  settled answer 15, and the only drag that undoes a drag. Title unchanged, and the offset is now
+  settled answer 15, and the only move that undoes a refiling. Title unchanged, and the offset is now
   counted over the group under no category rather than over the whole list.
 - [x] 7.4 `a commitment dropped after the last entry of a group is drawn at the end of that group` —
   **the reversal's own scenario, and a rename**: it was `a commitment dropped past the last entry
@@ -341,36 +353,49 @@ Under ADR-1019's 2026-09-04 amendment, whose three conditions `design.md` § *Th
 Story* checks off one by one. Every decision is behind the seam; the shell converts nothing, refuses
 nothing, orders nothing and groups nothing.
 
-**§ 9.0 and § 9.1 grew on 2026-09-08**, when settled answer 26 kept the cross-group drag that a
-`Section` per group costs `.onMove`. The measurement that answer required was made before this was
-written and is in `design.md` § *Context*: **ADR-1019 stands untouched and no record is owed**,
-because `dropDestination` hands the shell an index and the shell already holds the group. Nothing
-below computes anything, and § 9.1's stop says what to do if that stops being true.
+**§ 9.0 and § 9.1 have now moved twice.** They grew on 2026-09-08 when settled answer 26 kept the
+cross-group drag that a `Section` per group costs `.onMove`, and they shrank again the same day when
+settled answer 27 gave it up: built twice, walked on the phone twice, and it does not work. What
+ships is `.onMove` inside each section — a drag reorders within its own group through Edit mode — and
+the row's **Category** action across groups, which was already here and works. `design.md` § *The
+shell rides this Story* carries the two facts that were measured on the way, and they are the next
+Story's inheritance rather than this one's conclusion. **ADR-1019 is untouched**, and now for a
+stronger reason than before: with the drop path gone there is no line in the shell that could compute
+anything, correctly or otherwise.
 
-- [x] 9.0 `CommitmentsView.swift` — add the drag payload, a shell-local
-  `struct DraggedRow: Codable, Transferable` holding **the source section's `category: String?` and
-  the row's `offset: Int` within that section's `ForEach`** — two values the shell is handed when it
-  draws the row, and no third. A `Commitment` cannot be the payload: `.draggable` needs
-  `Transferable`, `CommitmentRecord` is internal to the kit, and this change opens neither
-  (`design.md` § *Context*). Give it a `CodableRepresentation`; the probe in `design.md` § *Context*
-  used `UTType.content` and a narrower exported type is equally fine and changes nothing across the
-  seam. Add the one resolver beside it —
-  `screen.keptGroups.first { $0.category == dragged.category }?.commitments[dragged.offset]`,
-  **guarded against an offset the group no longer has**, returning nothing rather than clamping.
-  A lookup that finds nothing does nothing and says nothing.
+- [ ] 9.0 **Take the dead drag plumbing out of `CommitmentsView.swift`.** This box used to add it;
+  settled answer 27 makes it the box that removes it, and everything it names reaches nothing in the
+  shipped app today. Five things go and no sixth:
+  `.draggable(DraggedRow(...))` from the row, `.dropDestination(for: DraggedRow.self)` from each
+  section's `ForEach`, the `private struct DraggedRow: Codable, Transferable`, the
+  `private func kept(_ dragged: DraggedRow) -> Commitment?` resolver that only it called, and
+  `import UniformTypeIdentifiers`, which is there only for the `UTType.content` in `DraggedRow`'s
+  `CodableRepresentation`. Update the comment above the `ForEach` so it says what is there — one
+  `.onMove` per section, an offset already counted inside the group — rather than three modifiers.
+
+  **What stays:** the `Section` per group, `.onMove` and its call to
+  `screen.move(_:toOffset:under:)`, the `EditButton`, and the **Category** swipe action beside
+  *Stop* and *Remove*, which is now the only way a person refiles a commitment across groups.
+  Removing any of those is a stop, not a tidy-up: the first three are how a drag reaches the seam at
+  all — `.onMove` reorders through Edit mode, so the `EditButton` is load-bearing and not decoration
+  — and the last is what settled answer 27 keeps the requirement reachable by.
+
+  **The `implementer` ticks this**, in the commit that removes the code, once
+  `grep -n 'draggable\|dropDestination\|DraggedRow\|UniformTypeIdentifiers' src/DayByDay/DayByDay/CommitmentsView.swift`
+  finds nothing and the target still builds. **If anything else turns out to reference `DraggedRow`,
+  stop and report it** rather than widening the removal.
 - [x] 9.1 `CommitmentsView.swift` — draw the kept list as **a `Section` per group over
   `screen.keptGroups`**: the category as the section's header, no header on the group with none, and
-  one `ForEach` per section over that group's commitments carrying **three** things — `.draggable`
-  on each row with § 9.0's payload, and `.onMove` and `.dropDestination(for: DraggedRow.self)` on
-  the `ForEach`. **This reverses what this box said before 2026-09-08** — `design.md` § *The shell
-  rides this Story* and § *Open Questions* 1 and 6 are why. Both closures pass two things and compute
-  nothing: the section's own `group.category`, and the destination `Int` untouched, into
-  `screen.move(_:toOffset:under:)`. **Delete `keptGroupHeadings`** — the offset map is what a
-  section makes unnecessary, and a shell that counts nothing is what ADR-1019's guard is asking for.
-  The stopped list keeps its own single section and wants a header saying so, since it is now one
-  section among several.
+  one `ForEach` per section over that group's commitments carrying **`.onMove`**. **This reverses
+  what this box said before 2026-09-08** — `design.md` § *The shell rides this Story* and
+  § *Open Questions* 1 and 6 are why, and § 9.0 is where the modifiers this box briefly also named
+  come back out. The closure passes two things and computes nothing: the section's own
+  `group.category`, and the destination `Int` untouched, into `screen.move(_:toOffset:under:)`.
+  **Delete `keptGroupHeadings`** — the offset map is what a section makes unnecessary, and a shell
+  that counts nothing is what ADR-1019's guard is asking for. The stopped list keeps its own single
+  section and wants a header saying so, since it is now one section among several.
 
-  **The stop.** If either closure turns out to need a line that adds, subtracts, counts rows or asks
+  **The stop.** If the closure turns out to need a line that adds, subtracts, counts rows or asks
   where a finger is — in particular if you reach for `dropDestination`'s `CGPoint` overload, which is
   `unavailable` on `DynamicViewContent` by name — **stop and report it**. That is arithmetic in the
   shell, it is what ADR-1019's guard forbids, and it would mean the measurement `design.md`
@@ -389,39 +414,53 @@ below computes anything, and § 9.1's stop says what to do if that stops being t
   reason its `ForEach` is keyed on position rather than on the row's value: the offset within its own
   group's `ForEach` is stable across a tap exactly as the flat offset was. This is where the day
   screen's half of the missing boundary comes from (`grill.md` § *Settled* 25).
-- [ ] 9.5 **Run it again.** `pnpm run phone`, or the simulator per `docs/running-the-app.md`, and
-  check by hand: type a category on the form and find the group appear; pick an offered category
-  rather than typing it; empty the field and find the row rejoin the ungrouped rows; drag a row — in Edit mode or by a
-  long-press lift, § 9.5's own watch-item below — to the **bottom of its own group** and find it
-  stay in that group — that is the defect
-  this rewrite exists for, so check it before anything else; drag a row from one group into another
-  and find it refiled where it was dropped; drag a row into the ungrouped rows and find its category
-  gone; drop a row where it started and find nothing said; and open the day screen and find the same
-  groups in the same places. Note what was seen in the PR.
+- [ ] 9.5 **Run it again, on what now exists.** `pnpm run phone`, or the simulator per
+  `docs/running-the-app.md`. **This box has been run twice and both runs found something**, which is
+  why it is here a third time: the first reversed the seam rule (settled answer 24) and the second
+  gave up the cross-group drag (settled answer 27). Run it **after** § 9.0, so that what is on the
+  phone is what the diff says. Check by hand, in this order:
+
+  - type a category on the form and find the group appear;
+  - pick an offered category rather than typing it;
+  - empty the field and find the row rejoin the ungrouped rows;
+  - **tap *Edit*, drag a row to the bottom of its own group, and find it stay in that group** — this
+    is the defect the whole rewrite exists for, so check it before anything else;
+  - drag a row within its group to somewhere in the middle, and find it land where it was put;
+  - drop a row back where it started and find nothing said;
+  - **use the row's *Category* action to file it under another group's word, and find it drawn in
+    that group**;
+  - use *Category* to empty the word and find the row rejoin the ungrouped rows;
+  - open the day screen and find the same groups in the same places.
+
+  **What is deliberately not on that list:** dragging a row from one group into another. There is no
+  such gesture any more — `grill.md` § *Settled* 27 — and if one appears to work, **stop and report
+  it**, because it would mean the plumbing § 9.0 removed was not all of it. Note in the PR what was
+  seen, item by item.
 
   **Three things to look at that are not requirements**, and none of them is a change to the delta:
-  whether the heading now stays put while its row is dragged, and whether the boundary before the
-  ungrouped rows is visible on **both** screens (`grill.md` § *Settled* 25 — a `Section` per group
-  should give all three for nothing, and if it does not, say so rather than inventing a heading,
-  because settled answer 11 stands); and whether a group whose first row is dragged away moving on
-  screen reads as a bug (`design.md` § *Risks*).
+  whether the heading stays put while its row is dragged; whether the boundary before the ungrouped
+  rows is visible on **both** screens (`grill.md` § *Settled* 25 — a `Section` per group should give
+  both for nothing, and if it does not, say so rather than inventing a heading, because settled
+  answer 11 stands); and whether a group whose first row is moved away moving on screen reads as a
+  bug (`design.md` § *Risks*).
 
-  **And one thing to watch that no header file settles.** With rows `.draggable` and each section's
-  `ForEach` carrying both `.onMove` and `.dropDestination`, which of the two delivers a drag that
-  starts and ends **inside one group** is behaviour rather than API (`design.md` § *The shell rides
-  this Story*). Either is fine — both call `screen.move` with the same three arguments, and the
-  requirement makes a drop where a row already sits change nothing. **A drop delivered twice is a
-  stop**: report it rather than suppressing one of the two, because which one to drop is a shell
-  decision worth reading in a diff. Say in the PR which one fired.
+  **And one thing to look at that is open and stays open.** `grill.md` § *Left open* 5 and
+  `design.md` § *Open Questions* 7: a moved row leaves its old place empty for about a second before
+  the list settles, `RosterStore.write` measures 13ms and the whole of `CommitmentsScreen.move` 16ms,
+  and nobody has excluded the rows being keyed by position. **Say whether it is still there and stop
+  there.** It is not this Story's to fix — no requirement is about how long a list takes to settle —
+  and a fix attempted here is a change to the shell that no box asks for. It belongs to #168.
 
-  Anything else that reads badly is a want in `docs/backlog.md` or a question for the owner, **not**
-  a change to this delta without a further G4.
+  **The `implementer` ticks this**, in its last commit before handing back for the review, once every
+  item above has been walked on a device and written into the PR. Anything that reads badly and is
+  not on the stop list is a want in `docs/backlog.md` or a question for the owner, **not** a change
+  to this delta without a further G4.
 
 ## 10. The records
 
-**Four of them were written at G4 and are in the diff the owner signed**, because `docs/adr/**` and
-`CONTEXT.md` are `spec-author`'s to write and not `implementer`'s (`AGENTS.md` § *Agent roles*). The
-boxes below confirm rather than write, and each is tickable while reading what is already there:
+**Every one of them was written at G4 and is in the diff the owner signed**, because `docs/adr/**`
+and `CONTEXT.md` are `spec-author`'s to write and not `implementer`'s (`AGENTS.md` § *Agent roles*).
+The boxes below confirm rather than write, and each is tickable while reading what is already there:
 
 - [x] 10.1 Confirm `docs/adr/1038-a-category-is-the-rosters.md` still describes what shipped — a
   category held by the roster against a commitment rather than as a fifth part of one, and the
@@ -449,15 +488,35 @@ boxes below confirm rather than write, and each is tickable while reading what i
 - [x] 10.6 Leave `docs/backlog.md` alone. B-029 and B-030 are both answered by this Story, and moving
   a want from § *Wants* to § *Decided* is a grooming pass's act rather than a Story branch's
   (`grill.md` § *Left open* 1). Confirm that neither has been moved by this branch before the review.
+  **The same holds for the cross-group drag** that settled answer 27 gave up: `grill.md` says
+  `docs/backlog.md` is where it goes if it is still wanted, and writing it there is the next grooming
+  pass's act or #168's, not this branch's.
+- [ ] 10.7 Confirm `CONTEXT.md` § *Move*'s **Corrected 2026-09-08** paragraph and
+  § *Commitments screen*'s **Corrected again 2026-09-08** paragraph are true of what shipped, after
+  § 9.0 has run: a drag reorders within one group and no further, and refiling across groups is the
+  row's *Category* action. **The domain in both terms is unchanged and must stay unchanged** — a move
+  still carries a group and a place inside it, and still moves and recategorises in one act, because
+  that is what `Roster.move(_:toOffset:under:)` and `CommitmentsScreen.move(_:toOffset:under:)`
+  answer and what the delta's scenarios test. If either paragraph has to say something different
+  about what a *move* is, that is a stop and a G4 question, not a wording fix: it would mean settled
+  answer 27 reached the requirement after all. **The `implementer` ticks this** on the same reading
+  as § 10.4.
 
 ## 11. Before the review, and what the janitor does at the archive
 
-- [x] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 782: `main` at
+**11.1, 11.2 and 11.4 are unticked again, because § 9.0 changes the tree they were ticked over.**
+Nothing they measure is expected to move — the kit is untouched by settled answer 27, so the count is
+still 782 and the coverage still 206/206, and `pnpm run verify` is the TypeScript tooling and never
+saw the shell at all — but a ticked box saying "every test green" is a claim about a working tree,
+and after § 9.0 it is a claim about a different one. **A number that comes back different is a stop**
+(rule 5), not a number to write down: it would mean the removal reached the kit.
+
+- [ ] 11.1 `cd src/DayByDayKit && swift test` — every test green, and the count is 782: `main` at
   `c39e1f8` carries 705 — § 11.3's rebase moved the base there from `85ca63b`'s 628 — plus the 77
   scenarios above. **That is eight fewer than the 713 this box asked for before 2026-09-08**: nine
   mark tests are deleted at § 7.0 and one is added at § 7.6. From the repo root, `pnpm run verify`
   green and `pnpm run checks` reporting `206/206 scenario(s) covered`.
-- [x] 11.2 `openspec validate add-commitment-category --strict` exits 0, and `openspec validate --all
+- [ ] 11.2 `openspec validate add-commitment-category --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [x] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-commitment-category/` or anywhere under `openspec/specs/` is a **stop**, not
@@ -474,9 +533,12 @@ boxes below confirm rather than write, and each is tickable while reading what i
   was validated against `main`'s specs on 2026-09-08 with all fourteen MODIFIED requirements intact
   (`design.md` § *Risks*). It is ordinary merge work, it is `implementer`'s and not
   `spec-author`'s, and it is why the branch handed over at G4 sits two commits behind `main`.
-- [x] 11.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+- [ ] 11.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff and do not act on findings until they come back
-  through the conductor. This box is ticked when the hand-back is written.
+  through the conductor. This box is ticked when the hand-back is written. **It is unticked again
+  because there is a second review to hold**: the diff `reviewer` read on 2026-09-08 still had the
+  drag plumbing in it, and § 9.0 takes it out. The `implementer` ticks this when it hands back the
+  second time.
 - [x] 11.5 Write the archive handover for the janitor, into the PR or the handover message, saying
   what it must check **after** `/opsx:archive` has run. This box is ticked when the instruction has
   been written, which is before the archive; the checking itself is the janitor's step and has no box
