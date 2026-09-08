@@ -229,7 +229,7 @@ suite before writing a test; then one scenario at a time as above.
   that checks the day's sum on read fails this, and that failure is the whole reason the box exists.
 - [x] 7.11 `a history kept before a day could hold an addition is read, and no day in it holds one` —
   a form-4 fixture. Expect green once 7.1 is in: the version guard reads `1...5`.
-- [ ] 7.12 `an addition made over a history kept before a day could hold an addition is read back
+- [x] 7.12 `an addition made over a history kept before a day could hold an addition is read back
   beside the records already there` — a form-4 fixture written over, then reopened at form 5.
 - [ ] 7.13 `a store whose shape and declared form disagree about additions is refused` — both
   directions, plus the third clause that is the real point: a **form-3** fixture holding neither notes

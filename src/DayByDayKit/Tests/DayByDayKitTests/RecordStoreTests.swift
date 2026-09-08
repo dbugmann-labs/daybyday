@@ -1526,3 +1526,70 @@ func aHistoryKeptBeforeADayCouldHoldAnAdditionIsReadAndNoDayInItHoldsOne() throw
     #expect(!store.history.isKept(protein, on: monday))
     #expect(try Data(contentsOf: place) == bytes)
 }
+
+@Test("an addition made over a history kept before a day could hold an addition is read back beside the records already there")
+func anAdditionMadeOverAHistoryKeptBeforeADayCouldHoldAnAdditionIsReadBackBesideTheRecordsAlreadyThere()
+    throws
+{
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "tick": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ],
+          "numbers": [],
+          "notes": [
+            {
+              "commitment": {
+                "name": "Journal",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "note": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "text": "Ran 8k."
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RecordStore(at: place)
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let firstAddition = Addition(30, for: protein, on: monday)!
+    let secondAddition = Addition(90, for: protein, on: monday)!
+    try store.add(firstAddition)
+    try store.add(secondAddition)
+
+    let later = try RecordStore(at: place)
+
+    var expected = History()
+    expected.add(Tick(gym, on: monday)!)
+    expected.add(Note("Ran 8k.", for: journal, on: monday)!)
+    expected.add(firstAddition)
+    expected.add(secondAddition)
+    #expect(later.history == expected)
+    #expect(later.history.isKept(gym, on: monday))
+    #expect(later.history.note(for: journal, on: monday) == "Ran 8k.")
+    #expect(later.history.total(for: protein, on: monday) == 120)
+    #expect(later.history.isKept(protein, on: monday))
+}
