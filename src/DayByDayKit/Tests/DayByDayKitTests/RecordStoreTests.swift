@@ -1808,3 +1808,45 @@ func aStoreHoldingWhatCouldNotBeAnAdditionIsRefused() throws {
     #expect(try Data(contentsOf: notDuePlace) == notDueBytes)
     #expect(try Data(contentsOf: emptyDayPlace) == emptyDayBytes)
 }
+
+@Test("a store holding a day whose additions sum past what can be kept exactly is read rather than refused")
+func aStoreHoldingADayWhoseAdditionsSumPastWhatCanBeKeptExactlyIsReadRatherThanRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [],
+          "numbers": [],
+          "notes": [],
+          "additions": [
+            {
+              "commitment": {
+                "name": "Protein",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "total": { "target": 120 } }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "amounts": [99999999999999999999999999999999999999, 0.5]
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RecordStore(at: place)
+
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    #expect(store.history.isKept(protein, on: monday))
+    #expect(store.history.total(for: protein, on: monday) > Commitment.Target(120)!.amount)
+    #expect(try Data(contentsOf: place) == bytes)
+}

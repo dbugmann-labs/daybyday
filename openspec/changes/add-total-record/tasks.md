@@ -222,7 +222,7 @@ suite before writing a test; then one scenario at a time as above.
   five ways: zero, a negative amount, the wrong kind, a date it is not due on, and a day carrying an
   empty list of amounts. All five come from `formAdditions()` returning `nil`, so expect this green
   once 7.1 is in; a red test is a finding.
-- [ ] 7.10 `a store holding a day whose additions sum past what can be kept exactly is read rather
+- [x] 7.10 `a store holding a day whose additions sum past what can be kept exactly is read rather
   than refused` — the box that pins `design.md` § *Where the sum cap lives*. A form-5 fixture holding
   a whole number of thirty-eight nines and then 0.5 on one day: each amount is an addition on its own,
   their exact sum is not one this app could have written, and the store **opens**. An implementation
