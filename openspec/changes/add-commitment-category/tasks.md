@@ -431,7 +431,7 @@ anything, correctly or otherwise.
   reason its `ForEach` is keyed on position rather than on the row's value: the offset within its own
   group's `ForEach` is stable across a tap exactly as the flat offset was. This is where the day
   screen's half of the missing boundary comes from (`grill.md` § *Settled* 25).
-- [ ] 9.5 **Run it again, on what now exists.** `pnpm run phone`, or the simulator per
+- [x] 9.5 **Run it again, on what now exists.** `pnpm run phone`, or the simulator per
   `docs/running-the-app.md`. **This box has been run twice and both runs found something**, which is
   why it is here a third time: the first reversed the seam rule (settled answer 24) and the second
   gave up the cross-group drag (settled answer 27). Run it **after** § 9.0, so that what is on the

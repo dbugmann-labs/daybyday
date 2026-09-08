@@ -428,6 +428,15 @@ Things that are built, or deliberately not built, in a state someone will trip o
   neither keeps a splitter. It is below the seam and changes no behaviour, so it needs no delta and
   no G4: a chore, or whatever next touches `Digits`. `Digits.swift` arrives with #141 and is not on
   `main` yet.
+- **A reordered row leaves its old place empty for about a second, on the phone, and the cause is
+  unexplained.** Surfaced at `add-commitment-category` (#147)'s § 9.5 walkthrough and carried here
+  from `grill.md` § *Left open* 5 and `design.md` § *Open Questions* 7, which archive with the
+  change. The obvious cause is dead: `RosterStore.write` measures 13ms and the whole of
+  `CommitmentsScreen.move` 16ms, so it is not the disk write. A recorded simulator reorder settles
+  in 0.2–0.4s, and the lag has never reproduced off the phone. The remaining candidate nobody has
+  excluded is that the rows are keyed by position. It belongs to #168, which will hold a drag on a
+  real device — not fixed here, because no requirement in this delta is about how long a list takes
+  to settle. Recorded 2026-09-08, at #147's close-out.
 
 ## Settled
 
