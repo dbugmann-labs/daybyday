@@ -92,17 +92,17 @@ Story* checks off one by one. **The shell computes neither answer**: it asks the
 the row. If either condition ends up written as a comparison in `ContentView.swift`, stop and report
 it — that is the one thing this Story exists to prevent.
 
-- [ ] 4.1 Draw the *Today* button only where `screen.offersGoingBackToToday`
+- [x] 4.1 Draw the *Today* button only where `screen.offersGoingBackToToday`
   (`ContentView.swift:126`–`:132` today, drawn with no condition at all). **Hidden, not
   drawn-and-inert**: B-028's own words are "should not exist".
-- [ ] 4.2 Draw a row as a `Button` only where `row.offersAnything(asOf: today())`
+- [x] 4.2 Draw a row as a `Button` only where `row.offersAnything(asOf: today())`
   (`ContentView.swift:164`–`:212` today, every row a `Button` whatever it offers). Where it offers
   nothing, **the same label is drawn as plain content**: the row keeps its name, its rhythm, its
   "so far of target" line where it has one, and its kept mark, and only the tap goes. **No message,
   no second style, no greying rule** — B-035 was answered against its own words at the Feature grill.
   The four `nil` checks that choose which sheet to open stay exactly where they are; what goes is the
   decision about whether there is a tap at all.
-- [ ] 4.3 Move a day back in `WalkthroughUITests.swift` before it asserts `app.buttons["Today"]`
+- [x] 4.3 Move a day back in `WalkthroughUITests.swift` before it asserts `app.buttons["Today"]`
   (`:26`–`:28` today), so the smoke layer still proves the shell drew the button — and now also fails
   if the button is hidden everywhere. **That assertion goes red the moment 4.1 lands**, which is
   expected and is the whole reason this box exists; ADR-1029's rule that this layer says nothing about

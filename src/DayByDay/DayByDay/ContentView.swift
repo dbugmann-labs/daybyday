@@ -123,13 +123,15 @@ struct ContentView: View {
                 }
                 .buttonStyle(.borderless)
             }
-            Button {
-                screen.showToday()
-            } label: {
-                Text("Today")
-                    .frame(maxWidth: .infinity)
+            if screen.offersGoingBackToToday {
+                Button {
+                    screen.showToday()
+                } label: {
+                    Text("Today")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
             }
-            .buttonStyle(.borderedProminent)
 
             switch screen.recordState {
             case .kept:
@@ -165,49 +167,57 @@ struct ContentView: View {
                         let entry = row.numberEntry(asOf: today())
                         let noteEntry = row.noteEntry(asOf: today())
                         let totalEntry = row.totalEntry(asOf: today())
-                        Button {
-                            if let entry {
-                                enteringText = entry.number.map { "\($0)" } ?? ""
-                                enteringRow = row
-                            } else if let noteEntry {
-                                enteringNoteText = noteEntry.note ?? ""
-                                enteringNoteRow = row
-                            } else if totalEntry != nil {
-                                enteringTotalText = ""
-                                enteringTotalRow = row
-                            } else {
-                                try? screen.tick(row)
-                            }
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    commitmentLine(
-                                        Text(row.name)
-                                            .foregroundStyle(row.isKept ? .secondary : .primary),
-                                        rhythmInWords: row.rhythmInWords)
-                                    if let totalEntry {
-                                        Text(totalEntry.soFarOfTarget)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    if row == screen.notice?.row {
-                                        Text(screen.notice?.cause ?? "Not saved. Try again.")
-                                            .font(.caption)
-                                            .foregroundStyle(.red)
-                                    }
-                                }
-                                if row.isKept || entry != nil || noteEntry != nil || totalEntry != nil {
-                                    Spacer()
-                                }
-                                if row.isKept {
-                                    Image(systemName: "checkmark")
-                                }
-                                if entry != nil || noteEntry != nil || totalEntry != nil {
-                                    Image(systemName: "chevron.right")
+                        let label = HStack {
+                            VStack(alignment: .leading) {
+                                commitmentLine(
+                                    Text(row.name)
+                                        .foregroundStyle(row.isKept ? .secondary : .primary),
+                                    rhythmInWords: row.rhythmInWords)
+                                if let totalEntry {
+                                    Text(totalEntry.soFarOfTarget)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
+                                if row == screen.notice?.row {
+                                    Text(screen.notice?.cause ?? "Not saved. Try again.")
+                                        .font(.caption)
+                                        .foregroundStyle(.red)
+                                }
                             }
+                            if row.isKept || entry != nil || noteEntry != nil || totalEntry != nil {
+                                Spacer()
+                            }
+                            if row.isKept {
+                                Image(systemName: "checkmark")
+                            }
+                            if entry != nil || noteEntry != nil || totalEntry != nil {
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        // `row.offersAnything(asOf:)` decides whether there is a tap at all; the
+                        // four `nil` checks above stay only to decide which sheet a tap opens.
+                        // `design.md` § *The shell rides this Story*.
+                        if row.offersAnything(asOf: today()) {
+                            Button {
+                                if let entry {
+                                    enteringText = entry.number.map { "\($0)" } ?? ""
+                                    enteringRow = row
+                                } else if let noteEntry {
+                                    enteringNoteText = noteEntry.note ?? ""
+                                    enteringNoteRow = row
+                                } else if totalEntry != nil {
+                                    enteringTotalText = ""
+                                    enteringTotalRow = row
+                                } else {
+                                    try? screen.tick(row)
+                                }
+                            } label: {
+                                label
+                            }
+                        } else {
+                            label
                         }
                     }
                 } header: {
