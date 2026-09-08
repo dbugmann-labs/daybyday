@@ -450,7 +450,9 @@ Neither box writes a test of its own; both check something a test cannot, and bo
 `docs/adr/1041-a-total-entrys-blank-commit-means-nothing.md`, the 2026-09-08 amendment on
 `docs/adr/1033-a-number-is-taken-back-by-naming-the-day.md`, and their rows in `docs/adr/README.md`
 are **written with this folder** and are in the G4 diff, so these boxes confirm rather than write.
-§ 16.5 is the exception and says so: it was added after the review and it writes.
+Two of them are exceptions and both say so, because both came out of the G7 review rather than out
+of the proposal: § 16.5 writes the amendment on 1036 that the first pass asked for, and § 16.3 now
+carries the correction on 1040 that the second pass asked for as well as its original confirmation.
 `CONTEXT.md` needs nothing: the grill landed **Addition** and **Total entry** and amended **Total**
 and **Row**, and writing the delta turned up no further term.
 
@@ -464,12 +466,25 @@ and **Row**, and writing the delta turned up no further term.
   take-back over a shared record type was introduced, and that its filename is unchanged, since
   `openspec/changes/archive/2026-09-07-add-number-record/tasks.md` § 8 names that path and the archive
   may not be edited.
-- [x] 16.3 Confirm 1040 describes the code that was actually written: **one** `Digits`, called only
-  from `DayView.Row.totalRecord(_:asOf:)`, with `record` carrying no digit bound of any kind.
-  `grep -rn "38\|thirty-eight" src/DayByDayKit/Sources/` should reach `Digits.swift` and
-  `DayScreen.read(_:)`'s existing bound and nothing in `Addition.swift`, `History.swift` or
-  `RecordStore.swift`. An ADR that has drifted from the implementation is edited in place and
-  stamped, per `docs/adr/README.md`; a decision that has actually changed is a stop, not an edit.
+- [x] 16.3 Confirm 1040 describes the code that was actually written: the **cap** is judged in one
+  place, `DayView.Row.totalRecord(_:asOf:)`, which is the only caller of `Digits.canAdd(_:to:)`, and
+  `record` carries no digit bound of any kind. `grep -rn "38\|thirty-eight"
+  src/DayByDayKit/Sources/` should reach `Digits.swift` and `DayScreen.read(_:)`'s existing bound
+  and nothing in `Addition.swift`, `History.swift` or `RecordStore.swift`. **`Digits` itself has
+  more than one caller, and that is the point rather than a drift:** the G7 first pass found the
+  significant-digit count copied out into `DayScreen.writtenOut(_:)`, and `6368eb6` moved the
+  counting step into `Digits.stripped(whole:fraction:)` so the bound on a typed number and the cap
+  on a day's sum count by one algorithm. So what this box confirms is that one place *decides* what
+  a significant digit is, not that one place calls it. An ADR that has drifted from the
+  implementation is edited in place and stamped, per `docs/adr/README.md`; a decision that has
+  actually changed is a stop, not an edit. This box read "**one** `Digits`, called only from
+  `DayView.Row.totalRecord(_:asOf:)`" until the G7 second pass's finding 2 — 1040's decision, that
+  the cap is judged at the row, had not moved, but the confirmation and 1040's own enumeration of
+  the type's members had gone stale against `6368eb6`. Both are corrected in the same commit as this
+  box, and **1040 takes no `- Amended:` stamp**: `git log origin/main -- docs/adr/1040-*.md` is
+  empty, so the file has never left this branch and there is no reader of a published decision to
+  tell. Its "One place decides" paragraph now states where the rule lives rather than listing the
+  type's members, per `docs/adr/README.md`'s own warning against writing a count into a record.
 - [x] 16.4 Confirm 1041 describes what `enter(_:on:)` actually does on a total row: a blank commit
   returns having kept nothing, taken nothing back and told nothing, and `takeBackLast(on:)` is the
   only way an addition leaves a day.
@@ -499,9 +514,16 @@ and **Row**, and writing the delta turned up no further term.
   green one means the reason was wrong. Record § 15.2's ten answers here too. A prediction in a task
   is not evidence; this is.
 - [x] 17.2 `pnpm run verify` green from the repo root, and `pnpm run checks` reporting
-  `scenario coverage — 248/248`. `cd src/DayByDayKit && swift test` reports **807 tests passing** —
-  705 at the branch point plus the hundred and two written here, plus none removed and none left
-  behind by § 15.2. A different number means a test was added or lost outside rule 3; report it.
+  `scenario coverage — 248/248`. `cd src/DayByDayKit && swift test` reports **808 tests passing** —
+  705 at the branch point, plus the hundred and two written here under rule 3, plus **one** written
+  at G7: `6368eb6` extracted the significant-digit count out of `DayScreen.writtenOut(_:)` into
+  `Digits` and pinned the two paths together with *Digits.significant(in:) and a typed value's own
+  significant-digit count agree on 10^38* in `DayScreenTests.swift`. That test is named for no
+  scenario and traced to nothing on purpose — `docs/process.md` § 8 and ADR-0005 leave below-seam
+  unit tests free-form — and CI check 4 counts scenarios rather than tests, so `248/248` does not
+  move with it. This box read 807 until the G7 second pass found the arithmetic stale; the number is
+  corrected here in the commit that carries the correction, and the box was not re-ticked. A number
+  other than 808 now means a test was added or lost outside rule 3; report it.
 - [ ] 17.3 Open the app on a phone or the simulator with `pnpm run phone`, **without deleting and
   reinstalling it first** — the existing install holds a record file in the store's fourth form, this
   branch's code writes the fifth, and a fresh install would write form 5 from the start, proving

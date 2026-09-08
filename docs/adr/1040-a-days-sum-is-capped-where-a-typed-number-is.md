@@ -56,9 +56,14 @@ that is not above zero, and nothing else; `History` holds whatever it is given.
 2^128−1; admitting thirty-nine would make the answer depend on magnitude rather than on digits, and
 would put a second number in a package that has one.
 
-**One place decides.** An internal `Digits` — `significant(in:)` and `canAdd(_:to:)` — holds the
-count and the test, the way `Blank` holds the one answer to "does this text say anything"
-(ADR-1039). Nothing else in `DayByDayKit` counts a decimal's digits.
+**One place decides.** An internal `Digits` holds both the counting and the test — what a
+significant digit is, and whether a day may take an amount — the way `Blank` holds the one answer
+to "does this text say anything" (ADR-1039). Nothing else in `DayByDayKit` decides what a
+significant digit is. That is deliberately a statement about where the *rule* lives and not about
+how many callers it has: `day-screen` asks it twice, once for the bound on a number a person typed
+and once for the cap on a day's sum, and those two must agree or the same value is a number when
+typed and not a number when summed. Which members the type ends up with moves with the code; that
+the counting has one home does not.
 
 ## Consequences
 
