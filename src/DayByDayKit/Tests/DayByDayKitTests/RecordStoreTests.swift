@@ -1379,3 +1379,47 @@ func anAmountIsReadBackExactlyAsItWasGivenWhateverItsDigits() throws {
     }
     #expect(later.history == expected)
 }
+
+@Test("a store opened again holds exactly the ticks, numbers, notes and additions added and not taken back")
+func aStoreOpenedAgainHoldsExactlyTheTicksNumbersNotesAndAdditionsAddedAndNotTakenBack() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let tick = Tick(gym, on: monday)!
+    let number = Number(70.5, for: weight, on: monday)!
+    let note = Note("Ran 8k.", for: journal, on: monday)!
+    let additionOnMonday = Addition(30, for: protein, on: monday)!
+    let additionOnWednesday = Addition(45, for: protein, on: wednesday)!
+
+    let store = try RecordStore(at: place)
+    try store.add(tick)
+    try store.add(number)
+    try store.add(note)
+    try store.add(additionOnMonday)
+    try store.add(additionOnWednesday)
+    try store.removeNumber(for: weight, on: monday)
+    try store.removeLastAddition(for: protein, on: wednesday)
+
+    let later = try RecordStore(at: place)
+
+    var expected = History()
+    expected.add(tick)
+    expected.add(note)
+    expected.add(additionOnMonday)
+    #expect(later.history == expected)
+    #expect(later.history.isKept(gym, on: monday))
+    #expect(later.history.number(for: weight, on: monday) == nil)
+    #expect(later.history.note(for: journal, on: monday) == "Ran 8k.")
+    #expect(later.history.total(for: protein, on: monday) == 30)
+    #expect(later.history.total(for: protein, on: wednesday) == 0)
+}
