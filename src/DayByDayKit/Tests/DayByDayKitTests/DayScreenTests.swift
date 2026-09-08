@@ -1670,7 +1670,7 @@ func aRosterWrittenInALaterFormThanThisAppKnowsMakesADayScreenThatSaysTheRosterI
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 4, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -1828,7 +1828,7 @@ func aDayScreenThatWasKeepingARosterStopsWhenItIsShownAgainAndTheRosterCannotBeR
     let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 4, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     screen.shown(asOf: monday)
 
@@ -2666,7 +2666,7 @@ func aDayScreenDrawsItsRowsInTheOrderItsRosterWasMovedInto() throws {
     try rosterStore.add(journaling)
     try rosterStore.add(supplements)
     try rosterStore.add(gym)
-    try rosterStore.move(gym, toOffset: 0)
+    try rosterStore.move(gym, toOffset: 0, under: nil)
 
     let screen = DayScreen(
         startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
@@ -5323,4 +5323,65 @@ func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
 
     #expect(screen.notice == nil)
     #expect(!screen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a day screen draws its rows in the groups its roster puts them in")
+func aDayScreenDrawsItsRowsInTheGroupsItsRosterPutsThemIn() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(creatine)
+    try rosterStore.add(gym)
+    try rosterStore.add(magnesium)
+    try rosterStore.add(journaling)
+    try rosterStore.put(creatine, under: "Supplements")
+    try rosterStore.put(magnesium, under: "Supplements")
+    try rosterStore.put(gym, under: "Sport")
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.groups.map(\.category) == ["Supplements", "Sport", nil])
+    #expect(
+        screen.dayView.rows.map(\.name) == ["Creatine", "Magnesium", "Gym", "Journaling"])
+    #expect(screen.rosterState == .kept)
+}
+
+@MainActor
+@Test("a day screen draws a group again after a category is changed at its roster place")
+func aDayScreenDrawsAGroupAgainAfterACategoryIsChangedAtItsRosterPlace() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(creatine)
+    try rosterStore.add(gym)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(screen.dayView.groups.map(\.category) == [nil])
+    #expect(screen.dayView.rows.map(\.name) == ["Creatine", "Gym"])
+
+    try rosterStore.put(creatine, under: "Supplements")
+    screen.shown(asOf: monday)
+
+    #expect(screen.dayView.groups.map(\.category) == ["Supplements", nil])
+    #expect(screen.dayView.rows.map(\.name) == ["Creatine", "Gym"])
 }

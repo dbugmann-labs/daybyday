@@ -46,12 +46,15 @@ struct CommitmentsView: View {
     let screen: CommitmentsScreen
 
     @State private var name = ""
+    @State private var category = ""
     @State private var rhythmKind: RhythmKind = .weekdays
     @State private var selectedWeekdays: Set<Weekday> = []
     @State private var dayOfMonth = 1
     @State private var intervalDays = 1
     @State private var timesPerWeek = 1
     @State private var keptFromDate: Date
+    @State private var categorising: Commitment?
+    @State private var categoryTyped = ""
 
     init(screen: CommitmentsScreen) {
         self.screen = screen
@@ -60,29 +63,45 @@ struct CommitmentsView: View {
 
     var body: some View {
         List {
-            Section("Kept") {
-                if screen.kept.isEmpty {
+            if screen.keptGroups.isEmpty {
+                Section("Kept") {
                     Text("Nothing is being kept.")
                 }
-                ForEach(screen.kept, id: \.self) { commitment in
-                    commitmentLine(
-                        Text(commitment.name), rhythmInWords: commitment.rhythmInWords
-                    )
-                    .swipeActions {
-                        Button("Stop") {
-                            screen.askToStopKeeping(commitment)
-                        }
-                        Button("Remove", role: .destructive) {
-                            screen.askToRemove(commitment)
+            }
+            // A `Section` per group, not one flat list: the category is the section's own
+            // header, and the group with none draws no header. Each section's `ForEach` carries
+            // one `.onMove`, over an offset already counted inside that section's own entries —
+            // `design.md` § *The shell rides this Story*. It passes that offset straight through
+            // to `screen.move` beside the section's own `group.category`: nothing here adds,
+            // subtracts, counts rows or asks where a finger is.
+            ForEach(screen.keptGroups, id: \.category) { group in
+                Section {
+                    ForEach(Array(group.commitments.enumerated()), id: \.offset) {
+                        index, commitment in
+                        commitmentLine(
+                            Text(commitment.name), rhythmInWords: commitment.rhythmInWords
+                        )
+                        .swipeActions {
+                            Button("Stop") {
+                                screen.askToStopKeeping(commitment)
+                            }
+                            Button("Remove", role: .destructive) {
+                                screen.askToRemove(commitment)
+                            }
+                            Button("Category") {
+                                categorising = commitment
+                                categoryTyped = group.category ?? ""
+                            }
                         }
                     }
-                }
-                // The drag hands an `IndexSet` and a destination `Int`; a single-row drag in a
-                // `List` always produces one element, and `offset` passes through to `screen.move`
-                // untouched — `design.md` § *The seam* fixes the arithmetic there, not here.
-                .onMove { source, offset in
-                    guard let index = source.first else { return }
-                    screen.move(screen.kept[index], toOffset: offset)
+                    .onMove { source, offset in
+                        guard let index = source.first else { return }
+                        screen.move(group.commitments[index], toOffset: offset, under: group.category)
+                    }
+                } header: {
+                    if let category = group.category {
+                        Text(category)
+                    }
                 }
             }
 
@@ -98,6 +117,10 @@ struct CommitmentsView: View {
 
             if case .moving(_, let movingRefusal) = screen.refusedChange {
                 refusalText(movingRefusal)
+            }
+
+            if case .categorising(_, let categorisingRefusal) = screen.refusedChange {
+                refusalText(categorisingRefusal)
             }
 
             Section("Stopped") {
@@ -182,6 +205,17 @@ struct CommitmentsView: View {
 
                 DatePicker("Kept from", selection: $keptFromDate, displayedComponents: [.date])
 
+                TextField("Category (optional)", text: $category)
+                if !screen.categoriesInUse.isEmpty {
+                    Menu("Use an existing category") {
+                        ForEach(screen.categoriesInUse, id: \.self) { existing in
+                            Button(existing) {
+                                category = existing
+                            }
+                        }
+                    }
+                }
+
                 Button("Add") {
                     define()
                 }
@@ -191,6 +225,13 @@ struct CommitmentsView: View {
                 }
             }
         }
+        // Apple documents `.default` and `.compact` but publishes no point value for either.
+        // Measured directly on device (iPhone 17 simulator, iOS 26.5, this SDK): the platform
+        // default renders as ~17.7pt between two adjacent sections, confirmed by a calibration
+        // read-back — setting this same modifier to 0 and to 20 moved the on-screen gap to
+        // exactly 0 and exactly 20, so the measurement has no hidden offset to account for. 12 is
+        // about two thirds of that, per the owner's ask.
+        .listSectionSpacing(12)
         .navigationTitle("Commitments")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -259,6 +300,51 @@ struct CommitmentsView: View {
                 }
             }
         }
+        .sheet(
+            isPresented: Binding(
+                get: { categorising != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        categorising = nil
+                    }
+                }
+            )
+        ) {
+            if let commitment = categorising {
+                NavigationStack {
+                    Form {
+                        Section {
+                            TextField("Category (blank for none)", text: $categoryTyped)
+                        }
+                        if !screen.categoriesInUse.isEmpty {
+                            Section("Already in use") {
+                                ForEach(screen.categoriesInUse, id: \.self) { existing in
+                                    Button(existing) {
+                                        categoryTyped = existing
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .navigationTitle("Category for \(commitment.name)")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                categorising = nil
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Save") {
+                                screen.put(
+                                    commitment,
+                                    under: categoryTyped.isEmpty ? nil : categoryTyped)
+                                categorising = nil
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /// The words a person reads for a refused change, in the shell's own vocabulary — the same
@@ -308,10 +394,13 @@ struct CommitmentsView: View {
                 year: components.year!, month: components.month!, day: components.day!)
         else { return }
 
-        let refusal = screen.define(name: name, on: rhythmBeingBuilt, keptFrom: keptFrom)
+        let refusal = screen.define(
+            name: name, on: rhythmBeingBuilt, keptFrom: keptFrom,
+            under: category.isEmpty ? nil : category)
 
         if refusal == nil {
             name = ""
+            category = ""
             selectedWeekdays = []
         }
     }

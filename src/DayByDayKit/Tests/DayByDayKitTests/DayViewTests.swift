@@ -383,7 +383,7 @@ func aDayViewOfNoCommitmentsAtAllHasNoRows() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let history = History()
 
-    let dayView = DayView(of: [], on: monday, in: history)
+    let dayView = DayView(of: [Commitment](), on: monday, in: history)
 
     #expect(dayView.rows.isEmpty)
 }
@@ -1101,7 +1101,7 @@ func twoRowsForCommitmentsAlikeInNameAndNotInRhythmSayDifferentRhythms() {
 func aDayViewSaysItsDayAsAWeekdayADayOfTheMonthAMonthAndAYear() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
-    let dayView = DayView(of: [], on: monday, in: History())
+    let dayView = DayView(of: [Commitment](), on: monday, in: History())
 
     #expect(dayView.title(asOf: thursday) == "Monday 31 August 2026")
 }
@@ -1109,7 +1109,7 @@ func aDayViewSaysItsDayAsAWeekdayADayOfTheMonthAMonthAndAYear() {
 @Test("a day view of the day it is asked as of says Today before the date")
 func aDayViewOfTheDayItIsAskedAsOfSaysTodayBeforeTheDate() {
     let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
-    let dayView = DayView(of: [], on: thursday, in: History())
+    let dayView = DayView(of: [Commitment](), on: thursday, in: History())
 
     #expect(dayView.title(asOf: thursday) == "Today · Thursday 3 September 2026")
 }
@@ -1118,7 +1118,7 @@ func aDayViewOfTheDayItIsAskedAsOfSaysTodayBeforeTheDate() {
 func aDayViewOfADayBeforeTheOneItIsAskedAsOfSaysTheDateAndNotToday() {
     let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
     let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
-    let dayView = DayView(of: [], on: wednesday, in: History())
+    let dayView = DayView(of: [Commitment](), on: wednesday, in: History())
 
     #expect(dayView.title(asOf: thursday) == "Wednesday 2 September 2026")
 }
@@ -1127,7 +1127,7 @@ func aDayViewOfADayBeforeTheOneItIsAskedAsOfSaysTheDateAndNotToday() {
 func aDayViewOfADayAfterTheOneItIsAskedAsOfSaysTheDateAndNotToday() {
     let friday = CalendarDate(year: 2026, month: 9, day: 4)!
     let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
-    let dayView = DayView(of: [], on: friday, in: History())
+    let dayView = DayView(of: [Commitment](), on: friday, in: History())
 
     #expect(dayView.title(asOf: thursday) == "Friday 4 September 2026")
 }
@@ -1136,7 +1136,7 @@ func aDayViewOfADayAfterTheOneItIsAskedAsOfSaysTheDateAndNotToday() {
 func aDayOfTheMonthBelowTenIsSaidWithoutALeadingZero() {
     let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
     let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
-    let dayView = DayView(of: [], on: tuesday, in: History())
+    let dayView = DayView(of: [Commitment](), on: tuesday, in: History())
 
     #expect(dayView.title(asOf: thursday) == "Tuesday 1 September 2026")
 }
@@ -1147,7 +1147,7 @@ func everyWeekdayIsSaidByItsOwnName() {
     let days = [CalendarDate(year: 2026, month: 8, day: 31)!]
         + (1...6).map { CalendarDate(year: 2026, month: 9, day: $0)! }
 
-    let titles = days.map { DayView(of: [], on: $0, in: History()).title(asOf: askedAsOf) }
+    let titles = days.map { DayView(of: [Commitment](), on: $0, in: History()).title(asOf: askedAsOf) }
 
     #expect(
         titles == [
@@ -1166,7 +1166,7 @@ func everyMonthIsSaidByItsOwnName() {
     let askedAsOf = CalendarDate(year: 2026, month: 1, day: 1)!
     let days = (1...12).map { CalendarDate(year: 2026, month: $0, day: 15)! }
 
-    let titles = days.map { DayView(of: [], on: $0, in: History()).title(asOf: askedAsOf) }
+    let titles = days.map { DayView(of: [Commitment](), on: $0, in: History()).title(asOf: askedAsOf) }
 
     #expect(
         titles == [
@@ -1192,8 +1192,8 @@ func aDayViewSaysItsDayInTheFirstSupportedYearAndInTheLast() {
     let lastDay = CalendarDate(year: 9999, month: 12, day: 31)!
     let lastAskedAsOf = CalendarDate(year: 9999, month: 12, day: 27)!
 
-    let firstView = DayView(of: [], on: firstDay, in: History())
-    let lastView = DayView(of: [], on: lastDay, in: History())
+    let firstView = DayView(of: [Commitment](), on: firstDay, in: History())
+    let lastView = DayView(of: [Commitment](), on: lastDay, in: History())
 
     #expect(firstView.title(asOf: firstAskedAsOf) == "Saturday 1 January 1583")
     #expect(lastView.title(asOf: lastAskedAsOf) == "Friday 31 December 9999")
@@ -1203,7 +1203,7 @@ func aDayViewSaysItsDayInTheFirstSupportedYearAndInTheLast() {
 func aDayViewSaysTheLeapDayOfALeapYear() {
     let leapDay = CalendarDate(year: 2028, month: 2, day: 29)!
     let askedAsOf = CalendarDate(year: 2028, month: 2, day: 28)!
-    let dayView = DayView(of: [], on: leapDay, in: History())
+    let dayView = DayView(of: [Commitment](), on: leapDay, in: History())
 
     #expect(dayView.title(asOf: askedAsOf) == "Tuesday 29 February 2028")
 }
@@ -1212,7 +1212,7 @@ func aDayViewSaysTheLeapDayOfALeapYear() {
 func aDayViewHoldingNoRowsSaysItsDayJustTheSame() {
     let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
     let askedAsOf = CalendarDate(year: 2026, month: 9, day: 3)!
-    let dayView = DayView(of: [], on: wednesday, in: History())
+    let dayView = DayView(of: [Commitment](), on: wednesday, in: History())
 
     #expect(dayView.rows.isEmpty)
     #expect(dayView.title(asOf: askedAsOf) == "Wednesday 2 September 2026")
@@ -2195,4 +2195,201 @@ func twoRowsWhoseDaysHoldDifferentAdditionsSummingAlikeAreTheSameRow() {
     #expect(firstView.rows[0] == secondView.rows[0])
     #expect(firstView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "60 of 120")
     #expect(secondView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "60 of 120")
+}
+
+@Test("a day view handed commitments with no grouping holds one group with no category")
+func aDayViewHandedCommitmentsWithNoGroupingHoldsOneGroupWithNoCategory() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.monday, .thursday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, run], on: monday, in: history)
+
+    #expect(dayView.groups.map(\.category) == [nil])
+    #expect(dayView.groups.first?.rows.map(\.name) == ["Gym", "Run"])
+
+    let groupedDayView = DayView(
+        of: [Roster.Group(category: nil, commitments: [gym, run])], on: monday, in: history)
+
+    #expect(dayView == groupedDayView)
+}
+
+@Test("a day view holds one group for each group it was handed that has something due")
+func aDayViewHoldsOneGroupForEachGroupItWasHandedThatHasSomethingDue() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(
+        of: [
+            Roster.Group(category: "Supplements", commitments: [creatine, magnesium]),
+            Roster.Group(category: "Sport", commitments: [gym]),
+            Roster.Group(category: nil, commitments: [journaling]),
+        ], on: monday, in: history)
+
+    #expect(dayView.groups.map(\.category) == ["Supplements", "Sport", nil])
+    #expect(dayView.rows.map(\.name) == ["Creatine", "Magnesium", "Gym", "Journaling"])
+}
+
+@Test("a day view draws no group whose commitments are none of them due on the date")
+func aDayViewDrawsNoGroupWhoseCommitmentsAreNoneOfThemDueOnTheDate() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let finances = Commitment(
+        name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom)!
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let history = History()
+
+    let dayView = DayView(
+        of: [
+            Roster.Group(category: "Money", commitments: [finances]),
+            Roster.Group(category: "Sport", commitments: [gym]),
+        ], on: tuesday, in: history)
+
+    #expect(dayView.groups.map(\.category) == ["Sport"])
+    #expect(dayView.groups.first?.rows.map(\.name) == ["Gym"])
+}
+
+@Test("a day view handed only groups with nothing due holds no groups at all")
+func aDayViewHandedOnlyGroupsWithNothingDueHoldsNoGroupsAtAll() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let finances = Commitment(
+        name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let history = History()
+
+    let dayView = DayView(
+        of: [Roster.Group(category: "Money", commitments: [finances])], on: tuesday, in: history)
+
+    #expect(dayView.groups.isEmpty)
+    #expect(dayView.rows.isEmpty)
+    #expect(dayView == DayView(of: [Commitment](), on: tuesday, in: history))
+}
+
+@Test("a day view drops the commitments that are not due and keeps the group its due ones are in")
+func aDayViewDropsTheCommitmentsThatAreNotDueAndKeepsTheGroupItsDueOnesAreIn() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(
+        name: "Creatine",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let vitaminD = Commitment(
+        name: "Vitamin D", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(
+        of: [Roster.Group(category: "Supplements", commitments: [creatine, vitaminD])],
+        on: monday, in: history)
+
+    #expect(dayView.groups.map(\.category) == ["Supplements"])
+    #expect(dayView.groups.first?.rows.map(\.name) == ["Creatine"])
+}
+
+@Test("a day view does not combine two groups under the same category")
+func aDayViewDoesNotCombineTwoGroupsUnderTheSameCategory() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(
+        of: [
+            Roster.Group(category: "Supplements", commitments: [creatine]),
+            Roster.Group(category: "Sport", commitments: [gym]),
+            Roster.Group(category: "Supplements", commitments: [magnesium]),
+        ], on: monday, in: history)
+
+    #expect(dayView.groups.map(\.category) == ["Supplements", "Sport", "Supplements"])
+    #expect(dayView.rows.map(\.name) == ["Creatine", "Gym", "Magnesium"])
+}
+
+@Test("a row in a group says whether its commitment is kept, exactly as a row under no category does")
+func aRowInAGroupSaysWhetherItsCommitmentIsKeptExactlyAsARowUnderNoCategoryDoes() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Tick(magnesium, on: monday)!)
+
+    let dayView = DayView(
+        of: [Roster.Group(category: "Supplements", commitments: [creatine, magnesium])],
+        on: monday, in: history)
+
+    #expect(dayView.groups.map(\.category) == ["Supplements"])
+    let rows = dayView.groups.first?.rows ?? []
+    #expect(rows.map(\.name) == ["Creatine", "Magnesium"])
+    #expect(rows.map(\.isKept) == [false, true])
+}
+
+@Test("two day views differing only in how their commitments were grouped are different day views")
+func twoDayViewsDifferingOnlyInHowTheirCommitmentsWereGroupedAreDifferentDayViews() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let ungrouped = DayView(
+        of: [Roster.Group(category: nil, commitments: [creatine, magnesium])], on: monday,
+        in: history)
+    let grouped = DayView(
+        of: [Roster.Group(category: "Supplements", commitments: [creatine, magnesium])],
+        on: monday, in: history)
+
+    #expect(ungrouped.rows.map(\.name) == ["Creatine", "Magnesium"])
+    #expect(grouped.rows.map(\.name) == ["Creatine", "Magnesium"])
+    #expect(ungrouped != grouped)
+}
+
+@Test("two day views differing only in a group none of whose commitments is due are the same day view")
+func twoDayViewsDifferingOnlyInAGroupNoneOfWhoseCommitmentsIsDueAreTheSameDayView() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let finances = Commitment(
+        name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let first = DayView(
+        of: [Roster.Group(category: nil, commitments: [gym])], on: monday, in: history)
+    let second = DayView(
+        of: [
+            Roster.Group(category: nil, commitments: [gym]),
+            Roster.Group(category: "Money", commitments: [finances]),
+        ], on: monday, in: history)
+
+    #expect(first.groups.map(\.category) == [nil])
+    #expect(first.groups.first?.rows.map(\.name) == ["Gym"])
+    #expect(first == second)
 }

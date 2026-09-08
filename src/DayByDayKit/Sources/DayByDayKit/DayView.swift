@@ -182,20 +182,54 @@ public struct DayView: Hashable, Sendable {
         return "Today · \(dateWords)"
     }
 
+    /// A category, or no category at all, together with the rows under it that are due on this
+    /// day view's date. `design.md` § *The seam*.
+    public struct Group: Hashable, Sendable {
+        public let category: String?
+        public let rows: [Row]
+
+        public init(category: String?, rows: [Row]) {
+            self.category = category
+            self.rows = rows
+        }
+    }
+
     let date: CalendarDate
-    public let rows: [Row]
+
+    /// This day view's rows, in **groups** — one for each group it was handed that holds at
+    /// least one row due on this day view's date, in the order it was handed them. A day view
+    /// works out no group of its own: it sorts none, combines none under the same category, and
+    /// decides no place for the commitments under no category. `design.md` § *The seam*.
+    public let groups: [Group]
+
+    /// Every row this day view holds, read across `groups` in the order the groups are drawn —
+    /// the same rows `groups` holds and each exactly once.
+    public var rows: [Row] { groups.flatMap(\.rows) }
 
     public init(of commitments: [Commitment], on date: CalendarDate, in history: History) {
+        self.init(of: [Roster.Group(category: nil, commitments: commitments)], on: date, in: history)
+    }
+
+    /// Forms a day view from `groups` — the same shape a roster reads its commitments back in —
+    /// each drawn as its own group, dropping every commitment not due on `date` and, with it, a
+    /// group left holding none. `design.md` § *The seam*.
+    public init(of groups: [Roster.Group], on date: CalendarDate, in history: History) {
         self.date = date
-        self.rows = commitments
-            .filter { $0.isDue(on: date) }
-            .map {
-                Row(
-                    commitment: $0, date: date, isKept: history.isKept($0, on: date),
-                    number: history.number(for: $0, on: date),
-                    note: history.note(for: $0, on: date),
-                    total: history.total(for: $0, on: date))
+        self.groups = groups.compactMap { group in
+            let rows = group.commitments
+                .filter { $0.isDue(on: date) }
+                .map {
+                    Row(
+                        commitment: $0, date: date, isKept: history.isKept($0, on: date),
+                        number: history.number(for: $0, on: date),
+                        note: history.note(for: $0, on: date),
+                        total: history.total(for: $0, on: date))
+                }
+            guard !rows.isEmpty else {
+                return nil
             }
+            return Group(category: group.category, rows: rows)
+        }
     }
 
     /// The day view of the calendar date one day before this one's, or `nil` when this day view
@@ -208,6 +242,16 @@ public struct DayView: Hashable, Sendable {
         return DayView(of: commitments, on: previousDate, in: history)
     }
 
+    /// The day view of the calendar date one day before this one's, or `nil` when this day view
+    /// is of 1 January 1583.
+    public func previousDay(of groups: [Roster.Group], in history: History) -> DayView? {
+        guard let previousDate = date.adding(days: -1) else {
+            return nil
+        }
+
+        return DayView(of: groups, on: previousDate, in: history)
+    }
+
     /// The day view of the calendar date one day after this one's, or `nil` when this day view
     /// is of 31 December 9999.
     public func nextDay(of commitments: [Commitment], in history: History) -> DayView? {
@@ -216,5 +260,15 @@ public struct DayView: Hashable, Sendable {
         }
 
         return DayView(of: commitments, on: nextDate, in: history)
+    }
+
+    /// The day view of the calendar date one day after this one's, or `nil` when this day view
+    /// is of 31 December 9999.
+    public func nextDay(of groups: [Roster.Group], in history: History) -> DayView? {
+        guard let nextDate = date.adding(days: 1) else {
+            return nil
+        }
+
+        return DayView(of: groups, on: nextDate, in: history)
     }
 }
