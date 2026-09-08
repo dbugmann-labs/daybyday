@@ -286,12 +286,12 @@ diff, so these boxes confirm rather than write.
   wrong by 55 the moment the branch was rebased, and nothing caught it until the review. It has since
   been rebased twice more. A count that is neither measured nor explained by § 1.1 is a stop and a
   report.
-- [ ] 11.3 Open the app on the phone with `pnpm run phone`, **after deleting the installed app** so
+- [x] 11.3 Open the app on the phone with `pnpm run phone`, **after deleting the installed app** so
   that § 9.3's day one is taken on. Enter a weight from its row, read it back after force-quitting
   and reopening, type a number outside the range and read the sentence on the row, then open the
   entry and press Cancel and confirm nothing changed and nothing new is told. Nothing automated sees
   any of this.
-- [ ] 11.4 Add two lines to `docs/open-questions.md` as a **chore commit that lands before this
+- [x] 11.4 Add two lines to `docs/open-questions.md` as a **chore commit that lands before this
   branch's archive**, not on this branch — `AGENTS.md` § *Agent roles* puts that file outside a
   Story's reach, and landing it first is what lets this box be ticked on evidence rather than in
   anticipation (the ordering `add-number-record` (#138) § 9.5 settled with the owner). The two: the
@@ -864,3 +864,15 @@ the same test went **green** without modification. `cd src/DayByDayKit && swift 
 **629 tests passing** with the temporary test present. It was then deleted; `swift test` reports
 **628 tests passing** with it gone, the same count § 11.2 expects and § 14 left behind, with no
 `@Test` display name changed.
+
+## § 11.3 — the phone run
+
+Done by the repo owner, on the phone, on 2026-09-08. The installed app was deleted first, then
+`pnpm run phone` built, installed and launched it fresh, so § 9.3's day one was the one taken on.
+All four checks behaved as specified: the Weight row drew with its chevron; tapping it opened an
+alert titled "Weight" with `40–150` as the placeholder; `70.5` was entered and Saved, the alert
+closed and the row drew a checkmark rather than the number; after a force-quit and reopen the
+weight read back and the entry re-opened holding `70.5`; `300` was refused with
+`Must be between 40 and 150` in red under the row's name; and pressing Cancel changed nothing and
+told nothing new. **Nothing automated sees any of this** — it is a human's report from the device,
+not a run this file's `swift test` counts include anywhere.
