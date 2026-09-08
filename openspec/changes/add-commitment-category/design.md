@@ -480,15 +480,24 @@ correcting one is worth a paragraph.
 
 ## Risks / Trade-offs
 
-- **`add-number-entry` (#139) is open, out of draft, and holds 810 added lines in
-  `openspec/specs/day-screen/spec.md`.** It modifies *A day view is the commitments due on a date*,
-  *A day view is in the order it was handed its commitments* and *A day view is a value*, and this
-  delta modifies the third of those. → **If #158 merges first, this delta's `day-screen` file must
-  be rewritten against the new spec before it can validate**, because a MODIFIED requirement may not
-  drop a scenario the current spec has. It is not a git conflict and the rebase will look clean; the
-  failure shows up at `openspec validate --strict`. `tasks.md` § 1.3 measures it before anything is
-  written and § 10.3 re-measures it before the review. **The cheapest order is to merge #158 first**,
-  and that is a recommendation to the owner rather than a decision this Story can take.
+- **Two Stories have landed on `day-screen` while this one was being written, and a third would be
+  the same risk again.** `add-number-entry` (#158) merged, and `add-note-record` (#169) merged after
+  it, together adding 720 lines to `openspec/specs/day-screen/spec.md`. The danger a MODIFIED
+  requirement runs is that it may not drop a scenario the current spec has, and it is not a git
+  conflict — the failure shows up at `openspec validate --strict`. → **Measured 2026-09-08 against
+  current `main` and this delta is clean**: all fourteen MODIFIED requirements — twelve in
+  `commitment`, two in `day-screen` — still exist under the same titles and drop no scenario, and
+  `openspec validate --all --strict --no-interactive` exits 0 with `main`'s specs in place. Neither
+  Story touched the two `day-screen` requirements this delta modifies; both added their own.
+  `tasks.md` § 1.3 re-measures it before anything is written and § 11.3 again before the review,
+  because a fourth Story landing here would not announce itself either.
+- **What those two Stories did leave is a rebase this Story cannot finish by itself.**
+  `add-note-record` (#169) changed `DayView.swift`, `DayScreen.swift`, `ContentView.swift` and three
+  test files that this branch's implementation commits also changed. → Nothing in
+  `openspec/changes/` or `openspec/specs/` conflicts, so it is not the stop `AGENTS.md` names; it is
+  ordinary `src/` and `tests/` merge work and therefore `implementer`'s rather than `spec-author`'s.
+  `tasks.md` § 11.3 is where it is resolved, and a conflict that reaches the change folder or the
+  specs at that point **is** the stop.
 - **The delta is the largest this repo has shipped — 206 scenarios, 129 of them carried verbatim.**
   → Unavoidable at this scope: `openspec` replaces a MODIFIED requirement whole, and twelve
   `commitment` requirements have a sentence that is false once a category exists. The saving that
@@ -590,6 +599,8 @@ settled answer 26 answered on 2026-09-08 against my recommendation. What each on
    rides this Story* the arrangement. **Nothing in the delta moved**: the requirement reads the same
    whichever gesture drives it. What grew is `tasks.md` § 9, by a payload type and two modifiers.
 
-One thing is settled but not yet *known*, and it is not a question for the owner: whether
-`add-number-entry` (#139) lands on `day-screen` first is a fact the implementer re-measures at
-`tasks.md` § 1.3.
+One thing that was settled but not yet *known* when this was first written is now known, and it was
+never a question for the owner: `add-number-entry` (#139/#158) has merged, and so has
+`add-note-record` (#169). Both landed on `day-screen`, **and this delta validates against both** —
+§ *Risks* carries the measurement. The implementer re-measures it at `tasks.md` § 1.3 anyway,
+because a further Story landing here would look exactly the same until it did not.

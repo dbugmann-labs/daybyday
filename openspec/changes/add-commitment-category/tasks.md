@@ -461,9 +461,19 @@ boxes below confirm rather than write, and each is tickable while reading what i
   --strict --no-interactive` exits 0.
 - [ ] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-commitment-category/` or anywhere under `openspec/specs/` is a **stop**, not
-  a merge to resolve (rule 5). **And so is a clean rebase that then fails § 11.2** — that is
-  `add-number-entry` (#139) having landed on `day-screen`, which § 1.3 warned about and which needs
-  a second G4 rather than a quiet refresh of the delta.
+  a merge to resolve (rule 5). **And so is a clean rebase that then fails § 11.2** — that is another
+  Story having landed on `day-screen`, which § 1.3 warned about and which needs a further G4 rather
+  than a quiet refresh of the delta.
+
+  **This rebase is already owed and it is yours.** `add-note-record` (#169) merged on 2026-09-08,
+  after this branch's base, and changed `DayView.swift`, `DayScreen.swift`, `ContentView.swift`,
+  `DayScreenTests.swift`, `DayViewTests.swift` and `CommitmentsScreenTests.swift` — all of which
+  this branch's implementation commits also changed. `docs/adr/README.md` conflicts too, on the ADR
+  table: `main` now holds **1039** and this branch **1038**, both rows are wanted, and numeric order
+  is the resolution. None of that is the stop above: nothing in `openspec/` conflicts, and the delta
+  was validated against `main`'s specs on 2026-09-08 with all fourteen MODIFIED requirements intact
+  (`design.md` § *Risks*). It is ordinary merge work, it is `implementer`'s and not
+  `spec-author`'s, and it is why the branch handed over at G4 sits two commits behind `main`.
 - [ ] 11.4 Ask for the review (**G7**) with `mattpocock-skills:code-review`, and fix what it finds on
   this branch before the archive.
 - [ ] 11.5 Write the archive handover for the janitor, into the PR or the handover message, saying
