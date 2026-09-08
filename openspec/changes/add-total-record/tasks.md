@@ -378,7 +378,7 @@ private twins at the foot of `DayScreen.swift`.
 - [x] 13.10 `a value that is not a number committed in a total entry is told the same thing a number
   entry tells` — word for word on both rows. The box that would fail a second reading with its own
   wording.
-- [ ] 13.11 `an addition refused by the place is told on the row and names no cause`
+- [x] 13.11 `an addition refused by the place is told on the row and names no cause`
 - [ ] 13.12 `what a day screen tells on a row ends when an addition is made and kept`
 - [ ] 13.13 `what a day screen tells on a row ends when a last addition is taken back and kept`
 - [ ] 13.14 `a commit saying nothing in a total entry leaves what a day screen is telling standing`
