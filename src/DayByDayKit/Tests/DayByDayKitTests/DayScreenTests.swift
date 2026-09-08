@@ -367,7 +367,7 @@ func aRecordWrittenInALaterFormThanThisAppKnowsMakesADayScreenThatSaysTheRecordI
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 4, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 5, "ticks": []}"#.utf8).write(to: place)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -451,7 +451,7 @@ func tickingARowOnADayScreenHoldingARecordFromALaterVersionKeepsNothingAndLeaves
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 4, "ticks": []}"#.utf8)
+    let bytes = Data(#"{"version": 5, "ticks": []}"#.utf8)
     try bytes.write(to: place)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -582,7 +582,7 @@ func aDayScreenShownAgainWhereTheRecordIsFromALaterVersionSaysSo() throws {
     let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 4, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 5, "ticks": []}"#.utf8).write(to: place)
 
     screen.shown(asOf: monday)
 
@@ -2468,7 +2468,7 @@ func aTapOnADayScreenHoldingARecordFromALaterVersionIsToldNothingOnTheRow() thro
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 4, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 5, "ticks": []}"#.utf8).write(to: place)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -3138,6 +3138,65 @@ func anEntryCommittedEmptyTakesTheNumberBackAndOneHoldingNothingButSpaceDoesTheS
 }
 
 @MainActor
+@Test("an entry committed with line breaks alone takes the number back")
+func anEntryCommittedWithLineBreaksAloneTakesTheNumberBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+    try screen.enter("\n\n\n", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == nil)
+    #expect(screen.notice == nil)
+
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+    try screen.enter("\t\n", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == nil)
+
+    let later = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!later.dayView.rows[0].isKept)
+    #expect(later.dayView.rows[0].numberEntry(asOf: monday)?.number == nil)
+}
+
+@MainActor
+@Test("an entry committed with a zero-width space alone keeps nothing and takes nothing back")
+func anEntryCommittedWithAZeroWidthSpaceAloneKeepsNothingAndTakesNothingBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+    try screen.enter("\u{200B}", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(screen.notice?.cause == "Not a number")
+
+    let later = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(later.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+    #expect(later.dayView.rows[0].isKept)
+}
+
+@MainActor
 @Test("a value that is not a number keeps nothing and takes nothing back")
 func aValueThatIsNotANumberKeepsNothingAndTakesNothingBack() throws {
     let (place, rosterPlace) = freshPlaces()
@@ -3548,4 +3607,664 @@ func whatADayScreenTellsAboutARefusedValueEndsWhenTheDayScreenIsMovedToTheDayBef
 
     #expect(screen.notice == nil)
     #expect(screen.title == "Sunday 30 August 2026")
+}
+
+@MainActor
+@Test("entering a note on a row makes the day screen say the commitment is kept")
+func enteringANoteOnARowMakesTheDayScreenSayTheCommitmentIsKept() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let row = screen.dayView.rows[0]
+
+    try screen.enter("Ran 8k before work.", on: row)
+
+    #expect(screen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a note entered on a day screen is held by a day screen opened afterwards at the same place")
+func aNoteEnteredOnADayScreenIsHeldByADayScreenOpenedAfterwardsAtTheSamePlace() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let first = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try first.enter("Ran 8k before work.", on: first.dayView.rows[0])
+
+    let second = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(second.dayView.rows[0].isKept)
+    #expect(second.dayView.rows[0].noteEntry(asOf: monday)?.note == "Ran 8k before work.")
+}
+
+@MainActor
+@Test("the note entry a row offers says the note just entered on it")
+func theNoteEntryARowOffersSaysTheNoteJustEnteredOnIt() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let threeLines = "Line one\nLine two\nLine three"
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter(threeLines, on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == threeLines)
+}
+
+@MainActor
+@Test("a note entered on a day that already holds one replaces it")
+func aNoteEnteredOnADayThatAlreadyHoldsOneReplacesIt() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    try screen.enter("Ran 8k. Knee held up.", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == "Ran 8k. Knee held up.")
+
+    let later = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(later.dayView.rows[0].noteEntry(asOf: monday)?.note == "Ran 8k. Knee held up.")
+}
+
+@MainActor
+@Test("committing an empty note entry takes the note back")
+func committingAnEmptyNoteEntryTakesTheNoteBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    try screen.enter("", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == nil)
+
+    let later = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(!later.dayView.rows[0].isKept)
+    #expect(later.dayView.rows[0].noteEntry(asOf: monday)?.note == nil)
+}
+
+@MainActor
+@Test("committing an empty note entry on a day that holds no note leaves the day as it was")
+func committingAnEmptyNoteEntryOnADayThatHoldsNoNoteLeavesTheDayAsItWas() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+
+    let later = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(!later.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a note that cannot be kept is refused and leaves the day view as it was")
+func aNoteThatCannotBeKeptIsRefusedAndLeavesTheDayViewAsItWas() throws {
+    let (place, rosterPlace) = try blockerPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    }
+    #expect(!screen.dayView.rows[0].isKept)
+
+    let later = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!later.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("entering a note on a row the day screen's day view does not hold changes nothing")
+func enteringANoteOnARowTheDayScreensDayViewDoesNotHoldChangesNothing() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let mondayScreen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let wednesdayScreen = DayScreen(
+        startingFrom: [journal], asOf: wednesday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    try mondayScreen.enter("Ran 8k.", on: wednesdayScreen.dayView.rows[0])
+
+    #expect(!mondayScreen.dayView.rows[0].isKept)
+
+    let laterOnWednesday = DayScreen(
+        startingFrom: [journal], asOf: wednesday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    #expect(!laterOnWednesday.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("committing on a row that offers no note entry changes nothing")
+func committingOnARowThatOffersNoNoteEntryChangesNothing() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom, kind: .tick)!
+    let journal = Commitment(name: "Journal", schedule: daily, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym, journal], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    let gymRow = screen.dayView.rows.first { $0.name == "Gym" }!
+    try screen.enter("Ran 8k.", on: gymRow)
+
+    screen.showNextDay()
+
+    let journalRow = screen.dayView.rows.first { $0.name == "Journal" }!
+    try screen.enter("Ran 8k.", on: journalRow)
+
+    #expect(!screen.dayView.rows.contains { $0.isKept })
+
+    let later = DayScreen(
+        startingFrom: [gym, journal], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    #expect(!later.dayView.rows.contains { $0.isKept })
+}
+
+@MainActor
+@Test("a commit is read as the entry the row it was made on offers")
+func aCommitIsReadAsTheEntryTheRowItWasMadeOnOffers() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight, journal], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+    try screen.enter("70.5", on: screen.dayView.rows[1])
+
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+    #expect(screen.dayView.rows[1].noteEntry(asOf: monday)?.note == "70.5")
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[1].isKept)
+}
+
+@MainActor
+@Test("entering a note on a day screen that is not keeping a record changes nothing and keeps nothing")
+func enteringANoteOnADayScreenThatIsNotKeepingARecordChangesNothingAndKeepsNothing() throws {
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytesBefore = Data("not a record".utf8)
+    try bytesBefore.write(to: place)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.recordState == .unreadable)
+    #expect(try Data(contentsOf: place) == bytesBefore)
+}
+
+@MainActor
+@Test("entering a note on one row leaves the other rows of the day as they were")
+func enteringANoteOnOneRowLeavesTheOtherRowsOfTheDayAsTheyWere() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom, kind: .tick)!
+    let journal = Commitment(name: "Journal", schedule: daily, keptFrom: keptFrom, kind: .note)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym, journal, weight], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[1])
+
+    #expect(screen.dayView.rows.map(\.name) == ["Gym", "Journal", "Weight"])
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[1].isKept)
+    #expect(!screen.dayView.rows[2].isKept)
+}
+
+@MainActor
+@Test("entering a note on a day a day screen has moved back to keeps it on that day")
+func enteringANoteOnADayADayScreenHasMovedBackToKeepsItOnThatDay() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journal = Commitment(name: "Journal", schedule: daily, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showPreviousDay()
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+
+    let laterOnSunday = DayScreen(
+        startingFrom: [journal], asOf: sunday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(laterOnSunday.dayView.rows[0].isKept)
+
+    let laterOnMonday = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!laterOnMonday.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("entering a note writes nothing to the roster's place")
+func enteringANoteWritesNothingToTheRostersPlace() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let bytesAfterOpen = try Data(contentsOf: rosterPlace)
+
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    try screen.enter("", on: screen.dayView.rows[0])
+
+    #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
+    #expect(screen.rosterState == .kept)
+}
+
+@MainActor
+@Test("a note committed with space around it is kept without that space and unchanged within it")
+func aNoteCommittedWithSpaceAroundItIsKeptWithoutThatSpaceAndUnchangedWithinIt() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let committed = "  Ran 8k.\nKnee held up.\n  "
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter(committed, on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == "Ran 8k.\nKnee held up.")
+
+    let later = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(later.dayView.rows[0].noteEntry(asOf: monday)?.note == "Ran 8k.\nKnee held up.")
+}
+
+@MainActor
+@Test("a note committed with space inside it keeps every character of that space")
+func aNoteCommittedWithSpaceInsideItKeepsEveryCharacterOfThatSpace() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let committed = "Monday\n\n   \tTuesday"
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter(committed, on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == committed)
+}
+
+@MainActor
+@Test("an entry committed empty takes the note back, and one holding nothing but blank space does the same")
+func anEntryCommittedEmptyTakesTheNoteBackAndOneHoldingNothingButBlankSpaceDoesTheSame() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let sleep = Commitment(name: "Sleep", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal, sleep], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    try screen.enter("Slept badly.", on: screen.dayView.rows[1])
+
+    try screen.enter("", on: screen.dayView.rows[0])
+    try screen.enter("  ", on: screen.dayView.rows[1])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(!screen.dayView.rows[1].isKept)
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == nil)
+    #expect(screen.dayView.rows[1].noteEntry(asOf: monday)?.note == nil)
+}
+
+@MainActor
+@Test("an entry committed with line breaks alone takes the note back")
+func anEntryCommittedWithLineBreaksAloneTakesTheNoteBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    try screen.enter("\n\n\n", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == nil)
+
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    try screen.enter("\t\n", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == nil)
+
+    let later = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!later.dayView.rows[0].isKept)
+    #expect(later.dayView.rows[0].noteEntry(asOf: monday)?.note == nil)
+}
+
+@MainActor
+@Test("a note of one visible character among blank space is written rather than taken back")
+func aNoteOfOneVisibleCharacterAmongBlankSpaceIsWrittenRatherThanTakenBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("\n  .\t\n", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == ".")
+}
+
+@MainActor
+@Test("a note of any length, any script and any number of lines is entered whole")
+func aNoteOfAnyLengthAnyScriptAndAnyNumberOfLinesIsEnteredWhole() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let texts = [
+        String(repeating: "a", count: 100_000),
+        "שלום עולם",
+        "🏃",
+        (1...20).map { "Line \($0)" }.joined(separator: "\n"),
+    ]
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    for text in texts {
+        try screen.enter(text, on: screen.dayView.rows[0])
+        #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == text)
+        #expect(screen.dayView.rows[0].isKept)
+    }
+
+    let later = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(later.dayView.rows[0].noteEntry(asOf: monday)?.note == texts.last)
+}
+
+@MainActor
+@Test("a note refused by the place is told on the row and names no cause")
+func aNoteRefusedByThePlaceIsToldOnTheRowAndNamesNoCause() throws {
+    let (place, rosterPlace) = try blockerPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let enteringScreen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try enteringScreen.enter("Ran 8k.", on: enteringScreen.dayView.rows[0])
+    }
+    #expect(enteringScreen.notice?.row == enteringScreen.dayView.rows[0])
+    #expect(enteringScreen.notice?.cause == nil)
+
+    let (takeBackPlace, takeBackRosterPlace) = try blockerPlaces()
+    let takeBackScreen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: takeBackPlace,
+        keepingRosterAt: takeBackRosterPlace)
+    #expect(throws: RecordStoreError.cannotWrite(at: takeBackPlace)) {
+        try takeBackScreen.enter("", on: takeBackScreen.dayView.rows[0])
+    }
+    #expect(takeBackScreen.notice?.row == takeBackScreen.dayView.rows[0])
+    #expect(takeBackScreen.notice?.cause == nil)
+
+    let (longPlace, longRosterPlace) = try blockerPlaces()
+    let longScreen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: longPlace,
+        keepingRosterAt: longRosterPlace)
+    #expect(throws: RecordStoreError.cannotWrite(at: longPlace)) {
+        try longScreen.enter(String(repeating: "a", count: 100_000), on: longScreen.dayView.rows[0])
+    }
+    #expect(longScreen.notice?.row == longScreen.dayView.rows[0])
+    #expect(longScreen.notice?.cause == nil)
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when a note is written and kept")
+func whatADayScreenTellsOnARowEndsWhenANoteIsWrittenAndKept() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let directory = place.deletingLastPathComponent()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let seedRoster = try RosterStore(at: rosterPlace)
+    try seedRoster.add(journal)
+
+    try makeReadOnly(directory)
+    defer { try? makeWritable(directory) }
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    }
+
+    try makeWritable(directory)
+
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.notice == nil)
+}
+
+@MainActor
+@Test("what a day screen tells on a row ends when a note is taken back and kept")
+func whatADayScreenTellsOnARowEndsWhenANoteIsTakenBackAndKept() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let directory = place.deletingLastPathComponent()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, kind: .tick)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal, gym], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    #expect(screen.dayView.rows[0].isKept)
+
+    try makeReadOnly(directory)
+    defer { try? makeWritable(directory) }
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try screen.tick(screen.dayView.rows[1])
+    }
+
+    try makeWritable(directory)
+
+    try screen.enter("", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.notice == nil)
+}
+
+@MainActor
+@Test("a commit on a row that offers no entry at all is told nothing on the row")
+func aCommitOnARowThatOffersNoEntryAtAllIsToldNothingOnTheRow() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let target = Commitment.Target(120)!
+    let water = Commitment(
+        name: "Water", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [water], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+
+    #expect(screen.notice == nil)
+    #expect(!screen.dayView.rows[0].isKept)
+
+    let (gymPlace, gymRosterPlace) = freshPlaces()
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let gymScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: gymPlace, keepingRosterAt: gymRosterPlace)
+    try gymScreen.enter("Ran 8k.", on: gymScreen.dayView.rows[0])
+
+    #expect(gymScreen.notice == nil)
+    #expect(!gymScreen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a commit on a note row on a day screen that is not keeping a record is told nothing on the row")
+func aCommitOnANoteRowOnADayScreenThatIsNotKeepingARecordIsToldNothingOnTheRow() throws {
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a record".utf8).write(to: place)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+
+    #expect(screen.notice == nil)
+    #expect(screen.recordState == .unreadable)
+
+    try screen.enter("", on: screen.dayView.rows[0])
+
+    #expect(screen.notice == nil)
+}
+
+@MainActor
+@Test("a commit on a note row for a day that has not arrived is told nothing on the row")
+func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journal = Commitment(name: "Journal", schedule: daily, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showNextDay()
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+
+    #expect(screen.notice == nil)
+    #expect(!screen.dayView.rows[0].isKept)
 }

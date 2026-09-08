@@ -326,9 +326,39 @@ draws one. Committing something that is not a number keeps nothing and takes not
 entry half typed must not erase the day it is being typed on. Agreed 2026-09-07 at the grill of
 `add-number-entry` (#139).
 
+**Amended 2026-09-08**, at the residual round of `add-note-record` (#140). "Committed empty" means
+committed **blank**, and blank means what it means everywhere else in this system: whitespace in the
+full sense, spaces, tabs and line breaks alike, decided by the one test this package uses for the
+question (ADR-1039). A character that occupies no width is not blank space — a zero-width space is a
+character like any other here, so an entry committed with one alone is *not a number* rather than a
+take-back. It had been the reverse, and it was measurably how a paste of one invisible character
+deleted the number a day held.
+
+**Note entry** — what a note commitment's row offers in a tick's place: the note a person gives for
+that day, kept once it is committed and taken back when it is committed blank. It is deliberately
+not a **note**, which is the record `record` holds — this is the place one is made, the way a tick is
+made in the row. It says **one** thing and no more: the note the day already holds, or *no note*.
+That is one fewer than a **number entry** says, and the difference is the kind's own: a number
+commitment may declare a **range**, so its entry has a bound to teach before it refuses anyone,
+while a note commitment declares nothing at all and there is nothing a note entry could teach and
+nothing it will refuse a person for. The note is reachable **only** through it: a row never says
+one. Committing something blank is the **take-back** and never a refusal, because there is no such
+thing as a text a note entry rejects. Agreed 2026-09-08 at the grill of `add-note-record` (#140).
+
 **Note** — the kind of record that holds a short text for the day: two or three sentences,
 deliberately not an essay. Typed in the row and nowhere else (*Entered where you stand*). It keeps
 the day by being there. Agreed 2026-09-06, same grill.
+
+**Amended 2026-09-08**, at the grill of `add-note-record` (#140). "Short" describes what a row's
+field invites, not what `record` refuses. A note has **no length limit and no restricted script**,
+and no character the system reserves — it is judged exactly as a **commitment name** is, because it
+is the owner's own words, and it may hold a line break. A note that is **empty or holds only blank
+space is not a note** and is refused where it is formed, the same refusal that stops a name of only
+blank space naming anything; blank space means whitespace in the full sense, spaces, tabs and line
+breaks alike, and it is decided by the one test this package uses for the question everywhere
+(ADR-1039). Blank space around a **committed** note is disregarded before it is kept, because
+tidying what a person typed belongs where they typed it; everything between the first and last
+character that is not blank space is kept exactly, line breaks included.
 
 **Total** — the kind of record that grows across a day: the additions made to it, in the order they
 were made, whose sum is the day's total. Protein after each meal; a supplement taken twice. Still
@@ -472,6 +502,17 @@ never says the number**. The day that has not arrived refuses both, word for wor
 reason. What a row **is** grows by the number the history holds for it, because two rows of one
 number commitment on one date holding 70.5 and 71 offer different entries and neither can stand in
 for the other — the argument the date already carried, applied to the third thing a row is.
+
+**Amended 2026-09-08**, at the grill of `add-note-record` (#140). A row offers **a tick, a number
+entry or a note entry**, according to the **kind** its commitment declares, and never more than one;
+a total row offers none of the three until there is a record for what its days take. It says neither
+the number nor the note: which of them it offers stays the only thing a row says about its kind, and
+it says its name, its rhythm and whether the day was kept in exactly the same way whichever it is.
+What a row **is** grows by the note the history holds for it, for the same reason it grew by the
+number — two rows of one note commitment on one date holding different notes offer different entries
+and neither can stand in for the other. Not saying the note matters more than not saying the number
+did: a note is the one record long enough that drawing it in the daily list would change what the
+list is for.
 
 **Today** — the day a screen is being looked at on, and the only thing in the system that does not
 come from the calendar. It is always handed in and never asked for: nothing in the rule engine reads

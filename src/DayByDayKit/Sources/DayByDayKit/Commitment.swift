@@ -5,7 +5,7 @@ public struct Commitment: Hashable, Sendable {
     public let kind: Kind
 
     public init?(name: String, schedule: Schedule, keptFrom: CalendarDate, kind: Kind = .tick) {
-        guard !name.allSatisfy(\.isWhitespace) else {
+        guard !Blank.saysNothing(name) else {
             return nil
         }
 

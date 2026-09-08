@@ -238,7 +238,7 @@ public final class DayScreen {
     /// can be spelled in a way `Decimal(string:)` holds and in another it refuses, so the parse
     /// is asked about the one spelling this reading already knows says the value exactly.
     private static func read(_ text: String) -> CommittedText {
-        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        let trimmed = Blank.trimmed(text)
         guard !trimmed.isEmpty else {
             return .takeBack
         }
@@ -333,32 +333,53 @@ public final class DayScreen {
         guard let recordStore else {
             return
         }
-        guard let entry = row.numberEntry(asOf: today) else {
-            return
-        }
 
-        switch Self.read(text) {
-        case .takeBack:
-            do {
-                try recordStore.removeNumber(on: row.recordedDay)
-            } catch {
-                notice = Notice(row: row)
-                throw error
-            }
-        case .number(let decimal):
-            guard let number = row.numberRecord(decimal, asOf: today) else {
-                notice = Notice(row: row, cause: entry.refusalCause)
+        if let entry = row.numberEntry(asOf: today) {
+            switch Self.read(text) {
+            case .takeBack:
+                do {
+                    try recordStore.removeNumber(on: row.recordedDay)
+                } catch {
+                    notice = Notice(row: row)
+                    throw error
+                }
+            case .number(let decimal):
+                guard let number = row.numberRecord(decimal, asOf: today) else {
+                    notice = Notice(row: row, cause: entry.refusalCause)
+                    return
+                }
+
+                do {
+                    try recordStore.add(number)
+                } catch {
+                    notice = Notice(row: row)
+                    throw error
+                }
+            case .notANumber:
+                notice = Notice(row: row, cause: "Not a number")
                 return
             }
+        } else if row.noteEntry(asOf: today) != nil {
+            if Blank.saysNothing(text) {
+                do {
+                    try recordStore.removeNote(on: row.recordedDay)
+                } catch {
+                    notice = Notice(row: row)
+                    throw error
+                }
+            } else {
+                guard let note = row.noteRecord(Blank.trimmed(text), asOf: today) else {
+                    return
+                }
 
-            do {
-                try recordStore.add(number)
-            } catch {
-                notice = Notice(row: row)
-                throw error
+                do {
+                    try recordStore.add(note)
+                } catch {
+                    notice = Notice(row: row)
+                    throw error
+                }
             }
-        case .notANumber:
-            notice = Notice(row: row, cause: "Not a number")
+        } else {
             return
         }
         notice = nil
@@ -456,5 +477,9 @@ public final class DayScreen {
 private extension RecordStore {
     func removeNumber(on day: RecordedDay) throws {
         try removeNumber(for: day.commitment, on: day.date)
+    }
+
+    func removeNote(on day: RecordedDay) throws {
+        try removeNote(for: day.commitment, on: day.date)
     }
 }

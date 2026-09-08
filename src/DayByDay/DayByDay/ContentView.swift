@@ -68,6 +68,8 @@ struct ContentView: View {
     @State private var commitmentsScreen: CommitmentsScreen?
     @State private var enteringRow: DayView.Row?
     @State private var enteringText = ""
+    @State private var enteringNoteRow: DayView.Row?
+    @State private var enteringNoteText = ""
 
     var body: some View {
         NavigationStack {
@@ -152,10 +154,14 @@ struct ContentView: View {
             // it stands in as the identity instead.
             ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset) { _, row in
                 let entry = row.numberEntry(asOf: today())
+                let noteEntry = row.noteEntry(asOf: today())
                 Button {
                     if let entry {
                         enteringText = entry.number.map { "\($0)" } ?? ""
                         enteringRow = row
+                    } else if let noteEntry {
+                        enteringNoteText = noteEntry.note ?? ""
+                        enteringNoteRow = row
                     } else {
                         try? screen.tick(row)
                     }
@@ -172,13 +178,13 @@ struct ContentView: View {
                                     .foregroundStyle(.red)
                             }
                         }
-                        if row.isKept || entry != nil {
+                        if row.isKept || entry != nil || noteEntry != nil {
                             Spacer()
                         }
                         if row.isKept {
                             Image(systemName: "checkmark")
                         }
-                        if entry != nil {
+                        if entry != nil || noteEntry != nil {
                             Image(systemName: "chevron.right")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -207,6 +213,38 @@ struct ContentView: View {
             }
             Button("Cancel", role: .cancel) {
                 enteringRow = nil
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { enteringNoteRow != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        enteringNoteRow = nil
+                    }
+                }
+            )
+        ) {
+            if let row = enteringNoteRow {
+                NavigationStack {
+                    TextEditor(text: $enteringNoteText)
+                        .padding()
+                        .navigationTitle(row.name)
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Cancel") {
+                                    enteringNoteRow = nil
+                                }
+                            }
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Save") {
+                                    try? screen.enter(enteringNoteText, on: row)
+                                    enteringNoteRow = nil
+                                }
+                            }
+                        }
+                }
             }
         }
     }
