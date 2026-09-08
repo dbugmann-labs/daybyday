@@ -163,7 +163,7 @@ kept.
   is of a commitment on a calendar date it is due on*. `Tick.swift` is **not** edited.
 - [x] 6.2 `a total commitment whose day's additions reach its target was kept on that date` — the
   requirement #137 shipped that this Story reverses, for the last kind.
-- [ ] 6.3 `a total commitment whose day's additions fall short of its target was not kept on it` —
+- [x] 6.3 `a total commitment whose day's additions fall short of its target was not kept on it` —
   all three clauses, the third of which crosses the target by 0.01 and must flip the answer.
 - [ ] 6.4 `additions past the target keep the day and change nothing else about it` — kept, **and**
   the day answers 150 rather than 120. An implementation clamping the sum at the target passes the

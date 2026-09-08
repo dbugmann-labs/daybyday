@@ -2002,3 +2002,22 @@ func aTotalCommitmentWhoseDaysAdditionsReachItsTargetWasKeptOnThatDate() {
     #expect(history.isKept(protein, on: monday))
     #expect(historyOfOneAddition.isKept(protein, on: monday))
 }
+
+@Test("a total commitment whose day's additions fall short of its target was not kept on it")
+func aTotalCommitmentWhoseDaysAdditionsFallShortOfItsTargetWasNotKeptOnIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(89.99, for: protein, on: monday)!)
+
+    #expect(!history.isKept(protein, on: monday))
+    #expect(!History().isKept(protein, on: monday))
+
+    history.add(Addition(0.01, for: protein, on: monday)!)
+    #expect(history.isKept(protein, on: monday))
+}
