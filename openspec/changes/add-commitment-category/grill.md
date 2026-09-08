@@ -1,6 +1,7 @@
 # Grill — add-commitment-category
 
-*21 questions over 5 rounds, 2026-09-08.*
+*23 questions over 6 rounds, 2026-09-08 — two of them asked after `spec-author`'s residual round,
+because the owner's reply to it opened a frontier node the grill had not reached.*
 
 ## Settled
 
@@ -77,6 +78,46 @@
     no reserved word — because that is what `CONTEXT.md` § Commitment name already says about the
     owner's own words.
 
+21. **While a drag is live, the commitments screen marks the group the row would land under.**
+    *The owner's remark at the residual round. It is the screen's answer and not the shell's —
+    `CONTEXT.md` § App shell decides nothing — so the screen owes "the category a drop at this
+    offset would join". Marking the heading was chosen over saying the word on the dragged row:
+    text under a moving thumb is the hardest thing on a phone to read. It exists because the seam
+    rule at § Residual 1 is ambiguous by construction, and this is what makes it legible.*
+22. **A drag alone can never lift one group above another, and that is accepted for this Story.**
+    *Found by reading the delta after the owner asked whether group ordering was possible at all:
+    a row dropped at the top joins the first group, so dragging Sport's rows above Supplements
+    dissolves Sport rather than lifting it. What works is two steps — drag the row into place,
+    then set its category back with the field, which changes no order — so a group's position is
+    set by re-labelling. Possible, and not discoverable.*
+23. **A draggable group heading is wanted, and is a Story of its own taken immediately after this
+    one.** *Recommended as its own Story and agreed. Groups gather: the delta's own
+    `a commitments screen draws what it keeps in groups` draws Magnesium beside Creatine over
+    Gym, so a group's members need not be adjacent in the order underneath, and moving a group
+    means gathering its commitments and relocating them as a block — the first act here that
+    moves more than one commitment at once. That needs a grill round of its own (what becomes of
+    a group's internal order, what a drop onto the uncategorised block means, what a stopped
+    commitment lying between two members does), which is exactly what folding it into a
+    205-scenario delta would have skipped.*
+
+## The residual round
+
+`spec-author` returned two questions that writing the delta made visible. Both answered
+2026-09-08, both on the recommendation, and both folded into `design.md`:
+
+1. **A drop on the seam between two groups joins the group *below*** — a row takes the category
+   of the entry it comes to stand before, and of the last entry drawn when it goes to the end.
+   *Keeps the seam the one offset `add-roster-order` fixed, with no conversion in the shell. The
+   cost is one unreachable slot, reached in two drops instead.*
+2. **The form offers the categories the roster is *keeping* commitments under**, not ones only a
+   stopped commitment carries. *The stopped list draws no headings, and a stopped commitment
+   brings its own category back when it is taken up again in one tap.*
+
+**The second is a finding about this grill.** Settled answer 7 says "the words on the roster's
+commitments" at a point where a roster holds commitments in three states, and the ambiguity is
+visible in the answer's own words. The first genuinely could not have been asked here: it only
+appears once a grouped drag is expressed as a single offset.
+
 ## Terms landed in CONTEXT.md
 
 - **Category** — the word a person put a commitment under, held by the roster against that
@@ -101,5 +142,9 @@
 2. **An ADR is owed and is `spec-author`'s**, amending or citing ADR-1023 and ADR-1030: why a
    category is the roster's when the kind is the commitment's. It is not left open in the sense
    of being undecided — the decision is settled at § Settled 4 — only unwritten.
+
+3. **The draggable group heading is a Story of its own** — § Settled 23 — to be written after this
+   Story's G4 and taken before #148 `add-commitment-editing`. Nothing in this delta depends on it,
+   and this delta's grouping rule is what it will be grilled against.
 
 Everything the frontier raised was answered.
