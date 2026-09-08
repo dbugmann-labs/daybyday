@@ -112,6 +112,18 @@ Things that are built, or deliberately not built, in a state someone will trip o
   three would share is deliberately not being designed until all three exist. Recorded 2026-09-07,
   at #138's G7. #138 has not merged — PR #151 is still a draft — so `main` does not have this yet
   and the tenth face is a forward reference until it lands.
+  **The tenth face has landed and an eleventh sits on top of it, of the same shape.** #138 merged, so
+  `History.number(for:on:)` is on `main` and the tenth face is no longer a forward reference.
+  `add-number-entry` (#139) then widens `DayView.Row` the same way: a row gives its number **out**,
+  through the `NumberEntry` its `numberEntry(asOf:)` offers, while still giving no tick out —
+  `tick(asOf:)` hands back a `Tick` that answers nothing about itself. So the same row now answers
+  one of its two questions with a value and the other with a yes or no, exactly as a `History` does
+  one level down. Like the ninth and tenth this is authorised by a requirement rather than an
+  oversight: the entry has to carry the number so the field opens holding what the day already
+  holds, which is that Story's grill answer 8, and the row still never *draws* it, which is answer 3.
+  The widening stays number-shaped — #140's note and #141's total will each face it again — and
+  `Commitment.schedule`, `Commitment.keptFrom` and the four schedule payloads are all still internal.
+  Recorded 2026-09-08, at #139's G7.
 - **A commitment of a kind nothing can yet record is a row that does nothing when tapped.**
   `add-commitment-kind` (#137) makes a commitment of the number, note or total kind formable and has
   `record` refuse a tick for it, so `day-screen`'s row for one offers nothing — by requirement, and on
@@ -123,6 +135,14 @@ Things that are built, or deliberately not built, in a state someone will trip o
   forbids the ordering and no edge on the tracker prevents it; the fix belongs to whichever lands first,
   and the cheapest one is an edge from #139 to #142. Recorded 2026-09-06, at #137's G7, from that
   change's `design.md` § *Impact*.
+  **Closed for the number kind, still open for the note and the total. 2026-09-08.**
+  `add-number-entry` (#139) gives a number commitment's row a number entry to offer in place of the
+  tick it cannot form, so a weight defined on the commitments screen is no longer a line that answers
+  nothing. A row of the **note** or **total** kind still offers nothing and still answers a tap with
+  silence, and nothing in the shipped app can reach that state — the commitments screen defines only
+  the plain kind until #142 lands. The ordering hazard this entry named is therefore half spent: if
+  #142 lands before #140 and #141, a person who defines a note or a total sees exactly the dead row
+  described above. The cheapest fix is the same one, an edge on the tracker from those two to #142.
 - **Two of #137's tests do not match their scenarios clause for clause, and check 4 cannot see it.**
   Found at `add-commitment-kind`'s second review, 2026-09-06. The G7 fix for a half-written range
   added a fourth malformed place to the test named *a roster store holding what could not be a roster
@@ -197,8 +217,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
   mutation path that makes the `ForEach` unsafe.
 
   A second face, same cause: `ContentView.swift` picks the refusal notice with
-  `row == screen.refusedChangeRow` — value equality — so two rows alike in name and kept-state would
-  both draw "Not saved. Try again.", against *A day screen tells on the row that was tapped*.
+  `row == screen.notice?.row` — value equality — so two rows alike in name and kept-state would
+  both draw the same notice, against *A day screen tells on the row that was tapped*. The property
+  was `refusedChangeRow` until `add-number-entry` (#139) renamed it and gave the notice a cause;
+  this line was updated with it on 2026-09-08, and the face is unchanged. The dated `## Settled`
+  entry below still says `refusedChangeRow`, correctly — it is a record of 2026-09-06, not a claim
+  about `main`.
 
   **There is no shell-only fix, so this is a Story rather than a chore.** The shell can see only
   `name` and `isKept`; a stable identity that is neither the value nor the position has to come from
