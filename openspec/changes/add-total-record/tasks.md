@@ -204,7 +204,7 @@ suite before writing a test; then one scenario at a time as above.
   instead.
 - [x] 7.2 `an addition made in a store is held by a second store opened at the same place while the
   first is still open`
-- [ ] 7.3 `a day's additions are read back in the order they were made` — including the last clause,
+- [x] 7.3 `a day's additions are read back in the order they were made` — including the last clause,
   which takes the last addition back **on the reopened store** and so proves the order survived the
   file rather than only the process. A document sorting a day's amounts passes the sum clause and
   fails this one.

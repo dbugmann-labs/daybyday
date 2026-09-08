@@ -1279,3 +1279,29 @@ func anAdditionMadeInAStoreIsHeldByASecondStoreOpenedAtTheSamePlaceWhileTheFirst
     #expect(second.history.total(for: protein, on: monday) == 30)
     #expect(!second.history.isKept(protein, on: monday))
 }
+
+@Test("a day's additions are read back in the order they were made")
+func aDaysAdditionsAreReadBackInTheOrderTheyWereMade() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let store = try RecordStore(at: place)
+    try store.add(Addition(45, for: protein, on: monday)!)
+    try store.add(Addition(30, for: protein, on: monday)!)
+
+    let later = try RecordStore(at: place)
+
+    #expect(later.history.total(for: protein, on: monday) == 75)
+
+    try later.removeLastAddition(for: protein, on: monday)
+
+    #expect(later.history.total(for: protein, on: monday) == 45)
+
+    let evenLater = try RecordStore(at: place)
+    #expect(evenLater.history.total(for: protein, on: monday) == 45)
+}
