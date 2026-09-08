@@ -175,7 +175,7 @@ kept.
   rule reads the wrong way round; that is a rule-5 stop, not a test to update.
 - [x] 6.7 `a total commitment with additions on a date still takes no number on it` — from § *A
   number is of a number commitment on a calendar date it is due on*. `Number.swift` is **not** edited.
-- [ ] 6.8 `a total commitment with additions on a date still takes no note on it` — from § *A note is
+- [x] 6.8 `a total commitment with additions on a date still takes no note on it` — from § *A note is
   of a note commitment on a calendar date it is due on*. `Note.swift` is **not** edited.
 
 ## 7. The form on disk
@@ -453,23 +453,23 @@ are **written with this folder** and are in the G4 diff, so these boxes confirm 
 `CONTEXT.md` needs nothing: the grill landed **Addition** and **Total entry** and amended **Total**
 and **Row**, and writing the delta turned up no further term.
 
-- [ ] 16.1 Confirm before the review that 1040 and 1041 are still the lowest free ADR numbers:
+- [x] 16.1 Confirm before the review that 1040 and 1041 are still the lowest free ADR numbers:
   `for r in $(git for-each-ref --format='%(refname)' refs/heads refs/remotes); do git ls-tree --name-only $r docs/adr/; done | sort -u`.
   1039 was the highest on any local or remote ref on 2026-09-08. **Report rather than renumber** if
   another branch has taken either (`AGENTS.md` rule 5).
-- [ ] 16.2 Confirm 1033's amendment still says what the code does, now that the code exists — in
+- [x] 16.2 Confirm 1033's amendment still says what the code does, now that the code exists — in
   particular that `History` takes the last addition back by `for:on:` as it takes a number and a note
   back, that nothing acquired an overload of `remove(_:)` taking an `Addition`, that no general
   take-back over a shared record type was introduced, and that its filename is unchanged, since
   `openspec/changes/archive/2026-09-07-add-number-record/tasks.md` § 8 names that path and the archive
   may not be edited.
-- [ ] 16.3 Confirm 1040 describes the code that was actually written: **one** `Digits`, called only
+- [x] 16.3 Confirm 1040 describes the code that was actually written: **one** `Digits`, called only
   from `DayView.Row.totalRecord(_:asOf:)`, with `record` carrying no digit bound of any kind.
   `grep -rn "38\|thirty-eight" src/DayByDayKit/Sources/` should reach `Digits.swift` and
   `DayScreen.read(_:)`'s existing bound and nothing in `Addition.swift`, `History.swift` or
   `RecordStore.swift`. An ADR that has drifted from the implementation is edited in place and
   stamped, per `docs/adr/README.md`; a decision that has actually changed is a stop, not an edit.
-- [ ] 16.4 Confirm 1041 describes what `enter(_:on:)` actually does on a total row: a blank commit
+- [x] 16.4 Confirm 1041 describes what `enter(_:on:)` actually does on a total row: a blank commit
   returns having kept nothing, taken nothing back and told nothing, and `takeBackLast(on:)` is the
   only way an addition leaves a day.
 
