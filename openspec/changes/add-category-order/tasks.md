@@ -177,7 +177,7 @@ and these boxes **confirm rather than write**.
   is a stop** (rule 5), not a number to write down.
 - [x] 8.2 `openspec validate add-category-order --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
-- [ ] 8.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+- [x] 8.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-category-order/` or anywhere under `openspec/specs/` is a **stop**, not a
   merge to resolve (rule 5) — it means another Story landed on `commitment` while this one was being
   written, and the six MODIFIED requirements were extracted verbatim from the `commitment` spec as it
