@@ -10,7 +10,7 @@ import Foundation
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 3
+    static let currentVersion = 4
 
     /// The form `removed` was introduced at: forms at or after this one carry it on every entry,
     /// forms before it never do. Kept apart from `currentVersion` on purpose, for the reason
@@ -19,6 +19,11 @@ struct RosterDocument: Codable {
     /// shape-against-form guard reads against this constant precisely so raising `currentVersion`
     /// alone cannot silently change which forms are expected to carry `removed`.
     static let removalIntroducedInVersion = 3
+
+    /// The form `category` was introduced at: forms at or after this one carry the key on every
+    /// entry — `null` where the commitment is under none — and forms before it never do. Kept
+    /// apart from `currentVersion` for the same reason `removalIntroducedInVersion` is.
+    static let categoryIntroducedInVersion = 4
 
     var version: Int
     var commitments: [RosterEntryRecord]
@@ -30,15 +35,17 @@ struct RosterDocument: Codable {
             RosterEntryRecord(
                 commitment: CommitmentRecord(entry.commitment),
                 keptUntil: entry.keptUntil.map(DateRecord.init),
-                removed: entry.isRemoved)
+                removed: entry.isRemoved,
+                category: entry.category)
         }
     }
 
-    /// Re-forms `roster` through `Roster.add`, `Roster.retire` and `Roster.remove`, so every
-    /// invariant the engine has applies to what comes off the disk and a document that could not
-    /// be a roster is refused rather than trusted. `nil` if any one entry in the document could
-    /// not be formed, if replaying it is refused by `Roster` itself, or if an entry is held as
-    /// removed with no day it was kept until — a state a roster has never been in.
+    /// Re-forms `roster` through `Roster.add`, `Roster.retire`, `Roster.remove` and `Roster.put`,
+    /// so every invariant the engine has applies to what comes off the disk and a document that
+    /// could not be a roster is refused rather than trusted. `nil` if any one entry in the
+    /// document could not be formed, if replaying it is refused by `Roster` itself, or if an
+    /// entry is held as removed with no day it was kept until — a state a roster has never been
+    /// in.
     func formRoster() -> Roster? {
         var roster = Roster()
         for entry in commitments {
@@ -47,6 +54,11 @@ struct RosterDocument: Codable {
             }
             guard roster.add(commitment) else {
                 return nil
+            }
+            if let category = entry.category {
+                guard roster.put(commitment, under: category) else {
+                    return nil
+                }
             }
             guard let keptUntilRecord = entry.keptUntil else {
                 guard entry.removed != true else {
@@ -85,8 +97,48 @@ struct RosterDocumentEnvelope: Decodable {
 /// entirely at every form before: presence means "this form", not "this commitment", which is
 /// what lets `RosterStore.init(at:)` check the whole document's shape against its declared
 /// version rather than trusting each entry on its own.
+///
+/// `category` is present exactly at forms at or after `RosterDocument.categoryIntroducedInVersion`
+/// too, but a plain `Optional` cannot say so on its own: `KeyedDecodingContainer.decodeIfPresent`
+/// reads an explicit `null` and an absent key alike as `nil`, and "this commitment is under no
+/// category" and "this form has no categories in it" must read as two different things
+/// (`design.md` § *Context*). `categoryKeyPresent` is `true` exactly when the "category" key was
+/// in the JSON at all, and is what `RosterStore.init(at:)` checks against the declared version;
+/// it is never itself written, because `encode(to:)` always writes `category` — `null` where the
+/// commitment is under none — so there is nothing for it to say at write time.
 struct RosterEntryRecord: Codable {
     var commitment: CommitmentRecord
     var keptUntil: DateRecord?
     var removed: Bool?
+    var category: String?
+    var categoryKeyPresent: Bool
+
+    private enum CodingKeys: String, CodingKey {
+        case commitment, keptUntil, removed, category
+    }
+
+    init(commitment: CommitmentRecord, keptUntil: DateRecord?, removed: Bool?, category: String?) {
+        self.commitment = commitment
+        self.keptUntil = keptUntil
+        self.removed = removed
+        self.category = category
+        self.categoryKeyPresent = true
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        commitment = try container.decode(CommitmentRecord.self, forKey: .commitment)
+        keptUntil = try container.decodeIfPresent(DateRecord.self, forKey: .keptUntil)
+        removed = try container.decodeIfPresent(Bool.self, forKey: .removed)
+        categoryKeyPresent = container.contains(.category)
+        category = try container.decodeIfPresent(String.self, forKey: .category)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(commitment, forKey: .commitment)
+        try container.encodeIfPresent(keptUntil, forKey: .keptUntil)
+        try container.encodeIfPresent(removed, forKey: .removed)
+        try container.encode(category, forKey: .category)
+    }
 }

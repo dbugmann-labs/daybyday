@@ -178,6 +178,30 @@ reached by defining the commitment again exactly. **Removing** is the roster's v
 what the person reads is the **app shell**'s. Agreed 2026-09-07 at the grill of
 `add-roster-removal` (#145).
 
+**Category** — the word a person put a commitment under: *supplements*, *sport*, whatever they
+type. It is the owner's own word and never one the app names — no fixed menu holds the day-one
+week, and the same argument that makes a **commitment name** the owner's rather than the system's
+makes this one theirs too. A commitment has at most one, and having none is an ordinary state
+rather than a gap: four lines of the day-one week are neither a supplement nor a habit. It is
+judged for saying something and for nothing else, exactly as a name is — but unlike a name it is
+optional, so a category of nothing but blank space is not refused, it *is* no category, and
+emptying it is how one is taken off.
+
+It is held by the **roster**, against each commitment, and never by the commitment, which stays
+four things. This is ADR-1023's argument reaching a second part: a tick embeds the whole
+commitment by value, so a fifth part a person can change would orphan every tick already
+recorded the moment they changed it. ADR-1030 let the **kind** be a fourth part only because a
+kind never changes — changing it is what changing a commitment is — and a category is the
+opposite, a label a person is expected to move.
+
+There is no list of categories anywhere. The categories that exist are exactly the words the
+roster's commitments carry, which is why a commitments screen can **offer the ones in use** and
+why a word whose last commitment lets it go simply stops existing. Offering them is not
+decoration: a phone autocapitalises, so *Supplements* typed once and *supplements* the next time
+would otherwise become two groups, silently — and the alternative, folding case when matching,
+would have the app choose which of a person's spellings a heading shows. Agreed 2026-09-08 at
+the grill of `add-commitment-category` (#147).
+
 **Roster** — the commitments a person keeps, held as one ordered set: every commitment that has been
 taken on, in the order it was taken on, and never two of the same one. It is the answer to "what do
 I keep", the thing a day is drawn from, and the thing a commitment is eventually retired out of. It
@@ -236,6 +260,17 @@ scrolling — is not something a roster can work out. The order runs over everyt
 kept, stopped and removed alike, so a stopped commitment keeps the place it has and taking it up
 again returns it there. What changes it is **moving** a commitment, and nothing else.
 
+**Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). A roster also holds, for
+each commitment, the **category** it is under, or that it is under none. Like the day a commitment
+was kept until and like the fact that one was removed, it is the roster's and not the commitment's,
+so changing it re-keys nothing and two commitments alike in all four parts are still the same
+commitment whatever they are filed under. A roster **changes a commitment's category**, and that is
+a fifth act beside taking one on, stopping keeping one, removing one and moving one. It is offered
+only on a commitment the roster is *keeping*: on a stopped or a removed one it is refused and said,
+exactly as a move is, and a stopped commitment keeps the category it had until it is taken up again.
+Taking one up again with a different category is the one place the two meet — the offered category
+wins, because it is what the person just said.
+
 **Move** — the roster's fourth act on a commitment, beside taking one on, stopping keeping one and
 removing one: putting a commitment it is keeping at a place among the ones it is keeping. It is the
 only thing that ever changes a **roster**'s order, and the only act a person performs on that order.
@@ -247,6 +282,29 @@ a roster is, and so is a place that is not one of the places there are. The pers
 drag on the **commitments screen**'s kept list, and that list is the only one it is offered on: a
 stopped commitment's place is one it already has. Agreed 2026-09-07 at the grill of
 `add-roster-order` (#146).
+
+**Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). It is still the only thing
+that changes a roster's order, and it is no longer only a move: a move is asked for with a place
+*inside a* **group**, so a commitment moved into another **category**'s group is put where it was
+moved to *and* put under that category, and one moved among the commitments under no category is
+moved and has its category cleared. The category field on the **commitments screen** remains the
+other way to change one, and it changes no order — a commitment given a category is drawn in that
+category's group while staying exactly where the roster holds it, so clearing the category draws it
+back where it never stopped being. One thing no move can do, and this is deliberate as far as #147:
+it cannot lift a whole **group** above another, because every move joins the group it names, so
+moving a group's rows upward dissolves the group rather than moving it. Setting the category back
+afterwards does it in two steps, and moving a group as one act is a Story of its own.
+
+**Corrected 2026-09-08**, at the second § 9.5 walkthrough of the same Story, and the amendment above
+is written in terms of a *move* because of it. As first written it said a person delivers this by
+**dragging** a row into another group's rows. **What a move is has not changed** — it still carries a
+group and a place inside it, and the roster still moves and recategorises in one act — but **that
+gesture does not exist**: a drag reorders within one group and no further, because `.onMove` names
+one collection, and the hand-written drop that was to cross groups was built twice, walked on the
+phone twice and given up. Refiling across groups is the **commitments screen**'s *Category* action on
+the row. The correction is to the clause and not to the decision, which is why it is stamped here
+rather than made quietly: the domain is the same and only what a person can *do* is narrower. The
+gesture is a want again, and it has a Story of its own (#168).
 
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
@@ -464,6 +522,12 @@ merely sorting. It keeps it the way it always has, as the order the commitments 
 nothing about what is stored changes and a roster written before this reads back with its taken-on
 order as the order its owner starts from.
 
+**Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). A roster store also keeps,
+against each commitment, the **category** it is under. A roster written before a commitment had one
+reads back with every commitment under none, in the way one written before a commitment carried a
+**kind** reads back as the plain kind: nothing already kept reads back differently, and no category
+is invented for it.
+
 **Day one** — the commitments a fresh install begins with, before anyone has defined one: the
 owner's own week, quoted in `docs/backlog.md` § *What day one looks like*. It is written into a
 roster that holds nothing at all, and only then — a roster emptied by stopping every commitment
@@ -516,6 +580,25 @@ reader could not tell apart are the same day view, even where one was offered a 
 not due on the date or read a history holding a tick it never looked up. What was offered is the
 caller's to remember; the day view keeps the answer. Corrected 2026-09-02 at #70's G7, where the
 requirement had claimed identity followed the arguments.
+
+**Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). A day view draws its rows
+in **groups**, one per **category**: a group sits where its first commitment sits in the person's
+order, and the commitments under no category come last, under no heading. It is not a rule the day
+view invented — the order is still the person's, read off the roster, and grouping by anything the
+system worked out was refused for the reason it has always been refused. A group whose commitments
+are none of them due is not drawn at all, because a day view shows what a date asks of you and an
+empty heading would be a claim about the day rather than about what a person keeps. A day view still
+changes nothing: the groups are drawn, and the gesture that sets a category is the **commitments
+screen**'s.
+
+**Corrected 2026-09-08**, while the delta of #147 was being written. The amendment above first
+called the grouping *"the one ordering it makes that is not the order it was handed"*, and a day view
+makes none: it is **handed** its commitments already in groups, by the **roster** that holds both the
+order and the categories, and draws them in the order it was handed them. Placing a group is the
+roster's rule and so is putting the uncategorised last; the day view's own contribution is the one
+thing about a date — a group with nothing due is not drawn. That leaves *"a day view orders nothing
+of its own"* true without an exception, which is what ADR-1038 records and what let the requirement
+saying so stay out of #147's delta entirely.
 
 **Row** — one commitment's line in a day view: its name, the **rhythm in words** it runs on, whether
 it is kept, and the place a tick is made. Ticking belongs to the row and therefore to `day-screen`:
@@ -622,6 +705,15 @@ it already holds the commitments and the store — and that where a day view *gi
 ends of the calendar, a day screen **stays exactly as it is**, because a screen is not a value and
 staying put is an answer it can give. A day screen also moves **straight back to today**, which a
 day view has no way to do: it holds no today to go back to.
+
+**Amended 2026-09-08**, at the Feature grill that reopened `FEAT: day-screen` (#27). A day screen
+is also moved by a **horizontal swipe** — left onto the next day, right onto the previous one,
+beside the chevrons rather than instead of them — and that gesture is the screen's permanently: no
+row on a day screen may ever take a swipe action, which is the opposite of the **commitments
+screen**, where a row swipe is how a commitment is stopped, resumed and removed. The swipe itself
+decides nothing and is the **app shell**'s, since it calls the same two acts the chevrons already
+call; what is decided, and what a later want for a day-screen row affordance has to read first, is
+who owns the gesture. ADR-1042.
 
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **record store** it reads a history from and writes a tick back to, the
@@ -766,6 +858,41 @@ on the kept list alone, because a stopped commitment already has its place; a mo
 is the fifth kind of **refused change**, and a commitment dropped back where it already was is not
 one of them — that is a move the screen makes, whose result is the roster it already had, and it
 neither writes anything nor answers a notice already standing.
+
+**Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). A commitments screen also
+**gives a commitment a category and takes one off**, on the form that defines one and on the kept
+list afterwards, and it **offers the categories already in use** rather than asking for the word
+twice. Its kept list is drawn in groups, placed as a **day view** places them — a group where its
+first commitment sits, the uncategorised last and unheaded — while the stopped list stays one flat
+list, since it is not what a person reads daily. Its **move** now carries a second meaning: a row
+moved into another group is moved *and* recategorised, and one moved among the uncategorised has
+its category cleared. A category it will not change is a **refused change** like every other, and
+the categories it offers are read off the roster it is drawing, so a word its last commitment lets
+go is gone from the form as well.
+
+**Corrected 2026-09-08**, at the § 9.5 walkthrough of the same Story, replacing a paragraph written
+after its residual round that said a commitments screen answers *the group a drop would join* while
+a drag is live. **A drop carries the group it landed in**, and the offset it carries is counted over
+the entries drawn in that group rather than over the whole list the screen draws. The rule it
+replaces — a drop on the seam between two groups joins the one below — was tried on the phone and
+failed on the case it was cheapest about: over a flat list the place after a group's last row and
+the place before the next group's first are one offset, so the end of a group was unreachable and a
+row could not be appended to one at all. Counting inside the group gives those two places one offset
+each. There is then no seam between groups for a drop to be ambiguous about, so the screen answers
+nothing extra about where a drag would land: what a person sees is the group they are dragging in,
+which the **app shell** draws as a section and which cannot move with the row.
+
+**Corrected again 2026-09-08**, at the second walkthrough, and this one is about the gesture and not
+about the screen; the amendment above reads *move* where it first read *drag*. A commitments screen
+still moves a commitment by being given a commitment, a group and an offset counted inside that
+group, and it still puts one under a category; both are what its requirements say and both are
+tested. **What a person does with them is narrower than was written.**
+A drag on the kept list reorders a row **within its own group** and no further, because `.onMove`
+names one collection and a group is a section; **refiling across groups is the row's *Category*
+action**, which is offered on the kept list beside *Stop* and *Remove*. The drag that was to cross
+groups was specified, built, walked on the phone, rebuilt and walked again, and given up
+(`add-commitment-category`'s `grill.md` § *Settled* 27). It is a want again, and the Story that gives
+group headings a drag of their own (#168) is where it is cheapest.
 
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most

@@ -149,61 +149,78 @@ struct ContentView: View {
                 Text("The roster was written by a newer version of DayByDay and must not be deleted.")
             }
 
-            // `Row` carries no identity of its own beyond `isKept` and `name` (`DayView.swift`
-            // keeps `commitment` and `date` internal to the kit), and `isKept` is exactly what a
-            // tap flips — keying `ForEach` on the row's value would make SwiftUI see a tap as one
-            // row removed and another inserted. The array's position is stable across a tap, so
-            // it stands in as the identity instead.
-            ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset) { _, row in
-                let entry = row.numberEntry(asOf: today())
-                let noteEntry = row.noteEntry(asOf: today())
-                let totalEntry = row.totalEntry(asOf: today())
-                Button {
-                    if let entry {
-                        enteringText = entry.number.map { "\($0)" } ?? ""
-                        enteringRow = row
-                    } else if let noteEntry {
-                        enteringNoteText = noteEntry.note ?? ""
-                        enteringNoteRow = row
-                    } else if totalEntry != nil {
-                        enteringTotalText = ""
-                        enteringTotalRow = row
-                    } else {
-                        try? screen.tick(row)
+            // A `Section` per group, the category as its header and none where there is no
+            // category — the same arrangement `CommitmentsView`'s kept list takes, and where this
+            // screen's own half of the boundary before the ungrouped rows comes from.
+            // `design.md` § *The shell rides this Story*.
+            ForEach(screen.dayView.groups, id: \.category) { group in
+                Section {
+                    // `Row` carries no identity of its own beyond `isKept` and `name`
+                    // (`DayView.swift` keeps `commitment` and `date` internal to the kit), and
+                    // `isKept` is exactly what a tap flips — keying `ForEach` on the row's value
+                    // would make SwiftUI see a tap as one row removed and another inserted. The
+                    // offset within this group's own `ForEach` is stable across a tap, exactly as
+                    // the flat offset was, so it stands in as the identity instead.
+                    ForEach(Array(group.rows.enumerated()), id: \.offset) { _, row in
+                        let entry = row.numberEntry(asOf: today())
+                        let noteEntry = row.noteEntry(asOf: today())
+                        let totalEntry = row.totalEntry(asOf: today())
+                        Button {
+                            if let entry {
+                                enteringText = entry.number.map { "\($0)" } ?? ""
+                                enteringRow = row
+                            } else if let noteEntry {
+                                enteringNoteText = noteEntry.note ?? ""
+                                enteringNoteRow = row
+                            } else if totalEntry != nil {
+                                enteringTotalText = ""
+                                enteringTotalRow = row
+                            } else {
+                                try? screen.tick(row)
+                            }
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    commitmentLine(
+                                        Text(row.name)
+                                            .foregroundStyle(row.isKept ? .secondary : .primary),
+                                        rhythmInWords: row.rhythmInWords)
+                                    if let totalEntry {
+                                        Text(totalEntry.soFarOfTarget)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    if row == screen.notice?.row {
+                                        Text(screen.notice?.cause ?? "Not saved. Try again.")
+                                            .font(.caption)
+                                            .foregroundStyle(.red)
+                                    }
+                                }
+                                if row.isKept || entry != nil || noteEntry != nil || totalEntry != nil {
+                                    Spacer()
+                                }
+                                if row.isKept {
+                                    Image(systemName: "checkmark")
+                                }
+                                if entry != nil || noteEntry != nil || totalEntry != nil {
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
                     }
-                } label: {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            commitmentLine(
-                                Text(row.name)
-                                    .foregroundStyle(row.isKept ? .secondary : .primary),
-                                rhythmInWords: row.rhythmInWords)
-                            if let totalEntry {
-                                Text(totalEntry.soFarOfTarget)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            if row == screen.notice?.row {
-                                Text(screen.notice?.cause ?? "Not saved. Try again.")
-                                    .font(.caption)
-                                    .foregroundStyle(.red)
-                            }
-                        }
-                        if row.isKept || entry != nil || noteEntry != nil || totalEntry != nil {
-                            Spacer()
-                        }
-                        if row.isKept {
-                            Image(systemName: "checkmark")
-                        }
-                        if entry != nil || noteEntry != nil || totalEntry != nil {
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                } header: {
+                    if let category = group.category {
+                        Text(category)
                     }
                 }
             }
         }
+        // Same measured value as `CommitmentsView`'s kept list — see the comment there for how
+        // it was determined.
+        .listSectionSpacing(12)
+        .simultaneousGesture(daySwipeGesture)
         .alert(
             enteringRow?.name ?? "",
             isPresented: Binding(
@@ -300,5 +317,26 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    /// ADR-1042: a horizontal swipe on the day screen moves the day it is showing, beside the
+    /// chevrons rather than instead of them — the same `showPreviousDay()` and `showNextDay()`
+    /// they call, so a move with nowhere to go behaves exactly as a chevron tap already does.
+    /// `minimumDistance` keeps a plain tap on a row or a button from ever reaching `onEnded`, and
+    /// comparing the two axes keeps an ordinary vertical scroll from being read as a day move.
+    /// `.simultaneousGesture` is what lets the list's own scrolling and its rows' own taps keep
+    /// working underneath it — this recognizer only ever acts on release.
+    private var daySwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 40)
+            .onEnded { value in
+                guard abs(value.translation.width) > abs(value.translation.height) else {
+                    return
+                }
+                if value.translation.width < 0 {
+                    screen.showNextDay()
+                } else {
+                    screen.showPreviousDay()
+                }
+            }
     }
 }

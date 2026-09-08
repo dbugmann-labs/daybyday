@@ -48,15 +48,30 @@ public final class CommitmentsScreen {
         roster.entries.compactMap { $0.keptUntil == nil || $0.isRemoved ? nil : $0.commitment }
     }
 
-    /// Sets `kept` and `stopped` from `store`, or empties both when `store` is `nil`. The one
-    /// site every read of the roster funnels through, so that neither list is ever ahead of what
-    /// is at the place.
+    /// Sets `keptGroups`, `kept` and `stopped` from `store`, or empties all three when `store`
+    /// is `nil`. The one site every read of the roster funnels through, so that no list is ever
+    /// ahead of what is at the place.
     private func refreshLists(from store: RosterStore?) {
-        kept = store?.roster.commitments ?? []
+        keptGroups = store?.roster.groups ?? []
+        kept = keptGroups.flatMap(\.commitments)
         stopped = store.map { Self.stopped(in: $0.roster) } ?? []
     }
 
-    /// The commitments the roster is keeping, in the order the roster holds them.
+    /// What this screen keeps, in **groups**: a group is a category, or no category at all,
+    /// together with the entries under it, in the order the roster holds them. The groups, their
+    /// order and what is in each are the roster's answer, read off it and drawn — this screen
+    /// sorts none of them and invents none of its own. `design.md` § *The seam*.
+    public private(set) var keptGroups: [Roster.Group] = []
+
+    /// The categories the commitments this screen keeps are under, each once, in the order their
+    /// groups are drawn. A category only a stopped commitment is under is not among them — the
+    /// stopped list draws no headings, so offering it here would offer a heading nothing kept is
+    /// under.
+    public var categoriesInUse: [String] { keptGroups.compactMap(\.category) }
+
+    /// The commitments the roster is keeping, read across `keptGroups` in the order they are
+    /// drawn — the same commitments `keptGroups` holds and each exactly once, but not
+    /// necessarily in the roster's own flat order once more than one category is in play.
     public private(set) var kept: [Commitment] = []
 
     /// The commitments the roster has stopped keeping, in the order the roster holds them.
@@ -106,6 +121,7 @@ public final class CommitmentsScreen {
         case keepingAgain(Commitment, Refusal)
         case removing(Commitment, Refusal)
         case moving(Commitment, Refusal)
+        case categorising(Commitment, Refusal)
     }
 
     /// Why a change was refused. `nil` from any of the five below means it was kept at the place
@@ -126,7 +142,9 @@ public final class CommitmentsScreen {
 
     /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`, and
     /// `keptFrom`, and takes it on. Takes a commitment the roster has stopped up again.
-    public func define(name: String, on rhythm: Rhythm, keptFrom: CalendarDate) -> Refusal? {
+    public func define(name: String, on rhythm: Rhythm, keptFrom: CalendarDate, under category: String?)
+        -> Refusal?
+    {
         if case .weekdays(let weekdays) = rhythm, weekdays.isEmpty {
             refusedChange = .defining(.dueOnNoDay)
             return .dueOnNoDay
@@ -148,7 +166,7 @@ public final class CommitmentsScreen {
         }
 
         do {
-            guard try rosterStore.add(commitment) else {
+            guard try rosterStore.add(commitment, under: category) else {
                 refusedChange = .defining(.alreadyKept)
                 return .alreadyKept
             }
@@ -291,21 +309,95 @@ public final class CommitmentsScreen {
         return nil
     }
 
-    /// Moves `commitment` to `offset`, counted over what this screen keeps as they stand before
-    /// the move — the same arithmetic `Roster.move` takes and exactly what `onMove(perform:)`
-    /// hands over, so nothing here converts it. Does nothing and says nothing, neither refusing
-    /// nor changing anything, when `commitment` is not in what this screen keeps — stopped or on
-    /// neither list, `design.md` § *An offset outside the range* is why a stopped commitment is
-    /// answered the same as one on neither list rather than as a refusal — or when `offset` is
-    /// outside the commitments it keeps, which is a place that is not there rather than a move
-    /// the roster refuses. Answers `nil` on the change being kept, including a move that leaves
-    /// what is kept exactly where it was. Neither `awaitingConfirmation` nor `awaitingRemoval` is
-    /// touched: a move takes neither slot.
-    @discardableResult public func move(_ commitment: Commitment, toOffset offset: Int) -> Refusal? {
+    /// Puts `commitment`, which this screen keeps, under `category`, or under none where
+    /// `category` is `nil`. Does nothing and says nothing, neither refusing nor changing
+    /// anything, when `commitment` is not in what this screen keeps — the guard is
+    /// `kept.contains(commitment)` alone, exactly as `move`'s is, and for the same reason: a
+    /// stopped commitment is not on the list a person is filing things on.
+    @discardableResult public func put(_ commitment: Commitment, under category: String?)
+        -> Refusal?
+    {
         guard kept.contains(commitment) else {
             return nil
         }
-        guard (0...kept.count).contains(offset) else {
+        guard let rosterStore else {
+            refusedChange = .categorising(commitment, .notKept)
+            return .notKept
+        }
+
+        let rosterBeforePut = rosterStore.roster
+        do {
+            try rosterStore.put(commitment, under: category)
+        } catch {
+            refusedChange = .categorising(commitment, .notKept)
+            return .notKept
+        }
+
+        // Settled answer 13, read the same way `move` reads it: a call that reaches the place
+        // with no change to make does not end a standing refused-change notice.
+        if rosterStore.roster != rosterBeforePut {
+            refusedChange = nil
+        }
+        refreshLists(from: rosterStore)
+        return nil
+    }
+
+    /// The roster's own offset a drop of `commitment` at `offset` — counted over the entries
+    /// `group` draws — lands at. `design.md` § *The offset a screen takes is over the group it
+    /// was dropped in*: the entry `group` draws at `offset`, or the last entry `group` draws
+    /// where `offset` is the number it draws — except on the two offsets that leave `commitment`
+    /// where it is drawn (the one it is drawn at in `group`, and the one just after, both only
+    /// where `group` is the group `commitment` is already in), which answer with the place
+    /// `commitment` already has, because a drop that has moved nothing has not recategorised
+    /// anything either. `nil` when `offset` is outside what `group` draws, or there is no roster
+    /// to place it in.
+    private func rosterOffset(for commitment: Commitment, droppedAt offset: Int, in group: Roster.Group)
+        -> Int?
+    {
+        guard (0...group.commitments.count).contains(offset) else {
+            return nil
+        }
+
+        let ownIndex = group.commitments.firstIndex(of: commitment)
+        if let ownIndex, offset == ownIndex || offset == ownIndex + 1 {
+            return rosterStore?.roster.commitments.firstIndex(of: commitment)
+        }
+
+        // `offset == group.commitments.count` names the place immediately after the last entry
+        // *this group* draws — not after the roster's own last kept commitment, which may sit in
+        // a different group entirely.
+        if offset == group.commitments.count {
+            guard let last = group.commitments.last,
+                let lastRosterOffset = rosterStore?.roster.commitments.firstIndex(of: last)
+            else {
+                return nil
+            }
+            return lastRosterOffset + 1
+        }
+
+        return rosterStore?.roster.commitments.firstIndex(of: group.commitments[offset])
+    }
+
+    /// Moves `commitment` to `offset`, counted over the entries drawn in the group named by
+    /// `category` as they stand before the move — not over `kept`, `design.md` § *The offset a
+    /// screen takes is over the group it was dropped in* — and puts it under `category`. Does
+    /// nothing and says nothing, neither refusing nor changing anything, when `commitment` is
+    /// not in what this screen keeps — stopped or on neither list — when `category` names a
+    /// group nothing this screen keeps is under, or when `offset` is outside what that group
+    /// draws, each a place that is not there rather than a move the roster refuses. Answers
+    /// `nil` on the change being kept, including a move that leaves what is kept exactly where
+    /// it was. Neither `awaitingConfirmation` nor `awaitingRemoval` is touched: a move takes
+    /// neither slot.
+    @discardableResult public func move(
+        _ commitment: Commitment, toOffset offset: Int, under category: String?
+    ) -> Refusal? {
+        guard kept.contains(commitment) else {
+            return nil
+        }
+        guard let group = keptGroups.first(where: { $0.category == category }) else {
+            return nil
+        }
+        guard let rosterOffset = rosterOffset(for: commitment, droppedAt: offset, in: group) else {
             return nil
         }
         guard let rosterStore else {
@@ -315,7 +407,7 @@ public final class CommitmentsScreen {
 
         let rosterBeforeMove = rosterStore.roster
         do {
-            try rosterStore.move(commitment, toOffset: offset)
+            try rosterStore.move(commitment, toOffset: rosterOffset, under: category)
         } catch {
             refusedChange = .moving(commitment, .notKept)
             return .notKept
