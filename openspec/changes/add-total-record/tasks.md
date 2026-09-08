@@ -382,9 +382,9 @@ private twins at the foot of `DayScreen.swift`.
 - [x] 13.12 `what a day screen tells on a row ends when an addition is made and kept`
 - [x] 13.13 `what a day screen tells on a row ends when a last addition is taken back and kept`
 - [x] 13.14 `a commit saying nothing in a total entry leaves what a day screen is telling standing`
-- [ ] 13.15 `a commit on a total row on a day screen that is not keeping a record is told nothing on
+- [x] 13.15 `a commit on a total row on a day screen that is not keeping a record is told nothing on
   the row` — four clauses, including the take-back.
-- [ ] 13.16 `a commit on a total row for a day that has not arrived is told nothing on the row`
+- [x] 13.16 `a commit on a total row for a day that has not arrived is told nothing on the row`
 - [ ] 13.17 `taking back on a row that offers no take-back is told nothing on the row` — and does not
   end what is already told on another row.
 - [x] 13.18 **Not a new test, and it is a rewrite.** The existing test named `a commit on a row that

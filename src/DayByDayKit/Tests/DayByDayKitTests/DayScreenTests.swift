@@ -5193,6 +5193,64 @@ func aCommitSayingNothingInATotalEntryLeavesWhatADayScreenIsTellingStanding() th
 }
 
 @MainActor
+@Test("a commit on a total row on a day screen that is not keeping a record is told nothing on the row")
+func aCommitOnATotalRowOnADayScreenThatIsNotKeepingARecordIsToldNothingOnTheRow() throws {
+    let (place, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a record".utf8).write(to: place)
+
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("30", on: screen.dayView.rows[0])
+
+    #expect(screen.notice == nil)
+    #expect(screen.recordState == .unreadable)
+
+    try screen.enter("0", on: screen.dayView.rows[0])
+    try screen.enter("1.2.3", on: screen.dayView.rows[0])
+    try screen.enter("", on: screen.dayView.rows[0])
+
+    #expect(screen.notice == nil)
+
+    try screen.takeBackLast(on: screen.dayView.rows[0])
+
+    #expect(screen.notice == nil)
+}
+
+@MainActor
+@Test("a commit on a total row for a day that has not arrived is told nothing on the row")
+func aCommitOnATotalRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let protein = Commitment(
+        name: "Protein", schedule: daily, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    screen.showNextDay()
+    try screen.enter("0", on: screen.dayView.rows[0])
+
+    #expect(screen.notice == nil)
+    #expect(!screen.dayView.rows[0].isKept)
+
+    try screen.takeBackLast(on: screen.dayView.rows[0])
+
+    #expect(screen.notice == nil)
+}
+
+@MainActor
 @Test("a commit on a note row for a day that has not arrived is told nothing on the row")
 func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
     let (place, rosterPlace) = freshPlaces()
