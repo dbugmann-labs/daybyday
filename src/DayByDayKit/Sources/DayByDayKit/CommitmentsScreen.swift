@@ -140,19 +140,6 @@ public final class CommitmentsScreen {
         case notKept
     }
 
-    /// The group a drop would join, answered by `landing(dropping:at:)` while a drag is live.
-    /// Three cases and not an `Optional`: `nil` could mean both "the group under no category"
-    /// and "no group at all", which is exactly the seam `Roster.move`'s own `under: String?`
-    /// could be silently wrong at. `design.md` § *The seam*.
-    public enum Landing: Equatable, Sendable {
-        /// The drop would join the group under `category`.
-        case under(String)
-        /// The drop would join the commitments under no category.
-        case underNoCategory
-        /// There is no group the drop would join.
-        case nowhere
-    }
-
     /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`, and
     /// `keptFrom`, and takes it on. Takes a commitment the roster has stopped up again.
     public func define(name: String, on rhythm: Rhythm, keptFrom: CalendarDate, under category: String?)
@@ -355,96 +342,72 @@ public final class CommitmentsScreen {
         return nil
     }
 
-    /// Where a drop of `commitment` at `offset` — counted over what this screen draws — lands:
-    /// the offset it takes in the roster's own order, and the group it joins. The one rule
-    /// `move` and `landing(dropping:at:)` both read, computed once here so the two can never say
-    /// different things. `design.md` § *The offset a screen takes is over what it draws*: the
-    /// entry drawn at `offset`, or the last entry drawn where `offset` is the number drawn —
-    /// except on the two offsets that leave `commitment` where it is drawn (the one it is drawn
-    /// at, and the one just after), which answer with the place `commitment` already has,
-    /// because a drop that has moved nothing has not recategorised anything either. `nil` when
-    /// `commitment` is not in what this screen keeps, `offset` is outside what it draws, or
-    /// there is no roster to place it in.
-    private func landingPlace(for commitment: Commitment, at offset: Int) -> (
-        rosterOffset: Int, group: Roster.Group
-    )? {
-        guard let drawnIndex = kept.firstIndex(of: commitment), (0...kept.count).contains(offset)
-        else {
+    /// The roster's own offset a drop of `commitment` at `offset` — counted over the entries
+    /// `group` draws — lands at. `design.md` § *The offset a screen takes is over the group it
+    /// was dropped in*: the entry `group` draws at `offset`, or the last entry `group` draws
+    /// where `offset` is the number it draws — except on the two offsets that leave `commitment`
+    /// where it is drawn (the one it is drawn at in `group`, and the one just after, both only
+    /// where `group` is the group `commitment` is already in), which answer with the place
+    /// `commitment` already has, because a drop that has moved nothing has not recategorised
+    /// anything either. `nil` when `offset` is outside what `group` draws, or there is no roster
+    /// to place it in.
+    private func rosterOffset(for commitment: Commitment, droppedAt offset: Int, in group: Roster.Group)
+        -> Int?
+    {
+        guard (0...group.commitments.count).contains(offset) else {
             return nil
         }
 
-        let landingCommitment: Commitment?
-        let group: Roster.Group?
-        if offset == drawnIndex || offset == drawnIndex + 1 {
-            landingCommitment = commitment
-            group = keptGroups.first { $0.commitments.contains(commitment) }
-        } else if offset == kept.count {
-            landingCommitment = nil
-            group = keptGroups.last
-        } else {
-            landingCommitment = kept[offset]
-            group = keptGroups.first { $0.commitments.contains(kept[offset]) }
-        }
-        guard let group else {
-            return nil
+        let ownIndex = group.commitments.firstIndex(of: commitment)
+        if let ownIndex, offset == ownIndex || offset == ownIndex + 1 {
+            return rosterStore?.roster.commitments.firstIndex(of: commitment)
         }
 
-        let rosterOffset: Int?
-        if let landingCommitment {
-            rosterOffset = rosterStore?.roster.commitments.firstIndex(of: landingCommitment)
-        } else {
-            rosterOffset = rosterStore?.roster.commitments.count
+        // `offset == group.commitments.count` names the place immediately after the last entry
+        // *this group* draws — not after the roster's own last kept commitment, which may sit in
+        // a different group entirely.
+        if offset == group.commitments.count {
+            guard let last = group.commitments.last,
+                let lastRosterOffset = rosterStore?.roster.commitments.firstIndex(of: last)
+            else {
+                return nil
+            }
+            return lastRosterOffset + 1
         }
-        guard let rosterOffset else {
-            return nil
-        }
-        return (rosterOffset: rosterOffset, group: group)
+
+        return rosterStore?.roster.commitments.firstIndex(of: group.commitments[offset])
     }
 
-    /// Which group a drop of `commitment` at `offset` would join, while a drag is live. Answers
-    /// `.nowhere` when `commitment` is not in what this screen keeps or `offset` is outside what
-    /// it draws — including a screen that keeps nothing at all. Changes nothing: no order, no
-    /// category, no refused change, nothing written at the roster place. `design.md` § *The mark
-    /// a live drag leaves*.
-    public func landing(dropping commitment: Commitment, at offset: Int) -> Landing {
-        guard let group = landingPlace(for: commitment, at: offset)?.group else {
-            return .nowhere
-        }
-        guard let category = group.category else {
-            return .underNoCategory
-        }
-        return .under(category)
-    }
-
-    /// Moves `commitment` to `offset`, counted over what this screen keeps as they stand before
-    /// the move — the drawn list, not the roster's own order, `design.md` § *The offset a screen
-    /// takes is over what it draws* — and puts it under the category of the group `offset` falls
-    /// in, exactly as `landing(dropping:at:)` answers. Does nothing and says nothing, neither
-    /// refusing nor changing anything, when `commitment` is not in what this screen keeps —
-    /// stopped or on neither list, `design.md` § *An offset outside the range* is why a stopped
-    /// commitment is answered the same as one on neither list rather than as a refusal — or when
-    /// `offset` is outside the commitments it draws, which is a place that is not there rather
-    /// than a move the roster refuses. Answers `nil` on the change being kept, including a move
-    /// that leaves what is kept exactly where it was. Neither `awaitingConfirmation` nor
-    /// `awaitingRemoval` is touched: a move takes neither slot.
-    @discardableResult public func move(_ commitment: Commitment, toOffset offset: Int) -> Refusal? {
+    /// Moves `commitment` to `offset`, counted over the entries drawn in the group named by
+    /// `category` as they stand before the move — not over `kept`, `design.md` § *The offset a
+    /// screen takes is over the group it was dropped in* — and puts it under `category`. Does
+    /// nothing and says nothing, neither refusing nor changing anything, when `commitment` is
+    /// not in what this screen keeps — stopped or on neither list — when `category` names a
+    /// group nothing this screen keeps is under, or when `offset` is outside what that group
+    /// draws, each a place that is not there rather than a move the roster refuses. Answers
+    /// `nil` on the change being kept, including a move that leaves what is kept exactly where
+    /// it was. Neither `awaitingConfirmation` nor `awaitingRemoval` is touched: a move takes
+    /// neither slot.
+    @discardableResult public func move(
+        _ commitment: Commitment, toOffset offset: Int, under category: String?
+    ) -> Refusal? {
         guard kept.contains(commitment) else {
             return nil
         }
-        guard (0...kept.count).contains(offset) else {
+        guard let group = keptGroups.first(where: { $0.category == category }) else {
+            return nil
+        }
+        guard let rosterOffset = rosterOffset(for: commitment, droppedAt: offset, in: group) else {
             return nil
         }
         guard let rosterStore else {
             refusedChange = .moving(commitment, .notKept)
             return .notKept
         }
-        guard let (rosterOffset, group) = landingPlace(for: commitment, at: offset) else {
-            return nil
-        }
 
         let rosterBeforeMove = rosterStore.roster
         do {
-            try rosterStore.move(commitment, toOffset: rosterOffset, under: group.category)
+            try rosterStore.move(commitment, toOffset: rosterOffset, under: category)
         } catch {
             refusedChange = .moving(commitment, .notKept)
             return .notKept
