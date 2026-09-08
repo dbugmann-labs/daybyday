@@ -109,15 +109,15 @@ Driven at `CommitmentsScreen.move(group:toOffset:)`, in
 Nothing here adds a member. Each box is a carried requirement whose prose this delta corrected, and
 each is verified by the new scenario named in it plus the carried tests staying untouched.
 
-- [ ] 5.1 *a commitments screen holds a refused group move against the category it was asked to move*
+- [x] 5.1 *a commitments screen holds a refused group move against the category it was asked to move*
   — the seventh kind, held and named.
-- [ ] 5.2 *a commitments screen holds nothing against a group move that asks for no change at all* —
+- [x] 5.2 *a commitments screen holds nothing against a group move that asks for no change at all* —
   all three no-change asks in one test: a group it draws none of, the group under none, and an offset
   that is not there.
-- [ ] 5.3 *what a commitments screen holds about a refused change ends when a group move is kept*.
-- [ ] 5.4 *what a commitments screen holds about a refused change stands when a group move leaves a
+- [x] 5.3 *what a commitments screen holds about a refused change ends when a group move is kept*.
+- [x] 5.4 *what a commitments screen holds about a refused change stands when a group move leaves a
   group where it is*.
-- [ ] 5.5 Read the four requirements this delta corrected only in prose — *A roster holds the
+- [x] 5.5 Read the four requirements this delta corrected only in prose — *A roster holds the
   commitments a person keeps*, *A roster store keeps a roster at a place*, *A commitments screen
   holds the change it refused* and *What a commitments screen holds about a refused change lasts* —
   against the code as it then stands, and confirm each corrected sentence is true of it: moving is
