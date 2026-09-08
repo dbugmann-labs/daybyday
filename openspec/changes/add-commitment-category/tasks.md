@@ -473,6 +473,20 @@ anything, correctly or otherwise.
   not on the stop list is a want in `docs/backlog.md` or a question for the owner, **not** a change
   to this delta without a further G4.
 
+- [x] 9.6 **Narrow the gap between sections on both screens.** No box asked for this; it is the
+  owner's own ask, made during the § 9.5 walkthrough, that the gap between category sections — and
+  between the last category and the ungrouped commitments — read as roughly two thirds of what a
+  bare `Section` per group draws by default. `CommitmentsView.swift` and `ContentView.swift` each
+  gain `.listSectionSpacing(12)` on their `List`.
+
+  **Where 12 comes from.** `ListSectionSpacing` publishes no point value for `.default` or
+  `.compact` — Apple documents only the two cases, not what either measures — so the default was
+  read off the device rather than assumed: walking the accessibility tree of a running kept list
+  (iPhone 17 simulator, iOS 26.5) put the gap between two adjacent sections at **17.67pt**, and a
+  calibration probe — setting the same modifier to 0 and to 20 in turn and reading the gap back
+  through the same tree — landed on exactly 0 and exactly 20, so the reading has no hidden offset
+  to account for. 12 is two thirds of 17.67, rounded to a whole point.
+
 ## 10. The records
 
 **Every one of them was written at G4 and is in the diff the owner signed**, because `docs/adr/**`
