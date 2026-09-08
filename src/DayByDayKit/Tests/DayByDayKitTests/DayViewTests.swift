@@ -1242,3 +1242,287 @@ func aRowForACommitmentWhoseKindIsNotATickOffersNothing() {
     #expect(dayView.rows[0].tick(asOf: sunday) == nil)
     #expect(tickKindDayView.rows[0].tick(asOf: monday) != nil)
 }
+
+@Test("a row offers the number entry for its commitment on the date the day view is of")
+func aRowOffersTheNumberEntryForItsCommitmentOnTheDateTheDayViewIsOf() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [weight], on: monday, in: history)
+
+    #expect(dayView.rows.count == 1)
+    #expect(dayView.rows[0].name == "Weight")
+    #expect(dayView.rows[0].numberEntry(asOf: monday) != nil)
+}
+
+@Test("a row for a commitment whose kind is not a number offers no number entry")
+func aRowForACommitmentWhoseKindIsNotANumberOffersNoNumberEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let water = Commitment(
+        name: "Water", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, journal, water], on: monday, in: history)
+    let numberDayView = DayView(of: [weight], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Journal", "Water"])
+    #expect(dayView.rows.allSatisfy { $0.numberEntry(asOf: monday) == nil })
+    #expect(numberDayView.rows[0].numberEntry(asOf: monday) != nil)
+}
+
+@Test("a row offers a tick or a number entry and never both")
+func aRowOffersATickOrANumberEntryAndNeverBoth() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, weight], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Weight"])
+    #expect(dayView.rows[0].tick(asOf: monday) != nil)
+    #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
+    #expect(dayView.rows[1].numberEntry(asOf: monday) != nil)
+    #expect(dayView.rows[1].tick(asOf: monday) == nil)
+}
+
+@Test("a row for a date later than the day it is asked as of offers no number entry")
+func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoNumberEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [weight], on: wednesday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Weight"])
+    #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
+    #expect(dayView.rows[0].tick(asOf: monday) == nil)
+}
+
+@Test(
+  "a row for a date later than the day it is asked as of offers no number entry even where the day holds a number"
+)
+func aRowForADateLaterThanTheDayItIsAskedAsOfOffersNoNumberEntryEvenWhereTheDayHoldsANumber() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Number(70.5, for: weight, on: wednesday)!)
+
+    let dayView = DayView(of: [weight], on: wednesday, in: history)
+
+    #expect(dayView.rows[0].isKept)
+    #expect(dayView.rows[0].numberEntry(asOf: monday) == nil)
+}
+
+@Test("a row for a date earlier than the day it is asked as of offers the number entry")
+func aRowForADateEarlierThanTheDayItIsAskedAsOfOffersTheNumberEntry() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let history = History()
+
+    let dayView = DayView(of: [weight], on: monday, in: history)
+
+    #expect(dayView.rows[0].numberEntry(asOf: saturday) != nil)
+}
+
+@Test("a row offers the number entry whether or not the day is already kept")
+func aRowOffersTheNumberEntryWhetherOrNotTheDayIsAlreadyKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let unkept = History()
+    var kept = History()
+    kept.add(Number(70.5, for: weight, on: monday)!)
+
+    let unkeptView = DayView(of: [weight], on: monday, in: unkept)
+    let keptView = DayView(of: [weight], on: monday, in: kept)
+
+    #expect(!unkeptView.rows[0].isKept)
+    #expect(keptView.rows[0].isKept)
+    #expect(unkeptView.rows[0].numberEntry(asOf: monday) != nil)
+    #expect(keptView.rows[0].numberEntry(asOf: monday) != nil)
+}
+
+@Test("a number entry says the range its commitment declares as a hint")
+func aNumberEntrySaysTheRangeItsCommitmentDeclaresAsAHint() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 40, highest: 150)!))!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)!))!
+    let fractional = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 40.5, highest: 150.25)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [weight, mood], on: monday, in: history)
+    let fractionalDayView = DayView(of: [fractional], on: monday, in: history)
+
+    #expect(dayView.rows[0].numberEntry(asOf: monday)?.hint == "40–150")
+    #expect(dayView.rows[1].numberEntry(asOf: monday)?.hint == "1–10")
+    #expect(fractionalDayView.rows[0].numberEntry(asOf: monday)?.hint == "40.5–150.25")
+}
+
+@Test("a number entry of a commitment that declares no range says no hint")
+func aNumberEntryOfACommitmentThatDeclaresNoRangeSaysNoHint() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [weight], on: monday, in: history)
+    let entry = try #require(dayView.rows[0].numberEntry(asOf: monday))
+
+    #expect(entry.hint == nil)
+}
+
+@Test("a number entry says the number the history holds for that commitment on that date")
+func aNumberEntrySaysTheNumberTheHistoryHoldsForThatCommitmentOnThatDate() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Number(70.5, for: weight, on: monday)!)
+
+    let dayView = DayView(of: [weight], on: monday, in: history)
+
+    let entry = dayView.rows[0].numberEntry(asOf: monday)
+
+    #expect(entry?.number == 70.5)
+    #expect(entry?.number != 70)
+    #expect(entry?.number != 71)
+}
+
+@Test("a number entry says no number where the day holds none")
+func aNumberEntrySaysNoNumberWhereTheDayHoldsNone() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let neverRecorded = History()
+    var addedThenRemoved = History()
+    addedThenRemoved.add(Number(70.5, for: weight, on: monday)!)
+    addedThenRemoved.removeNumber(for: weight, on: monday)
+
+    let neverRecordedView = DayView(of: [weight], on: monday, in: neverRecorded)
+    let addedThenRemovedView = DayView(of: [weight], on: monday, in: addedThenRemoved)
+
+    let neverRecordedEntry = try #require(neverRecordedView.rows[0].numberEntry(asOf: monday))
+    let addedThenRemovedEntry = try #require(
+        addedThenRemovedView.rows[0].numberEntry(asOf: monday))
+
+    #expect(neverRecordedEntry.number == nil)
+    #expect(addedThenRemovedEntry.number == nil)
+}
+
+@Test(
+  "a row for a number commitment holding a number says its name, its rhythm and that the day is kept"
+)
+func aRowForANumberCommitmentHoldingANumberSaysItsNameItsRhythmAndThatTheDayIsKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var historyWith70_5 = History()
+    historyWith70_5.add(Number(70.5, for: weight, on: monday)!)
+    var historyWith71 = History()
+    historyWith71.add(Number(71, for: weight, on: monday)!)
+
+    let dayView = DayView(of: [weight], on: monday, in: historyWith70_5)
+    let otherDayView = DayView(of: [weight], on: monday, in: historyWith71)
+
+    #expect(dayView.rows.count == 1)
+    #expect(dayView.rows[0].name == "Weight")
+    #expect(dayView.rows[0].rhythmInWords == "Mon, Wed, Sat")
+    #expect(dayView.rows[0].isKept)
+    #expect(otherDayView.rows[0].name == dayView.rows[0].name)
+    #expect(otherDayView.rows[0].rhythmInWords == dayView.rows[0].rhythmInWords)
+    #expect(otherDayView.rows[0].isKept == dayView.rows[0].isKept)
+}
+
+@Test("two rows for the same number commitment and date holding different numbers are different rows")
+func twoRowsForTheSameNumberCommitmentAndDateHoldingDifferentNumbersAreDifferentRows() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var historyWith70_5 = History()
+    historyWith70_5.add(Number(70.5, for: weight, on: monday)!)
+    var historyWith71 = History()
+    historyWith71.add(Number(71, for: weight, on: monday)!)
+
+    let firstView = DayView(of: [weight], on: monday, in: historyWith70_5)
+    let secondView = DayView(of: [weight], on: monday, in: historyWith71)
+
+    #expect(firstView.rows[0].isKept)
+    #expect(secondView.rows[0].isKept)
+    #expect(firstView.rows[0] != secondView.rows[0])
+}
+
+@Test("two rows for the same number commitment and date holding the same number are the same row")
+func twoRowsForTheSameNumberCommitmentAndDateHoldingTheSameNumberAreTheSameRow() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Number(70.5, for: weight, on: monday)!)
+
+    let firstView = DayView(of: [weight], on: monday, in: history)
+    let secondView = DayView(of: [weight], on: monday, in: history)
+
+    #expect(firstView.rows[0].isKept)
+    #expect(secondView.rows[0].isKept)
+    #expect(firstView.rows[0] == secondView.rows[0])
+}

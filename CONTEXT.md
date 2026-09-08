@@ -315,6 +315,17 @@ the commitment: mood is one to ten. A number outside it is refused rather than k
 that stops a tick on a day the commitment is not due. Without one, any number is a number. Agreed
 2026-09-06, same grill.
 
+**Number entry** — what a number commitment's row offers in a tick's place: the number a person gives
+for that day, asked for one at a time, kept whole when it is committed and taken back when it is
+committed empty. It is deliberately not a **number**, which is the record `record` holds — this is
+the place one is made, the way a tick is made in the row. It says two things and no more: the range
+its commitment declares, said for an empty field — "40–150" — so that a range is met before it
+refuses anyone, and the number the day already holds, so that clearing a day is something a person
+did rather than something a stray tap did. The number is reachable **only** through it: a row never
+draws one. Committing something that is not a number keeps nothing and takes nothing back, because an
+entry half typed must not erase the day it is being typed on. Agreed 2026-09-07 at the grill of
+`add-number-entry` (#139).
+
 **Note** — the kind of record that holds a short text for the day: two or three sentences,
 deliberately not an essay. Typed in the row and nowhere else (*Entered where you stand*). It keeps
 the day by being there. Agreed 2026-09-06, same grill.
@@ -452,6 +463,16 @@ grill of `add-tick-from-row` (#71); the refusal's second half — that a future 
 not it is already kept — was put to the owner as that grill's question round and answered by him the
 same day.
 
+**Amended 2026-09-07**, at the grill of `add-number-entry` (#139). A row offers **a tick or a number
+entry**, according to the **kind** its commitment declares, and never both — a tick row offers the
+tick, a number row offers the entry, and a note or a total row offers neither until there is a record
+for what those days take. Which of the two it offers is the only thing a row says about its kind: it
+says its name, its rhythm and whether the day was kept in exactly the same way either way, and **it
+never says the number**. The day that has not arrived refuses both, word for word and for the same
+reason. What a row **is** grows by the number the history holds for it, because two rows of one
+number commitment on one date holding 70.5 and 71 offer different entries and neither can stand in
+for the other — the argument the date already carried, applied to the third thing a row is.
+
 **Today** — the day a screen is being looked at on, and the only thing in the system that does not
 come from the calendar. It is always handed in and never asked for: nothing in the rule engine reads
 a clock, a time zone or a locale (ADR-1004), so *today* arrives as an argument at the moment a
@@ -551,6 +572,16 @@ own statement already says more, and a tap on a row for a day that has **not arr
 no tick at all. And it is **not** what the screen says about **keeping a record** — that answer is
 about whether the store opened at its place and is formed again only on being shown, so a refused
 write does not change it.
+
+**Amended 2026-09-07**, at the grill of `add-number-entry` (#139). A notice **may name a cause, and
+does exactly where a person can act on that cause differently** — which is ADR-1021's own test, not a
+departure from it. Two causes are named and no others: a value committed in a **number entry** that is
+not a number, and a number outside the **range** its commitment declares, told by naming the bounds.
+Every refusal by the place still names nothing, because "try again" is the whole of what anyone can
+do about one; it is false for the other two, which are refused for ever however often they are
+committed. The words are the package's own (ADR-1022) and the lifetime is untouched — still three
+ends, still at most one notice per screen. **Closing an entry without committing it is not a fourth
+end**: nothing was asked of the screen, so nothing about it changed. ADR-1036.
 
 **Amended 2026-09-04**, at the grill of `add-roster-store` (#103). A day screen holds **two stores**,
 at two places, and reports on each separately. It holds **no list of commitments**: it asks its roster

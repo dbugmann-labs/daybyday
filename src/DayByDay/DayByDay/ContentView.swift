@@ -45,6 +45,9 @@ private let dayOneCommitments: [Commitment] = {
         Commitment(
             name: "Yuno", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 5)!),
             keptFrom: keptFrom),
+        Commitment(
+            name: "Weight", schedule: daily, keptFrom: keptFrom,
+            kind: .number(range: Commitment.Range(lowest: 40, highest: 150))),
     ].compactMap { $0 }
 }()
 
@@ -63,6 +66,8 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var showingCommitments = false
     @State private var commitmentsScreen: CommitmentsScreen?
+    @State private var enteringRow: DayView.Row?
+    @State private var enteringText = ""
 
     var body: some View {
         NavigationStack {
@@ -146,8 +151,14 @@ struct ContentView: View {
             // row removed and another inserted. The array's position is stable across a tap, so
             // it stands in as the identity instead.
             ForEach(Array(screen.dayView.rows.enumerated()), id: \.offset) { _, row in
+                let entry = row.numberEntry(asOf: today())
                 Button {
-                    try? screen.tick(row)
+                    if let entry {
+                        enteringText = entry.number.map { "\($0)" } ?? ""
+                        enteringRow = row
+                    } else {
+                        try? screen.tick(row)
+                    }
                 } label: {
                     HStack {
                         VStack(alignment: .leading) {
@@ -155,18 +166,47 @@ struct ContentView: View {
                                 Text(row.name)
                                     .foregroundStyle(row.isKept ? .secondary : .primary),
                                 rhythmInWords: row.rhythmInWords)
-                            if row == screen.refusedChangeRow {
-                                Text("Not saved. Try again.")
+                            if row == screen.notice?.row {
+                                Text(screen.notice?.cause ?? "Not saved. Try again.")
                                     .font(.caption)
                                     .foregroundStyle(.red)
                             }
                         }
-                        if row.isKept {
+                        if row.isKept || entry != nil {
                             Spacer()
+                        }
+                        if row.isKept {
                             Image(systemName: "checkmark")
+                        }
+                        if entry != nil {
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
+            }
+        }
+        .alert(
+            enteringRow?.name ?? "",
+            isPresented: Binding(
+                get: { enteringRow != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        enteringRow = nil
+                    }
+                }
+            ),
+            presenting: enteringRow
+        ) { row in
+            TextField(row.numberEntry(asOf: today())?.hint ?? "", text: $enteringText)
+                .keyboardType(.decimalPad)
+            Button("Save") {
+                try? screen.enter(enteringText, on: row)
+                enteringRow = nil
+            }
+            Button("Cancel", role: .cancel) {
+                enteringRow = nil
             }
         }
     }
