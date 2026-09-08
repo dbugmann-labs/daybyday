@@ -379,8 +379,66 @@ public final class DayScreen {
                     throw error
                 }
             }
+        } else if row.totalEntry(asOf: today) != nil {
+            guard !Blank.saysNothing(text) else {
+                return
+            }
+
+            switch Self.read(text) {
+            case .takeBack:
+                return
+            case .notANumber:
+                notice = Notice(row: row, cause: "Not a number")
+                return
+            case .number(let decimal):
+                guard let record = row.totalRecord(decimal, asOf: today) else {
+                    return
+                }
+
+                switch record {
+                case .addition(let addition):
+                    do {
+                        try recordStore.add(addition)
+                    } catch {
+                        notice = Notice(row: row)
+                        throw error
+                    }
+                case .notAboveZero:
+                    notice = Notice(row: row, cause: "Must be more than 0")
+                    return
+                case .tooLargeToAdd:
+                    notice = Notice(row: row, cause: "Too large to add")
+                    return
+                }
+            }
         } else {
             return
+        }
+        notice = nil
+
+        dayView = dayViewOfShownDay()
+    }
+
+    /// Takes back the last addition `row`'s day holds, and keeps the change before `dayView`
+    /// says so. Does nothing when `row` is not one this screen's day view holds, when this screen
+    /// is not keeping a record, or when `row` offers no take-back as of `today`. Throws when the
+    /// change could not be kept at the record's place, leaving `dayView` as it was.
+    public func takeBackLast(on row: DayView.Row) throws {
+        guard dayView.rows.contains(row) else {
+            return
+        }
+        guard let recordStore else {
+            return
+        }
+        guard row.offersTakeBackLast(asOf: today) else {
+            return
+        }
+
+        do {
+            try recordStore.removeLastAddition(on: row.recordedDay)
+        } catch {
+            notice = Notice(row: row)
+            throw error
         }
         notice = nil
 
@@ -481,5 +539,9 @@ private extension RecordStore {
 
     func removeNote(on day: RecordedDay) throws {
         try removeNote(for: day.commitment, on: day.date)
+    }
+
+    func removeLastAddition(on day: RecordedDay) throws {
+        try removeLastAddition(for: day.commitment, on: day.date)
     }
 }

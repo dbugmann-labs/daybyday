@@ -12,7 +12,7 @@ import Foundation
 struct RecordDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 4
+    static let currentVersion = 5
 
     /// The form `numbers` was introduced at: forms at or after this one carry the key, forms
     /// before it never do. Kept apart from `currentVersion` on purpose — a fourth form would move
@@ -25,6 +25,9 @@ struct RecordDocument: Codable {
     /// judged against the form each part was first written at, never against whichever form
     /// happens to be the newest (`design.md` § *The form on disk moves to 4*).
     static let notesIntroducedInVersion = 4
+
+    /// The form `additions` was introduced at, on the same footing as the two constants above.
+    static let additionsIntroducedInVersion = 5
 
     var version: Int
     var ticks: [TickRecord]
@@ -40,16 +43,25 @@ struct RecordDocument: Codable {
     /// one, on the same footing as `numbers` above.
     var notes: [NoteRecord]?
 
-    /// Builds the document that exactly represents `ticks` and `numbers`, in the stable order
-    /// `design.md` fixes: by commitment name, then kept-from day, then date, then schedule, then
-    /// kind as the final tiebreaker — so two equal sets of ticks and numbers produce
-    /// byte-identical files regardless of `Dictionary`'s per-process iteration order. A day holds
-    /// at most one number per commitment, so two numbers cannot tie on all five for the *same*
-    /// commitment — but two distinct commitments (different kinds, same name, schedule and
-    /// kept-from day) can each hold a number on the same date and tie on the first four, which is
-    /// what `kind` is for. A tick's commitment is always of the tick kind, so `kind` never
-    /// actually discriminates two ticks.
-    init(_ ticks: Set<Tick>, _ numbers: [RecordedDay: Decimal], _ notes: [RecordedDay: String]) {
+    /// `nil` exactly when the document held no `additions` key at all — forms 1 through 4 never
+    /// write one, on the same footing as `numbers` and `notes` above. One record per
+    /// commitment-day, holding that day's amounts in order, per `design.md` § *A day's additions
+    /// are a list, and the file holds them as one record per day*.
+    var additions: [AdditionsRecord]?
+
+    /// Builds the document that exactly represents `ticks`, `numbers`, `notes` and `additions`, in
+    /// the stable order `design.md` fixes: by commitment name, then kept-from day, then date, then
+    /// schedule, then kind as the final tiebreaker — so two equal histories produce byte-identical
+    /// files regardless of `Dictionary`'s per-process iteration order. A day holds at most one
+    /// number per commitment, so two numbers cannot tie on all five for the *same* commitment —
+    /// but two distinct commitments (different kinds, same name, schedule and kept-from day) can
+    /// each hold a number on the same date and tie on the first four, which is what `kind` is for.
+    /// A tick's commitment is always of the tick kind, so `kind` never actually discriminates two
+    /// ticks.
+    init(
+        ticks: Set<Tick>, numbers: [RecordedDay: Decimal], notes: [RecordedDay: String],
+        additions: [RecordedDay: [Decimal]]
+    ) {
         version = Self.currentVersion
         self.ticks = ticks.map(TickRecord.init).sorted(by: Self.isOrderedBefore)
         self.numbers = numbers
@@ -66,6 +78,14 @@ struct RecordDocument: Codable {
                     commitment: CommitmentRecord($0.key.commitment),
                     date: DateRecord($0.key.date),
                     text: $0.value)
+            }
+            .sorted(by: Self.isOrderedBefore)
+        self.additions = additions
+            .map {
+                AdditionsRecord(
+                    commitment: CommitmentRecord($0.key.commitment),
+                    date: DateRecord($0.key.date),
+                    amounts: $0.value)
             }
             .sorted(by: Self.isOrderedBefore)
     }
@@ -113,6 +133,23 @@ struct RecordDocument: Codable {
                 return nil
             }
             result.append(note)
+        }
+        return result
+    }
+
+    /// Re-forms every addition this document holds, one commitment-day at a time and then one
+    /// amount at a time within it, exactly as `formNumbers()` does for numbers. `nil` here means
+    /// either a day's commitment or date could not be formed, one amount in a day could not be
+    /// formed as an `Addition` on its own, or a day's `amounts` was empty — content this app never
+    /// writes, per `design.md` § *A day's additions are a list, and the file holds them as one
+    /// record per day*. The whole document is refused, not the bad ones dropped.
+    func formAdditions() -> [Addition]? {
+        var result: [Addition] = []
+        for record in additions ?? [] {
+            guard let formed = record.formed() else {
+                return nil
+            }
+            result.append(contentsOf: formed)
         }
         return result
     }
@@ -217,5 +254,35 @@ struct NoteRecord: Codable, DatedCommitmentRecord {
             return nil
         }
         return Note(text, for: commitment, on: date)
+    }
+}
+
+/// One commitment-day's additions, held as one record per day rather than one per addition —
+/// `design.md` § *A day's additions are a list, and the file holds them as one record per day*.
+struct AdditionsRecord: Codable, DatedCommitmentRecord {
+    var commitment: CommitmentRecord
+    var date: DateRecord
+    var amounts: [Decimal]
+
+    /// Re-forms this day's additions, each through `Addition.init?` on its own. `nil` when the
+    /// commitment or date could not be formed, when any one amount could not be formed as an
+    /// `Addition`, or when `amounts` is empty — a day with no additions holds no record, so an
+    /// empty array is content this app never writes.
+    func formed() -> [Addition]? {
+        guard let commitment = commitment.commitment(), let date = date.calendarDate() else {
+            return nil
+        }
+        guard !amounts.isEmpty else {
+            return nil
+        }
+
+        var result: [Addition] = []
+        for amount in amounts {
+            guard let addition = Addition(amount, for: commitment, on: date) else {
+                return nil
+            }
+            result.append(addition)
+        }
+        return result
     }
 }

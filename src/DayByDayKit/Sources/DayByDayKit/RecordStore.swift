@@ -12,6 +12,7 @@ public final class RecordStore {
     private var ticks: Set<Tick>
     private var numbers: [RecordedDay: Decimal]
     private var notes: [RecordedDay: String]
+    private var additions: [RecordedDay: [Decimal]]
 
     /// Opens the store kept at `place`, reading what is there. A place where nothing has been
     /// kept opens empty; a place holding something that cannot be read as a store throws.
@@ -22,6 +23,7 @@ public final class RecordStore {
             self.ticks = []
             self.numbers = [:]
             self.notes = [:]
+            self.additions = [:]
             self.history = History()
             return
         }
@@ -41,20 +43,22 @@ public final class RecordStore {
             throw RecordStoreError.notAStore(at: place)
         }
         // Each form is read as the shape that form has, per `design.md` § *Each form is read as
-        // the shape that form has*: the `numbers` and `notes` fields are each present at the form
-        // that introduced them and at every form since, so their presence must agree with the
-        // declared version in both directions. Checked against each field's own
+        // the shape that form has*: the `numbers`, `notes` and `additions` fields are each present
+        // at the form that introduced them and at every form since, so their presence must agree
+        // with the declared version in both directions. Checked against each field's own
         // `...IntroducedInVersion` constant, not `currentVersion` — judged against the form each
         // part was first written at, never against whichever form happens to be the newest.
         guard (document.numbers != nil)
             == (document.version >= RecordDocument.numbersIntroducedInVersion),
             (document.notes != nil)
-                == (document.version >= RecordDocument.notesIntroducedInVersion)
+                == (document.version >= RecordDocument.notesIntroducedInVersion),
+            (document.additions != nil)
+                == (document.version >= RecordDocument.additionsIntroducedInVersion)
         else {
             throw RecordStoreError.notAStore(at: place)
         }
         guard let ticks = document.formTicks(), let formedNumbers = document.formNumbers(),
-            let formedNotes = document.formNotes()
+            let formedNotes = document.formNotes(), let formedAdditions = document.formAdditions()
         else {
             throw RecordStoreError.notAStore(at: place)
         }
@@ -76,6 +80,13 @@ public final class RecordStore {
             history.add(note)
         }
         self.notes = notes
+        var additions: [RecordedDay: [Decimal]] = [:]
+        for addition in formedAdditions {
+            let day = RecordedDay(commitment: addition.commitment, date: addition.date)
+            additions[day, default: []].append(addition.amount)
+            history.add(addition)
+        }
+        self.additions = additions
         self.history = history
     }
 
@@ -87,7 +98,7 @@ public final class RecordStore {
     public func add(_ tick: Tick) throws {
         var nextTicks = ticks
         nextTicks.insert(tick)
-        try write(nextTicks, numbers, notes)
+        try write(ticks: nextTicks, numbers: numbers, notes: notes, additions: additions)
 
         ticks = nextTicks
         history.add(tick)
@@ -96,7 +107,7 @@ public final class RecordStore {
     public func remove(_ tick: Tick) throws {
         var nextTicks = ticks
         nextTicks.remove(tick)
-        try write(nextTicks, numbers, notes)
+        try write(ticks: nextTicks, numbers: numbers, notes: notes, additions: additions)
 
         ticks = nextTicks
         history.remove(tick)
@@ -106,7 +117,7 @@ public final class RecordStore {
     public func add(_ number: Number) throws {
         var nextNumbers = numbers
         nextNumbers[RecordedDay(commitment: number.commitment, date: number.date)] = number.number
-        try write(ticks, nextNumbers, notes)
+        try write(ticks: ticks, numbers: nextNumbers, notes: notes, additions: additions)
 
         numbers = nextNumbers
         history.add(number)
@@ -115,7 +126,7 @@ public final class RecordStore {
     public func removeNumber(for commitment: Commitment, on date: CalendarDate) throws {
         var nextNumbers = numbers
         nextNumbers[RecordedDay(commitment: commitment, date: date)] = nil
-        try write(ticks, nextNumbers, notes)
+        try write(ticks: ticks, numbers: nextNumbers, notes: notes, additions: additions)
 
         numbers = nextNumbers
         history.removeNumber(for: commitment, on: date)
@@ -125,7 +136,7 @@ public final class RecordStore {
     public func add(_ note: Note) throws {
         var nextNotes = notes
         nextNotes[RecordedDay(commitment: note.commitment, date: note.date)] = note.text
-        try write(ticks, numbers, nextNotes)
+        try write(ticks: ticks, numbers: numbers, notes: nextNotes, additions: additions)
 
         notes = nextNotes
         history.add(note)
@@ -134,22 +145,47 @@ public final class RecordStore {
     public func removeNote(for commitment: Commitment, on date: CalendarDate) throws {
         var nextNotes = notes
         nextNotes[RecordedDay(commitment: commitment, date: date)] = nil
-        try write(ticks, numbers, nextNotes)
+        try write(ticks: ticks, numbers: numbers, notes: nextNotes, additions: additions)
 
         notes = nextNotes
         history.removeNote(for: commitment, on: date)
     }
 
-    /// Writes `nextTicks`, `nextNumbers` and `nextNotes` as the whole document, in the
-    /// byte-stable form `design.md` § *The form on disk* fixes: `.sortedKeys` so a keyed
+    /// Kept at `place` before this returns; on failure throws and leaves `history` as it was.
+    public func add(_ addition: Addition) throws {
+        var nextAdditions = additions
+        let day = RecordedDay(commitment: addition.commitment, date: addition.date)
+        nextAdditions[day, default: []].append(addition.amount)
+        try write(ticks: ticks, numbers: numbers, notes: notes, additions: nextAdditions)
+
+        additions = nextAdditions
+        history.add(addition)
+    }
+
+    public func removeLastAddition(for commitment: Commitment, on date: CalendarDate) throws {
+        var nextAdditions = additions
+        let day = RecordedDay(commitment: commitment, date: date)
+        if var amounts = nextAdditions[day], !amounts.isEmpty {
+            amounts.removeLast()
+            nextAdditions[day] = amounts.isEmpty ? nil : amounts
+        }
+        try write(ticks: ticks, numbers: numbers, notes: notes, additions: nextAdditions)
+
+        additions = nextAdditions
+        history.removeLastAddition(for: commitment, on: date)
+    }
+
+    /// Writes `nextTicks`, `nextNumbers`, `nextNotes` and `nextAdditions` as the whole document,
+    /// in the byte-stable form `design.md` § *The form on disk* fixes: `.sortedKeys` so a keyed
     /// container's keys do not follow Foundation's per-process hash order, on top of
-    /// `RecordDocument`'s own stable order, so two equal sets of ticks, numbers and notes always
-    /// produce byte-identical files.
+    /// `RecordDocument`'s own stable order, so two equal histories always produce byte-identical
+    /// files.
     private func write(
-        _ nextTicks: Set<Tick>, _ nextNumbers: [RecordedDay: Decimal],
-        _ nextNotes: [RecordedDay: String]
+        ticks nextTicks: Set<Tick>, numbers nextNumbers: [RecordedDay: Decimal],
+        notes nextNotes: [RecordedDay: String], additions nextAdditions: [RecordedDay: [Decimal]]
     ) throws {
-        let document = RecordDocument(nextTicks, nextNumbers, nextNotes)
+        let document = RecordDocument(
+            ticks: nextTicks, numbers: nextNumbers, notes: nextNotes, additions: nextAdditions)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
 

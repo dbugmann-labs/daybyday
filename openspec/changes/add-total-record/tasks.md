@@ -10,11 +10,11 @@ This section changes no behaviour and adds no test. It pins the starting point, 
 that say `5` to mean *a form later than the record store writes*, and labels the parameter list
 `docs/open-questions.md` recorded against this Story.
 
-- [ ] 1.1 Confirm the branch point before touching anything: from `src/DayByDayKit`, `swift test`
+- [x] 1.1 Confirm the branch point before touching anything: from `src/DayByDayKit`, `swift test`
   reports **705 tests passing**. Measured on this machine on 2026-09-08, Apple Swift 6.3.3
   (swiftlang-6.3.3.1.3), target `arm64-apple-macosx26.0`. A different number means `main` moved under
   the branch; report it rather than working around it (`AGENTS.md` rule 5).
-- [ ] 1.2 Edit the six sites that say `5` to mean *a form one later than the record store writes* so
+- [x] 1.2 Edit the six sites that say `5` to mean *a form one later than the record store writes* so
   they say `6`, and leave every other `4` and `5` in the tests exactly as it is. Five JSON fixtures
   move — `DayScreenTests.swift:370`, `:454`, `:585`, `:2471` and `RecordStoreTests.swift:295` — and
   one assertion, `RecordStoreTests.swift:298`, whose `laterForm(at:version: 5)` becomes `version: 6`.
@@ -29,14 +29,14 @@ that say `5` to mean *a form later than the record store writes*, and labels the
   fixtures are, and each still answers as its scenario says. `swift test` still reports **705
   passing** after this box — a red test is a rule-5 stop, because nothing in this box was supposed to
   change an answer.
-- [ ] 1.3 Label the two parameter lists `docs/open-questions.md` recorded against this Story:
+- [x] 1.3 Label the two parameter lists `docs/open-questions.md` recorded against this Story:
   `RecordStore.write(_:_:_:)` becomes `write(ticks:numbers:notes:)` and `RecordDocument.init(_:_:_:)`
   becomes `init(ticks:numbers:notes:)`, at every call site including
   `RecordDocumentTests.swift:52`'s bare `RecordDocument([], numbers, [:])`. Do it **before** the
   fourth parameter is added, so the diff that adds `additions:` is one word rather than a rewrite. No
   behaviour changes and no `@Test` display name changes; `swift test` still reports 705 passing.
   `design.md` § *`RecordStore.write` and `RecordDocument.init` take labels* is the decision.
-- [ ] 1.4 Confirm the coverage tool agrees before writing a test: from the repo root, `pnpm run
+- [x] 1.4 Confirm the coverage tool agrees before writing a test: from the repo root, `pnpm run
   checks` reports `scenario coverage — 146/248 scenario(s) covered` for this change, and names *a row
   offers the total entry for its commitment on the date the day view is of* as next. Measured on
   2026-09-08. A different number means something else moved; report it rather than working around it.
@@ -295,7 +295,7 @@ Five scenarios and the one piece of arithmetic this change invents, in
 the trap: the significant digits of the sum `Decimal` *hands back* are not the significant digits of
 the sum, and a rule read off the first accepts exactly the case it exists to refuse.
 
-- [ ] 11.1 Give `Digits` its body and `Row` its `totalRecord(_:asOf:)`, on the shape `design.md`
+- [x] 11.1 Give `Digits` its body and `Row` its `totalRecord(_:asOf:)`, on the shape `design.md`
   § *The seam* gives: `nil` when the row offers no total entry, `.notAboveZero` when `Addition.init?`
   refuses the amount, `.tooLargeToAdd` when `Digits.canAdd(_:to:)` says the day cannot take it, and
   `.addition` otherwise. No test is written in this box; §§ 11.2–11.5 and 13 are what prove it. It is
@@ -325,7 +325,7 @@ branch* — and the number and note branches are not touched. `DayScreen.read(_:
 copied**: a second reading here would make "Not a number" two causes instead of one, which § 13.3 is
 what catches.
 
-- [ ] 12.1 `adding on a total row makes the day screen say what the day has added`
+- [x] 12.1 `adding on a total row makes the day screen say what the day has added`
 - [ ] 12.2 `a day's additions accumulate rather than replace one another` — "30" twice leaves 60.
   The single most important box in this section: an implementation copying the number branch replaces
   and leaves 30.
@@ -387,7 +387,7 @@ private twins at the foot of `DayScreen.swift`.
 - [ ] 13.16 `a commit on a total row for a day that has not arrived is told nothing on the row`
 - [ ] 13.17 `taking back on a row that offers no take-back is told nothing on the row` — and does not
   end what is already told on another row.
-- [ ] 13.18 **Not a new test, and it is a rewrite.** The existing test named `a commit on a row that
+- [x] 13.18 **Not a new test, and it is a rewrite.** The existing test named `a commit on a row that
   offers no entry at all is told nothing on the row` is written against a **total** row today, and a
   total row now offers an entry, so its body no longer matches its scenario. Rewrite the body to the
   delta's: a **tick** row, told nothing for a text and for a blank commit alike. Its `@Test` display

@@ -367,7 +367,7 @@ func aRecordWrittenInALaterFormThanThisAppKnowsMakesADayScreenThatSaysTheRecordI
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 6, "ticks": []}"#.utf8).write(to: place)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -451,7 +451,7 @@ func tickingARowOnADayScreenHoldingARecordFromALaterVersionKeepsNothingAndLeaves
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 5, "ticks": []}"#.utf8)
+    let bytes = Data(#"{"version": 6, "ticks": []}"#.utf8)
     try bytes.write(to: place)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -582,7 +582,7 @@ func aDayScreenShownAgainWhereTheRecordIsFromALaterVersionSaysSo() throws {
     let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 6, "ticks": []}"#.utf8).write(to: place)
 
     screen.shown(asOf: monday)
 
@@ -2468,7 +2468,7 @@ func aTapOnADayScreenHoldingARecordFromALaterVersionIsToldNothingOnTheRow() thro
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 6, "ticks": []}"#.utf8).write(to: place)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -4201,26 +4201,21 @@ func aCommitOnARowThatOffersNoEntryAtAllIsToldNothingOnTheRow() throws {
     let (place, rosterPlace) = freshPlaces()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let target = Commitment.Target(120)!
-    let water = Commitment(
-        name: "Water", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let screen = DayScreen(
-        startingFrom: [water], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+        startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
 
     #expect(screen.notice == nil)
     #expect(!screen.dayView.rows[0].isKept)
 
-    let (gymPlace, gymRosterPlace) = freshPlaces()
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
-    let gymScreen = DayScreen(
-        startingFrom: [gym], asOf: monday, keepingRecordAt: gymPlace, keepingRosterAt: gymRosterPlace)
-    try gymScreen.enter("Ran 8k.", on: gymScreen.dayView.rows[0])
+    try screen.enter("30", on: screen.dayView.rows[0])
+    try screen.enter("", on: screen.dayView.rows[0])
 
-    #expect(gymScreen.notice == nil)
-    #expect(!gymScreen.dayView.rows[0].isKept)
+    #expect(screen.notice == nil)
+    #expect(!screen.dayView.rows[0].isKept)
 }
 
 @MainActor
@@ -4247,6 +4242,24 @@ func aCommitOnANoteRowOnADayScreenThatIsNotKeepingARecordIsToldNothingOnTheRow()
     try screen.enter("", on: screen.dayView.rows[0])
 
     #expect(screen.notice == nil)
+}
+
+@MainActor
+@Test("adding on a total row makes the day screen say what the day has added")
+func addingOnATotalRowMakesTheDayScreenSayWhatTheDayHasAdded() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [protein], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("30", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].totalEntry(asOf: monday)?.soFarOfTarget == "30 of 120")
+    #expect(!screen.dayView.rows[0].isKept)
 }
 
 @MainActor

@@ -49,7 +49,7 @@ func twoNumbersAlikeInNameKeptFromDayDateAndScheduleSortByKind() {
         RecordedDay(commitment: plain, date: monday): 71,
     ]
 
-    let document = RecordDocument([], numbers, [:])
+    let document = RecordDocument(ticks: [], numbers: numbers, notes: [:], additions: [:])
 
     #expect(document.numbers?.map(\.number) == [71, 70.5])
 }
