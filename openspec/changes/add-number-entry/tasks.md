@@ -269,7 +269,7 @@ diff, so these boxes confirm rather than write.
 - [x] 11.1 Record in this file, under a `## Notes` heading appended at the end, which of the boxes
   predicted red in §§ 2, 6 and 8 actually ran red before the code that satisfies them was written. A
   prediction in a task is not evidence; this is.
-- [ ] 11.2 Re-run after § 15, which is why this box is open again — it has been ticked after § 12,
+- [x] 11.2 Re-run after § 15, which is why this box is open again — it has been ticked after § 12,
   after § 13 and after § 14, and § 15 moves the code underneath it: `pnpm run verify` green from the
   repo root, and `pnpm run checks` reporting `scenario coverage — 75/75`.
   `cd src/DayByDayKit && swift test` reports **628 tests passing** — 580 on the base this branch now
@@ -578,7 +578,7 @@ that box; every test already on this branch stays green throughout, and a red on
 rule-5 stop rather than a licence to edit a test. § 15 runs **before** § 11.2, § 11.3 and § 11.5,
 all of which are open for it.
 
-- [ ] 15.1 Re-measure before moving anything, and read the output rather than this file. From
+- [x] 15.1 Re-measure before moving anything, and read the output rather than this file. From
   anywhere, with the toolchain in `AGENTS.md` § *This machine* on PATH — it takes about four
   seconds:
 
@@ -677,7 +677,7 @@ all of which are open for it.
   run because the values are random; the `0` and the equality do not. `design.md` § *Context*'s
   fifth measurement records the run of 2026-09-07: 11,975 kept and 2,418 rescued.
 
-- [ ] 15.2 Write the number out before the parse. In `Sources/DayByDayKit/DayScreen.swift`,
+- [x] 15.2 Write the number out before the parse. In `Sources/DayByDayKit/DayScreen.swift`,
   `read(_:)` ends by handing `Decimal(string:)` the text a person committed with the comma swapped
   for a full stop and nothing else changed — `let normalized = trimmed.replacingOccurrences(...)`,
   then the `guard let number = Decimal(string: normalized)`. Replace `significantDigitCount(_:)`
@@ -715,7 +715,7 @@ all of which are open for it.
   `trimmed` in place. `grep -n 'normalized' Sources/DayByDayKit/DayScreen.swift` prints two lines
   today and none after this box. Every other test stays green, and a red one is a rule-5 stop.
 
-- [ ] 15.3 Record in § *Notes*, under a heading of its own, what § 15.1 actually printed — all four
+- [x] 15.3 Record in § *Notes*, under a heading of its own, what § 15.1 actually printed — all four
   blocks, and the two totals of the last one as they came out on the day — that § 15.2's temporary
   test went red before the change and green after it, that it was deleted, and that
   `cd src/DayByDayKit && swift test` reports 628 with no `@Test` display name changed once it is
@@ -820,3 +820,47 @@ against, run one at a time and reverted before the next — each went red before
 
 Each mutation was reverted immediately after its red run; the file diffs to nothing against the
 state § 14.4 left it in once all five had been checked and undone.
+
+## § 15 — the sixth review pass's moves
+
+§ 15.1's re-measurement, run on this machine on 2026-09-08 with the toolchain named in
+`design.md` § *Context* (Apple Swift 6.3.3, swiftlang-6.3.3.1.3,
+target `arm64-apple-macosx26.0`), printed:
+
+```
+-- the sixth pass's case, and the same number written out --
+A raw 131 nil | written 93 held
+B raw 93 held | written 93 held
+A and B are written out the same: true
+-- the floor, written out: the 128th place held, the 129th not --
+places 128 held
+places 129 nil
+places 128 held
+places 129 nil
+-- the three the too-long test commits, still refused --
+chars 39 significant 39 refused on the count
+chars 200 significant 200 refused on the count
+chars 131 significant 1 refused on the type
+-- one value, five spellings, one answer --
+values 20000, spellings 100000
+answers that depended on the spelling: 0
+kept: 11906 of which printed back as the text handed in: 11906
+spellings refused as written and held once written out: 2505
+```
+
+All four things the box requires hold: A (131 chars) is `nil` raw and held written out, B is held
+both ways, and A and B are written out the same; the floor block reads held, nil, held, nil; the
+three values the too-long test commits are all still refused, two on the count and one on the
+type; and "answers that depended on the spelling" is `0`, with the two `kept:` totals equal to
+each other — 11,906 and 11,906 on this run (the totals move run to run because the values are
+random; the `0` and the equality do not).
+
+§ 15.2's temporary test, `a number written with trailing zeros past the type's floor is entered
+exactly`, was run alone before `read(_:)` changed and went **red**: `numberEntry(asOf:)?.number →
+nil` against the literal expected, because `Decimal(string:)` returned `nil` for the 131-character
+text as `read(_:)` handed it to the parse unchanged. After `writtenOut(_:)` replaced
+`significantDigitCount(_:)` and `read(_:)` was changed to call `Decimal(string:)` on its output,
+the same test went **green** without modification. `cd src/DayByDayKit && swift test` reported
+**629 tests passing** with the temporary test present. It was then deleted; `swift test` reports
+**628 tests passing** with it gone, the same count § 11.2 expects and § 14 left behind, with no
+`@Test` display name changed.

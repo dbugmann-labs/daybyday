@@ -233,8 +233,10 @@ public final class DayScreen {
     /// Reads `text` as `enter(_:on:)` does, in this capability's own way and consulting no
     /// locale. `Decimal(string:)` is a *prefix* parser, not a validator — `design.md` § *Context*
     /// measures five ways it silently reads a value nobody typed — so the shape of what was
-    /// committed is checked in full before `Decimal(string:)` is ever called, and only on text
-    /// already proved to hold nothing it cannot parse.
+    /// committed is checked in full before `Decimal(string:)` is ever called, and the parse is
+    /// then given a text this reading built and never the text a person typed: the same number
+    /// can be spelled in a way `Decimal(string:)` holds and in another it refuses, so the parse
+    /// is asked about the one spelling this reading already knows says the value exactly.
     private static func read(_ text: String) -> CommittedText {
         let trimmed = text.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
@@ -242,7 +244,9 @@ public final class DayScreen {
         }
 
         var digits = trimmed[...]
+        var sign = ""
         if digits.first == "-" {
+            sign = "-"
             digits.removeFirst()
         }
 
@@ -258,7 +262,7 @@ public final class DayScreen {
             }
         }
 
-        let significantDigits = Self.significantDigitCount(digits)
+        let (written, significantDigits) = Self.writtenOut(digits)
         guard digitCount >= 1, separatorCount <= 1, significantDigits <= 38 else {
             return .notANumber
         }
@@ -266,33 +270,51 @@ public final class DayScreen {
             return .number(0)
         }
 
-        let normalized = trimmed.replacingOccurrences(of: ",", with: ".")
-        guard let number = Decimal(string: normalized) else {
+        guard let number = Decimal(string: sign + written) else {
             return .notANumber
         }
         return .number(number)
     }
 
-    /// The number of significant digits in `digits` — text already proved to hold nothing but
-    /// digits and at most one separator, with any leading `-` already removed — counted by
-    /// dropping the leading zeros and the trailing zeros and counting what is left.
+    /// Writes `digits` out in the one spelling `read(_:)` asks `Decimal(string:)` about — text
+    /// already proved to hold nothing but digits and at most one separator, with any leading `-`
+    /// already removed — and gives back the count of significant digits that spelling holds: the
+    /// whole part with its leading zeros dropped, a full stop where a `.` or `,` was typed, the
+    /// fraction with its trailing zeros dropped, and no separator where nothing is left after it.
+    /// The count is read off that same stripping, not off `digits` directly, because a leading
+    /// zero the whole part loses can still open the fraction (`"0.08"` holds one significant
+    /// digit, not two).
+    ///
     /// `design.md` § *A number this system cannot keep exactly is not a number here*: a count
     /// above thirty-eight is a value that is not a number, and a count of zero is answered as
-    /// `.number(0)` without `read(_:)` ever calling `Decimal(string:)` — that call returns `nil`
-    /// for some text whose value is zero, once its written form falls below the type's floor,
-    /// which is not what a `nil` means for any other text `read(_:)` reaches.
-    private static func significantDigitCount(_ digits: Substring) -> Int {
-        let allDigits = String(digits.filter { $0 != "." && $0 != "," })
-
-        var significant = allDigits[...]
-        while significant.first == "0" {
-            significant.removeFirst()
+    /// `.number(0)` without `read(_:)` ever calling `Decimal(string:)` — a shortcut now rather
+    /// than a guard, since every such text is written out as `"0"` here too, and no longer the
+    /// only defence against a `nil` that once meant something else: a value at any magnitude can
+    /// be refused for how it was spelled rather than for what it is worth, which is why the parse
+    /// is never asked about the text as typed.
+    private static func writtenOut(_ digits: Substring) -> (text: String, significantDigits: Int) {
+        let parts = String(digits).replacingOccurrences(of: ",", with: ".")
+            .split(separator: ".", omittingEmptySubsequences: false)
+        var whole = parts[0]
+        var fraction = parts.count > 1 ? parts[1] : Substring()
+        while whole.first == "0" {
+            whole.removeFirst()
         }
-        while significant.last == "0" {
-            significant.removeLast()
+        while fraction.last == "0" {
+            fraction.removeLast()
         }
 
-        return significant.count
+        var counted = String(whole) + String(fraction)
+        while counted.first == "0" {
+            counted.removeFirst()
+        }
+        guard !counted.isEmpty else {
+            return ("0", 0)
+        }
+
+        let head = whole.isEmpty ? "0" : String(whole)
+        let text = fraction.isEmpty ? head : head + "." + String(fraction)
+        return (text, counted.count)
     }
 
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
