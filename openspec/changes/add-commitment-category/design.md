@@ -1,17 +1,19 @@
 ## Context
 
-See `proposal.md` § *Why*, and `grill.md`, whose twenty-five settled answers this delta is written on.
+See `proposal.md` § *Why*, and `grill.md`, whose twenty-six settled answers this delta is written on.
 **Settled answer 24 reversed settled answer 14's seam rule on the phone, on 2026-09-08**, and the
 sections it moved are § *The offset a screen takes is over the group it was dropped in*, § *What the
 mark was for, and what draws it now* and § *The shell rides this Story*; § *Open Questions* 1 records
-the reversal beside the answer it replaced.
+the reversal beside the answer it replaced. **Settled answer 26 then kept the cross-group drag** that
+the reversal put at risk, and what it moved is § *The shell rides this Story* and `tasks.md` § 9 and
+nothing in the delta; § *Open Questions* 6 records it and the measurement it turned on.
 What matters here is that a **category** is a word the person chose, held by the roster against a
 commitment, and that **grouping is a second reading of the order the roster already holds**. Once
 those two are fixed everything else follows: the commitment gains nothing, the day view gains no
 rule about arrangement, and the one grouping rule in the product lives in one place that both
 screens read.
 
-Seven facts read off this worktree at `19fb199`, 2026-09-08. The first five were measured for this
+Nine facts read off this worktree at `19fb199`, 2026-09-08. The first seven were measured for this
 document; the last two decide how big the change is and are the ones to re-check before starting.
 
 - **The commitment is untouched, and that is the point.** `Commitment.swift` and
@@ -40,8 +42,32 @@ document; the last two decide how big the change is and are the ones to re-check
   `SwiftUI.swiftinterface`, 2026-09-08, at line 10353 — and takes `Optional<(IndexSet, Int) -> Void>`.
   Its `IndexSet` and its `Int` are both over the `ForEach`'s **own** data, and no overload names two
   collections, so **a `Section` per group means every offset `.onMove` hands the shell is already
-  counted inside one group.** That is the fact the new seam is shaped to, and it is also why
-  § *Questions for you* 1 exists.
+  counted inside one group.** That is the fact the new seam is shaped to. It is also what a `Section`
+  per group costs: `.onMove` alone cannot carry a row out of one group and into another.
+- **`draggable` and `dropDestination` hand the shell a group's identity and an index; they do not ask
+  it to work either one out.** This is the measurement settled answer 26 required, made 2026-09-08
+  against the same `iPhoneOS26.5.sdk` `SwiftUI.swiftinterface`. Three lines decide it:
+
+  ```swift
+  // :9451
+  extension SwiftUICore.DynamicViewContent {
+    nonisolated public func dropDestination<T>(for payloadType: T.Type = T.self, action: @escaping ([T], Swift.Int) -> Swift.Void) -> some SwiftUICore.DynamicViewContent where T : CoreTransferable.Transferable
+  // :9453
+    @available(*, unavailable, message: "Unavailable for DynamicViewContent, use `dropDestination(for:action:)` instead.")
+    public func dropDestination<T>(for payloadType: T.Type = T.self, action: @escaping (_ items: [T], _ location: CoreFoundation.CGPoint) -> Swift.Bool, isTargeted: (Swift.Bool) -> Swift.Void = { _ in }) -> some SwiftUICore.View where T : CoreTransferable.Transferable
+  // :23663
+  extension SwiftUICore.View {
+    nonisolated public func draggable<T>(_ payload: @autoclosure @escaping () -> T) -> some SwiftUICore.View where T : CoreTransferable.Transferable
+  ```
+
+  The `Int` at `:9451` is documented in the module's own `arm64e-apple-ios.swiftdoc` as *"the offset
+  relative to the dynamic view's underlying collection of data"* — this section's own `ForEach`, so
+  the same offset `.onMove` gives and the same one `CommitmentsScreen.move` now takes. **The
+  geometric overload is `unavailable` on `DynamicViewContent` by name**, at `:9453`: SwiftUI itself
+  withholds from a `ForEach` the API that would make a shell work out where a drop landed, and
+  offers the index-handing one in its place. And it compiles, not merely reads: a probe with two
+  `Section`s, `.onMove` and `.dropDestination(for:)` on each section's `ForEach` and `.draggable` on
+  every row typechecks against `iPhoneSimulator.sdk` at `-target arm64-apple-ios26.0-simulator`.
 - **580 tests pass**, `swift test` from `src/DayByDayKit`, this branch cut from `main` at `f8236be`
   which includes `add-roster-order` (#161).
 - **`pnpm run check:scenarios` reports `129/206 scenario(s) covered`** for this change. Those 129
@@ -230,9 +256,11 @@ are drawn in the roster's own order, that is the place that draws it where it wa
 
 **The shell still converts nothing**, which is what ADR-1019's guard requires and what makes a
 `Section` per group affordable at all. It passes two things it already holds: the section's own
-identity, which is a constant it drew the heading from, and `onMove`'s `Int` untouched. There is no
-line in `CommitmentsView.swift` that adds, subtracts or counts — strictly less than the flat
-arrangement needed, which had to work out which drawn offset each heading sat above.
+identity, which is a constant it drew the heading from, and the destination `Int` untouched — from
+`.onMove` for a drag inside a group and from `.dropDestination` for one that crosses, both of them
+counted over that section's own `ForEach` (§ *Context*). There is no line in `CommitmentsView.swift`
+that adds, subtracts or counts — strictly less than the flat arrangement needed, which had to work
+out which drawn offset each heading sat above.
 
 **Two offsets change nothing at all, and the carve-out is now entirely inside one group.** The
 offset an entry is drawn at within its own group and the one just after it both leave it where it is
@@ -383,12 +411,59 @@ across the groups for everything else that uses it.
 stopped list is not grouped" true on a phone rather than only in a requirement. It is now one section
 among several rather than the second of two, so it wants a header that says so.
 
-**One thing about this arrangement is not yet known, and it is § *Questions for you* 1.** `.onMove`
-names one collection, so a drag that starts in one section may well not be deliverable into another
-— which would leave settled answers 14 and 15 specified, tested at the seam, and unreachable by drag
-on the phone until a Story rewrites the gesture. `tasks.md` § 9.5 measures it at the walkthrough and
-**stops** rather than reaching for a custom `draggable`/`dropDestination` drag, which would put
-"which row am I over" in `CommitmentsView.swift` and is the one thing ADR-1019's guard forbids.
+**The cross-group drag is kept, and the shell gets a `draggable`/`dropDestination` of its own to
+keep it.** `.onMove` names one collection, so a `Section` per group cannot by itself carry a row out
+of Supplements and into Sport — which would have left settled answers 14 and 15 specified, tested at
+the seam, and unreachable by drag. That loss was offered and declined: the drop into another group is
+the gesture settled answer 14 was chosen for (`grill.md` § *Settled* 26). So each section's `ForEach`
+keeps `.onMove` and gains `.dropDestination(for:)`, and each row gains `.draggable`:
+
+```swift
+Section {
+    ForEach(Array(group.commitments.enumerated()), id: \.offset) { index, commitment in
+        commitmentLine(Text(commitment.name), rhythmInWords: commitment.rhythmInWords)
+            .draggable(DraggedRow(category: group.category, offset: index))
+    }
+    .onMove { source, offset in
+        guard let index = source.first else { return }
+        screen.move(group.commitments[index], toOffset: offset, under: group.category)
+    }
+    .dropDestination(for: DraggedRow.self) { dropped, offset in
+        guard let dragged = dropped.first, let commitment = kept(dragged) else { return }
+        screen.move(commitment, toOffset: offset, under: group.category)
+    }
+} header: {
+    if let category = group.category { Text(category) }
+}
+```
+
+**ADR-1019 stands untouched, and the reason is what is passed rather than what is called.** Both
+arguments the shell gives `move` are values it was handed: `group.category` is the constant this
+`Section` drew its header from, and `offset` is the `Int` SwiftUI computed and documents as *"the
+offset relative to the dynamic view's underlying collection of data"* (§ *Context*). No line in
+`CommitmentsView.swift` adds, subtracts, counts rows or asks where a finger is, and the API that
+would have made it do so — the `CGPoint` overload — is `unavailable` on `DynamicViewContent` by
+name. The guard reads *"no line that could be wrong in a way a test would catch"*; there is no such
+line here, and there is strictly less of one than the flat arrangement had, which built an offset
+map. **No ADR is owed for this**, and none is written.
+
+**The one line worth naming is the payload.** `.draggable` needs a `Transferable`, and a commitment
+is not one: `CommitmentRecord` is internal to the kit and `Commitment` gains nothing in this change
+(§ *Context*). So the shell drags two values it already holds — the source section's own
+`group.category` and the row's own index in that section's `ForEach` — in a shell-local
+`Codable, Transferable` struct, and `kept(_:)` above resolves them back with
+`screen.keptGroups.first { $0.category == dragged.category }?.commitments[dragged.offset]`, guarded
+against an index that no longer exists. That is a lookup by an identity it was given, the same shape
+as the `screen.keptGroups.first { $0.commitments.contains(commitment) }` this file already ships for
+the Category swipe action — not a computation of where the drop landed. A lookup that fails does
+nothing and says nothing, because a screen keeping nothing at that place has been asked nothing.
+
+**What is still not known is behaviour rather than API, and § 9.5 is where it is looked at.** No
+interface line settles whether an intra-group drag arrives through `.onMove` or through
+`.dropDestination` once its rows are `.draggable`, and it does not have to: both hand the shell the
+same two values and both call `move` with the same three arguments, and the requirement makes a drop
+where a row already sits change nothing. **A drop delivered twice would be a shell bug and is a
+stop**, not a quiet fix.
 
 ### The day view is handed its groups, and `CONTEXT.md` is corrected
 
@@ -437,13 +512,15 @@ correcting one is worth a paragraph.
   answer 23's own Story, taken straight after this one. It is recorded here and **not designed
   for**: nothing in this delta anticipates it, and the grouping rule written here is what that Story
   will be grilled against.
-- **A drag may not be able to leave its section, which would make settled answers 14 and 15
-  unreachable on the phone in this Story.** `.onMove` names one collection and the SDK publishes no
-  overload that names two — § *Context*. → § *Questions for you* 1 puts it to the owner, `tasks.md`
-  § 9.5 measures it at the walkthrough, and the requirement is true and tested at the seam either
-  way. Worth knowing at G4: this is the one part of the Story whose visible result is not guaranteed,
-  and the reason it is here at all is that the arrangement that guaranteed it is the one that made
-  the end of a group unreachable.
+- **The cross-group drag is hand-written now, where `.onMove` used to give it for free.** `.onMove`
+  names one collection, so a `Section` per group cannot carry a row out of one group and into
+  another; `.draggable` on the row plus `.dropDestination(for:)` on each section's `ForEach` can, and
+  the SDK hands over the group's identity and the index rather than asking the shell to work either
+  out — measured 2026-09-08, § *Context*. → Settled answer 26 kept the gesture against my
+  recommendation to take the loss, and the measurement the answer turned on came back on the side of
+  keeping it: **ADR-1019 is untouched and no record is owed**. What is left is that a drag is three
+  modifiers and a payload type rather than one modifier, and that a payload type is a shell file's
+  worth of surface a reviewer has to read. § 9.5 is what looks at it on the phone.
 - **This delta has been rewritten once after implementation, and the second G4 is the price.**
   Settled answer 24 reversed a seam rule the owner had already approved, after seeing it on the
   phone. → Taken deliberately, and cheap by comparison: what changes is one signature, one
@@ -459,10 +536,9 @@ correcting one is worth a paragraph.
 
 ## Open Questions
 
-**One is outstanding — § *Questions for you* 1, raised on 2026-09-08 and about what the shell can
-draw rather than about what the delta says.** The rest are settled: `grill.md` § *Left open* named
-three, the residual round asked two more, and settled answer 24 has since reversed the first of
-those. What each one settled to:
+**None outstanding.** `grill.md` § *Left open* named three; the first residual round asked two more,
+of which settled answer 24 has since reversed the first; and a second residual round asked one, which
+settled answer 26 answered on 2026-09-08 against my recommendation. What each one settled to:
 
 1. **A drop carries the group it landed in — reversed 2026-09-08, and the answer it replaces is left
    standing here on purpose.** Residual question 1 was answered on my recommendation: a drop on the
@@ -501,32 +577,19 @@ those. What each one settled to:
    which is the first act in this product that would move more than one commitment at once. That
    needs a grill of its own, against the grouping rule written here.
 
+6. **The cross-group drag is kept, and it costs ADR-1019 nothing.** The second residual round, asked
+   2026-09-08 once a `Section` per group had been fixed as the arrangement, and answered against my
+   recommendation (`grill.md` § *Settled* 26): I proposed taking the loss of the drop into another
+   group, on the ground that refiling keeps a one-tap route on the row and that settled answer 23's
+   Story would write the custom gesture once for headings and rows together. The owner declined —
+   the drop into another group is the gesture settled answer 14 was chosen for, against my
+   recommendation then too. **The answer required a measurement rather than an assumption**, and it
+   was made before this was written: of the three outcomes it allowed, the first holds. The shell can
+   pass a group's identity and a received index straight through, so **ADR-1019 stands untouched and
+   no record is owed** — § *Context* carries the three interface lines it rests on and § *The shell
+   rides this Story* the arrangement. **Nothing in the delta moved**: the requirement reads the same
+   whichever gesture drives it. What grew is `tasks.md` § 9, by a payload type and two modifiers.
+
 One thing is settled but not yet *known*, and it is not a question for the owner: whether
 `add-number-entry` (#139) lands on `day-screen` first is a fact the implementer re-measures at
 `tasks.md` § 1.3.
-
-## Questions for you
-
-One question, raised while rewriting the delta for settled answer 24 and outstanding at the time
-this was written. **The delta is written on the recommended answer** and does not change either way;
-what changes is `tasks.md` § 9 and what you should expect to see at the next walkthrough.
-
-1. **A `Section` per group probably costs the cross-group drag.** `.onMove` is declared on
-   `DynamicViewContent` and its `IndexSet` and `Int` are both over one `ForEach`'s own data
-   (`iPhoneOS26.5.sdk`, `SwiftUI.swiftinterface:10353`); no overload names two collections. So a
-   drag that starts in the Supplements section may simply not be deliverable into the Sport one, and
-   settled answers 14 and 15 — a drop into another group files it there, a drop among the
-   uncategorised clears it — would be reachable at the seam and by the category field, but not by
-   dragging. It could not have been asked before, because it only exists once the shell is fixed as
-   a `Section` per group, which is what the reversal fixed it as.
-   - *Recommended:* **take it.** The defect you reported is the one being fixed and it is fixed
-     either way; refiling already has a one-tap route on the row; and the gesture that would restore
-     the cross-group drag is a custom `draggable`/`dropDestination` drag, which is a shell rewrite
-     with arithmetic in it, an ADR-1019 question, and naturally part of settled answer 23's
-     draggable-group-heading Story rather than this one.
-   - *If you say the cross-group drag has to work in this Story:* nothing in the delta moves — the
-     requirement is written the same way whichever gesture drives it — but `tasks.md` § 9 grows a
-     shell rewrite, ADR-1019's guard has to be re-argued for it, and the Story stops being one an
-     implementer can finish from the delta alone.
-   - *Either way:* `tasks.md` § 9.5 measures it on the phone and reports what it found, and a
-     surprise there is a stop and not a quiet fix.

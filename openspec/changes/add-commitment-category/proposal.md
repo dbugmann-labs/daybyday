@@ -93,10 +93,14 @@ None.
   new nested types — `Roster.Group` and `DayView.Group`. No new file.
 - `src/DayByDay/DayByDay/CommitmentsView.swift` and `ContentView.swift` — the category field, the
   categories offered, and both grouped lists drawn as a `Section` per group, under ADR-1019's
-  exception. The shell passes each section's own identity and `.onMove`'s offset untouched, and
-  computes nothing. **Whether a drag can leave its section is the one shell question this Story
-  cannot answer from a header file**: `design.md` § *Questions for you* 1 puts it to the owner and
-  `tasks.md` § 9.5 measures it on the phone.
+  exception. **A drag out of one group and into another is `.draggable` on the row and
+  `.dropDestination(for:)` on each section's `ForEach`**, because `.onMove` names one collection and
+  a `Section` per group is what makes the end of a group reachable at all. The shell passes each
+  section's own identity and the offset it is handed untouched, and computes nothing:
+  `dropDestination`'s `Int` is the SDK's own *"offset relative to the dynamic view's underlying
+  collection of data"*, and the geometric overload that would make a shell work out where a drop
+  landed is `unavailable` on `DynamicViewContent` by name. Measured 2026-09-08 —
+  **ADR-1019 is untouched and no record is owed** (`design.md` § *Context*, § *Open Questions* 6).
 - `docs/adr/` — **ADR-1038** written, and **ADR-1031 amended in place** on the trigger it named
   itself. **Not** amended: ADR-1030 (the kind is still the commitment's fourth part and still never
   changes; ADR-1038 says why a category is not a fifth), ADR-1037 (a move still changes the order

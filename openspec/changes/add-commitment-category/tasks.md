@@ -221,8 +221,8 @@ carried scenarios saying "what it keeps is three entries" true.
   — adds `categoriesInUse`, read off `keptGroups` and in that order.
 - [x] 6.12 `a commitments screen keeping nothing under a category offers none`
 - [x] 6.13 `a commitments screen offers no category that only a commitment it has stopped is under` —
-  the recommended answer to `design.md` § *Questions for you* 2. **If the owner answers that
-  question the other way, this box and § 6.11's and § 6.14's scenarios are the ones that change.**
+  the recommended answer to the first residual round's second question, settled at `design.md`
+  § *Open Questions* 2. **If that answer is ever taken the other way, this box and § 6.11's and § 6.14's scenarios are the ones that change.**
 - [x] 6.14 `a category no longer under any commitment kept is no longer offered` — there is nothing
   to delete, because there was never a list.
 - [x] 6.15 `a commitments screen does not fold the case of a category it is given` — settled answer
@@ -341,16 +341,40 @@ Under ADR-1019's 2026-09-04 amendment, whose three conditions `design.md` § *Th
 Story* checks off one by one. Every decision is behind the seam; the shell converts nothing, refuses
 nothing, orders nothing and groups nothing.
 
+**§ 9.0 and § 9.1 grew on 2026-09-08**, when settled answer 26 kept the cross-group drag that a
+`Section` per group costs `.onMove`. The measurement that answer required was made before this was
+written and is in `design.md` § *Context*: **ADR-1019 stands untouched and no record is owed**,
+because `dropDestination` hands the shell an index and the shell already holds the group. Nothing
+below computes anything, and § 9.1's stop says what to do if that stops being true.
+
+- [ ] 9.0 `CommitmentsView.swift` — add the drag payload, a shell-local
+  `struct DraggedRow: Codable, Transferable` holding **the source section's `category: String?` and
+  the row's `offset: Int` within that section's `ForEach`** — two values the shell is handed when it
+  draws the row, and no third. A `Commitment` cannot be the payload: `.draggable` needs
+  `Transferable`, `CommitmentRecord` is internal to the kit, and this change opens neither
+  (`design.md` § *Context*). Give it a `CodableRepresentation`; the probe in `design.md` § *Context*
+  used `UTType.content` and a narrower exported type is equally fine and changes nothing across the
+  seam. Add the one resolver beside it —
+  `screen.keptGroups.first { $0.category == dragged.category }?.commitments[dragged.offset]`,
+  **guarded against an offset the group no longer has**, returning nothing rather than clamping.
+  A lookup that finds nothing does nothing and says nothing.
 - [ ] 9.1 `CommitmentsView.swift` — draw the kept list as **a `Section` per group over
   `screen.keptGroups`**: the category as the section's header, no header on the group with none, and
-  one `ForEach` per section over that group's commitments with `.onMove` attached. **This reverses
-  what this box said before 2026-09-08** — `design.md` § *The shell rides this Story* and § *Open
-  Questions* 1 are why. The `.onMove` closure passes two things and computes nothing: the section's
-  own `group.category`, and the destination `Int` untouched, into
+  one `ForEach` per section over that group's commitments carrying **three** things — `.draggable`
+  on each row with § 9.0's payload, and `.onMove` and `.dropDestination(for: DraggedRow.self)` on
+  the `ForEach`. **This reverses what this box said before 2026-09-08** — `design.md` § *The shell
+  rides this Story* and § *Open Questions* 1 and 6 are why. Both closures pass two things and compute
+  nothing: the section's own `group.category`, and the destination `Int` untouched, into
   `screen.move(_:toOffset:under:)`. **Delete `keptGroupHeadings`** — the offset map is what a
   section makes unnecessary, and a shell that counts nothing is what ADR-1019's guard is asking for.
   The stopped list keeps its own single section and wants a header saying so, since it is now one
   section among several.
+
+  **The stop.** If either closure turns out to need a line that adds, subtracts, counts rows or asks
+  where a finger is — in particular if you reach for `dropDestination`'s `CGPoint` overload, which is
+  `unavailable` on `DynamicViewContent` by name — **stop and report it**. That is arithmetic in the
+  shell, it is what ADR-1019's guard forbids, and it would mean the measurement `design.md`
+  § *Context* rests on was wrong. It is a G4 question and an ADR-1019 amendment, not a line to write.
 - [x] 9.2 `CommitmentsView.swift` — add the category field to the define form, offering
   `screen.categoriesInUse` alongside free text, and pass whatever is in it to `screen.define` as the
   fourth argument. The field starts empty, and is cleared on a definition that is not refused,
@@ -367,8 +391,9 @@ nothing, orders nothing and groups nothing.
   screen's half of the missing boundary comes from (`grill.md` § *Settled* 25).
 - [ ] 9.5 **Run it again.** `pnpm run phone`, or the simulator per `docs/running-the-app.md`, and
   check by hand: type a category on the form and find the group appear; pick an offered category
-  rather than typing it; empty the field and find the row rejoin the ungrouped rows; tap Edit and
-  drag a row to the **bottom of its own group** and find it stay in that group — that is the defect
+  rather than typing it; empty the field and find the row rejoin the ungrouped rows; drag a row — in Edit mode or by a
+  long-press lift, § 9.5's own watch-item below — to the **bottom of its own group** and find it
+  stay in that group — that is the defect
   this rewrite exists for, so check it before anything else; drag a row from one group into another
   and find it refiled where it was dropped; drag a row into the ungrouped rows and find its category
   gone; drop a row where it started and find nothing said; and open the day screen and find the same
@@ -381,12 +406,14 @@ nothing, orders nothing and groups nothing.
   because settled answer 11 stands); and whether a group whose first row is dragged away moving on
   screen reads as a bug (`design.md` § *Risks*).
 
-  **And one measurement with a stop.** `design.md` § *Questions for you* 1: `.onMove` names one
-  collection, so a drag may not be able to leave its section at all. Find out. **If it cannot, draw
-  nothing new, report it, and stop** — do not reach for a custom `draggable`/`dropDestination` drag
-  to get the cross-group drop back, because that puts "which row am I over" in
-  `CommitmentsView.swift`, which is arithmetic in the shell and the one thing ADR-1019's guard
-  forbids. That is a Story of its own with its own G4. The box is ticked by the report either way.
+  **And one thing to watch that no header file settles.** With rows `.draggable` and each section's
+  `ForEach` carrying both `.onMove` and `.dropDestination`, which of the two delivers a drag that
+  starts and ends **inside one group** is behaviour rather than API (`design.md` § *The shell rides
+  this Story*). Either is fine — both call `screen.move` with the same three arguments, and the
+  requirement makes a drop where a row already sits change nothing. **A drop delivered twice is a
+  stop**: report it rather than suppressing one of the two, because which one to drop is a shell
+  decision worth reading in a diff. Say in the PR which one fired.
+
   Anything else that reads badly is a want in `docs/backlog.md` or a question for the owner, **not**
   a change to this delta without a further G4.
 
