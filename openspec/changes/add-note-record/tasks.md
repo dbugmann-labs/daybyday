@@ -265,16 +265,16 @@ expression** in a requirement `add-number-entry` signed four days earlier, and 1
 regression check that the whole argument for making the edit rests on: the eight archived scenarios
 of that requirement must answer exactly as they did.
 
-- [ ] 12.1 `a note committed with space around it is kept without that space and unchanged within it`
-- [ ] 12.2 `a note committed with space inside it keeps every character of that space`
-- [ ] 12.3 `an entry committed empty takes the note back, and one holding nothing but blank space does
+- [x] 12.1 `a note committed with space around it is kept without that space and unchanged within it`
+- [x] 12.2 `a note committed with space inside it keeps every character of that space`
+- [x] 12.3 `an entry committed empty takes the note back, and one holding nothing but blank space does
   the same`
-- [ ] 12.4 `an entry committed with line breaks alone takes the note back` — the box that fails a
+- [x] 12.4 `an entry committed with line breaks alone takes the note back` — the box that fails a
   reading written on `CharacterSet.whitespaces`, which does not contain a line break
   (`design.md` § *Context* measurement 1).
-- [ ] 12.5 `a note of one visible character among blank space is written rather than taken back`
-- [ ] 12.6 `a note of any length, any script and any number of lines is entered whole`
-- [ ] 12.7 `an entry committed with line breaks alone takes the number back` — expected **red** on
+- [x] 12.5 `a note of one visible character among blank space is written rather than taken back`
+- [x] 12.6 `a note of any length, any script and any number of lines is entered whole`
+- [x] 12.7 `an entry committed with line breaks alone takes the number back` — expected **red** on
   the trim that ships today, which leaves `"\n\n\n"` standing and reads it as *not a number*. The
   smallest change that makes it pass is `read(_:)`'s first line becoming `Blank.trimmed(text)` in
   place of `text.trimmingCharacters(in: .whitespaces)`, and **nothing else in `read(_:)` may move** —
@@ -285,7 +285,7 @@ of that requirement must answer exactly as they did.
   already passing. **A red one there is a rule-5 stop, never a test to update** — it would mean
   `design.md` § *Context* measurement 2a is wrong about which texts change answer, and that
   measurement is the evidence the owner settled the residual round on.
-- [ ] 12.8 `an entry committed with a zero-width space alone keeps nothing and takes nothing back` —
+- [x] 12.8 `an entry committed with a zero-width space alone keeps nothing and takes nothing back` —
   the direction the fix exists for. Write the character as `"\u{200B}"` and assert all four clauses:
   the number 70.5 still stands, the day is still kept, the row is told "Not a number", and a day
   screen opened afterwards at the same place says the same. Expect this **green as soon as 12.7's one

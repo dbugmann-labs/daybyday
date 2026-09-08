@@ -3138,6 +3138,65 @@ func anEntryCommittedEmptyTakesTheNumberBackAndOneHoldingNothingButSpaceDoesTheS
 }
 
 @MainActor
+@Test("an entry committed with line breaks alone takes the number back")
+func anEntryCommittedWithLineBreaksAloneTakesTheNumberBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+    try screen.enter("\n\n\n", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == nil)
+    #expect(screen.notice == nil)
+
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+    try screen.enter("\t\n", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == nil)
+
+    let later = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!later.dayView.rows[0].isKept)
+    #expect(later.dayView.rows[0].numberEntry(asOf: monday)?.number == nil)
+}
+
+@MainActor
+@Test("an entry committed with a zero-width space alone keeps nothing and takes nothing back")
+func anEntryCommittedWithAZeroWidthSpaceAloneKeepsNothingAndTakesNothingBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: range))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("70.5", on: screen.dayView.rows[0])
+    try screen.enter("\u{200B}", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(screen.notice?.cause == "Not a number")
+
+    let later = DayScreen(
+        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(later.dayView.rows[0].numberEntry(asOf: monday)?.number == 70.5)
+    #expect(later.dayView.rows[0].isKept)
+}
+
+@MainActor
 @Test("a value that is not a number keeps nothing and takes nothing back")
 func aValueThatIsNotANumberKeepsNothingAndTakesNothingBack() throws {
     let (place, rosterPlace) = freshPlaces()
@@ -3882,4 +3941,147 @@ func enteringANoteWritesNothingToTheRostersPlace() throws {
 
     #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
     #expect(screen.rosterState == .kept)
+}
+
+@MainActor
+@Test("a note committed with space around it is kept without that space and unchanged within it")
+func aNoteCommittedWithSpaceAroundItIsKeptWithoutThatSpaceAndUnchangedWithinIt() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let committed = "  Ran 8k.\nKnee held up.\n  "
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter(committed, on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == "Ran 8k.\nKnee held up.")
+
+    let later = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(later.dayView.rows[0].noteEntry(asOf: monday)?.note == "Ran 8k.\nKnee held up.")
+}
+
+@MainActor
+@Test("a note committed with space inside it keeps every character of that space")
+func aNoteCommittedWithSpaceInsideItKeepsEveryCharacterOfThatSpace() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let committed = "Monday\n\n   \tTuesday"
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter(committed, on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == committed)
+}
+
+@MainActor
+@Test("an entry committed empty takes the note back, and one holding nothing but blank space does the same")
+func anEntryCommittedEmptyTakesTheNoteBackAndOneHoldingNothingButBlankSpaceDoesTheSame() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let sleep = Commitment(name: "Sleep", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal, sleep], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    try screen.enter("Slept badly.", on: screen.dayView.rows[1])
+
+    try screen.enter("", on: screen.dayView.rows[0])
+    try screen.enter("  ", on: screen.dayView.rows[1])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(!screen.dayView.rows[1].isKept)
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == nil)
+    #expect(screen.dayView.rows[1].noteEntry(asOf: monday)?.note == nil)
+}
+
+@MainActor
+@Test("an entry committed with line breaks alone takes the note back")
+func anEntryCommittedWithLineBreaksAloneTakesTheNoteBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    try screen.enter("\n\n\n", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == nil)
+
+    try screen.enter("Ran 8k.", on: screen.dayView.rows[0])
+    try screen.enter("\t\n", on: screen.dayView.rows[0])
+
+    #expect(!screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == nil)
+
+    let later = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!later.dayView.rows[0].isKept)
+    #expect(later.dayView.rows[0].noteEntry(asOf: monday)?.note == nil)
+}
+
+@MainActor
+@Test("a note of one visible character among blank space is written rather than taken back")
+func aNoteOfOneVisibleCharacterAmongBlankSpaceIsWrittenRatherThanTakenBack() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    try screen.enter("\n  .\t\n", on: screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == ".")
+}
+
+@MainActor
+@Test("a note of any length, any script and any number of lines is entered whole")
+func aNoteOfAnyLengthAnyScriptAndAnyNumberOfLinesIsEnteredWhole() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journal = Commitment(
+        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .note)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let texts = [
+        String(repeating: "a", count: 100_000),
+        "שלום עולם",
+        "🏃",
+        (1...20).map { "Line \($0)" }.joined(separator: "\n"),
+    ]
+
+    let screen = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+
+    for text in texts {
+        try screen.enter(text, on: screen.dayView.rows[0])
+        #expect(screen.dayView.rows[0].noteEntry(asOf: monday)?.note == text)
+        #expect(screen.dayView.rows[0].isKept)
+    }
+
+    let later = DayScreen(
+        startingFrom: [journal], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(later.dayView.rows[0].noteEntry(asOf: monday)?.note == texts.last)
 }

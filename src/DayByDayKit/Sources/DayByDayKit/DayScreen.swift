@@ -238,7 +238,7 @@ public final class DayScreen {
     /// can be spelled in a way `Decimal(string:)` holds and in another it refuses, so the parse
     /// is asked about the one spelling this reading already knows says the value exactly.
     private static func read(_ text: String) -> CommittedText {
-        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        let trimmed = Blank.trimmed(text)
         guard !trimmed.isEmpty else {
             return .takeBack
         }
