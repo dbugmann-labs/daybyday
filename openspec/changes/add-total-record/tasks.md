@@ -313,7 +313,7 @@ the sum, and a rule read off the first accepts exactly the case it exists to ref
 - [x] 11.5 `an amount that is not above zero is told on the row, saying so` — from the MODIFIED
   § *A day screen tells on the row that was tapped that a change could not be kept*: the cause is
   told on the row committed on last and on no other, which is what 11.4 does not pin.
-- [ ] 11.6 `an amount too large to add to the day is told on the row, saying so` — the cause "Too
+- [x] 11.6 `an amount too large to add to the day is told on the row, saying so` — the cause "Too
   large to add", word for word, and that it is neither of the other two.
 
 ## 12. `day-screen` — adding, and reading what was committed
