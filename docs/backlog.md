@@ -125,6 +125,15 @@ shape it lacks, not the quota.
   tick, a line for a number — and B-008's principle test travels with it: a count is one step
   from a streak, and it stays on the right side only while it is looked at deliberately and
   never shown unasked. B-008's other half, navigating to a past day, is B-016.
+- **Open** — *folded in 2026-09-08, at the grill of `add-note-record` (#140), at the owner's
+  direction rather than from a want of his own, so there is nothing to quote.* That grill settled
+  that a row says **nothing** about a note: a note is reachable only through the entry its row
+  offers, so the only way to read what you wrote on Tuesday is to move to Tuesday and open that
+  row's field. Nothing in the product draws a note anywhere else, and nothing is planned to. The
+  note is therefore a third thing this page would be for, beside the count for a tick and the line
+  for a number the Open above already names — and it is the one that is least like an aggregate,
+  because what you want back is the words themselves rather than a shape they add up to. Whether
+  that is the same page or a different one is part of what "a page *per* what" has to settle.
 
 ### B-009 — carry my history to a new phone
 *Captured 2026-08-28, migrated 2026-09-02.*
