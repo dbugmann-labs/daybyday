@@ -217,6 +217,9 @@ struct ContentView: View {
                 }
             }
         }
+        // Same measured value as `CommitmentsView`'s kept list — see the comment there for how
+        // it was determined.
+        .listSectionSpacing(12)
         .alert(
             enteringRow?.name ?? "",
             isPresented: Binding(
