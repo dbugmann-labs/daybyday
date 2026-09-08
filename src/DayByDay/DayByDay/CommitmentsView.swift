@@ -100,7 +100,13 @@ struct CommitmentsView: View {
                     }
                 } header: {
                     if let category = group.category {
+                        // Same insets as the day screen's category heading, for the same reason
+                        // and off the same measurement — see the comment there. The `Kept`,
+                        // `Stopped` and `Define a commitment` headings below keep the platform's
+                        // own padding: they divide this screen rather than name a group, and the
+                        // owner's ask was about the gap above a category.
                         Text(category)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                     }
                 }
             }
