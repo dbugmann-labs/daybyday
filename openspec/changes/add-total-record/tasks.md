@@ -161,7 +161,7 @@ kept.
 
 - [x] 6.1 `a total commitment whose day is at its target still takes no tick on it` — from § *A tick
   is of a commitment on a calendar date it is due on*. `Tick.swift` is **not** edited.
-- [ ] 6.2 `a total commitment whose day's additions reach its target was kept on that date` — the
+- [x] 6.2 `a total commitment whose day's additions reach its target was kept on that date` — the
   requirement #137 shipped that this Story reverses, for the last kind.
 - [ ] 6.3 `a total commitment whose day's additions fall short of its target was not kept on it` —
   all three clauses, the third of which crosses the target by 0.01 and must flip the answer.

@@ -1983,3 +1983,22 @@ func aTotalCommitmentWhoseDayIsAtItsTargetStillTakesNoTickOnIt() {
     #expect(history.isKept(protein, on: monday))
     #expect(Tick(protein, on: wednesday) == nil)
 }
+
+@Test("a total commitment whose day's additions reach its target was kept on that date")
+func aTotalCommitmentWhoseDaysAdditionsReachItsTargetWasKeptOnThatDate() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var history = History()
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+
+    var historyOfOneAddition = History()
+    historyOfOneAddition.add(Addition(120, for: protein, on: monday)!)
+
+    #expect(history.isKept(protein, on: monday))
+    #expect(historyOfOneAddition.isKept(protein, on: monday))
+}
