@@ -125,6 +125,27 @@ because the owner's reply to it opened a frontier node the grill had not reached
     identity and an index it was given is not the shell computing anything — and it is
     `spec-author`'s to make.*
 
+27. **The cross-group drag is given up, after being built twice and walked twice.** *§ Settled 26
+    kept it deliberately, against `spec-author`'s recommendation to lose it; it does not work and
+    this repository cannot test it. Two facts were measured rather than guessed, and they are the
+    inheritance for § Settled 23's Story: **`.onMove` and `.dropDestination(for:)` cannot share a
+    `ForEach`** — instrumenting both closures showed `.onMove` winning every long press and
+    dropping a drag that leaves its section on the floor, while `.dropDestination` never fired at
+    all — and **an abstract `UTType` was not what was missing**: the payload was moved from
+    `public.content` to an exported type of the app's own, per Apple's own `Transferable`
+    reordering example, and the drag still snapped back. What ships instead is `.onMove`, which
+    reorders inside a group through Edit mode, and the **Category** action on the row, which
+    refiles across groups and works. `docs/backlog.md` is where the drag goes if it is still
+    wanted; #168 is where it is cheapest, because that Story has to build a drag layer for group
+    headings anyway.*
+28. **Nothing on this machine can drive a drag, and that is the reason this cost two evenings.**
+    *The Simulator has no GUI here — `System Events` reports zero windows — and XCUITest's
+    synthetic touch never triggered `.dropDestination` in any configuration, with `.onMove`
+    present or absent. So every attempt at a gesture is a round trip through the owner's phone.
+    Recorded as a fact about the environment rather than about this Story: a want that turns on a
+    gesture should be priced with that in it, and `tasks.md` § 9.5 is the only thing that ever
+    tests one.*
+
 ## The residual round
 
 `spec-author` returned two questions that writing the delta made visible. Both answered
@@ -175,5 +196,12 @@ appears once a grouped drag is expressed as a single offset.
 4. **§ Settled 14 and § Residual 1 are superseded by § Settled 24.** They are left standing rather
    than edited, because what they record is a decision that was made, tested in the hand and
    reversed — and the reversal is only legible next to them.
+
+5. **The reorder lag is unexplained and stays open.** On the phone, a moved row leaves its old
+   place empty for about a second before the list settles. The obvious cause is dead: `RosterStore.write`
+   measured 13ms and the whole `CommitmentsScreen.move` 16ms, and a recorded simulator reorder
+   settles in 0.2–0.4s. It was never judged again, because the gesture stopped working before it
+   could be. It belongs to whoever next holds a drag on a real device — § Settled 23's Story — and
+   the remaining candidate nobody has excluded is that the rows are keyed by position.
 
 Everything the frontier raised was answered.
