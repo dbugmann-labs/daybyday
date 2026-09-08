@@ -113,6 +113,18 @@ because the owner's reply to it opened a frontier node the grill had not reached
     last group so that neither screen showed where a category ended. *A divider is not a word the
     app invented, so § Settled 11 stands — what was missing was a boundary, not a name.*
 
+26. **The cross-group drag is kept, at the price of a hand-written gesture.** *Asked at the second
+    residual round, because a `Section` per group — what makes the end of a group reachable —
+    probably costs it: `.onMove` names one collection and no overload names two. Recommended
+    taking the loss, since refiling keeps a one-tap route on the row while appending to a group had
+    none, and § Settled 23's Story would do the custom gesture once for headings and rows together.
+    Declined: the drop into another group is the gesture § Settled 14 was chosen for, against
+    recommendation, and the owner has not changed their mind about it. So the shell gets a
+    `draggable`/`dropDestination` of its own in this Story. Whether that breaches ADR-1019 is a
+    measurement rather than a foregone conclusion — a drop target that hands back a group's
+    identity and an index it was given is not the shell computing anything — and it is
+    `spec-author`'s to make.*
+
 ## The residual round
 
 `spec-author` returned two questions that writing the delta made visible. Both answered
