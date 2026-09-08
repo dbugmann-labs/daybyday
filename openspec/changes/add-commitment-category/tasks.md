@@ -474,9 +474,9 @@ boxes below confirm rather than write, and each is tickable while reading what i
   was validated against `main`'s specs on 2026-09-08 with all fourteen MODIFIED requirements intact
   (`design.md` § *Risks*). It is ordinary merge work, it is `implementer`'s and not
   `spec-author`'s, and it is why the branch handed over at G4 sits two commits behind `main`.
-- [ ] 11.4 Ask for the review (**G7**) with `mattpocock-skills:code-review`, and fix what it finds on
+- [x] 11.4 Ask for the review (**G7**) with `mattpocock-skills:code-review`, and fix what it finds on
   this branch before the archive.
-- [ ] 11.5 Write the archive handover for the janitor, into the PR or the handover message, saying
+- [x] 11.5 Write the archive handover for the janitor, into the PR or the handover message, saying
   what it must check **after** `/opsx:archive` has run. This box is ticked when the instruction has
   been written, which is before the archive; the checking itself is the janitor's step and has no box
   of its own, deliberately — `add-roster-store` (#103) shipped a box that could only be ticked after
