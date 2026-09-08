@@ -231,7 +231,7 @@ suite before writing a test; then one scenario at a time as above.
   a form-4 fixture. Expect green once 7.1 is in: the version guard reads `1...5`.
 - [x] 7.12 `an addition made over a history kept before a day could hold an addition is read back
   beside the records already there` — a form-4 fixture written over, then reopened at form 5.
-- [ ] 7.13 `a store whose shape and declared form disagree about additions is refused` — both
+- [x] 7.13 `a store whose shape and declared form disagree about additions is refused` — both
   directions, plus the third clause that is the real point: a **form-3** fixture holding neither notes
   nor additions must still be read without error. That clause is what fails a guard written against
   `currentVersion` instead of against each field's own introduced-at constant.

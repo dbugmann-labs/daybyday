@@ -1593,3 +1593,64 @@ func anAdditionMadeOverAHistoryKeptBeforeADayCouldHoldAnAdditionIsReadBackBeside
     #expect(later.history.total(for: protein, on: monday) == 120)
     #expect(later.history.isKept(protein, on: monday))
 }
+
+@Test("a store whose shape and declared form disagree about additions is refused")
+func aStoreWhoseShapeAndDeclaredFormDisagreeAboutAdditionsIsRefused() throws {
+    let earlyFormWithAdditionsPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: earlyFormWithAdditionsPlace.deletingLastPathComponent(),
+        withIntermediateDirectories: true)
+    let earlyFormWithAdditionsBytes = Data(
+        """
+        {
+          "version": 4,
+          "ticks": [],
+          "numbers": [],
+          "notes": [],
+          "additions": [
+            {
+              "commitment": {
+                "name": "Protein",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "total": { "target": 120 } }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "amounts": [30]
+            }
+          ]
+        }
+        """.utf8)
+    try earlyFormWithAdditionsBytes.write(to: earlyFormWithAdditionsPlace)
+
+    let currentFormWithoutAdditionsPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: currentFormWithoutAdditionsPlace.deletingLastPathComponent(),
+        withIntermediateDirectories: true)
+    let currentFormWithoutAdditionsBytes = Data(
+        #"{"version": 5, "ticks": [], "numbers": [], "notes": []}"#.utf8)
+    try currentFormWithoutAdditionsBytes.write(to: currentFormWithoutAdditionsPlace)
+
+    let earlyFormNeitherPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: earlyFormNeitherPlace.deletingLastPathComponent(),
+        withIntermediateDirectories: true)
+    let earlyFormNeitherBytes = Data(#"{"version": 3, "ticks": [], "numbers": []}"#.utf8)
+    try earlyFormNeitherBytes.write(to: earlyFormNeitherPlace)
+
+    #expect(throws: RecordStoreError.notAStore(at: earlyFormWithAdditionsPlace)) {
+        try RecordStore(at: earlyFormWithAdditionsPlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: currentFormWithoutAdditionsPlace)) {
+        try RecordStore(at: currentFormWithoutAdditionsPlace)
+    }
+    let readWithoutError = try RecordStore(at: earlyFormNeitherPlace)
+    #expect(readWithoutError.history == History())
+
+    #expect(
+        try Data(contentsOf: earlyFormWithAdditionsPlace) == earlyFormWithAdditionsBytes)
+    #expect(
+        try Data(contentsOf: currentFormWithoutAdditionsPlace)
+            == currentFormWithoutAdditionsBytes)
+    #expect(try Data(contentsOf: earlyFormNeitherPlace) == earlyFormNeitherBytes)
+}
