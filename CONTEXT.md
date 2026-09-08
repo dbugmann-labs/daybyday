@@ -706,6 +706,15 @@ ends of the calendar, a day screen **stays exactly as it is**, because a screen 
 staying put is an answer it can give. A day screen also moves **straight back to today**, which a
 day view has no way to do: it holds no today to go back to.
 
+**Amended 2026-09-08**, at the Feature grill that reopened `FEAT: day-screen` (#27). A day screen
+is also moved by a **horizontal swipe** — left onto the next day, right onto the previous one,
+beside the chevrons rather than instead of them — and that gesture is the screen's permanently: no
+row on a day screen may ever take a swipe action, which is the opposite of the **commitments
+screen**, where a row swipe is how a commitment is stopped, resumed and removed. The swipe itself
+decides nothing and is the **app shell**'s, since it calls the same two acts the chevrons already
+call; what is decided, and what a later want for a day-screen row affordance has to read first, is
+who owns the gesture. ADR-1042.
+
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **record store** it reads a history from and writes a tick back to, the
 **roster store** it reads its commitments from, and the
