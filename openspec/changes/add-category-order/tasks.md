@@ -85,24 +85,24 @@ when the roster came back unchanged.
 Driven at `CommitmentsScreen.move(group:toOffset:)`, in
 `src/DayByDayKit/Tests/DayByDayKitTests/CommitmentsScreenTests.swift`.
 
-- [ ] 4.1 *a group moved through a commitments screen is drawn where it was moved to, and is kept
+- [x] 4.1 *a group moved through a commitments screen is drawn where it was moved to, and is kept
   there* — the first cycle, introducing the member and its `categoriesInUse` guards.
-- [ ] 4.2 *an offset a commitments screen is given for a group is counted over the groups it draws
+- [x] 4.2 *an offset a commitments screen is given for a group is counted over the groups it draws
   that are under a category* — the offset goes to the roster untouched; the screen converts nothing.
-- [ ] 4.3 *a group moved through a commitments screen carries the commitments it has stopped with it*
+- [x] 4.3 *a group moved through a commitments screen carries the commitments it has stopped with it*
   — the stopped list is drawn in the roster's new order afterwards, and a stopped member anchors
   where the block is placed.
-- [ ] 4.4 *a commitments screen asked to move the group of the commitments under no category does
+- [x] 4.4 *a commitments screen asked to move the group of the commitments under no category does
   nothing and says nothing*.
-- [ ] 4.5 *a commitments screen asked to move a group it draws none of does nothing and says nothing*.
-- [ ] 4.6 *a commitments screen given an offset the groups it draws do not have does nothing and says
+- [x] 4.5 *a commitments screen asked to move a group it draws none of does nothing and says nothing*.
+- [x] 4.6 *a commitments screen given an offset the groups it draws do not have does nothing and says
   nothing*.
-- [ ] 4.7 *a group move a commitments screen could not keep leaves both its lists as they were* — the
+- [x] 4.7 *a group move a commitments screen could not keep leaves both its lists as they were* — the
   cycle that adds `RefusedChange.movingGroup(String, Refusal)`, naming the category.
-- [ ] 4.8 *a group move that leaves a group where it is drawn changes nothing and refuses nothing* —
+- [x] 4.8 *a group move that leaves a group where it is drawn changes nothing and refuses nothing* —
   compared against the roster itself and not against the boolean the store answers, exactly as
   `move` and `put` already do.
-- [ ] 4.9 *a commitments screen shown again draws its groups in the order they were moved into*.
+- [x] 4.9 *a commitments screen shown again draws its groups in the order they were moved into*.
 
 ## 5. `commitment` — the six requirements this change makes newly true
 
