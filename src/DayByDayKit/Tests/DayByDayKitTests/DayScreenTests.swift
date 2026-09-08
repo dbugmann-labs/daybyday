@@ -5050,6 +5050,35 @@ func anAmountTooLargeToAddToTheDayIsToldOnTheRowSayingSo() throws {
 }
 
 @MainActor
+@Test(
+    "a value that is not a number committed in a total entry is told the same thing a number entry tells"
+)
+func aValueThatIsNotANumberCommittedInATotalEntryIsToldTheSameThingANumberEntryTells() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [weight, protein], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace)
+    try screen.enter("1.2.3", on: screen.dayView.rows[0])
+    let causeOnNumberRow = screen.notice?.cause
+
+    try screen.enter("1.2.3", on: screen.dayView.rows[1])
+
+    #expect(screen.notice?.row == screen.dayView.rows[1])
+    #expect(screen.notice?.cause == "Not a number")
+    #expect(screen.notice?.cause == causeOnNumberRow)
+}
+
+@MainActor
 @Test("a commit on a note row for a day that has not arrived is told nothing on the row")
 func aCommitOnANoteRowForADayThatHasNotArrivedIsToldNothingOnTheRow() throws {
     let (place, rosterPlace) = freshPlaces()

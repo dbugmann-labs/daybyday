@@ -375,7 +375,7 @@ private twins at the foot of `DayScreen.swift`.
 - [x] 13.8 `taking back on a day screen that is not keeping a record changes nothing and keeps
   nothing`
 - [x] 13.9 `taking back writes nothing to the roster's place`
-- [ ] 13.10 `a value that is not a number committed in a total entry is told the same thing a number
+- [x] 13.10 `a value that is not a number committed in a total entry is told the same thing a number
   entry tells` — word for word on both rows. The box that would fail a second reading with its own
   wording.
 - [ ] 13.11 `an addition refused by the place is told on the row and names no cause`
