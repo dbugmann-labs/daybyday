@@ -178,6 +178,30 @@ reached by defining the commitment again exactly. **Removing** is the roster's v
 what the person reads is the **app shell**'s. Agreed 2026-09-07 at the grill of
 `add-roster-removal` (#145).
 
+**Category** — the word a person put a commitment under: *supplements*, *sport*, whatever they
+type. It is the owner's own word and never one the app names — no fixed menu holds the day-one
+week, and the same argument that makes a **commitment name** the owner's rather than the system's
+makes this one theirs too. A commitment has at most one, and having none is an ordinary state
+rather than a gap: four lines of the day-one week are neither a supplement nor a habit. It is
+judged for saying something and for nothing else, exactly as a name is — but unlike a name it is
+optional, so a category of nothing but blank space is not refused, it *is* no category, and
+emptying it is how one is taken off.
+
+It is held by the **roster**, against each commitment, and never by the commitment, which stays
+four things. This is ADR-1023's argument reaching a second part: a tick embeds the whole
+commitment by value, so a fifth part a person can change would orphan every tick already
+recorded the moment they changed it. ADR-1030 let the **kind** be a fourth part only because a
+kind never changes — changing it is what changing a commitment is — and a category is the
+opposite, a label a person is expected to move.
+
+There is no list of categories anywhere. The categories that exist are exactly the words the
+roster's commitments carry, which is why a commitments screen can **offer the ones in use** and
+why a word whose last commitment lets it go simply stops existing. Offering them is not
+decoration: a phone autocapitalises, so *Supplements* typed once and *supplements* the next time
+would otherwise become two groups, silently — and the alternative, folding case when matching,
+would have the app choose which of a person's spellings a heading shows. Agreed 2026-09-08 at
+the grill of `add-commitment-category` (#147).
+
 **Roster** — the commitments a person keeps, held as one ordered set: every commitment that has been
 taken on, in the order it was taken on, and never two of the same one. It is the answer to "what do
 I keep", the thing a day is drawn from, and the thing a commitment is eventually retired out of. It
@@ -236,6 +260,17 @@ scrolling — is not something a roster can work out. The order runs over everyt
 kept, stopped and removed alike, so a stopped commitment keeps the place it has and taking it up
 again returns it there. What changes it is **moving** a commitment, and nothing else.
 
+**Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). A roster also holds, for
+each commitment, the **category** it is under, or that it is under none. Like the day a commitment
+was kept until and like the fact that one was removed, it is the roster's and not the commitment's,
+so changing it re-keys nothing and two commitments alike in all four parts are still the same
+commitment whatever they are filed under. A roster **changes a commitment's category**, and that is
+a fifth act beside taking one on, stopping keeping one, removing one and moving one. It is offered
+only on a commitment the roster is *keeping*: on a stopped or a removed one it is refused and said,
+exactly as a move is, and a stopped commitment keeps the category it had until it is taken up again.
+Taking one up again with a different category is the one place the two meet — the offered category
+wins, because it is what the person just said.
+
 **Move** — the roster's fourth act on a commitment, beside taking one on, stopping keeping one and
 removing one: putting a commitment it is keeping at a place among the ones it is keeping. It is the
 only thing that ever changes a **roster**'s order, and the only act a person performs on that order.
@@ -247,6 +282,15 @@ a roster is, and so is a place that is not one of the places there are. The pers
 drag on the **commitments screen**'s kept list, and that list is the only one it is offered on: a
 stopped commitment's place is one it already has. Agreed 2026-09-07 at the grill of
 `add-roster-order` (#146).
+
+**Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). It is still the only thing
+that changes a roster's order, and it is no longer only a move: a commitment dropped into another
+**category**'s group is moved to where it was dropped *and* put under that category, and one dropped
+among the commitments under no category is moved and has its category cleared. One gesture, doing
+what it looks like it does. The category field on the **commitments screen** remains the other way to
+change one, and it changes no order — a commitment given a category is drawn in that category's group
+while staying exactly where the roster holds it, so clearing the category draws it back where it
+never stopped being.
 
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
@@ -464,6 +508,12 @@ merely sorting. It keeps it the way it always has, as the order the commitments 
 nothing about what is stored changes and a roster written before this reads back with its taken-on
 order as the order its owner starts from.
 
+**Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). A roster store also keeps,
+against each commitment, the **category** it is under. A roster written before a commitment had one
+reads back with every commitment under none, in the way one written before a commitment carried a
+**kind** reads back as the plain kind: nothing already kept reads back differently, and no category
+is invented for it.
+
 **Day one** — the commitments a fresh install begins with, before anyone has defined one: the
 owner's own week, quoted in `docs/backlog.md` § *What day one looks like*. It is written into a
 roster that holds nothing at all, and only then — a roster emptied by stopping every commitment
@@ -516,6 +566,16 @@ reader could not tell apart are the same day view, even where one was offered a 
 not due on the date or read a history holding a tick it never looked up. What was offered is the
 caller's to remember; the day view keeps the answer. Corrected 2026-09-02 at #70's G7, where the
 requirement had claimed identity followed the arguments.
+
+**Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). A day view draws its rows
+in **groups**, one per **category**, and this is the one ordering it makes that is not the order it
+was handed: a group sits where its first commitment sits in that order, and the commitments under no
+category come last, under no heading. It is not a rule the day view invented — the order is still
+the person's, read off the roster, and grouping by anything the system worked out was refused for
+the reason it has always been refused. A group whose commitments are none of them due is not drawn
+at all, because a day view shows what a date asks of you and an empty heading would be a claim about
+the day rather than about what a person keeps. A day view still changes nothing: the groups are
+drawn, and the gesture that sets a category is the **commitments screen**'s.
 
 **Row** — one commitment's line in a day view: its name, the **rhythm in words** it runs on, whether
 it is kept, and the place a tick is made. Ticking belongs to the row and therefore to `day-screen`:
@@ -766,6 +826,17 @@ on the kept list alone, because a stopped commitment already has its place; a mo
 is the fifth kind of **refused change**, and a commitment dropped back where it already was is not
 one of them — that is a move the screen makes, whose result is the roster it already had, and it
 neither writes anything nor answers a notice already standing.
+
+**Amended 2026-09-08**, at the grill of `add-commitment-category` (#147). A commitments screen also
+**gives a commitment a category and takes one off**, on the form that defines one and on the kept
+list afterwards, and it **offers the categories already in use** rather than asking for the word
+twice. Its kept list is drawn in groups, placed as a **day view** places them — a group where its
+first commitment sits, the uncategorised last and unheaded — while the stopped list stays one flat
+list, since it is not what a person reads daily. Its drag now carries a second meaning: a row
+dropped into another group is moved *and* recategorised, and one dropped among the uncategorised has
+its category cleared. A category it will not change is a **refused change** like every other, and
+the categories it offers are read off the roster it is drawing, so a word its last commitment lets
+go is gone from the form as well.
 
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
