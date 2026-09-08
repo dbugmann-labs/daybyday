@@ -173,7 +173,7 @@ kept.
   the total kind were not kept on a date they are due on` is still green and its body unchanged: its
   total clause asks a history holding no addition, which is still *not kept*. If it is red, the kept
   rule reads the wrong way round; that is a rule-5 stop, not a test to update.
-- [ ] 6.7 `a total commitment with additions on a date still takes no number on it` — from § *A
+- [x] 6.7 `a total commitment with additions on a date still takes no number on it` — from § *A
   number is of a number commitment on a calendar date it is due on*. `Number.swift` is **not** edited.
 - [ ] 6.8 `a total commitment with additions on a date still takes no note on it` — from § *A note is
   of a note commitment on a calendar date it is due on*. `Note.swift` is **not** edited.
