@@ -15,7 +15,21 @@ Read `AGENTS.md` first. It is binding.
 
 ## Your steps, in order
 
-1. **Archive.** Run the CLI on the story branch, as the **last commit on that branch** — not a
+1. **Archive. Count the unticked boxes before you run anything:**
+
+   ```bash
+   grep -c '^- \[ \]' openspec/changes/<change-id>/tasks.md   # must print 0; exits 1 when it does
+   ```
+
+   If it prints anything but `0`, **stop and hand back to the `implementer`**, naming the boxes.
+   Ticking one is its write and not yours, and after the next command they are all out of reach for
+   good. Doing this here rather than at step 2 is the whole point: step 2's check fires when the
+   folder has already moved, and unpicking that means rewinding a pushed archive commit.
+   `add-number-entry` (#139) is where that happened, on 2026-09-08 — its § 11.5 was correctly
+   written as a janitor instruction, tickable beforehand, and nobody ticked it, so the archive ran
+   and the box could never be reached again.
+
+   Then run the CLI on the story branch, as the **last commit on that branch** — not a
    follow-up PR:
 
    ```bash
@@ -58,6 +72,10 @@ Read `AGENTS.md` first. It is binding.
    unticked box asks you to tick it *after* archiving, that box is unsatisfiable as written: stop,
    say so, and name it. `.claude/agents/spec-author.md` step 6 is where that is supposed to be
    prevented, and #103 is the Story that proved it was not.
+
+   **A box that is merely *unticked* is a different thing from one that is unsatisfiable**, and by
+   this step you can no longer tell them apart or act on either. That is why step 1 counts them
+   while they can still be reached.
 3. **Push the archive commit.** It is on your branch and not on the PR until you do:
 
    ```bash

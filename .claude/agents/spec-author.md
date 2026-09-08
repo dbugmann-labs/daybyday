@@ -109,6 +109,13 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
    checkbox**: write the box as the thing the janitor must *do*, tickable beforehand, and put the
    after-the-fact verification in the task's prose as a stop — "any drift is a stop and a report,
    never a hand-edit". The janitor's own step 2 already carries that shape.
+
+   **Say in that box who ticks it and when**, because a box written as a janitor instruction reads
+   like the janitor's to tick and the janitor may not tick anything: the `implementer` ticks it in
+   its last commit before the archive, on the evidence that everything the box asks for is in
+   place. `add-number-entry` (#139) shipped this box in exactly the right shape and it still
+   stalled, because nothing in it said whose tick it was — the implementer left it for the janitor,
+   the janitor archived, and the box moved out of reach. One clause prevents it.
 7. **Validate.** `openspec validate <change-id> --strict` must exit 0 before you hand back.
 8. **Open the draft PR.** G4 is read as a diff, so leave one behind. Commit the change folder
    as `docs(<capability>): propose <change-id>` — `grill.md` and `.openspec.yaml` are both
