@@ -212,7 +212,22 @@ struct ContentView: View {
                     }
                 } header: {
                     if let category = group.category {
+                        // The platform's own padding around a category heading, dropped. Measured
+                        // on this SDK (iPhone 17 simulator, iOS 26.5) rather than assumed, the way
+                        // `.listSectionSpacing(12)` below was: the gap between the card above and
+                        // the card this heading belongs to read 52.33pt untouched and reads 40.00pt
+                        // with these insets, and the heading itself has not moved sideways — the
+                        // 16pt leading and trailing are the platform's own, restated because
+                        // `listRowInsets` replaces all four.
+                        //
+                        // **40.00pt is the floor, and it is not these insets that set it.** The
+                        // heading's row will not lay out under 28pt however small they go —
+                        // negative values only slide the words inside it — so what is left is that
+                        // 28 plus the 12 below. Anything tighter has to come out of
+                        // `.listSectionSpacing`, and that is the gap before the ungrouped rows,
+                        // which is the one the owner asked to keep.
                         Text(category)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                     }
                 }
             }
