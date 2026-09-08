@@ -369,8 +369,8 @@ private twins at the foot of `DayScreen.swift`.
 - [x] 13.4 `a take-back that cannot be kept is refused and leaves the day view as it was` — refused
   with an error **and** told on the row naming no cause. The place's refusal never names a cause,
   whichever act asked.
-- [ ] 13.5 `taking back on a row that offers no take-back changes nothing`
-- [ ] 13.6 `taking back on a row for a day that has not arrived changes nothing`
+- [x] 13.5 `taking back on a row that offers no take-back changes nothing`
+- [x] 13.6 `taking back on a row for a day that has not arrived changes nothing`
 - [ ] 13.7 `taking back on a row the day screen's day view does not hold changes nothing`
 - [ ] 13.8 `taking back on a day screen that is not keeping a record changes nothing and keeps
   nothing`
