@@ -1451,3 +1451,78 @@ func anAdditionThatCannotBeKeptIsRefusedAndNotHeld() throws {
     let later = try RecordStore(at: place)
     #expect(later.history == History())
 }
+
+@Test("a history kept before a day could hold an addition is read, and no day in it holds one")
+func aHistoryKeptBeforeADayCouldHoldAnAdditionIsReadAndNoDayInItHoldsOne() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "tick": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ],
+          "numbers": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "number": { "lowest": 40, "highest": 150 } }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "number": 70.5
+            }
+          ],
+          "notes": [
+            {
+              "commitment": {
+                "name": "Journal",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "note": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "text": "Ran 8k."
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RecordStore(at: place)
+
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var expected = History()
+    expected.add(Tick(gym, on: monday)!)
+    expected.add(Number(70.5, for: weight, on: monday)!)
+    expected.add(Note("Ran 8k.", for: journal, on: monday)!)
+
+    #expect(store.history == expected)
+    #expect(store.history.isKept(gym, on: monday))
+    #expect(store.history.number(for: weight, on: monday) == 70.5)
+    #expect(store.history.note(for: journal, on: monday) == "Ran 8k.")
+    #expect(store.history.total(for: protein, on: monday) == 0)
+    #expect(!store.history.isKept(protein, on: monday))
+    #expect(try Data(contentsOf: place) == bytes)
+}
