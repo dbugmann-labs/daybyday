@@ -223,7 +223,7 @@ Driven at `DayScreen.returnedTo()`, in `src/DayByDayKit/Tests/DayByDayKitTests/D
   it on the screen **keeping** a record, or the carried scenario *a day screen returned to does not
   read its record again* goes red, and that one must stay green: its assertion is still the rule and
   only its title is now wrong.
-- [ ] 8.2 *what a day screen tells on a row stands when the screen is returned to and reads its record
+- [x] 8.2 *what a day screen tells on a row stands when the screen is returned to and reads its record
   again* — the re-read clears no notice.
 
 ## 9. The app shell

@@ -1969,6 +1969,32 @@ func aCommitmentRenamedAtADayScreensPlacesIsDrawnUnderItsNewNameAndStillKeptWhen
 }
 
 @MainActor
+@Test("what a day screen tells on a row stands when the screen is returned to and reads its record again")
+func whatADayScreenTellsOnARowStandsWhenTheScreenIsReturnedToAndReadsItsRecordAgain() throws {
+    let (recordPlace, rosterPlace) = try blockerPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace)
+
+    #expect(screen.recordState == .kept)
+    #expect(throws: RecordStoreError.cannotWrite(at: recordPlace)) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+    let noticeBefore = screen.notice
+    #expect(noticeBefore != nil)
+
+    screen.returnedTo()
+
+    #expect(screen.notice == noticeBefore)
+}
+
+@MainActor
 @Test("a day screen returned to does not read its record again")
 func aDayScreenReturnedToDoesNotReadItsRecordAgain() throws {
     let (place, rosterPlace) = freshPlaces()
