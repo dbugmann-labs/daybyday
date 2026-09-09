@@ -751,6 +751,32 @@ this list reads that first. And the `Today` button never animates: it is a butto
 acknowledges its own press, and it is a jump of arbitrary distance that no one-day slide could
 describe honestly. ADR-1043.
 
+**Day picker** — the control a day screen offers for reaching a day without stepping through every
+day between: a person picks the day and the screen shows it. It is **its own control**, beside the
+chevrons and the `Today` button rather than in place of either, and never the **day title**; and it
+is deliberately not a calendar month grid, because a grid is a look-back view and Epic #1 excludes
+those by name. It is always drawn. Forward it reaches to the last date the system supports, so there
+is always another day to pick and there is nothing for it to be **offered** or not offered about —
+the one way it differs from the `Today` button beside it. Distinct from the **commitments screen**'s
+date picker, which picks the day a commitment is **kept from**: that one picks a date to define a
+commitment, this one picks a day to look at, and they are never the same control. Agreed 2026-09-09
+at the grill of `add-day-picker` (#176).
+
+**Reach** — what a day screen says about its **day picker**, as one answer rather than as two dates
+anything outside could have worked out: the day the picker opens on, which is the day being shown,
+and the earliest day it reaches. The earliest is the earliest day anything on the **roster** has been
+**kept from** — every commitment the roster holds, the ones stopped and the ones **removed**
+included, because their days still hold records and a floor that rose when you retired something
+would put a day you actually kept out of reach — or the day being shown, whichever is earlier, so
+that a person who stepped below it can always get back to where they were. Where there is nothing to
+take an earliest day from, which is a roster that cannot be read rather than a first launch, it is
+the **today** the screen was handed. **A reach bounds the control and never the screen**: **day
+navigation** still steps as far back and as far forward as the calendar goes and adds no bound of its
+own, and a reach that rises above the day being shown — a commitment edited, a roster read again —
+leaves that day showing, because a reach never moves a person off the day they are looking at. It is
+answered from what the screen holds, in the way § *Offered* above says the way back to today is.
+Agreed 2026-09-09 at the grill of `add-day-picker` (#176).
+
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **record store** it reads a history from and writes a tick back to, the
 **roster store** it reads its commitments from, and the
