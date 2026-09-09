@@ -288,12 +288,12 @@ approval still signs this folder and no fourth approval is due.
   `## REMOVED`); there is no `## RENAMED` block, and `design.md:66-69` records why one was
   considered and rejected. Fixed in both places; the counts themselves (2, 10, 2) were already
   right. Ticked when the wording reads "three" in § 7.5 and in the PR body.
-- [ ] 9.3 **Pin a concrete value in the tautological title-equality test.** `a day screen says the
+- [x] 9.3 **Pin a concrete value in the tautological title-equality test.** `a day screen says the
   day its own day view says` asserted only `screen.title == screen.dayView.title` — true for every
   implementation, since `DayScreen.title` is defined as exactly `dayView.title`, so the assertion
-  could not fail. Add `#expect(screen.title == "Mon")` beside it, matching the scenario's own WHEN
-  (Monday 31 August 2026). No rename, no new test — § 7.1's count of 1015 does not move. Ticked
-  when the assertion is in and `swift test` is green.
+  could not fail. Added `#expect(screen.title == "Mon")` beside it, matching the scenario's own
+  WHEN (Monday 31 August 2026). No rename, no new test — § 7.1's count of 1015 does not move.
+  Ticked when the assertion is in and `swift test` is green.
 - [ ] 9.4 **Re-run § 7's checks over the fixed branch and hand back.** `cd src/DayByDayKit && swift
   test` green at **1015** — unchanged by all three boxes above; `pnpm run verify` green and `pnpm
   run checks` reporting `112/112 scenario(s) covered` from the repo root; `openspec validate

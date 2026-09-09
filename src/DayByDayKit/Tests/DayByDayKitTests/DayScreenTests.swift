@@ -655,6 +655,7 @@ func aDayScreenSaysTheDayItsOwnDayViewSays() {
         startingFrom: [gym], asOf: monday,
         keepingRecordAt: screenPlaces.record, keepingRosterAt: screenPlaces.roster)
 
+    #expect(screen.title == "Mon")
     #expect(screen.title == screen.dayView.title)
 }
 
