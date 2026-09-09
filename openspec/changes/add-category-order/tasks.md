@@ -56,7 +56,7 @@ Every box in this section is driven at `Roster.move(group:toOffset:)` and lands 
   category* — the count excludes the group under none, and no offset lands after it.
 - [x] 2.4 *a group's stopped and removed commitments travel with it* — the block is every entry under
   the category, whatever its state, and the dated group read is what proves it. This is the scenario
-  ADR-1043 exists for.
+  ADR-1044 exists for.
 - [x] 2.5 *a group's commitments are gathered into one block, keeping their order against each other*
   — a scattered group comes back contiguous, and what lay between it lands on one side.
 - [x] 2.6 *two offsets leave a group where it is, and both are accepted* — nothing is taken out of the
@@ -82,8 +82,10 @@ Every box in this section is driven at `Roster.move(group:toOffset:)` and lands 
   reason for; changing it too would split the target group's own block for nothing and would move
   § 4.3's stopped-list order, which is green and correct. In the same cycle, correct the ADR number in
   `Roster.move(group:toOffset:)`'s doc comment, which cites **ADR-1043** and must cite **ADR-1044**:
-  the ADR was renumbered because #185 took 1043 on `main`, and `src/` is the only place a stale
-  reference is left, since `docs/` and the change folder are `spec-author`'s.
+  the ADR was renumbered because #185 took 1043 on `main`. `docs/` and the change folder's
+  digest-covered files are `spec-author`'s, so this box reaches only `src/` — but **`src/` was not
+  the only stale reference**, as this sentence first claimed: § 2.4 carried one too and § 7.1's
+  sweep is what found it.
 - [x] 2.14 *a group placed against a kept commitment is read in a different order on a date before a
   stop* — the price of 2.13, pinned rather than left to be met: today's groups and the dated read
   disagree, once, in the one case the requirement names. **A test that goes green without 2.13's
@@ -201,7 +203,17 @@ and these boxes **confirm rather than write**.
   not 1043**: #185 merged `docs/adr/1043-a-day-change-pages-under-the-finger.md` onto `main` while
   this Story was in review, numbers are never reused (ADR-1020) and gaps are normal. Nothing in
   `scripts/` checks ADR numbering, so this box is the check: confirm no two files under `docs/adr/`
-  share a number, and that no reference to **1043** anywhere in this diff means this ADR.
+  share a number, and **sweep the whole diff for the string `1043`** — `git diff
+  origin/main...HEAD | grep -n 1043` — reading every hit and confirming reference by reference that
+  it means #185's ADR rather than this one. **Read every hit; a spot check is how a stale pointer
+  survives.** The sweep run on 2026-09-09, during the second review pass, found this: § 2.4 said
+  **1043** where it meant **1044**, and is corrected; § 2.13's pair, this box's own, and `design.md`
+  § *Open Questions* 1's pair all name #185's ADR legitimately, as does `src/`'s doc comment after
+  § 2.13 rewrote it to **1044**. `CONTEXT.md`'s one `ADR-1043` came onto `main` with #185 and is
+  outside this diff. The `implementer` ticks this box on that sweep's output, in its last commit
+  before the archive; a stale reference found after the tick is a stop and a report, never a hand-
+  edit, because the folder archives to `openspec/changes/archive/` and the pointer becomes
+  permanent.
 - [x] 7.2 Confirm ADR-1037 is amended in place and stamped — a move is still the only thing that
   changes a roster's order, and it now takes a group as well as a commitment — and that **ADR-1038 is
   untouched**. A diff touching 1038 is a stop: its rule surviving the block move intact is why the
