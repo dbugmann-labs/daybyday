@@ -209,7 +209,7 @@ struct ContentView: View {
                                         .foregroundStyle(.red)
                                 }
                             }
-                            if row.isKept || entry != nil || noteEntry != nil || totalEntry != nil {
+                            if markSystemName != nil || entry != nil || noteEntry != nil || totalEntry != nil {
                                 Spacer()
                             }
                             if let markSystemName {
@@ -224,7 +224,7 @@ struct ContentView: View {
                         }
                         // `isTarget` decides whether there is a tap at all; the four `nil`
                         // checks above stay only to decide which sheet a tap opens.
-                        // `design.md` § *The shell rides this Story*.
+                        // ADR-1044.
                         if isTarget {
                             Button {
                                 if let entry {
