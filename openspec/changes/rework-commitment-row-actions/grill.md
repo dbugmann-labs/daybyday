@@ -76,8 +76,8 @@ sheet already sets a category** — `change(_:toName:on:keptFrom:under:)` writes
     edit mode, `EditButton` or `systemName` returns nothing: the specs are seam-level throughout,
     and ADR-1022's line — what a screen draws is the drawing's — is the same one that kept *Move up*
     / *Move down* out of the spec at #168. *So the delta is the category split alone, and the red-green
-    cycles come only from it; the rest is app-shell work walked on the phone at `docs/process.md`
-    § 9.5.*
+    cycles come only from it; the rest is app-shell work walked on the phone (`pnpm run phone`)
+    before the review.*
 
 12. **One ADR, on decision 5 — the undepicted swipe — amending ADR-1042 in place rather than
     superseding it (ADR-1020).** *The requirement removal gets none: #148 deleted this repository's
