@@ -248,7 +248,7 @@ stood before it is stale by construction.
   space between the leading chevron and `Wed` than between the picker and the trailing chevron, so
   the whole row leans right rather than centring the picker between the chevrons as the layout
   intends. Neither is acted on here.
-- [ ] 8.3 **Re-run § 7's checks over the fixed branch and hand back.** `cd src/DayByDayKit && swift
+- [x] 8.3 **Re-run § 7's checks over the fixed branch and hand back.** `cd src/DayByDayKit && swift
   test` green at **1015** — unchanged by both boxes above, and a different number is a stop;
   `pnpm run verify` green and `pnpm run checks` reporting `112/112 scenario(s) covered` from the
   repo root; `openspec validate shorten-day-title --strict` and `openspec validate --all --strict
