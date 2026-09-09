@@ -12,16 +12,26 @@ public final class CommitmentsScreen {
     public static var rosterPlace: URL { DayScreen.rosterPlace }
 
     private let place: URL
+    private let recordPlace: URL
     private var rosterStore: RosterStore?
+    private var recordStore: RecordStore?
 
-    /// Opens on `today`, reading the roster kept at `place`.
-    public init(asOf today: CalendarDate, keepingRosterAt place: URL = CommitmentsScreen.rosterPlace) {
+    /// Opens on `today`, reading the roster kept at `place` and, for the record place a change
+    /// carries over at, the record kept at `keepingRecordAt`. Defaults to exactly the place a day
+    /// screen keeps its record, `design.md` § *The seam*: `CommitmentsScreen.init` gains this
+    /// parameter and nothing else changes shape, so every existing call site compiles unchanged.
+    public init(
+        asOf today: CalendarDate, keepingRosterAt place: URL = CommitmentsScreen.rosterPlace,
+        keepingRecordAt recordPlace: URL = DayScreen.recordPlace
+    ) {
         self.place = place
+        self.recordPlace = recordPlace
         self.dayToKeepFrom = today
 
         let opened = Self.open(at: place)
         self.rosterStore = opened.store
         self.rosterState = opened.state
+        self.recordStore = Self.openRecord(at: recordPlace)
         refreshLists(from: opened.store)
     }
 
@@ -39,6 +49,15 @@ public final class CommitmentsScreen {
         } catch {
             return (nil, .notKept)
         }
+    }
+
+    /// Opens the record at `place`. Every reason the store can refuse to open — a run of bytes
+    /// that is not a record, or a place a later version of DayByDay wrote — is answered alike,
+    /// `nil`: a change that then needs to carry a record over refuses as `.notKept`, the same
+    /// place-could-not-be-written refusal a roster failure already answers with, `design.md`
+    /// § *A place that could not be written*.
+    private static func openRecord(at place: URL) -> RecordStore? {
+        try? RecordStore(at: place)
     }
 
     /// The commitments `roster` has stopped keeping, in the order `roster` holds them. A removed
@@ -123,10 +142,14 @@ public final class CommitmentsScreen {
         case moving(Commitment, Refusal)
         case categorising(Commitment, Refusal)
         case movingGroup(String, Refusal)
+        /// The eighth kind: a change asked for, refused, and held against the commitment it was
+        /// asked to change rather than the one it would have produced — `design.md` § *The two
+        /// new refusals*.
+        case changing(Commitment, Refusal)
     }
 
-    /// Why a change was refused. `nil` from any of the five below means it was kept at the place
-    /// before that call returned.
+    /// Why a change was refused. `nil` from any of the seven below means it was kept at the
+    /// place before that call returned.
     public enum Refusal: Equatable, Sendable {
         /// A name that is empty or made only of blank space.
         case namesNothing
@@ -137,8 +160,30 @@ public final class CommitmentsScreen {
         case rhythmOutOfRange
         /// The roster is already keeping this commitment.
         case alreadyKept
-        /// The roster could not be written, or this screen is not keeping one.
+        /// The roster could not be written, the record place could not be written, or this
+        /// screen is not keeping either.
         case notKept
+        /// A change a stopped commitment does not take: its rhythm and its kept-from day have no
+        /// days left to decide about. The act is to take the commitment up again first.
+        case stoppedCommitmentCannotChangeRhythm
+        /// A day already recorded on that the change would leave not due — moving the kept-from
+        /// day later on any rhythm, or moving an interval rhythm's kept-from day off a whole
+        /// number of intervals in either direction. `design.md` § *An interval rhythm's grid
+        /// moves with the day it is kept from*.
+        case wouldLeaveARecordedDayNotDue
+    }
+
+    /// What a commitment on either of this screen's lists is made of — the value a sheet fills
+    /// itself from to change one. A value and not a form: it holds nothing a person typed and
+    /// nothing a person reads. `design.md` § *The seam*.
+    public struct Change: Equatable, Sendable {
+        public let name: String
+        public let rhythm: Rhythm
+        public let keptFrom: CalendarDate
+        public let category: String?
+        /// `false` for a commitment its roster has stopped keeping: it has no days left for a
+        /// rhythm to decide about, so the only change it takes is a rename.
+        public let canChangeRhythmAndKeptFrom: Bool
     }
 
     /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`, and
@@ -173,6 +218,203 @@ public final class CommitmentsScreen {
             }
         } catch {
             refusedChange = .defining(.notKept)
+            return .notKept
+        }
+
+        refusedChange = nil
+        refreshLists(from: rosterStore)
+        return nil
+    }
+
+    /// What `commitment` is made of, so a form opened to change it starts from what that
+    /// commitment is rather than from what a new one would be. `nil` for a commitment on neither
+    /// of this screen's lists — kept or stopped are the only two a change can reach.
+    public func whatItIsMadeOf(_ commitment: Commitment) -> Change? {
+        guard let rosterStore,
+            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment }),
+            !entry.isRemoved
+        else {
+            return nil
+        }
+
+        return Change(
+            name: commitment.name, rhythm: Rhythm(commitment.schedule), keptFrom: commitment.keptFrom,
+            category: entry.category, canChangeRhythmAndKeptFrom: entry.keptUntil == nil)
+    }
+
+    /// `category`, or nothing where `category` holds nothing but blank space — the same
+    /// normalization `Roster` applies to a category, applied here so the no-op check below and
+    /// the roster's own comparison never disagree on what "the category it is already under"
+    /// means. `design.md` § *B-037 carries no requirement*.
+    private static func normalizedCategory(_ category: String?) -> String? {
+        category.flatMap { Blank.saysNothing($0) ? nil : $0 }
+    }
+
+    /// Changes `commitment`, on either of this screen's lists, for the commitment `name`,
+    /// `rhythm` and `keptFrom` name, under `category`. Works out from those which of two acts —
+    /// carrying every record over to the changed commitment, or superseding — the change needs,
+    /// performing both in one order where it needs both: the carry-over first, then the
+    /// supersession. See `openspec/specs/commitment/spec.md` § *A commitments screen changes a
+    /// commitment on either of its lists* and `design.md` § *Two acts, not one*.
+    public func change(
+        _ commitment: Commitment, toName name: String, on rhythm: Rhythm, keptFrom: CalendarDate,
+        under category: String?
+    ) -> Refusal? {
+        guard kept.contains(commitment) || stopped.contains(commitment) else {
+            return nil
+        }
+
+        guard let rosterStore,
+            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
+        else {
+            refusedChange = .changing(commitment, .notKept)
+            return .notKept
+        }
+
+        let isStopped = stopped.contains(commitment)
+        let sameRhythm = Rhythm(commitment.schedule) == rhythm
+
+        guard !isStopped || (sameRhythm && keptFrom == commitment.keptFrom) else {
+            refusedChange = .changing(commitment, .stoppedCommitmentCannotChangeRhythm)
+            return .stoppedCommitmentCannotChangeRhythm
+        }
+
+        guard !Blank.saysNothing(name) else {
+            refusedChange = .changing(commitment, .namesNothing)
+            return .namesNothing
+        }
+
+        if case .weekdays(let weekdays) = rhythm, weekdays.isEmpty {
+            refusedChange = .changing(commitment, .dueOnNoDay)
+            return .dueOnNoDay
+        }
+
+        guard let newSchedule = rhythm.schedule(keptFrom: keptFrom) else {
+            refusedChange = .changing(commitment, .rhythmOutOfRange)
+            return .rhythmOutOfRange
+        }
+
+        let normalizedCategory = Self.normalizedCategory(category)
+
+        if sameRhythm {
+            // A different name, a different day kept from, or both, on the rhythm the
+            // commitment already runs on — every record of it is carried over to the changed
+            // one, and the roster then changes the commitment for it, in the place it holds it.
+            let changedCommitment = Commitment(
+                name: name, schedule: newSchedule, keptFrom: keptFrom, kind: commitment.kind)!
+
+            if changedCommitment == commitment, normalizedCategory == entry.category {
+                // The four things name the commitment that is already there, and the category
+                // it is already under: change nothing, write nothing, refuse nothing.
+                return nil
+            }
+
+            guard
+                changedCommitment == commitment
+                    || !rosterStore.roster.entries.contains(where: { $0.commitment == changedCommitment })
+            else {
+                refusedChange = .changing(commitment, .alreadyKept)
+                return .alreadyKept
+            }
+
+            if changedCommitment != commitment {
+                guard let recordStore else {
+                    refusedChange = .changing(commitment, .notKept)
+                    return .notKept
+                }
+
+                var simulated = recordStore.history
+                guard simulated.carryOver(commitment, to: changedCommitment) else {
+                    refusedChange = .changing(commitment, .wouldLeaveARecordedDayNotDue)
+                    return .wouldLeaveARecordedDayNotDue
+                }
+
+                do {
+                    _ = try recordStore.carryOver(commitment, to: changedCommitment)
+                } catch {
+                    refusedChange = .changing(commitment, .notKept)
+                    return .notKept
+                }
+            }
+
+            do {
+                _ = try rosterStore.change(commitment, to: changedCommitment, under: category)
+            } catch {
+                refusedChange = .changing(commitment, .notKept)
+                return .notKept
+            }
+
+            refusedChange = nil
+            refreshLists(from: rosterStore)
+            return nil
+        }
+
+        // A different rhythm: the roster supersedes. `commitment` is kept until the day before
+        // the day this screen was handed and held removed; the commitment the four things name
+        // — kept from the day this screen was handed — is taken on in its place.
+        let nameOrKeptFromChanged = name != commitment.name || keptFrom != commitment.keptFrom
+        let supersedeKeptUntil = Self.dayBefore(dayToKeepFrom)
+        let finalNewCommitment = Commitment(
+            name: name, schedule: newSchedule, keptFrom: dayToKeepFrom, kind: commitment.kind)!
+
+        guard !nameOrKeptFromChanged else {
+            // Both, in one save: the carry-over first — the superseded commitment carries the
+            // new name and the corrected day it was kept from — then the supersession, which
+            // starts today. `design.md` § *Both in one save*.
+            let oldRhythm = Rhythm(commitment.schedule)
+            let carryTargetSchedule = oldRhythm.schedule(keptFrom: keptFrom)!
+            let carryTarget = Commitment(
+                name: name, schedule: carryTargetSchedule, keptFrom: keptFrom, kind: commitment.kind)!
+
+            guard !rosterStore.roster.entries.contains(where: { $0.commitment == carryTarget })
+            else {
+                refusedChange = .changing(commitment, .alreadyKept)
+                return .alreadyKept
+            }
+            guard !rosterStore.roster.entries.contains(where: { $0.commitment == finalNewCommitment })
+            else {
+                refusedChange = .changing(commitment, .alreadyKept)
+                return .alreadyKept
+            }
+
+            guard let recordStore else {
+                refusedChange = .changing(commitment, .notKept)
+                return .notKept
+            }
+
+            var simulated = recordStore.history
+            guard simulated.carryOver(commitment, to: carryTarget) else {
+                refusedChange = .changing(commitment, .wouldLeaveARecordedDayNotDue)
+                return .wouldLeaveARecordedDayNotDue
+            }
+
+            do {
+                _ = try recordStore.carryOver(commitment, to: carryTarget)
+                _ = try rosterStore.change(commitment, to: carryTarget, under: entry.category)
+                _ = try rosterStore.supersede(
+                    carryTarget, with: finalNewCommitment, keptUntil: supersedeKeptUntil,
+                    under: category)
+            } catch {
+                refusedChange = .changing(commitment, .notKept)
+                return .notKept
+            }
+
+            refusedChange = nil
+            refreshLists(from: rosterStore)
+            return nil
+        }
+
+        guard !rosterStore.roster.entries.contains(where: { $0.commitment == finalNewCommitment })
+        else {
+            refusedChange = .changing(commitment, .alreadyKept)
+            return .alreadyKept
+        }
+
+        do {
+            _ = try rosterStore.supersede(
+                commitment, with: finalNewCommitment, keptUntil: supersedeKeptUntil, under: category)
+        } catch {
+            refusedChange = .changing(commitment, .notKept)
             return .notKept
         }
 
@@ -472,6 +714,7 @@ public final class CommitmentsScreen {
         let opened = Self.open(at: place)
         rosterStore = opened.store
         rosterState = opened.state
+        recordStore = Self.openRecord(at: recordPlace)
         refreshLists(from: opened.store)
     }
 }

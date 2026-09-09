@@ -275,11 +275,6 @@ struct CommitmentsView: View {
                     Stepper("\(timesPerWeek) time(s) a week", value: $timesPerWeek, in: 1...7)
                 }
 
-                if let preview = rhythmBeingBuilt.inWords {
-                    Text(preview)
-                        .foregroundStyle(.secondary)
-                }
-
                 DatePicker("Kept from", selection: $keptFromDate, displayedComponents: [.date])
 
                 TextField("Category (optional)", text: $category)
@@ -441,6 +436,10 @@ struct CommitmentsView: View {
             Text("Already being kept.")
         case .notKept:
             Text("The roster could not be read or could not be written.")
+        case .stoppedCommitmentCannotChangeRhythm:
+            Text("Take it up again first to change its rhythm.")
+        case .wouldLeaveARecordedDayNotDue:
+            Text("Choose a day that leaves every recorded day due.")
         }
     }
 
