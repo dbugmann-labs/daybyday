@@ -171,10 +171,12 @@ and these boxes **confirm rather than write**.
 
 ## 8. Before the review, and what the janitor does at the archive
 
-- [x] 8.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **913**: the 885
-  measured at § 1.1 plus the 28 scenarios § 2 to § 5 add. From the repo root, `pnpm run verify` green
-  and `pnpm run checks` reporting `121/121 scenario(s) covered`. **A number that comes back different
-  is a stop** (rule 5), not a number to write down.
+- [x] 8.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **930**: the 885
+  measured at § 1.1 plus the 28 scenarios § 2 to § 5 add, which is 913 — moved to 930 by the § 8.3
+  rebase, which pulled in the kit tests `add-offered-today-control` (#179) and the day-screen category
+  heading fix (#180) added on `main`, none of them this Story's own. **A number that comes back
+  different is a stop** (rule 5), not a number to write down. From the repo root, `pnpm run verify`
+  green and `pnpm run checks` reporting `121/121 scenario(s) covered`.
 - [x] 8.2 `openspec validate add-category-order --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [x] 8.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
