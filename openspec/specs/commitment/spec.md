@@ -40,7 +40,18 @@ say so, and the day they are keeping it from is then in the past.
 The kind is fixed when the commitment is formed and SHALL NOT change afterwards. There is no way to
 move a commitment from one kind to another, and there is deliberately none: a record embeds the
 whole commitment by value, so a part that changed would orphan everything already recorded against
-it. Changing what a person keeps is changing a commitment, which is a want of its own and not this.
+it.
+
+**Changing a commitment is now a thing a person does, and none of it happens here.** A commitment
+still carries nothing else and still has no identity of its own, so no part of one is mutable and
+nothing about this requirement moves. What changes is carried one level up and one capability across:
+a **different name** or a **different day kept from** is a second commitment that every record of the
+first is carried over to (`record`), put in the place the roster holds the first in; a **different
+rhythm** is a second commitment the roster takes on in the first's place while holding the first
+**removed**, kept until the day before. Neither re-keys anything, because in both cases every record
+still embeds a commitment the roster still holds. The **kind** is the one part no change reaches at
+all, and that is the ground ADR-1030 stands on: what a person keeps is not something they can edit
+into something else. ADR-1023 and ADR-1030, both amended for `add-commitment-editing` (#148).
 
 #### Scenario: a commitment reads back the name it was given
 
@@ -396,7 +407,11 @@ roster, not a missing one. There SHALL be no upper bound on how many commitments
 
 **The order SHALL be the person's.** The order the commitments were taken on is its initial value
 and the place a newly taken-on commitment lands, and **moving** is the only thing that ever changes
-it. A move takes one of exactly two things and there is no third: a **commitment**, which goes where
+the order of the commitments a roster already holds. Two things put a commitment somewhere other than
+last, and neither is a move: **changing** one commitment for another puts the second exactly where
+the first was, and **superseding** takes the second on in the place the first held. Both are a person
+correcting or replacing a row they are looking at, so a row that jumped to the bottom of the list
+would be the roster undoing an order they set. A move takes one of exactly two things and there is no third: a **commitment**, which goes where
 the move says on its own, or a **group**, which takes every commitment under one category with it as
 a block. A roster MUST NOT sort its commitments by name, by the day each is kept from, by
 the schedule each runs on, by the category each is under, or by any other property of them: it still
@@ -419,6 +434,11 @@ it has been removed. It holds nothing else. It MUST NOT give a commitment an ide
 a commitment can be asked for, a record of the day it was added, or any other state of its own, and
 it MUST NOT alter a commitment it holds: a commitment read back out of a roster SHALL be the
 commitment that was put in, with the same name, the same schedule and the same day it is kept from.
+**Changing one commitment for another is not altering one**, and the difference is the whole of why a
+change is safe: the roster is handed a second commitment, already formed, and puts it where the first
+was — it edits no part of anything, and the commitment it reads back afterwards is the one it was
+handed, exactly as before. It still holds no link between the two, and being changed or superseded
+gives neither of them a fifth part.
 None of the three is ever the commitment's: a commitment SHALL NOT gain a fifth part by being
 stopped, by being removed or by being put under a category, and it SHALL go on answering whether it
 is due on a date exactly as it did before. **The ban on a position is a ban on a read.** Nothing asks
@@ -514,6 +534,16 @@ five SHALL still hold what it held.
 - **THEN** the two are different rosters
 - **AND** a third roster given the same two and asked to put "Gym" under "Sport" is the same roster
   as the first
+
+#### Scenario: a commitment taken on to supersede another lands in that one's place rather than after every commitment already there
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday, then one named "Journaling", all kept from 1 January 2026,
+  supersedes "Gym" with a commitment named "Gym" on a schedule listing Tuesday and Thursday, kept
+  from 1 September 2026, as of 31 August 2026, under no category
+- **THEN** the roster reads back three commitments it is keeping, in the order "Water plants", then
+  the "Gym" on Tuesday and Thursday, then "Journaling"
+- **AND** a commitment named "Reading" added to that roster afterwards is read back last of the four
 
 ### Requirement: A roster refuses a commitment it already holds
 
@@ -1004,7 +1034,7 @@ A commitment taken on through a roster store SHALL be kept at that place before 
 taken on, so that a store opened at the same place afterwards — by the app opened again, or by
 anything else, and whether or not the first store was ever closed — holds it. Stopping a commitment
 SHALL be kept the same way, and so SHALL removing one, moving one, **moving a whole group**, putting
-one under a category, and
+one under a category, **changing one commitment for another**, **superseding one with another**, and
 taking one up again. There is no
 separate step at which a roster store is saved: the app can be stopped at any moment without
 warning, and a commitment waiting to be saved would be one a person believes they have taken on. A
@@ -1017,13 +1047,16 @@ does not hold, asking it to stop keeping one it has already stopped or removed, 
 remove one it does not hold or has already removed, asking it to move one it is not keeping or
 to move one to an offset outside the commitments it is keeping, **asking it to move a group no
 commitment it is keeping is under, or to move a group to an offset outside the groups it is keeping
-that are under a category**, and asking it to put one it is not
+that are under a category**, **asking it to change a commitment it does not hold or to change one
+into a commitment it already holds**, **asking it to supersede a commitment it is not keeping or to
+supersede one with a commitment it already holds**, and asking it to put one it is not
 keeping under a category each leave the roster exactly as it was — so nothing is kept at the place,
 and the store says what the roster said. **A change that leaves
 the roster exactly as it was SHALL keep nothing at the place either, and SHALL still report what the
 roster reported** — a move that put a commitment back where it already was under the category it was
-already under, **a group move that put a group back where it already was**, and a category change
-that put a commitment under the category it was already under,
+already under, **a group move that put a group back where it already was**, a category change
+that put a commitment under the category it was already under, **and a change of a commitment for
+itself under the category it was already under**,
 are all such a change: a store keeps what a change made, and a
 change that made none has nothing to keep. What a roster accepts, what it
 refuses and what it takes up again are the roster's own rules, stated above, and a store adds nothing
@@ -1056,8 +1089,11 @@ out.
 
 Roster stores at different places SHALL be independent of each other, and a roster store SHALL be
 independent of any store keeping anything else: taking on a commitment, stopping one, removing one,
-moving one, moving a group or putting one under a category MUST NOT change what is kept at any other
-place.
+moving one, moving a group, putting one under a category, changing one for another or superseding one
+MUST NOT change what is kept at any other
+place. **A change of commitment reaches a record place as well, and a roster store is not what
+reaches it**: carrying a commitment's records over is the `record` capability's, kept at its own place
+by its own store, and whatever asks for both is what puts them in an order.
 
 #### Scenario: a roster store opened where nothing has been kept holds a roster holding nothing
 
@@ -1379,6 +1415,44 @@ place.
 - **THEN** the store reports that it moved the group
 - **AND** the content at that place is byte-for-byte what was read before
 - **AND** asking it to move the group "Supplements" to the offset 1 instead leaves that true again
+
+#### Scenario: a commitment changed through a roster store is read back changed by a store opened afterwards
+
+- **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling", all
+  on a schedule listing Monday, Wednesday and Saturday and all kept from 1 January 2026, are taken on
+  through a roster store; the store is asked to change "Gym" for a commitment named "Gym 🏋️" alike in
+  every other way, under the category "Sport"; and a store is opened afterwards at the same place
+- **THEN** the first store reports that it changed the commitment
+- **AND** the later store's roster reads back three commitments in the order "Water plants", then
+  "Gym 🏋️", then "Journaling", with "Gym 🏋️" under "Sport"
+
+#### Scenario: a commitment superseded through a roster store is read back superseded by a store opened afterwards
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on through a roster store; the store is asked to supersede it with a
+  commitment named "Gym" on a schedule listing Tuesday and Thursday, kept from 1 September 2026, as of
+  31 August 2026, under no category; and a store is opened afterwards at the same place
+- **THEN** the first store reports that it superseded the commitment
+- **AND** the later store's roster reads back one commitment it is keeping, on Tuesday and Thursday,
+  and none it has stopped
+- **AND** that roster answers about 31 August 2026 with both commitments
+
+#### Scenario: a change and a supersession a roster refuses keep nothing at a roster store's place
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on a schedule listing Monday, Wednesday
+  and Saturday and both kept from 1 January 2026, are taken on through a roster store; and the store
+  is asked to change "Gym" for "Run" under no category, and then to supersede a commitment named
+  "Journaling" alike in every other way, which it does not hold, with one named "Journal"
+- **THEN** the store reports of each that the roster did not make the change, without an error
+- **AND** the content at that place is byte-for-byte what it was before either ask
+
+#### Scenario: a change of a commitment for itself keeps nothing at a roster store's place
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, under the category "Sport", is taken on through a roster store, and the store is
+  asked to change that commitment for that same commitment, under the category "Sport"
+- **THEN** the store reports that it changed the commitment
+- **AND** the content at that place is byte-for-byte what it was before the ask
 
 ### Requirement: A roster store reads a roster kept before a commitment carried a kind
 
@@ -1880,7 +1954,9 @@ A roster that has stopped nothing SHALL list nothing as stopped.
 ### Requirement: A commitments screen defines a commitment from a name, a rhythm and the day it is kept from
 
 A commitments screen SHALL define a commitment from four things and no others: a name, a rhythm,
-the day it is kept from, and the **category** to put it under, which may be none. The commitment so
+the day it is kept from, and the **category** to put it under, which may be none. **Changing a
+commitment takes the same four and no others**, which is why they are four rather than five: one form
+serves both, and a fifth thing here would be a field a change had nothing to do with. The commitment so
 formed SHALL be taken on at the roster place before either of the screen's lists says so, and SHALL
 then be last in what the screen keeps, in the group of the category it was given, because that is
 the place the roster gives it — **unless the roster already holds that commitment stopped or
@@ -1917,7 +1993,11 @@ commitment is due on the day a person started keeping it and every N days after 
 distinct in the model and may disagree where something other than this screen forms the commitment;
 this screen offers one date and uses it for both.
 
-A commitments screen SHALL offer, as the day to keep a commitment from, the day it was handed. It
+A commitments screen SHALL offer, as the day to keep a **new** commitment from, the day it was
+handed. For a commitment it already holds, the day it offers is that commitment's own day and is said
+by the requirement *A commitments screen says what a commitment it is asked to change is made of*;
+this one is about defining, and defining is what the day the screen was handed is the right answer
+for. It
 SHALL accept any calendar date the system supports in that place, the future included: a person who
 has kept something since June says June, and "I start the gym on Monday" is a real thing to want. A
 commitments screen MUST NOT judge that date against the day it was handed, and MUST NOT bound it in
@@ -2161,8 +2241,16 @@ allowed rather than the first that is not.
 ### Requirement: A commitments screen tells a commitment it already keeps apart from a roster it could not write
 
 A commitments screen SHALL refuse a commitment its roster is already keeping, and SHALL refuse a
-change it could not keep at the roster place, and SHALL tell the two apart. Neither SHALL change
+change it could not keep at a place, and SHALL tell the two apart. Neither SHALL change
 either of the screen's lists, and neither SHALL change what is at the roster place.
+
+**Both refusals reach further than defining now, and in different directions.** A change to a
+commitment is refused as one the roster already holds where the roster holds it in **any** of the
+three states rather than only where it is keeping it, because changing one commitment into another
+would put two histories under one value where defining one merely takes it up again. And a change the
+screen could not keep is told the same way whether it was the **record place** or the **roster place**
+that would not take it: a person can do nothing about either but try again later, which is the test
+this requirement has always applied.
 
 This deliberately does not follow the day screen, which tells every refused tick the same way
 (ADR-1021). The reasoning there was that a refusal a person cannot act on differently should not be
@@ -2172,7 +2260,8 @@ leaves a person nothing to do but try again later.
 
 A commitment the roster has **stopped** keeping is not a duplicate. Defining the same three things
 again SHALL take that commitment up again, in the place it has, exactly as offering it to the
-roster does.
+roster does. **Changing another commitment into it is a duplicate**, and is refused: the way back to
+a stopped or a removed commitment stays the deliberate one, and a spelling correction is not it.
 
 #### Scenario: a commitments screen refuses a commitment its roster is already keeping
 
@@ -2575,10 +2664,12 @@ the screen holds is what a person is told from. A screen that only answered woul
 person is told for to whatever drew it, and that lifetime would then be decided in a layer nothing
 regresses.
 
-The change it holds SHALL be one of the seven a person can ask for — defining a commitment, stopping
-keeping one, taking a stopped one up again, removing one, moving one, **moving a whole group**, or
-putting one under a category — and for the five that are asked about a commitment already on one of
-its lists, it SHALL name that commitment. **A refused group move SHALL name the category instead**,
+The change it holds SHALL be one of the eight a person can ask for — defining a commitment, stopping
+keeping one, taking a stopped one up again, removing one, moving one, **moving a whole group**,
+putting one under a category, or **changing one** — and for the six that are asked about a commitment
+already on one of its lists, it SHALL name that commitment. **A refused change names the commitment
+it was asked about and not the one it would have produced**, because the row a person is told beside
+is the row they tapped, and the commitment they asked for does not exist. **A refused group move SHALL name the category instead**,
 because a group is what was tapped and a category is the whole of what a group is: naming one of its
 commitments would point at a row the person did not touch. Which change it was is not
 decoration: a person is told beside the thing they asked for, and the only other way to place the
@@ -2601,7 +2692,9 @@ lists, confirming a removal when nothing is awaiting removal, **confirming a rem
 typed back does not match**, **asking to move a commitment the screen does not keep**, **asking
 to move one into a group the screen draws none of or to an offset that group does not have**,
 **asking to move a group the screen draws none of — the group of the commitments under no category
-among them — or to move a group to an offset the groups it draws under a category do not have** and
+among them — or to move a group to an offset the groups it draws under a category do not have**,
+**asking to change a commitment on neither of its lists**, **asking for a change that names what a
+commitment already is** and
 **asking to put a commitment the screen does not keep under a category** each answer nothing and
 change nothing, so each
 SHALL leave the screen holding no refused change and SHALL leave whatever it is already holding
@@ -2761,6 +2854,25 @@ restated here.
 - **AND** what it keeps is two groups, "Supplements" holding "Creatine" and then a group with no
   category holding "Gym"
 
+#### Scenario: a commitments screen holds a refused change against the commitment it was asked to change
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on a schedule listing all seven weekdays
+  and kept from 1 January 2026, are taken on at a roster place; a commitments screen is opened at that
+  roster place as of Monday 31 August 2026; and "Gym" is changed through it to the name "Run", under
+  no category
+- **THEN** it is refused as a commitment already kept
+- **AND** the screen holds that refusal, against changing "Gym"
+
+#### Scenario: a commitments screen holds nothing against a change that asks for no change at all
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Gym" is removed there as of
+  Sunday 30 August 2026; a commitments screen is opened at that roster place as of Monday
+  31 August 2026; and "Gym" is changed through it to the name "Gym 🏋️", under no category
+- **THEN** the screen holds no refused change
+- **AND** a change of "Journaling" to exactly the name, rhythm, day kept from and category it already
+  has leaves the screen holding no refused change either
+
 ### Requirement: What a commitments screen holds about a refused change lasts until the app is shown again or a change is kept
 
 A commitments screen SHALL go on holding a refused change until one of exactly two things happens,
@@ -2773,11 +2885,12 @@ answer about a place that has since been read again. It SHALL end whether or not
 be read — a screen that is then not keeping a roster says that instead, and says more than a refused
 change ever could.
 
-**A change reaching the roster place** ends it, whichever of the seven it was and whichever change
+**A change reaching a place** ends it, whichever of the eight it was and whichever change
 was refused before it. Defining a commitment that is taken on, a stop that is kept, a take-up-again
-that is kept, a removal that is kept, a move that is kept, **a group move that is kept** and a
-category change that is kept all
-count. This is one rule rather than six because it is
+that is kept, a removal that is kept, a move that is kept, **a group move that is kept**, a
+category change that is kept and **a change of a commitment that is kept** all
+count. A change of a commitment reaches the record place as well as the roster place, and it ends
+what is held once it has been kept — one act, one outcome, however many places it touched. This is one rule rather than six because it is
 the at-most-one rule above read the other way round: a commitments screen holds the outcome of the
 last change asked of it, so a change that is asked for and kept leaves nothing to hold. A person who
 has just been told a change landed is not also told that an earlier one did not.
@@ -2786,8 +2899,9 @@ A call that reaches the place with no change to make SHALL NOT end it, by the ru
 call is not a change asked for at all. **A move that drops a commitment where it already is is
 exactly such a call** — it is accepted rather than refused, and nothing is kept at the place, so
 there is nothing to have answered a notice with — **and so are a group move that leaves a group
-where it is drawn and a category change that puts a commitment under the category it is already
-under**. Nor SHALL putting a stop or a removal up for
+where it is drawn, a category change that puts a commitment under the category it is already
+under, a change that names what a commitment already is, and a change asked about a commitment on
+neither of the screen's lists**. Nor SHALL putting a stop or a removal up for
 confirmation, typing a name back, or cancelling either: none of them reaches the roster place, and
 nothing has been proved about it either way.
 
@@ -2944,64 +3058,24 @@ nothing has been proved about it either way.
 - **THEN** the group move refuses nothing
 - **AND** the screen still holds a name that says nothing, against defining a commitment
 
-### Requirement: A commitments screen says in words the rhythm its form is building
+#### Scenario: what a commitments screen holds about a refused change ends when a change to a commitment is kept
 
-A commitments screen SHALL say, for the rhythm its form is currently building, the words the
-schedule that rhythm names would be said in — the same words the entry for that commitment will say
-once it is defined, and no others. It SHALL say them as the rhythm is built rather than only once
-it is defined, so that a person reads what their rhythm will say before they commit to it.
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it and refused; and "Gym" is then changed through it to
+  the name "Gym 🏋️", under no category
+- **THEN** the change is not refused
+- **AND** the screen holds no refused change
 
-It SHALL say them **without being given a day to keep the commitment from**. An interval rhythm
-carries no start date and an interval schedule's words never say one, so a rhythm's words are
-exactly the words of the schedule it names, on every one of the four shapes and whatever day the
-commitment would be kept from.
+#### Scenario: what a commitments screen holds about a refused change stands when a change names what is already there
 
-A rhythm this screen would refuse to define a commitment on SHALL be said in one of exactly two
-ways, and never in the wording of the refusal itself:
-
-- A **weekday set with no days in it** names a schedule the system forms, so it SHALL be said as
-  that schedule is said — "No day". The screen refuses to define on it (ADR-1028); saying so is
-  what the refusal does, and the words go on describing the rhythm being built.
-- A **number no schedule can be built on** — a day of the month that is not one of the thirty-one,
-  an interval of fewer than one day, a weekly quota outside one to seven — names no schedule at
-  all, so there are no words for it and the screen SHALL say **nothing**. It MUST NOT substitute
-  the nearest number that would work, and MUST NOT say a refusal here: what a person does about
-  such a number is told when they try to define on it, in one place, by the requirement above.
-
-#### Scenario: a rhythm being built is said in the words the schedule it names says
-
-- **WHEN** a weekday-set rhythm of Monday, Wednesday and Saturday, a day-of-the-month rhythm of the
-  25th, an interval rhythm of 14 days, and a weekly-quota rhythm of 3 times a week are each said in
-  words for a commitments screen's form
-- **THEN** they say "Mon, Wed, Sat", "The 25th", "Every 14 days" and "3x a week"
-
-#### Scenario: an interval rhythm is said without a day to keep the commitment from
-
-- **WHEN** an interval rhythm of 14 days is said in words for a commitments screen's form
-- **THEN** it says "Every 14 days"
-- **AND** those are the words of a schedule of every 14 days starting on 1 January 2026, and the
-  words of a schedule of every 14 days starting on 31 August 2026, alike
-
-#### Scenario: a weekday-set rhythm with no days in it is said as no day
-
-- **WHEN** a weekday-set rhythm listing no weekdays at all is said in words for a commitments
-  screen's form
-- **THEN** it says "No day"
-
-#### Scenario: a rhythm carrying a number the calendar will not take is said as nothing
-
-- **WHEN** a day-of-the-month rhythm of the 32nd, a day-of-the-month rhythm of the 0th, an interval
-  rhythm of 0 days and a weekly-quota rhythm of 8 times a week are each said in words for a
-  commitments screen's form
-- **THEN** each says nothing at all
-- **AND** in particular none of them says "The 31st", "Every 1 day" or "7x a week"
-
-#### Scenario: a rhythm carrying the number at each end of what it allows is said in words
-
-- **WHEN** a day-of-the-month rhythm of the 1st, a day-of-the-month rhythm of the 31st, an interval
-  rhythm of 1 day, a weekly-quota rhythm of 1 time a week and a weekly-quota rhythm of 7 times a
-  week are each said in words for a commitments screen's form
-- **THEN** they say "The 1st", "The 31st", "Every day", "1x a week" and "7x a week"
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, is defined through it and refused; and "Gym" is then changed through it to
+  exactly the name, rhythm, day kept from and category it already has
+- **THEN** the screen still holds a name that says nothing, against defining a commitment
 
 ### Requirement: A roster removes a commitment it holds, and never lets it go
 
@@ -4826,3 +4900,616 @@ picker.
 - **WHEN** a roster takes on a commitment named "Gym" kept from 31 December 9999 and one named
   "Run" kept from 1 January 1583, both on a schedule listing all seven weekdays
 - **THEN** it answers 1 January 1583
+
+### Requirement: A roster changes a commitment it holds for another, in the place it holds it
+
+A roster SHALL change a commitment it holds for another, on being given the two and the **category**
+to put the result under, which may be none. Changing SHALL put the second commitment in the place the
+first held, SHALL leave the day that commitment was kept until and whether it was removed exactly as
+they were, SHALL put it under the category it was offered under, and SHALL report that it changed.
+Nothing else the roster holds SHALL move.
+
+**This is a replacement and deliberately not a removal followed by an addition.** A commitment taken
+on third stays third, one the roster has stopped stays stopped on the day it was kept until, and one
+it has removed stays removed. Adding would put the result last in an order the person set, and
+removing would put a kept-until day on a commitment nobody stopped keeping.
+
+**The category is the offered one, whatever the commitment was under before**, for the reason it is
+the offered one when a commitment is taken up again: a change is asked for by something holding a
+form, and the category on that form is what the person is saying now. Being offered under no category
+takes the category off.
+
+A roster SHALL change a commitment in any of the three states it holds one in, and SHALL leave it in
+the state it was in. Which commitments a person can reach in order to change one is a screen's
+question and not a roster's: a roster draws no lists and offers nothing.
+
+The roster SHALL refuse to change a commitment in exactly two cases, and SHALL report each rather
+than doing nothing silently, for the same reason a refused addition is reported:
+
+- a commitment the roster does not hold at all; and
+- a change whose result is a commitment the roster **already holds** — kept, stopped or removed
+  alike. This is stricter than what a roster refuses when it is offered a commitment, and the
+  difference is deliberate: offering a stopped or removed commitment takes it up again, which is one
+  history returning, while changing one commitment into another the roster holds would put two
+  histories under one value with no way back to the fact that they were deliberately kept apart.
+
+A roster asked to change a commitment **for itself** SHALL be left exactly as it was and SHALL report
+that it changed, exactly as a move that puts a commitment back where it already is is accepted rather
+than refused. A change that makes no change is not an error, and a roster asked for one has nothing
+to refuse.
+
+Changing SHALL change nothing about either commitment and nothing about what has been recorded
+against either. What a record of the commitment that was replaced is now a record of is the `record`
+capability's question, asked of a history and never of a roster; a roster holds no records and
+carries none over.
+
+A roster SHALL be a value here too: changing a commitment SHALL leave every other roster untouched,
+and two rosters differing only in one commitment having been changed SHALL be different rosters.
+
+#### Scenario: changing a commitment a roster holds puts the result in the place the one it replaced held
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, is asked to change "Gym" for a commitment named "Gym 🏋️" alike in every other way,
+  under no category
+- **THEN** the roster reports that it changed the commitment
+- **AND** it reads back three commitments in the order "Water plants", then "Gym 🏋️", then
+  "Journaling"
+
+#### Scenario: a changed commitment is put under the category the change was offered under
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, under the category "Sport", is asked to change it for a
+  commitment named "Gym 🏋️" alike in every other way, under the category "Morning"
+- **THEN** the roster reads back one group, "Morning", holding "Gym 🏋️"
+- **AND** a roster asked for that same change under no category reads back one group, with no
+  category, holding "Gym 🏋️"
+
+#### Scenario: changing a commitment a roster has stopped keeping leaves it stopped, on the day it was kept until
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, stops keeping it as of 31 January 2026, and is then asked to
+  change it for a commitment named "Gym 🏋️" alike in every other way, under no category
+- **THEN** the roster reports that it changed the commitment
+- **AND** it reads back no commitments it is keeping and one it has stopped, named "Gym 🏋️"
+- **AND** it answers with "Gym 🏋️" on 31 January 2026 and with nothing on 1 February 2026
+
+#### Scenario: changing a commitment a roster has removed leaves it removed
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, removes it as of 31 January 2026, and is then asked to change
+  it for a commitment named "Gym 🏋️" alike in every other way, under no category
+- **THEN** the roster reports that it changed the commitment
+- **AND** it reads back no commitments it is keeping and none it has stopped
+- **AND** it answers with "Gym 🏋️" on 31 January 2026 and with nothing on 1 February 2026
+
+#### Scenario: changing a commitment a roster does not hold is refused and leaves the roster as it was
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, is asked to change a commitment named "Run" alike in every
+  other way for one named "Runs", under no category
+- **THEN** the roster reports that it did not change the commitment
+- **AND** the roster is the same roster as one that was never asked
+
+#### Scenario: changing a commitment into one the roster already holds is refused, whichever state it holds it in
+
+- **WHEN** a roster given a commitment named "Gym" and one named "Run", both on a schedule listing
+  Monday, Wednesday and Saturday and both kept from 1 January 2026, is asked to change "Gym" for a
+  commitment named "Run" alike in every other way, under no category
+- **THEN** the roster reports that it did not change the commitment
+- **AND** the roster is the same roster as one that was never asked
+- **AND** a roster that had stopped keeping "Run" as of 31 January 2026 refuses that same change, and
+  so does one that had removed it as of that day
+
+#### Scenario: changing a commitment for itself changes nothing and is not refused
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, under the category "Sport", is asked to change that commitment
+  for that same commitment, under the category "Sport"
+- **THEN** the roster reports that it changed the commitment
+- **AND** the roster is the same roster as one that was never asked
+
+#### Scenario: changing a commitment on a copy of a roster leaves the roster it was copied from unchanged
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, is copied, and the copy changes that commitment for one named
+  "Gym 🏋️" alike in every other way, under no category
+- **THEN** the copy reads back one commitment, named "Gym 🏋️"
+- **AND** the roster it was copied from still reads back one commitment named "Gym" and is not the
+  same roster as the copy
+
+### Requirement: A roster supersedes a commitment it is keeping with another, from a day
+
+A roster SHALL **supersede** a commitment it is keeping with another, on being given the two, a
+calendar date — the day the superseded commitment was **kept until** — and the **category** to put
+the commitment taking its place under, which may be none. Superseding SHALL do three things as one
+act: record the date as the day the superseded commitment was kept until, hold that commitment as
+**removed**, and take the other commitment on in the place the superseded one held, under the
+category it was offered under. It SHALL report that it superseded.
+
+**The commitment taking the place is the one that keeps it**, and the superseded commitment sits
+immediately behind it in the roster's order. A person changing a rhythm has not asked for a row to
+move, and appending the new commitment would send it to the end of an order they set. The superseded
+commitment is drawn in neither of a screen's lists, so the only place the two are read together is a
+date's answer, where they are adjacent and only one of them is ever due.
+
+Superseding is the roster's answer to a person changing the rhythm a commitment runs on, and it is
+carried this way because **a commitment has no identity of its own** and a record embeds the whole
+commitment by value: a rhythm that could change on the commitment would orphan every record already
+made against it. ADR-1023 and ADR-1030, both amended for this Story.
+
+The roster SHALL refuse to supersede in exactly two cases, and SHALL report each:
+
+- a commitment the roster is **not keeping** — one it does not hold, one it has stopped keeping, and
+  one it has removed alike. There is nothing for a rhythm to decide about days a commitment has none
+  of; and
+- a superseding commitment the roster **already holds**, kept, stopped or removed alike, for the
+  reason a change into one it already holds is refused. A commitment asked to supersede **itself** is
+  refused by that same rule and asks for nothing.
+
+The roster SHALL refuse on no date. Any calendar date the system supports SHALL be accepted as the
+day the superseded commitment was kept until, including the first and the last, and including a date
+earlier than the day that commitment is kept from: such a commitment is one the roster was keeping on
+no date at all, exactly as a stop on such a date already leaves one. As everywhere else, the roster
+SHALL NOT ask what day it is, SHALL NOT judge either commitment's schedule, and SHALL NOT decide
+whether either is due.
+
+Superseding SHALL change nothing about either commitment and nothing about what has been recorded
+against either, and **the roster SHALL hold no link between the two**. Nothing reads one, and a
+surface with no reader is not a requirement; the cost is that one commitment's record across a change
+cannot afterwards be read as a single run.
+
+A roster SHALL be a value here too: superseding SHALL leave every other roster untouched, and two
+rosters differing only in a supersession SHALL be different rosters.
+
+#### Scenario: superseding a commitment takes the other one on in the place the superseded one held
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday, then one named "Journaling", all kept from 1 January 2026,
+  is asked to supersede "Gym" with a commitment named "Gym" on a schedule listing Tuesday and
+  Thursday, kept from 1 September 2026, as of 31 August 2026, under no category
+- **THEN** the roster reports that it superseded the commitment
+- **AND** it reads back three commitments it is keeping, in the order "Water plants", then "Gym" on
+  Tuesday and Thursday, then "Journaling"
+
+#### Scenario: a superseded commitment is held removed, on the day it was kept until
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, is asked to supersede it with a commitment named "Gym" on a
+  schedule listing Tuesday and Thursday, kept from 1 September 2026, as of 31 August 2026, under no
+  category
+- **THEN** the roster reads back one commitment it is keeping, on Tuesday and Thursday, and none it
+  has stopped
+- **AND** asked about 31 August 2026 it answers with both, the one on Tuesday and Thursday first
+- **AND** asked about 1 September 2026 it answers with the one on Tuesday and Thursday alone
+
+#### Scenario: the commitment that supersedes another is put under the category it was offered under
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, under the category "Sport", is asked to supersede it with a
+  commitment named "Gym" on a schedule listing Tuesday and Thursday, kept from 1 September 2026, as
+  of 31 August 2026, under the category "Morning"
+- **THEN** the roster reads back one group it is keeping, "Morning", holding the commitment on
+  Tuesday and Thursday
+
+#### Scenario: superseding a commitment a roster is not keeping is refused
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, stops keeping it as of 31 January 2026, and is then asked to
+  supersede it with a commitment named "Gym" on a schedule listing Tuesday and Thursday, kept from
+  1 September 2026, as of 31 August 2026, under no category
+- **THEN** the roster reports that it did not supersede the commitment
+- **AND** the roster is the same roster as one that stopped keeping "Gym" as of 31 January 2026 and
+  was never asked
+- **AND** a roster that had removed "Gym" as of 31 January 2026 refuses that same supersession, and
+  so does one that never held it at all
+
+#### Scenario: superseding a commitment with one the roster already holds is refused
+
+- **WHEN** a roster given a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday and one named "Gym" on a schedule listing Tuesday and Thursday, both kept from
+  1 January 2026, is asked to supersede the first with the second, as of 31 August 2026, under no
+  category
+- **THEN** the roster reports that it did not supersede the commitment
+- **AND** the roster is the same roster as one that was never asked
+- **AND** a roster asked to supersede a commitment with that same commitment refuses it too
+
+#### Scenario: a commitment superseded as of a day before the day it is kept from was kept on no date
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 March 2026, is asked to supersede it with a commitment named "Gym" on a
+  schedule listing Tuesday and Thursday, kept from 1 March 2026, as of 28 February 2026, under no
+  category
+- **THEN** the roster reports that it superseded the commitment
+- **AND** asked about 28 February 2026 it answers with both, and asked about 1 March 2026 it answers
+  with the one on Tuesday and Thursday alone
+
+#### Scenario: a superseded commitment stays where it was for every date the roster answers about
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday, then one named "Journaling", all kept from 1 January 2026,
+  is asked to supersede "Gym" with a commitment named "Gym" on a schedule listing Tuesday and
+  Thursday, kept from 1 September 2026, as of 31 August 2026, under no category
+- **THEN** asked about 31 August 2026 it answers with four commitments, in the order "Water plants",
+  the "Gym" on Tuesday and Thursday, the "Gym" on Monday, Wednesday and Saturday, then "Journaling"
+
+#### Scenario: superseding on a copy of a roster leaves the roster it was copied from unchanged
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, is copied, and the copy supersedes it with a commitment named
+  "Gym" on a schedule listing Tuesday and Thursday, kept from 1 September 2026, as of
+  31 August 2026, under no category
+- **THEN** the copy reads back one commitment it is keeping, on Tuesday and Thursday
+- **AND** the roster it was copied from still reads back one commitment named "Gym" on Monday,
+  Wednesday and Saturday, and is not the same roster as the copy
+
+### Requirement: A commitments screen says what a commitment it is asked to change is made of
+
+A commitments screen SHALL say, for a commitment on either of its lists, the four things a change is
+asked with — the **name** it has, the **rhythm** it runs on, the **day it is kept from** and the
+**category** it is under — so that a form opened to change it starts from what that commitment is
+rather than from what a new one would be. For a commitment on neither of its lists it SHALL say
+nothing at all.
+
+The rhythm it says SHALL be the one of the four that names that commitment's schedule, carrying the
+number that schedule carries. An **interval** rhythm carries no start date, so an interval schedule's
+own start date is not part of what is said; the day the commitment is kept from is said separately,
+and on a commitment this screen defined the two are the same day. There is no rhythm a commitment's
+schedule cannot be said as, because every schedule this screen can define one on was named by a
+rhythm in the first place.
+
+It SHALL also say **whether the rhythm and the day kept from can be changed at all**: they can for a
+commitment its roster is keeping, and they cannot for one it has stopped keeping. A stopped
+commitment has no days left for a rhythm to decide about, so the only change it takes is a rename.
+The **kind** its days take is not among the four and is not said here: a kind never changes, so a
+form has nothing to offer for it.
+
+This says what a commitment *is*, and no words a person reads. What a form draws, where it is reached
+from and which of its fields it lets a thumb into are the drawing's, exactly as they already are for
+everything else this screen answers. ADR-1022.
+
+#### Scenario: a commitments screen says what a commitment it keeps is made of, on each of the four rhythms
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, one named
+  "Finances" on a schedule on the 25th of the month, one named "Contact lenses" on a schedule of
+  every 14 days starting on 1 January 2026, and one named "Reading" on a schedule of 3 times a week,
+  all kept from 1 January 2026, are taken on at a roster place; and a commitments screen is opened at
+  that roster place as of Monday 31 August 2026
+- **THEN** what it says each is made of names a weekday-set rhythm of Monday, Wednesday and Saturday,
+  a day-of-the-month rhythm of the 25th, an interval rhythm of 14 days and a weekly-quota rhythm of
+  3 times a week, in that order
+- **AND** each says the name that commitment has and 1 January 2026 as the day it is kept from
+
+#### Scenario: a commitments screen says the category a commitment it keeps is under
+
+- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is put under the
+  category "Supplements" there; and a commitments screen is opened at that roster place as of Monday
+  31 August 2026
+- **THEN** what it says "Creatine" is made of says the category "Supplements"
+- **AND** what it says "Gym" is made of says no category at all
+
+#### Scenario: a commitments screen says a stopped commitment's rhythm and day kept from cannot be changed
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Gym" is stopped there as of
+  Sunday 30 August 2026; and a commitments screen is opened at that roster place as of Monday
+  31 August 2026
+- **THEN** what it says "Gym" is made of says its rhythm and the day it is kept from cannot be changed
+- **AND** what it says "Journaling" is made of says they can
+
+#### Scenario: a commitments screen says nothing about a commitment on neither of its lists
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Gym" is removed there as of
+  Sunday 30 August 2026; and a commitments screen is opened at that roster place as of Monday
+  31 August 2026
+- **THEN** it says nothing about what "Gym" is made of
+- **AND** it says nothing about what a commitment named "Run" alike in every other way, which its
+  roster has never held, is made of
+
+### Requirement: A commitments screen changes a commitment on either of its lists
+
+A commitments screen SHALL change a commitment on either of its lists, from the same four things it
+defines one from and no others: a **name**, a **rhythm**, the **day it is kept from**, and the
+**category** to put it under, which may be none. It SHALL work out from those four which of two acts
+the change needs, and where it needs both it SHALL perform them in one order and no other.
+
+- **A different name, a different day kept from, or both, on the rhythm the commitment already runs
+  on.** The screen SHALL carry every record of that commitment over to the changed one at the record
+  place, and SHALL then change the commitment for the changed one at the roster place, in the place
+  the roster holds it. Every past day afterwards draws the changed commitment and answers about it
+  exactly as it answered about the one it replaced. **A name is not a rule** — nothing is due or not
+  due because of it — and **the day a commitment is kept from is a claim about a person's own
+  history** rather than a rule about days ahead, so correcting either corrects the whole of what has
+  been kept rather than starting something new.
+- **A different rhythm.** The screen SHALL supersede: the commitment is kept until the day **before**
+  the day the screen was handed and held removed, and the commitment the four things name — kept from
+  the day the screen was handed — is taken on in its place. **No record moves and no past day
+  changes its answer**: the new rhythm decides the days from today onward and every day already lived
+  answers exactly as it did (ADR-1013).
+- **Both, in one save: the carry-over first, then the supersession.** It is the only order that
+  satisfies the two rules above at once — the superseded commitment then carries the new name and the
+  corrected day it was kept from, so every past day redraws correctly, while the commitment taken on
+  carries the new name, the new rhythm and the day the screen was handed as the day it is kept from.
+  The day the person typed into the field reaches the past, which is what they were correcting, and
+  not the commitment starting today, which cannot begin before today without rewriting the days
+  behind it.
+
+**On an interval rhythm the day a commitment is kept from is also the rhythm's start date, and
+changing that day moves the grid with it.** A commitment kept every N days from one day is due on that
+day and every N days after it, so a change that names a different day SHALL form the changed
+commitment's schedule from the day the change names, exactly as defining one does: one date is offered
+and one date answers for both, and a person is never asked for a second. The days such a commitment
+was due on before the change are therefore not the days it is due on after it. On the other three
+rhythms — a weekday set, a day of the month, a weekly quota — dueness does not depend on the day kept
+from at all, so moving that day earlier only widens the window and every day already recorded on stays
+due. That difference is why the refusal below is about what the change would leave, and never about
+which way the day moved.
+
+**The record place is written before the roster place, and that order is part of the decision.** The
+two are separate files and nothing makes one write of both. Written the other way round, a roster
+that took the change and a record place that then refused it would leave a past day drawing a
+commitment it holds no record of, and asking for the same change again could not repair it, because
+the commitment the second ask names as the one to change is no longer the one the records are under.
+In the order stated, the same second ask carries nothing over — there is nothing left under the old
+commitment — and then writes the roster, which is exactly the repair. Where nothing is carried over,
+nothing is written at the record place at all.
+
+**The kind its days take is not one of the four and SHALL NOT change.** The changed commitment SHALL
+be of the kind the commitment it replaces is of, on every one of the acts above. ADR-1030.
+
+**Where the four things name the commitment that is already there, and the category it is already
+under**, the screen SHALL change nothing, SHALL write nothing at either place and SHALL refuse
+nothing. Closing a form opened by accident is not an error.
+
+**A commitment its roster has stopped keeping SHALL be changed in name and category only**, and a
+change asking for a different rhythm or a different day kept from on one SHALL be refused as a change
+a stopped commitment does not take, told apart from every other refusal, because what a person does
+about it — take the commitment up again first — is theirs to do. A commitment its roster has
+**removed** is on neither of this screen's lists; a screen asked to change one, or to change any
+commitment on neither list, SHALL do nothing and SHALL say nothing, exactly as it already answers
+every other change asked about a commitment it does not have.
+
+A change SHALL be refused in the words this screen already uses wherever it already has them, and
+for the same reasons: a **name that says nothing**, a **weekday set with no days in it**, a **rhythm
+number the calendar will not take**, a **commitment the roster already holds** and a **place that
+could not be written**. The fourth is stricter here than it is for defining, and that is the
+decision: defining a commitment the roster has stopped or removed takes that commitment up again,
+while changing one *into* it would put two histories under one value, so a change whose result the
+roster holds in **any** of the three states is refused. The fifth covers the record place as well as
+the roster place: neither leaves a person anything to do but try again later, so the two are told the
+same way.
+
+Two refusals are this change's own, because nothing before it could produce them, and each SHALL be
+told apart from the other five for the reason ADR-1036 gives — a person can act on each, and on each
+differently:
+
+- **A change a stopped commitment does not take**, above: take the commitment up again first.
+- **A day already recorded on that the change would leave not due.** A change SHALL be refused where
+  any day the commitment has a record on is a day the changed commitment is not due on, and carrying
+  the record over to a day it could not have been made on is not something this system does. Moving
+  the day a commitment is kept from *later* can strand a recorded day on any of the four rhythms. On
+  an interval rhythm, where the grid moves with the day, moving it **earlier** does the same: unless
+  the day moves by a whole number of intervals, every day already recorded on falls off the new grid.
+  What a person does about it is pick a day that leaves every recorded day due, or leave the day
+  alone.
+
+Nothing SHALL be kept at either place by a refused change, and neither of the screen's lists SHALL
+move.
+
+#### Scenario: a commitment renamed through a commitments screen is drawn under its new name, in the place it held
+
+- **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling", all
+  on a schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster
+  place; a commitments screen is opened at that roster place as of Monday 31 August 2026; and "Gym"
+  is changed through it to the name "Gym 🏋️", on the rhythm and the day kept from it already has,
+  under no category
+- **THEN** nothing is refused
+- **AND** what it keeps is three entries, named "Water plants", then "Gym 🏋️", then "Journaling"
+- **AND** a roster store opened afterwards at that place holds those three commitments in that order
+
+#### Scenario: every record of a commitment renamed through a commitments screen is carried over to the new name
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a tick for it on Monday 3 August 2026 is kept at a
+  record place; a commitments screen is opened at that roster place and that record place as of
+  Monday 31 August 2026; and "Gym" is changed through it to the name "Gym 🏋️", on the rhythm and the
+  day kept from it already has, under no category
+- **THEN** nothing is refused
+- **AND** a store opened afterwards at that record place answers that "Gym 🏋️" was kept on Monday
+  3 August 2026
+- **AND** it answers that "Gym" was not kept on that day
+
+#### Scenario: a commitment whose rhythm is changed through a commitments screen is kept until yesterday and the new one is taken on today
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; and "Gym" is changed through it to a weekday-set rhythm of Tuesday and
+  Thursday, on the name and the day kept from it already has, under no category
+- **THEN** nothing is refused
+- **AND** what it keeps is one entry, named "Gym", saying "Tue, Thu"
+- **AND** a roster store opened afterwards at that place answers about Sunday 30 August 2026 with the
+  commitment on Monday, Wednesday and Saturday kept from 1 January 2026, and about Monday
+  31 August 2026 with the one on Tuesday and Thursday kept from that day
+
+#### Scenario: a rhythm changed through a commitments screen leaves every record already made standing
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on at a roster place; a tick for it on Monday 3 August 2026 is kept at a
+  record place; a commitments screen is opened at that roster place and that record place as of
+  Monday 31 August 2026; and "Gym" is changed through it to a weekday-set rhythm of Tuesday and
+  Thursday, under no category
+- **THEN** nothing is refused
+- **AND** a store opened afterwards at that record place answers that the commitment on Monday,
+  Wednesday and Saturday was kept on Monday 3 August 2026
+- **AND** the content at that record place is byte-for-byte what it was before the change
+
+#### Scenario: a name and a rhythm changed in one save put the new name on the superseded commitment
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on at a roster place; a tick for it on Monday 3 August 2026 is kept at a
+  record place; a commitments screen is opened at that roster place and that record place as of
+  Monday 31 August 2026; and "Gym" is changed through it to the name "Gym 🏋️" on a weekday-set
+  rhythm of Tuesday and Thursday, under no category
+- **THEN** nothing is refused
+- **AND** a roster store opened afterwards at that place answers about Sunday 30 August 2026 with
+  "Gym 🏋️" on Monday, Wednesday and Saturday, kept from 1 January 2026
+- **AND** what the screen keeps is one entry, named "Gym 🏋️", saying "Tue, Thu"
+- **AND** a store opened afterwards at that record place answers that "Gym 🏋️" on Monday, Wednesday
+  and Saturday was kept on Monday 3 August 2026
+
+#### Scenario: the day a commitment is kept from is moved earlier through a commitments screen and the days it opens become due
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 August
+  2026, is taken on at a roster place; a commitments screen is opened at that roster place as of
+  Monday 31 August 2026; and "Gym" is changed through it to the day kept from 1 June 2026, on the
+  name and the rhythm it already has, under no category
+- **THEN** nothing is refused
+- **AND** the commitment a roster store opened afterwards at that place holds is due on Monday
+  1 June 2026 and on Monday 3 August 2026
+
+#### Scenario: moving the day a commitment is kept from past a day it has a record on is refused
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 June 2026,
+  is taken on at a roster place; a tick for it on Monday 3 August 2026 is kept at a record place; a
+  commitments screen is opened at that roster place and that record place as of Monday
+  31 August 2026; and "Gym" is changed through it to the day kept from 1 September 2026, under no
+  category
+- **THEN** it is refused as a day already recorded on that the change would leave not due, told
+  apart from a place that could not be written
+- **AND** what the screen keeps is one entry named "Gym", and the content at both places is
+  byte-for-byte what it was immediately after the screen was opened
+
+#### Scenario: the day an interval commitment is kept from is moved earlier and every day it is due on moves with it
+
+- **WHEN** a commitment named "Contact lenses" on an interval rhythm of 14 days, kept from Wednesday
+  1 July 2026, is taken on at a roster place; a commitments screen is opened at that roster place as
+  of Monday 31 August 2026; and "Contact lenses" is changed through it to the day kept from Monday
+  29 June 2026, on the name and the rhythm it already has, under no category
+- **THEN** nothing is refused
+- **AND** the commitment a roster store opened afterwards at that place holds is due on Monday 29 June
+  2026 and on Monday 13 July 2026
+- **AND** it is not due on Wednesday 1 July 2026
+
+#### Scenario: moving the day an interval commitment is kept from off a day it has a record on is refused
+
+- **WHEN** a commitment named "Contact lenses" on an interval rhythm of 14 days, kept from Wednesday
+  1 July 2026, is taken on at a roster place; a tick for it on Wednesday 15 July 2026 is kept at a
+  record place; a commitments screen is opened at that roster place and that record place as of Monday
+  31 August 2026; and "Contact lenses" is changed through it to the day kept from Monday 29 June 2026,
+  on the name and the rhythm it already has, under no category
+- **THEN** it is refused as a day already recorded on that the change would leave not due, told apart
+  from a place that could not be written
+- **AND** what the screen keeps is one entry named "Contact lenses", and the content at both places is
+  byte-for-byte what it was immediately after the screen was opened
+
+#### Scenario: an interval commitment's day kept from moved earlier by a whole number of intervals leaves every recorded day due
+
+- **WHEN** a commitment named "Contact lenses" on an interval rhythm of 14 days, kept from Wednesday
+  1 July 2026, is taken on at a roster place; a tick for it on Wednesday 15 July 2026 is kept at a
+  record place; a commitments screen is opened at that roster place and that record place as of Monday
+  31 August 2026; and "Contact lenses" is changed through it to the day kept from Wednesday 17 June
+  2026, on the name and the rhythm it already has, under no category
+- **THEN** nothing is refused
+- **AND** the commitment a roster store opened afterwards at that place holds is due on Wednesday
+  17 June 2026 and on Wednesday 15 July 2026
+- **AND** a store opened afterwards at that record place answers that the commitment kept from
+  Wednesday 17 June 2026 was kept on Wednesday 15 July 2026
+- **AND** it answers that the commitment kept from Wednesday 1 July 2026 was not kept on that day
+
+#### Scenario: a change whose result the roster already holds is refused, whichever state it holds it in
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; a commitments screen is
+  opened at that roster place as of Monday 31 August 2026; and "Gym" is changed through it to the
+  name "Run", under no category
+- **THEN** it is refused as a commitment already kept
+- **AND** what it keeps is two entries, named "Gym" and then "Run"
+- **AND** the same change is refused the same way on a screen whose roster had stopped keeping "Run"
+  as of Sunday 30 August 2026, and on one whose roster had removed it as of that day
+
+#### Scenario: a change that names what is already there changes nothing and refuses nothing
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, under the category "Sport", is taken on at a roster place; a commitments screen is
+  opened at that roster place as of Monday 31 August 2026; and "Gym" is changed through it to exactly
+  the name, rhythm, day kept from and category it already has
+- **THEN** nothing is refused
+- **AND** what it keeps is one group, "Sport", holding one entry named "Gym"
+- **AND** the content at that roster place is byte-for-byte what it was immediately after the screen
+  was opened
+
+#### Scenario: a stopped commitment renamed through a commitments screen stays stopped, on the day it was kept until
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Gym" is stopped there as of
+  Sunday 30 August 2026; a commitments screen is opened at that roster place as of Monday
+  31 August 2026; and "Gym" is changed through it to the name "Gym 🏋️", on the rhythm and the day
+  kept from it already has, under no category
+- **THEN** nothing is refused
+- **AND** what it has stopped is one entry, named "Gym 🏋️"
+- **AND** what it keeps is one entry, named "Journaling"
+
+#### Scenario: changing the rhythm or the day kept from of a stopped commitment is refused
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; "Gym" is stopped there as of Sunday 30 August 2026;
+  a commitments screen is opened at that roster place as of Monday 31 August 2026; and "Gym" is
+  changed through it to a weekday-set rhythm of Tuesday and Thursday, under no category
+- **THEN** it is refused as a change a stopped commitment does not take, told apart from a commitment
+  already kept and from a place that could not be written
+- **AND** a change to the day kept from 1 June 2026 on that same stopped commitment is refused the
+  same way
+- **AND** what it has stopped is one entry, named "Gym"
+
+#### Scenario: a commitments screen asked to change a commitment on neither of its lists does nothing and says nothing
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Gym" is removed there as of
+  Sunday 30 August 2026; a commitments screen is opened at that roster place as of Monday
+  31 August 2026; and "Gym" is changed through it to the name "Gym 🏋️", under no category
+- **THEN** nothing is refused
+- **AND** what it keeps is one entry named "Journaling" and what it has stopped is nothing
+- **AND** the content at that roster place is byte-for-byte what it was immediately after the screen
+  was opened
+
+#### Scenario: a change a commitments screen could not keep leaves both places as they were
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; what is at that place is then made impossible to write; and "Gym" is
+  changed through it to the name "Gym 🏋️", under no category
+- **THEN** it is refused as a place that could not be written, told apart from a commitment already
+  kept
+- **AND** what it keeps is one entry, named "Gym"
+
+#### Scenario: a change refuses a name that says nothing, a rhythm due on no day and a rhythm number the calendar will not take
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of Monday 31 August 2026; and "Gym" is changed through it three times — once to the name "   ",
+  once to a weekday-set rhythm listing no weekdays, and once to a day-of-the-month rhythm of the 32nd
+- **THEN** the three are refused as a name that says nothing, a rhythm due on no day and a rhythm
+  number the calendar will not take, each told apart from the others
+- **AND** what it keeps is one entry, named "Gym", after all three
+
+#### Scenario: a commitment of the number kind changed through a commitments screen keeps the kind its days take
+
+- **WHEN** a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
+  listing all seven weekdays, kept from 1 January 2026, is taken on at a roster place; a commitments
+  screen is opened at that roster place as of Monday 31 August 2026; and "Weight" is changed through
+  it to the name "Bodyweight", under no category
+- **THEN** nothing is refused
+- **AND** the commitment a roster store opened afterwards at that place holds is of the number kind
+  with a range of 40 to 150
+
+#### Scenario: a rhythm changed on the first date the calendar supports supersedes as of that day itself
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 1583, is taken on at a roster place; a commitments screen is opened at that roster place
+  as of 1 January 1583; and "Gym" is changed through it to a weekday-set rhythm of Tuesday and
+  Thursday, under no category
+- **THEN** nothing is refused
+- **AND** a roster store opened afterwards at that place answers about 1 January 1583 with both
+  commitments, and about 2 January 1583 with the one on Tuesday and Thursday alone
