@@ -486,10 +486,11 @@ months later.
   requirement, so there is nothing for a Story to specify. Kept is a dimmed name and a plain
   checkmark, no colour, no animation — the row goes quiet. Lands before #100, since there is
   nothing to say a tick was *not* kept while nothing shows that one was. **Amended 2026-09-09** by
-  ADR-1044, at the grill of #175: the checkmark now takes the accent colour, so this line reads
-  *a dimmed name and a plain checkmark in the accent colour, no animation*. The dimming, the
-  plainness of the mark and the absence of animation all stand; only "no colour" is withdrawn, and
-  only for the trailing mark.
+  ADR-1044, after the branch was built onto the phone and looked at: a kept row's name is **struck
+  through**, and the checkmark's grey is now stated rather than inherited. The line reads *a
+  struck-through dimmed name and a plain grey checkmark, no animation — the row goes quiet.*
+  "No colour" **stands**: the accent was tried on the checkmark at the grill of #175 and rejected
+  on the phone, and only the circle an unkept tick row offers takes it.
 - 2026-09-03 — be told when a tick I made was not kept → Story #100 `add-refused-tick-notice`,
   under `FEAT: day-screen` (#27), appended to the chain after #93. The refusal is told on the row
   that was tapped and stays until the app is shown again or a tick on any row is kept — the
