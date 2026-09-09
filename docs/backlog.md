@@ -488,9 +488,11 @@ months later.
   nothing to say a tick was *not* kept while nothing shows that one was. **Amended 2026-09-09** by
   ADR-1045, over two looks at the built app: a kept row's name is **struck through**, and the
   checkmark takes the **system green**. The line reads *a struck-through dimmed name and a plain
-  green checkmark, no animation.* "No colour" is **withdrawn**, and only for the checkmark — the
-  circle an unkept tick row offers takes the accent, and the accent was tried on the checkmark
-  first and rejected. **The row no longer goes quiet in the way this line meant**: that clause was
+  green checkmark, no animation.* "No colour" is **withdrawn**, and only for the checkmark — it is
+  the only mark the trailing slot draws at all. The open circle an unkept tick row briefly offered
+  in the accent was **removed 2026-09-09 by `chore/unmark-the-offered-row`** after a day of use,
+  reversing ADR-1045 decision 4; the accent had been tried on the checkmark first and rejected, so
+  it no longer appears in that slot in either state. **The row no longer goes quiet in the way this line meant**: that clause was
   written when the mark was plain, and green is the canonical congratulation colour, so this is
   the closest the app has come to `CONTEXT.md` § *Nothing congratulates you*. The objection was
   put to the owner in those terms and overruled; ADR-1045 § *Decision 8* carries both sides and
