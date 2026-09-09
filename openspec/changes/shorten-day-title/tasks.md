@@ -196,7 +196,7 @@ The two boxes below are the other two findings. **Both are the `implementer`'s, 
 reports this folder approved again (rule 1) — finding 1 edited the delta, so the approval that
 stood before it is stale by construction.
 
-- [ ] 8.1 **Witness the "exactly as it did before the tick" clause.** The scenario `a day screen
+- [x] 8.1 **Witness the "exactly as it did before the tick" clause.** The scenario `a day screen
   says the same day after a tick is made on it` says the screen says `"Mon"` *exactly as it did
   before the tick*, and its test (`aDayScreenSaysTheSameDayAfterATickIsMadeOnIt`) reads the title
   once, after `try screen.tick(...)`. An implementation whose title changed on a tick — `"Sun"`

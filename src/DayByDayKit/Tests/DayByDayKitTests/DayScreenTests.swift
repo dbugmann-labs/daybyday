@@ -711,6 +711,7 @@ func aDayScreenSaysTheSameDayAfterATickIsMadeOnIt() throws {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(screen.title == "Mon")
     try screen.tick(screen.dayView.rows[0])
 
     #expect(screen.title == "Mon")
