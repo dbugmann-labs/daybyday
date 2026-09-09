@@ -125,7 +125,7 @@ Driven at `CommitmentsScreen.move(group:toOffset:)`, in
   compared against the roster itself and not against the boolean the store answers, exactly as
   `move` and `put` already do.
 - [x] 4.9 *a commitments screen shown again draws its groups in the order they were moved into*.
-- [ ] 4.10 *a group moved above one whose first commitment is stopped is drawn where the person put
+- [x] 4.10 *a group moved above one whose first commitment is stopped is drawn where the person put
   it* — added at the second G4, the screen's own reading of § 2.13 and § 2.14: the group is drawn at
   the offset the person tapped, and the place answers about a date before the stop the other way
   round. The screen converts nothing here either; this cycle should need no change to

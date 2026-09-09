@@ -4195,6 +4195,51 @@ func aGroupMoveThatLeavesAGroupWhereItIsDrawnChangesNothingAndRefusesNothing() t
 }
 
 @MainActor
+@Test("a group moved above one whose first commitment is stopped is drawn where the person put it")
+func aGroupMovedAboveOneWhoseFirstCommitmentIsStoppedIsDrawnWhereThePersonPutIt() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(creatine)
+    try rosterStore.add(magnesium)
+    try rosterStore.add(gym)
+    try rosterStore.put(creatine, under: "Supplements")
+    try rosterStore.put(magnesium, under: "Supplements")
+    try rosterStore.put(gym, under: "Sport")
+    try rosterStore.retire(creatine, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let refusal = screen.move(group: "Sport", toOffset: 0)
+
+    #expect(refusal == nil)
+    #expect(
+        screen.keptGroups
+            == [
+                Roster.Group(category: "Sport", commitments: [gym]),
+                Roster.Group(category: "Supplements", commitments: [magnesium]),
+            ])
+    #expect(screen.stopped == [creatine])
+
+    let later = try RosterStore(at: rosterPlace)
+
+    #expect(
+        later.roster.groups(on: sunday)
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine, magnesium]),
+                Roster.Group(category: "Sport", commitments: [gym]),
+            ])
+}
+
+@MainActor
 @Test("a commitments screen shown again draws its groups in the order they were moved into")
 func aCommitmentsScreenShownAgainDrawsItsGroupsInTheOrderTheyWereMovedInto() throws {
     let rosterPlace = freshRosterPlace()
