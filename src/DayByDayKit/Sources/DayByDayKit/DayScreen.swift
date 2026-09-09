@@ -173,6 +173,23 @@ public final class DayScreen {
         shownDay != today
     }
 
+    /// What a day screen says about the reach of its day picker: the day the picker opens on,
+    /// and the earliest day it reaches. `openspec/changes/add-day-picker/design.md` § *The seam*.
+    public struct Reach: Hashable, Sendable {
+        public let opensOn: CalendarDate
+        public let earliest: CalendarDate
+    }
+
+    /// The reach of this screen's day picker: the day it opens on is the day being shown, and
+    /// the earliest day it reaches is the earlier of the earliest day anything on this screen's
+    /// roster is kept from — or, where the roster answers none, the today this screen was last
+    /// handed — and the day being shown.
+    public var dayPickerReach: Reach {
+        let floor = roster.earliestKeptFrom ?? today
+        let earliest = shownDay.days(until: floor) < 0 ? floor : shownDay
+        return Reach(opensOn: shownDay, earliest: earliest)
+    }
+
     /// Anything but `.kept` means the day is drawn from no record at all and no tick is taken.
     public private(set) var recordState: RecordState
 
@@ -483,6 +500,21 @@ public final class DayScreen {
             notice = nil
         }
         shownDay = today
+        dayView = dayViewOfShownDay()
+    }
+
+    /// Shows `day`, the day picked on this screen's day picker, where it is not earlier than
+    /// `dayPickerReach.earliest`; leaves the screen exactly as it was, with nothing formed again
+    /// and nothing said about it, where it is earlier. Does not move the today, and does not read
+    /// the roster or the record again.
+    public func showDay(_ day: CalendarDate) {
+        guard day.days(until: dayPickerReach.earliest) <= 0 else {
+            return
+        }
+        if shownDay != day {
+            notice = nil
+        }
+        shownDay = day
         dayView = dayViewOfShownDay()
     }
 
