@@ -161,7 +161,7 @@ disagreeing with itself. So 6.1 and 6.2 **confirm** rather than write:
   afterwards, because `/opsx:archive` moves this folder under `openspec/changes/archive/` and every
   editor is denied there.
 
-  **Archive handover, for the janitor.** This delta carries all four operation sections —
+  **Archive handover, for the janitor.** This delta carries all three operation sections —
   `## ADDED` (2 requirements), `## MODIFIED` (10), `## REMOVED` (2) — against the single capability
   `day-screen`, and it is the first change in this repo to use `## REMOVED` at all. After
   `/opsx:archive` has run, check three things in `openspec/specs/day-screen/spec.md` and report,
@@ -236,11 +236,18 @@ stood before it is stale by construction.
   `git diff --stat origin/main... -- src/DayByDay/` must report exactly what § 5 left. Ticked when
   the look has happened and its result is written into this box.
 
-  **Looked, on iPhone 17, iOS 26.5.** The roster the Simulator kept from an earlier run already
-  held five commitments (Creatine, Magnesium, Gym, Yuno, Weight), so the picker's reach was a real
-  one without adding anything. The row reads `< Wed  9 Sep 2026 >`: the weekday sits directly left
+  **Looked, on iPhone 17, iOS 26.5 — redone and corrected at the third review pass.** The first
+  answer here was wrong about why the roster held anything: `simctl uninstall` does delete the
+  app's data container, and the redo proved it — `simctl get_app_container ... data` after a fresh
+  uninstall–install cycle showed the resulting container and its `roster.json` both created within
+  the same second as the install, so nothing survived from an earlier run. What repopulated the
+  roster is `ContentView.swift`'s `dayOneCommitments` seed, which `DayScreen` takes on "only where
+  the roster kept at `DayScreen.rosterPlace` holds nothing at all" — the app seeds itself into a
+  genuinely empty roster, which is why the five rows shown (Creatine, Magnesium, Gym, Yuno, Weight
+  — the ones due Wednesday 9 September 2026) needed nothing added through *Commitments*. The row
+  itself reads the same as the first look: `< Wed  9 Sep 2026 >`, the weekday sitting directly left
   of the date-picker pill, both between the two chevrons, all on **one line** — no wrap, no
-  truncation, no shrink. **The Story's own defect is closed.**
+  truncation, no shrink. **The Story's own defect is closed**, now on evidence that holds together.
 
   The shell observation for `design.md` § *Open Questions* 2, written down and not acted on: the
   picker's pill has a filled gray background and reads visually heavier than the plain-text `Wed`
@@ -256,3 +263,42 @@ stood before it is stale by construction.
   a conflict in the change folder or under `openspec/specs/` being a stop as in § 7.3. Hand back for
   the review; § 7.5's archive handover stands unchanged and is still the janitor's instruction.
   Ticked when the hand-back is written.
+
+## 9. Answering the third review pass
+
+`reviewer` came back at **G7** with three findings and all three were accepted (PR #190, the
+review comment of 2026-09-09, third pass). None touches the delta — `specs/day-screen/spec.md`
+and `design.md` are both untouched by all three — so the G4 marker recorded for the third
+approval still signs this folder and no fourth approval is due.
+
+- [x] 9.1 **Redo § 8.2's look and correct what its answer said.** The same iPhone 17 (iOS 26.5)
+  simulator was already booted, so no cold boot was needed. Built fresh with `xcodebuild
+  ... -derivedDataPath /tmp/dbd-look-3 build`, then ran § 8.2's own `simctl uninstall`, `install`,
+  `launch` and `screenshot` in that order, backgrounding the build. `simctl get_app_container ...
+  data` showed the resulting container and its `roster.json` both created within the same second
+  as the install, so the earlier claim that the Simulator had "kept" the roster "from an earlier
+  run" was wrong on its face — nothing survived the uninstall. § 8.2's answer, above, is rewritten
+  to name the real mechanism: the app seeds `ContentView.dayOneCommitments` into any roster it
+  finds empty, which is what made the picker's reach real without adding anything, and is also why
+  "add a commitment through *Commitments* first" turned out to be unnecessary here. The row itself
+  is unchanged from the first look: one line, no wrap. Ticked when § 8.2's answer is rewritten to
+  match.
+- [x] 9.2 **Say three sections, not four, in the archive handover.** § 7.5 above and the PR body
+  both said "all four operation sections" over a list of three (`## ADDED`, `## MODIFIED`,
+  `## REMOVED`); there is no `## RENAMED` block, and `design.md:66-69` records why one was
+  considered and rejected. Fixed in both places; the counts themselves (2, 10, 2) were already
+  right. Ticked when the wording reads "three" in § 7.5 and in the PR body.
+- [ ] 9.3 **Pin a concrete value in the tautological title-equality test.** `a day screen says the
+  day its own day view says` asserted only `screen.title == screen.dayView.title` — true for every
+  implementation, since `DayScreen.title` is defined as exactly `dayView.title`, so the assertion
+  could not fail. Add `#expect(screen.title == "Mon")` beside it, matching the scenario's own WHEN
+  (Monday 31 August 2026). No rename, no new test — § 7.1's count of 1015 does not move. Ticked
+  when the assertion is in and `swift test` is green.
+- [ ] 9.4 **Re-run § 7's checks over the fixed branch and hand back.** `cd src/DayByDayKit && swift
+  test` green at **1015** — unchanged by all three boxes above; `pnpm run verify` green and `pnpm
+  run checks` reporting `112/112 scenario(s) covered` from the repo root; `openspec validate
+  shorten-day-title --strict` and `openspec validate --all --strict --no-interactive` both exit 0;
+  then rebase onto current `main` and push with `--force-with-lease`, a conflict in the change
+  folder or under `openspec/specs/` being a stop as in § 7.3. Hand back for the review; § 7.5's
+  archive handover, corrected by 9.2, is still the janitor's instruction. Ticked when the hand-back
+  is written.
