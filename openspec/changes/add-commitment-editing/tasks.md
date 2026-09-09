@@ -232,7 +232,7 @@ ADR-1019's 2026-09-04 exception, and `design.md` § *B-037 carries no requiremen
 attached to any box here**, and none may be added by one: a box that finds itself needing a scenario
 is a stop.
 
-- [ ] 9.1 Move the define form into a **sheet** in `CommitmentsView.swift`, reached by a `+` in the
+- [x] 9.1 Move the define form into a **sheet** in `CommitmentsView.swift`, reached by a `+` in the
   toolbar for defining and from a row for changing (B-037). The sheet fills its fields from
   `screen.whatItIsMadeOf(commitment)` when it opens to change one and from `screen.dayToKeepFrom` when
   it opens to define, calls `screen.change(...)` or `screen.define(...)` on save, and **stays open with
