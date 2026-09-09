@@ -140,13 +140,13 @@ is a stop.
   tap can reach a refusal. The shell counts no rows and computes nothing else. Verify by building:
   `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay -destination
   'platform=iOS Simulator,name=iPhone 16' build` succeeds.
-- [ ] 6.2 Walk it on the phone with `pnpm run phone`: move a group up, down, to the top and to the
+- [x] 6.2 Walk it on the phone with `pnpm run phone`: move a group up, down, to the top and to the
   bottom; confirm the group under no category draws no actions and stays last; confirm a group's
   stopped commitments follow it by opening a past day. **If the action rows read badly in the hand,
   try a control on the heading instead** — `grill.md` § *Settled* 5 chose the walk over the gamble,
   and whichever wins, **no requirement moves and no second G4 is owed**. Record what was walked and
   which of the two shipped in the PR.
-- [ ] 6.3 In the same pass, look at the ~1s reorder settle lag `docs/open-questions.md` parks on this
+- [x] 6.3 In the same pass, look at the ~1s reorder settle lag `docs/open-questions.md` parks on this
   Story. The un-excluded candidate is `CommitmentsView.swift:79`'s `id: \.offset`; this change moves
   whole blocks through that line. If keying the kept list's rows on the commitment's own value fixes
   it, that is a shell fix on this branch and the open question closes with a note saying what it was.
@@ -183,10 +183,10 @@ and these boxes **confirm rather than write**.
   written, and the six MODIFIED requirements were extracted verbatim from the `commitment` spec as it
   stood at `fe540d5`, the commit this branch was rebased onto at G4. **A clean rebase that then fails
   § 8.2 is the same stop**, and it needs a further G4 rather than a quiet refresh of the delta.
-- [ ] 8.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+- [x] 8.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff and do not act on findings until they come back
   through the conductor. This box is ticked when the hand-back is written.
-- [ ] 8.5 Write the archive handover for the janitor, into the PR or the handover message, saying what
+- [x] 8.5 Write the archive handover for the janitor, into the PR or the handover message, saying what
   it must check **after** `/opsx:archive` has run. **The `implementer` ticks this box, in its last
   commit before the archive, on the instruction having been written** — the checking itself is the
   janitor's step and has no box of its own, deliberately: `add-roster-store` (#103) shipped a box that
