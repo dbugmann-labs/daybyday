@@ -1,18 +1,25 @@
 ## 1. Ground rules for this change
 
-This delta is unusually large and almost entirely mechanical: **110 scenarios, of which 103 already
-have an acceptance test carrying exactly the right name.** What changes in those 103 is what they
+This delta is unusually large and almost entirely mechanical: **112 scenarios, of which 105 already
+have an acceptance test carrying exactly the right name.** What changes in those 105 is what they
 assert, not what they are called. Read these three before starting; each one is a way this change
 can go wrong quietly.
 
+**Two of those 105 arrived from somewhere else.** `add-commitment-editing` (#148, PR #188) landed on
+`day-screen` after this folder was written, adding two scenarios to *A day screen reads its roster
+again when it is returned to* and rewriting that requirement's prose. A MODIFIED block replaces the
+whole requirement, so this delta had to take that requirement's current text and re-apply only its
+own two edits to it; the two scenarios and their tests come across unchanged and neither asserts a
+day title. Nothing else in this change moves, and § 3.2 covers the requirement exactly as before.
+
 - [x] 1.1 **Never rename or delete a test that a delta scenario names.** Confirm before you start
-  that all 110 scenario titles in `specs/day-screen/spec.md` are accounted for: 103 have a test
+  that all 112 scenario titles in `specs/day-screen/spec.md` are accounted for: 105 have a test
   today, 7 do not and are listed in § 4. Nine *other* tests are retired in § 3.4 because their
   requirements are `## REMOVED`; those nine are the only deletions this change makes, and their
-  names are listed there. Verify with `pnpm run checks` reporting `110/110 scenario(s) covered` at
+  names are listed there. Verify with `pnpm run checks` reporting `112/112 scenario(s) covered` at
   the end, and with § 7.1's test count.
 - [x] 1.2 **CI check 4 cannot catch a stale assertion in this change.** It matches scenario titles
-  to test titles, and 103 of them already match — so a test whose assertion was never brought in
+  to test titles, and 105 of them already match — so a test whose assertion was never brought in
   line still passes it. `swift test` is what catches those, because the implementation returns
   `"Mon"` where the old assertion expects `"Today · Monday 31 August 2026"`. Never make a test pass
   by relaxing it: if an assertion cannot be made to match its scenario, that is a **stop**
@@ -43,7 +50,7 @@ can go wrong quietly.
   two tables stay apart* says why the weekday names are not shared with `schedule`'s; merging them
   is a **stop and a G4 question**, not a tidy-up.
 
-## 3. The kit: bringing the 103 named tests in line
+## 3. The kit: bringing the 105 named tests in line
 
 Work **one requirement at a time**, in this order, and run `swift test` after each. Each box is
 ticked when every test belonging to that requirement is green and asserts what its scenario in
@@ -131,11 +138,13 @@ disagreeing with itself. So 6.1 and 6.2 **confirm** rather than write:
 
 ## 7. Before the review, and what the janitor does at the archive
 
-- [x] 7.1 `cd src/DayByDayKit && swift test` — every test green, and the count is **959**: 961 at
+- [x] 7.1 `cd src/DayByDayKit && swift test` — every test green, and the count is **1015**: 1017 at
   the base, plus the seven new tests of § 2.1 and § 4, minus the nine retired in § 3.4. A count that
   comes back different is a **stop** (rule 5), not a number to write down — it means a test was
-  renamed or dropped that § 1.1 forbids. From the repo root, `pnpm run verify` green and
-  `pnpm run checks` reporting `110/110 scenario(s) covered`.
+  renamed or dropped that § 1.1 forbids. *The base was 961 when this folder was written;
+  `add-commitment-editing` (PR #188) landed 56 tests on `main` afterwards, so both numbers moved by
+  56 and the arithmetic between them did not.* From the repo root, `pnpm run verify` green and
+  `pnpm run checks` reporting `112/112 scenario(s) covered`.
 - [x] 7.2 `openspec validate shorten-day-title --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [x] 7.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside

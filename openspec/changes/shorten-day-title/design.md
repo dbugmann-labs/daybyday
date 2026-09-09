@@ -126,6 +126,25 @@ by construction: `ScheduleWords`' table is an **ordered array** because its job 
 future change to either rhythm words or day titles silently change the other, and the thing saved
 is seven string literals. `DayTitle.monthNames` is deleted outright — it loses its only caller.
 
+### One MODIFIED block carries a sibling Story's amendment
+
+`add-commitment-editing` (#148, PR #188) merged onto `main` after this folder was written, and it
+amended *A day screen reads its roster again when it is returned to*: being returned to now **does**
+read the record place again where a record is being kept, and two scenarios were added for it. That
+requirement is one of the ten this change restates.
+
+A MODIFIED block replaces the whole requirement, so a block written against the older text would
+have merged that amendment away — silently, because the two edits sit in different files and git
+reports no conflict. `openspec validate --strict` caught it on the omitted scenario names alone;
+the reverted prose it does not check for.
+
+**This delta therefore states that requirement as `main` now has it, with only its own two edits
+re-applied** — the two `THEN` lines that witnessed the day in words become
+`its day picker opens on <date>`. #188's prose, its two new scenarios and their two tests come
+across unchanged; neither new scenario asserts a day title, so nothing about this change touches
+them. Restating the older text was never a real option: it would undo a requirement that has passed
+G4, shipped and merged.
+
 ## Risks / Trade-offs
 
 - **A large mechanical delta invites a mechanical implementation.** Ten requirements are restated in
