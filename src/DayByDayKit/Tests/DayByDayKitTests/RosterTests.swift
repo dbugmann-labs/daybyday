@@ -2444,3 +2444,143 @@ func aRosterKeepingOneGroupUnderACategoryAcceptsBothTheOffsetsItHas() {
 
     #expect(!movedAtOffsetTwo)
 }
+
+@Test("a roster holding no commitments answers no earliest day anything it holds is kept from")
+func aRosterHoldingNoCommitmentsAnswersNoEarliestDayAnythingItHoldsIsKeptFrom() {
+    let roster = Roster()
+
+    #expect(roster.earliestKeptFrom == nil)
+}
+
+@Test("a roster answers the earliest day among the commitments it holds")
+func aRosterAnswersTheEarliestDayAmongTheCommitmentsItHolds() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
+    let run = Commitment(
+        name: "Run", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let journaling = Commitment(
+        name: "Journaling", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 2, day: 1)!)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.add(run)
+    _ = roster.add(journaling)
+
+    var otherOrder = Roster()
+    _ = otherOrder.add(journaling)
+    _ = otherOrder.add(run)
+    _ = otherOrder.add(gym)
+
+    #expect(roster.earliestKeptFrom == CalendarDate(year: 2026, month: 1, day: 1))
+    #expect(otherOrder.earliestKeptFrom == CalendarDate(year: 2026, month: 1, day: 1))
+}
+
+@Test("a roster counts a commitment it has stopped keeping in the earliest day anything it holds is kept from")
+func aRosterCountsACommitmentItHasStoppedKeepingInTheEarliestDayAnythingItHoldsIsKeptFrom() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let run = Commitment(
+        name: "Run", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.add(run)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(roster.earliestKeptFrom == CalendarDate(year: 2026, month: 1, day: 1))
+    #expect(roster.commitments == [run])
+}
+
+@Test("the earliest day anything a roster holds is kept from falls when a commitment kept from an earlier day is taken on")
+func theEarliestDayAnythingARosterHoldsIsKeptFromFallsWhenACommitmentKeptFromAnEarlierDayIsTakenOn() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
+    let run = Commitment(
+        name: "Run", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let journaling = Commitment(
+        name: "Journaling", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 6, day: 1)!)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    let firstAnswer = roster.earliestKeptFrom
+
+    _ = roster.add(run)
+    let secondAnswer = roster.earliestKeptFrom
+
+    _ = roster.add(journaling)
+
+    #expect(firstAnswer == CalendarDate(year: 2026, month: 3, day: 1))
+    #expect(secondAnswer == CalendarDate(year: 2026, month: 1, day: 1))
+    #expect(roster.earliestKeptFrom == CalendarDate(year: 2026, month: 1, day: 1))
+}
+
+@Test("a roster answers the day a commitment is kept from and not a day it is due")
+func aRosterAnswersTheDayACommitmentIsKeptFromAndNotADayItIsDue() {
+    let schedule = Schedule.weekdays([.monday])
+    let keptFrom = CalendarDate(year: 2026, month: 2, day: 1)!  // a Sunday
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+
+    #expect(roster.earliestKeptFrom == keptFrom)
+    #expect(!gym.isDue(on: keptFrom))
+    #expect(gym.isDue(on: CalendarDate(year: 2026, month: 2, day: 2)!))
+}
+
+@Test("a roster answers the first supported date where a commitment it holds is kept from it")
+func aRosterAnswersTheFirstSupportedDateWhereACommitmentItHoldsIsKeptFromIt() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: schedule,
+        keptFrom: CalendarDate(year: 9999, month: 12, day: 31)!)!
+    let run = Commitment(
+        name: "Run", schedule: schedule,
+        keptFrom: CalendarDate(year: 1583, month: 1, day: 1)!)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.add(run)
+
+    #expect(roster.earliestKeptFrom == CalendarDate(year: 1583, month: 1, day: 1))
+}
+
+@Test("a roster counts a commitment it has removed in the earliest day anything it holds is kept from")
+func aRosterCountsACommitmentItHasRemovedInTheEarliestDayAnythingItHoldsIsKeptFrom() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let run = Commitment(
+        name: "Run", schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.add(run)
+    _ = roster.remove(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    #expect(roster.earliestKeptFrom == CalendarDate(year: 2026, month: 1, day: 1))
+    #expect(roster.commitments == [run])
+}
