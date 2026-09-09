@@ -61,6 +61,19 @@ private func today() -> CalendarDate {
     return CalendarDate(year: components.year!, month: components.month!, day: components.day!)!
 }
 
+/// Turns a calendar date the day picker's `screen.dayPickerReach` hands back into the instant a
+/// SwiftUI `DatePicker` needs — the reverse of `today()` above, and, like it, edge code per
+/// ADR-1004: both read `Calendar.current`, the device's own calendar, so the two conversions
+/// agree. `CommitmentsView`'s own `date(from:)` is this same conversion; duplicated here rather
+/// than exported, per `openspec/changes/add-day-picker/design.md` § *What the shell draws*.
+private func date(from calendarDate: CalendarDate) -> Date {
+    var components = DateComponents()
+    components.year = calendarDate.year
+    components.month = calendarDate.month
+    components.day = calendarDate.day
+    return Calendar.current.date(from: components)!
+}
+
 struct ContentView: View {
     @State private var screen = DayScreen(startingFrom: dayOneCommitments, asOf: today())
     @Environment(\.scenePhase) private var scenePhase
@@ -122,6 +135,27 @@ struct ContentView: View {
                     Image(systemName: "chevron.right")
                 }
                 .buttonStyle(.borderless)
+                // The day picker: bounded by `screen.dayPickerReach`, which the shell computes
+                // neither end of, per ADR-1019's 2026-09-04 amendment. `.labelsHidden()` because
+                // this row already carries the day's title as text; the default (non-`.graphical`)
+                // style is what B-040 asked for and B-007 explicitly left out.
+                DatePicker(
+                    "Day",
+                    selection: Binding(
+                        get: { date(from: screen.dayPickerReach.opensOn) },
+                        set: { newDate in
+                            let components = Calendar.current.dateComponents(
+                                [.year, .month, .day], from: newDate)
+                            screen.showDay(
+                                CalendarDate(
+                                    year: components.year!, month: components.month!,
+                                    day: components.day!)!)
+                        }
+                    ),
+                    in: date(from: screen.dayPickerReach.earliest)...,
+                    displayedComponents: [.date]
+                )
+                .labelsHidden()
             }
             if screen.offersGoingBackToToday {
                 Button {
