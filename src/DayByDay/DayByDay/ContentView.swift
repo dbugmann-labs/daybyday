@@ -167,12 +167,48 @@ struct ContentView: View {
                         let entry = row.numberEntry(asOf: today())
                         let noteEntry = row.noteEntry(asOf: today())
                         let totalEntry = row.totalEntry(asOf: today())
+                        // A tick row is exactly the row whose kind offers none of the three
+                        // entries above — the same test the tap action below already makes at
+                        // its own `else`. `row.tick(asOf:)` cannot stand in for this: it guards
+                        // on the date alone and is non-`nil` for every kind (`DayView.swift`),
+                        // so it would put a mark on every unkept row rather than only ticks.
+                        // ADR-1045.
+                        let isTickRow = entry == nil && noteEntry == nil && totalEntry == nil
+                        let isTarget = row.offersAnything(asOf: today())
+                        // Concrete, not `.primary`/`.secondary` — those are hierarchical and
+                        // resolve against the enclosing `Button`'s accent tint, which is the
+                        // whole of why the name reads blue today. ADR-1045 decision 9.
+                        let nameColor: Color = row.isKept ? .secondary : .primary
+                        // Decision 4: the tick kind's own affordance for "not yet kept, but you
+                        // can", in the same slot a kept tick uses — never both, and absent
+                        // rather than dimmed where the row offers nothing (`CONTEXT.md` §
+                        // *Offered*).
+                        let markSystemName: String? =
+                            row.isKept ? "checkmark" : (isTickRow && isTarget ? "circle" : nil)
+                        // Decision 8: the circle keeps the accent, the checkmark takes the
+                        // system green — the concrete `Color.green`, never a hierarchical style,
+                        // so it reads green inside the enclosing `Button` and outside it alike.
+                        // Stated explicitly in both branches, since neither is drawn inside a
+                        // `Button` reliably.
+                        let markColor: Color = row.isKept ? Color.green : .accentColor
+                        // Resets the hierarchy the rhythm inside `commitmentLine` still reads
+                        // `.secondary` against, so it reads grey rather than the Button's accent
+                        // tint, without editing that file. Decision 11: the strikethrough goes on
+                        // this child `Text`, not the composed one — measured (ADR-1045) to stay on
+                        // the name, survive the interpolation and take the child's own colour,
+                        // where `.strikethrough()` on the composed `Text` would draw a second rule
+                        // across the rhythm's own baseline as well.
+                        let nameLine: Text =
+                            commitmentLine(
+                                Text(row.name)
+                                    .foregroundStyle(nameColor)
+                                    .strikethrough(row.isKept),
+                                rhythmInWords: row.rhythmInWords
+                            )
+                            .foregroundStyle(Color.primary)
                         let label = HStack {
                             VStack(alignment: .leading) {
-                                commitmentLine(
-                                    Text(row.name)
-                                        .foregroundStyle(row.isKept ? .secondary : .primary),
-                                    rhythmInWords: row.rhythmInWords)
+                                nameLine
                                 if let totalEntry {
                                     Text(totalEntry.soFarOfTarget)
                                         .font(.caption)
@@ -184,11 +220,12 @@ struct ContentView: View {
                                         .foregroundStyle(.red)
                                 }
                             }
-                            if row.isKept || entry != nil || noteEntry != nil || totalEntry != nil {
+                            if markSystemName != nil || entry != nil || noteEntry != nil || totalEntry != nil {
                                 Spacer()
                             }
-                            if row.isKept {
-                                Image(systemName: "checkmark")
+                            if let markSystemName {
+                                Image(systemName: markSystemName)
+                                    .foregroundStyle(markColor)
                             }
                             if entry != nil || noteEntry != nil || totalEntry != nil {
                                 Image(systemName: "chevron.right")
@@ -196,10 +233,10 @@ struct ContentView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        // `row.offersAnything(asOf:)` decides whether there is a tap at all; the
-                        // four `nil` checks above stay only to decide which sheet a tap opens.
-                        // `design.md` § *The shell rides this Story*.
-                        if row.offersAnything(asOf: today()) {
+                        // `isTarget` decides whether there is a tap at all; the four `nil`
+                        // checks above stay only to decide which sheet a tap opens.
+                        // ADR-1045.
+                        if isTarget {
                             Button {
                                 if let entry {
                                     enteringText = entry.number.map { "\($0)" } ?? ""
@@ -217,7 +254,11 @@ struct ContentView: View {
                                 label
                             }
                         } else {
+                            // Decisions 3 and 5, ADR-1045: a row that offers nothing recedes as
+                            // one thing — the name, the rhythm and any mark fade together rather
+                            // than by three different amounts.
                             label
+                                .opacity(0.5)
                         }
                     }
                 } header: {
