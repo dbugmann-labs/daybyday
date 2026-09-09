@@ -544,11 +544,20 @@ public final class DayScreen {
 
     /// The person has come back to this screen from somewhere else in the app: the roster is read
     /// again and the day view is formed again for the day being shown. Takes no today, moves no
-    /// day, and does not read the record.
+    /// day. Where this screen is keeping a record, that is read again too — a rename or a
+    /// rhythm change made elsewhere reaches every row this screen draws. A screen not keeping a
+    /// record does not start keeping one by being returned to: `design.md` § *A day screen
+    /// returned to now reads its record place again where it is keeping one*.
     public func returnedTo() {
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
+
+        if recordState == .kept {
+            let opened = Self.open(at: recordPlace)
+            self.recordStore = opened.store
+            self.recordState = opened.state
+        }
 
         self.dayView = DayView(
             of: openedRoster.roster.groups(on: shownDay), on: shownDay,
