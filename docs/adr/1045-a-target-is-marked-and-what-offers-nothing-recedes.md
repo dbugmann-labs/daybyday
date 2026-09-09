@@ -1,4 +1,4 @@
-# 1044. A row that is a target is marked, and a row that offers nothing recedes
+# 1045. A row that is a target is marked, and a row that offers nothing recedes
 
 - Status: accepted — the owner's decisions at the Story grill of `add-offered-row-target` (#175) on
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
