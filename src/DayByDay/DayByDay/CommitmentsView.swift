@@ -196,6 +196,10 @@ struct CommitmentsView: View {
                 refusalText(categorisingRefusal)
             }
 
+            if case .movingGroup(_, let movingGroupRefusal) = screen.refusedChange {
+                refusalText(movingGroupRefusal)
+            }
+
             Section("Stopped") {
                 if screen.stopped.isEmpty {
                     Text("Nothing has been stopped.")
