@@ -89,13 +89,13 @@ struct CommitmentsView: View {
             // draws a single `Button` and says nothing about two, so this was open until walked.
             // Each carries the accessibility label the prose in `proposal.md` and `design.md`
             // names, `Move up` and `Move down`, unchanged by drawing an icon instead of the words.
-            // `index` is the group's own position in
+            // `groupIndex` is the group's own position in
             // `screen.keptGroups`, which is `screen.categoriesInUse`'s position too: the group
             // under no category, where there is one, is always last, so every categorised group
-            // sits at the same index in both. Up is `index - 1`, down is `index + 2`, and each is
-            // drawn only where that offset is one `screen.categoriesInUse` has, so no tap can
-            // reach a refusal; nothing here counts rows or asks where a finger is.
-            ForEach(Array(screen.keptGroups.enumerated()), id: \.element.category) { index, group in
+            // sits at the same index in both. Up is `groupIndex - 1`, down is `groupIndex + 2`,
+            // and each is drawn only where that offset is one `screen.categoriesInUse` has, so no
+            // tap can reach a refusal; nothing here counts rows or asks where a finger is.
+            ForEach(Array(screen.keptGroups.enumerated()), id: \.element.category) { groupIndex, group in
                 Section {
                     // Keyed on the commitment's own value, not its position — as the flat list
                     // was before this Story's group move started carrying whole blocks through
@@ -119,8 +119,8 @@ struct CommitmentsView: View {
                         }
                     }
                     .onMove { source, offset in
-                        guard let index = source.first else { return }
-                        screen.move(group.commitments[index], toOffset: offset, under: group.category)
+                        guard let rowIndex = source.first else { return }
+                        screen.move(group.commitments[rowIndex], toOffset: offset, under: group.category)
                     }
                 } header: {
                     if let category = group.category {
@@ -155,17 +155,17 @@ struct CommitmentsView: View {
                         // one another and from having neither; not shrinking the icons instead,
                         // since that would not change what reads as thick — the row.
                         HStack(spacing: 32) {
-                            if index > 0 {
+                            if groupIndex > 0 {
                                 Button {
-                                    screen.move(group: category, toOffset: index - 1)
+                                    screen.move(group: category, toOffset: groupIndex - 1)
                                 } label: {
                                     Image(systemName: "arrow.up")
                                 }
                                 .accessibilityLabel("Move up")
                             }
-                            if index + 2 <= screen.categoriesInUse.count {
+                            if groupIndex + 2 <= screen.categoriesInUse.count {
                                 Button {
-                                    screen.move(group: category, toOffset: index + 2)
+                                    screen.move(group: category, toOffset: groupIndex + 2)
                                 } label: {
                                     Image(systemName: "arrow.down")
                                 }
