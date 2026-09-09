@@ -146,10 +146,12 @@ struct ContentView: View {
                         set: { newDate in
                             let components = Calendar.current.dateComponents(
                                 [.year, .month, .day], from: newDate)
-                            screen.showDay(
-                                CalendarDate(
+                            guard
+                                let picked = CalendarDate(
                                     year: components.year!, month: components.month!,
-                                    day: components.day!)!)
+                                    day: components.day!)
+                            else { return }
+                            screen.showDay(picked)
                         }
                     ),
                     in: date(from: screen.dayPickerReach.earliest)...,

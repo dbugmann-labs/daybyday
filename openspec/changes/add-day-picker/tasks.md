@@ -219,6 +219,26 @@ boxes confirm rather than write, and each is tickable while reading what is alre
 - [x] 6.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff and do not act on findings until they come back
   through the conductor. This box is ticked when the hand-back is written.
+
+  **G7 fix pass, accepted by the repo owner.** Two findings came back and were both fixed in
+  `src/` only, no scenario or test renamed or re-asserted. `ContentView.swift`'s `DatePicker` `set`
+  closure force-unwrapped the `Date` → `CalendarDate` conversion; it now guards it with `guard
+  let ... else { return }`, matching `CommitmentsView.define()`'s identical conversion on identical
+  input — a `nil` (outside 1583–9999) is a no-op rather than a trap. `Roster.earliestKeptFrom`'s
+  `reduce(into:)` became `entries.map(\.commitment.keptFrom).min { $0.days(until: $1) > 0 }`,
+  keeping the convention that `CalendarDate` is compared with `days(until:)` rather than
+  `Comparable`; the reviewer's suggested closure compared with `< 0`, which this pass found inverts
+  the ordering (it settles on the *latest* `keptFrom`, not the earliest — confirmed both by manual
+  trace against `CalendarDate.days(until:)`'s documented sign and against `DayScreen.swift:189`'s
+  existing `a.days(until: b) < 0 ? b : a` "earlier of two" idiom, and empirically with a standalone
+  Swift script), so `> 0` was used instead to preserve the exact behaviour the finding required.
+  `swift test` from `src/DayByDayKit` still reports all **961** tests passing, including the
+  `otherOrder` reversed-entries case in `RosterTests.swift` that a flipped sign would have broken;
+  `xcodebuild build` for the `DayByDay` scheme against an iPhone 17 simulator succeeded; `pnpm run
+  verify` and `pnpm run checks` are both green. Two other findings from the same pass were
+  deliberately left: the day-title wrapping to two lines, left to #182
+  (`shorten-day-title`), and § 4.3's walkthrough evidence standing on the Simulator rather than the
+  phone, already accepted by the owner.
 - [x] 6.5 Write the archive handover for the janitor, into the PR or the hand-back message, saying
   what it must check **after** `/opsx:archive` has run. **The `implementer` ticks this box, in its
   last commit before the archive**, on the evidence that the instruction has been written — the

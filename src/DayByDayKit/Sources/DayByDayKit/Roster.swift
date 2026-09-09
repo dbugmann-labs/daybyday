@@ -40,13 +40,7 @@ public struct Roster: Hashable, Sendable {
     /// The earliest calendar date any commitment this roster holds is kept from, or `nil` where
     /// it holds none at all. `openspec/changes/add-day-picker/design.md` § *The seam*.
     public var earliestKeptFrom: CalendarDate? {
-        entries.reduce(into: nil as CalendarDate?) { earliest, entry in
-            let keptFrom = entry.commitment.keptFrom
-            if let current = earliest, current.days(until: keptFrom) >= 0 {
-                return
-            }
-            earliest = keptFrom
-        }
+        entries.map(\.commitment.keptFrom).min { $0.days(until: $1) > 0 }
     }
 
     /// The commitments this roster keeps, in **groups**: a group is a category, or no category
