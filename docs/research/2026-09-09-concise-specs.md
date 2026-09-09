@@ -1,9 +1,11 @@
 # Making the specs and change folders concise
 
 **Status: a plan, not a decision, and nothing here is implemented.** Recorded 2026-09-09 against
-`main` at `4e64641`, `openspec` 1.10.0. Every line number below is as of that commit. The plan
-is meant to run after `add-commitment-editing` (#148) and `add-day-picker` (#176) merge and
-before the next Story is cut, so that the next Story is the first one written under the new
+`main` at `4e64641`, `openspec` 1.10.0. Every line number below is as of that commit. **Several
+Stories will ship before this plan is taken up** — `add-commitment-editing` (#148) and
+`add-day-picker` (#176) are in flight today and more will follow — so everything measured here
+is a snapshot, and § *Before taking this up* is the step that brings it back to the truth. The
+plan then runs between two Stories, so that the next one cut is the first written under the new
 rules. The seven survey reports it rests on are in `2026-09-09-concise-specs/`, one per spec
 range and one for the change folders; they are the checklists the rewrite Stories work from,
 not background reading.
@@ -242,6 +244,37 @@ source rather than assumed.
   capabilities, and read the survey's *Rules at risk* list against the rewritten requirements
   rather than the whole diff.
 
+## Before taking this up: re-baseline
+
+Every Story that merges after `4e64641` adds or modifies requirements that no survey has read.
+They were written under the old habits, so they carry the same rationale-in-prose and the same
+rules-hidden-in-commentary as everything above, and a rewrite Story that works only from the
+surveys in this folder would trim them blind. The first step of phase 1, before any config lands,
+is therefore to list what shipped and survey it:
+
+```bash
+git fetch origin
+git log --oneline 4e64641..origin/main -- openspec/specs/            # which Stories landed
+git diff 4e64641 origin/main -- openspec/specs/ | grep -E '^\+### Requirement:'   # what they added
+git diff --stat 4e64641 origin/main -- openspec/specs/ docs/adr/       # how much moved, and which ADRs came with it
+```
+
+For each requirement that list names, run the same survey the seven reports were produced by —
+one subagent per capability or per requirement range, read-only, reporting the same five things:
+the per-requirement table (prose words, scenario count, normative / rationale / cross-reference
+split, verdict, words after), **Rules at risk** (sentences that read as rationale but carry a rule
+a test or a later requirement depends on, quoted with line numbers), **Rationale needing a home**
+(which ADR already records it, or none), **Scenario duplication**, and totals. Write each report
+beside the seven here, dated, and refresh the phase 2 table's numbers from them. The survey's
+*Rules at risk* list is what the reviewer works from at G7, so a requirement that is not on one
+is a requirement the rewrite can silently break.
+
+Two more things go stale with the specs. The line numbers in every report and in this document
+are as of `4e64641` and will have drifted; re-anchor by requirement title, never by line. And any
+Story that reopened a change folder after this date is one more data point for the change-folder
+survey — if one grew past the phase 1 budgets, note which rule would have caught it before
+writing the config.
+
 ## The plan
 
 ### Phase 0 — this PR
@@ -250,17 +283,17 @@ Land this document and the seven surveys. Nothing else changes.
 
 ### Phase 1 — stop the growth (one chore, after #148 and #176 merge)
 
-`chore/concise-artifacts`: the `config.yaml` above, the four agent and process edits, an ADR
+`chore/concise-artifacts`, cut once the re-baseline above is done and no Story is between its
+propose and its merge: the `config.yaml` above, the four agent and process edits, an ADR
 recording (a) the artifact budgets and where they are enforced, (b) that a spec may be
 rewritten with no behaviour change as a Story whose delta is MODIFIED-only and whose tests do
 not change, and (c) that the schema is not forked and why. Optionally the advisory lint. Half a
 day of agent work, one PR to read.
 
-One decision sits here. **`add-commitment-editing` (#148) has a worktree but no change folder
-yet**, so if phase 1 merges before its grill, it becomes the first Story written under the new
-rules. That is the cheapest possible rehearsal, and the recommendation is to let it be one;
-the alternative is to sequence phase 1 after #148's propose, which keeps the rehearsal for a
-Story that has not been named yet.
+One decision sits here: **which Story is the rehearsal.** Whatever Story is proposed first after
+phase 1 merges is the first one written under the new rules, and the cheapest test of them. The
+recommendation is to land phase 1 in the gap before an ordinary, small Story rather than before a
+large one, so the first folder read against the budgets is one where an overrun is easy to see.
 
 ### Phase 2 — rewrite the prose, one Story per capability, sequential
 
@@ -273,7 +306,7 @@ Story that has not been named yet.
 | — | `cli-version` | 116 → 103 | 4 | leave alone; it is the reference shape |
 
 Total: 54,287 → ~18,000 prose words (−67%), 153,590 → ~117,000 words overall, roughly 12,500 →
-9,500 lines. The scenarios are untouched, which is why the file count of lines falls by only a
+9,500 lines — **as of `4e64641`; the re-baseline refreshes every figure in this table.** The scenarios are untouched, which is why the file count of lines falls by only a
 quarter while the prose falls by two-thirds.
 
 Each Story runs the ordinary pipeline with three adaptations:
@@ -339,7 +372,7 @@ to them, not cut.
 
 ## Open questions this plan leaves to you
 
-1. Phase 1 before or after #148's propose (see phase 1).
+1. Which gap between Stories phase 1 lands in, and so which Story is the rehearsal (see phase 1).
 2. Whether to add the advisory lint (recommended: yes).
 3. Whether phase 2 stops after `record` (recommended: decide after `commitment` lands).
 4. Whether phase 3 happens at all (recommended: not until the rules have run for a few Stories
