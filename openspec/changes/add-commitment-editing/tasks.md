@@ -287,17 +287,31 @@ signs and these boxes **confirm rather than write**.
   run checks` reporting `188/188 scenario(s) covered`.
 - [x] 11.2 `openspec validate add-commitment-editing --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
-- [ ] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+- [x] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-commitment-editing/` or anywhere under `openspec/specs/` is a **stop**, not a
   merge to resolve (rule 5) — it means another Story landed on `commitment`, `record` or `day-screen`
   while this one was being written, and the ten MODIFIED requirements were extracted verbatim from
   those three specs as they stood at `e908ff8` and were re-checked against `4e64641`, the commit this
   branch sits on at G4 — neither commit changed any file under `openspec/specs/`. **A clean rebase that then fails § 11.2 is the same
   stop**, and it needs a further G4 rather than a quiet refresh of the delta.
-- [ ] 11.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+
+  Rebased onto `476754c` (`add-day-picker`, #186, merged after this branch's G4). One conflict, in
+  `src/DayByDayKit/Tests/DayByDayKitTests/RosterTests.swift` — **not** the change folder and **not**
+  `openspec/specs/`, so not this box's named stop. Both #186 and this delta's `ff978fa` append new
+  tests at the same point at the end of the file (#186's 7 `earliestKeptFrom` scenarios, this delta's
+  17 in § 4); nothing overlapped in substance. `git merge-file`'s own 3-way merge silently dropped the
+  closing `}` of the last shared-context test at that boundary — confirmed by diffing its output
+  against `ours`/`base`/`theirs` directly — so the conflict was resolved by hand from the three staged
+  blobs (`git show :1:`, `:2:`, `:3:`) as base + ours' exclusive tail + theirs' exclusive tail, rather
+  than by trusting the tool's conflict markers. `openspec/specs/` and the change folder rebased clean;
+  G4's digest (`2f23b454d619`) is unchanged. Verified after: `swift test` green at **1017** (this
+  delta's 989 plus #186's 28 new tests, 7 + 21), `pnpm run verify` and `pnpm run checks` both green
+  (`188/188 scenario(s) covered`), and both `openspec validate` commands from § 11.2 re-run clean.
+  Pushed to `origin/story/148-add-commitment-editing` with `--force-with-lease`.
+- [x] 11.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff and do not act on findings until they come back
   through the conductor. This box is ticked when the hand-back is written.
-- [ ] 11.5 Write the archive handover for the janitor, into the PR or the handover message, saying what
+- [x] 11.5 Write the archive handover for the janitor, into the PR or the handover message, saying what
   it must check **after** `/opsx:archive` has run. **The `implementer` ticks this box, in its last
   commit before the archive, on the instruction having been written** — the checking itself is the
   janitor's step and has no box of its own, deliberately: `add-roster-store` (#103) shipped a box that
