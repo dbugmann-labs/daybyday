@@ -203,30 +203,22 @@ struct ContentView: View {
                         let entry = row.numberEntry(asOf: today())
                         let noteEntry = row.noteEntry(asOf: today())
                         let totalEntry = row.totalEntry(asOf: today())
-                        // A tick row is exactly the row whose kind offers none of the three
-                        // entries above — the same test the tap action below already makes at
-                        // its own `else`. `row.tick(asOf:)` cannot stand in for this: it guards
-                        // on the date alone and is non-`nil` for every kind (`DayView.swift`),
-                        // so it would put a mark on every unkept row rather than only ticks.
-                        // ADR-1045.
-                        let isTickRow = entry == nil && noteEntry == nil && totalEntry == nil
                         let isTarget = row.offersAnything(asOf: today())
                         // Concrete, not `.primary`/`.secondary` — those are hierarchical and
                         // resolve against the enclosing `Button`'s accent tint, which is the
                         // whole of why the name reads blue today. ADR-1045 decision 9.
                         let nameColor: Color = row.isKept ? .secondary : .primary
-                        // Decision 4: the tick kind's own affordance for "not yet kept, but you
-                        // can", in the same slot a kept tick uses — never both, and absent
-                        // rather than dimmed where the row offers nothing (`CONTEXT.md` §
-                        // *Offered*).
-                        let markSystemName: String? =
-                            row.isKept ? "checkmark" : (isTickRow && isTarget ? "circle" : nil)
-                        // Decision 8: the circle keeps the accent, the checkmark takes the
-                        // system green — the concrete `Color.green`, never a hierarchical style,
-                        // so it reads green inside the enclosing `Button` and outside it alike.
-                        // Stated explicitly in both branches, since neither is drawn inside a
-                        // `Button` reliably.
-                        let markColor: Color = row.isKept ? Color.green : .accentColor
+                        // Decision 4, reversed by ADR-1045's third amendment: an unkept tick
+                        // row carries no mark at all. The trailing slot holds a mark only where
+                        // the row is kept, so the open `circle` that used to say "not yet kept,
+                        // but you can" is gone and nothing takes its place.
+                        let markSystemName: String? = row.isKept ? "checkmark" : nil
+                        // Decision 8: the checkmark takes the system green — the concrete
+                        // `Color.green`, never a hierarchical style, so it reads green inside
+                        // the enclosing `Button` and outside it alike. It is the only mark this
+                        // slot draws now, and it is still stated explicitly, since it is not
+                        // drawn inside a `Button` reliably.
+                        let markColor: Color = Color.green
                         // Resets the hierarchy the rhythm inside `commitmentLine` still reads
                         // `.secondary` against, so it reads grey rather than the Button's accent
                         // tint, without editing that file. Decision 11: the strikethrough goes on
