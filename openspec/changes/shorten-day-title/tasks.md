@@ -294,7 +294,7 @@ approval still signs this folder and no fourth approval is due.
   could not fail. Added `#expect(screen.title == "Mon")` beside it, matching the scenario's own
   WHEN (Monday 31 August 2026). No rename, no new test — § 7.1's count of 1015 does not move.
   Ticked when the assertion is in and `swift test` is green.
-- [ ] 9.4 **Re-run § 7's checks over the fixed branch and hand back.** `cd src/DayByDayKit && swift
+- [x] 9.4 **Re-run § 7's checks over the fixed branch and hand back.** `cd src/DayByDayKit && swift
   test` green at **1015** — unchanged by all three boxes above; `pnpm run verify` green and `pnpm
   run checks` reporting `112/112 scenario(s) covered` from the repo root; `openspec validate
   shorten-day-title --strict` and `openspec validate --all --strict --no-interactive` both exit 0;
