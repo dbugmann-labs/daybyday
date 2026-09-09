@@ -214,23 +214,23 @@ and these boxes **confirm rather than write**.
 
 ## 8. Before the review, and what the janitor does at the archive
 
-- [ ] 8.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **933**: the 930
+- [x] 8.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **933**: the 930
   the first pass reached — the 885 measured at § 1.1, plus the 28 scenarios § 2 to § 5 added, which is
   913, moved to 930 by the rebase that pulled in the kit tests `add-offered-today-control` (#179) and
   the day-screen category heading fix (#180) — plus the **three** the second G4 adds at § 2.13, § 2.14
   and § 4.10. The rebase onto `e0a4f6d` adds none: #185 touched the shell and `docs/`, not the kit.
   **A number that comes back different is a stop** (rule 5), not a number to write down. From the repo
   root, `pnpm run verify` green and `pnpm run checks` reporting `124/124 scenario(s) covered`.
-- [ ] 8.2 `openspec validate add-category-order --strict` exits 0, and `openspec validate --all
+- [x] 8.2 `openspec validate add-category-order --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
-- [ ] 8.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+- [x] 8.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-category-order/` or anywhere under `openspec/specs/` is a **stop**, not a
   merge to resolve (rule 5) — it means another Story landed on `commitment` while this one was being
   written, and the six MODIFIED requirements were extracted verbatim from the `commitment` spec as it
   stood at `fe540d5`, and were re-checked against `e0a4f6d`, the commit this branch sits on at the
   second G4 — neither commit changed `openspec/specs/commitment/spec.md`. **A clean rebase that then fails
   § 8.2 is the same stop**, and it needs a further G4 rather than a quiet refresh of the delta.
-- [ ] 8.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+- [x] 8.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff and do not act on findings until they come back
   through the conductor. This box is ticked when the hand-back is written.
 - [x] 8.5 Write the archive handover for the janitor, into the PR or the handover message, saying what
