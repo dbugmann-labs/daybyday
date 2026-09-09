@@ -274,60 +274,6 @@ shape it lacks, not the quota.
 - **Open** — the *Decided* line of 2026-09-06 already sends the mood's one tap to the Story that
   enters a number (#139). This entry is that line's missing half: what the affordance actually is.
 
-### B-036 — build a rhythm without being told what it will say
-*Captured 2026-09-07.*
-
-> "The "preview" text when creating a commitment is not needed"
-
-- **Trigger** — every time a commitment is defined. The line sits under the rhythm controls for as
-  long as the form is open, and says what the controls immediately above it are already showing.
-- **Touches** — `commitment` (#26). It asks for a **shipped requirement to be taken back** rather
-  than for something new: *A commitments screen says in words the rhythm its form is building*, five
-  scenarios in `openspec/specs/commitment/spec.md`, drawn by `CommitmentsView.swift:167`. B-028 is
-  the nearest thing already captured and is not the same shape — it narrows when a control appears,
-  this deletes a requirement. Removing it is a delta on `commitment`, so it serialises behind the
-  #144–#148 chain and #142, which all delta that spec (`docs/process.md` §7). The words themselves
-  stay: the list entry says them, and B-025 wants more of them.
-- **Principle** — tested against *an iPhone, in your hand*: **passes by subtraction.** The form is a
-  name, a picker, up to seven toggles, a date and a button on a phone screen, and this is the one
-  row of it a person reads nothing new from.
-- **Open** — the preview earned its place on an argument still on the record: it exists "so that a
-  person reads what their rhythm will say before they commit to it". The owner has now used the form
-  and does not want it, which is evidence that argument did not survive contact — but nobody has said
-  whether that holds for all four rhythm shapes. A weekday set reads off its own toggles; "The 25th"
-  and "Every 14 days" are assembled from a stepper and a number field and arguably do not.
-- **Open** — that same requirement is the only place a rhythm the screen would refuse is described:
-  an empty weekday set says "No day", and a number no schedule can be built on says nothing at all.
-  Deleting the preview deletes both, and the screen then says nothing about such a rhythm until the
-  refusal at define time.
-
-### B-037 — reach the commitment form when I want it, not always under the list
-*Captured 2026-09-07.*
-
-> "Creation of a commitment is not needed as a fixed part of the commitment screen, it should be a
-> button which then opens the commitment creation screen"
-
-- **Trigger** — every visit to the commitments screen, most of which are to read or change what is
-  already kept rather than to add something. The form is a permanent section below both lists, so
-  every one of those visits scrolls past all of it.
-- **Touches** — `commitment` (#26). *A commitments screen defines a commitment from a name, a rhythm
-  and the day it is kept from* says what defining takes and what the roster does with it, and says
-  nothing about where the form sits — so whether this is a delta at all or a shell change under
-  `CONTEXT.md` § *App shell* is the first thing a grill would settle. If it is a delta it serialises
-  behind the #144–#148 chain (`docs/process.md` §7). It moves the same section B-036 wants a line out
-  of, so the two want reading together, and one of them may make the other free.
-- **Principle** — tested against *entered where you stand*: **passes, and it is that principle's own
-  exemption.** A want that puts a second screen in front of something usually loses here, but the
-  rule is about the five daily visits and defining a commitment is not one of them. The principle
-  says as much itself — "a screen for *looking* is not a daily visit and is not what this rules out"
-  — and a screen for defining is the same kind of rare, deliberate act.
-- **Open** — a pushed screen, or a sheet? The want says "screen"; on a phone a sheet is the cheaper
-  thing that reads the same way, and it is a real choice rather than an implementation detail,
-  because a sheet keeps the list behind it and a screen does not.
-- **Open** — does the form behind that button also serve editing? #148 `add-commitment-editing` will
-  need somewhere to put a name and a rhythm, and if it is this form then this want is the screen that
-  Story lands in rather than a thing of its own.
-
 ### B-039 — be reminded to record a day before it is gone
 *Captured 2026-09-08, from the sixth grooming sweep. The wording is the sweep's.*
 
@@ -388,11 +334,62 @@ decision it records is the owner's, twice.*
   not in the SDK this project builds against, and its `sources` are item ids. Worth re-reading
   before anyone hand-writes a gesture again.
 
+### B-042 — act on a commitment with one swipe, and keep the mode for reordering
+
+*Captured 2026-09-09, after the phone walk of `add-commitment-editing` (#148).*
+
+> "I was thinking to rename the 'Edit' just to 'Reorder', and to offer editing (Edit / Remove /
+> Stop / Resume) as swipe actions.. what is your suggestion here, and what is state of the art?
+> you can also think about 2 different swipe actions (left / right)"
+
+> "Category as a swipe action is really not needed anymore, it can be done with the edit, so this
+> has to be removed"
+
+> "I want to have icons instead of words for the swipe actions - just nicer"
+
+- **Trigger** — every visit to the commitments screen that is not just reading it: stopping
+  something, renaming it, getting rid of it. Today each of those either needs a mode entered first
+  or sits in a row of word-labelled buttons that grows every time a Story adds one.
+- **Touches** — `commitment` (#26). Three of the four acts already have shipped requirements and
+  seams behind them and are only being re-reached — `askToStopKeeping`/`confirmStopKeeping`,
+  `askToRemove`/`confirmRemoving`, `keepAgain`, and the change sheet #148 landed. **The fourth is
+  not**: dropping the *Category* swipe leaves `CommitmentsScreen.put(_:under:)` with no caller in
+  the app, so *A commitments screen puts a commitment under a category, and offers the categories
+  in use* would be a shipped, tested requirement nothing can reach. That is the delta, and it is
+  why this is a Story rather than a chore.
+- **Principle** — tested against *five percent of seven things*: **it loses**, as B-041 does. Every
+  act it touches already works; this makes them nicer to reach. *An iPhone, in your hand* is what
+  argues for it, and the honest weight is that the owner walked the feature on the phone and this
+  is what they came back with.
+- **Open** — which edge carries what. The suggestion made at capture, on Mail's and Reminders'
+  convention: **leading edge Edit**, benign and most frequent; **trailing edge Stop-or-Resume then
+  Remove**, destructive outermost so a full swipe removes. Never more than three a side before the
+  labels truncate. Not decided.
+- **Open** — icons or words. Icons are what Mail uses and they fit more per side, but they are
+  learned rather than read, and *Stop keeping* is not a verb with an obvious glyph. The want asks
+  for icons; whether every one of the four has an icon a person will guess is the question.
+- **Open** — does the renamed *Reorder* mode keep anything but `.onMove`? If editing leaves it,
+  the mode does one thing, and a mode that does one thing may not need to be a mode at all.
+- **Open** — this reverses a decision taken hours earlier, and deliberately: the grill of #148
+  settled at Q12 that the sheet and the swipe both set a category, and the phone walk changed the
+  owner's mind. Recorded so the next pass does not read it as an oversight.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-09 — reach the commitment form when I want it, not always under the list (B-037), and
+  build a rhythm without being told what it will say (B-036) → both **shipped**, inside
+  `FEAT: commitment` (#26), Story #148 `add-commitment-editing`, merged 2026-09-09. Neither was in
+  that Story's accepted breakdown: they were taken into it during its grill, by the owner's
+  decision, because a dedicated edit sheet beside a permanent define section is two forms that
+  drift — so the one sheet serves defining and changing, reached by a `+` in the toolbar, and the
+  rhythm-preview requirement was deleted outright as a REMOVED requirement, the first this
+  repository has written. B-037's own open question is answered: a sheet, not a pushed screen.
+  #26's G2 comment records a five-Story breakdown that does not carry either of them and is owed
+  an amendment. B-042 above reworks the same row a third time.
 
 - 2026-09-08 — **dropped**: tick a habit phrased as a negative, where ticking records that it was
   *not* done (B-005). Already covered: the Feature grill that reopened `FEAT: record` (#53) on
