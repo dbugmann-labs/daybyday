@@ -175,6 +175,60 @@ public final class RecordStore {
         history.removeLastAddition(for: commitment, on: date)
     }
 
+    /// Carries every record held of `commitment` over to `changed`, kept at `place` before this
+    /// returns. `false` is the history's own refusal, reported without an error and without a
+    /// write; a place that could not be written throws, as every other change does. See
+    /// `openspec/specs/record/spec.md` § *A store carries every record of one commitment over to
+    /// another, at its place*.
+    @discardableResult
+    public func carryOver(_ commitment: Commitment, to changed: Commitment) throws -> Bool {
+        var nextHistory = history
+        guard nextHistory.carryOver(commitment, to: changed) else {
+            return false
+        }
+        guard nextHistory != history else {
+            return true
+        }
+
+        // The history's own carry-over already refused where any record could not re-form
+        // under `changed`, so every force-unwrap below is re-running formation the history has
+        // already proven succeeds.
+        var nextTicks = ticks
+        for tick in ticks where tick.commitment == commitment {
+            nextTicks.remove(tick)
+            nextTicks.insert(Tick(changed, on: tick.date)!)
+        }
+
+        var nextNumbers = numbers
+        for (day, value) in numbers where day.commitment == commitment {
+            nextNumbers[day] = nil
+            nextNumbers[RecordedDay(commitment: changed, date: day.date)] = value
+        }
+
+        var nextNotes = notes
+        for (day, text) in notes where day.commitment == commitment {
+            nextNotes[day] = nil
+            nextNotes[RecordedDay(commitment: changed, date: day.date)] = text
+        }
+
+        var nextAdditions = additions
+        for (day, amounts) in additions where day.commitment == commitment {
+            nextAdditions[day] = nil
+            nextAdditions[RecordedDay(commitment: changed, date: day.date)] = amounts
+        }
+
+        try write(
+            ticks: nextTicks, numbers: nextNumbers, notes: nextNotes, additions: nextAdditions)
+
+        ticks = nextTicks
+        numbers = nextNumbers
+        notes = nextNotes
+        additions = nextAdditions
+        history = nextHistory
+
+        return true
+    }
+
     /// Writes `nextTicks`, `nextNumbers`, `nextNotes` and `nextAdditions` as the whole document,
     /// in the byte-stable form `design.md` § *The form on disk* fixes: `.sortedKeys` so a keyed
     /// container's keys do not follow Foundation's per-process hash order, on top of
