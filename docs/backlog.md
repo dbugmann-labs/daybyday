@@ -486,11 +486,15 @@ months later.
   requirement, so there is nothing for a Story to specify. Kept is a dimmed name and a plain
   checkmark, no colour, no animation — the row goes quiet. Lands before #100, since there is
   nothing to say a tick was *not* kept while nothing shows that one was. **Amended 2026-09-09** by
-  ADR-1044, after the branch was built onto the phone and looked at: a kept row's name is **struck
-  through**, and the checkmark's grey is now stated rather than inherited. The line reads *a
-  struck-through dimmed name and a plain grey checkmark, no animation — the row goes quiet.*
-  "No colour" **stands**: the accent was tried on the checkmark at the grill of #175 and rejected
-  on the phone, and only the circle an unkept tick row offers takes it.
+  ADR-1044, over two looks at the built app: a kept row's name is **struck through**, and the
+  checkmark takes the **system green**. The line reads *a struck-through dimmed name and a plain
+  green checkmark, no animation.* "No colour" is **withdrawn**, and only for the checkmark — the
+  circle an unkept tick row offers takes the accent, and the accent was tried on the checkmark
+  first and rejected. **The row no longer goes quiet in the way this line meant**: that clause was
+  written when the mark was plain, and green is the canonical congratulation colour, so this is
+  the closest the app has come to `CONTEXT.md` § *Nothing congratulates you*. The objection was
+  put to the owner in those terms and overruled; ADR-1044 § *Decision 8* carries both sides and
+  the trigger for reopening it.
 - 2026-09-03 — be told when a tick I made was not kept → Story #100 `add-refused-tick-notice`,
   under `FEAT: day-screen` (#27), appended to the chain after #93. The refusal is told on the row
   that was tapped and stays until the app is shown again or a tick on any row is kept — the
