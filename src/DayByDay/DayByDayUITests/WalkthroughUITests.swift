@@ -21,6 +21,15 @@ final class WalkthroughUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
+        // Moved a day back before either assertion below, so the *Today* button is proved rather
+        // than assumed: `add-offered-today-control` (#174) hides it on the today the screen was
+        // handed, and this is the one control this smoke layer would otherwise never see drawn.
+        // The move itself is ADR-1042's horizontal swipe on the list, the same recognizer a row
+        // that offers nothing still sits under.
+        let list = app.collectionViews.firstMatch
+        _ = list.waitForExistence(timeout: 60)
+        list.swipeRight()
+
         // The three fixed controls of the day screen. If the body failed to build, or a binding
         // was misspelled so a subtree never rendered, this is where it shows.
         XCTAssertTrue(

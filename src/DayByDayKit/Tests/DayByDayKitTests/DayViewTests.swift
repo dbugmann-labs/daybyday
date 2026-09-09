@@ -2393,3 +2393,139 @@ func twoDayViewsDifferingOnlyInAGroupNoneOfWhoseCommitmentsIsDueAreTheSameDayVie
     #expect(first.groups.first?.rows.map(\.name) == ["Gym"])
     #expect(first == second)
 }
+
+@Test("a row of every kind offers something on a day that has arrived")
+func aRowOfEveryKindOffersSomethingOnADayThatHasArrived() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let target = Commitment.Target(120)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, weight, journal, protein], on: monday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Weight", "Journal", "Protein"])
+    #expect(dayView.rows.allSatisfy { $0.offersAnything(asOf: monday) })
+}
+
+@Test("no row of a day view whose date has not arrived offers anything")
+func noRowOfADayViewWhoseDateHasNotArrivedOffersAnything() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let target = Commitment.Target(120)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let dayView = DayView(of: [gym, weight, journal, protein], on: wednesday, in: history)
+
+    #expect(dayView.rows.map(\.name) == ["Gym", "Weight", "Journal", "Protein"])
+    #expect(dayView.rows.allSatisfy { !$0.offersAnything(asOf: monday) })
+}
+
+@Test("a row for a date earlier than the day it is asked as of offers something")
+func aRowForADateEarlierThanTheDayItIsAskedAsOfOffersSomething() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let history = History()
+
+    let dayView = DayView(of: [gym], on: monday, in: history)
+    let row = dayView.rows[0]
+
+    #expect(row.offersAnything(asOf: saturday))
+    #expect(row.tick(asOf: saturday) == Tick(gym, on: monday))
+}
+
+@Test("a row's answer about offering anything follows the day it is asked as of")
+func aRowsAnswerAboutOfferingAnythingFollowsTheDayItIsAskedAsOf() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let history = History()
+
+    let dayView = DayView(of: [weight], on: wednesday, in: history)
+    let row = dayView.rows[0]
+
+    #expect(!row.offersAnything(asOf: tuesday))
+    #expect(row.offersAnything(asOf: wednesday))
+}
+
+@Test("a row offers something whether or not its day says the commitment is kept")
+func aRowOffersSomethingWhetherOrNotItsDaySaysTheCommitmentIsKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var keptHistory = History()
+    keptHistory.add(Tick(gym, on: monday)!)
+
+    let notKeptDayView = DayView(of: [gym], on: monday, in: History())
+    let keptDayView = DayView(of: [gym], on: monday, in: keptHistory)
+
+    #expect(!notKeptDayView.rows[0].isKept)
+    #expect(keptDayView.rows[0].isKept)
+    #expect(notKeptDayView.rows[0].offersAnything(asOf: monday))
+    #expect(keptDayView.rows[0].offersAnything(asOf: monday))
+}
+
+@Test("a total row whose day holds no addition offers something")
+func aTotalRowWhoseDayHoldsNoAdditionOffersSomething() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var addedHistory = History()
+    addedHistory.add(Addition(30, for: protein, on: monday)!)
+
+    let emptyDayView = DayView(of: [protein], on: monday, in: History())
+    let addedDayView = DayView(of: [protein], on: monday, in: addedHistory)
+
+    #expect(!emptyDayView.rows[0].offersTakeBackLast(asOf: monday))
+    #expect(addedDayView.rows[0].offersTakeBackLast(asOf: monday))
+    #expect(emptyDayView.rows[0].offersAnything(asOf: monday))
+    #expect(addedDayView.rows[0].offersAnything(asOf: monday))
+}
+
+@Test("a row offers something on its own date in the first supported year and in the last")
+func aRowOffersSomethingOnItsOwnDateInTheFirstSupportedYearAndInTheLast() {
+    let firstKeptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let firstGym = Commitment(name: "Gym", schedule: schedule, keptFrom: firstKeptFrom)!
+    let firstDate = CalendarDate(year: 1583, month: 1, day: 3)!
+    let history = History()
+
+    let firstDayView = DayView(of: [firstGym], on: firstDate, in: history)
+    #expect(firstDayView.rows[0].offersAnything(asOf: firstDate))
+
+    let lastDate = CalendarDate(year: 9999, month: 12, day: 27)!
+    let lastDayView = DayView(of: [firstGym], on: lastDate, in: history)
+    #expect(lastDayView.rows[0].offersAnything(asOf: lastDate))
+    #expect(!lastDayView.rows[0].offersAnything(asOf: firstDate))
+}

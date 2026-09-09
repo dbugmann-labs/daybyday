@@ -166,6 +166,13 @@ public final class DayScreen {
         dayView.title(asOf: today)
     }
 
+    /// Whether this screen offers the way back to the today it was handed: `true` exactly where
+    /// the day being shown is not that today. Reads no clock; the today is the one this screen
+    /// was last handed, at `init` or at `shown(asOf:)`.
+    public var offersGoingBackToToday: Bool {
+        shownDay != today
+    }
+
     /// Anything but `.kept` means the day is drawn from no record at all and no tick is taken.
     public private(set) var recordState: RecordState
 
