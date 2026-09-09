@@ -787,9 +787,11 @@ at.
 **and** a day it is showing, and they are two things. They coincided only while a screen could be on
 no day but today; once it can be moved, the day being looked at is one the person chose and the
 today is still the fact about the device the shell handed over. Every question the screen asks *as
-of* a day — whether a row offers its tick, whether the day title says *Today* — is asked as of the
-today, and never as of the day being shown, which is the whole of what § *Today* above warned
-about.
+of* a day — whether a row offers its tick, whether the screen **offers** the way back to today — is
+asked as of the today, and never as of the day being shown, which is the whole of what § *Today*
+above warned about. **The day title is no longer one of them.** It said *Today* on the one day it
+was asked as of until `shorten-day-title` (#182) took that word out; it is now read off the day
+being shown alone, and whether that day is the today is the offered answer's to give.
 
 **Day navigation** — going from one day view to the day view of the day before it or the day after
 it, one calendar day at a time. It is a question about a date and about nothing else: it never asks
@@ -843,6 +845,16 @@ the one way it differs from the `Today` button beside it. Distinct from the **co
 date picker, which picks the day a commitment is **kept from**: that one picks a date to define a
 commitment, this one picks a day to look at, and they are never the same control. Agreed 2026-09-09
 at the grill of `add-day-picker` (#176).
+
+**Amended 2026-09-09**, at the grill of `shorten-day-title` (#182). The picker sits **between the
+chevrons**, and it is **what says the date** — the day of the month, the month and the year the day
+screen is showing. It is still its own control and still not the **day title**, but the sentence
+above saying it sits beside the title rather than where the title's date was no longer holds: the
+title kept only its weekday, and the date it gave up is the picker's. Two things follow and are part
+of the amendment. The date is drawn by the platform, so it is said in **the device's** words and not
+the app's — the one place in this app where that is true, taken deliberately and at the cost that
+nothing the app owns can state which date is on screen. And the picker is now the answer anything
+asks when it needs to know *which* day a screen is showing, which is the day its **reach** opens on.
 
 **Reach** — what a day screen says about its **day picker**, as one answer rather than as two dates
 anything outside could have worked out: the day the picker opens on, which is the day being shown,
@@ -1143,6 +1155,21 @@ and the day title is nothing but its words. ADR-1022. Agreed 2026-09-03 at the g
 `add-screen-date` (#92); the two halves of the form that were preferences rather than facts —
 *Today* in front of the date rather than in place of it, and the year said whatever year it is asked
 in — were put to the owner as that grill's question round and answered by him the same day.
+
+**Amended 2026-09-09**, at the grill of `shorten-day-title` (#182). A day title is **the name of the
+weekday and nothing else** — "Wed" — in the three-letter form `schedule` already says a rhythm's
+weekdays in, so the app carries one abbreviation rule rather than two. No day of the month, no
+month, no year, and no *Today* in front of it. It is therefore **no longer asked as of a day**: the
+day it was asked as of decided the word *Today* and nothing else, and with that word gone nothing is
+left for it to decide, so a day title is the same words whatever day the question is asked on and
+two dates sharing a weekday have the same title however far apart they are. What a day title can no
+longer do is say *which* day is being shown or whether that day is the **today**; those are the
+**day picker**'s and the **offered** way back to today's, and a caller wanting either asks for it by
+name. Everything else about the term stands, the sentence above about the words being the app's own
+included — it is seven weekday names that are fixed here now rather than nineteen names and a form.
+The **date** is no longer the app's to say at all: the day picker beside the title renders it, in
+whatever words the device uses, which is the half of ADR-1022 this Story reverses and the reason
+nothing the app owns can state which date is on screen. ADR-1022, amended the same day.
 
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
