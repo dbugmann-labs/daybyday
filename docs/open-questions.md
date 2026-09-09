@@ -436,23 +436,20 @@ Things that are built, or deliberately not built, in a state someone will trip o
   neither keeps a splitter. It is below the seam and changes no behaviour, so it needs no delta and
   no G4: a chore, or whatever next touches `Digits`. `Digits.swift` arrives with #141 and is not on
   `main` yet.
-- **A reordered row leaves its old place empty for about a second, on the phone, and the cause is
-  unexplained.** Surfaced at `add-commitment-category` (#147)'s § 9.5 walkthrough and carried here
-  from `grill.md` § *Left open* 5 and `design.md` § *Open Questions* 7, which archive with the
-  change. The obvious cause is dead: `RosterStore.write` measures 13ms and the whole of
-  `CommitmentsScreen.move` 16ms, so it is not the disk write. A recorded simulator reorder settles
-  in 0.2–0.4s, and the lag has never reproduced off the phone. The remaining candidate nobody has
-  excluded is that the rows are keyed by position — and that keying is not something #147
-  inherited: G7 review found it introduced inside this diff, at `CommitmentsView.swift:79`, where
-  the kept list's per-group `ForEach` reads `id: \.offset`. On `main` before this Story the same
-  list was one flat `ForEach(screen.kept, id: \.self)` — keyed on the commitment's own value, not
-  its position — so #168 starts from a narrower place than "rows are keyed by position somewhere
-  upstream": the candidate sits inside the change that surfaced the lag. It still belongs to #168,
-  which will hold a drag on a real device — not fixed here, because no requirement in this delta is
-  about how long a list takes to settle, and no fix is proposed on the strength of where the keying
-  came from alone. Recorded 2026-09-08, at #147's close-out; corrected 2026-09-08 at G7.
 
 ## Settled
+
+- 2026-09-09 — **the reordered-row lag was the kept list's per-group `ForEach` keyed on
+  `\.offset`, introduced by #147, and keying it on the commitment's own value instead fixed it.**
+  Open since #147's § 9.5 walkthrough, narrowed at #147's own G7 to `CommitmentsView.swift:79`:
+  `main` before #147 read the kept list as one flat `ForEach(screen.kept, id: \.self)`, and #147's
+  diff was the one that switched it to `id: \.offset`. #168 (`add-category-order`) moved whole
+  blocks through that same line and, per `tasks.md` § 6.3, tried the fix the entry named as the
+  remaining candidate — keying the per-group `ForEach` back on the commitment's own value
+  (`id: \.self`) rather than its position. The lag was gone on the walk that also confirmed this
+  Story's own group-move actions, 2026-09-09. **Confirmed by one walk, not measured** — the earlier
+  simulator timings that could not reproduce it off the phone were not repeated here, only the
+  phone symptom itself, watched for and not seen.
 
 - 2026-09-08 — **every kind's row now offers something, so a commitment of a kind nothing can
   record is a state nothing can reach.** Open since #137's G7 as *A commitment of a kind nothing can
