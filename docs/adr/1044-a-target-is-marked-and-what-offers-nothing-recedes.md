@@ -4,6 +4,11 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-09 — the branch was built onto the owner's phone and two things came back. The
+  checkmark gives up the accent and takes the grey of the name beside it, which is the conductor's
+  recommendation at decision 8 — rejected when it was argued and taken when it was seen — and a
+  kept row's name is now struck through as well (decision 11). The circle keeps the accent, and
+  everything this record says about a day that has not arrived stands untouched.
 - Deciders: Diego Bugmann
 
 ## Context
@@ -51,11 +56,12 @@ carrying the whole signal on the one kind that has the most rows. Category headi
 headers at `:222` and after, outside the per-row branch entirely.
 
 **Why this is a record and not just a diff.** Two of the decisions below spend things that were
-already spent. One puts colour on a kept mark, which `chore/draw-kept` decided against by name. The
-other settles what marks a row's two states for every kind of commitment added after today, in a
-place — the trailing slot — that holds exactly one thing at a time. Neither is visible from the
-requirement, because the requirement deliberately says nothing about looks; a later grill asking why
-a kept checkmark is blue would otherwise find only a shell commit.
+already spent. One draws on a kept row, which `chore/draw-kept` settled by name: its mark's colour
+stops being inherited and its name gains a strikethrough. The other settles what marks a row's two
+states for every kind of commitment added after today, in a place — the trailing slot — that holds
+exactly one thing at a time. Neither is visible from the requirement, because the requirement
+deliberately says nothing about looks; a later grill asking why a kept checkmark is grey while the
+circle above it is blue would otherwise find only a shell commit.
 
 ## Decision
 
@@ -83,9 +89,9 @@ trailing mark or none. This gives the tick kind the affordance every other kind 
 slot, and it is what makes decision 3's "mark the target" true on the rows there are most of.
 
 **5. A row that offers nothing fades.** One opacity over the whole label, so the name, the rhythm and
-any checkmark recede together as one thing rather than three. Grey was rejected as the axis:
-`.secondary` on a name already means *kept* (`chore/draw-kept` — "Kept is a dimmed name and a plain
-checkmark, no colour, no animation"), and a second meaning for grey would make a kept row and a row
+any checkmark recede together as one thing rather than three. Grey was rejected as the axis: a grey
+name already means *kept* (`chore/draw-kept`, and decisions 8 and 11 below, which give a kept row a
+grey mark and a struck name as well), and a second meaning for grey would make a kept row and a row
 for a day that has not arrived read alike.
 
 **The opacity value is not a decision, and this record does not fix one.** It is the implementer's to
@@ -101,17 +107,35 @@ a day that has not arrived — the fade is about what a row offers, and it belon
 circle. The two marks say different and simultaneously true things: a chevron means the tap opens a
 sheet, a circle means it toggles in place.
 
-**8. Both trailing marks take the accent — a blue circle and a blue checkmark.** This is a deliberate
-**amendment to `chore/draw-kept`'s "no colour"**, and it also settles the checkmark's tint, which
-until now was inherited and therefore blue inside a `Button` and the label colour outside one with
-nothing having chosen either. *Taken against the conductor's recommendation*, which was a coloured
-control and a quiet, uncoloured statement — a blue circle for the thing you can tap and a plain
-checkmark for the thing that is merely so — argued from `CONTEXT.md` § *Nothing congratulates you*,
-on the ground that colouring a kept mark is the app being pleased with you. The owner's answer is
-that the two marks occupy one slot and swap into each other on a tap, so a colour change riding along
-with the shape change reads as a second event; one accent across both makes the tick and the take-back
-one control that changes shape. *Nothing congratulates you* is untouched by it — the mark still
-appears and nothing accumulates, celebrates or counts.
+**8. The circle takes the accent; the checkmark takes the grey of the name beside it.** A coloured
+control and a quiet, uncoloured statement: blue for the thing you can tap, grey for the thing that is
+merely so. Both styles are **stated explicitly at the one place the mark is drawn, which is what
+makes them true inside the `Button` and outside it alike** — that half of this decision has never
+moved and matters more now than it did, because an unstyled mark inherits the accent inside a
+`Button` and the label colour outside one, and grey is neither of those. The grey is the same one a
+kept name takes, so a kept row's name and its mark recede together as one thing rather than two.
+`chore/draw-kept`'s "no colour" was withdrawn by this decision for one day and now stands again.
+
+**This decision was reversed by looking at the built app, and the position it now holds is the one
+this record names as the conductor's rejected recommendation.** It first read *both trailing marks
+take the accent — a blue circle and a blue checkmark*, taken against that recommendation, on the
+owner's argument that the two marks occupy one slot and swap into each other on a tap, so a colour
+change riding along with the shape change reads as a second event, where one accent across both makes
+the tick and the take-back one control that changes shape. That is a good argument and it is why the
+accent was built rather than talked about. It was built, put on the phone with `pnpm run phone`, and
+the owner's words on seeing it were: *"i don't like it too much that the checkmark has the same color
+as the circle."* What the argument predicted — a tap reading as two events — is not what a screen full
+of blue checkmarks turned out to be about; a kept mark holding the same colour as a mark you can press
+makes a row that is finished go on asking for a press. Asked what the checkmark should take instead,
+the owner chose grey matching the name over the plain label colour and over dropping the mark
+altogether.
+
+The conductor's argument for the same shape — from `CONTEXT.md` § *Nothing congratulates you*, that a
+mark saying you did the thing is the last place this product should spend colour — did not win the
+decision. The phone did. Both arguments are kept above because a reader deserves to see what was tried
+and what changed it, and because this is the strongest thing in the record about why the shell gets
+built and looked at at all (ADR-1019): an argument that reads as sound in a round can be settled in
+one sentence by five seconds of holding the thing.
 
 **9. The name takes the plain label colour, no longer the accent.** Names read as text and controls
 read as controls, and the kept dimming from `chore/draw-kept` now reads against plain rather than
@@ -119,6 +143,23 @@ against blue.
 
 **10. The chevron stays grey.** A disclosure chevron is a hint about what happens next rather than the
 control itself, and grey is the platform's convention for one. It is not brought under decision 8.
+
+**11. A kept row's name is struck through, and only the name.** The owner, on seeing the branch on
+the phone: *"when something is ticked, it would be nice if it is striked through, to make it even
+more clear that it is done."* The strikethrough **covers the name and stops there — the rhythm beside
+it is not struck.** Asked directly whether to strike the whole line, the owner chose the name
+alone: striking the name says *this day is done*, while the rhythm is what the commitment runs on and
+is exactly as true after the tick as before it, so a rule through it would say something false.
+
+This composes with what is already there rather than replacing any of it. **A kept row is a
+struck-through, dimmed name, a grey checkmark, and no animation.** It follows `row.isKept` and
+nothing else, so a kept row that also offers nothing gets decision 5's opacity riding over the whole
+label exactly as it rides over the mark — the two are different axes and they stack.
+
+It is on the right side of `CONTEXT.md` § *Nothing congratulates you*, and one clause is enough
+because a later reader will check: a rule through a name is a statement that the day is done, in the
+same class as the checkmark beside it — it accumulates nothing, counts nothing and celebrates
+nothing, and the row still goes quiet.
 
 **Two things the grill considered and refused.** A **faded circle** on a row that offers nothing was
 refused: that is drawn-and-inert, and `CONTEXT.md` § *Offered* says a screen draws as a target only
@@ -130,31 +171,36 @@ is covered without any of this being reopened.
 ### Where each decision lands, and which of them a person sees every day
 
 Everything below is in `src/DayByDay/DayByDay/ContentView.swift`, in the per-row `ForEach` of
-`dayList` at roughly `:166`–`:222`. Nothing outside that file changes, and nothing in
-`src/DayByDayKit` changes at all.
+`dayList` at roughly `:166`–`:251`. Nothing outside that file changes, and nothing in
+`src/DayByDayKit` changes at all. **The line numbers are read off `1c16c20`, the branch as built**,
+rather than off the pre-implementation file this table was first written against.
 
 | Decision | Where | Seen when |
 |---|---|---|
-| 4 — open `circle` on an unkept tick row | the trailing slot, `:187`–`:197` | **every day**, on most rows |
-| 8 — accent on both trailing marks | the same slot | **every day**, on every marked row |
-| 9 — plain label colour on the name | `:172`–`:175`, at the call to `commitmentLine` | **every day**, on every row |
-| 3, 5 — the whole label recedes | the bare-label branch at `:219` | only a day that has not arrived |
-| 6 — headings, title, chevrons and *Today* untouched | `:222` and the day header above `dayList` | — |
-| 7, 10 — chevron unchanged, no circle beside it | `:193`–`:197` | — |
+| 4 — open `circle` on an unkept tick row | chosen at `:187`–`:188`, drawn at `:215`–`:218` | **every day**, on most rows |
+| 8 — accent on the circle, grey on the checkmark | a colour derived beside `markSystemName`, applied at `:217` | **every day**, on every marked row |
+| 9 — plain label colour on the name | `:181`, and the composition at `:192`–`:197` | **every day**, on every row |
+| 11 — a kept row's name is struck through | `:194`, on the child `Text` handed to `commitmentLine` | **every day**, on every kept row |
+| 3, 5 — the whole label recedes | the bare-label branch at `:245`–`:250` | only a day that has not arrived |
+| 6 — headings, title, chevrons and *Today* untouched | `:253` and the day header above `dayList` | — |
+| 7, 10 — chevron unchanged, no circle beside it | `:219`–`:223` | — |
 
-Decisions 4, 8 and 9 change the screen the owner looks at five times a day; decisions 3 and 5 change
-only a day that has not arrived. That split is worth knowing before the phone build, because most of
-what will look different is not the thing this record was opened for.
+Decisions 4, 8, 9 and 11 change the screen the owner looks at five times a day; decisions 3 and 5
+change only a day that has not arrived. That split is worth knowing before the phone build, because
+most of what will look different is not the thing this record was opened for — and it is what the
+phone build then proved, since both of the changes it sent back were about a day that has arrived.
 
 ## Consequences
 
-- **`docs/backlog.md` § *Decided* is amended, not this file's predecessor.** The decision decision 8
-  amends is not in an ADR: it is the 2026-09-03 `chore/draw-kept` line in that ledger, which read
-  "Kept is a dimmed name and a plain checkmark, no colour, no animation — the row goes quiet." As of
-  this record it reads: *kept is a dimmed name and a plain checkmark in the accent colour, no
-  animation — the row goes quiet.* The dimming, the plainness of the mark and the absence of animation
-  all stand; only "no colour" is withdrawn, and only for the trailing mark. Updating that line is the
-  conductor's, not this branch's.
+- **`docs/backlog.md` § *Decided* is amended by this record, and now twice.** The decision decisions
+  8 and 11 touch is not in an ADR: it is the 2026-09-03 `chore/draw-kept` line in that ledger, which
+  read "Kept is a dimmed name and a plain checkmark, no colour, no animation — the row goes quiet."
+  This record's first version put the accent on that checkmark; the phone took it off again. As the
+  record now stands the line reads: *kept is a struck-through dimmed name and a plain grey checkmark,
+  no animation — the row goes quiet.* So "no colour" is **restored** rather than withdrawn — what the
+  line actually gains is the strikethrough, and a grey that is now stated rather than inherited.
+  Updating that line is the conductor's, not this branch's: **`chore/mark-the-offered-row` does not
+  edit `docs/backlog.md`.**
 - **The trailing slot is now spent for the tick kind in both its states.** A later want for a third
   thing on a tick row — a long-press affordance, a per-row indicator — has no trailing slot to use and
   must find another place, in the way ADR-1042 spent the horizontal swipe. That is the price of
@@ -164,9 +210,9 @@ what will look different is not the thing this record was opened for.
   the commitment's kind (`DayView.swift:64`–`:72`) — so `row.tick(asOf: today()) != nil` would put a
   circle on unkept number, note and total rows as well. The test for "this row's tap makes a tick" is
   the one the file already makes twice: the row offers something *and* `numberEntry`, `noteEntry` and
-  `totalEntry` are all `nil` (`:193`, and the `else` at `:213`–`:216` that calls `screen.tick(row)`).
-  Use that, and prefer deriving it once beside the three `let`s at `:167`–`:169` over writing the
-  condition a third time.
+  `totalEntry` are all `nil`. It is derived once as `isTickRow` at `:176`, beside the three `let`s at
+  `:167`–`:169`, rather than written a third time next to the `else` at `:239`–`:241` that calls
+  `screen.tick(row)`.
 - **Decision 9 is a change of style *kind*, not of colour name.** `.primary` and `.secondary` are
   hierarchical, which is precisely why the name is blue inside a `Button` today; asking for the label
   colour means a concrete style rather than a hierarchical one at that call site. The hyphen and the
@@ -176,15 +222,49 @@ what will look different is not the thing this record was opened for.
   `CommitmentsView`, whose rows are not inside a `Button` and are therefore already drawing the label
   colour, so nothing there should move: whatever achieves this belongs at the day screen's call site
   and not inside `CommitmentLine.swift`.
-- **The accent on the trailing marks has to be asked for, in both branches.** A checkmark inside a
-  `Button` is accent-tinted by inheritance today and one outside a `Button` is not, so decision 8 is
-  only satisfied when the mark is given the accent explicitly — otherwise a kept row on a day that has
-  not arrived keeps drawing a label-coloured checkmark and decision 8 is half true. Give the mark its
-  own style and let decision 5's opacity ride over it.
+- **Both trailing marks have to be styled explicitly, and they no longer take the same style.** They
+  are drawn by one `if let markSystemName` at `:215`–`:218`, so the colour is a second value derived
+  beside `markSystemName` at `:187` — `let markColor: Color = row.isKept ? .secondary : .accentColor`
+  — and not a second branch in the body. **The grey must be the concrete `Color.secondary`**, the same
+  value `nameColor` takes at `:181`, rather than the hierarchical `.secondary`: hierarchical styles
+  resolve against the enclosing `Button`'s accent tint, which is the whole of why a name read blue in
+  the first place, so `.foregroundStyle(.secondary)` on a mark inside a `Button` is a dimmed blue and
+  not grey. Left unstyled it is worse — accent inside the `Button`, label colour outside, and neither
+  chosen. Decision 5's opacity then rides over whichever colour the mark has.
+- **The strikethrough belongs at the day screen's call site, never in `CommitmentLine.swift`.** It
+  goes on the child `Text` at `:194`, beside `nameColor` —
+  `Text(row.name).foregroundStyle(nameColor).strikethrough(row.isKept)`, which type-checks against
+  the iOS 26.0 SDK this app builds for. This is the same reasoning that already keeps decision 9 out
+  of that file: `commitmentLine` is shared with `CommitmentsView`, whose rows are not a day's rows,
+  know nothing about `isKept` and must not gain a rule through their names.
+- **A strikethrough on the child `Text` does survive `commitmentLine`'s interpolation — measured on
+  2026-09-09, not assumed.** `commitmentLine` composes `Text("\(name) \(rhythm)")` from two child
+  `Text` values, and a modifier that did not survive that would have sent decision 11 into
+  `CommitmentLine.swift`, which is the one place it must not go. The exact composition the day screen
+  builds — `commitmentLine(Text(name).foregroundStyle(Color.secondary).strikethrough(),
+  rhythmInWords:).foregroundStyle(Color.primary)` — was rendered through `ImageRenderer` and diffed
+  against the same line unstruck, on Xcode 26.6 / Swift 6.3.3. Three findings, all of them things a
+  cold implementer would otherwise guess at:
+  - **It survives, and it stays on the name.** The only pixels that change are a three-pixel band at
+    one height running `x 0…255`, where the name's own ink ends at `x 253` and the rhythm occupies
+    `x 253…317`. The rule stops at the name; the rhythm is untouched, which is decision 11 exactly.
+  - **The outer `.foregroundStyle(Color.primary)` does not eat it.** The same composition with and
+    without that modifier produced a pixel-for-pixel identical difference.
+  - **The rule takes the child `Text`'s own colour**, median brightness 0.502 against a
+    `Color.secondary` name and 0.153 against a `Color.primary` one. So on a kept row the rule is
+    already grey with the dimmed name it crosses and needs no colour of its own.
+
+  For contrast, `.strikethrough()` on the *composed* `Text` is wrong rather than merely redundant: it
+  draws **two** rules, three pixels deep across the name at one height and a separate one-pixel rule
+  across the rhythm lower down, because the rhythm is `.caption` and sits on its own baseline. That is
+  decision 11's rejected alternative, drawn. The measurement was made with `ImageRenderer` on macOS
+  rather than on the phone, because `Text` interpolation is the same SwiftUI machinery on both; the
+  last word is still `pnpm run phone`.
 - **Nothing automated proves any of this.** The smoke layer is one XCUITest asserting the day screen
-  draws (`WalkthroughUITests.swift`, ADR-1029), and no test in the repo can see a colour or an
-  opacity. This is checked by the owner looking at it on the phone, which is what the shell is for and
-  what makes it a chore rather than a Story.
+  draws (`WalkthroughUITests.swift`, ADR-1029), and no test in the repo can see a colour, an opacity
+  or a rule through a word. This is checked by the owner looking at it on the phone, which is what the
+  shell is for and what makes it a chore rather than a Story — and it is not a formality: the first
+  build sent back a reversal and a new decision within the hour.
 - **`CONTEXT.md` is untouched and no term is landed.** *Offered* and *target* are already there, and a
   circle, a fade and an accent are implementation detail rather than domain vocabulary — the glossary
   is deliberately devoid of it. `openspec/` is untouched too, which the chore lane requires
@@ -203,19 +283,39 @@ difference is only legible by comparison, and a day that has not arrived offers 
 there is no marked row anywhere on that screen to compare an unmarked one against. The signal has to
 survive being the only thing on screen.
 
-**A coloured control and a quiet, uncoloured statement — a blue circle, a plain checkmark.** The
-conductor's recommendation at decision 8, argued from `CONTEXT.md` § *Nothing congratulates you*: a
-mark that says you did the thing is the last place this product should spend colour, and the row is
-meant to go quiet. Rejected by the owner because the circle and the checkmark are one control in one
-slot swapping shape on a tap, and changing colour at the same moment makes the tap read as two
-events rather than one. Recorded because it is the strongest argument against decision 8 and a later
-reader will reconstruct it whether or not it is written down.
+**One accent across both trailing marks — a blue circle and a blue checkmark.** What decision 8 said
+first, and what was actually built: the circle and the checkmark are one control in one slot swapping
+shape on a tap, and changing colour at the same moment would make the tap read as two events rather
+than one. It was taken over the conductor's recommendation — the shape decision 8 now holds — which
+was argued from `CONTEXT.md` § *Nothing congratulates you*, that a mark saying you did the thing is
+the last place this product should spend colour. Rejected on the phone rather than in the argument:
+a screen of blue checkmarks reads as a screen of rows still asking to be pressed. The tap never did
+read as two events, so the argument that won the round was answering a question the built app did not
+ask. Both halves are kept here because the reasoning for the accent is genuinely good and someone
+will reach for it again.
+
+**The plain label colour for the checkmark, and dropping the checkmark altogether.** The two other
+answers offered when the mark's colour was reopened at the phone. The label colour was rejected
+because it leaves the mark as loud as the name and the kept row still does not recede as one thing;
+dropping the mark was rejected because the strikethrough and the dimming say *done* about the name
+while nothing then says it about the row's trailing edge, and the slot would sit empty on the one
+kind that has no chevron. Grey matching the name takes both points at once.
+
+**Striking the whole line, rhythm included.** The obvious way to do decision 11 — one
+`.strikethrough()` on the composed `Text`, which is also one call rather than two. Rejected by the
+owner when asked directly: a strikethrough is a statement that *this day is done*, and the rhythm is
+what the commitment runs on, which is exactly as true after the tick as before it. Striking it would
+say something false about the commitment in order to say something true about the day. It is also
+visibly wrong rather than merely over-broad — measured, the composed strike draws two rules at two
+heights, because the rhythm is `.caption` and sits on its own baseline.
 
 **Grey as the axis for a row that offers nothing** — dim the name the way a kept name is dimmed,
 rather than fading the whole label. Rejected because grey is already spoken for: `chore/draw-kept`
 made a dimmed name mean *kept*, so a grey name would mean two unlike things on one screen and a kept
 row would read as a row for a day that has not arrived. Opacity over the whole label is a different
-axis and takes the checkmark with it, which grey on the name alone would not.
+axis and takes the checkmark with it, which grey on the name alone would not. Decision 8's reversal
+sharpens this rather than disturbing it: grey now means *kept* on the mark as well as on the name, so
+it is spoken for twice, and the fade stays the one thing that means *this day has not arrived*.
 
 **A faded circle on a row that offers nothing**, so that every tick row has a mark and only its
 strength varies. Rejected on `CONTEXT.md` § *Offered* directly: a screen draws as a target only what
