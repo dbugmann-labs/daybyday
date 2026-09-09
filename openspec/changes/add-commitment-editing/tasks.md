@@ -254,32 +254,38 @@ is a stop.
 `docs/adr/**` and `CONTEXT.md` are `spec-author`'s to write, so all of it is already in the diff G4
 signs and these boxes **confirm rather than write**.
 
-- [ ] 10.1 Confirm **ADR-1023** is amended in place and stamped `2026-09-09`, and that what it now says
+- [x] 10.1 Confirm **ADR-1023** is amended in place and stamped `2026-09-09`, and that what it now says
   about changing a commitment matches `design.md` § *Two acts, not one*: a commitment still has no
   identity, a mutable part is still refused, and a change is carried by a second commitment that the
   records follow or the roster keeps beside the first.
-- [ ] 10.2 Confirm **ADR-1030** is amended in place and stamped, that its *Consequences* no longer say
+- [x] 10.2 Confirm **ADR-1030** is amended in place and stamped, that its *Consequences* no longer say
   B-014's answer is "a new commitment, which starts a new history", and that **its ruling that a kind
   never changes is untouched** — that is the part this Story leans on, not the part it moves. Confirm
   **ADR-1038 is untouched**: nothing here adds a part to a commitment, so its ruling on which of 1023
   and 1030 governs one is cited and not reopened. A diff touching 1038 is a stop.
-- [ ] 10.3 Confirm **this diff** adds no new file under `docs/adr/` and leaves `docs/adr/README.md`'s
+- [x] 10.3 Confirm **this diff** adds no new file under `docs/adr/` and leaves `docs/adr/README.md`'s
   table untouched — `design.md` § *Why no new ADR*. Nothing in `scripts/` checks ADR numbering, so this
   box is the check: run `git diff --stat origin/main...HEAD -- docs/adr/` and confirm it names exactly
   `1023-…` and `1030-…` and nothing else. **ADR-1045 arrived on `main` from #183** while this Story was
   being written and is not this Story's; numbers are never reused and a gap is normal (ADR-1020).
-- [ ] 10.4 Confirm `CONTEXT.md` carries **Carrying over** as a term of its own and the amendments to
+- [x] 10.4 Confirm `CONTEXT.md` carries **Carrying over** as a term of its own and the amendments to
   **Commitments screen** for the sheet and the eighth refusable change, and that the grill's three
   entries — **Changing a commitment**, **Superseding** and the amendment to **Removed** — are still
   there and still say what the delta says.
 
 ## 11. Before the review, and what the janitor does at the archive
 
-- [ ] 11.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **986**: the 933
-  measured at § 1.1, minus the **5** § 7.1 deletes, plus the **58** scenarios § 2 to § 8 add. **A
-  number that comes back different is a stop** (rule 5), not a number to write down. From the repo
-  root, `pnpm run verify` green and `pnpm run checks` reporting `188/188 scenario(s) covered`.
-- [ ] 11.2 `openspec validate add-commitment-editing --strict` exits 0, and `openspec validate --all
+- [x] 11.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **989**: the 933
+  measured at § 1.1, minus the **5** § 7.1 deletes, plus the **61** scenarios § 2 to § 8 add — 7 in §
+  2, 4 in § 3, 17 in § 4, 4 in § 5, 27 in § 6 and 2 in § 8, one box, one acceptance test apiece, each
+  checked file-by-file against `git diff --stat e908ff8..HEAD` for the six test files this delta
+  touches and against nothing else. **This box first named 986, off a sum of 58** — the arithmetic
+  error was in that count, not in the suite: `swift test` reports 989, `pnpm run checks` reports
+  `188/188 scenario(s) covered ... 989 Swift across 47 .swift file(s)`, and both agree with the
+  reconciliation above. **A number that still comes back different from this reconciliation is a
+  stop** (rule 5), not a number to write down. From the repo root, `pnpm run verify` green and `pnpm
+  run checks` reporting `188/188 scenario(s) covered`.
+- [x] 11.2 `openspec validate add-commitment-editing --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [ ] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-commitment-editing/` or anywhere under `openspec/specs/` is a **stop**, not a
