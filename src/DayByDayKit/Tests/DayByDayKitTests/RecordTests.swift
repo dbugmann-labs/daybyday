@@ -2088,3 +2088,169 @@ func aTotalCommitmentWithAdditionsOnADateStillTakesNoNoteOnIt() {
     #expect(Note("Ran 8k.", for: protein, on: monday) == nil)
     #expect(history.total(for: protein, on: monday) == 120)
 }
+
+@Test("every record of a commitment is carried over to another, on the dates each was made for")
+func everyRecordOfACommitmentIsCarriedOverToAnotherOnTheDatesEachWasMadeFor() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let tuesday = CalendarDate(year: 2026, month: 8, day: 4)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    history.add(Tick(gym, on: tuesday)!)
+
+    let carried = history.carryOver(gym, to: gymEmoji)
+
+    #expect(carried)
+    #expect(history.isKept(gymEmoji, on: monday))
+    #expect(history.isKept(gymEmoji, on: tuesday))
+    #expect(!history.isKept(gym, on: monday))
+    #expect(!history.isKept(gym, on: tuesday))
+}
+
+@Test("a number, a note and a day's additions are carried over exactly")
+func aNumberANoteAndADaysAdditionsAreCarriedOverExactly() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+
+    let weight = Commitment(name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let bodyweight = Commitment(
+        name: "Bodyweight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let journalling = Commitment(
+        name: "Journalling", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let proteinGrams = Commitment(
+        name: "Protein grams", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    var history = History()
+    history.add(Number(72.45, for: weight, on: monday)!)
+    history.add(Note(" kept the promise ", for: journal, on: monday)!)
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(12.5, for: protein, on: monday)!)
+    history.add(Addition(30, for: protein, on: monday)!)
+
+    let carriedWeight = history.carryOver(weight, to: bodyweight)
+    let carriedJournal = history.carryOver(journal, to: journalling)
+    let carriedProtein = history.carryOver(protein, to: proteinGrams)
+    #expect(carriedWeight)
+    #expect(carriedJournal)
+    #expect(carriedProtein)
+
+    #expect(history.number(for: bodyweight, on: monday) == 72.45)
+    #expect(history.note(for: journalling, on: monday) == " kept the promise ")
+    #expect(history.total(for: proteinGrams, on: monday) == 72.5)
+
+    history.removeLastAddition(for: proteinGrams, on: monday)
+    #expect(history.total(for: proteinGrams, on: monday) == 42.5)
+}
+
+@Test("carrying over is refused where a record sits on a date the other commitment is not due on")
+func carryingOverIsRefusedWhereARecordSitsOnADateTheOtherCommitmentIsNotDueOn() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let juneFirst = CalendarDate(year: 2026, month: 6, day: 1)!
+    let septemberFirst = CalendarDate(year: 2026, month: 9, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: juneFirst)!
+    let gymLater = Commitment(name: "Gym", schedule: schedule, keptFrom: septemberFirst)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    let historyBefore = history
+
+    let carried = history.carryOver(gym, to: gymLater)
+
+    #expect(!carried)
+    #expect(history.isKept(gym, on: monday))
+    #expect(history == historyBefore)
+}
+
+@Test("carrying over is refused where the two commitments differ in the kind their days take")
+func carryingOverIsRefusedWhereTheTwoCommitmentsDifferInTheKindTheirDaysTake() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let weightAsNote = Commitment(name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    var history = History()
+    history.add(Number(72.45, for: weight, on: monday)!)
+    let historyBefore = history
+
+    let carried = history.carryOver(weight, to: weightAsNote)
+
+    #expect(!carried)
+    #expect(history == historyBefore)
+}
+
+@Test("carrying over the records of a commitment that has none refuses nothing and changes nothing")
+func carryingOverTheRecordsOfACommitmentThatHasNoneRefusesNothingAndChangesNothing() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    var history = History()
+    history.add(Tick(journaling, on: monday)!)
+    let historyBefore = history
+
+    let carried = history.carryOver(gym, to: gymEmoji)
+
+    #expect(carried)
+    #expect(history == historyBefore)
+}
+
+@Test("carrying a commitment's records over to that same commitment changes nothing and refuses nothing")
+func carryingACommitmentsRecordsOverToThatSameCommitmentChangesNothingAndRefusesNothing() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    let historyBefore = history
+
+    let carried = history.carryOver(gym, to: gym)
+
+    #expect(carried)
+    #expect(history == historyBefore)
+}
+
+@Test("carrying over to a commitment the history already holds a record of is refused")
+func carryingOverToACommitmentTheHistoryAlreadyHoldsARecordOfIsRefused() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let tuesday = CalendarDate(year: 2026, month: 8, day: 4)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    history.add(Tick(run, on: tuesday)!)
+    let historyBefore = history
+
+    let carried = history.carryOver(gym, to: run)
+
+    #expect(!carried)
+    #expect(history == historyBefore)
+}

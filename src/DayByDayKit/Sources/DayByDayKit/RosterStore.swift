@@ -192,6 +192,62 @@ public final class RosterStore {
         roster = nextRoster
         return true
     }
+
+    /// Kept at `place` before this returns, unless changing `commitment` for itself left the
+    /// roster exactly as it was. Answers what `Roster.change` answers — `true` even where
+    /// nothing changed, and `false`, without throwing and without writing, when the roster does
+    /// not hold `commitment`, or when `changed` is a commitment it already holds.
+    @discardableResult
+    public func change(_ commitment: Commitment, to changed: Commitment, under category: String?)
+        throws -> Bool
+    {
+        var nextRoster = roster
+        guard nextRoster.change(commitment, to: changed, under: category) else {
+            return false
+        }
+        if nextRoster != roster {
+            try write(nextRoster)
+        }
+
+        roster = nextRoster
+        return true
+    }
+
+    /// Kept at `place` before this returns. Answers what `Roster.supersede` answers — `false`,
+    /// without throwing and without writing, when the roster is not currently keeping
+    /// `commitment`, or when `new` is a commitment it already holds.
+    @discardableResult
+    public func supersede(
+        _ commitment: Commitment, with new: Commitment, keptUntil date: CalendarDate,
+        under category: String?
+    ) throws -> Bool {
+        var nextRoster = roster
+        guard nextRoster.supersede(commitment, with: new, keptUntil: date, under: category) else {
+            return false
+        }
+        try write(nextRoster)
+
+        roster = nextRoster
+        return true
+    }
+
+    /// Kept at `place` in one write, replacing the whole roster with `nextRoster`. For a caller
+    /// that must apply more than one `Roster` mutation as a single act — a rename immediately
+    /// followed by a supersession, say — building the combined value first and handing it here
+    /// keeps the two from ever being kept as two separate writes, where a place that goes
+    /// unwritable between them could leave one half kept and the other refused. Answers `false`,
+    /// without throwing and without writing, when `nextRoster` is exactly the roster already
+    /// held.
+    @discardableResult
+    func replace(with nextRoster: Roster) throws -> Bool {
+        guard nextRoster != roster else {
+            return false
+        }
+        try write(nextRoster)
+
+        roster = nextRoster
+        return true
+    }
 }
 
 public enum RosterStoreError: Error, Equatable, Sendable {

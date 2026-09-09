@@ -373,6 +373,79 @@ public struct Roster: Hashable, Sendable {
         return true
     }
 
+    /// Changes `commitment` for `changed`, in the place `commitment` held, under `category` — or
+    /// under none where `category` is `nil` or holds nothing but blank space — and answers
+    /// `true`. A replacement, not a removal followed by an addition: the day `commitment` was
+    /// kept until and whether it was removed are carried across exactly as they were, whichever
+    /// of the three states it was in. Answers `false` and changes nothing when this roster does
+    /// not hold `commitment` at all, or when `changed` is a commitment this roster already holds
+    /// — kept, stopped or removed alike.
+    ///
+    /// Asked to change `commitment` for itself, this roster is left exactly as it was in every
+    /// other respect and still takes the offered `category`, exactly as `move` still applies a
+    /// category on the offset that asks for no move; answers `true` and refuses nothing, checked
+    /// before the already-holds refusal so a self-change is never mistaken for one.
+    public mutating func change(
+        _ commitment: Commitment, to changed: Commitment, under category: String?
+    ) -> Bool {
+        guard let index = entries.firstIndex(where: { $0.commitment == commitment }) else {
+            return false
+        }
+
+        let normalized = Self.normalized(category)
+
+        guard commitment != changed else {
+            entries[index] = Entry(
+                commitment: entries[index].commitment, keptUntil: entries[index].keptUntil,
+                isRemoved: entries[index].isRemoved, category: normalized)
+            return true
+        }
+
+        guard !entries.contains(where: { $0.commitment == changed }) else {
+            return false
+        }
+
+        entries[index] = Entry(
+            commitment: changed, keptUntil: entries[index].keptUntil,
+            isRemoved: entries[index].isRemoved, category: normalized)
+        return true
+    }
+
+    /// Supersedes `commitment`, which this roster is keeping, with `new` — as of `date`, the day
+    /// `commitment` was kept until — under `category`, or under none where `category` is `nil` or
+    /// holds nothing but blank space, and answers `true`. `new` takes the place `commitment` held
+    /// and keeps it; `commitment` is held **removed**, on `date`, immediately behind it — the
+    /// only place the two are ever read together. Any date is accepted, including one before the
+    /// day `commitment` is kept from, which leaves it kept on no date at all. Answers `false` and
+    /// changes nothing when this roster is not currently keeping `commitment` — one it does not
+    /// hold, one it has stopped keeping and one it has removed alike — or when `new` is a
+    /// commitment this roster already holds, kept, stopped or removed alike, which is also what
+    /// refuses superseding a commitment with itself.
+    public mutating func supersede(
+        _ commitment: Commitment, with new: Commitment, keptUntil date: CalendarDate,
+        under category: String?
+    ) -> Bool {
+        guard let index = entries.firstIndex(where: { $0.commitment == commitment }),
+            entries[index].keptUntil == nil
+        else {
+            return false
+        }
+
+        guard !entries.contains(where: { $0.commitment == new }) else {
+            return false
+        }
+
+        let normalized = Self.normalized(category)
+        let supersededEntry = Entry(
+            commitment: commitment, keptUntil: date, isRemoved: true,
+            category: entries[index].category)
+
+        entries[index] = Entry(
+            commitment: new, keptUntil: nil, isRemoved: false, category: normalized)
+        entries.insert(supersededEntry, at: index + 1)
+        return true
+    }
+
     /// The commitments this roster had not stopped keeping on `date`, in the order it holds
     /// them. It applies no other rule: a commitment's own day it is kept from and its
     /// schedule are the commitment's answer, not the roster's. A removed commitment answers

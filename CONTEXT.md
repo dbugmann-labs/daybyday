@@ -178,6 +178,69 @@ reached by defining the commitment again exactly. **Removing** is the roster's v
 what the person reads is the **app shell**'s. Agreed 2026-09-07 at the grill of
 `add-roster-removal` (#145).
 
+**Amended 2026-09-09**, at the grill of `add-commitment-editing` (#148). The state now also holds a
+commitment the roster **superseded** — one whose rhythm a person changed — and not only one they got
+rid of. Everything the state means is unchanged and is exactly what supersession needs: the roster
+keeps it in the place it was taken on in, with the day it was kept until; every past day draws it as
+it always did; every record against it stands; and it shows in neither of the **commitments
+screen**'s lists. What is widened is the word, which no longer covers one act only. The person
+performs one of those acts and not the other, which is why **changing** is a verb of its own below
+and why the app shell says nothing about removal when someone changes a commitment. Defining a
+superseded commitment again exactly still takes it up again, in its old place and with its history —
+the shipped way back, applied unchanged, and the honest answer to a person who has decided their old
+rhythm was the right one.
+
+**Changing a commitment** — giving one a different name, a different rhythm, or a different day it
+is **kept from**, without losing what has been recorded against it. It is the person's verb, and it
+covers three acts that the model carries in two different ways, because what a person means by
+"change" is not one thing.
+
+A **name** is not a rule: nothing is due or not due because of it, so a rename reaches the whole
+history. Every record already made is rewritten to carry the new name, every one of them still forms,
+and every past day redraws under the name the person now uses. Two rows for one commitment in a
+week's view is what the alternative costs, and it is not a price worth paying to be literal about
+what a screen said last month.
+
+A **rhythm** is a rule, and changing it does not reach the past: the new rhythm decides today onward
+and every day already lived answers exactly as it did. That is ADR-1013's promise, and a history
+that rewrites itself is the one thing this product must not do. The roster carries it by
+**superseding**.
+
+The **kept-from day** is the exception, and it is one deliberately. It is neither a rule nor a label
+but a claim about a person's own history — "I have kept this since June" — so correcting it corrects
+the whole of that history rather than starting a new one. On a weekday set, a day of the month and a
+weekly quota, moving it earlier widens the window and the days it opens become due as they always
+should have been. On **every N days** it does more than widen: the kept-from day is that rhythm's
+**start date**, so the grid moves with the day and the commitment lands on a different set of dates
+than it did. Either way the same refusal applies — a change is refused where any day the commitment
+has a record on is a day it would no longer be due on, whichever direction the day moved, because a
+change that hides a day someone recorded against is not a correction. Superseding cannot serve here
+at all — the new commitment would be kept from today and the June days would stay not-due, so the
+likeliest reason anyone touches this field would achieve nothing.
+
+A change is refused when it would produce a commitment the roster already holds, kept, stopped or
+removed. Merging two histories is irreversible and throws away the fact that they were deliberately
+kept apart; reaching a removed commitment's history through a spelling correction is too large a
+thing to happen invisibly, and the way back stays the deliberate one. A **stopped** commitment can
+only be renamed, because the other two parts decide dueness and it has no days left to decide.
+Agreed 2026-09-09 at the grill of `add-commitment-editing` (#148).
+
+**Superseding** — the roster's verb for what changing a rhythm does to the old commitment: it is
+kept until the day before the one the screen was handed, marked **removed**, and the new commitment
+is taken on in the place the old one held. It is the roster's act and never the commitment's, for
+ADR-1023's reason reaching a third part — a record embeds the whole commitment by value, so a part
+a person can change would orphan everything recorded against it the moment they changed it. Nothing
+is re-keyed here: each past day answers against the value it was written against, because that value
+is still in the roster.
+
+The roster records **no link** between the superseded commitment and the one that replaced it.
+Nothing reads one, and a surface with no reader is not a requirement. The cost is named rather than
+hidden: one commitment's record across a change cannot be read as a single run, and once records
+exist against both values that link cannot be reconstructed. The day the person changes on is the
+new commitment's first, not the old one's last — the same choice #145 made for stopping, and the
+same price: a record made that morning under the old rhythm is not drawn that day, though it stands.
+Agreed 2026-09-09 at the grill of `add-commitment-editing` (#148).
+
 **Category** — the word a person put a commitment under: *supplements*, *sport*, whatever they
 type. It is the owner's own word and never one the app names — no fixed menu holds the day-one
 week, and the same argument that makes a **commitment name** the owner's rather than the system's
@@ -372,6 +435,25 @@ Agreed 2026-09-02 at the grill of `add-tick-record` (#55). **Amended 2026-09-06*
 records of every kind, not ticks alone, and answers *kept* by each kind's own rule: a tick, a number
 or a note by being there, a total by its sum having reached its target. Still at most one record per
 commitment per day, still a value.
+
+**Carrying over** — `record`'s verb for what a rename, or a corrected day **kept from**, does to
+everything already recorded: every tick, number, note and addition of one commitment becomes a record
+of another, on the day each was made for, and the first is left holding none. It moves what a record
+is *of* and changes nothing a record *holds* — a number stays digit for digit, a note character for
+character, a day's additions in the order they were made. It exists because a record embeds the whole
+commitment by value, so this is the only way a person's history survives their correcting what they
+call something.
+
+It is **all of them or none**. Where any record could not be a record of the second commitment — a
+date it is not due on, a kind whose record it does not take — nothing moves and the carry-over is
+refused, because a record that could not have been made is not one this system will write and a
+history that quietly dropped the ones that did not fit would be the false record the product exists to
+remove. Carrying over is not **merging**: a history already holding a record of the second commitment
+refuses too, since which of two records for one day survived would be a choice about somebody's
+history that nothing here is entitled to make. Nothing to carry is not a refusal, which is what lets
+the same ask be made twice safely. Deliberately not what a **rhythm** change does — that carries
+nothing over at all and **supersedes** instead. Agreed 2026-09-09 while writing the delta of
+`add-commitment-editing` (#148).
 
 **Untick** — to take a tick back, leaving the history as though that tick had never been: the
 commitment is not kept on that day, every other tick stands, and nothing remembers that the tick was
@@ -971,6 +1053,27 @@ moved category travels with the group like every other. What a person taps is *M
 down* in Edit mode, which is the **app shell**'s and carries no requirement: up and down are
 derivable from a place and not the reverse.
 
+**Amended 2026-09-09**, at `add-commitment-editing` (#148). A commitments screen also **changes** a
+commitment, on either of its lists, from the same four things it defines one from — and that is why
+they are four rather than five: **one form defines and changes**, reached by a `+` in the toolbar for
+one and from a row for the other, drawn as a sheet so the list stays behind it. Which of the two acts
+under **changing a commitment** a save performs is worked out from the four and never asked: the
+screen carries the records over and replaces the roster's entry for a name or a day kept from, and
+supersedes for a rhythm, and where a save asks for both it does the first and then the second. It is
+the first screen to write at **two places in one act** — the record place before the roster place, so
+that a second write that fails can be repaired by asking for the same change again — and a change it
+could not keep is told the same way whichever of the two would not take it. A change is the **eighth**
+kind of **refused change** and names the commitment that was tapped rather than the one it would have
+produced, which does not exist. It carries two refusals nothing before it could produce: a change a
+**stopped** commitment does not take, which is anything but a rename, and a day already recorded on
+that the change would leave not due. A commitment on neither list asks for no change, so a **removed**
+one is unreachable here without a refusal of its own. What the screen says about a commitment, so a
+form can start from what it is, is its name, its rhythm, its day kept from, its category and whether
+the last two can be changed at all — and no words a person reads, as ever. The **live rhythm preview
+under the form is gone** (B-036), and the sentence about it in the 2026-09-06 amendment above is
+withdrawn: a rhythm is still said in words on both lists and on a day screen's rows, and no longer for
+a rhythm nobody has committed to.
+
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
 one, because one refusal is one event and the ask a person is waiting on an answer for is the one
@@ -1069,7 +1172,10 @@ the schedule value, not something the rule reaches outside itself for. It is a c
 names a day that exists inside the supported years, and it is fixed: it is not the last tick, so no
 tick moves it and no past day's answer changes once given. Distinct from the day a commitment is
 **kept from**: the start date sets which dates the rhythm lands on, the kept-from day suppresses
-landings earlier than itself, and an interval commitment carries both.
+landings earlier than itself, and an interval commitment carries both. On every commitment a
+commitments screen makes they are the same day, defining and **changing a commitment** alike — a
+change that moves the kept-from day moves the start date with it, so one date on the form answers for
+both and the two never disagree on anything the app itself formed.
 
 **Day of the month** — the third of the four schedule shapes: a single day number a commitment
 runs on in every month. "Finances every 25th" is one. A month too short to hold the number is due

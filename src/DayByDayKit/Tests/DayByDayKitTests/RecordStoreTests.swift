@@ -1850,3 +1850,98 @@ func aStoreHoldingADayWhoseAdditionsSumPastWhatCanBeKeptExactlyIsReadRatherThanR
     #expect(store.history.total(for: protein, on: monday) > Commitment.Target(120)!.amount)
     #expect(try Data(contentsOf: place) == bytes)
 }
+
+@Test("records carried over through a store are read back under the other commitment by a store opened afterwards")
+func recordsCarriedOverThroughAStoreAreReadBackUnderTheOtherCommitmentByAStoreOpenedAfterwards()
+    throws
+{
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    let first = try RecordStore(at: place)
+    try first.add(Tick(gym, on: monday)!)
+
+    let carried = try first.carryOver(gym, to: gymEmoji)
+
+    let later = try RecordStore(at: place)
+
+    #expect(carried)
+    #expect(later.history.isKept(gymEmoji, on: monday))
+    #expect(!later.history.isKept(gym, on: monday))
+}
+
+@Test("a carry-over a store's history refuses keeps nothing at its place")
+func aCarryOverAStoresHistoryRefusesKeepsNothingAtItsPlace() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let juneFirst = CalendarDate(year: 2026, month: 6, day: 1)!
+    let septemberFirst = CalendarDate(year: 2026, month: 9, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: juneFirst)!
+    let gymLater = Commitment(name: "Gym", schedule: schedule, keptFrom: septemberFirst)!
+
+    let store = try RecordStore(at: place)
+    try store.add(Tick(gym, on: monday)!)
+    let bytes = try Data(contentsOf: place)
+
+    let carried = try store.carryOver(gym, to: gymLater)
+
+    #expect(!carried)
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a carry-over with nothing to carry keeps nothing at a store's place")
+func aCarryOverWithNothingToCarryKeepsNothingAtAStoresPlace() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RecordStore(at: place)
+    try store.add(Tick(journaling, on: monday)!)
+    let bytes = try Data(contentsOf: place)
+
+    let carried = try store.carryOver(gym, to: gymEmoji)
+
+    #expect(carried)
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a store that could not write a carry-over leaves its history exactly as it was")
+func aStoreThatCouldNotWriteACarryOverLeavesItsHistoryExactlyAsItWas() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let place = directory.appendingPathComponent("store.json")
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RecordStore(at: place)
+    try store.add(Tick(gym, on: monday)!)
+
+    try FileManager.default.removeItem(at: directory)
+    try Data().write(to: directory)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try store.carryOver(gym, to: gymEmoji)
+    }
+    #expect(store.history.isKept(gym, on: monday))
+    #expect(!store.history.isKept(gymEmoji, on: monday))
+}

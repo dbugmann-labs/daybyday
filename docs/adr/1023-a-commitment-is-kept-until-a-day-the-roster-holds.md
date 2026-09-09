@@ -3,6 +3,8 @@
 - Status: accepted
 - Date: 2026-09-03
 - Deciders: Diego Bugmann
+- Amended: 2026-09-09 — changing a commitment is answered without a mutable part: a rename and a
+  corrected kept-from day carry the records over to a second commitment, a rhythm change supersedes
 - Amended: 2026-09-07 — a commitments screen hands the day *before* the one it was handed, for a
   stop and for a removal alike; the kept-until day itself is unchanged
 
@@ -103,13 +105,40 @@ Four things are part of the decision rather than incidental to it:
   this ADR gives about `Tick`. ADR-1035.
 - **ADR-1013 does not move.** It said the end date was not its to decide, so nothing in it becomes
   wrong; this record is the answer to the half it left open, and the two are read together.
+- **Changing a commitment is answered on this record rather than against it.** `add-commitment-editing`
+  (#148) took B-014 — the want ADR-1030 named as this record's revisit trigger — and the answer is
+  *not* that a commitment gained an identity of its own. It still has none, no part of one is mutable,
+  and the argument above stands exactly as written. What a person calls "changing a commitment" is two
+  acts, and each meets the mechanism above rather than working around it:
+
+  - **A different name, or a different day kept from.** A second commitment is formed, every record of
+    the first is **carried over** to it — `record`'s own requirement, all of them or none — and the
+    roster then puts the second where the first was. Nothing is orphaned, because after the carry-over
+    every record embeds a commitment the roster still holds. The carry-over refuses outright where any
+    record could not be a record of the second commitment, which is what stops the kept-from day being
+    moved over a day someone recorded against — moved forward on any rhythm, and moved in either
+    direction on **every N days**, where the kept-from day is the interval's start date and the grid
+    moves with it.
+  - **A different rhythm.** Nothing is carried over at all. The roster **supersedes**: the old
+    commitment is kept until the day before, held **removed**, and the new one is taken on in the place
+    it held. Every past day answers against the value it was written against, because that value is
+    still in the roster. This is the same shape a stop already has and it needs no new state.
+
+  Two prices are taken knowingly. The roster holds **no link** between a superseded commitment and the
+  one that replaced it, so one commitment's record across a rhythm change cannot be read as a single
+  run, and once records exist against both values the link cannot be reconstructed. And **removed** now
+  covers a commitment the roster superseded as well as one a person got rid of, which widens a word
+  that describes an act the person did not perform.
 
 ## Alternatives considered
 
 **A fourth part on `Commitment`, `keptUntil`.** The symmetric, obvious shape, and the one a reader
 will propose again. Rejected on the mechanism above: `Tick` embeds the commitment by value, so the
 fourth part changes the identity of every commitment the moment it is set and orphans every tick
-already recorded. Making it work would mean either giving `Commitment` an identifier — which
+already recorded. **This is not softened by a history now being able to carry its records over**
+(2026-09-09, above): a carry-over is a deliberate act with a refusal of its own, asked for by a person
+who is changing something and answered before the roster is written. A part that changed on its own
+would fire it implicitly, from wherever the part was set, with nothing to refuse into. Making it work would mean either giving `Commitment` an identifier — which
 `openspec/specs/commitment/spec.md` forbids in as many words, and which `add-commitment-roster`'s
 duplicate refusal is built on the absence of — or excluding the new part from equality, which is a
 value that lies about what it is.
