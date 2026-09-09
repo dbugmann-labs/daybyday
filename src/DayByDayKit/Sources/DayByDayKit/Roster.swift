@@ -277,7 +277,7 @@ public struct Roster: Hashable, Sendable {
     /// `category` — kept, stopped and removed alike — travels together as one block, keeping its
     /// order against the others that travel; every commitment that does not travel stays in the
     /// order it was in against every other commitment that does not travel. `design.md` § *A group
-    /// move is a block move*, ADR-1043.
+    /// move is a block move*, ADR-1044.
     ///
     /// `category` goes through the same `Blank` test every other category does (ADR-1039), so a
     /// category of nothing but blank space is the group under no category. Answers `false` and
@@ -289,11 +289,16 @@ public struct Roster: Hashable, Sendable {
     /// Two offsets name the place the group already has — the one it is at among the groups kept
     /// under a category, and the one just after that — and on both nothing is taken out of
     /// `entries` and nothing in it moves. Every other offset takes every commitment under
-    /// `category` out of the sequence and puts the block back immediately before the first
-    /// commitment under the category of the group that stood at `offset`, or immediately after the
-    /// last commitment under the category of the last group kept under one when `offset` is the
-    /// number of them — both counted over every commitment under that category, not only the ones
-    /// this roster is keeping. Both paths answer `true` and report that the roster moved the group.
+    /// `category` out of the sequence and puts the block back immediately before the **first
+    /// commitment this roster is keeping** under the category of the group that stood at `offset`,
+    /// or immediately after the last commitment under the category of the last group kept under one
+    /// when `offset` is the number of them — that second anchor counted over every commitment under
+    /// the target category, whatever state it is in, and not only the ones this roster is keeping.
+    /// The first is measured over the kept ones because the offset itself is counted over the groups
+    /// a person can see; where a stopped or removed commitment under the target lies earlier than
+    /// its first kept one, the block lands after that stopped or removed commitment, so a date
+    /// before the stop reads the two groups the other way round from today. `design.md` § *Where the
+    /// block is put*, ADR-1044. Both paths answer `true` and report that the roster moved the group.
     public mutating func move(group category: String?, toOffset offset: Int) -> Bool {
         guard let normalizedCategory = Self.normalized(category) else {
             return false
@@ -338,10 +343,13 @@ public struct Roster: Hashable, Sendable {
         }
 
         // `offset == categorisedOrder.count` means "after the last of them"; every other offset
-        // names the group that stood there before the move, before whose first commitment the
-        // block is put back. Neither lookup can miss: the guard above ruled out `offset ==
-        // sourceGroupIndex` and `offset == sourceGroupIndex + 1`, so `targetCategory` is never
-        // `normalizedCategory`, and `remaining` still holds every commitment under it.
+        // names the group that stood there before the move, before whose first **kept**
+        // commitment the block is put back — the offset is counted over the groups a person can
+        // see, `design.md` § *Where the block is put*. Neither lookup can miss: the guard above
+        // ruled out `offset == sourceGroupIndex` and `offset == sourceGroupIndex + 1`, so
+        // `targetCategory` is never `normalizedCategory`, and `remaining` still holds every
+        // commitment under it — kept, stopped and removed alike — with at least one kept, because
+        // being in `categorisedOrder` is exactly what having one means.
         let targetCategory =
             offset == categorisedOrder.count ? categorisedOrder.last! : categorisedOrder[offset]
 
@@ -349,8 +357,10 @@ public struct Roster: Hashable, Sendable {
             let lastUnderTarget = remaining.lastIndex(where: { $0.category == targetCategory })!
             remaining.insert(contentsOf: moving, at: lastUnderTarget + 1)
         } else {
-            let firstUnderTarget = remaining.firstIndex(where: { $0.category == targetCategory })!
-            remaining.insert(contentsOf: moving, at: firstUnderTarget)
+            let firstKeptUnderTarget = remaining.firstIndex(where: {
+                $0.category == targetCategory && $0.keptUntil == nil
+            })!
+            remaining.insert(contentsOf: moving, at: firstKeptUnderTarget)
         }
 
         entries = remaining

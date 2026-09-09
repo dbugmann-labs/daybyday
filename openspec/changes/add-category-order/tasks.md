@@ -73,7 +73,7 @@ Every box in this section is driven at `Roster.move(group:toOffset:)` and lands 
   anything, no kept-until day moves, no state changes.
 - [x] 2.11 *moving a group on a copy of a roster leaves the roster it was copied from unchanged*.
 - [x] 2.12 *a roster keeping one group under a category accepts both the offsets it has*.
-- [ ] 2.13 *a group is put before the first commitment the roster is keeping under the group at the
+- [x] 2.13 *a group is put before the first commitment the roster is keeping under the group at the
   offset* — **added at the second G4, and this is the cycle that moves the anchor.** The
   before-the-first branch is measured over the commitments the roster is *keeping*: it lands against
   the target group's first **kept** commitment, not against the first one under that category in any
@@ -84,7 +84,7 @@ Every box in this section is driven at `Roster.move(group:toOffset:)` and lands 
   `Roster.move(group:toOffset:)`'s doc comment, which cites **ADR-1043** and must cite **ADR-1044**:
   the ADR was renumbered because #185 took 1043 on `main`, and `src/` is the only place a stale
   reference is left, since `docs/` and the change folder are `spec-author`'s.
-- [ ] 2.14 *a group placed against a kept commitment is read in a different order on a date before a
+- [x] 2.14 *a group placed against a kept commitment is read in a different order on a date before a
   stop* — the price of 2.13, pinned rather than left to be met: today's groups and the dated read
   disagree, once, in the one case the requirement names. **A test that goes green without 2.13's
   change having been made is measuring the wrong thing** — check that this one was red first.

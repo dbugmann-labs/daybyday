@@ -2330,6 +2330,87 @@ func movingAGroupOnACopyOfARosterLeavesTheRosterItWasCopiedFromUnchanged() {
     #expect(original != copy)
 }
 
+@Test("a group is put before the first commitment the roster is keeping under the group at the offset")
+func aGroupIsPutBeforeTheFirstCommitmentTheRosterIsKeepingUnderTheGroupAtTheOffset() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let finances = Commitment(name: "Finances", schedule: schedule, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let thirtyFirstOfJanuary = CalendarDate(year: 2026, month: 1, day: 31)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(finances)
+    _ = roster.add(magnesium)
+    _ = roster.add(gym)
+    _ = roster.put(creatine, under: "Supplements")
+    _ = roster.put(magnesium, under: "Supplements")
+    _ = roster.put(finances, under: "Money")
+    _ = roster.put(gym, under: "Sport")
+    _ = roster.retire(creatine, keptUntil: thirtyFirstOfJanuary)
+
+    let moved = roster.move(group: "Sport", toOffset: 1)
+
+    #expect(moved)
+    #expect(
+        roster.groups
+            == [
+                Roster.Group(category: "Money", commitments: [finances]),
+                Roster.Group(category: "Sport", commitments: [gym]),
+                Roster.Group(category: "Supplements", commitments: [magnesium]),
+            ])
+    #expect(
+        roster.commitments(on: thirtyFirstOfJanuary)
+            == [creatine, finances, gym, magnesium])
+}
+
+@Test("a group placed against a kept commitment is read in a different order on a date before a stop")
+func aGroupPlacedAgainstAKeptCommitmentIsReadInADifferentOrderOnADateBeforeAStop() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: schedule, keptFrom: keptFrom)!
+    let vitaminD = Commitment(name: "Vitamin D", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let thirtyFirstOfJanuary = CalendarDate(year: 2026, month: 1, day: 31)!
+
+    var roster = Roster()
+    _ = roster.add(creatine)
+    _ = roster.add(magnesium)
+    _ = roster.add(vitaminD)
+    _ = roster.add(gym)
+    _ = roster.put(creatine, under: "Supplements")
+    _ = roster.put(magnesium, under: "Supplements")
+    _ = roster.put(vitaminD, under: "Supplements")
+    _ = roster.put(gym, under: "Sport")
+    _ = roster.retire(creatine, keptUntil: thirtyFirstOfJanuary)
+
+    let moved = roster.move(group: "Sport", toOffset: 0)
+
+    #expect(moved)
+    #expect(
+        roster.groups
+            == [
+                Roster.Group(category: "Sport", commitments: [gym]),
+                Roster.Group(category: "Supplements", commitments: [magnesium, vitaminD]),
+            ])
+    #expect(
+        roster.groups(on: thirtyFirstOfJanuary)
+            == [
+                Roster.Group(category: "Supplements", commitments: [creatine, magnesium, vitaminD]),
+                Roster.Group(category: "Sport", commitments: [gym]),
+            ])
+    #expect(
+        roster.commitments(on: thirtyFirstOfJanuary)
+            == [creatine, gym, magnesium, vitaminD])
+}
+
 @Test("a roster keeping one group under a category accepts both the offsets it has")
 func aRosterKeepingOneGroupUnderACategoryAcceptsBothTheOffsetsItHas() {
     let schedule = Schedule.weekdays([
