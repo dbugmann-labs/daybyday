@@ -75,9 +75,15 @@ struct CommitmentsView: View {
             // to `screen.move` beside the section's own `group.category`: nothing here adds,
             // subtracts, counts rows or asks where a finger is.
             //
-            // `.sectionActions` draws `Move up` and `Move down` below a categorised section's
-            // content in Edit mode, the one documented per-section action surface — `design.md`
-            // § *The shell rides this Story*. `index` is the group's own position in
+            // `.sectionActions` draws two icon buttons below a categorised section's content in
+            // Edit mode, the one documented per-section action surface — `design.md` § *The shell
+            // rides this Story*. Both sit in one `HStack`, itself the single view the content
+            // closure returns, so the row is meant to read as one item with two separately
+            // tappable buttons rather than two stacked rows — Apple's own documented example draws
+            // a single `Button` and says nothing about two, so whether this lays out as intended is
+            // **unconfirmed until walked on the phone**. Each carries the accessibility label the
+            // prose in `proposal.md` and `design.md` names, `Move up` and `Move down`, unchanged by
+            // drawing an icon instead of the words. `index` is the group's own position in
             // `screen.keptGroups`, which is `screen.categoriesInUse`'s position too: the group
             // under no category, where there is one, is always last, so every categorised group
             // sits at the same index in both. Up is `index - 1`, down is `index + 2`, and each is
@@ -85,8 +91,11 @@ struct CommitmentsView: View {
             // reach a refusal; nothing here counts rows or asks where a finger is.
             ForEach(Array(screen.keptGroups.enumerated()), id: \.element.category) { index, group in
                 Section {
-                    ForEach(Array(group.commitments.enumerated()), id: \.offset) {
-                        index, commitment in
+                    // Keyed on the commitment's own value, not its position — as the flat list
+                    // was before this Story's group move started carrying whole blocks through
+                    // this `ForEach`. `.onMove` still takes its offsets from the underlying
+                    // `group.commitments`, whatever the `id:` is keyed on.
+                    ForEach(group.commitments, id: \.self) { commitment in
                         commitmentLine(
                             Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                         )
@@ -120,16 +129,31 @@ struct CommitmentsView: View {
                 }
                 .sectionActions {
                     if let category = group.category {
-                        if index > 0 {
-                            Button("Move up") {
-                                screen.move(group: category, toOffset: index - 1)
+                        // One `HStack`, so this is one item to `sectionActions` rather than two —
+                        // see the comment above `ForEach(Array(screen.keptGroups.enumerated())…`.
+                        // Thinner than a commitment row above: the platform's own vertical padding
+                        // on a `sectionActions` row is trimmed the same way the category heading's
+                        // already is, off `.listRowInsets`.
+                        HStack(spacing: 32) {
+                            if index > 0 {
+                                Button {
+                                    screen.move(group: category, toOffset: index - 1)
+                                } label: {
+                                    Image(systemName: "arrow.up")
+                                }
+                                .accessibilityLabel("Move up")
+                            }
+                            if index + 2 <= screen.categoriesInUse.count {
+                                Button {
+                                    screen.move(group: category, toOffset: index + 2)
+                                } label: {
+                                    Image(systemName: "arrow.down")
+                                }
+                                .accessibilityLabel("Move down")
                             }
                         }
-                        if index + 2 <= screen.categoriesInUse.count {
-                            Button("Move down") {
-                                screen.move(group: category, toOffset: index + 2)
-                            }
-                        }
+                        .buttonStyle(.borderless)
+                        .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 2, trailing: 16))
                     }
                 }
             }
