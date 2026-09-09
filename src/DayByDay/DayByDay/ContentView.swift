@@ -182,16 +182,28 @@ struct ContentView: View {
                         // Decision 4: the tick kind's own affordance for "not yet kept, but you
                         // can", in the same slot a kept tick uses — never both, and absent
                         // rather than dimmed where the row offers nothing (`CONTEXT.md` §
-                        // *Offered*). Decision 8: both marks take the accent explicitly, in
-                        // both branches, since neither is drawn inside a `Button` reliably.
+                        // *Offered*).
                         let markSystemName: String? =
                             row.isKept ? "checkmark" : (isTickRow && isTarget ? "circle" : nil)
+                        // Decision 8, reversed: the circle keeps the accent, the checkmark takes
+                        // the grey of the name beside it — the concrete `Color.secondary`, the
+                        // same value `nameColor` takes, never the hierarchical `.secondary`,
+                        // which would resolve against the enclosing `Button`'s accent tint and
+                        // draw a dimmed blue rather than grey. Stated explicitly in both branches,
+                        // since neither is drawn inside a `Button` reliably.
+                        let markColor: Color = row.isKept ? Color.secondary : .accentColor
                         // Resets the hierarchy the rhythm inside `commitmentLine` still reads
                         // `.secondary` against, so it reads grey rather than the Button's accent
-                        // tint, without editing that file.
+                        // tint, without editing that file. Decision 11: the strikethrough goes on
+                        // this child `Text`, not the composed one — measured (ADR-1044) to stay on
+                        // the name, survive the interpolation and take the child's own colour,
+                        // where `.strikethrough()` on the composed `Text` would draw a second rule
+                        // across the rhythm's own baseline as well.
                         let nameLine: Text =
                             commitmentLine(
-                                Text(row.name).foregroundStyle(nameColor),
+                                Text(row.name)
+                                    .foregroundStyle(nameColor)
+                                    .strikethrough(row.isKept),
                                 rhythmInWords: row.rhythmInWords
                             )
                             .foregroundStyle(Color.primary)
@@ -214,7 +226,7 @@ struct ContentView: View {
                             }
                             if let markSystemName {
                                 Image(systemName: markSystemName)
-                                    .foregroundStyle(Color.accentColor)
+                                    .foregroundStyle(markColor)
                             }
                             if entry != nil || noteEntry != nil || totalEntry != nil {
                                 Image(systemName: "chevron.right")
