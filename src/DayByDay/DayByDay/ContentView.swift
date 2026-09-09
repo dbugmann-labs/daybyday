@@ -128,17 +128,13 @@ struct ContentView: View {
                 .buttonStyle(.borderless)
                 Spacer()
                 Text(screen.title)
-                Spacer()
-                Button {
-                    screen.showNextDay()
-                } label: {
-                    Image(systemName: "chevron.right")
-                }
-                .buttonStyle(.borderless)
-                // The day picker: bounded by `screen.dayPickerReach`, which the shell computes
-                // neither end of, per ADR-1019's 2026-09-04 amendment. `.labelsHidden()` because
-                // this row already carries the day's title as text; the default (non-`.graphical`)
-                // style is what B-040 asked for and B-007 explicitly left out.
+                // The day picker: between the chevrons and beside the short weekday title, and
+                // what says the date now that the title says only the weekday
+                // (`shorten-day-title/grill.md` § *Settled* 5). Bounded by `screen.dayPickerReach`,
+                // which the shell computes neither end of, per ADR-1019's 2026-09-04 amendment.
+                // `.labelsHidden()` because the weekday text beside it already labels the row; the
+                // default (non-`.graphical`) style is what B-040 asked for and B-007 explicitly
+                // left out.
                 DatePicker(
                     "Day",
                     selection: Binding(
@@ -158,6 +154,13 @@ struct ContentView: View {
                     displayedComponents: [.date]
                 )
                 .labelsHidden()
+                Spacer()
+                Button {
+                    screen.showNextDay()
+                } label: {
+                    Image(systemName: "chevron.right")
+                }
+                .buttonStyle(.borderless)
             }
             if screen.offersGoingBackToToday {
                 Button {

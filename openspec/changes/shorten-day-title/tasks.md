@@ -95,14 +95,14 @@ One red-green cycle each, one scenario at a time (rule 3), each test named verba
 Under ADR-1019's 2026-09-04 exception — a title nobody can see shortened would leave the wrap this
 Story exists to fix exactly where it is.
 
-- [ ] 5.1 In `ContentView.swift`'s `dayList` `HStack`, arrange the row so the day picker sits
+- [x] 5.1 In `ContentView.swift`'s `dayList` `HStack`, arrange the row so the day picker sits
   between the chevrons and is what says the date, with the short title beside it (`grill.md`
   § *Settled* 5). The shell goes on reading `screen.title` and `screen.dayPickerReach` and computes
   neither. Verify: `xcodebuild build` for the `DayByDay` scheme succeeds.
-- [ ] 5.2 Confirm the shell formats no date and assembles no sentence — `CONTEXT.md` § *App shell*.
+- [x] 5.2 Confirm the shell formats no date and assembles no sentence — `CONTEXT.md` § *App shell*.
   It may pass a `CalendarDate` to `DatePicker` through the `Date` conversion already there; it may
   not build a string out of a weekday, a day, a month or a year. Any such string is a **stop**.
-- [ ] 5.3 Leave `WalkthroughUITests.swift` alone. It asserts the *Today* button and that some row
+- [x] 5.3 Leave `WalkthroughUITests.swift` alone. It asserts the *Today* button and that some row
   was drawn, never the day title. `git diff --stat origin/main... -- src/DayByDay/DayByDayUITests/`
   reports nothing.
 
@@ -113,20 +113,20 @@ G4** — the grill assigned that wording to the delta's author (`grill.md` § *T
 CONTEXT.md*), and leaving them contradicting the delta would have made G4 a read of a doc set
 disagreeing with itself. So 6.1 and 6.2 **confirm** rather than write:
 
-- [ ] 6.1 Confirm `docs/adr/1022-the-day-is-said-in-the-apps-own-words.md` still describes what
+- [x] 6.1 Confirm `docs/adr/1022-the-day-is-said-in-the-apps-own-words.md` still describes what
   shipped: the app says the weekday in its own seven names, the date is the day picker's and so the
   device's, and nothing the app owns states a date. Its `- Amended: 2026-09-09` stamp is present.
   If the implementation needed a rule the ADR does not carry, that is a **stop and a G4 question**,
   not an edit to slip in. **Say what changed in the ADR and why in the PR** — `docs/adr/README.md`'s
   first requirement, read against this diff.
-- [ ] 6.2 Confirm the three amended `CONTEXT.md` entries still describe what shipped — **Day title**
+- [x] 6.2 Confirm the three amended `CONTEXT.md` entries still describe what shipped — **Day title**
   (weekday alone, three letters, no date, no *Today*, not asked as of a day), **Today** (the day
   title is no longer a question asked as of the today) and **Day picker** (between the chevrons, and
   what says the date). Coin no new term: writing the delta turned none up, and coining one here is a
   **stop**, not an edit.
-- [ ] 6.3 Confirm `openspec/specs/` was not hand-edited on this branch (rule 2):
+- [x] 6.3 Confirm `openspec/specs/` was not hand-edited on this branch (rule 2):
   `git diff --stat origin/main... -- openspec/specs/` reports nothing before the archive.
-- [ ] 6.4 Leave `docs/backlog.md` and `docs/open-questions.md` alone. Moving a want is a grooming
+- [x] 6.4 Leave `docs/backlog.md` and `docs/open-questions.md` alone. Moving a want is a grooming
   pass's act, not a Story branch's.
 
 ## 7. Before the review, and what the janitor does at the archive
