@@ -122,6 +122,7 @@ public final class CommitmentsScreen {
         case removing(Commitment, Refusal)
         case moving(Commitment, Refusal)
         case categorising(Commitment, Refusal)
+        case movingGroup(String, Refusal)
     }
 
     /// Why a change was refused. `nil` from any of the five below means it was kept at the place
@@ -416,6 +417,43 @@ public final class CommitmentsScreen {
         // Settled answer 13: a call that reaches the place with no change to make does not end a
         // standing refused-change notice. `design.md` § *A store writes what a change made* is
         // why the comparison is against the roster itself rather than the boolean `move` answers.
+        if rosterStore.roster != rosterBeforeMove {
+            refusedChange = nil
+        }
+        refreshLists(from: rosterStore)
+        return nil
+    }
+
+    /// Moves the **group** named by `category` to `offset`, counted over the groups this screen
+    /// draws that are under a category, as they stand before the move — the same count and the
+    /// same order the roster's own answers, so this screen converts nothing. Does nothing and
+    /// says nothing, neither refusing nor changing anything, when `category` names a group this
+    /// screen draws none of — including the group of the commitments under no category, which
+    /// this act never takes — or when `offset` is outside what the groups under a category draw.
+    /// Answers `nil` on the change being kept, including a move that leaves what is drawn exactly
+    /// where it was. `design.md` § *The seam*.
+    @discardableResult public func move(group category: String?, toOffset offset: Int) -> Refusal? {
+        guard let category, categoriesInUse.contains(category) else {
+            return nil
+        }
+        guard (0...categoriesInUse.count).contains(offset) else {
+            return nil
+        }
+        guard let rosterStore else {
+            refusedChange = .movingGroup(category, .notKept)
+            return .notKept
+        }
+
+        let rosterBeforeMove = rosterStore.roster
+        do {
+            try rosterStore.move(group: category, toOffset: offset)
+        } catch {
+            refusedChange = .movingGroup(category, .notKept)
+            return .notKept
+        }
+
+        // Settled answer 13, read the same way `move` and `put` read it: a call that reaches the
+        // place with no change to make does not end a standing refused-change notice.
         if rosterStore.roster != rosterBeforeMove {
             refusedChange = nil
         }

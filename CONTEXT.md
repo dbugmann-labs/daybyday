@@ -290,10 +290,12 @@ moved to *and* put under that category, and one moved among the commitments unde
 moved and has its category cleared. The category field on the **commitments screen** remains the
 other way to change one, and it changes no order — a commitment given a category is drawn in that
 category's group while staying exactly where the roster holds it, so clearing the category draws it
-back where it never stopped being. One thing no move can do, and this is deliberate as far as #147:
-it cannot lift a whole **group** above another, because every move joins the group it names, so
-moving a group's rows upward dissolves the group rather than moving it. Setting the category back
-afterwards does it in two steps, and moving a group as one act is a Story of its own.
+back where it never stopped being. One thing a move of a *commitment* cannot do, and this was
+deliberate as far as #147: it cannot lift a whole **group** above another, because every such move
+joins the group it names, so moving a group's rows upward dissolves the group rather than moving it.
+Setting the category back afterwards does it in two steps. **#168 answered that by giving a move a
+second thing to take rather than by widening this one** — the amendment below, which is what that
+clause used to say was a Story of its own.
 
 **Corrected 2026-09-08**, at the second § 9.5 walkthrough of the same Story, and the amendment above
 is written in terms of a *move* because of it. As first written it said a person delivers this by
@@ -304,7 +306,30 @@ one collection, and the hand-written drop that was to cross groups was built twi
 phone twice and given up. Refiling across groups is the **commitments screen**'s *Category* action on
 the row. The correction is to the clause and not to the decision, which is why it is stamped here
 rather than made quietly: the domain is the same and only what a person can *do* is narrower. The
-gesture is a want again, and it has a Story of its own (#168).
+gesture is a want again, and it is **B-041** (captured on `chore/backlog`, PR #178) — #168 turned out
+not to need a drag layer at all, so it carries the want rather than delivering it.
+
+**Amended 2026-09-08**, at the grill of `add-category-order` (#168). **A move takes either a
+commitment or a group, and there is no third thing.** Moving a group is given the **category** naming
+it and a place counted over the groups the roster is keeping *that are under a category*; it
+relocates every commitment under that category — kept, stopped and removed alike — as one block,
+keeping their order against each other; and it changes no category, no day and no commitment, because
+every one of them travels under the word that named the group. Between the two, a move is still the
+only thing that ever changes a roster's order. Four things follow, each a decision rather than a
+detail. **A group's place stays derived** — nothing is stored for a group and ADR-1038's rule is
+untouched — so stopping, removing or re-filing a group's *first* commitment can still shift the whole
+group without anyone having moved it. **A scattered group comes back contiguous**, so a commitment
+under another category that lay between two of its members ends up on one side of the whole group;
+everything that stays keeps its order against everything else that stays, and nothing further is
+promised. **The group of the commitments under no category is not one a move takes**: the reading rule
+draws it last wherever its commitments sit and it shows no heading, so there is nothing to take hold
+of and nowhere to put it, and no place puts any group after it. **A group lands where the person
+aimed it, and a past date may in return disagree**: the place is counted over the groups a person can
+see, and the block is put against the target group's first *kept* commitment, so today's list always
+reads the way the tap asked; where a stopped or removed commitment under that target lies earlier in
+the order, a date before the stop then draws those two groups the other way round. Why the block
+carries the stopped and removed commitments where a commitment's move steps over them, and why it is
+placed against a kept one, is **ADR-1044**; ADR-1037 is amended with it.
 
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
@@ -902,8 +927,23 @@ A drag on the kept list reorders a row **within its own group** and no further, 
 names one collection and a group is a section; **refiling across groups is the row's *Category*
 action**, which is offered on the kept list beside *Stop* and *Remove*. The drag that was to cross
 groups was specified, built, walked on the phone, rebuilt and walked again, and given up
-(`add-commitment-category`'s `grill.md` § *Settled* 27). It is a want again, and the Story that gives
-group headings a drag of their own (#168) is where it is cheapest.
+(`add-commitment-category`'s `grill.md` § *Settled* 27). It is a want again — **B-041** — and it is
+not #168's: that Story turned out to need no drag layer, so the want is captured rather than carried.
+
+**Amended 2026-09-08**, at the grill of `add-category-order` (#168). A commitments screen also
+**moves a group among the groups it draws**, and that is where the order the groups are drawn in —
+here and on a **day screen** — is set. It is given the category naming the group and a place counted
+over the groups it draws that are under a category, and it hands that place to the roster untouched:
+unlike a row's move, whose place is counted inside one group and has to be turned into a place in the
+roster's order here, a group's place is the same number at both. A group it draws none of — the group
+of the commitments under no category among them — and a place those groups do not have each ask for
+no change, so it does nothing and says nothing; one it could not keep is the **seventh** kind of
+**refused change**, and the first to name a **category** rather than a commitment, because a person
+tapped a heading and naming one of the rows under it would point at something they did not touch.
+Its stopped list is drawn in the roster's new order afterwards, since a stopped commitment under the
+moved category travels with the group like every other. What a person taps is *Move up* and *Move
+down* in Edit mode, which is the **app shell**'s and carries no requirement: up and down are
+derivable from a place and not the reverse.
 
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most

@@ -55,6 +55,7 @@ struct CommitmentsView: View {
     @State private var keptFromDate: Date
     @State private var categorising: Commitment?
     @State private var categoryTyped = ""
+    @Environment(\.editMode) private var editMode
 
     init(screen: CommitmentsScreen) {
         self.screen = screen
@@ -74,10 +75,33 @@ struct CommitmentsView: View {
             // `design.md` § *The shell rides this Story*. It passes that offset straight through
             // to `screen.move` beside the section's own `group.category`: nothing here adds,
             // subtracts, counts rows or asks where a finger is.
-            ForEach(screen.keptGroups, id: \.category) { group in
+            //
+            // `.sectionActions` draws two icon buttons below a categorised section's content, the
+            // one documented per-section action surface — `design.md` § *The shell rides this
+            // Story*. Gated on `editMode` below: `grill.md` § *Settled* 6 decided the actions
+            // appear in Edit mode only, and both the appearance and the row re-evaluating on that
+            // transition are confirmed — on the phone (2026-09-09) and by
+            // `zzzScratchVerifyEditGateAndRowHeight`, a throwaway XCUITest run during this fix and
+            // not kept: no `Move up`/`Move down` button exists before `EditButton()` is tapped,
+            // both exist right after. Both sit in one `HStack`, itself the single view the content
+            // closure returns, so the row reads as one item with two separately tappable buttons
+            // rather than two stacked rows — confirmed on the phone: Apple's own documented example
+            // draws a single `Button` and says nothing about two, so this was open until walked.
+            // Each carries the accessibility label the prose in `proposal.md` and `design.md`
+            // names, `Move up` and `Move down`, unchanged by drawing an icon instead of the words.
+            // `groupIndex` is the group's own position in
+            // `screen.keptGroups`, which is `screen.categoriesInUse`'s position too: the group
+            // under no category, where there is one, is always last, so every categorised group
+            // sits at the same index in both. Up is `groupIndex - 1`, down is `groupIndex + 2`,
+            // and each is drawn only where that offset is one `screen.categoriesInUse` has, so no
+            // tap can reach a refusal; nothing here counts rows or asks where a finger is.
+            ForEach(Array(screen.keptGroups.enumerated()), id: \.element.category) { groupIndex, group in
                 Section {
-                    ForEach(Array(group.commitments.enumerated()), id: \.offset) {
-                        index, commitment in
+                    // Keyed on the commitment's own value, not its position — as the flat list
+                    // was before this Story's group move started carrying whole blocks through
+                    // this `ForEach`. `.onMove` still takes its offsets from the underlying
+                    // `group.commitments`, whatever the `id:` is keyed on.
+                    ForEach(group.commitments, id: \.self) { commitment in
                         commitmentLine(
                             Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                         )
@@ -95,8 +119,8 @@ struct CommitmentsView: View {
                         }
                     }
                     .onMove { source, offset in
-                        guard let index = source.first else { return }
-                        screen.move(group.commitments[index], toOffset: offset, under: group.category)
+                        guard let rowIndex = source.first else { return }
+                        screen.move(group.commitments[rowIndex], toOffset: offset, under: group.category)
                     }
                 } header: {
                     if let category = group.category {
@@ -107,6 +131,49 @@ struct CommitmentsView: View {
                         // owner's ask was about the gap above a category.
                         Text(category)
                             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
+                    }
+                }
+                .sectionActions {
+                    if editMode?.wrappedValue.isEditing == true, let category = group.category {
+                        // One `HStack`, so this is one item to `sectionActions` rather than two —
+                        // see the comment above `ForEach(Array(screen.keptGroups.enumerated())…`.
+                        //
+                        // **This row cannot be made thinner than a commitment row from here.**
+                        // Measured 2026-09-09 with `zzzScratchVerifyEditGateAndRowHeight`: a
+                        // `sectionActions` row's own frame reads exactly 52.0pt — identical, to the
+                        // decimal, to a plain commitment row's (`Creatine - Every day`, also
+                        // 52.0pt) — and stays exactly 52.0pt across three separate builds tried in
+                        // turn: `.listRowInsets` alone (below), `.listRowInsets` plus
+                        // `.frame(height: 32)`, and both plus
+                        // `.environment(\.defaultMinListRowHeight, 32)` on the row's own content.
+                        // None moved it by a point. `sectionActions` appears to impose a fixed,
+                        // platform-drawn row height on this SDK (iOS 26.5) that no content-level
+                        // sizing modifier reaches — consistent with the header text above shrinking
+                        // to 28pt off the same `.listRowInsets` this row ignores, so the modifier
+                        // itself works in this file, just not on a `sectionActions` row. Left as
+                        // `.listRowInsets` alone, since the other two measured no different from
+                        // one another and from having neither; not shrinking the icons instead,
+                        // since that would not change what reads as thick — the row.
+                        HStack(spacing: 32) {
+                            if groupIndex > 0 {
+                                Button {
+                                    screen.move(group: category, toOffset: groupIndex - 1)
+                                } label: {
+                                    Image(systemName: "arrow.up")
+                                }
+                                .accessibilityLabel("Move up")
+                            }
+                            if groupIndex + 2 <= screen.categoriesInUse.count {
+                                Button {
+                                    screen.move(group: category, toOffset: groupIndex + 2)
+                                } label: {
+                                    Image(systemName: "arrow.down")
+                                }
+                                .accessibilityLabel("Move down")
+                            }
+                        }
+                        .buttonStyle(.borderless)
+                        .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 2, trailing: 16))
                     }
                 }
             }
@@ -127,6 +194,10 @@ struct CommitmentsView: View {
 
             if case .categorising(_, let categorisingRefusal) = screen.refusedChange {
                 refusalText(categorisingRefusal)
+            }
+
+            if case .movingGroup(_, let movingGroupRefusal) = screen.refusedChange {
+                refusalText(movingGroupRefusal)
             }
 
             Section("Stopped") {
