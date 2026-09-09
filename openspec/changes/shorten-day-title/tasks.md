@@ -142,10 +142,10 @@ disagreeing with itself. So 6.1 and 6.2 **confirm** rather than write:
   `openspec/changes/shorten-day-title/` or anywhere under `openspec/specs/` is a **stop**, not a
   merge to resolve (rule 5) — this delta restates twelve requirements of `day-screen`, so any other
   Story that landed on that capability meanwhile conflicts with it by construction.
-- [ ] 7.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+- [x] 7.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff, and do not act on findings until they come back
   through the conductor. This box is ticked when the hand-back is written.
-- [ ] 7.5 Write the archive handover for the janitor, into the PR or the hand-back message.
+- [x] 7.5 Write the archive handover for the janitor, into the PR or the hand-back message.
   **The `implementer` ticks this box, in its last commit before the archive**, on the evidence that
   the handover has been written — the checking itself is the janitor's step and has no box of its
   own, deliberately: a box whose tick depends on the archive having run cannot be reached
