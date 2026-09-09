@@ -54,6 +54,14 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   early and add a check that fails the PR when the number is taken — is the one this recurrence
   argues for, the convention having now failed on its second outing.
 
+- **The shell reads its own clock per row.** `ContentView.swift:164` asks each row what it offers as
+  of `today()`, a `Calendar.current` read (`ContentView.swift:59-62`), while the screen holds a today
+  it was handed at `init` and re-handed on `shown(asOf:)`. The two can disagree across midnight, and
+  gating the row tap the same way inherits that. It predates this Story — all five existing row
+  offers are already asked that way — and closing it means either exposing the screen's today or
+  moving row answers onto the screen, both of which #174's grill rejected on their own merits.
+  Recorded 2026-09-09, at #174's close-out.
+
 - **The general record reader all four kinds would share.** Deferred by `add-number-record` (#138)
   at its grill's Q5 — "rather than fix the shape of two records nobody has grilled yet" — and
   `add-note-record` (#140)'s `design.md` named `add-total-record` (#141) as the change where that
