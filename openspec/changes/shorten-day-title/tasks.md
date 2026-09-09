@@ -131,12 +131,12 @@ disagreeing with itself. So 6.1 and 6.2 **confirm** rather than write:
 
 ## 7. Before the review, and what the janitor does at the archive
 
-- [ ] 7.1 `cd src/DayByDayKit && swift test` — every test green, and the count is **959**: 961 at
+- [x] 7.1 `cd src/DayByDayKit && swift test` — every test green, and the count is **959**: 961 at
   the base, plus the seven new tests of § 2.1 and § 4, minus the nine retired in § 3.4. A count that
   comes back different is a **stop** (rule 5), not a number to write down — it means a test was
   renamed or dropped that § 1.1 forbids. From the repo root, `pnpm run verify` green and
   `pnpm run checks` reporting `110/110 scenario(s) covered`.
-- [ ] 7.2 `openspec validate shorten-day-title --strict` exits 0, and `openspec validate --all
+- [x] 7.2 `openspec validate shorten-day-title --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [ ] 7.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/shorten-day-title/` or anywhere under `openspec/specs/` is a **stop**, not a
