@@ -1397,3 +1397,91 @@ func aGroupMoveThatLeavesAGroupWhereItIsKeepsNothingAtARosterStoresPlace() throw
     #expect(movedAtOffsetJustAfter)
     #expect(try Data(contentsOf: place) == bytesBeforeMove)
 }
+
+@Test("a commitment changed through a roster store is read back changed by a store opened afterwards")
+func aCommitmentChangedThroughARosterStoreIsReadBackChangedByAStoreOpenedAfterwards() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    let first = try RosterStore(at: place)
+    try first.add(gym)
+
+    let changed = try first.change(gym, to: gymEmoji, under: nil)
+
+    let later = try RosterStore(at: place)
+
+    #expect(changed)
+    #expect(later.roster.commitments == [gymEmoji])
+}
+
+@Test("a commitment superseded through a roster store is read back superseded by a store opened afterwards")
+func aCommitmentSupersededThroughARosterStoreIsReadBackSupersededByAStoreOpenedAfterwards() throws {
+    let place = freshPlace()
+    let originalSchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: originalSchedule, keptFrom: keptFrom)!
+    let newGym = Commitment(
+        name: "Gym", schedule: newSchedule,
+        keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!)!
+    let thirtyFirstOfAugust = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let first = try RosterStore(at: place)
+    try first.add(gym)
+
+    let superseded = try first.supersede(
+        gym, with: newGym, keptUntil: thirtyFirstOfAugust, under: nil)
+
+    let later = try RosterStore(at: place)
+
+    #expect(superseded)
+    #expect(later.roster.commitments == [newGym])
+    #expect(later.roster.commitments(on: thirtyFirstOfAugust) == [newGym, gym])
+}
+
+@Test("a change and a supersession a roster refuses keep nothing at a roster store's place")
+func aChangeAndASupersessionARosterRefusesKeepNothingAtARosterStoresPlace() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let thirtyFirstOfAugust = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.add(run)
+    let bytesBefore = try Data(contentsOf: place)
+
+    let changed = try store.change(gym, to: run, under: nil)
+
+    #expect(!changed)
+    #expect(try Data(contentsOf: place) == bytesBefore)
+
+    let superseded = try store.supersede(gym, with: run, keptUntil: thirtyFirstOfAugust, under: nil)
+
+    #expect(!superseded)
+    #expect(try Data(contentsOf: place) == bytesBefore)
+}
+
+@Test("a change of a commitment for itself keeps nothing at a roster store's place")
+func aChangeOfACommitmentForItselfKeepsNothingAtARosterStoresPlace() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym, under: "Sport")
+    let bytesBefore = try Data(contentsOf: place)
+    let rosterBefore = store.roster
+
+    let changed = try store.change(gym, to: gym, under: "Sport")
+
+    #expect(changed)
+    #expect(store.roster == rosterBefore)
+    #expect(try Data(contentsOf: place) == bytesBefore)
+}
