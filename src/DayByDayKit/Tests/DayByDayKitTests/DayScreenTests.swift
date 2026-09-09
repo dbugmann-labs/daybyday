@@ -731,6 +731,7 @@ func aDayScreenSaysItsDayTheSameWayWhetherOrNotItIsShowingItsToday() {
     let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
 
     #expect(!screen.offersGoingBackToToday)
+    #expect(screen.title == "Mon")
 
     for _ in 0..<7 {
         screen.showPreviousDay()
