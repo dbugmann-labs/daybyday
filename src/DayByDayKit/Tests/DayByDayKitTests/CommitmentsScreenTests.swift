@@ -4485,14 +4485,20 @@ func aCommitmentRenamedThroughACommitmentsScreenIsDrawnUnderItsNewNameInThePlace
         asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
 
     let refusal = screen.change(
-        gym, toName: "Gym 🏋️", on: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
-        under: nil)
+        gym, toName: "Gym 🏋️",
+        on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, under: nil)
 
     #expect(refusal == nil)
     #expect(screen.kept.map(\.name) == ["Water plants", "Gym 🏋️", "Journaling"])
 
     let laterRosterStore = try RosterStore(at: places.roster)
     #expect(laterRosterStore.roster.commitments.map(\.name) == ["Water plants", "Gym 🏋️", "Journaling"])
+    // Renamed in place, not superseded: a day before today still finds only these three — a
+    // supersession would leave a fourth, removed twin visible on that day.
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    #expect(laterRosterStore.roster.commitments(on: sunday).count == 3)
 }
 
 @MainActor
@@ -4516,8 +4522,10 @@ func everyRecordOfACommitmentRenamedThroughACommitmentsScreenIsCarriedOverToTheN
         asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
 
     let refusal = screen.change(
-        gym, toName: "Gym 🏋️", on: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
-        under: nil)
+        gym, toName: "Gym 🏋️",
+        on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, under: nil)
 
     #expect(refusal == nil)
 
@@ -4525,6 +4533,12 @@ func everyRecordOfACommitmentRenamedThroughACommitmentsScreenIsCarriedOverToTheN
     let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
     #expect(laterRecordStore.history.isKept(gymEmoji, on: august3rd))
     #expect(!laterRecordStore.history.isKept(gym, on: august3rd))
+
+    // Renamed in place, not superseded: a day before today still finds only the one commitment
+    // — a supersession would leave a second, removed twin visible on that day.
+    let laterRosterStore = try RosterStore(at: places.roster)
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    #expect(laterRosterStore.roster.commitments(on: sunday).count == 1)
 }
 
 @MainActor
