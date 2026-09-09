@@ -17,6 +17,17 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 ## Open technical decisions
 
+- **Whether the specs and change folders should be made concise, and how.** The capability specs are
+  12,515 lines, 35% of it requirement prose that is two-thirds rationale already recorded in ADRs and
+  one-third rules, some twenty of which are stated only in sentences that read as commentary; the change
+  folders have grown from 167 lines to over 2,000, almost entirely on reopening history and pasted logs.
+  `docs/research/2026-09-09-concise-specs.md` measures both, drafts the `openspec/config.yaml` rules that
+  would hold future artifacts down, and lays out a phased plan: the config and agent edits as one chore
+  after #148 and #176 merge, then one editorial Story per capability whose delta is MODIFIED-only and
+  whose tests do not change, because rule 2 and CI check 2 leave no other lane. It also says where it
+  disagrees with the ask: most of the size is scenarios, and rules alone will not hold without the
+  reviewer checking them. Four decisions are listed at its end; none is taken.
+
 - **When an ADR number is claimed.** Today it is taken at Stage 4, when the file is written,
   and merged at Stage 9 — so two branches open at once can both write the same number and
   neither learns of it until a rebase conflicts in `docs/adr/README.md`. Story #11 hit it twice
