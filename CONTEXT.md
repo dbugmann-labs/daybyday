@@ -713,7 +713,18 @@ row on a day screen may ever take a swipe action, which is the opposite of the *
 screen**, where a row swipe is how a commitment is stopped, resumed and removed. The swipe itself
 decides nothing and is the **app shell**'s, since it calls the same two acts the chevrons already
 call; what is decided, and what a later want for a day-screen row affordance has to read first, is
-who owns the gesture. ADR-1042.
+who owns the gesture. ADR-1042. **A day change draws no motion**: chevron, swipe and `Today` alike
+replace the day where it stands. Motion played once the finger is already off was built against
+this screen and tried on a phone on 2026-09-09, and it was rejected there — an acknowledgement that
+arrives after the gesture is over leaves the drag itself reading as unresponsive, which is worse
+than replacing instantly. What is owed instead is a day screen that **pages under the finger**, the
+day being dragged toward already drawn and moving with the thumb; that needs the kit to answer the
+day either side of the one being shown without moving onto it, which is a requirement and so a
+Story rather than a chore. Two constraints outlive all of it. Whatever moves is **the whole day and
+never its rows**, since the shell identifies a day-screen row by its position — anything animating
+this list reads that first. And the `Today` button never animates: it is a button, so it
+acknowledges its own press, and it is a jump of arbitrary distance that no one-day slide could
+describe honestly. ADR-1043.
 
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **record store** it reads a history from and writes a tick back to, the

@@ -245,6 +245,22 @@ struct ContentView: View {
         // Same measured value as `CommitmentsView`'s kept list — see the comment there for how
         // it was determined.
         .listSectionSpacing(12)
+        // The gap between the toolbar and the day's title row — not `.listSectionSpacing` above,
+        // which is the gap the *category headings* sit under, and not a `listRowInsets` on a
+        // section header, since the day-title row is bare content, not a section. Measured on
+        // this SDK (iPhone 17 simulator, iOS 26.5) the same way as `.listSectionSpacing(12)`
+        // above: with no `.contentMargins` at all, the day-title card's top edge read 151.0pt
+        // from the top of the screen. Calibrated against `for: .automatic` specifically —
+        // `for: .scrollContent` was tried first and moved the card by less than it was asked to,
+        // an unexplained partial effect this comment does not rely on — by setting it to 0pt and
+        // to 40pt: the card read 116.0pt and 156.0pt respectively, a full point-for-point 40pt
+        // move for a 40pt ask, so `for: .automatic` has no hidden offset to account for and the
+        // platform's own unstated default here is 151.0 − 116.0 = 35.0pt. 24 is about two thirds
+        // of that, the same proportion `.listSectionSpacing(12)` above took off its own 17.7pt
+        // default, and reads 140.0pt on screen — an 11.0pt tightening, confirmed rather than
+        // interpolated. Not pushed toward a floor: the owner's ask was "slightly smaller," not
+        // "as small as possible," and this leaves a clearly visible gap under the toolbar.
+        .contentMargins(.top, 24, for: .automatic)
         .simultaneousGesture(daySwipeGesture)
         .alert(
             enteringRow?.name ?? "",
