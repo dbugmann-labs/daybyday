@@ -138,7 +138,7 @@ disagreeing with itself. So 6.1 and 6.2 **confirm** rather than write:
   `pnpm run checks` reporting `110/110 scenario(s) covered`.
 - [x] 7.2 `openspec validate shorten-day-title --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
-- [ ] 7.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+- [x] 7.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/shorten-day-title/` or anywhere under `openspec/specs/` is a **stop**, not a
   merge to resolve (rule 5) — this delta restates twelve requirements of `day-screen`, so any other
   Story that landed on that capability meanwhile conflicts with it by construction.
