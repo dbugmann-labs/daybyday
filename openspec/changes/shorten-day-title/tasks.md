@@ -5,19 +5,19 @@ have an acceptance test carrying exactly the right name.** What changes in those
 assert, not what they are called. Read these three before starting; each one is a way this change
 can go wrong quietly.
 
-- [ ] 1.1 **Never rename or delete a test that a delta scenario names.** Confirm before you start
+- [x] 1.1 **Never rename or delete a test that a delta scenario names.** Confirm before you start
   that all 110 scenario titles in `specs/day-screen/spec.md` are accounted for: 103 have a test
   today, 7 do not and are listed in § 4. Nine *other* tests are retired in § 3.4 because their
   requirements are `## REMOVED`; those nine are the only deletions this change makes, and their
   names are listed there. Verify with `pnpm run checks` reporting `110/110 scenario(s) covered` at
   the end, and with § 7.1's test count.
-- [ ] 1.2 **CI check 4 cannot catch a stale assertion in this change.** It matches scenario titles
+- [x] 1.2 **CI check 4 cannot catch a stale assertion in this change.** It matches scenario titles
   to test titles, and 103 of them already match — so a test whose assertion was never brought in
   line still passes it. `swift test` is what catches those, because the implementation returns
   `"Mon"` where the old assertion expects `"Today · Monday 31 August 2026"`. Never make a test pass
   by relaxing it: if an assertion cannot be made to match its scenario, that is a **stop**
   (rule 5), not a weakened test.
-- [ ] 1.3 **Read `design.md` § *What the other ten requirements assert instead* before touching
+- [x] 1.3 **Read `design.md` § *What the other ten requirements assert instead* before touching
   `DayScreenTests.swift`.** Ten requirements change no behaviour at all; their scenarios swap a
   day-title assertion for `dayPickerReach.opensOn` or `offersGoingBackToToday`. If a scenario in
   the delta seems to require a *new* answer from `DayScreen`, you have misread it — nothing in this
@@ -25,7 +25,7 @@ can go wrong quietly.
 
 ## 2. The kit: what a day title says
 
-- [ ] 2.1 Take **`a day view says its day as the three-letter name of its weekday`** red-green as
+- [x] 2.1 Take **`a day view says its day as the three-letter name of its weekday`** red-green as
   one cycle (rule 3). Write the test in `DayViewTests.swift` named exactly that; it asserts a day
   view of Monday 31 August 2026 says `"Mon"`, and it is red against today's implementation, which
   says `"Monday 31 August 2026"`. Then make it pass:
@@ -33,11 +33,11 @@ can go wrong quietly.
   only caller, and `DayView.title(asOf:)` becomes `public var title: String` returning that one
   lookup — no `date == today` comparison and no `"Today · "` prefix. `DayScreen.title` drops the
   `asOf: today` argument it passes on.
-- [ ] 2.2 Expect this one edit to turn a large number of shipped tests red at once — that is this
+- [x] 2.2 Expect this one edit to turn a large number of shipped tests red at once — that is this
   change's shape, not a mistake, and § 3 is where they come back. Verify the edit itself is
   complete rather than the suite green: `cd src/DayByDayKit && swift build` succeeds, and
   `grep -rn 'monthNames\|title(asOf' src/` returns nothing.
-- [ ] 2.3 Confirm `Weekday.swift` and `ScheduleWords.swift` are **untouched** by this branch —
+- [x] 2.3 Confirm `Weekday.swift` and `ScheduleWords.swift` are **untouched** by this branch —
   `git diff --stat origin/main... -- src/DayByDayKit/Sources/DayByDayKit/Weekday.swift
   src/DayByDayKit/Sources/DayByDayKit/ScheduleWords.swift` reports nothing. `design.md` § *Why the
   two tables stay apart* says why the weekday names are not shared with `schedule`'s; merging them
@@ -49,10 +49,10 @@ Work **one requirement at a time**, in this order, and run `swift test` after ea
 ticked when every test belonging to that requirement is green and asserts what its scenario in
 `specs/day-screen/spec.md` says — no more and no less.
 
-- [ ] 3.1 **The two title requirements** (`## ADDED`). In `DayViewTests.swift`, the four reused
+- [x] 3.1 **The two title requirements** (`## ADDED`). In `DayViewTests.swift`, the four reused
   names under *A day view says its day as a weekday*; in `DayScreenTests.swift`, the five reused
   names under *A day screen says the day it is showing*. Assertions become the short weekday.
-- [ ] 3.2 **The eight re-witnessed requirements.** *A day screen moves the day it is showing one
+- [x] 3.2 **The eight re-witnessed requirements.** *A day screen moves the day it is showing one
   calendar day either way*; *A day screen goes straight back to the today it was handed*; *A move
   with nowhere to go leaves a day screen exactly as it was*; *What a day screen tells on a row lasts
   until…*; *A day screen reads its roster again when it is returned to*; *A day screen says whether
@@ -60,12 +60,12 @@ ticked when every test belonging to that requirement is green and asserts what i
   shows a day picked on its day picker*. In each, a day-title assertion becomes an assertion on
   `screen.dayPickerReach.opensOn`, on `screen.offersGoingBackToToday`, or on both — read the
   scenario, do not pattern-match the old line.
-- [ ] 3.3 **The two requirements that keep a title assertion.** *A day screen that cannot read its
+- [x] 3.3 **The two requirements that keep a title assertion.** *A day screen that cannot read its
   roster draws the day and no rows* keeps its clause and it becomes `"Mon"` — that requirement is
   about the screen still saying its day. The five scenarios re-homed into *A day screen re-reads its
   day and its record when the app is shown again* keep their names and their tests, and their
   day-title clauses are re-witnessed as in 3.2.
-- [ ] 3.4 **Delete exactly these nine tests**, whose requirements are `## REMOVED` and whose names
+- [x] 3.4 **Delete exactly these nine tests**, whose requirements are `## REMOVED` and whose names
   appear nowhere in the delta: `a day view says its day as a weekday, a day of the month, a month
   and a year`; `a day view of the day it is asked as of says Today before the date`; `a day view of
   a day before the one it is asked as of says the date and not Today`; `a day view of a day after
@@ -79,16 +79,16 @@ ticked when every test belonging to that requirement is green and asserts what i
 
 One red-green cycle each, one scenario at a time (rule 3), each test named verbatim:
 
-- [ ] 4.1 `two day views whose dates fall on the same weekday say the same day title` — the scenario
+- [x] 4.1 `two day views whose dates fall on the same weekday say the same day title` — the scenario
   that pins *no day of the month, no month, no year*.
-- [ ] 4.2 `a day screen says its day the same way whether or not it is showing its today` — the
+- [x] 4.2 `a day screen says its day the same way whether or not it is showing its today` — the
   scenario that pins *Today* being gone from the words. If this one is hard to make fail first, the
   implementation already dropped the prefix in § 2.1; write it anyway and confirm it is green for
   the right reason by temporarily restoring the prefix.
-- [ ] 4.3 `a day screen says the day its own day view says`.
-- [ ] 4.4 `a day screen moved to another day says that day`.
-- [ ] 4.5 `a day screen sent back onto today says that today's weekday`.
-- [ ] 4.6 `a day screen showing a day picked on its day picker says that day`.
+- [x] 4.3 `a day screen says the day its own day view says`.
+- [x] 4.4 `a day screen moved to another day says that day`.
+- [x] 4.5 `a day screen sent back onto today says that today's weekday`.
+- [x] 4.6 `a day screen showing a day picked on its day picker says that day`.
 
 ## 5. The shell
 
