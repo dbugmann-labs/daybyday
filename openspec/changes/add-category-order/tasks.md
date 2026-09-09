@@ -144,7 +144,7 @@ each is verified by the new scenario named in it plus the carried tests staying 
 - [x] 5.3 *what a commitments screen holds about a refused change ends when a group move is kept*.
 - [x] 5.4 *what a commitments screen holds about a refused change stands when a group move leaves a
   group where it is*.
-- [ ] 5.5 **Unticked at the second G4**, because it was ticked against a delta that contradicted
+- [x] 5.5 **Unticked at the second G4**, because it was ticked against a delta that contradicted
   itself, so the reading it records was made against sentences that could not all be true at once. It
   is not a box that was skipped: it asks whether each corrected sentence is true of the code, the
   answer was taken as yes, and the sentence the review found false — where the block is placed — is
@@ -194,7 +194,7 @@ is a stop.
 `docs/adr/**` and `CONTEXT.md` are `spec-author`'s to write, so all three land in the diff G4 signs
 and these boxes **confirm rather than write**.
 
-- [ ] 7.1 Confirm `docs/adr/1044-a-group-move-carries-the-whole-group.md` is present, is in
+- [x] 7.1 Confirm `docs/adr/1044-a-group-move-carries-the-whole-group.md` is present, is in
   `docs/adr/README.md`'s table in numeric order, and says what `design.md` § *A group move is a block
   move* and § *Where the block is put* both say — the second including the 2026-09-09 amendment, which
   reverses the anchor the block is placed against and states what that costs. **The number is 1044 and
@@ -202,11 +202,11 @@ and these boxes **confirm rather than write**.
   this Story was in review, numbers are never reused (ADR-1020) and gaps are normal. Nothing in
   `scripts/` checks ADR numbering, so this box is the check: confirm no two files under `docs/adr/`
   share a number, and that no reference to **1043** anywhere in this diff means this ADR.
-- [ ] 7.2 Confirm ADR-1037 is amended in place and stamped — a move is still the only thing that
+- [x] 7.2 Confirm ADR-1037 is amended in place and stamped — a move is still the only thing that
   changes a roster's order, and it now takes a group as well as a commitment — and that **ADR-1038 is
   untouched**. A diff touching 1038 is a stop: its rule surviving the block move intact is why the
   block move was chosen.
-- [ ] 7.3 Confirm `CONTEXT.md` § *Move* and § *Commitments screen* carry this Story's amendments —
+- [x] 7.3 Confirm `CONTEXT.md` § *Move* and § *Commitments screen* carry this Story's amendments —
   § *Move* including the fourth of the things that follow, added at the second G4: a group lands where
   the person aimed it and a past date may in return disagree — and
   that § *Move*'s 2026-09-08 clause saying a group move "is a Story of its own" has been rewritten
