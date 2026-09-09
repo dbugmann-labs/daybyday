@@ -581,10 +581,10 @@ direction, and a screen showing any other date SHALL move both ways.
 - **WHEN** a day screen is opened as of Saturday 1 January 1583, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 1583, and a second day screen is opened the same way as of Friday 31 December 9999
-- **THEN** the first, moved to the day before and then to the day after, says the day is "Sunday
-  2 January 1583"
-- **AND** the second, moved to the day after and then to the day before, says the day is "Thursday
-  30 December 9999"
+- **THEN** after the first is moved to the day before and then to the day after, its day picker
+  opens on Sunday 2 January 1583
+- **AND** after the second is moved to the day after and then to the day before, its day picker
+  opens on Thursday 30 December 9999
 
 ### Requirement: A day screen that cannot read its roster draws the day and no rows
 

@@ -173,3 +173,73 @@ disagreeing with itself. So 6.1 and 6.2 **confirm** rather than write:
   `openspec validate --archived` must both exit 0. **Any drift is a stop and a report, never a
   hand-edit** — `openspec/specs/` is written by `/opsx:archive` and nothing else (rule 2), and the
   archive path is denied to every editor anyway.
+
+## 8. Answering the second review pass
+
+`reviewer` came back at **G7** with three findings and all three were accepted (PR #190, the review
+comment of 2026-09-09). One of them is a delta edit; it is already in this folder and is what the
+third G4 approval on this Story signs.
+
+**Finding 1 — done here, and it costs no code.** *A move with nowhere to go leaves a day screen
+exactly as it was* holds three scenarios, and the third, `a day screen at either end of the calendar
+still moves the other way`, was carried over from `main` with both its day-title clauses untouched:
+the delta required a day screen to say `"Sunday 2 January 1583"` and `"Thursday 30 December 9999"`,
+a form this very change makes impossible and one the ADDED requirement at the top of the same file
+forbids. Both clauses now witness the day the screen's picker opens on, exactly as the requirement's
+two other scenarios already did and exactly as the test carrying that name
+(`DayScreenTests.swift`, `aDayScreenAtEitherEndOfTheCalendarStillMovesTheOtherWay`) already asserts.
+**No test changes, no rename, and § 7.1's count of 1015 does not move.** `design.md` § *What the
+other ten requirements assert instead* records why it was a miss rather than a decision.
+
+The two boxes below are the other two findings. **Both are the `implementer`'s, and the
+`implementer` ticks both**, one commit each. Neither may be started until `pnpm run check:g4`
+reports this folder approved again (rule 1) — finding 1 edited the delta, so the approval that
+stood before it is stale by construction.
+
+- [ ] 8.1 **Witness the "exactly as it did before the tick" clause.** The scenario `a day screen
+  says the same day after a tick is made on it` says the screen says `"Mon"` *exactly as it did
+  before the tick*, and its test (`aDayScreenSaysTheSameDayAfterATickIsMadeOnIt`) reads the title
+  once, after `try screen.tick(...)`. An implementation whose title changed on a tick — `"Sun"`
+  before, `"Mon"` after — passes it. Add `#expect(screen.title == "Mon")` on the line before the
+  tick, so the comparison the scenario names is the one the test makes. This is the same edit
+  `c360369` made one scenario down, in *a day screen says its day the same way whether or not it is
+  showing its today*; that commit's message is the model for this one's. **Do not rename the test
+  and do not add a second one** — § 1.1 forbids the first and § 7.1's count of 1015 forbids the
+  second. Ticked when the assertion is in and `swift test` is green.
+- [ ] 8.2 **Look at the day-title row, and write what you saw into this box.** The defect that
+  started this Story is a wrap: with `add-day-picker`'s fourth control in the row,
+  "Today · Wednesday 9 September 2026" ran onto a second line (`proposal.md` § *Why*). Nothing in
+  this branch has yet looked at whether it stopped — `ui-smoke` is skipped while the PR is a draft
+  and asserts only that the app drew a row, and § 5.1 asks only that `xcodebuild build` succeeds.
+  So look, on a booted Simulator, and say plainly what you saw and on what device and iOS version:
+
+  ```bash
+  cd src/DayByDay
+  xcrun simctl boot 'iPhone 17'; open -a Simulator            # already booted: boot exits non-zero, fine
+  xcodebuild -project DayByDay.xcodeproj -scheme DayByDay \
+    -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /tmp/dbd-look build
+  xcrun simctl uninstall booted com.dbugmann.daybyday          # the Simulator keeps the record between runs
+  xcrun simctl install booted /tmp/dbd-look/Build/Products/Debug-iphonesimulator/DayByDay.app
+  xcrun simctl launch booted com.dbugmann.daybyday
+  xcrun simctl io booted screenshot /tmp/day-title-row.png
+  ```
+
+  Add a commitment through *Commitments* first, so the picker's reach is a real one rather than an
+  empty roster's, and read the screenshot rather than describing what you expect. **Two different
+  answers come out of this and they are not the same finding.** That the title now sits on one line
+  beside the chevrons and the picker is the Story's own defect closed: if it still wraps, or is
+  truncated, or shrinks, that is a **stop** (rule 5) and a report — this change did not do what it
+  exists to do. Anything else about how the row reads — spacing, alignment, the picker's weight
+  against the weekday — is the ADR-1019 shell observation `design.md` § *Open Questions* 2 sends
+  here: write it down, do not act on it, and it becomes a further chore rather than a respec.
+  The commands above build a throwaway product into `/tmp`; nothing under `src/` changes, and
+  `git diff --stat origin/main... -- src/DayByDay/` must report exactly what § 5 left. Ticked when
+  the look has happened and its result is written into this box.
+- [ ] 8.3 **Re-run § 7's checks over the fixed branch and hand back.** `cd src/DayByDayKit && swift
+  test` green at **1015** — unchanged by both boxes above, and a different number is a stop;
+  `pnpm run verify` green and `pnpm run checks` reporting `112/112 scenario(s) covered` from the
+  repo root; `openspec validate shorten-day-title --strict` and `openspec validate --all --strict
+  --no-interactive` both exit 0; then rebase onto current `main` and push with `--force-with-lease`,
+  a conflict in the change folder or under `openspec/specs/` being a stop as in § 7.3. Hand back for
+  the review; § 7.5's archive handover stands unchanged and is still the janitor's instruction.
+  Ticked when the hand-back is written.

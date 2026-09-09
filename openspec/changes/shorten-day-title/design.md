@@ -32,7 +32,8 @@ Three shipped answers do the work instead, and none of them moves in this change
 - **Changing what the day screen *does*.** Ten of the twelve requirements in the delta change no
   behaviour. Their scenarios are re-witnessed; nothing they require moves.
 - **Deciding the day-title row's layout.** The picker sitting between the chevrons is the shell's
-  under ADR-1019, confirmed in the Simulator at implementation rather than specified here.
+  under ADR-1019, looked at in the Simulator and written down at **`tasks.md` § 8.2** rather than
+  specified here.
 - **Making the date something the app can assert again.** It is the picker's now, in the device's
   words. See § *What this costs*.
 - Localisation of any kind. ADR-1022 stands.
@@ -109,6 +110,17 @@ scenarios assert a weakened proxy and six assert the real thing is one nobody ca
 leaving the title quoted in nine requirements rebuilds the 64-site coupling that made this change
 cost what it costs. After this delta a day title is quoted in three requirements instead of eleven.
 
+**One scenario escaped that rule and was caught on the second review pass.** *A move with nowhere to
+go leaves a day screen exactly as it was* holds three scenarios; two were re-witnessed and the third,
+*a day screen at either end of the calendar still moves the other way*, was carried over from `main`
+with its two day-title clauses untouched — so the delta required a day screen to say `"Sunday
+2 January 1583"` while the requirement three hundred lines above it required that same screen to say
+`"Sun"`. It was a miss rather than a decision: nothing distinguishes that scenario from its two
+siblings, and the acceptance test carrying its name had already been written against
+`dayPickerReach.opensOn`, so the contradiction was invisible to `swift test` and to CI check 4 alike.
+Both clauses now witness the day the picker opens on, which is what the rule says and what the test
+already asserts. The count above was three only after this correction — before it, four.
+
 **This does not contradict `grill.md` § *Settled* 6.** That answer — "nothing the app owns can state
 which date is showing, so no scenario, test or screenshot asserts it" — is about what the app
 **says**, and it holds: no scenario in this delta asserts a date in words anywhere. `opensOn` is an
@@ -182,8 +194,12 @@ callers, and it ships in one commit series on one branch.
    settle and nothing in this delta constrains how: the requirement says what the screen *says its
    day is*, and says nothing about where any control sits. Deliberately left there.
 2. **Whether the row still lays out well once the picker is its centre** is a shell observation
-   under ADR-1019, confirmed in the Simulator at implementation (`tasks.md` § 4) rather than decided
-   here. If the short title still shares that row badly, that is a further chore and not a respec.
+   under ADR-1019, looked at in the Simulator and written down at **`tasks.md` § 8.2** rather than
+   decided here. If the short title still shares that row badly, that is a further chore and not a
+   respec. *This pointer was wrong when the folder was first written — it named `tasks.md` § 4, a
+   section about the kit's new scenarios that asks for no such look, and no step anywhere in the
+   folder collected the evidence this line claimed. Corrected on the second review pass; § 8.2 is
+   the step, and it is unticked until someone has actually looked.*
 
 Writing the delta raised no residual round. The one question it turned up — what the nine
 incidental requirements assert once a weekday can witness neither the day nor the today — resolved
