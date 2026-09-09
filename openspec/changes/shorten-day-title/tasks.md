@@ -206,7 +206,7 @@ stood before it is stale by construction.
   showing its today*; that commit's message is the model for this one's. **Do not rename the test
   and do not add a second one** — § 1.1 forbids the first and § 7.1's count of 1015 forbids the
   second. Ticked when the assertion is in and `swift test` is green.
-- [ ] 8.2 **Look at the day-title row, and write what you saw into this box.** The defect that
+- [x] 8.2 **Look at the day-title row, and write what you saw into this box.** The defect that
   started this Story is a wrap: with `add-day-picker`'s fourth control in the row,
   "Today · Wednesday 9 September 2026" ran onto a second line (`proposal.md` § *Why*). Nothing in
   this branch has yet looked at whether it stopped — `ui-smoke` is skipped while the PR is a draft
@@ -235,6 +235,19 @@ stood before it is stale by construction.
   The commands above build a throwaway product into `/tmp`; nothing under `src/` changes, and
   `git diff --stat origin/main... -- src/DayByDay/` must report exactly what § 5 left. Ticked when
   the look has happened and its result is written into this box.
+
+  **Looked, on iPhone 17, iOS 26.5.** The roster the Simulator kept from an earlier run already
+  held five commitments (Creatine, Magnesium, Gym, Yuno, Weight), so the picker's reach was a real
+  one without adding anything. The row reads `< Wed  9 Sep 2026 >`: the weekday sits directly left
+  of the date-picker pill, both between the two chevrons, all on **one line** — no wrap, no
+  truncation, no shrink. **The Story's own defect is closed.**
+
+  The shell observation for `design.md` § *Open Questions* 2, written down and not acted on: the
+  picker's pill has a filled gray background and reads visually heavier than the plain-text `Wed`
+  beside it, and the row is not evenly balanced around its centre — there is markedly more open
+  space between the leading chevron and `Wed` than between the picker and the trailing chevron, so
+  the whole row leans right rather than centring the picker between the chevrons as the layout
+  intends. Neither is acted on here.
 - [ ] 8.3 **Re-run § 7's checks over the fixed branch and hand back.** `cd src/DayByDayKit && swift
   test` green at **1015** — unchanged by both boxes above, and a different number is a stop;
   `pnpm run verify` green and `pnpm run checks` reporting `112/112 scenario(s) covered` from the
