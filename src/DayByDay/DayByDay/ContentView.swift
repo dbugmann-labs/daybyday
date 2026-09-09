@@ -185,13 +185,12 @@ struct ContentView: View {
                         // *Offered*).
                         let markSystemName: String? =
                             row.isKept ? "checkmark" : (isTickRow && isTarget ? "circle" : nil)
-                        // Decision 8, reversed: the circle keeps the accent, the checkmark takes
-                        // the grey of the name beside it — the concrete `Color.secondary`, the
-                        // same value `nameColor` takes, never the hierarchical `.secondary`,
-                        // which would resolve against the enclosing `Button`'s accent tint and
-                        // draw a dimmed blue rather than grey. Stated explicitly in both branches,
-                        // since neither is drawn inside a `Button` reliably.
-                        let markColor: Color = row.isKept ? Color.secondary : .accentColor
+                        // Decision 8: the circle keeps the accent, the checkmark takes the
+                        // system green — the concrete `Color.green`, never a hierarchical style,
+                        // so it reads green inside the enclosing `Button` and outside it alike.
+                        // Stated explicitly in both branches, since neither is drawn inside a
+                        // `Button` reliably.
+                        let markColor: Color = row.isKept ? Color.green : .accentColor
                         // Resets the hierarchy the rhythm inside `commitmentLine` still reads
                         // `.secondary` against, so it reads grey rather than the Button's accent
                         // tint, without editing that file. Decision 11: the strikethrough goes on
