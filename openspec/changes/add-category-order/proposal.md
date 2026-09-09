@@ -29,7 +29,15 @@ earlier and left an order entry behind whenever a category's last commitment let
   its relative order. This is deliberately *not* the single-commitment rule, which passes over an
   intervening stopped entry rather than pushing it, and the difference is observable: the dated group
   read draws stopped and removed commitments under their category, so a member left behind would let
-  a day in January draw the groups in an order the person never set. **ADR-1043** records it.
+  a day in January draw the groups in an order the person never set. **ADR-1044** records it.
+- **The block is placed against the target group's first *kept* commitment**, so a group lands where
+  the offset named it every time. The price is that where a stopped or removed commitment under the
+  target group lies earlier in the roster's order, a past date afterwards draws those two groups the
+  other way round from the way today's list draws them. Both anchors were measured exhaustively: the
+  other one never lets a date disagree, and lands 18 in 4788 accepted moves at a place the offset
+  never named, with nothing refused. A wrong landing is wrong on the screen the person is looking at,
+  every time; the date nuance is reachable only by scrolling back. The requirement says so and a
+  scenario pins it.
 - **A group's commitments are gathered.** A category whose entries are scattered through the order
   comes back contiguous, so a group move can reorder other commitments against the moved group's own
   — everything that stays keeps its order against everything else that stays, and nothing more is
@@ -94,7 +102,8 @@ None.
   ADR-1019's 2026-09-04 exception, plus the `id: \.offset` keying the reorder lag is parked on. The
   shell passes the section's own category and an offset derived from its index; it counts no rows and
   computes nothing else.
-- `docs/adr/` — **ADR-1043** written. **ADR-1037** amended in place: a move is still the only thing
+- `docs/adr/` — **ADR-1044** written, and amended in place at the second G4 with the placement
+  decision above. **ADR-1037** amended in place: a move is still the only thing
   that changes a roster's order, and it now takes a group as well as a commitment. **ADR-1038 is
   untouched** — "a group sits where its first commitment sits" survives the block move intact, which
   is the whole reason the block move was chosen.

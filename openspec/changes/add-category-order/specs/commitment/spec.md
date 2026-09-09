@@ -1440,18 +1440,33 @@ which passes a stopped or removed commitment lying in its way rather than taking
 difference is observable rather than a taste: a roster answers about a calendar date in groups too,
 drawing the commitments it had not stopped keeping on that date each under its category, so a member
 left behind would go on sitting where the group used to be and a day in January would read the groups
-in an order the person never set. The order the person set is the order every date reads in.
-ADR-1043.
+in an order the person never set. Carrying every member is what lets a past date read the group order
+the person set; the one case where it still does not is named two paragraphs below, and that one
+comes from where the block is **placed** rather than from what it carries. ADR-1044.
 
 **The group is put where the offset points, and it arrives as one block.** Unless the offset is one
 of the two that ask for the place the group already has, every commitment under that category SHALL
 be taken out of the sequence the roster holds and put back **immediately before the first commitment
-under the category of the group that stood at that offset** among the groups it was keeping under a
-category, or **immediately after the last commitment under the category of the last of them** where
-the offset is the number of them. Both are counted over every commitment under that category and not
-only the ones the roster is keeping, for the reason the block travels whole: a stopped commitment
-under the group being placed against would otherwise draw that group earlier on a past date than the
-move put it today.
+the roster is keeping under the category of the group that stood at that offset**, or, where the
+offset is the number of the groups it is keeping under a category, **immediately after the last
+commitment under the category of the last of them**, whatever state that one is in. The first is
+measured over the commitments the roster is **keeping**, and not over every commitment under the
+target category, because the offset itself is counted over the groups a person can see: measured
+against a stopped or removed commitment lying earlier than the target group's first kept one, the
+block would come to rest at a place the offset never named, and rest there with nothing refused and
+the roster written. The second is deliberately not measured that way, and the difference is not an
+oversight: after the last of a group is after every commitment under it either way, so no offset can
+land wrong there, and placing after the whole of it leaves the group being measured against unbroken.
+
+**What the first of those costs is paid on a past date, and it is said here rather than found
+later.** Where a commitment the roster has stopped keeping or removed under the **target** group lies
+earlier in the order than that group's first kept commitment, the arriving block is put after it — so
+the roster SHALL afterwards answer about a date on which that commitment was still kept in the
+opposite group order to the one it reads back today. That follows from the grouping rule rather than
+from this act: a group sits where its first commitment sits, and on such a date the first one under
+the target is the stopped one. It is accepted deliberately, as the narrower of two harms — what a
+person taps lands where they aimed it, on the list they are looking at, every time, and the
+disagreement is reachable only by scrolling back to a date before the stop. ADR-1044.
 
 **Every commitment that does not travel SHALL afterwards be in the order it was in against every
 other commitment that does not travel** — kept, stopped and removed alike — and no two of them SHALL
@@ -1646,6 +1661,39 @@ A roster SHALL be a value here too: moving a group SHALL leave every other roste
 - **AND** the roster it was copied from still reads back "Supplements" holding "Creatine" and then
   "Sport" holding "Gym", and is not the same roster as the copy
 
+#### Scenario: a group is put before the first commitment the roster is keeping under the group at the offset
+
+- **WHEN** a roster given a commitment named "Creatine", then one named "Finances", then one named
+  "Magnesium", then one named "Gym", all on a schedule listing all seven weekdays and all kept from
+  1 January 2026, puts "Creatine" and "Magnesium" under the category "Supplements", "Finances" under
+  "Money" and "Gym" under "Sport", stops keeping "Creatine" as of 31 January 2026 — leaving
+  "Supplements" a group whose first commitment is one it has stopped — and is then asked to move the
+  group "Sport" to the offset 1
+- **THEN** the roster reports that it moved the group
+- **AND** it reads back three groups: "Money" holding "Finances", then "Sport" holding "Gym", then
+  "Supplements" holding "Magnesium" — "Sport" at the offset it was given, after "Money" and before
+  "Supplements", the group that stood at that offset
+- **AND** it reads its commitments back flat as "Creatine", then "Finances", then "Gym", then
+  "Magnesium" — "Gym" put before "Magnesium", the first commitment the roster is keeping under
+  "Supplements", and after "Creatine", which it is not
+
+#### Scenario: a group placed against a kept commitment is read in a different order on a date before a stop
+
+- **WHEN** a roster given a commitment named "Creatine", then one named "Magnesium", then one named
+  "Vitamin D", then one named "Gym", all on a schedule listing all seven weekdays and all kept from
+  1 January 2026, puts "Creatine", "Magnesium" and "Vitamin D" under the category "Supplements" and
+  "Gym" under "Sport", stops keeping "Creatine" as of 31 January 2026, and is then asked to move the
+  group "Sport" to the offset 0
+- **THEN** the roster reports that it moved the group
+- **AND** it reads back two groups, "Sport" holding "Gym", then "Supplements" holding "Magnesium" and
+  then "Vitamin D"
+- **AND** asked about 31 January 2026, a day on which it had not stopped keeping "Creatine", it reads
+  back those two groups the other way round: "Supplements" holding "Creatine", then "Magnesium", then
+  "Vitamin D", and then "Sport" holding "Gym" — because on that day the first commitment under
+  "Supplements" is the one the move was not measured against
+- **AND** it reads its commitments back flat as "Creatine", then "Gym", then "Magnesium", then
+  "Vitamin D"
+
 #### Scenario: a roster keeping one group under a category accepts both the offsets it has
 
 - **WHEN** a roster holding a commitment named "Creatine" under the category "Supplements" and then
@@ -1684,6 +1732,15 @@ group move changes that order, and a stopped commitment under the moved category
 group like every other. It is not a second rule and it is not a defect: both lists are read off the
 roster after the change, and the alternative — a stopped list that held still — would be a second
 order for something to keep in step.
+
+**A group is drawn where the person put it, and a past day may draw the groups the other way round.**
+The offset is counted over the groups this screen draws, so the group SHALL come to rest at that
+offset on this list, every time. Where the group it was put before has a commitment the screen has
+stopped lying earlier in the roster's order than the first one it keeps under that category, what is
+kept at the roster place SHALL afterwards answer about a date before that stop with those two groups
+in the opposite order. That is the roster's own rule read back through the place this screen keeps,
+rather than a second rule of the screen's, and it is the accepted price of landing the group where it
+was put.
 
 A commitments screen asked to move a group it draws none of — a category nothing it keeps is under,
 and no category at all among them — or to an offset that the groups it draws under a category do not
@@ -1815,6 +1872,22 @@ just after it — which is the same arithmetic a drop back where a row already i
   then "Sport" holding "Gym"
 - **AND** moving the group "Supplements" to the offset 1 leaves that true again
 - **AND** the content at that place is byte-for-byte what was read before either move
+
+#### Scenario: a group moved above one whose first commitment is stopped is drawn where the person put it
+
+- **WHEN** a commitment named "Creatine", then one named "Magnesium", then one named "Gym", all on a
+  schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster place;
+  "Creatine" and "Magnesium" are put under the category "Supplements" there and "Gym" under "Sport";
+  "Creatine" is stopped there as of Sunday 30 August 2026, leaving "Supplements" a group whose first
+  commitment is one the screen has stopped; a commitments screen is opened at that roster place as of
+  Monday 31 August 2026; and the group "Sport" is moved to the offset 0
+- **THEN** nothing is refused
+- **AND** what it keeps is two groups, "Sport" holding "Gym", then "Supplements" holding "Magnesium" —
+  drawn at the offset it was given and not after "Supplements"
+- **AND** what it has stopped is one entry, named "Creatine"
+- **AND** a roster store opened afterwards at that place answers about Sunday 30 August 2026 with
+  those two groups the other way round, "Supplements" holding "Creatine" and then "Magnesium", and
+  then "Sport" holding "Gym"
 
 #### Scenario: a commitments screen shown again draws its groups in the order they were moved into
 

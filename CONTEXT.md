@@ -315,7 +315,7 @@ it and a place counted over the groups the roster is keeping *that are under a c
 relocates every commitment under that category — kept, stopped and removed alike — as one block,
 keeping their order against each other; and it changes no category, no day and no commitment, because
 every one of them travels under the word that named the group. Between the two, a move is still the
-only thing that ever changes a roster's order. Three things follow, each a decision rather than a
+only thing that ever changes a roster's order. Four things follow, each a decision rather than a
 detail. **A group's place stays derived** — nothing is stored for a group and ADR-1038's rule is
 untouched — so stopping, removing or re-filing a group's *first* commitment can still shift the whole
 group without anyone having moved it. **A scattered group comes back contiguous**, so a commitment
@@ -323,9 +323,13 @@ under another category that lay between two of its members ends up on one side o
 everything that stays keeps its order against everything else that stays, and nothing further is
 promised. **The group of the commitments under no category is not one a move takes**: the reading rule
 draws it last wherever its commitments sit and it shows no heading, so there is nothing to take hold
-of and nowhere to put it, and no place puts any group after it. Why the block carries the stopped and
-removed commitments where a commitment's move steps over them is **ADR-1043**; ADR-1037 is amended
-with it.
+of and nowhere to put it, and no place puts any group after it. **A group lands where the person
+aimed it, and a past date may in return disagree**: the place is counted over the groups a person can
+see, and the block is put against the target group's first *kept* commitment, so today's list always
+reads the way the tap asked; where a stopped or removed commitment under that target lies earlier in
+the order, a date before the stop then draws those two groups the other way round. Why the block
+carries the stopped and removed commitments where a commitment's move steps over them, and why it is
+placed against a kept one, is **ADR-1044**; ADR-1037 is amended with it.
 
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N

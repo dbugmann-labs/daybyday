@@ -1,4 +1,4 @@
-# 1043. A group move carries the whole group, where a commitment's move steps over what lies between
+# 1044. A group move carries the whole group, where a commitment's move steps over what lies between
 
 - Status: accepted
 - Date: 2026-09-08
@@ -30,12 +30,35 @@ it is not keeping where it was.
 **A group move carries every commitment under that category — kept, stopped and removed alike — as
 one block, keeping their order against each other.**
 
+> **Amended 2026-09-09**, at `add-category-order`'s (#168) review, and the second bullet below is the
+> amendment. **The block is placed against the target group's first *kept* commitment, not against
+> the first commitment under that category in any state.** As first written this ADR decided the
+> anchor the other way, and the delta contradicted itself over it: two sentences of
+> `commitment/spec.md` and this file's own second bullet could not all be true of one implementation.
+> The two anchors were then measured exhaustively, over every four-entry roster across three
+> categories with every kept-and-stopped combination. The any-state anchor never lets a past date
+> disagree with today about the order of the groups, but lands the group at a place the offset did
+> not name in **18 of 4788** accepted moves, with nothing refused and the roster written. The
+> kept anchor lands all **5838** accepted moves exactly where the offset named, and introduces a
+> fresh today-versus-past-date disagreement in **102** of them, about 1.75%, every one of them
+> through the before-the-first branch; the after-the-last branch landed right and agreed with every
+> past date under both anchors, so it is left measured as it was. **The tap is honoured.** A wrong
+> landing is wrong on the screen the person is looking at, every time it happens; an ordering nuance
+> on a past date is visible only when they scroll back to one. What *travels* is unchanged — the
+> whole block, in every state — and so is everything else below, including the argument for it: what
+> follows now reads as the reason the block is whole rather than as a promise that no date can ever
+> disagree, and the one case where one still does is the second consequence.
+
 - **The block is every entry under the category, in every state.** Not the kept ones, not the ones a
   list is drawing today.
-- **It is placed against the *whole* of the target group's block**, not against that group's first
-  kept commitment: immediately before the first commitment under the category of the group that stood
-  at the offset, or immediately after the last commitment under the category of the last group kept
-  under one.
+- **It is placed against the target group's first *kept* commitment**: immediately before the first
+  commitment the roster is **keeping** under the category of the group that stood at the offset. The
+  offset is counted over the groups a person can see, so the thing it is measured against has to be
+  a commitment they can see too, or the group lands where nobody pointed. The other branch —
+  immediately after the last commitment under the category of the last group kept under one, when
+  the offset is the number of them — stays measured over every commitment under that category, in
+  any state: after the last of a group is after all of it either way, so nothing can land wrong
+  there, and placing after the whole of it leaves that group's own block unbroken.
 - **A commitment's move is unchanged.** It goes on passing what lies between rather than pushing it,
   and the two rules stand side by side deliberately.
 
@@ -43,8 +66,11 @@ The reason is not symmetry and not tidiness — it is that the other choice is *
 roster answers about a calendar date in groups too, drawing the commitments it had not stopped keeping
 on that date each under its category, and ADR-1038's rule places a group at its *first* commitment. A
 stopped member left behind at the group's old place would go on anchoring that group there: move
-*Supplements* below *Sport* today, and January still draws *Supplements* first. There is one order and
-it is the person's; a group order that holds only for dates after the move is not one.
+*Supplements* below *Sport* today, and January still draws *Supplements* first — and it would do it
+for every group with a stopped member, on every date, for as long as the roster lives. There is one
+order and it is the person's; a group order that holds only for dates after the move is not one. The
+narrow case the amendment above accepts is not that: it is one group against one other, on dates
+before one stop, in exchange for the group landing where it was put every time it is moved.
 
 The two rules differ because the two acts differ in what they are about. A commitment's move is about
 one row a person has hold of, and what it steps over is nobody's business but its own. A group move is
@@ -58,6 +84,17 @@ one word sit. To move the reading you have to move all of them.
   stays keeps its order against everything else that stays, and that is all a group move promises.
   This is the price of one order over one roster, and `commitment/spec.md` states it rather than
   leaving it to be found.
+- **A move can make a past date draw the groups in an order today does not.** Where a stopped or
+  removed commitment under the *target* group sits earlier in the roster's order than that group's
+  first kept one, the arriving block is placed after it — so today reads the moved group before the
+  target, as the tap asked, while a date on which that stopped commitment was still kept reads the
+  target first, because ADR-1038 places a group at its first commitment and on that date the first
+  one is the stopped one. This is a real cost and not a rounding error: it is the price of the second
+  decision bullet, taken deliberately at the review of #168 and not discovered afterwards. It was
+  measured at about 1.75% of accepted moves over the exhaustive four-entry space, against 18 in 4788
+  silently wrong landings for the anchor that avoids it. `commitment/spec.md` states it in the
+  requirement and pins it with a scenario of its own, so no one has to find it.
+
 - **Moving a group away and back does not restore the roster**, because the first of the two moves
   gathered it. Asking for the place a group already has is carved out of the gather entirely — two
   offsets change nothing at all — so a tap that means nothing costs nothing; but two taps that mean
@@ -79,7 +116,8 @@ one word sit. To move the reading you have to move all of them.
 
 **Move only the group's kept commitments.** Rejected on the mechanism above: the dated group read
 would disagree with what the person just did, and the disagreement grows with every stopped
-commitment.
+commitment. This is about what *travels*, and it is a different question from what the block is
+placed *against* — the amendment above changed the second and left this rejection standing.
 
 **Move only the group's first commitment**, which is all ADR-1038's rule strictly needs to redraw the
 heading. Rejected because it leaves the rest of the group where it was: the flat reads, and every past

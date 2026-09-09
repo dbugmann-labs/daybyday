@@ -41,7 +41,7 @@ of them changing a line.
 > reads is placed by them rather than by whenever its first commitment happened to be taken on. The
 > decision below is unchanged in every other respect — one order, over everything the roster holds,
 > living on the roster — and what a group move carries, which is not what a commitment's move
-> carries, is **ADR-1043**.
+> carries, is **ADR-1044**.
 
 - **`Roster.move(_:toOffset:)`** is the whole of it: a commitment and an insertion point, counted
   over the commitments the roster is keeping *before* the move — the same arithmetic

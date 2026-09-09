@@ -2,7 +2,10 @@
 
 See `proposal.md` § *Why* for the motivation and `grill.md` § *Settled* for the eight answers this
 delta is written on. What matters here is the state of the code the change lands in, all of it on
-`main` as of `fe540d5`, the commit this branch sits on at G4:
+`main` as of `fe540d5`, the commit this branch sat on when this section was written — and still true
+at **`e0a4f6d`**, where the branch sits for the second G4: `openspec/specs/commitment/spec.md` is
+byte-for-byte the same at both, and the two chores and the one Story that landed in between are all
+`day-screen` and the shell.
 
 - **`Roster` holds one order over one array of entries.** `Roster.Entry` already carries
   `category: String?` beside the commitment, the day it was kept until and whether it was removed
@@ -70,13 +73,13 @@ gains one case. Every scenario in the delta is driven at one of these:
 `Roster.Entry`, `Roster.Group`, `RosterDocument`, `CommitmentCoding`, `DayView` and `DayScreen` are
 untouched, and so is every existing member of the three types above.
 
-### A group move is a block move, and ADR-1043
+### A group move is a block move, and ADR-1044
 
 **Every commitment under the category travels — kept, stopped and removed alike.** A commitment's
 move does the opposite with what lies in its way: it *passes* a stopped or removed commitment rather
 than pushing it, and that carve-out is written into the shipped requirement three times over. A
 reader who has just read `Roster.move` will expect the same here, so the difference is worth an ADR
-rather than a paragraph. **ADR-1043** is written in this diff.
+rather than a paragraph. **ADR-1044** is written in this diff.
 
 The argument is not symmetry, it is that the other choice is observably wrong. `Roster.groups(on:)`
 draws the commitments the roster had not stopped keeping on a date, each under its category, and a
@@ -91,24 +94,52 @@ the rest of the group scattered where they were, so the flat reads and every pas
 what the person just did); **a second order over categories** (`grill.md` § *Settled* 1 — it would
 overturn ADR-1038 and leave an order entry behind whenever a category emptied).
 
-### Where the block is put, and why it is measured against every commitment under a category
+### Where the block is put, and why the tap is honoured rather than the past date
 
-The block goes immediately before **the first commitment under the category of the group that stood
-at the offset**, or immediately after **the last commitment under the category of the last group
-kept under one** where the offset is the number of them. Both are counted over every commitment under
-that category, whatever state it is in — not over the ones the roster is keeping.
+The block goes immediately before **the first commitment the roster is keeping under the category of
+the group that stood at the offset**, or immediately after **the last commitment under the category
+of the last group kept under one**, in any state, where the offset is the number of them. The first
+is measured over the commitments the roster is keeping; the second is not, and does not need to be.
 
-That is the same argument one level down. If the block were placed before the target group's first
-*kept* commitment while a stopped commitment under that same category sat earlier in the order, then
-today would draw the moved group before the target and a past date would draw it after. Placing
-against the whole of the target group's block is what makes the two agree.
+**This is the reverse of what this section said when the delta was first written, and the reversal is
+the point of the second G4.** As written, both branches were measured over every commitment under the
+target category in any state, and the argument was the one this design gives for the block travelling
+whole one level up: place before the target group's first *kept* commitment while a stopped one under
+that same category sits earlier in the order, and today draws the moved group before the target while
+a past date draws it after. That argument is sound and nothing has been found wrong with it. What was
+missing is its price, and the price is larger than the thing it buys.
+
+Both anchors were measured exhaustively, over every four-entry roster across three categories with
+every kept-and-stopped combination:
+
+| anchor | lands where the offset named | today-vs-past-date disagreements it introduces |
+|---|---|---|
+| the target group's first commitment in any state | **18 of 4788** accepted moves land somewhere else, silently — nothing refused, roster written | none, ever |
+| the target group's first **kept** commitment | all **5838** accepted moves land where the offset named | **102**, about 1.75%, every one through the before-the-first branch |
+
+The minimal wrong landing is four entries: `[A-stopped, A-kept, A-kept, B-kept]`, move group `B` to
+offset 0. The offset names "before `A`" and the roster is written with `B` after `A`, because the
+anchor was a commitment the person cannot see. The minimal disagreement is the same four entries
+under the other anchor: today reads `[B, A]`, a date before the stop reads `[A, B]`.
+
+**A wrong landing is wrong on the screen the person is looking at, every time it happens. An ordering
+nuance on a past date is visible only when they scroll back to one.** So the offset is counted over
+the kept, categorised groups — the ones a person can see — and the block is placed against the target
+group's first kept commitment, and the requirement states the past-date consequence rather than
+leaving it to be met. **ADR-1044** is amended in place with the same reasoning and the same numbers.
+
+The after-the-last branch is the one place the old anchor survives, and not by inertia: after the
+last of a group is after every commitment under it whichever way it is measured, so that branch
+landed right and agreed with every past date under both anchors. Measuring it over the kept ones
+would only split the target group's own block around the arriving one, for nothing.
 
 Neither lookup can miss, and not for the same reason. The "after the last" branch is only reached
 when the offset is the number of groups kept under a category, and that offset is the carve-out
 whenever the moved group is itself the last of them — so the group being measured against is never
 the one just taken out. The "before the first" branch is only reached for an offset that is neither
 the moved group's own nor the one after it, so the group at that offset is never the moved one
-either.
+either — and it has at least one kept commitment left to anchor against, because being in the count
+the offset runs over is exactly what having one means.
 
 ### The offset counts the headed groups, and that is why nothing lands after the uncategorised
 
@@ -189,6 +220,12 @@ Under ADR-1019's 2026-09-04 exception, and with no requirement attached to any o
 - **Up-then-down is not an undo for a scattered group.** → Stated in the requirement and walked on
   the phone. A group is scattered only where the person interleaved two categories by hand, and the
   first move makes it contiguous for good, so the surprise happens at most once per group.
+- **A move can make a past date draw the groups in an order today does not.** → Chosen over the
+  alternative at the second G4, not overlooked: it happens only where a stopped or removed commitment
+  under the *target* group lies earlier in the order than that group's first kept one, it was
+  measured at about 1.75% of accepted moves over the exhaustive four-entry space, and the anchor that
+  avoids it lands 18 in 4788 accepted moves at a place the offset never named, silently. The
+  requirement states it and a scenario of its own pins it. § *Where the block is put* has the numbers.
 - **Six restated MODIFIED requirements are six chances to change a shipped sentence by accident.**
   → Each was extracted verbatim from `openspec/specs/commitment/spec.md` and edited only where the
   Story makes it false; `tasks.md` § 1.1 names the exact edits, and no carried scenario is renamed,
@@ -208,17 +245,18 @@ Under ADR-1019's 2026-09-04 exception, and with no requirement attached to any o
 **Every question `grill.md` § *Left open* carried is answered here, and none is outstanding.** No
 residual round was raised: writing the delta turned up no question the grill could not have reached.
 
-1. **The ADR owed on the block move — written, not open, and it is 1043 rather than 1042.**
+1. **The ADR owed on the block move — written, not open, and it is 1044 rather than 1042 or 1043.**
    `grill.md` § *Left open* 1 called it settled and unwritten and named **1042** as the next free
-   number, which it was when the grill ran. `chore/tighten-section-gaps`' sibling chore merged as
-   **#177** while this delta was being written and took 1042 for *the horizontal swipe belongs to the
-   day*, so the rebase onto `origin/main` collided on `docs/adr/README.md`'s table — outside the
-   change folder and outside `openspec/specs/`, so ordinary merge work rather than the rule-5 stop —
-   and this ADR was renumbered to **1043**. Numbers are never reused (ADR-1020), and `grill.md` is
-   the conductor's file, so its "1042" is left standing and corrected here rather than edited there.
-   **ADR-1043** is in this diff, and ADR-1037 is amended in place: a move is still the only thing that
-   changes a roster's order and it now takes a group as well as a commitment. **ADR-1038 is
-   untouched**, which `tasks.md` checks rather than assumes.
+   number, which it was when the grill ran. It has been overtaken twice by chores merging while this
+   Story was being written, each time collided on `docs/adr/README.md`'s table alone — outside the
+   change folder and outside `openspec/specs/`, so ordinary merge work rather than the rule-5 stop.
+   **#177** took 1042 for *the horizontal swipe belongs to the day*, and **#185** took 1043 for *a day
+   change pages under the finger*, so this one is **1044**. Numbers are never reused (ADR-1020), gaps
+   are normal, and `grill.md` is the conductor's file, so its "1042" is left standing and corrected
+   here rather than edited there. **ADR-1044** is in this diff and is amended in place with the
+   placement decision § *Where the block is put* records; ADR-1037 is amended in place too: a move is
+   still the only thing that changes a roster's order and it now takes a group as well as a
+   commitment. **ADR-1038 is untouched**, which `tasks.md` checks rather than assumes.
 2. **The Story issue's intent sentence is wrong in one clause — recorded, not repaired.** It says the
    group is moved "by dragging its heading", and `grill.md` § *Settled* 5 replaced the gesture. Rule 4
    settles it: issues carry no requirements, the spec wins, and nothing in this change reads the issue

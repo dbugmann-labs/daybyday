@@ -10,6 +10,13 @@
   next. Those 93 are the scenarios this delta carries verbatim from the current specs, and
   **no test behind any of them may be renamed, moved, or have an assertion changed by a box below.**
 
+  **Restated at the second G4, and the 93 are untouched by it.** The delta now carries **124**
+  scenarios rather than 121: the review added § 2.13, § 2.14 and § 4.10, all three of them new
+  scenarios under the two ADDED requirements. The branch was also rebased off `b707046`, where § 8.3
+  left it, onto **`e0a4f6d`**, which adds #185's day-screen chore; that chore touches the shell and
+  `docs/` and not the kit, so the baseline above stands and the sentence about the 93 binds exactly as
+  it did.
+
   **Unlike `add-commitment-category` (#147), there is no exception to that.** Every seam member this
   change adds is a new overload — `Roster.move(group:toOffset:)`, `RosterStore.move(group:toOffset:)`,
   `CommitmentsScreen.move(group:toOffset:)` — and **no existing signature changes**, so not one
@@ -66,6 +73,21 @@ Every box in this section is driven at `Roster.move(group:toOffset:)` and lands 
   anything, no kept-until day moves, no state changes.
 - [x] 2.11 *moving a group on a copy of a roster leaves the roster it was copied from unchanged*.
 - [x] 2.12 *a roster keeping one group under a category accepts both the offsets it has*.
+- [ ] 2.13 *a group is put before the first commitment the roster is keeping under the group at the
+  offset* — **added at the second G4, and this is the cycle that moves the anchor.** The
+  before-the-first branch is measured over the commitments the roster is *keeping*: it lands against
+  the target group's first **kept** commitment, not against the first one under that category in any
+  state. The after-the-last branch is left exactly as it is — after the last commitment under the
+  target category whatever state it is in — which `design.md` § *Where the block is put* gives the
+  reason for; changing it too would split the target group's own block for nothing and would move
+  § 4.3's stopped-list order, which is green and correct. In the same cycle, correct the ADR number in
+  `Roster.move(group:toOffset:)`'s doc comment, which cites **ADR-1043** and must cite **ADR-1044**:
+  the ADR was renumbered because #185 took 1043 on `main`, and `src/` is the only place a stale
+  reference is left, since `docs/` and the change folder are `spec-author`'s.
+- [ ] 2.14 *a group placed against a kept commitment is read in a different order on a date before a
+  stop* — the price of 2.13, pinned rather than left to be met: today's groups and the dated read
+  disagree, once, in the one case the requirement names. **A test that goes green without 2.13's
+  change having been made is measuring the wrong thing** — check that this one was red first.
 
 ## 3. `commitment` — a roster store keeps a group move at its place
 
@@ -103,6 +125,11 @@ Driven at `CommitmentsScreen.move(group:toOffset:)`, in
   compared against the roster itself and not against the boolean the store answers, exactly as
   `move` and `put` already do.
 - [x] 4.9 *a commitments screen shown again draws its groups in the order they were moved into*.
+- [ ] 4.10 *a group moved above one whose first commitment is stopped is drawn where the person put
+  it* — added at the second G4, the screen's own reading of § 2.13 and § 2.14: the group is drawn at
+  the offset the person tapped, and the place answers about a date before the stop the other way
+  round. The screen converts nothing here either; this cycle should need no change to
+  `CommitmentsScreen` at all, and one that does means § 2.13 landed in the wrong place.
 
 ## 5. `commitment` — the six requirements this change makes newly true
 
@@ -117,13 +144,22 @@ each is verified by the new scenario named in it plus the carried tests staying 
 - [x] 5.3 *what a commitments screen holds about a refused change ends when a group move is kept*.
 - [x] 5.4 *what a commitments screen holds about a refused change stands when a group move leaves a
   group where it is*.
-- [x] 5.5 Read the four requirements this delta corrected only in prose — *A roster holds the
+- [ ] 5.5 **Unticked at the second G4**, because it was ticked against a delta that contradicted
+  itself, so the reading it records was made against sentences that could not all be true at once. It
+  is not a box that was skipped: it asks whether each corrected sentence is true of the code, the
+  answer was taken as yes, and the sentence the review found false — where the block is placed — is
+  one this box did not name. It names it now, and the whole box is done again after § 2.13.
+
+  Read the four requirements this delta corrected only in prose — *A roster holds the
   commitments a person keeps*, *A roster store keeps a roster at a place*, *A commitments screen
   holds the change it refused* and *What a commitments screen holds about a refused change lasts* —
   against the code as it then stands, and confirm each corrected sentence is true of it: moving is
   the only thing that changes the order and it takes a commitment or a group; the store keeps a group
   move and passes its two refusals through; there are seven changes a person can ask for and a
-  refused group move names a category. **No new test is owed by this box** — the four are carried
+  refused group move names a category. **Read the two ADDED requirements' placement paragraphs against
+  the code in the same pass** — where the block is put, and what that costs on a date before a stop —
+  because that is the pair the review found the delta contradicting itself over, and placement is the
+  one kind of sentence this box has already been wrong about once. **No new test is owed by this box** — the four are carried
   requirements whose scenarios are already green — and any sentence that is *not* true of the code is
   a stop, not a sentence to edit (a delta edited after G4 costs a second approval, rule 1).
 
@@ -158,34 +194,43 @@ is a stop.
 `docs/adr/**` and `CONTEXT.md` are `spec-author`'s to write, so all three land in the diff G4 signs
 and these boxes **confirm rather than write**.
 
-- [x] 7.1 Confirm `docs/adr/1043-a-group-move-carries-the-whole-group.md` is present, is in
+- [ ] 7.1 Confirm `docs/adr/1044-a-group-move-carries-the-whole-group.md` is present, is in
   `docs/adr/README.md`'s table in numeric order, and says what `design.md` § *A group move is a block
-  move* says.
-- [x] 7.2 Confirm ADR-1037 is amended in place and stamped — a move is still the only thing that
+  move* and § *Where the block is put* both say — the second including the 2026-09-09 amendment, which
+  reverses the anchor the block is placed against and states what that costs. **The number is 1044 and
+  not 1043**: #185 merged `docs/adr/1043-a-day-change-pages-under-the-finger.md` onto `main` while
+  this Story was in review, numbers are never reused (ADR-1020) and gaps are normal. Nothing in
+  `scripts/` checks ADR numbering, so this box is the check: confirm no two files under `docs/adr/`
+  share a number, and that no reference to **1043** anywhere in this diff means this ADR.
+- [ ] 7.2 Confirm ADR-1037 is amended in place and stamped — a move is still the only thing that
   changes a roster's order, and it now takes a group as well as a commitment — and that **ADR-1038 is
   untouched**. A diff touching 1038 is a stop: its rule surviving the block move intact is why the
   block move was chosen.
-- [x] 7.3 Confirm `CONTEXT.md` § *Move* and § *Commitments screen* carry this Story's amendments, and
+- [ ] 7.3 Confirm `CONTEXT.md` § *Move* and § *Commitments screen* carry this Story's amendments —
+  § *Move* including the fourth of the things that follow, added at the second G4: a group lands where
+  the person aimed it and a past date may in return disagree — and
   that § *Move*'s 2026-09-08 clause saying a group move "is a Story of its own" has been rewritten
   rather than left standing beside its own answer.
 
 ## 8. Before the review, and what the janitor does at the archive
 
-- [x] 8.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **930**: the 885
-  measured at § 1.1 plus the 28 scenarios § 2 to § 5 add, which is 913 — moved to 930 by the § 8.3
-  rebase, which pulled in the kit tests `add-offered-today-control` (#179) and the day-screen category
-  heading fix (#180) added on `main`, none of them this Story's own. **A number that comes back
-  different is a stop** (rule 5), not a number to write down. From the repo root, `pnpm run verify`
-  green and `pnpm run checks` reporting `121/121 scenario(s) covered`.
-- [x] 8.2 `openspec validate add-category-order --strict` exits 0, and `openspec validate --all
+- [ ] 8.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **933**: the 930
+  the first pass reached — the 885 measured at § 1.1, plus the 28 scenarios § 2 to § 5 added, which is
+  913, moved to 930 by the rebase that pulled in the kit tests `add-offered-today-control` (#179) and
+  the day-screen category heading fix (#180) — plus the **three** the second G4 adds at § 2.13, § 2.14
+  and § 4.10. The rebase onto `e0a4f6d` adds none: #185 touched the shell and `docs/`, not the kit.
+  **A number that comes back different is a stop** (rule 5), not a number to write down. From the repo
+  root, `pnpm run verify` green and `pnpm run checks` reporting `124/124 scenario(s) covered`.
+- [ ] 8.2 `openspec validate add-category-order --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
-- [x] 8.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+- [ ] 8.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-category-order/` or anywhere under `openspec/specs/` is a **stop**, not a
   merge to resolve (rule 5) — it means another Story landed on `commitment` while this one was being
   written, and the six MODIFIED requirements were extracted verbatim from the `commitment` spec as it
-  stood at `fe540d5`, the commit this branch was rebased onto at G4. **A clean rebase that then fails
+  stood at `fe540d5`, and were re-checked against `e0a4f6d`, the commit this branch sits on at the
+  second G4 — neither commit changed `openspec/specs/commitment/spec.md`. **A clean rebase that then fails
   § 8.2 is the same stop**, and it needs a further G4 rather than a quiet refresh of the delta.
-- [x] 8.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+- [ ] 8.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff and do not act on findings until they come back
   through the conductor. This box is ticked when the hand-back is written.
 - [x] 8.5 Write the archive handover for the janitor, into the PR or the handover message, saying what
