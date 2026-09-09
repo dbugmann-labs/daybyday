@@ -1097,125 +1097,64 @@ func twoRowsForCommitmentsAlikeInNameAndNotInRhythmSayDifferentRhythms() {
     #expect(dayView.rows[1].rhythmInWords == "Every day")
 }
 
-@Test("a day view says its day as a weekday, a day of the month, a month and a year")
-func aDayViewSaysItsDayAsAWeekdayADayOfTheMonthAMonthAndAYear() {
+@Test("a day view says its day as the three-letter name of its weekday")
+func aDayViewSaysItsDayAsTheThreeLetterNameOfItsWeekday() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
     let dayView = DayView(of: [Commitment](), on: monday, in: History())
 
-    #expect(dayView.title(asOf: thursday) == "Monday 31 August 2026")
-}
-
-@Test("a day view of the day it is asked as of says Today before the date")
-func aDayViewOfTheDayItIsAskedAsOfSaysTodayBeforeTheDate() {
-    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
-    let dayView = DayView(of: [Commitment](), on: thursday, in: History())
-
-    #expect(dayView.title(asOf: thursday) == "Today · Thursday 3 September 2026")
-}
-
-@Test("a day view of a day before the one it is asked as of says the date and not Today")
-func aDayViewOfADayBeforeTheOneItIsAskedAsOfSaysTheDateAndNotToday() {
-    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
-    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
-    let dayView = DayView(of: [Commitment](), on: wednesday, in: History())
-
-    #expect(dayView.title(asOf: thursday) == "Wednesday 2 September 2026")
-}
-
-@Test("a day view of a day after the one it is asked as of says the date and not Today")
-func aDayViewOfADayAfterTheOneItIsAskedAsOfSaysTheDateAndNotToday() {
-    let friday = CalendarDate(year: 2026, month: 9, day: 4)!
-    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
-    let dayView = DayView(of: [Commitment](), on: friday, in: History())
-
-    #expect(dayView.title(asOf: thursday) == "Friday 4 September 2026")
-}
-
-@Test("a day of the month below ten is said without a leading zero")
-func aDayOfTheMonthBelowTenIsSaidWithoutALeadingZero() {
-    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
-    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
-    let dayView = DayView(of: [Commitment](), on: tuesday, in: History())
-
-    #expect(dayView.title(asOf: thursday) == "Tuesday 1 September 2026")
+    #expect(dayView.title == "Mon")
 }
 
 @Test("every weekday is said by its own name")
 func everyWeekdayIsSaidByItsOwnName() {
-    let askedAsOf = CalendarDate(year: 2026, month: 1, day: 1)!
     let days = [CalendarDate(year: 2026, month: 8, day: 31)!]
         + (1...6).map { CalendarDate(year: 2026, month: 9, day: $0)! }
 
-    let titles = days.map { DayView(of: [Commitment](), on: $0, in: History()).title(asOf: askedAsOf) }
+    let titles = days.map { DayView(of: [Commitment](), on: $0, in: History()).title }
 
-    #expect(
-        titles == [
-            "Monday 31 August 2026",
-            "Tuesday 1 September 2026",
-            "Wednesday 2 September 2026",
-            "Thursday 3 September 2026",
-            "Friday 4 September 2026",
-            "Saturday 5 September 2026",
-            "Sunday 6 September 2026",
-        ])
+    #expect(titles == ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
 }
 
-@Test("every month is said by its own name")
-func everyMonthIsSaidByItsOwnName() {
-    let askedAsOf = CalendarDate(year: 2026, month: 1, day: 1)!
-    let days = (1...12).map { CalendarDate(year: 2026, month: $0, day: 15)! }
+@Test("two day views whose dates fall on the same weekday say the same day title")
+func twoDayViewsWhoseDatesFallOnTheSameWeekdaySayTheSameDayTitle() {
+    let days = [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 6, day: 15)!,
+        CalendarDate(year: 1583, month: 1, day: 3)!,
+    ]
 
-    let titles = days.map { DayView(of: [Commitment](), on: $0, in: History()).title(asOf: askedAsOf) }
+    let titles = days.map { DayView(of: [Commitment](), on: $0, in: History()).title }
 
-    #expect(
-        titles == [
-            "Thursday 15 January 2026",
-            "Sunday 15 February 2026",
-            "Sunday 15 March 2026",
-            "Wednesday 15 April 2026",
-            "Friday 15 May 2026",
-            "Monday 15 June 2026",
-            "Wednesday 15 July 2026",
-            "Saturday 15 August 2026",
-            "Tuesday 15 September 2026",
-            "Thursday 15 October 2026",
-            "Sunday 15 November 2026",
-            "Tuesday 15 December 2026",
-        ])
+    #expect(titles == ["Mon", "Mon", "Mon"])
 }
 
 @Test("a day view says its day in the first supported year and in the last")
 func aDayViewSaysItsDayInTheFirstSupportedYearAndInTheLast() {
     let firstDay = CalendarDate(year: 1583, month: 1, day: 1)!
-    let firstAskedAsOf = CalendarDate(year: 1583, month: 1, day: 3)!
     let lastDay = CalendarDate(year: 9999, month: 12, day: 31)!
-    let lastAskedAsOf = CalendarDate(year: 9999, month: 12, day: 27)!
 
     let firstView = DayView(of: [Commitment](), on: firstDay, in: History())
     let lastView = DayView(of: [Commitment](), on: lastDay, in: History())
 
-    #expect(firstView.title(asOf: firstAskedAsOf) == "Saturday 1 January 1583")
-    #expect(lastView.title(asOf: lastAskedAsOf) == "Friday 31 December 9999")
+    #expect(firstView.title == "Sat")
+    #expect(lastView.title == "Fri")
 }
 
 @Test("a day view says the leap day of a leap year")
 func aDayViewSaysTheLeapDayOfALeapYear() {
     let leapDay = CalendarDate(year: 2028, month: 2, day: 29)!
-    let askedAsOf = CalendarDate(year: 2028, month: 2, day: 28)!
     let dayView = DayView(of: [Commitment](), on: leapDay, in: History())
 
-    #expect(dayView.title(asOf: askedAsOf) == "Tuesday 29 February 2028")
+    #expect(dayView.title == "Tue")
 }
 
 @Test("a day view holding no rows says its day just the same")
 func aDayViewHoldingNoRowsSaysItsDayJustTheSame() {
     let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
-    let askedAsOf = CalendarDate(year: 2026, month: 9, day: 3)!
     let dayView = DayView(of: [Commitment](), on: wednesday, in: History())
 
     #expect(dayView.rows.isEmpty)
-    #expect(dayView.title(asOf: askedAsOf) == "Wednesday 2 September 2026")
+    #expect(dayView.title == "Wed")
 }
 
 @Test("a row for a commitment whose kind is not a tick offers nothing")

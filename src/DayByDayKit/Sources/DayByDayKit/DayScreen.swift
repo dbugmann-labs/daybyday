@@ -160,10 +160,9 @@ public final class DayScreen {
     /// The day view the person is looking at, as the record stood when it was last read.
     public private(set) var dayView: DayView
 
-    /// The day this screen is showing, said in words: its day view's title, asked as of the day
-    /// the screen was handed. Reads no clock.
+    /// The day this screen is showing, said in words: its day view's title. Reads no clock.
     public var title: String {
-        dayView.title(asOf: today)
+        dayView.title
     }
 
     /// Whether this screen offers the way back to the today it was handed: `true` exactly where

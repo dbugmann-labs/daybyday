@@ -931,9 +931,9 @@ of them SHALL move like any other and go on saying so.
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026, and it is moved to the day after
-- **THEN** it says the day is "Tuesday 1 September 2026", without "Today" in front of it
-- **AND** moving it to the day before makes it say the day is "Today · Monday 31 August 2026", which
-  is the day it was handed
+- **THEN** its day picker opens on Tuesday 1 September 2026, and it offers the way back to today
+- **AND** moving it to the day before makes its day picker open on Monday 31 August 2026, which is
+  the day it was handed, and makes it offer no way back
 
 #### Scenario: a day screen moves onto a day that has not arrived and shows it
 
@@ -942,7 +942,7 @@ of them SHALL move like any other and go on saying so.
   1 January 2026, and it is moved to the day after four times
 - **THEN** its day view is the same day view as one formed directly of that commitment on Friday
   4 September 2026 from a history that has taken no tick
-- **AND** it says the day is "Friday 4 September 2026"
+- **AND** its day picker opens on Friday 4 September 2026
 
 #### Scenario: a day screen moves back to a day before every commitment was kept from and shows no rows
 
@@ -1008,7 +1008,7 @@ back SHALL be an answer rather than a refusal: it is the one move that always ha
   commitment named "Journaling" on a schedule listing all seven weekdays, in that order and both kept
   from 1 January 2026; it is moved to the day before three times; and it is then sent back to today
 - **THEN** its day view is the same day view as the one it held when it was opened
-- **AND** it says the day is "Today · Monday 31 August 2026"
+- **AND** its day picker opens on Monday 31 August 2026, and it offers no way back to today
 
 #### Scenario: a day screen moved into the future goes back to today in one step
 
@@ -1017,7 +1017,7 @@ back SHALL be an answer rather than a refusal: it is the one move that always ha
   commitment named "Journaling" on a schedule listing all seven weekdays, in that order and both kept
   from 1 January 2026; it is moved to the day after three times; and it is then sent back to today
 - **THEN** its day view is the same day view as the one it held when it was opened
-- **AND** it says the day is "Today · Monday 31 August 2026"
+- **AND** its day picker opens on Monday 31 August 2026, and it offers no way back to today
 
 #### Scenario: a day screen already showing today is left where it is when it is sent back to today
 
@@ -1025,7 +1025,7 @@ back SHALL be an answer rather than a refusal: it is the one move that always ha
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026, and it is sent back to today without having been moved
 - **THEN** its day view is the same day view as the one it held when it was opened
-- **AND** it says the day is "Today · Monday 31 August 2026"
+- **AND** its day picker opens on Monday 31 August 2026, and it offers no way back to today
 
 #### Scenario: a day screen goes back to the today it was last handed rather than the day it opened on
 
@@ -1033,7 +1033,7 @@ back SHALL be an answer rather than a refusal: it is the one move that always ha
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026; the app is then shown again as of Wednesday 2 September 2026; it is moved to the
   day before twice; and it is then sent back to today
-- **THEN** it says the day is "Today · Wednesday 2 September 2026"
+- **THEN** its day picker opens on Wednesday 2 September 2026, and it offers no way back to today
 
 #### Scenario: going back to today does not read the record again
 
@@ -1084,7 +1084,7 @@ direction, and a screen showing any other date SHALL move both ways.
   1583; it is moved to the day before; and it is moved to the day before again
 - **THEN** its day view is the same day view as one formed directly of that commitment on Saturday
   1 January 1583 from a history that has taken no tick
-- **AND** it says the day is "Saturday 1 January 1583"
+- **AND** its day picker opens on Saturday 1 January 1583
 - **AND** it says it is keeping a record
 
 #### Scenario: a day screen showing the last supported date is unchanged when it is moved to the day after
@@ -1094,7 +1094,7 @@ direction, and a screen showing any other date SHALL move both ways.
   1 January 1583; it is moved to the day after; and it is moved to the day after again
 - **THEN** its day view is the same day view as one formed directly of that commitment on Friday
   31 December 9999 from a history that has taken no tick
-- **AND** it says the day is "Friday 31 December 9999"
+- **AND** its day picker opens on Friday 31 December 9999
 - **AND** it says it is keeping a record
 
 #### Scenario: a day screen at either end of the calendar still moves the other way
@@ -1102,10 +1102,10 @@ direction, and a screen showing any other date SHALL move both ways.
 - **WHEN** a day screen is opened as of Saturday 1 January 1583, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 1583, and a second day screen is opened the same way as of Friday 31 December 9999
-- **THEN** the first, moved to the day before and then to the day after, says the day is "Sunday
-  2 January 1583"
-- **AND** the second, moved to the day after and then to the day before, says the day is "Thursday
-  30 December 9999"
+- **THEN** after the first is moved to the day before and then to the day after, its day picker
+  opens on Sunday 2 January 1583
+- **AND** after the second is moved to the day after and then to the day before, its day picker
+  opens on Thursday 30 December 9999
 
 ### Requirement: A day screen holds the day view of the day it was handed, formed from the record kept at its place
 
@@ -1546,98 +1546,6 @@ places it keeps its record and its roster at, and the day it is showing are all 
 - **AND** it says the roster was written by a later version of DayByDay
 - **AND** its day view holds no rows
 
-### Requirement: A day view says its day as a weekday and a date, and says Today on the day it is asked as of
-
-A day view SHALL say the day it is of, in words, when it is asked as of a day. That answer is its
-**day title**, and it is read off the day view's date and off the day it is asked as of, and off
-nothing else: it MUST NOT depend on the rows the day view holds, on whether any of them says its
-commitment is kept, or on how many there are, so a day view holding no rows at all says its day
-exactly as one holding seven does.
-
-The date SHALL be said as four things in this order, separated by single spaces: the name of the
-weekday, the day of the month as a number with no leading zero, the name of the month, and the year
-as four digits — "Monday 31 August 2026". On the day it is asked as of, and on no other day, the
-word "Today" SHALL be said in front of that date, separated from it by a space, a middle dot and a
-space — "Today · Thursday 3 September 2026". The day it is asked as of SHALL decide that and nothing
-else: no other day is named in words, so the day before is said as its date exactly as the day after
-is, and the date itself is said the same way whatever day the question is asked as of.
-
-The names of the weekdays and of the months SHALL be this capability's own — the English names,
-fixed here — and MUST NOT be taken from the device's language, region, locale or calendar
-preferences. The same day is said in the same words on every device, which is what makes a day title
-something a test can state at all. As throughout this capability, the question is asked *of a date*:
-this capability MUST NOT read a clock and MUST NOT consult the present moment or the device's time
-zone, so a day title is answered for every date the system supports and a past day's title reads
-tomorrow exactly as it does now.
-
-#### Scenario: a day view says its day as a weekday, a day of the month, a month and a year
-
-- **WHEN** a day view of Monday 31 August 2026 is asked what its day is as of Thursday 3 September
-  2026
-- **THEN** it says "Monday 31 August 2026"
-
-#### Scenario: a day view of the day it is asked as of says Today before the date
-
-- **WHEN** a day view of Thursday 3 September 2026 is asked what its day is as of Thursday
-  3 September 2026
-- **THEN** it says "Today · Thursday 3 September 2026"
-
-#### Scenario: a day view of a day before the one it is asked as of says the date and not Today
-
-- **WHEN** a day view of Wednesday 2 September 2026 is asked what its day is as of Thursday
-  3 September 2026
-- **THEN** it says "Wednesday 2 September 2026"
-
-#### Scenario: a day view of a day after the one it is asked as of says the date and not Today
-
-- **WHEN** a day view of Friday 4 September 2026 is asked what its day is as of Thursday 3 September
-  2026
-- **THEN** it says "Friday 4 September 2026"
-
-#### Scenario: a day of the month below ten is said without a leading zero
-
-- **WHEN** a day view of Tuesday 1 September 2026 is asked what its day is as of Thursday
-  3 September 2026
-- **THEN** it says "Tuesday 1 September 2026"
-
-#### Scenario: every weekday is said by its own name
-
-- **WHEN** the day views of the seven days from Monday 31 August 2026 to Sunday 6 September 2026 are
-  each asked what their day is as of Thursday 1 January 2026
-- **THEN** they say "Monday 31 August 2026", "Tuesday 1 September 2026", "Wednesday 2 September
-  2026", "Thursday 3 September 2026", "Friday 4 September 2026", "Saturday 5 September 2026" and
-  "Sunday 6 September 2026"
-
-#### Scenario: every month is said by its own name
-
-- **WHEN** the day views of the fifteenth day of each of the twelve months of 2026 are each asked
-  what their day is as of Thursday 1 January 2026
-- **THEN** they say "Thursday 15 January 2026", "Sunday 15 February 2026", "Sunday 15 March 2026",
-  "Wednesday 15 April 2026", "Friday 15 May 2026", "Monday 15 June 2026", "Wednesday 15 July 2026",
-  "Saturday 15 August 2026", "Tuesday 15 September 2026", "Thursday 15 October 2026", "Sunday
-  15 November 2026" and "Tuesday 15 December 2026"
-
-#### Scenario: a day view says its day in the first supported year and in the last
-
-- **WHEN** a day view of Saturday 1 January 1583 is asked what its day is as of Monday 3 January
-  1583
-- **THEN** it says "Saturday 1 January 1583"
-- **AND** a day view of Friday 31 December 9999 asked as of Monday 27 December 9999 says "Friday
-  31 December 9999"
-
-#### Scenario: a day view says the leap day of a leap year
-
-- **WHEN** a day view of Tuesday 29 February 2028 is asked what its day is as of Monday 28 February
-  2028
-- **THEN** it says "Tuesday 29 February 2028"
-
-#### Scenario: a day view holding no rows says its day just the same
-
-- **WHEN** a day view of no commitments at all on Wednesday 2 September 2026 is asked what its day
-  is as of Thursday 3 September 2026
-- **THEN** it holds no rows
-- **AND** it says "Wednesday 2 September 2026"
-
 #### Scenario: a day screen moved off today keeps the day it is showing when the app is shown again
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
@@ -1647,7 +1555,7 @@ tomorrow exactly as it does now.
   2 September 2026
 - **THEN** its day view is the same day view as one formed directly of those two commitments, in that
   order, on Sunday 30 August 2026, from a history that has taken no tick
-- **AND** it says the day is "Sunday 30 August 2026"
+- **AND** its day picker opens on Sunday 30 August 2026, and it offers the way back to today
 
 #### Scenario: a day screen moved away and back onto today moves onto the new day when the app is shown again
 
@@ -1658,7 +1566,7 @@ tomorrow exactly as it does now.
   shown again as of Wednesday 2 September 2026
 - **THEN** its day view is the same day view as one formed directly of those two commitments, in that
   order, on Wednesday 2 September 2026, from a history that has taken no tick
-- **AND** it says the day is "Today · Wednesday 2 September 2026"
+- **AND** its day picker opens on Wednesday 2 September 2026, and it offers no way back to today
 
 #### Scenario: a day screen sent back to today moves onto the new day when the app is shown again
 
@@ -1666,7 +1574,7 @@ tomorrow exactly as it does now.
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026; it is moved to the day before three times; it is sent back to today; and the app is
   then shown again as of Wednesday 2 September 2026
-- **THEN** it says the day is "Today · Wednesday 2 September 2026"
+- **THEN** its day picker opens on Wednesday 2 September 2026, and it offers no way back to today
 
 #### Scenario: a day screen kept on a day that has since arrived offers the tick it refused before
 
@@ -1676,7 +1584,8 @@ tomorrow exactly as it does now.
   ticked; the app is then shown again as of Tuesday 1 September 2026; and the one row it then holds
   is ticked
 - **THEN** the first ticking left the day view saying the commitment is not kept
-- **AND** after being shown again it says the day is "Today · Tuesday 1 September 2026"
+- **AND** after being shown again its day picker opens on Tuesday 1 September 2026, and it offers
+  no way back to today
 - **AND** the second ticking makes its day view say the commitment is kept on Tuesday 1 September
   2026
 
@@ -1688,90 +1597,7 @@ tomorrow exactly as it does now.
   is then kept at that place by something else; and the app is shown again as of Monday 31 August
   2026
 - **THEN** its day view says the commitment is kept on Sunday 30 August 2026
-- **AND** it says the day is "Sunday 30 August 2026", the screen not having moved
-
-### Requirement: A day screen says the day it is showing, as of the day it was handed
-
-A day screen SHALL say the day it is showing, and that SHALL be its day view's day title asked as of
-the today it was handed. It adds nothing to that answer and takes nothing away: the words are the day
-title requirement's, and the only thing a day screen contributes is the day the question is asked as
-of, which is the today it holds and is the one thing here that is not on the screen already.
-
-The date it says SHALL follow the day the screen is showing, and the word "Today" SHALL follow the
-today. A day screen moved off its today therefore says a bare date, and one showing its today — for
-having never moved, for having been moved back, or for having been sent back — says "Today" in front
-of that date. That is how a person knows they are not where they started, and it is why a screen that
-can be moved has to say its day at all.
-
-The today SHALL be the one the screen was handed and never one it went looking for. A day screen MUST
-NOT read a clock to say its day, so a screen handed a day says that day whatever day it really is,
-and it says the same day until it is moved or the app is shown again — a tick made on it MUST NOT
-change what it says the day is, and neither MUST time passing.
-
-A day screen SHALL say its day whether or not it is keeping a record. What a date asks of a person
-needs no record to answer, so a screen that could not read one says its day exactly as a screen that
-did.
-
-#### Scenario: a day screen says the day it is showing
-
-- **WHEN** a day screen is opened as of Thursday 3 September 2026, at a place where nothing has been
-  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
-  1 January 2026
-- **THEN** it says the day is "Today · Thursday 3 September 2026"
-
-#### Scenario: a day screen says the day it was handed rather than the day it really is
-
-- **WHEN** a day screen is opened as of Monday 3 January 1583, at a place where nothing has been
-  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
-  1 January 1583
-- **THEN** it says the day is "Today · Monday 3 January 1583"
-- **AND** a day screen opened the same way as of Monday 27 December 9999 says the day is "Today ·
-  Monday 27 December 9999"
-
-#### Scenario: a day screen says the day its own day view says, asked as of the day it was handed
-
-- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
-  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026
-- **THEN** what it says the day is is what its day view says when that day view is asked as of Monday
-  31 August 2026
-
-#### Scenario: a day screen shown again on a later day says that day
-
-- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
-  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
-  1 January 2026, and the app is then shown again as of Tuesday 1 September 2026
-- **THEN** it says the day is "Today · Tuesday 1 September 2026"
-
-#### Scenario: a day screen that cannot read its record still says the day
-
-- **WHEN** a day screen is opened as of Monday 31 August 2026, of a commitment named "Journaling" on
-  a schedule listing all seven weekdays, kept from 1 January 2026, at a place holding a run of bytes
-  that is not a record
-- **THEN** it says it is not keeping a record
-- **AND** it says the day is "Today · Monday 31 August 2026"
-
-#### Scenario: a day screen says the same day after a tick is made on it
-
-- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
-  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, and its one row is ticked
-- **THEN** it says the day is "Today · Monday 31 August 2026", exactly as it did before the tick
-
-#### Scenario: a day screen moved to another day says that day and does not say Today
-
-- **WHEN** a day screen is opened as of Thursday 3 September 2026, at a place where nothing has been
-  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
-  1 January 2026, and it is moved to the day before
-- **THEN** it says the day is "Wednesday 2 September 2026"
-- **AND** moving it to the day before again makes it say the day is "Tuesday 1 September 2026"
-
-#### Scenario: a day screen sent back onto today says Today again
-
-- **WHEN** a day screen is opened as of Thursday 3 September 2026, at a place where nothing has been
-  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
-  1 January 2026; it is moved to the day before twice; and it is then sent back to today
-- **THEN** it says the day is "Today · Thursday 3 September 2026"
+- **AND** its day picker still opens on Sunday 30 August 2026, the screen not having moved
 
 ### Requirement: A day screen draws the commitments its roster had not stopped keeping on the day it is showing
 
@@ -2120,7 +1946,7 @@ called needs no roster to answer.
   bytes that is not what a roster is written as, at a record place where nothing has been kept, of a
   commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
   2026
-- **THEN** it says the day is "Today · Monday 31 August 2026"
+- **THEN** it says the day is "Mon"
 - **AND** it says it is keeping a record
 - **AND** it says it is not keeping a roster
 
@@ -2477,7 +2303,7 @@ for a minute before backing out of it, is the most tempting instance of that.
   schedule listing all seven weekdays, kept from 1 January 2026; its one row is ticked; and it is
   then moved to the day before
 - **THEN** the day screen tells nothing on any row
-- **AND** it says "Sunday 30 August 2026"
+- **AND** its day picker opens on Sunday 30 August 2026
 
 #### Scenario: what a day screen tells on a row ends when the day screen is moved to the day after
 
@@ -2486,7 +2312,7 @@ for a minute before backing out of it, is the most tempting instance of that.
   schedule listing all seven weekdays, kept from 1 January 2026; its one row is ticked; and it is
   then moved to the day after
 - **THEN** the day screen tells nothing on any row
-- **AND** it says "Tuesday 1 September 2026"
+- **AND** its day picker opens on Tuesday 1 September 2026
 
 #### Scenario: what a day screen tells on a row ends when the day screen is sent back to today from another day
 
@@ -2495,7 +2321,7 @@ for a minute before backing out of it, is the most tempting instance of that.
   schedule listing all seven weekdays, kept from 1 January 2026; it is moved to the day before;
   its one row is ticked; and it is then sent back to today
 - **THEN** the day screen tells nothing on any row
-- **AND** it says "Today · Monday 31 August 2026"
+- **AND** its day picker opens on Monday 31 August 2026, and it offers no way back to today
 
 #### Scenario: what a day screen tells on a row stands when a move has nowhere to go
 
@@ -2506,8 +2332,8 @@ for a minute before backing out of it, is the most tempting instance of that.
   day before and the second to the day after
 - **THEN** each day screen still tells, on the row that was ticked on it, that the change could
   not be kept
-- **AND** the first says "Today · Saturday 1 January 1583" and the second says "Today · Friday 31
-  December 9999"
+- **AND** the first's day picker still opens on Saturday 1 January 1583 and the second's on Friday
+  31 December 9999
 
 #### Scenario: what a day screen tells on a row stands when a day screen showing today is sent back to today
 
@@ -2516,7 +2342,7 @@ for a minute before backing out of it, is the most tempting instance of that.
   schedule listing all seven weekdays, kept from 1 January 2026; its one row is ticked; and it is
   then sent back to today without having been moved
 - **THEN** the day screen still tells, on that row, that the change could not be kept
-- **AND** it says "Today · Monday 31 August 2026"
+- **AND** its day picker still opens on Monday 31 August 2026, and it offers no way back to today
 
 #### Scenario: what a day screen tells on a row ends when a number is entered and kept
 
@@ -2556,7 +2382,7 @@ for a minute before backing out of it, is the most tempting instance of that.
   listing all seven weekdays, kept from 1 January 2026; "1.2.3" is committed on its one row; and
   it is then moved to the day before
 - **THEN** the day screen tells nothing on any row
-- **AND** it says "Sunday 30 August 2026"
+- **AND** its day picker opens on Sunday 30 August 2026
 
 #### Scenario: what a day screen tells on a row ends when a note is written and kept
 
@@ -2861,7 +2687,7 @@ adds no rule of its own to either.
   1 January 2026, is taken on at a roster place; a day screen of no commitments at all is opened at
   that roster place as of Monday 31 August 2026, at a record place where nothing has been kept; it
   is moved to the day before; and it is returned to
-- **THEN** it says the day it is showing is "Sunday 30 August 2026"
+- **THEN** its day picker opens on Sunday 30 August 2026
 - **AND** its day view holds one row, named "Journaling"
 
 #### Scenario: a day screen returned to keeps the today it was handed
@@ -2870,7 +2696,7 @@ adds no rule of its own to either.
   1 January 2026, is taken on at a roster place; a day screen of no commitments at all is opened at
   that roster place as of Monday 31 August 2026, at a record place where nothing has been kept; and
   it is returned to
-- **THEN** it says the day it is showing is "Today · Monday 31 August 2026"
+- **THEN** its day picker opens on Monday 31 August 2026, and it offers no way back to today
 
 #### Scenario: a day screen returned to does not read its record again
 
@@ -4757,7 +4583,7 @@ rows, or on what is being told on a row.
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026, and it is not moved
 - **THEN** it offers no way back to today
-- **AND** it says the day is "Today · Monday 31 August 2026"
+- **AND** its day picker opens on Monday 31 August 2026
 
 #### Scenario: a day screen moved into the past offers the way back to today
 
@@ -4789,7 +4615,7 @@ rows, or on what is being told on a row.
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026, and it is sent back to today without having been moved
-- **THEN** it says the day is "Today · Monday 31 August 2026"
+- **THEN** its day picker opens on Monday 31 August 2026
 - **AND** it offers no way back to today, exactly as it did before
 
 #### Scenario: a day screen shown again on a later day offers the way back to today from the day it stayed on
@@ -4799,7 +4625,7 @@ rows, or on what is being told on a row.
   1 January 2026; it is moved to the day before; and the app is then shown again as of Wednesday
   2 September 2026
 - **THEN** it offers the way back to today
-- **AND** sent back, it says the day is "Today · Wednesday 2 September 2026" and offers no way back
+- **AND** sent back, its day picker opens on Wednesday 2 September 2026 and it offers no way back
 
 #### Scenario: a day screen showing its today when the app is shown again on a later day offers no way back to today
 
@@ -4808,7 +4634,7 @@ rows, or on what is being told on a row.
   1 January 2026, and the app is shown again as of Wednesday 2 September 2026 without it having been
   moved
 - **THEN** it offers no way back to today
-- **AND** it says the day is "Today · Wednesday 2 September 2026"
+- **AND** its day picker opens on Wednesday 2 September 2026
 
 #### Scenario: a day screen the day it is showing has caught up with offers no way back to today
 
@@ -4817,7 +4643,7 @@ rows, or on what is being told on a row.
   1 January 2026; it is moved to the day after; and the app is then shown again as of Tuesday
   1 September 2026
 - **THEN** it offers no way back to today
-- **AND** it says the day is "Today · Tuesday 1 September 2026"
+- **AND** its day picker opens on Tuesday 1 September 2026
 
 #### Scenario: a day screen whose move had nowhere to go offers no way back to today
 
@@ -5071,8 +4897,8 @@ holding nothing and is answered by the rule above rather than by a rule of its o
   that roster place as of Monday 31 August 2026, at a record place where nothing has been kept; it
   is moved to the day before; that roster place is then made to hold a run of bytes that is not
   what a roster is written as; and the screen is returned to
-- **THEN** it says the day it is showing is "Sunday 30 August 2026"
-- **AND** its day picker opens on Sunday 30 August 2026 and reaches back to Sunday 30 August 2026
+- **THEN** its day picker opens on Sunday 30 August 2026 and reaches back to Sunday 30 August
+  2026
 - **AND** before it was returned to, its day picker reached back to 1 January 2020
 
 #### Scenario: a day screen that cannot read its record says the reach of its day picker like any other
@@ -5139,7 +4965,6 @@ names a day inside the supported years and needs no validity rule of its own her
   1 January 2026; and Monday 15 June 2026 is picked
 - **THEN** its day view is the same day view as one formed directly of those two commitments, in
   that order, on Monday 15 June 2026, from a history that has taken no tick
-- **AND** it says the day is "Monday 15 June 2026"
 - **AND** its day picker opens on Monday 15 June 2026
 
 #### Scenario: a day screen shows a day picked after the today it was handed
@@ -5147,17 +4972,16 @@ names a day inside the supported years and needs no validity rule of its own her
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026; and Friday 25 December 2026 is picked
-- **THEN** it says the day is "Friday 25 December 2026"
-- **AND** a second day screen opened the same way, on which Friday 31 December 9999 is picked, says
-  the day is "Friday 31 December 9999"
+- **THEN** its day picker opens on Friday 25 December 2026
+- **AND** a second day screen opened the same way, on which Friday 31 December 9999 is picked, has
+  its day picker open on Friday 31 December 9999
 
 #### Scenario: a day screen shows the earliest day its day picker reaches when that day is picked
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026; and Thursday 1 January 2026, the earliest day its day picker reaches, is picked
-- **THEN** it says the day is "Thursday 1 January 2026"
-- **AND** its day picker opens on Thursday 1 January 2026 and reaches back to Thursday 1 January
+- **THEN** its day picker opens on Thursday 1 January 2026 and reaches back to Thursday 1 January
   2026
 
 #### Scenario: a day screen is left exactly as it was by a day picked earlier than its day picker reaches
@@ -5165,7 +4989,7 @@ names a day inside the supported years and needs no validity rule of its own her
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026; and Wednesday 31 December 2025 is picked
-- **THEN** it says the day is "Today · Monday 31 August 2026"
+- **THEN** it offers no way back to today
 - **AND** its day view is the same day view as the one it held before that day was picked, and is
   not the day view of Thursday 1 January 2026
 - **AND** its day picker still opens on Monday 31 August 2026 and reaches back to 1 January 2026
@@ -5176,7 +5000,7 @@ names a day inside the supported years and needs no validity rule of its own her
   from but not written to and where nothing has been kept, of a commitment named "Gym" on a
   schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026; its one row is ticked
   and refused; and Monday 31 August 2026 is picked
-- **THEN** it says the day is "Today · Monday 31 August 2026"
+- **THEN** its day picker still opens on Monday 31 August 2026, and it offers no way back to today
 - **AND** it is still telling on that row that the change could not be kept
 - **AND** its day view is the same day view as the one it held before that day was picked
 
@@ -5209,8 +5033,9 @@ names a day inside the supported years and needs no validity rule of its own her
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026; and Monday 15 June 2026 is picked
-- **THEN** it says the day is "Monday 15 June 2026", without "Today" in front of it
-- **AND** sent back to today, it says the day is "Today · Monday 31 August 2026"
+- **THEN** its day picker opens on Monday 15 June 2026, and it offers the way back to today
+- **AND** sent back to today, its day picker opens on Monday 31 August 2026 and it offers no way
+  back
 
 #### Scenario: a day screen stops telling what it was telling on a row when a picked day changes the day it is showing
 
@@ -5219,7 +5044,7 @@ names a day inside the supported years and needs no validity rule of its own her
   schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026; its one row is ticked
   and refused; and Monday 15 June 2026 is picked
 - **THEN** it tells nothing on any row
-- **AND** it says the day is "Monday 15 June 2026"
+- **AND** its day picker opens on Monday 15 June 2026
 
 #### Scenario: a day screen goes on telling what it was telling on a row when a picked day is earlier than its day picker reaches
 
@@ -5228,7 +5053,7 @@ names a day inside the supported years and needs no validity rule of its own her
   schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026; its one row is ticked
   and refused; and Wednesday 31 December 2025 is picked
 - **THEN** it is still telling on that row that the change could not be kept
-- **AND** it says the day is "Today · Monday 31 August 2026"
+- **AND** its day picker still opens on Monday 31 August 2026
 
 #### Scenario: a day screen offers the way back to today once a day other than that today is picked
 
@@ -5239,3 +5064,161 @@ names a day inside the supported years and needs no validity rule of its own her
 - **AND** picking Monday 31 August 2026 from there, it offers no way back to today
 - **AND** a screen on which Wednesday 31 December 2025 is picked instead offers no way back to
   today, that day never having been shown
+
+### Requirement: A day view says its day as a weekday
+
+A day view SHALL say the day it is of, in words. That answer is its **day title**, and it is read off
+the day view's date and off nothing else: it MUST NOT depend on the rows the day view holds, on
+whether any of them says its commitment is kept, or on how many there are, so a day view holding no
+rows at all says its day exactly as one holding seven does.
+
+The day title SHALL be the name of the weekday its date falls on, and nothing else: no day of the
+month, no month, no year, and no word in front of it. The names SHALL be the three-letter ones —
+"Mon", "Tue", "Wed", "Thu", "Fri", "Sat" and "Sun" — which are the names this package already says a
+schedule's weekdays in, so that one abbreviation is read across the app rather than two.
+
+**The day title SHALL NOT depend on any other day.** It is asked of a date alone and is handed no
+day: a day title is the same words whatever day the question is asked on, whatever day the person is
+looking at, and whatever day the device thinks it is. Two dates falling on the same weekday therefore
+have the same day title however far apart they are, and that is the whole of what this answer says.
+What day of the month, month and year a day view is of is said on a day screen by the day picker
+beside its title, in whatever words the device uses for a date, and this capability says none of it.
+
+The names of the weekdays SHALL be this capability's own — the English names, fixed here — and MUST
+NOT be taken from the device's language, region, locale or calendar preferences, which is what makes
+a day title something a test can state at all. ADR-1022. As throughout this capability, the question
+is asked *of a date*: this capability MUST NOT read a clock and MUST NOT consult the present moment
+or the device's time zone, so a day title is answered for every date the system supports and a past
+day's title reads tomorrow exactly as it does now.
+
+#### Scenario: a day view says its day as the three-letter name of its weekday
+
+- **WHEN** a day view of Monday 31 August 2026 is asked what its day is
+- **THEN** it says "Mon"
+
+#### Scenario: every weekday is said by its own name
+
+- **WHEN** the day views of the seven days from Monday 31 August 2026 to Sunday 6 September 2026 are
+  each asked what their day is
+- **THEN** they say "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" and "Sun"
+
+#### Scenario: two day views whose dates fall on the same weekday say the same day title
+
+- **WHEN** the day views of Monday 31 August 2026, of Monday 15 June 2026 and of Monday 3 January
+  1583 are each asked what their day is
+- **THEN** each of them says "Mon"
+
+#### Scenario: a day view says its day in the first supported year and in the last
+
+- **WHEN** a day view of Saturday 1 January 1583 is asked what its day is
+- **THEN** it says "Sat"
+- **AND** a day view of Friday 31 December 9999 says "Fri"
+
+#### Scenario: a day view says the leap day of a leap year
+
+- **WHEN** a day view of Tuesday 29 February 2028 is asked what its day is
+- **THEN** it says "Tue"
+
+#### Scenario: a day view holding no rows says its day just the same
+
+- **WHEN** a day view of no commitments at all on Wednesday 2 September 2026 is asked what its day is
+- **THEN** it holds no rows
+- **AND** it says "Wed"
+
+### Requirement: A day screen says the day it is showing
+
+A day screen SHALL say the day it is showing, and that SHALL be its day view's day title. It adds
+nothing to that answer and takes nothing away: the words are the day title requirement's, and a day
+screen contributes nothing to them at all.
+
+**The words SHALL follow the day being shown and nothing else.** In particular they MUST NOT follow
+the today the screen was handed: a day screen showing its today says exactly what a day screen
+showing any other day of that weekday says, and there is no word, mark or spacing that tells the two
+apart. What tells them apart is *A day screen says whether it offers the way back to today*, which is
+the one answer about that and which this requirement leaves untouched; a caller that must know
+whether the day being shown is the today asks that answer, and MUST NOT read it out of these words.
+A caller that must know *which* day is being shown asks *A day screen says the reach of its day
+picker*, whose day the picker opens on is that day.
+
+A day screen MUST NOT read a clock to say its day, so a screen handed a day says that day's weekday
+whatever day it really is, and goes on saying it until it is moved, a day is picked on it, or the app
+is shown again. A tick made on it MUST NOT change what it says the day is, and neither MUST time
+passing.
+
+A day screen SHALL say its day whether or not it is keeping a record and whether or not it is keeping
+a roster. What a date asks of a person needs no record to answer, so a screen that could not read one
+says its day exactly as a screen that did.
+
+#### Scenario: a day screen says the day it is showing
+
+- **WHEN** a day screen is opened as of Thursday 3 September 2026, at a place where nothing has been
+  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026
+- **THEN** it says the day is "Thu"
+
+#### Scenario: a day screen says its day the same way whether or not it is showing its today
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, and it is moved to the day before seven times, onto Monday 24 August 2026
+- **THEN** it says the day is "Mon", exactly as it did before it was moved
+- **AND** it offers the way back to today, where before it was moved it offered none
+
+#### Scenario: a day screen says the day its own day view says
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026
+- **THEN** what it says the day is is what its day view says
+
+#### Scenario: a day screen says the day it was handed rather than the day it really is
+
+- **WHEN** a day screen is opened as of Monday 3 January 1583, at a place where nothing has been
+  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 1583
+- **THEN** it says the day is "Mon"
+- **AND** a day screen opened the same way as of Friday 31 December 9999 says the day is "Fri"
+
+#### Scenario: a day screen shown again on a later day says that day
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, and the app is then shown again as of Tuesday 1 September 2026
+- **THEN** it says the day is "Tue"
+
+#### Scenario: a day screen moved to another day says that day
+
+- **WHEN** a day screen is opened as of Thursday 3 September 2026, at a place where nothing has been
+  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, and it is moved to the day before
+- **THEN** it says the day is "Wed"
+- **AND** moving it to the day before again makes it say the day is "Tue"
+
+#### Scenario: a day screen sent back onto today says that today's weekday
+
+- **WHEN** a day screen is opened as of Thursday 3 September 2026, at a place where nothing has been
+  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026; it is moved to the day before twice; and it is then sent back to today
+- **THEN** it says the day is "Thu"
+
+#### Scenario: a day screen showing a day picked on its day picker says that day
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, and Wednesday 10 June 2026 is picked
+- **THEN** it says the day is "Wed"
+
+#### Scenario: a day screen that cannot read its record still says the day
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, of a commitment named "Journaling" on
+  a schedule listing all seven weekdays, kept from 1 January 2026, at a place holding a run of bytes
+  that is not a record
+- **THEN** it says it is not keeping a record
+- **AND** it says the day is "Mon"
+
+#### Scenario: a day screen says the same day after a tick is made on it
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, and its one row is ticked
+- **THEN** it says the day is "Mon", exactly as it did before the tick
