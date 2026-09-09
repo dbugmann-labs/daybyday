@@ -55,6 +55,7 @@ struct CommitmentsView: View {
     @State private var keptFromDate: Date
     @State private var categorising: Commitment?
     @State private var categoryTyped = ""
+    @Environment(\.editMode) private var editMode
 
     init(screen: CommitmentsScreen) {
         self.screen = screen
@@ -75,15 +76,20 @@ struct CommitmentsView: View {
             // to `screen.move` beside the section's own `group.category`: nothing here adds,
             // subtracts, counts rows or asks where a finger is.
             //
-            // `.sectionActions` draws two icon buttons below a categorised section's content in
-            // Edit mode, the one documented per-section action surface — `design.md` § *The shell
-            // rides this Story*. Both sit in one `HStack`, itself the single view the content
-            // closure returns, so the row is meant to read as one item with two separately
-            // tappable buttons rather than two stacked rows — Apple's own documented example draws
-            // a single `Button` and says nothing about two, so whether this lays out as intended is
-            // **unconfirmed until walked on the phone**. Each carries the accessibility label the
-            // prose in `proposal.md` and `design.md` names, `Move up` and `Move down`, unchanged by
-            // drawing an icon instead of the words. `index` is the group's own position in
+            // `.sectionActions` draws two icon buttons below a categorised section's content, the
+            // one documented per-section action surface — `design.md` § *The shell rides this
+            // Story*. Gated on `editMode` below: `grill.md` § *Settled* 6 decided the actions
+            // appear in Edit mode only, and both the appearance and the row re-evaluating on that
+            // transition are confirmed — on the phone (2026-09-09) and by
+            // `zzzScratchVerifyEditGateAndRowHeight`, a throwaway XCUITest run during this fix and
+            // not kept: no `Move up`/`Move down` button exists before `EditButton()` is tapped,
+            // both exist right after. Both sit in one `HStack`, itself the single view the content
+            // closure returns, so the row reads as one item with two separately tappable buttons
+            // rather than two stacked rows — confirmed on the phone: Apple's own documented example
+            // draws a single `Button` and says nothing about two, so this was open until walked.
+            // Each carries the accessibility label the prose in `proposal.md` and `design.md`
+            // names, `Move up` and `Move down`, unchanged by drawing an icon instead of the words.
+            // `index` is the group's own position in
             // `screen.keptGroups`, which is `screen.categoriesInUse`'s position too: the group
             // under no category, where there is one, is always last, so every categorised group
             // sits at the same index in both. Up is `index - 1`, down is `index + 2`, and each is
@@ -128,12 +134,26 @@ struct CommitmentsView: View {
                     }
                 }
                 .sectionActions {
-                    if let category = group.category {
+                    if editMode?.wrappedValue.isEditing == true, let category = group.category {
                         // One `HStack`, so this is one item to `sectionActions` rather than two —
                         // see the comment above `ForEach(Array(screen.keptGroups.enumerated())…`.
-                        // Thinner than a commitment row above: the platform's own vertical padding
-                        // on a `sectionActions` row is trimmed the same way the category heading's
-                        // already is, off `.listRowInsets`.
+                        //
+                        // **This row cannot be made thinner than a commitment row from here.**
+                        // Measured 2026-09-09 with `zzzScratchVerifyEditGateAndRowHeight`: a
+                        // `sectionActions` row's own frame reads exactly 52.0pt — identical, to the
+                        // decimal, to a plain commitment row's (`Creatine - Every day`, also
+                        // 52.0pt) — and stays exactly 52.0pt across three separate builds tried in
+                        // turn: `.listRowInsets` alone (below), `.listRowInsets` plus
+                        // `.frame(height: 32)`, and both plus
+                        // `.environment(\.defaultMinListRowHeight, 32)` on the row's own content.
+                        // None moved it by a point. `sectionActions` appears to impose a fixed,
+                        // platform-drawn row height on this SDK (iOS 26.5) that no content-level
+                        // sizing modifier reaches — consistent with the header text above shrinking
+                        // to 28pt off the same `.listRowInsets` this row ignores, so the modifier
+                        // itself works in this file, just not on a `sectionActions` row. Left as
+                        // `.listRowInsets` alone, since the other two measured no different from
+                        // one another and from having neither; not shrinking the icons instead,
+                        // since that would not change what reads as thick — the row.
                         HStack(spacing: 32) {
                             if index > 0 {
                                 Button {
