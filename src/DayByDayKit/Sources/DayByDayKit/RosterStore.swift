@@ -230,6 +230,24 @@ public final class RosterStore {
         roster = nextRoster
         return true
     }
+
+    /// Kept at `place` in one write, replacing the whole roster with `nextRoster`. For a caller
+    /// that must apply more than one `Roster` mutation as a single act — a rename immediately
+    /// followed by a supersession, say — building the combined value first and handing it here
+    /// keeps the two from ever being kept as two separate writes, where a place that goes
+    /// unwritable between them could leave one half kept and the other refused. Answers `false`,
+    /// without throwing and without writing, when `nextRoster` is exactly the roster already
+    /// held.
+    @discardableResult
+    func replace(with nextRoster: Roster) throws -> Bool {
+        guard nextRoster != roster else {
+            return false
+        }
+        try write(nextRoster)
+
+        roster = nextRoster
+        return true
+    }
 }
 
 public enum RosterStoreError: Error, Equatable, Sendable {
