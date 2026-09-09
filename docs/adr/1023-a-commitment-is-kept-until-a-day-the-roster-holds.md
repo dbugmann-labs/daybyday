@@ -116,7 +116,9 @@ Four things are part of the decision rather than incidental to it:
     roster then puts the second where the first was. Nothing is orphaned, because after the carry-over
     every record embeds a commitment the roster still holds. The carry-over refuses outright where any
     record could not be a record of the second commitment, which is what stops the kept-from day being
-    moved forward over a day someone recorded against.
+    moved over a day someone recorded against — moved forward on any rhythm, and moved in either
+    direction on **every N days**, where the kept-from day is the interval's start date and the grid
+    moves with it.
   - **A different rhythm.** Nothing is carried over at all. The roster **supersedes**: the old
     commitment is kept until the day before, held **removed**, and the new one is taken on in the place
     it held. Every past day answers against the value it was written against, because that value is

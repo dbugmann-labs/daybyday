@@ -5,7 +5,8 @@
 `grill.md` settled twenty-four questions over six rounds and left nothing open. This file records
 what writing the delta on those answers turned up: the facts each answer had to be checked against,
 the two places the settled wording did not survive contact with the code, and the one question that
-was invisible until a requirement had to be phrased.
+was invisible until a requirement had to be phrased — raised as a residual round, answered on
+2026-09-09, and folded in below.
 
 Three facts the whole design rests on, each measured in this worktree rather than remembered:
 
@@ -21,8 +22,9 @@ true; the way through is not a mutable part but a **second commitment** that eit
 `Commitment.isDue(on:)` applies `keptFrom` as a separate floor on top of it. They agree only because
 `Rhythm.schedule(keptFrom:)` builds one from the other, and the shipped spec says so in as many words:
 *"The two remain distinct in the model and may disagree where something other than this screen forms
-the commitment; this screen offers one date and uses it for both."* This is the fact § *Questions for
-you* 1 turns on, and it is why that question exists at all.
+the commitment; this screen offers one date and uses it for both."* This is the fact the residual round
+turned on, and § *An interval rhythm's grid moves with the day it is kept from* is what the answer to
+it decided.
 
 **Neither store's form number moves.** The roster file is at form 4 (`RosterDocument.currentVersion`)
 and already carries `removed` — since form 3, `removalIntroducedInVersion` — which is the only key
@@ -155,13 +157,38 @@ together do reach both, because the rename happens while there is still one valu
   rhythm and its kept-from day decide dueness and it has no days left to decide. The act a person
   takes is *take it up again first*, which is different from every other refusal's, so ADR-1036 says
   tell it apart.
-- **A day already recorded on that the change would leave not due.** Moving a kept-from day forward
-  over a day someone recorded against would either orphan that record or drop it, and this system does
-  neither. The act is *pick an earlier day*.
+- **A day already recorded on that the change would leave not due.** Moving a kept-from day over a day
+  someone recorded against would either orphan that record or drop it, and this system does neither.
+  The act is *pick a day that leaves every recorded day due*. The refusal is stated as what the change
+  would leave rather than as a direction, because on an interval rhythm the grid moves with the day and
+  moving it **earlier** strands records just as readily — the section below.
 
 Everything else reuses what the define form already says. A **place that could not be written** now
 covers the record place as well as the roster place, because a person can do nothing about either but
 try again later, which is the test that requirement has always applied.
+
+### An interval rhythm's grid moves with the day it is kept from
+
+**Answered at the residual round on 2026-09-09, against the recommendation and by the owner's
+decision**; `grill.md` § *Settled* 3 carries the amendment. `Schedule.everyNDays` holds its own start
+date and `Commitment.keptFrom` is a separate floor, so a kept-from change had two possible readings:
+move the floor and leave the grid, or move both. The delta moves both. `change` builds the changed
+commitment's schedule from the day the change names, exactly as `Rhythm.schedule(keptFrom:)` already
+does when the same sheet defines one, so the two fields never disagree on anything this screen makes.
+
+What that buys is that one date on the sheet means one thing. A person correcting *every 14 days since
+1 July* to *since 17 June* is saying the run started earlier, and a floor that moved while the grid
+stayed would leave them due on days they never chose, with no field on the sheet that could fix it. The
+declined alternative — floor only — kept every existing record safe by construction and made the
+refusal a one-directional rule, at the price of a commitment whose kept-from day and grid say different
+things with nothing on the screen admitting it.
+
+The price taken is that the refusal reaches further. Any kept-from change on an interval commitment
+that has a record is refused unless the day moves by a whole number of intervals, and a person cannot
+read that off the sheet before saving. It is one of the eight refusals told apart under ADR-1036, so
+what it says is what the sheet says, and the sheet stays open with what was typed. The three scenarios
+§ 6.12–6.14 drive are the whole of it: the grid moving, the refusal in the earlier direction, and the
+whole-multiple move that is not refused.
 
 ### A change into a commitment the roster already holds is refused in all three states
 
@@ -215,7 +242,7 @@ this section being wrong rather than a file to edit.**
 
 ## Risks / Trade-offs
 
-- **This is the largest delta the repository has carried: 185 scenarios, 58 of them new.** The owner
+- **This is the largest delta the repository has carried: 188 scenarios, 61 of them new.** The owner
   reaffirmed one Story at the grill after the size was raised, so it is not reopened here. The
   practical risk is a long red-green run in which the ordering rules — carry-over before roster,
   rename before supersession — are easy to satisfy per-test and easy to lose overall; `tasks.md`
@@ -233,46 +260,22 @@ this section being wrong rather than a file to edit.**
 - **A rename is not reversible through the record if it is interrupted mid-way by a second rename.**
   Nothing here promises otherwise, and nothing offers a history of names.
 
-## Questions for you
-
-One question. It was invisible until the kept-from requirement had to be phrased, and **the grill
-could not have reached it**: it turns on `Schedule.everyNDays` carrying its own start date separately
-from `Commitment.keptFrom`, which is a fact about the code that only a delta-writing pass goes and
-reads. Everything else the grill settled survived contact with the code unchanged.
-
-The delta is written on the recommended answer, so it validates and is complete either way; if you
-say otherwise, the change below is what moves.
-
-1. **An interval commitment's kept-from day is also its rhythm's start date. When someone corrects
-   the kept-from day, does the rhythm's grid move with it?**
-
-   `grill.md` § *Settled* 3 says moving the day earlier "widens the window and every past day inside
-   it becomes due". That is true of a weekday set, a day of the month and a weekly quota, whose
-   dueness does not depend on the kept-from day at all. It is **not** true of *every 14 days*: there,
-   moving the day back by three days moves every due day since, so a commitment with any record at all
-   would have every one of those records sitting on a day it is no longer due on — and the carry-over
-   would refuse the whole change.
-
-   - *Recommended:* **the kept-from day moves the floor only, and an interval rhythm's start date
-     stays where it is.** The model already allows the two to differ and the shipped spec says so; the
-     grid a person has actually been keeping to is preserved; every existing record still forms; and
-     "widens the window" becomes true of all four rhythms. The price: a commitment whose kept-from day
-     is earlier than its interval's start opens no days before that start — an interval that began in
-     August cannot be made to have been due in June, only to have been *kept* since June — and the
-     sheet can no longer re-create such a commitment from scratch, though nothing asks it to.
-   - *If you say the grid moves with the day:* the requirement *A commitments screen changes a
-     commitment on either of its lists* is rewritten for the interval case, and its two kept-from
-     scenarios with it, so that a kept-from change on an interval commitment with any record is
-     refused as *a day already recorded on that the change would leave not due* nearly every time —
-     including moving the day **earlier**, which the settled answer says is the safe direction. The
-     refusal is one a person cannot predict from the screen. Nothing else in the delta moves; the
-     `record` and `day-screen` deltas are untouched either way.
-
 ## Open Questions
 
-**`grill.md` § *Left open* says "None.", and it is still none.** All three of the things it owed
-`spec-author` as work rather than as questions are discharged in this diff, and each is recorded here
-so a reader can check rather than trust:
+**`grill.md` § *Left open* says "None.", and it is still none.**
+
+**One question was raised as a residual round and is settled.** *An interval commitment's kept-from day
+is also its rhythm's start date; when someone corrects the kept-from day, does the rhythm's grid move
+with it?* Answered on 2026-09-09: **the grid moves with the day**, against the recommendation, which had
+been to move the floor only. The delta was rewritten on that answer — § *An interval rhythm's grid moves
+with the day it is kept from*, the interval paragraph and the reworded refusal in *A commitments screen
+changes a commitment on either of its lists*, and three scenarios at § 6.12–6.14. `grill.md` § *Settled*
+3 carries the amendment. **The grill could not have reached it**: it turns on `Schedule.everyNDays`
+carrying a start date separately from `Commitment.keptFrom`, which is a fact about the code that only a
+delta-writing pass goes and reads.
+
+All three of the things `grill.md` owed `spec-author` as work rather than as questions are discharged in
+this diff, and each is recorded here so a reader can check rather than trust:
 
 1. **The ADR owed — written, and it is two amendments rather than a new record.** ADR-1023 and
    ADR-1030 are amended in place and stamped `2026-09-09`. § *Why no new ADR* gives the reasoning, and

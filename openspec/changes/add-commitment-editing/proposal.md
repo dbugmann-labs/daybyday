@@ -16,7 +16,7 @@ Both are `orchestrator`'s to do and neither is in this diff.
 
 The grill also asked whether this is too large for one Story — three wants, a new sheet, a rewrite of
 records, a supersession rule and amendments to two ADRs — and the owner reaffirmed one Story. It is
-recorded here because the size is real: this delta carries **185 scenarios, 58 of them new**.
+recorded here because the size is real: this delta carries **188 scenarios, 61 of them new**.
 
 ## What Changes
 

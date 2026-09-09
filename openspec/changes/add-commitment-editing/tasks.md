@@ -6,7 +6,7 @@
   rebase onto **`4e64641`** that this branch sits on at G4: #183 landed while the delta was being
   written and touched `src/DayByDay`, `docs/` and nothing in the kit or under `openspec/specs/`,
   which `git diff --stat e908ff8 4e64641 -- src/DayByDayKit openspec/specs` reports as empty. From the repo root,
-  `pnpm run check:scenarios` reports `scenario coverage — 127/185 scenario(s) covered` for this change
+  `pnpm run check:scenarios` reports `scenario coverage — 127/188 scenario(s) covered` for this change
   and names *"changing a commitment a roster holds puts the result in the place the one it replaced
   held"* as next. Those **127 are the scenarios this delta carries verbatim from the current specs,
   and no test behind any of them may be renamed, moved, or have an assertion changed by a box below.**
@@ -26,8 +26,9 @@
 
   **An interval schedule carries its own start date.** `grep -n 'everyNDays' src/DayByDayKit/Sources/DayByDayKit/Schedule.swift`
   finds `case everyNDays(DayInterval, from: CalendarDate)`, and `Commitment.isDue(on:)` applies
-  `keptFrom` as a separate floor above it. This is what `design.md` § *Questions for you* 1 turns on;
-  if the two are one field, that question is moot and the delta needs re-reading before anything else.
+  `keptFrom` as a separate floor above it. **§ 6.12–6.14 turn on this being two fields**: the grid moves
+  with the day because `change` writes the day it was handed into both. If the two are one field, those
+  three boxes are moot and the delta needs re-reading before anything else.
 
   **Neither form number moves.** `grep -n 'currentVersion\|IntroducedInVersion' src/DayByDayKit/Sources/DayByDayKit/RosterDocument.swift src/DayByDayKit/Sources/DayByDayKit/RecordDocument.swift`
   finds roster form **4** with `removalIntroducedInVersion = 3`, and record form **5**. **No box below
@@ -158,31 +159,42 @@ ordering against a red store is how the order gets quietly reversed.
   days it opens become due*.
 - [ ] 6.11 *moving the day a commitment is kept from past a day it has a record on is refused* — the
   first of the two new refusals, and the one § 2.3 makes reachable.
-- [ ] 6.12 *a change whose result the roster already holds is refused, whichever state it holds it in*.
-- [ ] 6.13 *a change that names what is already there changes nothing and refuses nothing* — nothing
+- [ ] 6.12 *the day an interval commitment is kept from is moved earlier and every day it is due on
+  moves with it* — the grid moves with the day, answered at the residual round on 2026-09-09 and
+  recorded in `grill.md` § *Settled* 3 as amended. The cycle that makes `change` build the schedule
+  from the day it was handed rather than carrying the old schedule's start date through; a test that
+  passes while the start date stays put is measuring the wrong thing.
+- [ ] 6.13 *moving the day an interval commitment is kept from off a day it has a record on is
+  refused* — the same refusal as § 6.11 reached by moving the day **earlier**, which is the direction
+  the other three rhythms are safe in.
+- [ ] 6.14 *an interval commitment's day kept from moved earlier by a whole number of intervals leaves
+  every recorded day due* — the boundary that says the refusal is about what the change leaves and not
+  about which way the day moved.
+- [ ] 6.15 *a change whose result the roster already holds is refused, whichever state it holds it in*.
+- [ ] 6.16 *a change that names what is already there changes nothing and refuses nothing* — nothing
   written at either place, both byte-for-byte what they were.
-- [ ] 6.14 *a stopped commitment renamed through a commitments screen stays stopped, on the day it was
+- [ ] 6.17 *a stopped commitment renamed through a commitments screen stays stopped, on the day it was
   kept until*.
-- [ ] 6.15 *changing the rhythm or the day kept from of a stopped commitment is refused* — the second
+- [ ] 6.18 *changing the rhythm or the day kept from of a stopped commitment is refused* — the second
   new refusal, told apart from the other six.
-- [ ] 6.16 *a commitments screen asked to change a commitment on neither of its lists does nothing and
+- [ ] 6.19 *a commitments screen asked to change a commitment on neither of its lists does nothing and
   says nothing* — a removed commitment among them, which is how a removed one is unreachable without a
   refusal of its own.
-- [ ] 6.17 *a change a commitments screen could not keep leaves both places as they were*.
-- [ ] 6.18 *a change refuses a name that says nothing, a rhythm due on no day and a rhythm number the
+- [ ] 6.20 *a change a commitments screen could not keep leaves both places as they were*.
+- [ ] 6.21 *a change refuses a name that says nothing, a rhythm due on no day and a rhythm number the
   calendar will not take* — the three the define form already makes, reached through `change`.
-- [ ] 6.19 *a commitment of the number kind changed through a commitments screen keeps the kind its
+- [ ] 6.22 *a commitment of the number kind changed through a commitments screen keeps the kind its
   days take* — the kind is not one of the four and is carried through from the commitment being
   changed. ADR-1030.
-- [ ] 6.20 *a rhythm changed on the first date the calendar supports supersedes as of that day itself*
+- [ ] 6.23 *a rhythm changed on the first date the calendar supports supersedes as of that day itself*
   — there is no day before, and the screen hands that day rather than refusing.
-- [ ] 6.21 *a commitments screen holds a refused change against the commitment it was asked to change*
+- [ ] 6.24 *a commitments screen holds a refused change against the commitment it was asked to change*
   — the eighth kind of refused change, naming the commitment tapped rather than the one it would have
   produced.
-- [ ] 6.22 *a commitments screen holds nothing against a change that asks for no change at all*.
-- [ ] 6.23 *what a commitments screen holds about a refused change ends when a change to a commitment
+- [ ] 6.25 *a commitments screen holds nothing against a change that asks for no change at all*.
+- [ ] 6.26 *what a commitments screen holds about a refused change ends when a change to a commitment
   is kept*.
-- [ ] 6.24 *what a commitments screen holds about a refused change stands when a change names what is
+- [ ] 6.27 *what a commitments screen holds about a refused change stands when a change names what is
   already there*.
 
 ## 7. `commitment` — the rhythm preview goes (B-036)
@@ -266,7 +278,7 @@ signs and these boxes **confirm rather than write**.
 - [ ] 11.1 From `src/DayByDayKit`, `swift test` — every test green, and the count is **986**: the 933
   measured at § 1.1, minus the **5** § 7.1 deletes, plus the **58** scenarios § 2 to § 8 add. **A
   number that comes back different is a stop** (rule 5), not a number to write down. From the repo
-  root, `pnpm run verify` green and `pnpm run checks` reporting `185/185 scenario(s) covered`.
+  root, `pnpm run verify` green and `pnpm run checks` reporting `188/188 scenario(s) covered`.
 - [ ] 11.2 `openspec validate add-commitment-editing --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
 - [ ] 11.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside

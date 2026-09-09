@@ -208,12 +208,15 @@ that rewrites itself is the one thing this product must not do. The roster carri
 
 The **kept-from day** is the exception, and it is one deliberately. It is neither a rule nor a label
 but a claim about a person's own history — "I have kept this since June" — so correcting it corrects
-the whole of that history rather than starting a new one. Moved earlier it widens the window, and
-the days it opens become due as they always should have been. Moved later, where a record already
-sits outside the new floor, it is refused: a change that hides a day someone recorded against is not
-a correction. Superseding cannot serve here at all — the new commitment would be kept from today and
-the June days would stay not-due, so the likeliest reason anyone touches this field would achieve
-nothing.
+the whole of that history rather than starting a new one. On a weekday set, a day of the month and a
+weekly quota, moving it earlier widens the window and the days it opens become due as they always
+should have been. On **every N days** it does more than widen: the kept-from day is that rhythm's
+**start date**, so the grid moves with the day and the commitment lands on a different set of dates
+than it did. Either way the same refusal applies — a change is refused where any day the commitment
+has a record on is a day it would no longer be due on, whichever direction the day moved, because a
+change that hides a day someone recorded against is not a correction. Superseding cannot serve here
+at all — the new commitment would be kept from today and the June days would stay not-due, so the
+likeliest reason anyone touches this field would achieve nothing.
 
 A change is refused when it would produce a commitment the roster already holds, kept, stopped or
 removed. Merging two histories is irreversible and throws away the fact that they were deliberately
@@ -1169,7 +1172,10 @@ the schedule value, not something the rule reaches outside itself for. It is a c
 names a day that exists inside the supported years, and it is fixed: it is not the last tick, so no
 tick moves it and no past day's answer changes once given. Distinct from the day a commitment is
 **kept from**: the start date sets which dates the rhythm lands on, the kept-from day suppresses
-landings earlier than itself, and an interval commitment carries both.
+landings earlier than itself, and an interval commitment carries both. On every commitment a
+commitments screen makes they are the same day, defining and **changing a commitment** alike — a
+change that moves the kept-from day moves the start date with it, so one date on the form answers for
+both and the two never disagree on anything the app itself formed.
 
 **Day of the month** — the third of the four schedule shapes: a single day number a commitment
 runs on in every month. "Finances every 25th" is one. A month too short to hold the number is due

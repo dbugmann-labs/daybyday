@@ -335,6 +335,17 @@ the change needs, and where it needs both it SHALL perform them in one order and
   not the commitment starting today, which cannot begin before today without rewriting the days
   behind it.
 
+**On an interval rhythm the day a commitment is kept from is also the rhythm's start date, and
+changing that day moves the grid with it.** A commitment kept every N days from one day is due on that
+day and every N days after it, so a change that names a different day SHALL form the changed
+commitment's schedule from the day the change names, exactly as defining one does: one date is offered
+and one date answers for both, and a person is never asked for a second. The days such a commitment
+was due on before the change are therefore not the days it is due on after it. On the other three
+rhythms — a weekday set, a day of the month, a weekly quota — dueness does not depend on the day kept
+from at all, so moving that day earlier only widens the window and every day already recorded on stays
+due. That difference is why the refusal below is about what the change would leave, and never about
+which way the day moved.
+
 **The record place is written before the roster place, and that order is part of the decision.** The
 two are separate files and nothing makes one write of both. Written the other way round, a roster
 that took the change and a record place that then refused it would leave a past day drawing a
@@ -374,10 +385,14 @@ told apart from the other five for the reason ADR-1036 gives — a person can ac
 differently:
 
 - **A change a stopped commitment does not take**, above: take the commitment up again first.
-- **A day already recorded on that the change would leave not due.** Moving the day a commitment is
-  kept from *later* can put a day someone recorded against outside what that commitment is due on,
-  and carrying the record over to a day it could not have been made on is not something this system
-  does. What a person does about it is pick a day no record falls before, or leave the day alone.
+- **A day already recorded on that the change would leave not due.** A change SHALL be refused where
+  any day the commitment has a record on is a day the changed commitment is not due on, and carrying
+  the record over to a day it could not have been made on is not something this system does. Moving
+  the day a commitment is kept from *later* can strand a recorded day on any of the four rhythms. On
+  an interval rhythm, where the grid moves with the day, moving it **earlier** does the same: unless
+  the day moves by a whole number of intervals, every day already recorded on falls off the new grid.
+  What a person does about it is pick a day that leaves every recorded day due, or leave the day
+  alone.
 
 Nothing SHALL be kept at either place by a refused change, and neither of the screen's lists SHALL
 move.
@@ -464,6 +479,43 @@ move.
   apart from a place that could not be written
 - **AND** what the screen keeps is one entry named "Gym", and the content at both places is
   byte-for-byte what it was immediately after the screen was opened
+
+#### Scenario: the day an interval commitment is kept from is moved earlier and every day it is due on moves with it
+
+- **WHEN** a commitment named "Contact lenses" on an interval rhythm of 14 days, kept from Wednesday
+  1 July 2026, is taken on at a roster place; a commitments screen is opened at that roster place as
+  of Monday 31 August 2026; and "Contact lenses" is changed through it to the day kept from Monday
+  29 June 2026, on the name and the rhythm it already has, under no category
+- **THEN** nothing is refused
+- **AND** the commitment a roster store opened afterwards at that place holds is due on Monday 29 June
+  2026 and on Monday 13 July 2026
+- **AND** it is not due on Wednesday 1 July 2026
+
+#### Scenario: moving the day an interval commitment is kept from off a day it has a record on is refused
+
+- **WHEN** a commitment named "Contact lenses" on an interval rhythm of 14 days, kept from Wednesday
+  1 July 2026, is taken on at a roster place; a tick for it on Wednesday 15 July 2026 is kept at a
+  record place; a commitments screen is opened at that roster place and that record place as of Monday
+  31 August 2026; and "Contact lenses" is changed through it to the day kept from Monday 29 June 2026,
+  on the name and the rhythm it already has, under no category
+- **THEN** it is refused as a day already recorded on that the change would leave not due, told apart
+  from a place that could not be written
+- **AND** what the screen keeps is one entry named "Contact lenses", and the content at both places is
+  byte-for-byte what it was immediately after the screen was opened
+
+#### Scenario: an interval commitment's day kept from moved earlier by a whole number of intervals leaves every recorded day due
+
+- **WHEN** a commitment named "Contact lenses" on an interval rhythm of 14 days, kept from Wednesday
+  1 July 2026, is taken on at a roster place; a tick for it on Wednesday 15 July 2026 is kept at a
+  record place; a commitments screen is opened at that roster place and that record place as of Monday
+  31 August 2026; and "Contact lenses" is changed through it to the day kept from Wednesday 17 June
+  2026, on the name and the rhythm it already has, under no category
+- **THEN** nothing is refused
+- **AND** the commitment a roster store opened afterwards at that place holds is due on Wednesday
+  17 June 2026 and on Wednesday 15 July 2026
+- **AND** a store opened afterwards at that record place answers that the commitment kept from
+  Wednesday 17 June 2026 was kept on Wednesday 15 July 2026
+- **AND** it answers that the commitment kept from Wednesday 1 July 2026 was not kept on that day
 
 #### Scenario: a change whose result the roster already holds is refused, whichever state it holds it in
 

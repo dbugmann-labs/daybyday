@@ -25,6 +25,15 @@ five-Story breakdown that did not carry them — that amendment is `orchestrator
    so the likeliest real use of the feature would achieve nothing. This corrects a fact about a
    history rather than changing a rule.*
 
+   **Amended 2026-09-09 at the residual round**, against the recommendation and by the owner's
+   decision. "Widens the window" holds for a weekday set, a day of the month and a weekly quota,
+   whose dueness does not depend on the kept-from day. It does not hold for an interval rhythm,
+   which carries its own start date: **there the grid moves with the day.** Moving the kept-from
+   day of an *every N days* commitment therefore moves every due day since, so the change is
+   refused wherever it would leave an existing record on a day that is no longer due — in either
+   direction, earlier included. The alternative was to move the floor only and leave the interval's
+   start where it is; it was declined.
+
 ### How that is carried
 
 4. **A rhythm change supersedes.** The old commitment is kept until one day and the new one taken
