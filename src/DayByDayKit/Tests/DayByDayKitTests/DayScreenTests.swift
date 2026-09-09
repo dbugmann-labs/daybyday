@@ -5496,6 +5496,8 @@ func goingBackToTodayOnADayScreenThatOffersNoWayBackLeavesItShowingThatToday() {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!screen.offersGoingBackToToday)
+
     screen.showToday()
 
     #expect(screen.title == "Today · Monday 31 August 2026")
