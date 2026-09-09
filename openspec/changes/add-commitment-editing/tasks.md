@@ -243,7 +243,7 @@ is a stop.
   the row's swipe action — they answer different moments. Verify by building:
   `xcodebuild -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay -destination 'platform=iOS Simulator,name=iPhone 16' build`
   succeeds.
-- [ ] 9.2 Walk it on the phone with `pnpm run phone`: define a commitment through the `+`; rename one
+- [x] 9.2 Walk it on the phone with `pnpm run phone`: define a commitment through the `+`; rename one
   and check a past day still shows it kept; change a rhythm and check yesterday still answers on the
   old one; rename a stopped commitment; try a rename that collides and read the refusal in the sheet.
   **Uninstall first with `simctl uninstall` if walking the simulator** — a setup tap on a record that
