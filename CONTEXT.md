@@ -67,6 +67,17 @@ before any test is written.
 
 **G4** — the spec-approval gate. Nothing is implemented before it. `docs/process.md` §4.
 
+**Editorial Story** — a Story whose delta carries every requirement in full and changes no
+behaviour, no test and no scenario title, and which names no seam; the lane for condensing a
+capability spec, because rule 2 and CI check 2 leave no other. Requirements arrive as MODIFIED,
+except where one splits because it cannot reach the prose budget, which is REMOVED plus ADDED and
+moves no scenario. Runs the ordinary pipeline and its gates. ADR-1047.
+
+**Budget** — the line or word ceiling an artifact is written to: `proposal.md` 60 lines, `design.md`
+150, `tasks.md` one line per scenario plus 80, a requirement's prose 40–150 normative words. Told to
+`spec-author` by `openspec/config.yaml`, enforced by `reviewer` at G7, warned about by
+`pnpm run check:budgets`. ADR-1047.
+
 ## Product principles
 
 The rules a want is judged against. These are not backlog entries — they are what decides
