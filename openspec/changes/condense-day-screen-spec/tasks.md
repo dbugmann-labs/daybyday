@@ -45,7 +45,7 @@ and `survey-2026-09-10-day-screen.md` for boxes 2.9, 2.10, 2.11, 2.16, 2.20, 2.2
 - [x] 2.24 *A day screen reads its roster again when it is returned to* — `add-commitment-editing` (#148) reversed the rule survey B recorded here: rewrite from the current sentence, and leave the false scenario title unrenamed
 - [x] 2.25 *A row offers the number entry its commitment takes, and offers none for a day that has not arrived* — states for the family that a row offers at most one entry kind; 2.29 and 2.33 cross-reference it
 - [x] 2.26 *A number entry says the range its commitment takes and the number the day already holds* — the hint's en dash stays as a normative sentence and its "why" goes
-- [x] 2.27 *A day screen enters the number a row's entry takes, and keeps it before the day view says so* — states for the family the eight behaviours the three entries share; 2.31 and 2.36 cross-reference them
+- [x] 2.27 *A day screen enters the number a row's entry takes, and keeps it before the day view says so* — states for the family the behaviours the three entries share; 2.31 and 2.36 cross-reference them
 - [x] 2.28 *A day screen reads what an entry is committed with as a number, as a take-back, or as neither* — keep the enumeration of what is not a number: it is a scenario's fixture list and the only statement that a digit outside the ten is refused
 - [x] 2.29 *A row offers the note entry its commitment takes, and offers none for a day that has not arrived* — see 2.25
 - [x] 2.30 *A note entry says the note the day already holds, and says nothing else*

@@ -22,8 +22,8 @@ requirement is written to; `docs/research/2026-09-09-concise-specs.md` is the pl
   three entry kinds share — are stated once and cross-referenced in one clause.
 - Every scenario title, body and position is carried across verbatim: none is added, renamed,
   merged or dropped.
-- The rules the surveys find with no scenario survive as bare SHALL/MUST sentences; the eight
-  testable today are listed in `design.md` as knowingly untested and captured as one backlog want.
+- The rules the surveys find with no scenario survive as bare SHALL/MUST sentences; `design.md`
+  lists the eight testable today as knowingly untested, and their want sits on the backlog branch.
 - **No behaviour changes, nothing under `src/` or the tests changes, and there is no seam** —
   `design.md` says why that satisfies the Definition of Ready.
 - Scenario deduplication is the plan's next phase and is not this Story: every deletion there takes
@@ -54,4 +54,5 @@ None.
 - `docs/adr/1047-an-artifact-has-a-budget-and-condensing-is-a-story.md` — a third scenario title
   known to be false, and it is this capability's.
 - `docs/adr/README.md` — one row.
-- `docs/backlog.md` — one want, for the rules that stay knowingly untested.
+- `AGENTS.md`, `CONTEXT.md` and `docs/process.md` — the editorial-Story definition and its
+  Definition of Ready clause, widened past MODIFIED-only.

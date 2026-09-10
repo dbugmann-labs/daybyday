@@ -2392,12 +2392,12 @@ one. It SHALL be a number when it holds, in this order and nothing else, an opti
 then digits and at most one decimal separator with at least one digit among them; the separator
 SHALL be a full stop or a comma, read alike, and the number SHALL be exactly what those digits say.
 Up to thirty-eight significant digits SHALL be kept, counted from the first digit that is not a zero
-to the last; text saying more, or a number too large or too near zero to hold, MUST NOT be rounded,
-shortened or fitted to what can be held. Everything else SHALL be a value that is not a number: two
-separators, a separator with no digit beside it, a sign anywhere but the front, an exponent, letters
-or spaces among the digits, a character of no width anywhere in it, a digit that is not one of the
-ten this package reads, and digits saying a number that cannot be kept exactly. Such a value SHALL
-keep nothing, take nothing back, and leave the day exactly as it was.
+to the last that is not a zero; text saying more, or a number too large or too near zero to hold,
+MUST NOT be rounded, shortened or fitted to what can be held. Everything else SHALL be a value that
+is not a number: two separators, a separator with no digit beside it, a sign anywhere but the front,
+an exponent, letters or spaces among the digits, a character of no width anywhere in it, a digit
+that is not one of the ten this package reads, and digits saying a number that cannot be kept
+exactly. Such a value SHALL keep nothing, take nothing back, and leave the day exactly as it was.
 
 #### Scenario: a number typed with a full stop is entered exactly as it was typed
 
@@ -2592,9 +2592,7 @@ A note entry SHALL say exactly one thing: the note the history the day view was 
 for that commitment on that date, or no note where it holds none. It SHALL say no hint and nothing else. The note SHALL be the one the `record` capability answers for
 that commitment on that date, MUST NOT be recomposed, shortened or otherwise altered here, and SHALL
 be the whole of what was written, however long and however many lines. An entry offered again from a
-history the note has been taken back from SHALL say no note. A row SHALL NOT say the note itself:
-what a row gives back is its name, the rhythm its commitment runs on in words, whether that
-commitment is kept, and what it offers.
+history the note has been taken back from SHALL say no note. A row SHALL NOT say the note itself.
 
 #### Scenario: a note entry says the note the history holds for that commitment on that date
 
@@ -3060,8 +3058,9 @@ take-back; one that says nothing SHALL keep nothing, take nothing back and chang
 entry a commit lands in SHALL be decided by the row it was made on and never by the text, for all
 four kinds. The entry SHALL be the one the row offers, asked as of the today the screen was handed.
 The change SHALL be kept at the record place before the day view says so, and the day view SHALL
-then be formed again. The eight answers *A day screen enters the number a row's entry takes, and
-keeps it before the day view says so* states in full SHALL be this requirement's too.
+then be formed again. Adding SHALL otherwise answer as entering a number does, under the requirement
+on entering a number, except where this requirement or the one on reading a total entry states
+otherwise.
 
 #### Scenario: adding on a total row makes the day screen say what the day has added
 

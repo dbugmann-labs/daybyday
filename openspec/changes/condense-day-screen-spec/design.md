@@ -44,8 +44,8 @@ what `tasks.md` gives a box per requirement and what `reviewer` reads at G7.
 Grill answer 1. The nineteen rules the surveys find with no scenario are kept as bare SHALL/MUST
 sentences rather than deleted or tested: deleting one changes behaviour by omission, and writing a
 scenario for one adds a test, which an editorial Story may not do. The eight the surveys judge
-testable today are listed under § *Open Questions* as knowingly untested and captured as one
-backlog want.
+testable today are listed under § *Open Questions* as knowingly untested, and their want sits on
+the backlog branch rather than here.
 
 ### Rationale is homed before the prose carrying it is deleted
 
@@ -81,7 +81,7 @@ spec file rather than in the removed one's place. ADR-1047's editorial-Story def
 `CONTEXT.md`'s term are widened to say so, having read MODIFIED-only until now.
 
 The two rules the surveys find struck three times over — *a row offers at most one of a tick, a
-number entry, a note entry and a total entry* and the eight behaviours the three entry kinds share
+number entry, a note entry and a total entry* and the behaviours the three entry kinds share
 — are stated once in the first requirement of each family and cross-referenced in one clause
 elsewhere, because a per-requirement trim that strikes each as a restatement loses it entirely. The
 twin the third survey found takes the same treatment: the pair about a move with nowhere to go, and
@@ -115,8 +115,8 @@ cap. **A finding only where a sentence is rationale rather than a rule**; this l
 - *A day screen draws the commitments its roster had not stopped keeping on the day it is showing* — 166; three at-risk sentences, the six moments, and the group deferral.
 - *A day screen tells on the row that was tapped that a change could not be kept* — 256; four causes quoted verbatim and three at-risk sentences.
 - *What a day screen tells on a row lasts until the app is shown again, a change is kept, or the day it is showing changes* — 167; three ends and the four things that are not one.
-- *A day screen enters the number a row's entry takes, and keeps it before the day view says so* — 258; states the family's eight shared behaviours in full.
-- *A day screen reads what an entry is committed with as a number, as a take-back, or as neither* — 283; the whole number grammar the total's reading defers to.
+- *A day screen enters the number a row's entry takes, and keeps it before the day view says so* — 258; states the shared behaviours of the entry family in full.
+- *A day screen reads what an entry is committed with as a number, as a take-back, or as neither* — 288; the whole number grammar the total's reading defers to.
 - *A row is its commitment, its date and what that day holds* — 153; a split half three words over, carrying identity and per-kind contents.
 - *A row gives back what a screen draws and what a tap makes* — 172; the other half, four give-backs and the rhythm rules.
 
@@ -146,4 +146,4 @@ cap. **A finding only where a sentence is rationale rather than a rule**; this l
 - that answer holds whatever the roster, the record, the rows and the today are
 - the day picker's four reach rules
 
-**One want captures all eight**, for the conductor to file: *cover the eight day-screen rules the condensing surveys found testable but untested, with a scenario each, so that no rule in that spec rests on prose alone.* Nothing else is open: `grill.md` § *Left open* is "None." and no residual round came out of writing these artifacts.
+**One want captures all eight**, captured on the backlog branch as B-044: *cover the eight day-screen rules the condensing surveys found testable but untested, with a scenario each, so that no rule in that spec rests on prose alone.* Nothing else is open: `grill.md` § *Left open* is "None." and no residual round came out of writing these artifacts.
