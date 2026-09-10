@@ -50,7 +50,9 @@ body:
         - label: Every blocking Story closed
         - label: No open questions left by the grill, and no residual round outstanding
         - label: "Change folder exists; `openspec validate <change-id> --strict` exits 0"
-        - label: "Seam(s) named in `design.md`"
+        - label: "The delta uses ADDED / MODIFIED / REMOVED correctly against current specs, and every requirement has scenarios covering its error and edge cases, not just the happy path"
+        - label: "Seam(s) named in `design.md` — or `design.md` states that no test changes and why, which is what an editorial Story looks like (ADR-1047)"
+        - label: "The change folder is within the budgets of ADR-1047 (`pnpm run check:budgets` warns, never blocks)"
         - label: "Draft PR open on the story branch, rebased onto current `main`"
         - label: "A comment on this issue records the G4 approval marker, and its digest matches the change folder as it stands — recorded by a human, or relayed on a human's instruction. No agent may originate it. `pnpm run check:g4` prints the exact line to record; this template does not quote it, so that rendering the template never writes a marker-shaped string into an unapproved Story."
   - type: checkboxes
