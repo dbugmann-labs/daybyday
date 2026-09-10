@@ -144,7 +144,7 @@ tested: what a form draws is the drawing's (ADR-1022), exactly as the rhythm fie
   voice.
 - [x] 7.4 `xcodebuild build` for the `DayByDay` scheme against an iPhone 17 simulator succeeds —
   `swift test` compiles none of the app target, so nothing before this box has proved this one.
-- [ ] 7.5 Walk it on the phone with `pnpm run phone`: define one commitment of each of the four kinds,
+- [x] 7.5 Walk it on the phone with `pnpm run phone`: define one commitment of each of the four kinds,
   a number with a range and a number without, and read both refusals by typing a lowest above a
   highest and an empty target. Then open the change sheet on the total and confirm the kind and the
   target are shown and will not take a thumb. **Do not run a UI test to do this** — a cold simulator
