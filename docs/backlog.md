@@ -414,6 +414,40 @@ decision it records is the owner's, twice.*
 - **Open** — a narrowed range with records already outside it. Refuse the change, as #148 refuses
   a day already recorded on that would be left not due, or accept it and let the old days stand?
 
+### B-044 — every day-screen rule has a scenario that proves it
+
+*Captured 2026-09-10.*
+
+> Cover the eight day-screen rules the condensing surveys found testable but untested — a row's
+> zero sum, the unprefilled total field, two rows that are the same row, an entry closed
+> uncommitted, a take-back on a day holding no number, the neighbour day views' non-regression and
+> four independences, and the day picker's four reach rules — with a scenario each, so that no
+> rule in that spec rests on prose alone.
+
+- **Trigger** — the next Story that modifies one of these eight requirements and trims a rule
+  nobody tests, the same way `add-commitment-editing` (#148) already left a scenario title
+  documented-wrong — *a day screen returned to does not read its record again* — with nothing
+  short of a survey to notice.
+- **Touches** — `day-screen`. The list of eight lives in
+  `openspec/changes/condense-day-screen-spec/design.md` § *Open Questions* (on the Story branch
+  `story/201-condense-day-screen-spec`, archived later) and in
+  `docs/research/2026-09-09-concise-specs/survey-2026-09-10-day-screen.md`.
+- **Principle** — tested against *five percent of seven things*: **fails**, plainly — this adds no
+  capability a person can do; it makes eight already-shipped rules provable where they now rest on
+  prose alone. Captured anyway, because a rule with no scenario is exactly the thing a later trim
+  removes without anyone noticing, which is what the condensing Story that surfaced these eight
+  exists to guard against.
+- **Open** — the surveys also found rules that are **untestable by construction**, not merely
+  untested: block 8's *"The answer SHALL be about the control and not about the position … it
+  MUST NOT be phrased as, or stand in for, whether the screen is showing its today"*, and block
+  14's *"whether a move has anywhere to go is not answered here and is not answered anywhere, and
+  a caller MUST NOT stand a move down on the strength of it."* Whether either belongs on this list
+  at all, beside the eight that can actually be given a scenario, is undecided.
+- **Open** — one Story, or one per requirement. The eight span several requirements across the
+  capability — row formation, an entry's commit-and-read, the day picker, the neighbour day
+  views — so a single change touches most of `day-screen` at once; splitting them costs the "no
+  rule in that spec rests on prose alone" framing its single sentence states.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
