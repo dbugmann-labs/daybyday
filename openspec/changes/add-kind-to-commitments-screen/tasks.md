@@ -102,8 +102,8 @@ them together and after § 3's. `Refusal` gains exactly two cases and `RefusedCh
 Both belong to *A commitments screen says what a commitment it is asked to change is made of*.
 `Change` gains `kind: Commitment.Kind`; `change(_:toName:on:keptFrom:under:)` **does not move**.
 
-- [ ] 5.1 `a commitments screen says the kind a commitment it keeps takes, with what that kind carries`.
-- [ ] 5.2 `a commitments screen says a number commitment carrying no range takes the number kind and no range`
+- [x] 5.1 `a commitments screen says the kind a commitment it keeps takes, with what that kind carries`.
+- [x] 5.2 `a commitments screen says a number commitment carrying no range takes the number kind and no range`
   — on a **stopped** commitment, which also re-asserts that its rhythm and day kept from cannot be
   changed.
 

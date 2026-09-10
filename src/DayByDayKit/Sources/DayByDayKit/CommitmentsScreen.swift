@@ -201,6 +201,10 @@ public final class CommitmentsScreen {
         /// `false` for a commitment its roster has stopped keeping: it has no days left for a
         /// rhythm to decide about, so the only change it takes is a rename.
         public let canChangeRhythmAndKeptFrom: Bool
+        /// The kind this commitment's days take, with the range or the target that kind
+        /// carries. Shown, and not one of the four a change is asked with: a kind is set when a
+        /// commitment is defined and never changes. `design.md` § *The seam*.
+        public let kind: Commitment.Kind
     }
 
     /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`,
@@ -324,7 +328,8 @@ public final class CommitmentsScreen {
 
         return Change(
             name: commitment.name, rhythm: Rhythm(commitment.schedule), keptFrom: commitment.keptFrom,
-            category: entry.category, canChangeRhythmAndKeptFrom: entry.keptUntil == nil)
+            category: entry.category, canChangeRhythmAndKeptFrom: entry.keptUntil == nil,
+            kind: commitment.kind)
     }
 
     /// `category`, or nothing where `category` holds nothing but blank space — the same

@@ -4865,6 +4865,65 @@ func aCommitmentsScreenSaysNothingAboutACommitmentOnNeitherOfItsLists() throws {
 }
 
 @MainActor
+@Test("a commitments screen says the kind a commitment it keeps takes, with what that kind carries")
+func aCommitmentsScreenSaysTheKindACommitmentItKeepsTakesWithWhatThatKindCarries() throws {
+    let rosterPlace = freshRosterPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(mood)
+    try rosterStore.add(journal)
+    try rosterStore.add(protein)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.whatItIsMadeOf(gym)?.kind == .tick)
+    #expect(
+        screen.whatItIsMadeOf(mood)?.kind
+            == .number(range: Commitment.Range(lowest: 1, highest: 10)))
+    #expect(screen.whatItIsMadeOf(journal)?.kind == .note)
+    #expect(screen.whatItIsMadeOf(protein)?.kind == .total(target: Commitment.Target(120)!))
+}
+
+@MainActor
+@Test("a commitments screen says a number commitment carrying no range takes the number kind and no range")
+func aCommitmentsScreenSaysANumberCommitmentCarryingNoRangeTakesTheNumberKindAndNoRange() throws {
+    let rosterPlace = freshRosterPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(weight)
+    try rosterStore.add(gym)
+    try rosterStore.retire(weight, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.whatItIsMadeOf(weight)?.kind == .number(range: nil))
+    #expect(screen.whatItIsMadeOf(weight)?.canChangeRhythmAndKeptFrom == false)
+}
+
+@MainActor
 @Test("a commitment renamed through a commitments screen is drawn under its new name, in the place it held")
 func aCommitmentRenamedThroughACommitmentsScreenIsDrawnUnderItsNewNameInThePlaceItHeld() throws {
     let places = freshRosterAndRecordPlaces()
