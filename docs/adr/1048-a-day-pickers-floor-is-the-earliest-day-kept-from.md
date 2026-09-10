@@ -5,6 +5,9 @@
   the prose which had been carrying the reasoning
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — why the aggregate question belongs to the roster rather than to any
+  commitment is added to the decision, by `condense-commitment-spec` (#204), which deletes the
+  `commitment` requirement prose that carried it.
 
 ## Context
 
@@ -58,6 +61,14 @@ by a later version, or a screen handed no commitments at a place holding nothing
 today the screen was handed, and clamps from there like any other. A first launch is not one of
 those cases: day one is written into the empty roster before the screen answers anything (ADR-1027),
 so the reach is taken from the commitments just taken on.
+
+**Why the roster owns the question, and not any commitment.** A commitment reads back the name it
+was given and the kind its days take and nothing else — the day it is kept from is a part it is made
+of, not a part it hands out — so one aggregate answer from the roster is the only way anything
+outside `commitment` can learn where a person's history begins. That aggregate is the whole of what
+is answered: which day, and nothing about whose commitment it came from. The question is therefore
+about a roster rather than about the thing a screen is drawing, and is asked of the roster even where
+a screen already holds every commitment it is showing.
 
 ## Consequences
 

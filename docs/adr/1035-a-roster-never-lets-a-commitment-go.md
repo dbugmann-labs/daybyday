@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-07
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — an unreadable roster store being refused rather than answered as an empty
+  roster is added to the decision by `condense-commitment-spec` (#204), which deletes the requirement
+  prose that carried the argument; it is this record's failure mode arriving from the store's side.
 
 ## Context
 
@@ -72,6 +75,15 @@ kept-until day does and for exactly the reason ADR-1023 gives: `Tick` embeds the
 by value and `History` answers by set membership, so a fourth part on `Commitment` would change its
 identity the moment it was set and orphan every tick recorded against it. That is the failure this
 decision exists to prevent, arriving by way of a `Bool`.
+
+**An unreadable roster store is refused, and never answered as an empty roster.** The failure this
+record exists to prevent arrives a second way, at the store: opening a place holding something this
+app cannot read as a roster store is an error, not a roster holding nothing, and what is there is
+neither overwritten, moved, deleted nor partly kept. A roster reading as holding nothing is
+indistinguishable from a first launch to whatever writes day one (ADR-1027), so a silent empty answer
+would write day one over a list a person has kept for months and tell them they keep nothing. An
+honest error on opening is the failure this product can survive; a list silently replaced by an empty
+one is not, and it is the same silence a dropped entry would have caused.
 
 ## Consequences
 
