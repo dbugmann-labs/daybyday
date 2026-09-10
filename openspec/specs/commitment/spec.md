@@ -1829,9 +1829,9 @@ holds nothing (ADR-1027), and a second thing writing day one would take it on tw
 
 - **WHEN** a commitment named "Creatine", then one named "Gym", then one named "Magnesium", all on a
   schedule listing all seven weekdays and kept from 1 January 2026, are taken on at a roster place; a
-  commitments screen is opened at that roster place as of Monday 31 August 2026; "Magnesium" is put
-  under the category "Supplements" through it; and "Magnesium" is then put under no category through
-  it
+  commitments screen is opened at that roster place as of Monday 31 August 2026; "Magnesium" is
+  changed through it to the category "Supplements", on the name, the rhythm and the day kept from it
+  already has; and "Magnesium" is then changed through it to no category, on those same three
 - **THEN** immediately after the first change what it keeps is two groups, "Supplements" holding
   "Magnesium" and then a group with no category holding "Creatine" and then "Gym"
 - **AND** afterwards what it keeps is one group, with no category, holding "Creatine", then "Gym",
@@ -2576,11 +2576,10 @@ recover. It SHALL offer no category either: the categories it offers are the one
 keeps are under, and it keeps none.
 
 Defining a commitment through such a screen SHALL be refused as a roster that could not be written.
-Asking it to stop keeping a commitment, to take one up again, to remove one, to move one, or to put
-one under a category SHALL do
-nothing and say nothing, by the rule that already governs a commitment neither list holds: both its
-lists are empty, so there is nothing there to stop, nothing there to take up, nothing there to
-remove, nothing there to move and nothing there to put under anything.
+Asking it to stop keeping a commitment, to take one up again, to remove one, to move one, or to
+change one SHALL do nothing and say nothing, by the rule that already governs a commitment neither
+list holds: both its lists are empty, so there is nothing there to stop, nothing there to take up,
+nothing there to remove, nothing there to move and nothing there to change.
 
 Every way the place can refuse to be read SHALL be answered alike, save one, which SHALL be named:
 a roster **written by a later version of DayByDay**. That roster is whole and it is the app that is
@@ -2647,8 +2646,8 @@ afresh.
 
 - **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place holding a
   run of bytes that is not what a roster is written as, and a commitment named "Gym" on a schedule
-  listing all seven weekdays, kept from 1 January 2026, formed directly, is put under the category
-  "Sport" through it
+  listing all seven weekdays, kept from 1 January 2026, formed directly, is changed through it to the
+  category "Sport", on the name, the rhythm and the day kept from it already has
 - **THEN** nothing is refused and the screen holds no refused change
 - **AND** it says it is not keeping a roster, and what it keeps is no groups at all
 - **AND** the categories it offers are none
@@ -2664,16 +2663,23 @@ the screen holds is what a person is told from. A screen that only answered woul
 person is told for to whatever drew it, and that lifetime would then be decided in a layer nothing
 regresses.
 
-The change it holds SHALL be one of the eight a person can ask for — defining a commitment, stopping
-keeping one, taking a stopped one up again, removing one, moving one, **moving a whole group**,
-putting one under a category, or **changing one** — and for the six that are asked about a commitment
-already on one of its lists, it SHALL name that commitment. **A refused change names the commitment
-it was asked about and not the one it would have produced**, because the row a person is told beside
-is the row they tapped, and the commitment they asked for does not exist. **A refused group move SHALL name the category instead**,
+The change it holds SHALL be one of the seven a person can ask for — defining a commitment, stopping
+keeping one, taking a stopped one up again, removing one, moving one, **moving a whole group**, or
+**changing one** — and for the five that are asked about a commitment already on one of its lists, it
+SHALL name that commitment. **A refused change names the commitment it was asked about and not the
+one it would have produced**, because the row a person is told beside is the row they tapped, and the
+commitment they asked for does not exist. **A refused group move SHALL name the category instead**,
 because a group is what was tapped and a category is the whole of what a group is: naming one of its
 commitments would point at a row the person did not touch. Which change it was is not
 decoration: a person is told beside the thing they asked for, and the only other way to place the
 message is for whatever draws the screen to remember which call it made.
+
+**The seven are counted here and numbered nowhere else.** A requirement that introduces one of them
+SHALL name it — a refused move, a refused group move, a refused change — and SHALL NOT identify it by
+its position among them, because withdrawing a kind renumbers every position after it and falsifies
+both the requirements that state one and the archived change folders that cite one, which are never
+edited. A statement about the kinds that came *before* a kind is not a position in this sense: it
+names them, all of them go on existing, and nothing withdrawn later can make it untrue.
 
 Why it was refused SHALL be the same refusal that was answered to the caller, and no more. A
 commitments screen SHALL hold **no words a person reads**: the distinction between its refusals is
@@ -2693,9 +2699,8 @@ typed back does not match**, **asking to move a commitment the screen does not k
 to move one into a group the screen draws none of or to an offset that group does not have**,
 **asking to move a group the screen draws none of — the group of the commitments under no category
 among them — or to move a group to an offset the groups it draws under a category do not have**,
-**asking to change a commitment on neither of its lists**, **asking for a change that names what a
-commitment already is** and
-**asking to put a commitment the screen does not keep under a category** each answer nothing and
+**asking to change a commitment on neither of its lists** and **asking for a change that names what a
+commitment already is** each answer nothing and
 change nothing, so each
 SHALL leave the screen holding no refused change and SHALL leave whatever it is already holding
 exactly as it was.
@@ -2812,22 +2817,23 @@ restated here.
 - **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
   1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
   as of Monday 31 August 2026; what is at that place is then made impossible to write; and "Gym" is
-  put under the category "Sport" through the screen
+  changed through the screen to the category "Sport", on the name, the rhythm and the day kept from
+  it already has
 - **THEN** it is refused as a roster that could not be written
-- **AND** the screen holds that refusal, against putting "Gym" under a category
+- **AND** the screen holds that refusal, against changing "Gym"
 - **AND** what it keeps is one group, with no category, holding "Gym"
 
 #### Scenario: a commitments screen holds nothing against a category change that asks for no change at all
 
 - **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
-  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
-  as of Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven
-  weekdays, kept from that same day, is defined through it and refused; and a commitment named
-  "Journaling" on that same schedule and kept-from day, formed directly and never taken on, is put
-  under the category "Sport" through the screen
+  1 January 2026, is taken on at a roster place and put under the category "Sport" there; a
+  commitments screen is opened at that roster place as of Monday 31 August 2026; a commitment named
+  "   " on a weekday-set rhythm of all seven weekdays, kept from that same day, is defined through it
+  and refused; and "Gym" is changed through the screen to the category "Sport" it is already under,
+  on the name, the rhythm and the day kept from it already has
 - **THEN** the category change refuses nothing
 - **AND** the screen still holds a name that says nothing, against defining a commitment
-- **AND** what it keeps is one group, with no category, holding "Gym"
+- **AND** what it keeps is one group, "Sport", holding "Gym"
 
 #### Scenario: a commitments screen holds a refused group move against the category it was asked to move
 
@@ -2885,25 +2891,27 @@ answer about a place that has since been read again. It SHALL end whether or not
 be read — a screen that is then not keeping a roster says that instead, and says more than a refused
 change ever could.
 
-**A change reaching a place** ends it, whichever of the eight it was and whichever change
-was refused before it. Defining a commitment that is taken on, a stop that is kept, a take-up-again
-that is kept, a removal that is kept, a move that is kept, **a group move that is kept**, a
-category change that is kept and **a change of a commitment that is kept** all
-count. A change of a commitment reaches the record place as well as the roster place, and it ends
-what is held once it has been kept — one act, one outcome, however many places it touched. This is one rule rather than six because it is
-the at-most-one rule above read the other way round: a commitments screen holds the outcome of the
-last change asked of it, so a change that is asked for and kept leaves nothing to hold. A person who
-has just been told a change landed is not also told that an earlier one did not.
+**A change reaching a place** ends it, whichever kind it was and whichever change was refused before
+it. Defining a commitment that is taken on, a stop that is kept, a take-up-again that is kept, a
+removal that is kept, a move that is kept, **a group move that is kept** and **a change of a
+commitment that is kept** all count, and a change that writes nothing but a category is one of the
+last of those rather than a kind of its own, because a category is one of the four things a change
+is made of. A change of a commitment reaches the record place as well as the roster place, and it
+ends what is held once it has been kept — one act, one outcome, however many places it touched. This
+is one rule rather than one for each kind because it is the at-most-one rule above read the other
+way round: a commitments screen holds the outcome of the last change asked of it, so a change that
+is asked for and kept leaves nothing to hold. A person who has just been told a change landed is not
+also told that an earlier one did not.
 
 A call that reaches the place with no change to make SHALL NOT end it, by the rule above that such a
 call is not a change asked for at all. **A move that drops a commitment where it already is is
 exactly such a call** — it is accepted rather than refused, and nothing is kept at the place, so
 there is nothing to have answered a notice with — **and so are a group move that leaves a group
-where it is drawn, a category change that puts a commitment under the category it is already
-under, a change that names what a commitment already is, and a change asked about a commitment on
-neither of the screen's lists**. Nor SHALL putting a stop or a removal up for
-confirmation, typing a name back, or cancelling either: none of them reaches the roster place, and
-nothing has been proved about it either way.
+where it is drawn, a change that names what a commitment already is, the category it is already
+under among the four things it names, and a change asked about a commitment on neither of the
+screen's lists**. Nor SHALL putting a stop or a removal up for confirmation, typing a name back, or
+cancelling either: none of them reaches the roster place, and nothing has been proved about it
+either way.
 
 #### Scenario: what a commitments screen holds about a refused change ends when the app is shown again
 
@@ -3021,8 +3029,8 @@ nothing has been proved about it either way.
 - **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
   1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place
   as of Monday 31 August 2026; a commitment named "   " on a weekday-set rhythm of all seven
-  weekdays, kept from that same day, is defined through it and refused; and "Gym" is put under the
-  category "Sport" through it
+  weekdays, kept from that same day, is defined through it and refused; and "Gym" is changed through
+  it to the category "Sport", on the name, the rhythm and the day kept from it already has
 - **THEN** the screen holds no refused change
 - **AND** what it keeps is one group, "Sport", holding "Gym"
 
@@ -3032,7 +3040,8 @@ nothing has been proved about it either way.
   1 January 2026, is taken on at a roster place and put under the category "Sport" there; a
   commitments screen is opened at that roster place as of Monday 31 August 2026; a commitment named
   "   " on a weekday-set rhythm of all seven weekdays, kept from that same day, is defined through
-  it and refused; and "Gym" is put under the category "Sport" through it
+  it and refused; and "Gym" is changed through it to the category "Sport" it is already under, on the
+  name, the rhythm and the day kept from it already has
 - **THEN** the second change refuses nothing
 - **AND** the screen still holds a name that says nothing, against defining a commitment
 
@@ -4206,140 +4215,6 @@ SHALL each read back no groups at all rather than one empty group.
   "Creatine" coming after "Sport" holding "Gym"
 - **AND** asked about 1 February 2026 it reads back one group, with no category, holding "Creatine"
 
-### Requirement: A commitments screen puts a commitment under a category, and offers the categories in use
-
-A commitments screen SHALL put a commitment on the list of what it keeps under a **category**, on
-being given that commitment and the category, and SHALL keep that at the roster place before either
-list says so. It SHALL ask for no confirmation: a category is one word, changing it is one act, and
-changing it back is the undo. This is one of the two ways a category changes on this screen; the
-other is a **move**, which carries a category because the place it names is inside a group.
-
-A commitments screen asked to put a commitment it does not keep under a category — one on the list
-of what it has stopped, or one neither of its lists holds — SHALL do nothing and SHALL say nothing,
-by the rule that already governs a commitment neither list holds. The roster's own refusal is
-therefore never reached through this screen and there is nothing for it to word. One it could not
-keep at the roster place SHALL be refused as a roster that could not be written, leaving both lists
-as they were and the commitment under the category it was already under. That is the **sixth** kind
-of refused change a commitments screen holds, and it SHALL name the commitment it was asked about.
-
-A category made of nothing but blank space SHALL put the commitment under none and SHALL NOT be
-refused, which is how a category is taken off. Nothing else about a category SHALL be refused, and
-the screen SHALL pass it to the roster exactly as it was given: it MUST NOT trim it, MUST NOT fold
-its case, and MUST NOT match it loosely against a category already in use. A screen that folded case
-would be choosing which of a person's spellings a heading shows.
-
-**A commitments screen SHALL offer the categories already in use**, so that a person picks one
-rather than typing it again. They SHALL be the categories the commitments it **keeps** are under,
-each once, in the order the screen draws its groups; a screen keeping nothing under any category
-SHALL offer none. They are read off the roster the screen is drawing rather than held anywhere, so a
-category whose last kept commitment has been put under another is gone from what is offered at the
-same moment its heading goes, and a category is never offered that no heading shows.
-
-**The offering is what makes typing safe rather than a convenience.** A phone capitalises the first
-letter of a field, so "Supplements" typed once and "supplements" typed the next time would silently
-become two groups — and the alternative, folding case when matching, would have the app decide which
-spelling a person meant. Offering the words already in use removes the problem instead of judging
-the owner's words. A category a person types that matches none of them is accepted exactly as typed
-and becomes a group of its own, which is how the first commitment under a new category gets there.
-
-**A category on a commitment the screen has stopped is not offered**, and that is deliberate rather
-than an omission: the categories offered are the ones a heading is drawn for, the stopped list draws
-no headings, and a stopped commitment brings its own category back with it when it is taken up again
-in one tap. Nothing is lost by leaving it out, and offering it would draw a word from a list nobody
-is looking at.
-
-#### Scenario: a commitment is put under a category through a commitments screen and kept at the roster place
-
-- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
-  weekdays and kept from 1 January 2026, are taken on at a roster place; a commitments screen is
-  opened at that roster place as of Monday 31 August 2026; and "Creatine" is put under the category
-  "Supplements" through it
-- **THEN** nothing is refused
-- **AND** what it keeps is two groups, "Supplements" holding "Creatine" and then a group with no
-  category holding "Gym"
-- **AND** a commitments screen opened afterwards at that place as of that same day keeps those same
-  two groups
-
-#### Scenario: a category taken off through a commitments screen draws its commitment among the ones under none
-
-- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
-  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is put under the
-  category "Supplements" there; a commitments screen is opened at that roster place as of Monday
-  31 August 2026; and "Creatine" is put under a category of three spaces through it
-- **THEN** nothing is refused
-- **AND** what it keeps is one group, with no category, holding "Creatine" and then "Gym"
-
-#### Scenario: a commitments screen offers the categories the commitments it keeps are under, each once
-
-- **WHEN** a commitment named "Creatine", then one named "Gym", then one named "Magnesium", then one
-  named "Finances", all on a schedule listing all seven weekdays and kept from 1 January 2026, are
-  taken on at a roster place; "Creatine" and "Magnesium" are put under the category "Supplements"
-  there and "Gym" under "Sport"; and a commitments screen is opened at that roster place as of
-  Monday 31 August 2026
-- **THEN** the categories it offers are "Supplements" and then "Sport", in the order it draws its
-  groups
-- **AND** "Supplements" is offered once
-
-#### Scenario: a commitments screen keeping nothing under a category offers none
-
-- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
-  weekdays and kept from 1 January 2026, are taken on at a roster place; and a commitments screen is
-  opened at that roster place as of Monday 31 August 2026
-- **THEN** the categories it offers are none
-- **AND** what it keeps is one group, with no category, holding "Gym" and then "Journaling"
-
-#### Scenario: a commitments screen offers no category that only a commitment it has stopped is under
-
-- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
-  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is put under the
-  category "Supplements" there and stopped there as of Sunday 30 August 2026; and a commitments
-  screen is opened at that roster place as of Monday 31 August 2026
-- **THEN** the categories it offers are none
-- **AND** after "Creatine" is taken up again through the screen, the categories it offers are
-  "Supplements"
-
-#### Scenario: a category no longer under any commitment kept is no longer offered
-
-- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
-  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is put under the
-  category "Supplements" there; a commitments screen is opened at that roster place as of Monday
-  31 August 2026; and "Creatine" is put under the category "Morning" through it
-- **THEN** the categories it offers are "Morning"
-- **AND** "Supplements" is not among them
-
-#### Scenario: a commitments screen does not fold the case of a category it is given
-
-- **WHEN** a commitment named "Creatine" and one named "Magnesium", both on a schedule listing all
-  seven weekdays and kept from 1 January 2026, are taken on at a roster place; a commitments screen
-  is opened at that roster place as of Monday 31 August 2026; "Creatine" is put under the category
-  "Supplements" through it; and "Magnesium" is put under the category "supplements" through it
-- **THEN** what it keeps is two groups, "Supplements" holding "Creatine" and then "supplements"
-  holding "Magnesium"
-- **AND** the categories it offers are "Supplements" and then "supplements"
-
-#### Scenario: a commitments screen asked to put a commitment it does not keep under a category does nothing and says nothing
-
-- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
-  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is stopped there
-  as of Sunday 30 August 2026; a commitments screen is opened at that roster place as of Monday
-  31 August 2026; and "Creatine" is put under the category "Supplements" through it
-- **THEN** nothing is refused and the screen holds no refused change
-- **AND** what it keeps is one group, with no category, holding "Gym", and what it has stopped is
-  one entry, named "Creatine"
-- **AND** putting a commitment named "Journaling" on that same schedule and kept-from day, formed
-  directly and never taken on, under "Supplements" likewise refuses nothing and changes nothing
-
-#### Scenario: a category change a commitments screen could not keep leaves both its lists as they were
-
-- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
-  weekdays and kept from 1 January 2026, are taken on at a roster place; a commitments screen is
-  opened at that roster place as of Monday 31 August 2026; what is at that place is then made
-  impossible to write; and "Creatine" is put under the category "Supplements" through it
-- **THEN** it is refused as a roster that could not be written
-- **AND** what it keeps is one group, with no category, holding "Creatine" and then "Gym", and what
-  it has stopped is nothing
-- **AND** the categories it offers are none
-
 ### Requirement: A roster moves a group among the groups it is keeping
 
 A roster SHALL move a **group**, on being given the **category** naming it and an **offset** — a
@@ -4665,11 +4540,10 @@ this screen and there is nothing for it to word.
 
 A group move the screen could not keep at the roster place SHALL be refused as a roster that could
 not be written, leaving both lists as they were, and it SHALL name the **category** it was asked to
-move. That is the **seventh** kind of refused change a commitments screen holds, beside defining a
-commitment, stopping keeping one, taking one up again, removing one, moving one and putting one under
-a category, and it is the first that names something other than a commitment — a group is a category
-and the commitments under it, a person tapped the heading, and naming one of the rows would point at
-a row they did not touch.
+move. That is a refused **group move**, and it is the only kind of refused change a commitments
+screen holds that names something other than a commitment — a group is a category and the commitments
+under it, a person tapped the heading, and naming one of the rows would point at a row they did not
+touch.
 
 **A group move that leaves a group where it is drawn changes nothing and says nothing.** It is not
 refused, it changes neither list, and it does not answer a refused change the screen is already
@@ -5259,6 +5133,17 @@ nothing is written at the record place at all.
 **The kind its days take is not one of the four and SHALL NOT change.** The changed commitment SHALL
 be of the kind the commitment it replaces is of, on every one of the acts above. ADR-1030.
 
+**A change is the only act on this screen that writes a category without a move.** The category is
+one of the four, picked from the categories the screen offers or typed; a commitment given one is
+drawn in that category's group and a category of nothing but blank space takes it off, exactly as
+defining one does. What a commitments screen no longer does is put a commitment under a category as
+an act of its own, so a change is the whole of how a person refiles without dragging. The other way
+a category changes on this screen is a **move**: a commitment dropped into another group is put
+under that group's category by the same act, because the place a drop names is inside a group. That
+is *A commitments screen moves a commitment among the ones it keeps*, which this change leaves
+untouched, and the two do not need keeping in step — a drag says where a row sits and takes the
+category of where it landed, and a change says what the commitment is.
+
 **Where the four things name the commitment that is already there, and the category it is already
 under**, the screen SHALL change nothing, SHALL write nothing at either place and SHALL refuse
 nothing. Closing a form opened by accident is not an error.
@@ -5513,3 +5398,110 @@ move.
 - **THEN** nothing is refused
 - **AND** a roster store opened afterwards at that place answers about 1 January 1583 with both
   commitments, and about 2 January 1583 with the one on Tuesday and Thursday alone
+
+#### Scenario: a category set through a commitments screen's change is kept at the roster place
+
+- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; a commitments screen is
+  opened at that roster place as of Monday 31 August 2026; and "Creatine" is changed through it to
+  the category "Supplements", on the name, the rhythm and the day kept from it already has
+- **THEN** nothing is refused
+- **AND** what it keeps is two groups, "Supplements" holding "Creatine" and then a group with no
+  category holding "Gym"
+- **AND** a commitments screen opened afterwards at that place as of that same day keeps those same
+  two groups
+
+#### Scenario: a category taken off through a commitments screen's change draws its commitment among the ones under none
+
+- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is put under the
+  category "Supplements" there; a commitments screen is opened at that roster place as of Monday
+  31 August 2026; and "Creatine" is changed through it to a category of three spaces, on the name,
+  the rhythm and the day kept from it already has
+- **THEN** nothing is refused
+- **AND** what it keeps is one group, with no category, holding "Creatine" and then "Gym"
+
+### Requirement: A commitments screen offers the categories in use
+
+**A commitments screen SHALL offer the categories already in use**, so that a person picks one
+rather than typing it again. They SHALL be the categories the commitments it **keeps** are under,
+each once, in the order the screen draws its groups; a screen keeping nothing under any category
+SHALL offer none. They are read off the roster the screen is drawing rather than held anywhere, so a
+category whose last kept commitment has been put under another is gone from what is offered at the
+same moment its heading goes, and a category is never offered that no heading shows.
+
+**The offering is what makes typing safe rather than a convenience.** A phone capitalises the first
+letter of a field, so "Supplements" typed once and "supplements" typed the next time would silently
+become two groups — and the alternative, folding case when matching, would have the app decide which
+spelling a person meant. Offering the words already in use removes the problem instead of judging
+the owner's words. A category a person types that matches none of them is accepted exactly as typed
+and becomes a group of its own, which is how the first commitment under a new category gets there.
+
+**Two spellings that differ only in case are two categories, and SHALL be offered as two.** The
+screen MUST NOT fold the case of a category and MUST NOT match one loosely against a category
+already in use, here or anywhere else it handles one: a screen that folded case would be choosing
+which of a person's spellings a heading shows. What it offers is what the roster holds, exactly as
+the roster holds it.
+
+**A category on a commitment the screen has stopped is not offered**, and that is deliberate rather
+than an omission: the categories offered are the ones a heading is drawn for, the stopped list draws
+no headings, and a stopped commitment brings its own category back with it when it is taken up again
+in one tap. Nothing is lost by leaving it out, and offering it would draw a word from a list nobody
+is looking at.
+
+**What is offered is picked on the act that writes a category without a move: a change.** The
+category is one of the four things a change is made of, so a person who wants a word already in use
+takes it from what this requirement offers rather than typing it a second time, and the screen that
+offers a word is the screen that writes it. A **move** writes a category too — a commitment dropped
+into another group is put under that group's category by the same act — but a move needs no
+offering: the word it writes is the one the group it landed in already carries.
+
+#### Scenario: a commitments screen offers the categories the commitments it keeps are under, each once
+
+- **WHEN** a commitment named "Creatine", then one named "Gym", then one named "Magnesium", then one
+  named "Finances", all on a schedule listing all seven weekdays and kept from 1 January 2026, are
+  taken on at a roster place; "Creatine" and "Magnesium" are put under the category "Supplements"
+  there and "Gym" under "Sport"; and a commitments screen is opened at that roster place as of
+  Monday 31 August 2026
+- **THEN** the categories it offers are "Supplements" and then "Sport", in the order it draws its
+  groups
+- **AND** "Supplements" is offered once
+
+#### Scenario: a commitments screen keeping nothing under a category offers none
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; and a commitments screen is
+  opened at that roster place as of Monday 31 August 2026
+- **THEN** the categories it offers are none
+- **AND** what it keeps is one group, with no category, holding "Gym" and then "Journaling"
+
+#### Scenario: a commitments screen offers no category that only a commitment it has stopped is under
+
+- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is put under the
+  category "Supplements" there and stopped there as of Sunday 30 August 2026; and a commitments
+  screen is opened at that roster place as of Monday 31 August 2026
+- **THEN** the categories it offers are none
+- **AND** after "Creatine" is taken up again through the screen, the categories it offers are
+  "Supplements"
+
+#### Scenario: a category no longer under any commitment kept is no longer offered
+
+- **WHEN** a commitment named "Creatine" and one named "Gym", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Creatine" is put under the
+  category "Supplements" there; a commitments screen is opened at that roster place as of Monday
+  31 August 2026; and "Creatine" is changed through it to the category "Morning", on the name, the
+  rhythm and the day kept from it already has
+- **THEN** the categories it offers are "Morning"
+- **AND** "Supplements" is not among them
+
+#### Scenario: a commitments screen does not fold the case of a category it is given
+
+- **WHEN** a commitment named "Creatine" and one named "Magnesium", both on a schedule listing all
+  seven weekdays and kept from 1 January 2026, are taken on at a roster place; a commitments screen
+  is opened at that roster place as of Monday 31 August 2026; "Creatine" is changed through it to the
+  category "Supplements"; and "Magnesium" is changed through it to the category "supplements", each
+  on the name, the rhythm and the day kept from it already has
+- **THEN** what it keeps is two groups, "Supplements" holding "Creatine" and then "supplements"
+  holding "Magnesium"
+- **AND** the categories it offers are "Supplements" and then "supplements"

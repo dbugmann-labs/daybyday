@@ -132,19 +132,18 @@ public final class CommitmentsScreen {
     public private(set) var refusedChange: RefusedChange?
 
     /// A change a commitments screen was asked for and refused: which one, and why. The commitment
-    /// is carried on the four changes that are asked about a commitment already on a list, so that
-    /// a person is told beside the row they tapped rather than in one place for all five.
+    /// is carried on the changes that are asked about a commitment already on a list — stopping,
+    /// taking one up again, removing, moving and changing — so that a person is told beside the
+    /// row they tapped rather than in one place for all of them.
     public enum RefusedChange: Equatable, Sendable {
         case defining(Refusal)
         case stopping(Commitment, Refusal)
         case keepingAgain(Commitment, Refusal)
         case removing(Commitment, Refusal)
         case moving(Commitment, Refusal)
-        case categorising(Commitment, Refusal)
         case movingGroup(String, Refusal)
-        /// The eighth kind: a change asked for, refused, and held against the commitment it was
-        /// asked to change rather than the one it would have produced — `design.md` § *The two
-        /// new refusals*.
+        /// A change asked for, refused, and held against the commitment it was asked to change
+        /// rather than the one it would have produced — `design.md` § *The two new refusals*.
         case changing(Commitment, Refusal)
     }
 
@@ -555,39 +554,6 @@ public final class CommitmentsScreen {
         }
 
         refusedChange = nil
-        refreshLists(from: rosterStore)
-        return nil
-    }
-
-    /// Puts `commitment`, which this screen keeps, under `category`, or under none where
-    /// `category` is `nil`. Does nothing and says nothing, neither refusing nor changing
-    /// anything, when `commitment` is not in what this screen keeps — the guard is
-    /// `kept.contains(commitment)` alone, exactly as `move`'s is, and for the same reason: a
-    /// stopped commitment is not on the list a person is filing things on.
-    @discardableResult public func put(_ commitment: Commitment, under category: String?)
-        -> Refusal?
-    {
-        guard kept.contains(commitment) else {
-            return nil
-        }
-        guard let rosterStore else {
-            refusedChange = .categorising(commitment, .notKept)
-            return .notKept
-        }
-
-        let rosterBeforePut = rosterStore.roster
-        do {
-            try rosterStore.put(commitment, under: category)
-        } catch {
-            refusedChange = .categorising(commitment, .notKept)
-            return .notKept
-        }
-
-        // Settled answer 13, read the same way `move` reads it: a call that reaches the place
-        // with no change to make does not end a standing refused-change notice.
-        if rosterStore.roster != rosterBeforePut {
-            refusedChange = nil
-        }
         refreshLists(from: rosterStore)
         return nil
     }

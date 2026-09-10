@@ -394,6 +394,19 @@ the order, a date before the stop then draws those two groups the other way roun
 carries the stopped and removed commitments where a commitment's move steps over them, and why it is
 placed against a kept one, is **ADR-1044**; ADR-1037 is amended with it.
 
+**Corrected 2026-09-09**, at the grill of `rework-commitment-row-actions` (#192), and this one
+withdraws a clause rather than a decision. The 2026-09-08 correction above ends *"Refiling across
+groups is the **commitments screen**'s *Category* action on the row"*, and **that action is gone**:
+the row's swipe no longer offers it, and the screen no longer puts a commitment under a category at
+all. **Refiling across groups is the category field on the change sheet**, which has written the
+category since `add-commitment-editing` (#148) and offers the same words already in use. What a
+move is has not changed again — it still takes either a commitment or a group, still carries a place,
+and a row dragged within its own group still reorders and no further. Only the way a person refiles
+without a drag has moved, from one gesture to a sheet. **B-041 is untouched by this and its
+*Principle* line is now weaker**: it argued the drag-to-refile want loses because the row's *Category*
+action already refiles in one tap, and refiling is now a swipe, a sheet, a field and a save. That is
+the next grooming pass's to reweigh, not this Story's — `docs/backlog.md` lives on `chore/backlog`.
+
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
 times within a week on any days.
@@ -1085,6 +1098,28 @@ the last two can be changed at all — and no words a person reads, as ever. The
 under the form is gone** (B-036), and the sentence about it in the 2026-09-06 amendment above is
 withdrawn: a rhythm is still said in words on both lists and on a day screen's rows, and no longer for
 a rhythm nobody has committed to.
+
+**Amended 2026-09-09**, at the grill of `rework-commitment-row-actions` (#192), and it takes
+something away. **A commitments screen no longer puts a commitment under a category**: the act, the
+row's *Category* swipe and the sheet behind it are all withdrawn, and a **change** is the only thing
+on this screen that writes a category **without a drag**. A move still carries one, exactly as
+§ *Move* above says — a row dropped into another group is put under that group's category — so what
+went is the act that wrote a category on its own. What survives is the **offering** — the categories
+the commitments it keeps are under, each once, in the order it draws its groups, none from the
+stopped list — which the change sheet now reads, and which is a requirement of its own rather than
+half of another. So the 2026-09-08 correction above is wrong where it says refiling across groups is
+the row's *Category* action offered beside *Stop* and *Remove*: it is the change sheet's category
+field, reached the same way any change is. One consequence is accepted knowingly: a **stopped**
+commitment's category becomes changeable, which `put` always refused, because a change may alter a
+stopped commitment's name and category and now nothing else on this screen refuses it.
+
+**The kinds of refused change are seven, and they are counted in one place and numbered nowhere.**
+Withdrawing the category kind renumbers every kind after it, so the ordinals above are withdrawn with
+it: a **group move** is a refused change that names a **category** rather than a commitment — the
+only one that does — and a **change** is a refused change that names the commitment tapped rather
+than the one it would have produced. Neither is *the seventh* or *the eighth* any more, and no
+requirement states a kind's position. The archived change folders that cite one keep their ordinals
+and go on describing the specs they were written against.
 
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most

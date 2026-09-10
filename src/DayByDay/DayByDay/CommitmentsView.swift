@@ -92,8 +92,6 @@ private enum SheetTarget: Identifiable {
 struct CommitmentsView: View {
     let screen: CommitmentsScreen
 
-    @State private var categorising: Commitment?
-    @State private var categoryTyped = ""
     @State private var sheetTarget: SheetTarget?
     @Environment(\.editMode) private var editMode
 
@@ -140,21 +138,30 @@ struct CommitmentsView: View {
                         commitmentLine(
                             Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                         )
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            sheetTarget = .changing(commitment)
+                        .swipeActions(edge: .leading) {
+                            Button {
+                                sheetTarget = .changing(commitment)
+                            } label: {
+                                Image(systemName: "pencil")
+                            }
+                            .tint(.accentColor)
+                            .accessibilityLabel("Edit")
                         }
-                        .swipeActions {
-                            Button("Stop") {
+                        .swipeActions(edge: .trailing) {
+                            Button {
                                 screen.askToStopKeeping(commitment)
+                            } label: {
+                                Image(systemName: "stop.circle")
                             }
-                            Button("Remove", role: .destructive) {
+                            .tint(.orange)
+                            .accessibilityLabel("Stop")
+                            Button(role: .destructive) {
                                 screen.askToRemove(commitment)
+                            } label: {
+                                Image(systemName: "trash")
                             }
-                            Button("Category") {
-                                categorising = commitment
-                                categoryTyped = group.category ?? ""
-                            }
+                            .tint(.red)
+                            .accessibilityLabel("Remove")
                         }
                     }
                     .onMove { source, offset in
@@ -231,10 +238,6 @@ struct CommitmentsView: View {
                 refusalText(movingRefusal)
             }
 
-            if case .categorising(_, let categorisingRefusal) = screen.refusedChange {
-                refusalText(categorisingRefusal)
-            }
-
             if case .movingGroup(_, let movingGroupRefusal) = screen.refusedChange {
                 refusalText(movingGroupRefusal)
             }
@@ -247,17 +250,30 @@ struct CommitmentsView: View {
                     commitmentLine(
                         Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                     )
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        sheetTarget = .changing(commitment)
+                    .swipeActions(edge: .leading) {
+                        Button {
+                            sheetTarget = .changing(commitment)
+                        } label: {
+                            Image(systemName: "pencil")
+                        }
+                        .tint(.accentColor)
+                        .accessibilityLabel("Edit")
                     }
-                    .swipeActions {
-                        Button("Resume") {
+                    .swipeActions(edge: .trailing) {
+                        Button {
                             screen.keepAgain(commitment)
+                        } label: {
+                            Image(systemName: "play.circle")
                         }
-                        Button("Remove", role: .destructive) {
+                        .tint(.green)
+                        .accessibilityLabel("Resume")
+                        Button(role: .destructive) {
                             screen.askToRemove(commitment)
+                        } label: {
+                            Image(systemName: "trash")
                         }
+                        .tint(.red)
+                        .accessibilityLabel("Remove")
                     }
                 }
             }
@@ -291,7 +307,19 @@ struct CommitmentsView: View {
         .navigationTitle("Commitments")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                EditButton()
+                Toggle(
+                    isOn: Binding(
+                        get: { editMode?.wrappedValue.isEditing == true },
+                        set: { isReordering in
+                            editMode?.wrappedValue = isReordering ? .active : .inactive
+                        }
+                    )
+                ) {
+                    Image(systemName: "arrow.up.arrow.down")
+                }
+                .toggleStyle(.button)
+                .accessibilityLabel(
+                    editMode?.wrappedValue.isEditing == true ? "Reorder, on" : "Reorder, off")
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -356,51 +384,6 @@ struct CommitmentsView: View {
                                 screen.confirmRemoving()
                             }
                             .disabled(!screen.nameTypedBackMatches)
-                        }
-                    }
-                }
-            }
-        }
-        .sheet(
-            isPresented: Binding(
-                get: { categorising != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        categorising = nil
-                    }
-                }
-            )
-        ) {
-            if let commitment = categorising {
-                NavigationStack {
-                    Form {
-                        Section {
-                            TextField("Category (blank for none)", text: $categoryTyped)
-                        }
-                        if !screen.categoriesInUse.isEmpty {
-                            Section("Already in use") {
-                                ForEach(screen.categoriesInUse, id: \.self) { existing in
-                                    Button(existing) {
-                                        categoryTyped = existing
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .navigationTitle("Category for \(commitment.name)")
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                categorising = nil
-                            }
-                        }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Save") {
-                                screen.put(
-                                    commitment,
-                                    under: categoryTyped.isEmpty ? nil : categoryTyped)
-                                categorising = nil
-                            }
                         }
                     }
                 }
