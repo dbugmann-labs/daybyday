@@ -321,6 +321,15 @@ decision it records is the owner's, twice.*
   action already refiles across groups in one tap, so this deepens something that works rather than
   making a new thing possible. *An iPhone, in your hand* is the principle that argues for it — a
   drag is what a thumb reaches for — and it is not enough on its own.
+
+  **Amended 2026-09-10**, after `rework-commitment-row-actions` (#192) shipped. **The one tap that
+  argument rests on is gone.** That Story withdrew the row's *Category* action, and with it
+  `CommitmentsScreen.put(_:under:)` and the requirement behind it; refiling across groups is now the
+  change sheet's category field, reached by swiping right on the row for the pencil, opening the
+  sheet, setting the word and saving. The verdict is left where it was on purpose — this entry is
+  not the place to re-decide it, and the next grooming pass is — but the margin it was decided by is
+  narrower than the line above reads, and a pass that quotes "already refiles in one tap" is quoting
+  something that stopped being true. `grill.md` § *Settled* 14 of #192 recorded that this was owed.
 - **Open** — is it buildable at all? Two things were measured rather than guessed at #147, and any
   future attempt starts from them: **`.onMove` and `.dropDestination(for:)` cannot share a
   `ForEach`** — instrumented, `.onMove` won every long press and `.dropDestination` never fired —
