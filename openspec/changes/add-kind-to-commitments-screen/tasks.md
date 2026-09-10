@@ -130,19 +130,19 @@ anything.
 `src/DayByDay/DayByDay/CommitmentsView.swift` only. None of this is a requirement and none of it is
 tested: what a form draws is the drawing's (ADR-1022), exactly as the rhythm fields already are.
 
-- [ ] 7.1 The sheet gains a **Kind** picker over the four, starting on `screen.kindToOffer` when it
+- [x] 7.1 The sheet gains a **Kind** picker over the four, starting on `screen.kindToOffer` when it
   is defining. Under Number it shows two range fields, under Total a target field, and under Tick and
   Note neither. The three fields are plain `TextField`s bound to `String`: no formatter, no
   `keyboardType` that forbids a minus or a separator, and nothing that blocks a character — the whole
   point of `design.md` § *One reading of a typed number* is that the screen says "that is not a
   number" out loud rather than the shell refusing the keystroke.
-- [ ] 7.2 When the sheet is **changing** a commitment, the picker and the three fields are filled from
+- [x] 7.2 When the sheet is **changing** a commitment, the picker and the three fields are filled from
   `whatItIsMadeOf(_:)`'s new `kind` and `.disabled(true)`, beside the rhythm's existing treatment for
   a stopped commitment. The save path does not send them: `change(_:toName:on:keptFrom:under:)` takes
   four things and is not touched.
-- [ ] 7.3 Two more lines in `refusalText(_:)`, one per new `Refusal` case, in this file's existing
+- [x] 7.3 Two more lines in `refusalText(_:)`, one per new `Refusal` case, in this file's existing
   voice.
-- [ ] 7.4 `xcodebuild build` for the `DayByDay` scheme against an iPhone 17 simulator succeeds —
+- [x] 7.4 `xcodebuild build` for the `DayByDay` scheme against an iPhone 17 simulator succeeds —
   `swift test` compiles none of the app target, so nothing before this box has proved this one.
 - [ ] 7.5 Walk it on the phone with `pnpm run phone`: define one commitment of each of the four kinds,
   a number with a range and a number without, and read both refusals by typing a lowest above a
