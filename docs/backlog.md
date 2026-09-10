@@ -383,6 +383,37 @@ decision it records is the owner's, twice.*
   settled at Q12 that the sheet and the swipe both set a category, and the phone walk changed the
   owner's mind. Recorded so the next pass does not read it as an oversight.
 
+### B-043 — change a number's range or a total's target without starting the commitment over
+
+*Captured 2026-09-10, at the grill of `add-kind-to-commitments-screen` (#142).*
+
+> "Out of scope — capture as a want" — the owner's answer at round 1 of that grill, choosing it
+> over taking a range and target change into #142 and over ruling one out for good. The want is
+> the third option that answer leaves standing rather than a sentence said unprompted, and it is
+> recorded that way so a later pass does not read it as something asked for out of the blue.
+
+- **Trigger** — the day a mood turns out to want one to five rather than one to ten, or a protein
+  target moves from 120 grams to 140. Neither is a mistake being corrected; both are a person
+  changing their mind about a commitment they intend to keep.
+- **Touches** — `commitment` (#26). It is not a new kind of anything: #142 lands the range and the
+  target on the form that defines a commitment, and this is the same two fields reached from the
+  change sheet, which #148 built. The machinery it needs already exists — a range is part of what
+  a commitment *is*, so a changed range is a different commitment, which is exactly what a rhythm
+  change already handles by **superseding**. What is new is the refusal set and the sheet letting
+  a thumb into two fields #142 deliberately locks.
+- **Principle** — tested against *five percent of seven things*: **it loses**, as B-041 and B-042
+  do. Every commitment can already declare a range and a target once #142 lands; this deepens
+  that rather than making a new kind of record possible. Captured anyway, because the alternative
+  a person has today is to define a second commitment and abandon the first, which splits a
+  history the product exists to keep whole.
+- **Open** — does a changed range **supersede**, as a rhythm change does, or **carry over**, as a
+  rename does? Superseding is the structurally honest answer and it costs the person the run of
+  days under the old range as a separate commitment. Carrying over would rewrite records against
+  a bound they were never judged by — including, for a narrowed range, days holding a number the
+  new range would refuse.
+- **Open** — a narrowed range with records already outside it. Refuse the change, as #148 refuses
+  a day already recorded on that would be left not due, or accept it and let the old days stand?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
