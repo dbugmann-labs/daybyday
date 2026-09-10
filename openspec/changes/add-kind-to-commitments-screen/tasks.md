@@ -188,15 +188,15 @@ tidy-up (rule 5).
   checks` reporting `78/78 scenario(s) covered`.
 - [x] 9.2 `openspec validate add-kind-to-commitments-screen --strict` exits 0, and `openspec validate
   --all --strict --no-interactive` exits 0.
-- [ ] 9.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+- [x] 9.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-kind-to-commitments-screen/` or anywhere under `openspec/specs/` is a
   **stop**, not a merge to resolve (rule 5) — and so is a clean rebase that then fails 9.1 or 9.2,
   which is § 1.3's hazard arriving late. **Re-measure 9.1's number after the rebase**: a test count
   written inside a G4-signed folder goes stale when `main` moves under it.
-- [ ] 9.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+- [x] 9.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff, and do not act on findings until they come back
   through the conductor. This box is ticked when the hand-back is written.
-- [ ] 9.5 Write the archive handover below into the PR or the hand-back message. **The `implementer`
+- [x] 9.5 Write the archive handover below into the PR or the hand-back message. **The `implementer`
   ticks this box, in its last commit before the archive**, on the evidence that the handover has been
   written — the checking itself is the janitor's step and has no box of its own, deliberately: a box
   whose tick depends on the archive having run cannot be reached afterwards, because `/opsx:archive`
