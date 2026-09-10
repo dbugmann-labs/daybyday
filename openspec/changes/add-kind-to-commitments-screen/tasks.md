@@ -1,6 +1,6 @@
 ## 1. Before a line is written
 
-- [ ] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
+- [x] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
   From `src/DayByDayKit`, `swift test` reports **1036 tests passing** — measured 2026-09-10 on this
   branch, whose one commit ahead of `origin/main` is the grill commit `5252fde`, sitting on `a04e151`.
   From the repo root, `pnpm run check:scenarios` reports **`56/78 scenario(s) covered`** and names *a
@@ -12,7 +12,7 @@
   anything has been written. Only the **22** genuinely new ones show as missing, and §§ 3–6 name all
   22 by hand.
 
-- [ ] 1.2 Confirm the four facts the shape rests on, before writing any test, and stop and report if
+- [x] 1.2 Confirm the four facts the shape rests on, before writing any test, and stop and report if
   any is false (`design.md` § *Context*): `CommitmentsScreen.define(name:on:keptFrom:under:)` is
   declared at `CommitmentsScreen.swift:190` and forms its `Commitment` at `:203` without naming a
   kind; `Commitment.Range.init?` refuses a NaN end and a lowest above its highest, and
@@ -22,7 +22,7 @@
   `Blank.saysNothing(_:)` is the whole of this package's blank test. If `read(_:)` has grown a third
   caller or moved, stop: § 2 is written on it being a two-caller private.
 
-- [ ] 1.3 Re-read this box before § 3 and again before § 9. `commitment` is the busiest capability in
+- [x] 1.3 Re-read this box before § 3 and again before § 9. `commitment` is the busiest capability in
   the repo and this delta restates 56 of its scenarios. If another Story delta-ing it merges to `main`
   while this branch is open, a clean rebase can still leave this delta describing a spec that has
   moved. Check with `git fetch origin && git log --oneline origin/main --
@@ -35,13 +35,13 @@
 commit so that the diff of every later box is about this Story. Rule 3 is not bent here: no scenario
 is being satisfied, and the existing suite is the whole of the check.
 
-- [ ] 2.1 Move `DayScreen.read(_:)`, `DayScreen.writtenOut(_:)` and the `CommittedText` enum into a
+- [x] 2.1 Move `DayScreen.read(_:)`, `DayScreen.writtenOut(_:)` and the `CommittedText` enum into a
   new package-internal `TypedNumber` in `src/DayByDayKit/Sources/DayByDayKit/TypedNumber.swift`,
   beside `Blank.swift` and `Digits.swift`. Change nothing else about them — same logic, same
   `Digits` calls, same three answers, the doc comments carried over with their references to #139's
   `design.md` intact. `DayScreen` calls `TypedNumber.read(_:)` at its two existing sites.
 
-- [ ] 2.2 `swift test` from `src/DayByDayKit` reports **1036 passing**, the same number as 1.1, with
+- [x] 2.2 `swift test` from `src/DayByDayKit` reports **1036 passing**, the same number as 1.1, with
   no test renamed, added or deleted. **A red test here is a stop and a report** (rule 5): this box
   moves code and is not entitled to change an answer a `day-screen` scenario asserts.
 
