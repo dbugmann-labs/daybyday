@@ -181,21 +181,21 @@ while reading what is already there:
 
 ## 6. Before the review, and what the janitor does at the archive
 
-- [ ] 6.1 `cd src/DayByDayKit && swift test` — every test green, and the count is **1038**: 1015 at
+- [x] 6.1 `cd src/DayByDayKit && swift test` — every test green, and the count is **1038**: 1015 at
   the base plus the twenty-three new scenarios of § 2 and § 3. A count that comes back different is a
   **stop** (rule 5), not a number to write down — it would mean a test was renamed or removed by a
   box above, which § 1.1 forbids. From the repo root, `pnpm run verify` green and `pnpm run checks`
   reporting `26/26 scenario(s) covered`.
-- [ ] 6.2 `openspec validate add-adjacent-day-views --strict` exits 0, and `openspec validate --all
+- [x] 6.2 `openspec validate add-adjacent-day-views --strict` exits 0, and `openspec validate --all
   --strict --no-interactive` exits 0.
-- [ ] 6.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
+- [x] 6.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-adjacent-day-views/` or anywhere under `openspec/specs/` is a **stop**, not a
   merge to resolve (rule 5) — and so is a clean rebase that then fails 6.2, which is § 1.3's hazard
   arriving late.
-- [ ] 6.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
+- [x] 6.4 Hand back for the review (**G7**). The conductor spawns `reviewer`; do not run
   `mattpocock-skills:code-review` on your own diff and do not act on findings until they come back
   through the conductor. This box is ticked when the hand-back is written.
-- [ ] 6.5 Write the archive handover for the janitor, into the PR or the hand-back message, saying
+- [x] 6.5 Write the archive handover for the janitor, into the PR or the hand-back message, saying
   what it must check **after** `/opsx:archive` has run. **The `implementer` ticks this box, in its
   last commit before the archive**, on the evidence that the instruction has been written — the
   checking itself is the janitor's step and has no box of its own, deliberately: a box whose tick
