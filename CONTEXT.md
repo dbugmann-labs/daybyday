@@ -1102,14 +1102,16 @@ a rhythm nobody has committed to.
 **Amended 2026-09-09**, at the grill of `rework-commitment-row-actions` (#192), and it takes
 something away. **A commitments screen no longer puts a commitment under a category**: the act, the
 row's *Category* swipe and the sheet behind it are all withdrawn, and a **change** is the only thing
-on this screen that writes a category. What survives is the **offering** — the categories the
-commitments it keeps are under, each once, in the order it draws its groups, none from the stopped
-list — which the change sheet now reads, and which is a requirement of its own rather than half of
-another. So the 2026-09-08 correction above is wrong where it says refiling across groups is the
-row's *Category* action offered beside *Stop* and *Remove*: it is the change sheet's category field,
-reached the same way any change is. One consequence is accepted knowingly: a **stopped** commitment's
-category becomes changeable, which `put` always refused, because a change may alter a stopped
-commitment's name and category and now nothing else on this screen refuses it.
+on this screen that writes a category **without a drag**. A move still carries one, exactly as
+§ *Move* above says — a row dropped into another group is put under that group's category — so what
+went is the act that wrote a category on its own. What survives is the **offering** — the categories
+the commitments it keeps are under, each once, in the order it draws its groups, none from the
+stopped list — which the change sheet now reads, and which is a requirement of its own rather than
+half of another. So the 2026-09-08 correction above is wrong where it says refiling across groups is
+the row's *Category* action offered beside *Stop* and *Remove*: it is the change sheet's category
+field, reached the same way any change is. One consequence is accepted knowingly: a **stopped**
+commitment's category becomes changeable, which `put` always refused, because a change may alter a
+stopped commitment's name and category and now nothing else on this screen refuses it.
 
 **The kinds of refused change are seven, and they are counted in one place and numbered nowhere.**
 Withdrawing the category kind renumbers every kind after it, so the ordinals above are withdrawn with

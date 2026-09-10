@@ -145,12 +145,14 @@ suite passes a non-`nil` category to `change` (`CommitmentsScreenTests.swift:488
 scenario the moment `put` goes.
 
 They are re-landed on the change requirement, under names that say which act made them, and that
-requirement gains one paragraph saying it is now the only act on this screen that writes a category.
-The other two withdrawn scenarios are answered where they stand: *asked to put a commitment it does
-not keep* by *a commitments screen asked to change a commitment on neither of its lists does nothing
-and says nothing*, and *a category change it could not keep* by *a change a commitments screen could
-not keep leaves both places as they were* together with the rewritten *holds a refused category
-change against the commitment it was asked about*.
+requirement gains one paragraph saying it is now the only act on this screen that writes a category
+**without a move**. Not the only act that writes one: *A commitments screen moves a commitment among
+the ones it keeps* puts a dropped row under the group's category by the same gesture, and this delta
+leaves that requirement alone. The other two withdrawn scenarios are answered where they stand:
+*asked to put a commitment it does not keep* by *a commitments screen asked to change a commitment
+on neither of its lists does nothing and says nothing*, and *a category change it could not keep* by
+*a change a commitments screen could not keep leaves both places as they were* together with the
+rewritten *holds a refused category change against the commitment it was asked about*.
 
 Two scenarios keep their titles and get new bodies, because the title stays true while the act
 underneath it changes: *a category no longer under any commitment kept is no longer offered* and *a

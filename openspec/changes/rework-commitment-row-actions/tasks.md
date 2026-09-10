@@ -236,9 +236,10 @@ see, not a tidy-up (rule 5).
      hold 16, 10, 21, 12, **7** and 17 scenarios respectively. Only one of the six changes its
      count: *changes a commitment on either of its lists* goes from 19 to 21, the two scenarios of
      § 2. The other five hold the number they already hold and are modified in their prose, in a
-     scenario's body, or in both — *cannot read its roster* most quietly of all, one **WHEN** clause
+     scenario's body, or in both — *cannot read its roster* most quietly of all: one **WHEN** clause
      rewritten in *a commitments screen that cannot read its roster does nothing when it is asked to
-     put a commitment under a category* and nothing else in the requirement touched.
+     put a commitment under a category*, whose title stays while its body asks for a change, and one
+     sentence of prose that named the withdrawn act rewritten to name a change instead.
 
      Alongside those counts, **the words "sixth" and "seventh" appear nowhere in the file**. Both
      are in it today and both go: the "sixth" leaves with the requirement point 1 removes, and the

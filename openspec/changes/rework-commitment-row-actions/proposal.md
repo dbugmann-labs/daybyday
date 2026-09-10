@@ -56,8 +56,9 @@ None.
   - **MODIFIED** *A commitments screen moves a group among the groups it draws* — loses the ordinal
     the withdrawal falsifies.
   - **MODIFIED** *A commitments screen changes a commitment on either of its lists* — gains the
-    paragraph saying it is the only act on this screen that writes a category, and the two scenarios
-    that would otherwise have gone unasserted.
+    paragraph saying it is the only act on this screen that writes a category **without a move**, a
+    drop into another group still carrying one, and the two scenarios that would otherwise have gone
+    unasserted.
   - **MODIFIED** *A commitments screen lists the commitments its roster keeps, in the order they were
     taken on*, *A commitments screen that cannot read its roster lists nothing and changes nothing*
     and *What a commitments screen holds about a refused change lasts until the app is shown again or

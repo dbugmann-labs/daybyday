@@ -28,10 +28,12 @@ no headings, and a stopped commitment brings its own category back with it when 
 in one tap. Nothing is lost by leaving it out, and offering it would draw a word from a list nobody
 is looking at.
 
-**What is offered is picked on the one act that writes a category on this screen: a change.** The
+**What is offered is picked on the act that writes a category without a move: a change.** The
 category is one of the four things a change is made of, so a person who wants a word already in use
 takes it from what this requirement offers rather than typing it a second time, and the screen that
-offers a word is the screen that writes it.
+offers a word is the screen that writes it. A **move** writes a category too — a commitment dropped
+into another group is put under that group's category by the same act — but a move needs no
+offering: the word it writes is the one the group it landed in already carries.
 
 #### Scenario: a commitments screen offers the categories the commitments it keeps are under, each once
 
@@ -555,11 +557,16 @@ nothing is written at the record place at all.
 **The kind its days take is not one of the four and SHALL NOT change.** The changed commitment SHALL
 be of the kind the commitment it replaces is of, on every one of the acts above. ADR-1030.
 
-**A change is the only act on this screen that writes a category.** The category is one of the four,
-picked from the categories the screen offers or typed; a commitment given one is drawn in that
-category's group and a category of nothing but blank space takes it off, exactly as defining one
-does. A commitments screen does not put a commitment under a category on its own, so there is no
-second act on this screen for this one to be kept in step with.
+**A change is the only act on this screen that writes a category without a move.** The category is
+one of the four, picked from the categories the screen offers or typed; a commitment given one is
+drawn in that category's group and a category of nothing but blank space takes it off, exactly as
+defining one does. What a commitments screen no longer does is put a commitment under a category as
+an act of its own, so a change is the whole of how a person refiles without dragging. The other way
+a category changes on this screen is a **move**: a commitment dropped into another group is put
+under that group's category by the same act, because the place a drop names is inside a group. That
+is *A commitments screen moves a commitment among the ones it keeps*, which this change leaves
+untouched, and the two do not need keeping in step — a drag says where a row sits and takes the
+category of where it landed, and a change says what the commitment is.
 
 **Where the four things name the commitment that is already there, and the category it is already
 under**, the screen SHALL change nothing, SHALL write nothing at either place and SHALL refuse
@@ -1024,11 +1031,10 @@ recover. It SHALL offer no category either: the categories it offers are the one
 keeps are under, and it keeps none.
 
 Defining a commitment through such a screen SHALL be refused as a roster that could not be written.
-Asking it to stop keeping a commitment, to take one up again, to remove one, to move one, or to put
-one under a category SHALL do
-nothing and say nothing, by the rule that already governs a commitment neither list holds: both its
-lists are empty, so there is nothing there to stop, nothing there to take up, nothing there to
-remove, nothing there to move and nothing there to put under anything.
+Asking it to stop keeping a commitment, to take one up again, to remove one, to move one, or to
+change one SHALL do nothing and say nothing, by the rule that already governs a commitment neither
+list holds: both its lists are empty, so there is nothing there to stop, nothing there to take up,
+nothing there to remove, nothing there to move and nothing there to change.
 
 Every way the place can refuse to be read SHALL be answered alike, save one, which SHALL be named:
 a roster **written by a later version of DayByDay**. That roster is whole and it is the app that is
@@ -1114,25 +1120,27 @@ answer about a place that has since been read again. It SHALL end whether or not
 be read — a screen that is then not keeping a roster says that instead, and says more than a refused
 change ever could.
 
-**A change reaching a place** ends it, whichever of the eight it was and whichever change
-was refused before it. Defining a commitment that is taken on, a stop that is kept, a take-up-again
-that is kept, a removal that is kept, a move that is kept, **a group move that is kept**, a
-category change that is kept and **a change of a commitment that is kept** all
-count. A change of a commitment reaches the record place as well as the roster place, and it ends
-what is held once it has been kept — one act, one outcome, however many places it touched. This is one rule rather than six because it is
-the at-most-one rule above read the other way round: a commitments screen holds the outcome of the
-last change asked of it, so a change that is asked for and kept leaves nothing to hold. A person who
-has just been told a change landed is not also told that an earlier one did not.
+**A change reaching a place** ends it, whichever kind it was and whichever change was refused before
+it. Defining a commitment that is taken on, a stop that is kept, a take-up-again that is kept, a
+removal that is kept, a move that is kept, **a group move that is kept** and **a change of a
+commitment that is kept** all count, and a change that writes nothing but a category is one of the
+last of those rather than a kind of its own, because a category is one of the four things a change
+is made of. A change of a commitment reaches the record place as well as the roster place, and it
+ends what is held once it has been kept — one act, one outcome, however many places it touched. This
+is one rule rather than one for each kind because it is the at-most-one rule above read the other
+way round: a commitments screen holds the outcome of the last change asked of it, so a change that
+is asked for and kept leaves nothing to hold. A person who has just been told a change landed is not
+also told that an earlier one did not.
 
 A call that reaches the place with no change to make SHALL NOT end it, by the rule above that such a
 call is not a change asked for at all. **A move that drops a commitment where it already is is
 exactly such a call** — it is accepted rather than refused, and nothing is kept at the place, so
 there is nothing to have answered a notice with — **and so are a group move that leaves a group
-where it is drawn, a category change that puts a commitment under the category it is already
-under, a change that names what a commitment already is, and a change asked about a commitment on
-neither of the screen's lists**. Nor SHALL putting a stop or a removal up for
-confirmation, typing a name back, or cancelling either: none of them reaches the roster place, and
-nothing has been proved about it either way.
+where it is drawn, a change that names what a commitment already is, the category it is already
+under among the four things it names, and a change asked about a commitment on neither of the
+screen's lists**. Nor SHALL putting a stop or a removal up for confirmation, typing a name back, or
+cancelling either: none of them reaches the roster place, and nothing has been proved about it
+either way.
 
 #### Scenario: what a commitments screen holds about a refused change ends when the app is shown again
 
