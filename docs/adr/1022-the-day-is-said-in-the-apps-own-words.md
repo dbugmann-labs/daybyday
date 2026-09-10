@@ -4,6 +4,8 @@
   day back to a person
 - Date: 2026-09-03
 - Deciders: Diego Bugmann
+- Amended: 2026-09-09 — the day title is the weekday alone, so the app owns seven names and no form;
+  the date is the day picker's and therefore the device's
 
 ## Context
 
@@ -42,38 +44,64 @@ Locale.current on this machine is en_CH -> Thursday, 3 September 2026
 
 ## Decision
 
-**A day is said in words this package owns: the English names of the seven weekdays and the twelve
-months, written out in `DayByDayKit`, with no `Locale`, no `DateFormatter` and no localisation.**
-The same day is said in the same words on every device, in every region, in every language setting.
+**Any day this package says in words is said in words it owns, with no `Locale`, no `DateFormatter`
+and no localisation.** The same day is said in the same words on every device, in every region, in
+every language setting. Today that is the English names of the seven weekdays — "Mon", "Tue", "Wed",
+"Thu", "Fri", "Sat", "Sun" — written out in `DayByDayKit`, and it is the whole of a day title.
 
 Two consequences are part of the decision rather than incidental to it:
 
-- **The form is fixed by the spec, not by a style.** "Monday 31 August 2026" — weekday name, day of
-  the month with no leading zero, month name, four-digit year, single spaces — with "Today · " in
-  front on the day the question is asked as of. It is quoted verbatim in every scenario of #92's
-  delta, because the words *are* the requirement: there is nothing else to a day title.
-- **The comma is deliberately absent**, which makes the form differ from every locale's full date
-  style, including the one this machine happens to run (`en_CH`, above). An implementation that
-  quietly reached for `DateFormatter` therefore fails the scenarios here, in this language, rather
-  than passing locally and failing on the first phone whose region differs.
+- **The form is fixed by the spec, not by a style.** It is quoted verbatim in every scenario that
+  asks for a day title, because the words *are* the requirement: there is nothing else to a day
+  title.
+- **The words are deliberately not any locale's**, including the one this machine happens to run
+  (`en_CH`, above). An implementation that quietly reached for `DateFormatter` therefore fails the
+  scenarios here, in this language, rather than passing locally and failing on the first phone whose
+  region differs.
+
+**Amended 2026-09-09 by `shorten-day-title` (#182): the app says the weekday, and the device says
+the date.** As accepted, this record fixed a whole date — "Monday 31 August 2026", weekday name, day
+of the month with no leading zero, month name, four-digit year, single spaces, with "Today · " in
+front on the day the question was asked as of — and nineteen names written out by hand to build it.
+The day screen has since grown a **day picker**, which renders the date itself an inch from the
+title; the title spelling the same day out in full stopped fitting the row, and #182 settled that
+the title says the weekday and the picker says the date. So the twelve month names are deleted, the
+seven weekday names shorten to the three-letter forms `schedule` already uses, and the word *Today*
+goes — what tells a person they are not on today is the *Today* button, which is drawn only where
+the screen offers the way back.
+
+**The half of this decision that is reversed is named rather than buried: the date is now the
+device's.** A compact `DatePicker` cannot be persuaded to say the weekday instead — on iOS
+`DatePickerComponents` offers only `date` and `hourAndMinute`, no initializer takes a format, and
+`DatePickerStyleConfiguration` exposes no text hook — so the control that says the date says it in
+the phone's language and region, and the app does not choose those words. The cost is exactly what
+§ *Consequences* claims below as this record's dividend, and it is paid knowingly: **nothing the app
+owns can state which date is on screen**, so no scenario, no test and no screenshot asserts one. It
+is bounded, and the bound is what keeps this record standing rather than superseded. Anything
+`DayByDayKit` **says** is still said in the app's own words — the weekday here, a rhythm in words
+under ADR-1034, a notice under ADR-1036 — and the reasoning below for why is untouched. What moved
+is that the date is no longer something `DayByDayKit` says at all.
 
 ## Consequences
 
 - **A day title is something a scenario can state.** That is the whole dividend: `#### Scenario: a
-  day view says its day as a weekday, a day of the month, a month and a year` has an expected string
-  in it, and it is the same string in CI, on the owner's laptop and on a phone bought abroad. With
-  the device deciding, that scenario could only have asserted that *something* was returned.
-- **The app is English, and says so by shipping.** A person with a German phone reads "Thursday
-  3 September 2026". The owner is the only user (`AGENTS.md` § *Working with the human*), so the
-  cost today is zero and the honesty is worth more than a half-localisation that covers the date and
-  nothing else on the screen.
+  day view says its day as the three-letter name of its weekday` has an expected string in it, and
+  it is the same string in CI, on the owner's laptop and on a phone bought abroad. With the device
+  deciding, that scenario could only have asserted that *something* was returned. **The date is the
+  counter-example, and it is the reason the amendment above is worth reading**: it is drawn by a
+  `DatePicker`, so no scenario states it and none can.
+- **The app is English, and says so by shipping.** A person with a German phone reads "Thu", above a
+  date their phone says in German. The owner is the only user (`AGENTS.md` § *Working with the
+  human*), so the cost today is zero and the honesty is worth more than a half-localisation.
 - **Localising later is a spec change, not a refactor.** Every scenario quotes a string, so adding a
   second language rewrites those scenarios and the requirement above them. That is the expensive
   half of this decision and the reason it is an ADR: it is cheap to take now and not cheap to undo.
   The trigger that would force it is a second person using the app in another language — nothing
   else does.
-- **Nineteen names are written out by hand, and a typo in one would ship.** #92's delta answers that
-  with two scenarios that name every weekday and every month, rather than with a review habit.
+- **The names are written out by hand, and a typo in one would ship.** That is answered with a
+  scenario naming every one of them — `#### Scenario: every weekday is said by its own name` — rather
+  than with a review habit. It was nineteen names while the months were the app's too; it is seven
+  since the amendment above.
 - **It does not extend to every string in the app by itself.** The shell already draws two sentences
   about a record that could not be read (#91), and `add-refused-tick-notice` (#100) will add more.
   The reasoning here — a sentence a test can be wrong about lives behind the seam, in fixed words —

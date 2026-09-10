@@ -160,10 +160,9 @@ public final class DayScreen {
     /// The day view the person is looking at, as the record stood when it was last read.
     public private(set) var dayView: DayView
 
-    /// The day this screen is showing, said in words: its day view's title, asked as of the day
-    /// the screen was handed. Reads no clock.
+    /// The day this screen is showing, said in words: its day view's title. Reads no clock.
     public var title: String {
-        dayView.title(asOf: today)
+        dayView.title
     }
 
     /// Whether this screen offers the way back to the today it was handed: `true` exactly where
@@ -171,6 +170,23 @@ public final class DayScreen {
     /// was last handed, at `init` or at `shown(asOf:)`.
     public var offersGoingBackToToday: Bool {
         shownDay != today
+    }
+
+    /// What a day screen says about the reach of its day picker: the day the picker opens on,
+    /// and the earliest day it reaches. `openspec/changes/add-day-picker/design.md` § *The seam*.
+    public struct Reach: Hashable, Sendable {
+        public let opensOn: CalendarDate
+        public let earliest: CalendarDate
+    }
+
+    /// The reach of this screen's day picker: the day it opens on is the day being shown, and
+    /// the earliest day it reaches is the earlier of the earliest day anything on this screen's
+    /// roster is kept from — or, where the roster answers none, the today this screen was last
+    /// handed — and the day being shown.
+    public var dayPickerReach: Reach {
+        let floor = roster.earliestKeptFrom ?? today
+        let earliest = shownDay.days(until: floor) < 0 ? floor : shownDay
+        return Reach(opensOn: shownDay, earliest: earliest)
     }
 
     /// Anything but `.kept` means the day is drawn from no record at all and no tick is taken.
@@ -229,92 +245,6 @@ public final class DayScreen {
         dayView = dayViewOfShownDay()
     }
 
-    /// What `enter(_:on:)` reads a commit as: a number, a take-back, or a value that is not a
-    /// number. See `design.md` § *Reading what was committed*.
-    private enum CommittedText {
-        case number(Decimal)
-        case takeBack
-        case notANumber
-    }
-
-    /// Reads `text` as `enter(_:on:)` does, in this capability's own way and consulting no
-    /// locale. `Decimal(string:)` is a *prefix* parser, not a validator — `design.md` § *Context*
-    /// measures five ways it silently reads a value nobody typed — so the shape of what was
-    /// committed is checked in full before `Decimal(string:)` is ever called, and the parse is
-    /// then given a text this reading built and never the text a person typed: the same number
-    /// can be spelled in a way `Decimal(string:)` holds and in another it refuses, so the parse
-    /// is asked about the one spelling this reading already knows says the value exactly.
-    private static func read(_ text: String) -> CommittedText {
-        let trimmed = Blank.trimmed(text)
-        guard !trimmed.isEmpty else {
-            return .takeBack
-        }
-
-        var digits = trimmed[...]
-        var sign = ""
-        if digits.first == "-" {
-            sign = "-"
-            digits.removeFirst()
-        }
-
-        var digitCount = 0
-        var separatorCount = 0
-        for character in digits {
-            if character.isASCII, character.isNumber {
-                digitCount += 1
-            } else if character == "." || character == "," {
-                separatorCount += 1
-            } else {
-                return .notANumber
-            }
-        }
-
-        let (written, significantDigits) = Self.writtenOut(digits)
-        guard digitCount >= 1, separatorCount <= 1, significantDigits <= 38 else {
-            return .notANumber
-        }
-        guard significantDigits > 0 else {
-            return .number(0)
-        }
-
-        guard let number = Decimal(string: sign + written) else {
-            return .notANumber
-        }
-        return .number(number)
-    }
-
-    /// Writes `digits` out in the one spelling `read(_:)` asks `Decimal(string:)` about — text
-    /// already proved to hold nothing but digits and at most one separator, with any leading `-`
-    /// already removed — and gives back the count of significant digits that spelling holds: the
-    /// whole part with its leading zeros dropped, a full stop where a `.` or `,` was typed, the
-    /// fraction with its trailing zeros dropped, and no separator where nothing is left after it.
-    /// The count is `Digits.stripped(whole:fraction:)`'s, read off that same stripping and not
-    /// off `digits` directly, because a leading zero the whole part loses can still open the
-    /// fraction (`"0.08"` holds one significant digit, not two) — `Digits` is where this counting
-    /// is decided, so this and `Digits.significant(in:)` cannot drift apart on what a significant
-    /// digit is.
-    ///
-    /// `design.md` § *A number this system cannot keep exactly is not a number here*: a count
-    /// above thirty-eight is a value that is not a number, and a count of zero is answered as
-    /// `.number(0)` without `read(_:)` ever calling `Decimal(string:)` — a shortcut now rather
-    /// than a guard, since every such text is written out as `"0"` here too, and no longer the
-    /// only defence against a `nil` that once meant something else: a value at any magnitude can
-    /// be refused for how it was spelled rather than for what it is worth, which is why the parse
-    /// is never asked about the text as typed.
-    private static func writtenOut(_ digits: Substring) -> (text: String, significantDigits: Int) {
-        let parts = String(digits).replacingOccurrences(of: ",", with: ".")
-            .split(separator: ".", omittingEmptySubsequences: false)
-        let stripped = Digits.stripped(
-            whole: parts[0], fraction: parts.count > 1 ? parts[1] : Substring())
-        guard stripped.significantDigits > 0 else {
-            return ("0", 0)
-        }
-
-        let head = stripped.whole.isEmpty ? "0" : String(stripped.whole)
-        let text = stripped.fraction.isEmpty ? head : head + "." + String(stripped.fraction)
-        return (text, stripped.significantDigits)
-    }
-
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
     /// nothing, and keeps the change before `dayView` says so. Does nothing when `row` is not one
     /// this screen's day view holds, when this screen is not keeping a record, or when `row`
@@ -330,7 +260,7 @@ public final class DayScreen {
         }
 
         if let entry = row.numberEntry(asOf: today) {
-            switch Self.read(text) {
+            switch TypedNumber.read(text) {
             case .takeBack:
                 do {
                     try recordStore.removeNumber(on: row.recordedDay)
@@ -379,7 +309,7 @@ public final class DayScreen {
                 return
             }
 
-            switch Self.read(text) {
+            switch TypedNumber.read(text) {
             case .takeBack:
                 return
             case .notANumber:
@@ -440,15 +370,39 @@ public final class DayScreen {
         dayView = dayViewOfShownDay()
     }
 
+    /// The day view of `day`, drawn from `roster` and `recordStore`'s history exactly as they
+    /// stand now — asks neither again.
+    private func dayView(on day: CalendarDate) -> DayView {
+        DayView(of: roster.groups(on: day), on: day, in: recordStore?.history ?? History())
+    }
+
     /// The day view of `shownDay`, drawn from `roster` and `recordStore`'s history exactly as
     /// they stand now — asks neither again. Shared by every caller that re-forms `dayView` after
     /// changing what it is drawn from or which day it is drawn for: the writes `tick` and
     /// `enter(_:on:)` keep before re-forming it, and the moves `showPreviousDay`, `showNextDay`
     /// and `showToday` that only step the day already held.
     private func dayViewOfShownDay() -> DayView {
-        DayView(
-            of: roster.groups(on: shownDay), on: shownDay,
-            in: recordStore?.history ?? History())
+        dayView(on: shownDay)
+    }
+
+    /// The day view of the calendar date one day before `shownDay`, or `nil` where `shownDay` is
+    /// 1 January 1583. Formed for that day's own roster answer, never from `dayView`'s groups or
+    /// from `roster.groups(on: shownDay)` — `design.md` § *The neighbour is formed for its own
+    /// day*. Reads neither the roster nor the record again, and changes nothing about the screen.
+    public var previousDayView: DayView? {
+        guard let previousDate = shownDay.adding(days: -1) else {
+            return nil
+        }
+        return dayView(on: previousDate)
+    }
+
+    /// The day view of the calendar date one day after `shownDay`, or `nil` where `shownDay` is
+    /// 31 December 9999. The same as `previousDayView`, one day the other way.
+    public var nextDayView: DayView? {
+        guard let nextDate = shownDay.adding(days: 1) else {
+            return nil
+        }
+        return dayView(on: nextDate)
     }
 
     /// Shows the calendar day before the one being shown. Leaves the screen exactly as it is when
@@ -486,6 +440,21 @@ public final class DayScreen {
         dayView = dayViewOfShownDay()
     }
 
+    /// Shows `day`, the day picked on this screen's day picker, where it is not earlier than
+    /// `dayPickerReach.earliest`; leaves the screen exactly as it was, with nothing formed again
+    /// and nothing said about it, where it is earlier. Does not move the today, and does not read
+    /// the roster or the record again.
+    public func showDay(_ day: CalendarDate) {
+        guard day.days(until: dayPickerReach.earliest) <= 0 else {
+            return
+        }
+        if shownDay != day {
+            notice = nil
+        }
+        shownDay = day
+        dayView = dayViewOfShownDay()
+    }
+
     /// The app has been shown on `today`: the day view and the record are read again. A screen
     /// showing its today follows onto the new one; a screen showing any other day goes on
     /// showing that day. The comparison is against the today the screen held before this call.
@@ -512,11 +481,20 @@ public final class DayScreen {
 
     /// The person has come back to this screen from somewhere else in the app: the roster is read
     /// again and the day view is formed again for the day being shown. Takes no today, moves no
-    /// day, and does not read the record.
+    /// day. Where this screen is keeping a record, that is read again too — a rename or a
+    /// rhythm change made elsewhere reaches every row this screen draws. A screen not keeping a
+    /// record does not start keeping one by being returned to: `design.md` § *A day screen
+    /// returned to now reads its record place again where it is keeping one*.
     public func returnedTo() {
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
+
+        if recordState == .kept {
+            let opened = Self.open(at: recordPlace)
+            self.recordStore = opened.store
+            self.recordState = opened.state
+        }
 
         self.dayView = DayView(
             of: openedRoster.roster.groups(on: shownDay), on: shownDay,

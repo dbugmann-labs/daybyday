@@ -4,6 +4,13 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-09 — the merged branch was used for a day and the owner asked for the circle to
+  go: *"I really don't like the blue circle that is drawn next to a commitment when it is due."*
+  **Decision 4 is reversed** — an unkept tick row draws no mark at all — and with it the accent
+  leaves the trailing slot, so decision 8 is now the green checkmark alone. Decision 3's "mark the
+  target" half is withdrawn and its fade half stands: what tells a row that offers nothing from one
+  that does is decision 5's opacity and nothing else. Reversed by `chore/unmark-the-offered-row`,
+  the same route that built it.
 - Amended: 2026-09-09 — the branch went back onto the phone with the grey checkmark on it and the
   owner asked for green. Decision 8 moves a third time: a kept row's checkmark takes the system
   green, the circle keeps the accent, and a kept name stays dimmed and struck through. All three
@@ -94,6 +101,20 @@ Where it is kept it keeps the existing plain `checkmark`. Same slot, never both 
 trailing mark or none. This gives the tick kind the affordance every other kind already has in that
 slot, and it is what makes decision 3's "mark the target" true on the rows there are most of.
 
+**Reversed 2026-09-09, on a day of using it.** The circle was built, merged and lived with, and what
+it turned out to be is a blue ring on nearly every row of the screen every morning — a mark that is
+on the rows there are most of is a mark that is on almost the whole list, and a list that is mostly
+marked marks nothing. The owner's words were *"I really don't like the blue circle that is drawn
+next to a commitment when it is due."* **An unkept tick row now draws nothing in the trailing slot.**
+This is the third thing in this record settled by building it and looking at it rather than by
+arguing it, and it is the second time that method has overturned something the same method chose.
+
+What is not reversed with it: the kept checkmark, its green, the strikethrough, the plain name and
+the fade all stand. The affordance argument above was not wrong about the tick kind having less in
+that slot than the other kinds — it is that the cost of saying so on every row every day is higher
+than the gap it fills, and a want for a quieter way to say it is judged fresh rather than against
+this paragraph.
+
 **5. A row that offers nothing fades.** One opacity over the whole label, so the name, the rhythm and
 any checkmark recede together as one thing rather than three. Grey was rejected as the axis: a grey
 name already means *kept* (`chore/draw-kept`, and decision 11 below, which strikes that name through
@@ -113,6 +134,11 @@ a day that has not arrived — the fade is about what a row offers, and it belon
 circle. The two marks say different and simultaneously true things: a chevron means the tap opens a
 sheet, a circle means it toggles in place.
 
+**Moot since the reversal of decision 4** — there is no circle to keep off the other kinds. What
+survives it is the reasoning, for whatever the trailing slot is next asked to hold: a chevron says
+the tap opens a sheet, and anything put beside it has to say something else that is true at the same
+time.
+
 **8. The circle takes the accent; the checkmark takes the system green.** Blue for the thing you can
 press, green for the day that is done. Both styles are **stated explicitly at the one place the mark
 is drawn, which is what makes them true inside the `Button` and outside it alike** — that half of
@@ -123,12 +149,15 @@ struck through (decision 11), so a kept row is now a quiet name beside a coloure
 two grey things together. `chore/draw-kept`'s "no colour" is withdrawn by this decision, for the second
 time and this time knowingly.
 
-**What the trailing slot's colours mean, now that green is spent.** There are three and there is not
-a fourth: **accent — there is something here to tap**; **green — this day is done**; **grey — nothing
-here is a target**, which is decision 5's fade and decision 10's chevron. Any later control that
-wants a colour in that slot is judged against those three the way a want is judged against
-`CONTEXT.md` § *Offered* — it either says one of these things, or it owes an argument for a fourth
-meaning on a strip of screen that holds one mark at a time.
+**What the trailing slot's colours mean, now that green is spent.** There were three; **since the
+reversal of decision 4 there are two**, because the accent left the slot with the circle.
+**Green — this day is done**, and **grey — nothing here is a target**, which is decision 5's fade
+and decision 10's chevron. The meaning the accent carried — *there is something here to tap* — is
+now said by nothing in that slot, deliberately: an unkept tick row is a plain name and an empty
+slot. Any later control that wants a colour there is judged against those two the way a want is
+judged against `CONTEXT.md` § *Offered* — it either says one of these things, or it owes an argument
+for a third meaning on a strip of screen that holds one mark at a time, and *there is something here
+to tap* has been tried and taken back.
 
 **This colour has been decided three times, and every time by building it and looking at it rather
 than by arguing it.** The trail is kept whole because it is the clearest thing in this repository
@@ -221,26 +250,28 @@ is covered without any of this being reopened.
 ### Where each decision lands, and which of them a person sees every day
 
 Everything below is in `src/DayByDay/DayByDay/ContentView.swift`, in the per-row `ForEach` of
-`dayList` at roughly `:166`–`:264`. Nothing outside that file changes, and nothing in
-`src/DayByDayKit` changes at all. **The line numbers are read off `6a039bf`, the branch as it now
-stands**, and they were re-read at this amendment rather than carried over: the earlier ones were
-off `1c16c20`, and the commit that built decisions 8 and 11 moved almost every line in the table.
+`dayList` at roughly `:200`–`:291`. Nothing outside that file changes, and nothing in
+`src/DayByDayKit` changes at all. **The line numbers are read off `28b1dda`, the reversal commit on
+`chore/unmark-the-offered-row`**, and they were re-read at this amendment rather than carried over,
+as they were at the one before it: the earlier sets were off `1c16c20` and `6a039bf`, and every one
+of these amendments has moved lines the table names.
 
 | Decision | Where | Seen when |
 |---|---|---|
-| 4 — open `circle` on an unkept tick row | chosen at `:186`–`:187`, drawn at `:227`–`:230` | **every day**, on most rows |
-| 8 — accent on the circle, green on the checkmark | `markColor`, derived at `:194` beside `markSystemName`, applied at `:229` | **every day**, on every marked row |
-| 9 — plain label colour on the name | `:181`, and the composition at `:202`–`:209` | **every day**, on every row |
-| 11 — a kept row's name is struck through | `:206`, on the child `Text` handed to `commitmentLine` | **every day**, on every kept row |
-| 3, 5 — the whole label recedes | the bare-label branch at `:257`–`:262` | only a day that has not arrived |
-| 6 — headings, title, chevrons and *Today* untouched | `:265` and the day header above `dayList` | — |
-| 7, 10 — chevron unchanged, no circle beside it | `:231`–`:235` | — |
+| 4 — **reversed**: no mark on an unkept tick row | `markSystemName` at `:215`, now `row.isKept` alone | **every day**, on most rows |
+| 8 — green on the checkmark, and nothing else in the slot | `markColor` at `:221`, applied at `:256` | **every day**, on every kept row |
+| 9 — plain label colour on the name | `:210`, and the composition at `:229`–`:236` | **every day**, on every row |
+| 11 — a kept row's name is struck through | `:233`, on the child `Text` handed to `commitmentLine` | **every day**, on every kept row |
+| 3, 5 — the whole label recedes | the bare-label branch at `:284`–`:289` | only a day that has not arrived |
+| 6 — headings, title, chevrons and *Today* untouched | `:292` and the day header above `dayList` | — |
+| 7, 10 — chevron unchanged, and now the only mark on an unkept row of any kind | `:258`–`:262` | — |
 
-Decisions 4, 8, 9 and 11 change the screen the owner looks at five times a day; decisions 3 and 5
-change only a day that has not arrived. That split is worth knowing before the phone build, because
-most of what will look different is not the thing this record was opened for — and it is what the
-phone builds then proved, since all three of the changes they have sent back — the checkmark's colour
-twice and the strikethrough — were about a day that has arrived.
+Decisions 8, 9 and 11 change the screen the owner looks at five times a day, and the reversal of
+decision 4 changes it more than any of them, since the mark it removes was on most rows; decisions 3
+and 5 change only a day that has not arrived. That split is worth knowing before each phone build,
+because most of what looks different is not the thing this record was opened for — and it is what
+every phone build has then proved, since all four of the changes sent back — the checkmark's colour
+twice, the strikethrough, and now the circle — were about a day that has arrived.
 
 ## Consequences
 
@@ -253,18 +284,18 @@ twice and the strikethrough — were about a day that has arrived.
   colour" is withdrawn**, after one day of standing restored; what the line gains beyond the colour
   is the strikethrough. Updating that line is the conductor's, not this branch's:
   **`chore/mark-the-offered-row` does not edit `docs/backlog.md`.**
-- **The trailing slot is now spent for the tick kind in both its states.** A later want for a third
-  thing on a tick row — a long-press affordance, a per-row indicator — has no trailing slot to use and
-  must find another place, in the way ADR-1042 spent the horizontal swipe. That is the price of
-  decision 4 and it is taken knowingly.
-- **A cold implementer must not identify a tick row by `row.tick(asOf:)`.** That member returns
-  non-`nil` for a row of **every** kind on a day that has arrived — it guards on the date and not on
-  the commitment's kind (`DayView.swift:64`–`:72`) — so `row.tick(asOf: today()) != nil` would put a
-  circle on unkept number, note and total rows as well. The test for "this row's tap makes a tick" is
-  the one the file already makes twice: the row offers something *and* `numberEntry`, `noteEntry` and
-  `totalEntry` are all `nil`. It is derived once as `isTickRow` at `:176`, beside the three `let`s at
-  `:167`–`:169`, rather than written a third time next to the `else` at `:251`–`:253` that calls
-  `screen.tick(row)`.
+- **The trailing slot is spent for a kept tick row and free again for an unkept one.** That price
+  was booked knowingly against decision 4 and the reversal hands half of it back: a later want for
+  something on an unkept tick row — a long-press affordance, a per-row indicator — has the slot to
+  use, and owes only the argument that whatever it draws is worth seeing on most rows every day,
+  which is the argument the circle lost. On a kept row the slot is still spent, by the checkmark.
+- **`isTickRow` is gone with the circle, and the warning it carried is kept here rather than in the
+  file.** The trailing slot no longer asks which kind an unkept row is, so the only place that still
+  tests it is the `else` at `:280`–`:282` that calls `screen.tick(row)`. Should anything need that
+  test a second time again, it is that `numberEntry`, `noteEntry` and `totalEntry` are all `nil` —
+  **not** `row.tick(asOf:) != nil`, which returns non-`nil` for a row of **every** kind on a day that
+  has arrived, because it guards on the date and not on the commitment's kind
+  (`DayView.swift:64`–`:72`).
 - **Decision 9 is a change of style *kind*, not of colour name.** `.primary` and `.secondary` are
   hierarchical, which is precisely why the name is blue inside a `Button` today; asking for the label
   colour means a concrete style rather than a hierarchical one at that call site. The hyphen and the
@@ -357,6 +388,15 @@ twice and the strikethrough — were about a day that has arrived.
   fade say the wrong thing, and this record is reopened rather than stretched.
 
 ## Alternatives considered
+
+**Fade the inert row and mark nothing — which is what now stands, and what nobody argued for.** It is
+the mirror of the first alternative below and it was never on the table at the grill: the reversal of
+decision 4 arrived at it by removal, a day after the circle shipped, rather than by anyone proposing
+it. So the objection decision 3 raises against the alternative below — that a difference legible only
+by comparison is no use on a screen where every row is inert at once — applies to this shape too, and
+is answered only by the fade being an absolute rather than a comparative signal: a faded row is
+readable as faded on its own, where an unmarked row is readable as unmarked only beside a marked one.
+That is thinner than what decision 3 asked for, and it is what a day of use preferred anyway.
 
 **Mark the target and leave the inert row exactly as it is.** The conductor's recommendation at
 decision 3, and the cheaper half of what was taken: a circle appearing on tappable tick rows is

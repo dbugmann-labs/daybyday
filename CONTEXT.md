@@ -178,6 +178,69 @@ reached by defining the commitment again exactly. **Removing** is the roster's v
 what the person reads is the **app shell**'s. Agreed 2026-09-07 at the grill of
 `add-roster-removal` (#145).
 
+**Amended 2026-09-09**, at the grill of `add-commitment-editing` (#148). The state now also holds a
+commitment the roster **superseded** — one whose rhythm a person changed — and not only one they got
+rid of. Everything the state means is unchanged and is exactly what supersession needs: the roster
+keeps it in the place it was taken on in, with the day it was kept until; every past day draws it as
+it always did; every record against it stands; and it shows in neither of the **commitments
+screen**'s lists. What is widened is the word, which no longer covers one act only. The person
+performs one of those acts and not the other, which is why **changing** is a verb of its own below
+and why the app shell says nothing about removal when someone changes a commitment. Defining a
+superseded commitment again exactly still takes it up again, in its old place and with its history —
+the shipped way back, applied unchanged, and the honest answer to a person who has decided their old
+rhythm was the right one.
+
+**Changing a commitment** — giving one a different name, a different rhythm, or a different day it
+is **kept from**, without losing what has been recorded against it. It is the person's verb, and it
+covers three acts that the model carries in two different ways, because what a person means by
+"change" is not one thing.
+
+A **name** is not a rule: nothing is due or not due because of it, so a rename reaches the whole
+history. Every record already made is rewritten to carry the new name, every one of them still forms,
+and every past day redraws under the name the person now uses. Two rows for one commitment in a
+week's view is what the alternative costs, and it is not a price worth paying to be literal about
+what a screen said last month.
+
+A **rhythm** is a rule, and changing it does not reach the past: the new rhythm decides today onward
+and every day already lived answers exactly as it did. That is ADR-1013's promise, and a history
+that rewrites itself is the one thing this product must not do. The roster carries it by
+**superseding**.
+
+The **kept-from day** is the exception, and it is one deliberately. It is neither a rule nor a label
+but a claim about a person's own history — "I have kept this since June" — so correcting it corrects
+the whole of that history rather than starting a new one. On a weekday set, a day of the month and a
+weekly quota, moving it earlier widens the window and the days it opens become due as they always
+should have been. On **every N days** it does more than widen: the kept-from day is that rhythm's
+**start date**, so the grid moves with the day and the commitment lands on a different set of dates
+than it did. Either way the same refusal applies — a change is refused where any day the commitment
+has a record on is a day it would no longer be due on, whichever direction the day moved, because a
+change that hides a day someone recorded against is not a correction. Superseding cannot serve here
+at all — the new commitment would be kept from today and the June days would stay not-due, so the
+likeliest reason anyone touches this field would achieve nothing.
+
+A change is refused when it would produce a commitment the roster already holds, kept, stopped or
+removed. Merging two histories is irreversible and throws away the fact that they were deliberately
+kept apart; reaching a removed commitment's history through a spelling correction is too large a
+thing to happen invisibly, and the way back stays the deliberate one. A **stopped** commitment can
+only be renamed, because the other two parts decide dueness and it has no days left to decide.
+Agreed 2026-09-09 at the grill of `add-commitment-editing` (#148).
+
+**Superseding** — the roster's verb for what changing a rhythm does to the old commitment: it is
+kept until the day before the one the screen was handed, marked **removed**, and the new commitment
+is taken on in the place the old one held. It is the roster's act and never the commitment's, for
+ADR-1023's reason reaching a third part — a record embeds the whole commitment by value, so a part
+a person can change would orphan everything recorded against it the moment they changed it. Nothing
+is re-keyed here: each past day answers against the value it was written against, because that value
+is still in the roster.
+
+The roster records **no link** between the superseded commitment and the one that replaced it.
+Nothing reads one, and a surface with no reader is not a requirement. The cost is named rather than
+hidden: one commitment's record across a change cannot be read as a single run, and once records
+exist against both values that link cannot be reconstructed. The day the person changes on is the
+new commitment's first, not the old one's last — the same choice #145 made for stopping, and the
+same price: a record made that morning under the old rhythm is not drawn that day, though it stands.
+Agreed 2026-09-09 at the grill of `add-commitment-editing` (#148).
+
 **Category** — the word a person put a commitment under: *supplements*, *sport*, whatever they
 type. It is the owner's own word and never one the app names — no fixed menu holds the day-one
 week, and the same argument that makes a **commitment name** the owner's rather than the system's
@@ -331,6 +394,19 @@ the order, a date before the stop then draws those two groups the other way roun
 carries the stopped and removed commitments where a commitment's move steps over them, and why it is
 placed against a kept one, is **ADR-1044**; ADR-1037 is amended with it.
 
+**Corrected 2026-09-09**, at the grill of `rework-commitment-row-actions` (#192), and this one
+withdraws a clause rather than a decision. The 2026-09-08 correction above ends *"Refiling across
+groups is the **commitments screen**'s *Category* action on the row"*, and **that action is gone**:
+the row's swipe no longer offers it, and the screen no longer puts a commitment under a category at
+all. **Refiling across groups is the category field on the change sheet**, which has written the
+category since `add-commitment-editing` (#148) and offers the same words already in use. What a
+move is has not changed again — it still takes either a commitment or a group, still carries a place,
+and a row dragged within its own group still reorders and no further. Only the way a person refiles
+without a drag has moved, from one gesture to a sheet. **B-041 is untouched by this and its
+*Principle* line is now weaker**: it argued the drag-to-refile want loses because the row's *Category*
+action already refiles in one tap, and refiling is now a swipe, a sheet, a field and a save. That is
+the next grooming pass's to reweigh, not this Story's — `docs/backlog.md` lives on `chore/backlog`.
+
 **Schedule** — the rule attached to a commitment that decides which days it is due on. Four
 shapes are known to be needed: a set of weekdays, every N days, a day of the month, and N
 times within a week on any days.
@@ -373,6 +449,25 @@ records of every kind, not ticks alone, and answers *kept* by each kind's own ru
 or a note by being there, a total by its sum having reached its target. Still at most one record per
 commitment per day, still a value.
 
+**Carrying over** — `record`'s verb for what a rename, or a corrected day **kept from**, does to
+everything already recorded: every tick, number, note and addition of one commitment becomes a record
+of another, on the day each was made for, and the first is left holding none. It moves what a record
+is *of* and changes nothing a record *holds* — a number stays digit for digit, a note character for
+character, a day's additions in the order they were made. It exists because a record embeds the whole
+commitment by value, so this is the only way a person's history survives their correcting what they
+call something.
+
+It is **all of them or none**. Where any record could not be a record of the second commitment — a
+date it is not due on, a kind whose record it does not take — nothing moves and the carry-over is
+refused, because a record that could not have been made is not one this system will write and a
+history that quietly dropped the ones that did not fit would be the false record the product exists to
+remove. Carrying over is not **merging**: a history already holding a record of the second commitment
+refuses too, since which of two records for one day survived would be a choice about somebody's
+history that nothing here is entitled to make. Nothing to carry is not a refusal, which is what lets
+the same ask be made twice safely. Deliberately not what a **rhythm** change does — that carries
+nothing over at all and **supersedes** instead. Agreed 2026-09-09 while writing the delta of
+`add-commitment-editing` (#148).
+
 **Untick** — to take a tick back, leaving the history as though that tick had never been: the
 commitment is not kept on that day, every other tick stands, and nothing remembers that the tick was
 ever there — an untick is not a record of its own. Taking back a tick that was never there is
@@ -387,6 +482,14 @@ note or a total. It is set when the commitment is defined and is one of the four
 two commitments the same one. A row reads it to know what to offer before anything has been
 recorded; the day-one week is nine ticks. Agreed 2026-09-06 at the Feature grill of `FEAT: record`
 (#53).
+
+**Amended 2026-09-10**, at the grill of `add-kind-to-commitments-screen` (#142). A **row** has read a
+kind since #137, and a **commitments screen** now writes one: it is the fifth thing that screen
+defines a commitment from, and the last part of a commitment that had no way of being set from a
+phone. Nothing about what a kind *is* changes — it is still set when the commitment is defined, still
+one of the four things that make two commitments the same one, and still not something a **change**
+can touch, which is why a person who wants a different kind defines a different commitment and keeps
+the one they had, with everything recorded against it.
 
 **Number** — the kind of record that holds one decimal for the day: a weight, a mood. Entered once,
 and entered again it is replaced, so there is still one record per commitment per day. It carries no
@@ -705,9 +808,11 @@ at.
 **and** a day it is showing, and they are two things. They coincided only while a screen could be on
 no day but today; once it can be moved, the day being looked at is one the person chose and the
 today is still the fact about the device the shell handed over. Every question the screen asks *as
-of* a day — whether a row offers its tick, whether the day title says *Today* — is asked as of the
-today, and never as of the day being shown, which is the whole of what § *Today* above warned
-about.
+of* a day — whether a row offers its tick, whether the screen **offers** the way back to today — is
+asked as of the today, and never as of the day being shown, which is the whole of what § *Today*
+above warned about. **The day title is no longer one of them.** It said *Today* on the one day it
+was asked as of until `shorten-day-title` (#182) took that word out; it is now read off the day
+being shown alone, and whether that day is the today is the offered answer's to give.
 
 **Day navigation** — going from one day view to the day view of the day before it or the day after
 it, one calendar day at a time. It is a question about a date and about nothing else: it never asks
@@ -750,6 +855,68 @@ never its rows**, since the shell identifies a day-screen row by its position �
 this list reads that first. And the `Today` button never animates: it is a button, so it
 acknowledges its own press, and it is a jump of arbitrary distance that no one-day slide could
 describe honestly. ADR-1043.
+
+**Amended 2026-09-10**, at the grill of `add-adjacent-day-views` (#184). The day change **pages under
+the finger**: the day being dragged toward is already drawn and moves with the thumb, a release short
+of the threshold settles it back and changes nothing at all, and a release past it carries the day
+the rest of the way. A **chevron** plays that same settle, in the same direction — leftwards onto the
+next day, rightwards onto the previous — because a tap has no *during* and one move drawn two
+different ways depending on how it was asked for is the worse outcome. What pages is **the day's
+rows**; the chevrons, the weekday, the **day picker** and the `Today` button are a fixed row of
+controls above them, which is the home-screen model the owner named: the icons travel, the dock
+stays. The `Today` button and the day picker both go on **replacing where they stand**, however near
+the day picked, since a control that can jump any distance must not sometimes slide. A person who has
+asked for less motion keeps the tracking and loses the played half: the drag still follows the
+finger, and the settle at release, like a chevron tap, becomes an instant change. The two constraints
+above are unchanged — the whole day moves and never its rows, and `Today` never animates. What makes
+any of it possible is the **adjacent day view** below. ADR-1043.
+
+**Adjacent day view** — the day view of the day before or the day after the one a **day screen** is
+showing, answered without moving onto it. There is none past either end of the calendar. It is formed
+exactly as the shown day's is, from the screen's record and from the commitments its **roster** had
+not stopped keeping *on that adjacent day*, so it is what the screen would hold had it been moved
+there — a commitment stopped yesterday has a row on the page arriving from the left and none on the
+day being stood on, which is what makes what is seen arriving what is got when it lands. A day screen
+draws nothing and acts on nothing through it: every tick, number, note and addition is still made on
+the day being shown. It is one day either side and never a run of them, and asking for it moves
+nothing, reads nothing and ends nothing the screen is telling on a row. Agreed 2026-09-10 at the
+grill of `add-adjacent-day-views` (#184).
+
+**Day picker** — the control a day screen offers for reaching a day without stepping through every
+day between: a person picks the day and the screen shows it. It is **its own control**, beside the
+chevrons and the `Today` button rather than in place of either, and never the **day title**; and it
+is deliberately not a calendar month grid, because a grid is a look-back view and Epic #1 excludes
+those by name. It is always drawn. Forward it reaches to the last date the system supports, so there
+is always another day to pick and there is nothing for it to be **offered** or not offered about —
+the one way it differs from the `Today` button beside it. Distinct from the **commitments screen**'s
+date picker, which picks the day a commitment is **kept from**: that one picks a date to define a
+commitment, this one picks a day to look at, and they are never the same control. Agreed 2026-09-09
+at the grill of `add-day-picker` (#176).
+
+**Amended 2026-09-09**, at the grill of `shorten-day-title` (#182). The picker sits **between the
+chevrons**, and it is **what says the date** — the day of the month, the month and the year the day
+screen is showing. It is still its own control and still not the **day title**, but the sentence
+above saying it sits beside the title rather than where the title's date was no longer holds: the
+title kept only its weekday, and the date it gave up is the picker's. Two things follow and are part
+of the amendment. The date is drawn by the platform, so it is said in **the device's** words and not
+the app's — the one place in this app where that is true, taken deliberately and at the cost that
+nothing the app owns can state which date is on screen. And the picker is now the answer anything
+asks when it needs to know *which* day a screen is showing, which is the day its **reach** opens on.
+
+**Reach** — what a day screen says about its **day picker**, as one answer rather than as two dates
+anything outside could have worked out: the day the picker opens on, which is the day being shown,
+and the earliest day it reaches. The earliest is the earliest day anything on the **roster** has been
+**kept from** — every commitment the roster holds, the ones stopped and the ones **removed**
+included, because their days still hold records and a floor that rose when you retired something
+would put a day you actually kept out of reach — or the day being shown, whichever is earlier, so
+that a person who stepped below it can always get back to where they were. Where there is nothing to
+take an earliest day from, which is a roster that cannot be read rather than a first launch, it is
+the **today** the screen was handed. **A reach bounds the control and never the screen**: **day
+navigation** still steps as far back and as far forward as the calendar goes and adds no bound of its
+own, and a reach that rises above the day being shown — a commitment edited, a roster read again —
+leaves that day showing, because a reach never moves a person off the day they are looking at. It is
+answered from what the screen holds, in the way § *Offered* above says the way back to today is.
+Agreed 2026-09-09 at the grill of `add-day-picker` (#176).
 
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **record store** it reads a history from and writes a tick back to, the
@@ -945,6 +1112,64 @@ moved category travels with the group like every other. What a person taps is *M
 down* in Edit mode, which is the **app shell**'s and carries no requirement: up and down are
 derivable from a place and not the reverse.
 
+**Amended 2026-09-09**, at `add-commitment-editing` (#148). A commitments screen also **changes** a
+commitment, on either of its lists, from the same four things it defines one from — and that is why
+they are four rather than five: **one form defines and changes**, reached by a `+` in the toolbar for
+one and from a row for the other, drawn as a sheet so the list stays behind it. Which of the two acts
+under **changing a commitment** a save performs is worked out from the four and never asked: the
+screen carries the records over and replaces the roster's entry for a name or a day kept from, and
+supersedes for a rhythm, and where a save asks for both it does the first and then the second. It is
+the first screen to write at **two places in one act** — the record place before the roster place, so
+that a second write that fails can be repaired by asking for the same change again — and a change it
+could not keep is told the same way whichever of the two would not take it. A change is the **eighth**
+kind of **refused change** and names the commitment that was tapped rather than the one it would have
+produced, which does not exist. It carries two refusals nothing before it could produce: a change a
+**stopped** commitment does not take, which is anything but a rename, and a day already recorded on
+that the change would leave not due. A commitment on neither list asks for no change, so a **removed**
+one is unreachable here without a refusal of its own. What the screen says about a commitment, so a
+form can start from what it is, is its name, its rhythm, its day kept from, its category and whether
+the last two can be changed at all — and no words a person reads, as ever. The **live rhythm preview
+under the form is gone** (B-036), and the sentence about it in the 2026-09-06 amendment above is
+withdrawn: a rhythm is still said in words on both lists and on a day screen's rows, and no longer for
+a rhythm nobody has committed to.
+
+**Amended 2026-09-09**, at the grill of `rework-commitment-row-actions` (#192), and it takes
+something away. **A commitments screen no longer puts a commitment under a category**: the act, the
+row's *Category* swipe and the sheet behind it are all withdrawn, and a **change** is the only thing
+on this screen that writes a category **without a drag**. A move still carries one, exactly as
+§ *Move* above says — a row dropped into another group is put under that group's category — so what
+went is the act that wrote a category on its own. What survives is the **offering** — the categories
+the commitments it keeps are under, each once, in the order it draws its groups, none from the
+stopped list — which the change sheet now reads, and which is a requirement of its own rather than
+half of another. So the 2026-09-08 correction above is wrong where it says refiling across groups is
+the row's *Category* action offered beside *Stop* and *Remove*: it is the change sheet's category
+field, reached the same way any change is. One consequence is accepted knowingly: a **stopped**
+commitment's category becomes changeable, which `put` always refused, because a change may alter a
+stopped commitment's name and category and now nothing else on this screen refuses it.
+
+**Amended 2026-09-10**, at the grill of `add-kind-to-commitments-screen` (#142). A commitments screen
+defines a commitment from **five** things: a name, a rhythm, the day it is kept from, a category and
+the **kind** its days take, all four kinds offered and the **tick** offered for a new one. The
+2026-09-09 amendment's reasoning that they are "four rather than five" is withdrawn — one form still
+serves both acts, and what a **change** does with the fifth field is *show* it and never ask about it,
+because a kind never changes. What the screen says a commitment is made of now includes the kind,
+with the **range** or the **target** that kind carries, so a sheet opened on "Mood" reads Number, 1 to
+10 rather than a form that has quietly shed two fields. This is also the first screen field a person
+types a **number** into that the **app shell** does not form for them: a range end and a target arrive
+as text, exactly as typed, and the screen judges them — deliberately unlike three of the four
+rhythms, whose number the shell has already made, and deliberately like a **number entry** on a day
+screen's row. Two refusals come with it, *a range that is not a range* and *a target that is not a
+target*, each collapsing three ways to fail for ADR-1021's reason; neither is a new **kind** of
+refused change, so the seven below stand. ADR-1046.
+
+**The kinds of refused change are seven, and they are counted in one place and numbered nowhere.**
+Withdrawing the category kind renumbers every kind after it, so the ordinals above are withdrawn with
+it: a **group move** is a refused change that names a **category** rather than a commitment — the
+only one that does — and a **change** is a refused change that names the commitment tapped rather
+than the one it would have produced. Neither is *the seventh* or *the eighth* any more, and no
+requirement states a kind's position. The archived change folders that cite one keep their ordinals
+and go on describing the specs they were written against.
+
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
 one, because one refusal is one event and the ask a person is waiting on an answer for is the one
@@ -1015,6 +1240,21 @@ and the day title is nothing but its words. ADR-1022. Agreed 2026-09-03 at the g
 *Today* in front of the date rather than in place of it, and the year said whatever year it is asked
 in — were put to the owner as that grill's question round and answered by him the same day.
 
+**Amended 2026-09-09**, at the grill of `shorten-day-title` (#182). A day title is **the name of the
+weekday and nothing else** — "Wed" — in the three-letter form `schedule` already says a rhythm's
+weekdays in, so the app carries one abbreviation rule rather than two. No day of the month, no
+month, no year, and no *Today* in front of it. It is therefore **no longer asked as of a day**: the
+day it was asked as of decided the word *Today* and nothing else, and with that word gone nothing is
+left for it to decide, so a day title is the same words whatever day the question is asked on and
+two dates sharing a weekday have the same title however far apart they are. What a day title can no
+longer do is say *which* day is being shown or whether that day is the **today**; those are the
+**day picker**'s and the **offered** way back to today's, and a caller wanting either asks for it by
+name. Everything else about the term stands, the sentence above about the words being the app's own
+included — it is seven weekday names that are fixed here now rather than nineteen names and a form.
+The **date** is no longer the app's to say at all: the day picker beside the title renders it, in
+whatever words the device uses, which is the half of ADR-1022 this Story reverses and the reason
+nothing the app owns can state which date is on screen. ADR-1022, amended the same day.
+
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
 combination that names no day — 30 February — is not one. Its year runs from 1583 to 9999
@@ -1043,7 +1283,10 @@ the schedule value, not something the rule reaches outside itself for. It is a c
 names a day that exists inside the supported years, and it is fixed: it is not the last tick, so no
 tick moves it and no past day's answer changes once given. Distinct from the day a commitment is
 **kept from**: the start date sets which dates the rhythm lands on, the kept-from day suppresses
-landings earlier than itself, and an interval commitment carries both.
+landings earlier than itself, and an interval commitment carries both. On every commitment a
+commitments screen makes they are the same day, defining and **changing a commitment** alike — a
+change that moves the kept-from day moves the start date with it, so one date on the form answers for
+both and the two never disagree on anything the app itself formed.
 
 **Day of the month** — the third of the four schedule shapes: a single day number a commitment
 runs on in every month. "Finances every 25th" is one. A month too short to hold the number is due

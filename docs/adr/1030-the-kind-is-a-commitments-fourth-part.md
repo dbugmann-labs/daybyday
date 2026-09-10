@@ -3,6 +3,8 @@
 - Status: accepted
 - Date: 2026-09-06
 - Deciders: Diego Bugmann
+- Amended: 2026-09-09 — B-014 was taken and this record's revisit trigger fired; a commitment gained
+  no identity, and the kind is still the one part no change reaches
 
 ## Context
 
@@ -30,9 +32,13 @@ Two facts separate a kind from *kept until*, and both are load-bearing:
 
 - **A kind never changes once the commitment is defined.** There is no operation that moves a
   commitment from one kind to another, and there is deliberately none. Changing what a person keeps
-  is *changing a commitment* — B-014's want — and as things stand a changed commitment is a
-  different commitment. *Kept until* is the opposite: it is set by an act a person performs on a
-  commitment they are already keeping, which is precisely why it re-keys.
+  is *changing a commitment* — B-014's want — and a changed commitment is a different commitment.
+  *Kept until* is the opposite: it is set by an act a person performs on a
+  commitment they are already keeping, which is precisely why it re-keys. **B-014 has since been
+  taken and this sentence is what survived it** (2026-09-09): a person can now change a name, a rhythm
+  and a day kept from, and the kind is the one part of the four that no change reaches. The changed
+  commitment is still a *different* commitment — that is exactly how the change is carried — so the
+  ground this decision stands on is untouched.
 - **Every commitment that existed before kinds did is of the plain kind.** A commitment formed
   without a kind named is a tick, so every record already written is a record of a commitment whose
   kind is `tick`, and reading a file written before this change back with `tick` on every commitment
@@ -70,11 +76,34 @@ say which of the two a screen was pointing at. Identity is all four parts.
 
 - **Two commitments differing only in kind are two commitments**, so a roster holds both, and the
   duplicate refusal judges four parts rather than three.
-- **A kind cannot be changed**, and the day someone wants to — B-014 — the answer is a new
-  commitment, which starts a new history. That cost is real and is the price of the stability above.
-  **The trigger for revisiting this decision is B-014 being taken**: if a commitment ever gains an
-  identity of its own, so that changing a part does not re-key its records, both this ADR and
-  ADR-1023 are amended in place rather than superseded (ADR-1020).
+- **A kind cannot be changed**, and the day someone wants to the answer is a new commitment, which
+  starts a new history. That cost is real and is the price of the stability above, and it is now the
+  one place where that is still the answer.
+
+  **The revisit this record named has happened, and the trigger's premise did not.** B-014 was taken
+  by `add-commitment-editing` (#148) on 2026-09-09, and a commitment gained **no** identity of its own:
+  changing a part still re-keys its records, and that is met head-on rather than avoided. A **name** or
+  a **day kept from** is changed by forming a second commitment and having `record` **carry every
+  record of the first over to it**, all of them or none, before the roster puts the second where the
+  first was — so nothing is orphaned, because afterwards every record embeds a commitment the roster
+  still holds. A **rhythm** is changed by the roster **superseding**, which carries nothing over at
+  all: the old commitment is kept until the day before and held removed, and every past day goes on
+  answering against the value it was written against. ADR-1023 carries the mechanism and is amended in
+  the same diff.
+
+  **The kind takes neither route, and that is this record's answer rather than an omission.** A
+  carry-over refuses where a record could not be a record of the second commitment, and a record of one
+  kind is never a record of another — so a kind change would refuse for every commitment that has ever
+  been recorded against, and succeed only for one that has not, which is a change nobody needs and a
+  rule nobody could predict. Superseding would work mechanically and would say something false: it
+  would put a weight and a mood under one name in one place as though the second replaced the first,
+  when what a person means by changing the kind is that they want a different thing recorded. The
+  answer stays a new commitment.
+
+  **A further revisit would need a different trigger from this one**, because this one has fired. The
+  shape that would move this decision is a commitment gaining an identity of its own — the same
+  condition, still unmet — and the two records to amend in place would still be this one and ADR-1023
+  (ADR-1020).
 - **Every file written before this change stays readable**, because the plain kind is the default and
   the form before this one holds no kind at all. ADR-1031 carries how.
 - **A fifth kind is a compile error rather than a silent gap**, because the kind is an enum with

@@ -5,6 +5,10 @@
   in place of a fourth Story
 - Date: 2026-09-08
 - Deciders: Diego Bugmann
+- Amended: 2026-09-09 — the depiction half is drawn per screen rather than product-wide: the
+  commitments screen's row swipe is deliberately undepicted, the day screen's chevrons stay, and
+  the reason the two differ is the same frequency argument that decided who owns the gesture. At
+  the grill of `rework-commitment-row-actions` (#192)
 
 ## Context
 
@@ -58,6 +62,23 @@ turn.
 tolerated.** On the commitments screen a horizontal swipe acts on the row it started on; on the day
 screen it moves the whole day, wherever it started. One gesture, two meanings, one screen apart.
 
+**Whether a screen depicts its swipe is decided per screen, and the commitments screen does not.**
+The sentence above — a gesture nothing on the screen depicts is a gesture a person has to be told
+about — is why the chevrons stay *here*; it is not a rule the product carries everywhere, and #192
+settled that the commitments screen goes the other way. Its rows offer four acts behind two swipe
+edges with nothing drawn to announce them, the row tap that used to open the change sheet is taken
+away, and no chevron, no caret and no hint is added. **The reason is the same frequency argument
+that decided the ownership question above, read from the other end.** Moving days is the constant
+act of every visit, so a person who never discovers the gesture pays on every visit and something
+must tell them. Stopping, resuming, removing and editing a commitment are occasional — the owner
+manages the roster rarely and reads the day screen daily — and a list row that swipes is the most
+universal idiom iOS has, learned on Mail and Messages before this app is opened. A permanent hint on
+every row, to teach an occasional act, is the wrong price on a screen this product wants quiet.
+
+**That is a claim about depiction and not about ownership**, and the ownership claim below is
+unaffected: the commitments screen's rows own the horizontal swipe there, the day screen owns it
+here, and neither moves.
+
 **The reason the screen wins is frequency.** Moving days happens constantly; taking a record back is
 rare, and it is already reachable inside the row's own entry — a number or a note is taken back by
 committing it empty, and a total by its own act on the row (ADR-1033, ADR-1041). The rare thing
@@ -83,6 +104,11 @@ diff nobody signs.
   being asked for by name. If that arrives, this record is reopened rather than stretched, and the
   price of reopening it is that the swipe navigation goes: the two cannot both have it, which is
   the finding this record exists to carry forward.
+- **Nothing on the commitments screen says its rows swipe, and a person who never tries it can no
+  longer edit a commitment at all** — #192 removed the row tap as well, so the swipe is the only
+  door to the change sheet. This is the sharpest cost of the amendment and it was taken knowingly,
+  against the recommendation to leave the leading edge unclaimed. The reversal is one line of
+  `CommitmentsView.swift`, and the trigger is the owner reaching for a tap and finding nothing.
 - **A person who learns the swipe on one screen learns the wrong thing about the other.** The
   mitigation is that the day screen's rows have no swipe to compete with, so the failure is a swipe
   that moves the day when someone meant to act on a row — recoverable by swiping back, and it

@@ -29,6 +29,15 @@ private func weekdayName(_ weekday: Weekday) -> String {
     }
 }
 
+private func kindChoiceName(_ kind: CommitmentsScreen.KindChoice) -> String {
+    switch kind {
+    case .tick: "Tick"
+    case .number: "Number"
+    case .note: "Note"
+    case .total: "Total"
+    }
+}
+
 /// Turns the calendar date `screen` hands back into the instant a SwiftUI `DatePicker` needs —
 /// the reverse of `ContentView.today()`, and, like it, edge code per ADR-1004: both read
 /// `Calendar.current`, the device's own calendar, so the two conversions agree.
@@ -40,27 +49,64 @@ private func date(from calendarDate: CalendarDate) -> Date {
     return Calendar.current.date(from: components)!
 }
 
-/// The roster's own management surface: what it keeps, what it has stopped, and a form that
-/// defines a new commitment on one of the four rhythms `CommitmentsScreen` offers.
+/// The words a person reads for a refused change, in the shell's own vocabulary — the same shape
+/// `RosterState`'s three cases already map to. One case, `.namesNothing` through
+/// `.wouldLeaveARecordedDayNotDue`, one sentence; nothing here decides whether a refusal
+/// happened, only what it is called. File-scope rather than a method, so both `CommitmentsView`
+/// and `CommitmentSheet` read off the same words.
+@ViewBuilder
+private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
+    switch refusal {
+    case .namesNothing:
+        Text("Give it a name.")
+    case .dueOnNoDay:
+        Text("Choose at least one weekday.")
+    case .rhythmOutOfRange:
+        Text("That number isn't one this rhythm accepts.")
+    case .alreadyKept:
+        Text("Already being kept.")
+    case .notKept:
+        Text("The roster could not be read or could not be written.")
+    case .stoppedCommitmentCannotChangeRhythm:
+        Text("Take it up again first to change its rhythm.")
+    case .wouldLeaveARecordedDayNotDue:
+        Text("Choose a day that leaves every recorded day due.")
+    case .rangeIsNotARange:
+        Text("That's not a range.")
+    case .targetIsNotATarget:
+        Text("That's not a target.")
+    }
+}
+
+/// Which commitment `CommitmentSheet` is open for — nothing, for a sheet that defines a new one,
+/// or the one it is open to change. `Identifiable` so `.sheet(item:)` can drive it directly, and
+/// so opening a second commitment while one sheet is already open (unreachable from this view
+/// today) still gets a sheet of its own identity rather than the first one's state reused under
+/// it.
+private enum SheetTarget: Identifiable {
+    case defining
+    case changing(Commitment)
+
+    var id: Int {
+        switch self {
+        case .defining: 0
+        case .changing(let commitment): commitment.hashValue
+        }
+    }
+
+    var commitment: Commitment? {
+        if case .changing(let commitment) = self { commitment } else { nil }
+    }
+}
+
+/// The roster's own management surface: what it keeps, what it has stopped, and the sheet — B-037
+/// — that defines a new commitment on one of the four rhythms `CommitmentsScreen` offers, or
+/// changes one already on either list.
 struct CommitmentsView: View {
     let screen: CommitmentsScreen
 
-    @State private var name = ""
-    @State private var category = ""
-    @State private var rhythmKind: RhythmKind = .weekdays
-    @State private var selectedWeekdays: Set<Weekday> = []
-    @State private var dayOfMonth = 1
-    @State private var intervalDays = 1
-    @State private var timesPerWeek = 1
-    @State private var keptFromDate: Date
-    @State private var categorising: Commitment?
-    @State private var categoryTyped = ""
+    @State private var sheetTarget: SheetTarget?
     @Environment(\.editMode) private var editMode
-
-    init(screen: CommitmentsScreen) {
-        self.screen = screen
-        _keptFromDate = State(initialValue: date(from: screen.dayToKeepFrom))
-    }
 
     var body: some View {
         List {
@@ -105,17 +151,30 @@ struct CommitmentsView: View {
                         commitmentLine(
                             Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                         )
-                        .swipeActions {
-                            Button("Stop") {
+                        .swipeActions(edge: .leading) {
+                            Button {
+                                sheetTarget = .changing(commitment)
+                            } label: {
+                                Image(systemName: "pencil")
+                            }
+                            .tint(.accentColor)
+                            .accessibilityLabel("Edit")
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button {
                                 screen.askToStopKeeping(commitment)
+                            } label: {
+                                Image(systemName: "stop.circle")
                             }
-                            Button("Remove", role: .destructive) {
+                            .tint(.orange)
+                            .accessibilityLabel("Stop")
+                            Button(role: .destructive) {
                                 screen.askToRemove(commitment)
+                            } label: {
+                                Image(systemName: "trash")
                             }
-                            Button("Category") {
-                                categorising = commitment
-                                categoryTyped = group.category ?? ""
-                            }
+                            .tint(.red)
+                            .accessibilityLabel("Remove")
                         }
                     }
                     .onMove { source, offset in
@@ -125,10 +184,10 @@ struct CommitmentsView: View {
                 } header: {
                     if let category = group.category {
                         // Same insets as the day screen's category heading, for the same reason
-                        // and off the same measurement — see the comment there. The `Kept`,
-                        // `Stopped` and `Define a commitment` headings below keep the platform's
-                        // own padding: they divide this screen rather than name a group, and the
-                        // owner's ask was about the gap above a category.
+                        // and off the same measurement — see the comment there. The `Kept` and
+                        // `Stopped` headings below keep the platform's own padding: they divide
+                        // this screen rather than name a group, and the owner's ask was about the
+                        // gap above a category.
                         Text(category)
                             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                     }
@@ -192,10 +251,6 @@ struct CommitmentsView: View {
                 refusalText(movingRefusal)
             }
 
-            if case .categorising(_, let categorisingRefusal) = screen.refusedChange {
-                refusalText(categorisingRefusal)
-            }
-
             if case .movingGroup(_, let movingGroupRefusal) = screen.refusedChange {
                 refusalText(movingGroupRefusal)
             }
@@ -208,13 +263,30 @@ struct CommitmentsView: View {
                     commitmentLine(
                         Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                     )
-                    .swipeActions {
-                        Button("Resume") {
+                    .swipeActions(edge: .leading) {
+                        Button {
+                            sheetTarget = .changing(commitment)
+                        } label: {
+                            Image(systemName: "pencil")
+                        }
+                        .tint(.accentColor)
+                        .accessibilityLabel("Edit")
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button {
                             screen.keepAgain(commitment)
+                        } label: {
+                            Image(systemName: "play.circle")
                         }
-                        Button("Remove", role: .destructive) {
+                        .tint(.green)
+                        .accessibilityLabel("Resume")
+                        Button(role: .destructive) {
                             screen.askToRemove(commitment)
+                        } label: {
+                            Image(systemName: "trash")
                         }
+                        .tint(.red)
+                        .accessibilityLabel("Remove")
                     }
                 }
             }
@@ -237,70 +309,6 @@ struct CommitmentsView: View {
             case .writtenByALaterVersion:
                 Text("The roster was written by a newer version of DayByDay and must not be deleted.")
             }
-
-            Section("Define a commitment") {
-                TextField("Name", text: $name)
-
-                Picker("Rhythm", selection: $rhythmKind) {
-                    ForEach(RhythmKind.allCases) { kind in
-                        Text(kind.rawValue).tag(kind)
-                    }
-                }
-
-                switch rhythmKind {
-                case .weekdays:
-                    ForEach(allWeekdays, id: \.self) { weekday in
-                        Toggle(
-                            weekdayName(weekday),
-                            isOn: Binding(
-                                get: { selectedWeekdays.contains(weekday) },
-                                set: { isOn in
-                                    if isOn {
-                                        selectedWeekdays.insert(weekday)
-                                    } else {
-                                        selectedWeekdays.remove(weekday)
-                                    }
-                                }
-                            ))
-                    }
-                case .dayOfMonth:
-                    Stepper("Day \(dayOfMonth)", value: $dayOfMonth, in: 1...31)
-                case .everyNDays:
-                    LabeledContent("Every") {
-                        TextField("Days", value: $intervalDays, format: .number)
-                            .keyboardType(.numberPad)
-                        Text("day(s)")
-                    }
-                case .weeklyQuota:
-                    Stepper("\(timesPerWeek) time(s) a week", value: $timesPerWeek, in: 1...7)
-                }
-
-                if let preview = rhythmBeingBuilt.inWords {
-                    Text(preview)
-                        .foregroundStyle(.secondary)
-                }
-
-                DatePicker("Kept from", selection: $keptFromDate, displayedComponents: [.date])
-
-                TextField("Category (optional)", text: $category)
-                if !screen.categoriesInUse.isEmpty {
-                    Menu("Use an existing category") {
-                        ForEach(screen.categoriesInUse, id: \.self) { existing in
-                            Button(existing) {
-                                category = existing
-                            }
-                        }
-                    }
-                }
-
-                Button("Add") {
-                    define()
-                }
-
-                if case .defining(let refusal) = screen.refusedChange {
-                    refusalText(refusal)
-                }
-            }
         }
         // Apple documents `.default` and `.compact` but publishes no point value for either.
         // Measured directly on device (iPhone 17 simulator, iOS 26.5, this SDK): the platform
@@ -312,11 +320,28 @@ struct CommitmentsView: View {
         .navigationTitle("Commitments")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                EditButton()
+                Toggle(
+                    isOn: Binding(
+                        get: { editMode?.wrappedValue.isEditing == true },
+                        set: { isReordering in
+                            editMode?.wrappedValue = isReordering ? .active : .inactive
+                        }
+                    )
+                ) {
+                    Image(systemName: "arrow.up.arrow.down")
+                }
+                .toggleStyle(.button)
+                .accessibilityLabel(
+                    editMode?.wrappedValue.isEditing == true ? "Reorder, on" : "Reorder, off")
             }
-        }
-        .onChange(of: screen.dayToKeepFrom) { _, newValue in
-            keptFromDate = date(from: newValue)
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    sheetTarget = .defining
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("Define a commitment")
+            }
         }
         .alert(
             "Stop keeping this commitment?",
@@ -377,75 +402,227 @@ struct CommitmentsView: View {
                 }
             }
         }
-        .sheet(
-            isPresented: Binding(
-                get: { categorising != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        categorising = nil
-                    }
-                }
-            )
-        ) {
-            if let commitment = categorising {
-                NavigationStack {
-                    Form {
-                        Section {
-                            TextField("Category (blank for none)", text: $categoryTyped)
+        .sheet(item: $sheetTarget) { target in
+            CommitmentSheet(screen: screen, changing: target.commitment)
+        }
+    }
+}
+
+/// The one sheet that both defines a new commitment and changes one already on either of
+/// `screen`'s lists — B-037. Reached by a `+` in `CommitmentsView`'s toolbar for defining and by
+/// a tap on a row for changing. Its fields start from `screen.whatItIsMadeOf(commitment)` when it
+/// is open to change one, and from `screen.dayToKeepFrom` when it is open to define; either way, a
+/// refusal leaves every field exactly as it was typed rather than closing the sheet, because a
+/// rhythm built control by control is most of the work a refusal would otherwise throw away.
+private struct CommitmentSheet: View {
+    let screen: CommitmentsScreen
+    let changing: Commitment?
+    let canChangeRhythmAndKeptFrom: Bool
+
+    @State private var name: String
+    @State private var category: String
+    @State private var rhythmKind: RhythmKind
+    @State private var selectedWeekdays: Set<Weekday>
+    @State private var dayOfMonth: Int
+    @State private var intervalDays: Int
+    @State private var timesPerWeek: Int
+    @State private var keptFromDate: Date
+    @State private var kindChoice: CommitmentsScreen.KindChoice
+    @State private var lowest: String
+    @State private var highest: String
+    @State private var target: String
+    @State private var refusal: CommitmentsScreen.Refusal?
+    @Environment(\.dismiss) private var dismiss
+
+    /// `commitment` is `nil` to define a new commitment, and the one to change otherwise. Every
+    /// field starts from `screen.whatItIsMadeOf(commitment)` in the second case — the rhythm and
+    /// the day kept from included, whether or not `canChangeRhythmAndKeptFrom` then lets a thumb
+    /// into them — and from an empty form kept from `screen.dayToKeepFrom` in the first.
+    init(screen: CommitmentsScreen, changing commitment: Commitment?) {
+        self.screen = screen
+        self.changing = commitment
+
+        let madeOf = commitment.flatMap { screen.whatItIsMadeOf($0) }
+        canChangeRhythmAndKeptFrom = madeOf?.canChangeRhythmAndKeptFrom ?? true
+
+        _name = State(initialValue: madeOf?.name ?? "")
+        _category = State(initialValue: madeOf?.category ?? "")
+        _keptFromDate = State(initialValue: date(from: madeOf?.keptFrom ?? screen.dayToKeepFrom))
+
+        switch madeOf?.rhythm {
+        case .weekdays(let weekdays):
+            _rhythmKind = State(initialValue: .weekdays)
+            _selectedWeekdays = State(initialValue: weekdays)
+            _dayOfMonth = State(initialValue: 1)
+            _intervalDays = State(initialValue: 1)
+            _timesPerWeek = State(initialValue: 1)
+        case .dayOfMonth(let day):
+            _rhythmKind = State(initialValue: .dayOfMonth)
+            _selectedWeekdays = State(initialValue: [])
+            _dayOfMonth = State(initialValue: day)
+            _intervalDays = State(initialValue: 1)
+            _timesPerWeek = State(initialValue: 1)
+        case .everyNDays(let days):
+            _rhythmKind = State(initialValue: .everyNDays)
+            _selectedWeekdays = State(initialValue: [])
+            _dayOfMonth = State(initialValue: 1)
+            _intervalDays = State(initialValue: days)
+            _timesPerWeek = State(initialValue: 1)
+        case .weeklyQuota(let timesPerWeek):
+            _rhythmKind = State(initialValue: .weeklyQuota)
+            _selectedWeekdays = State(initialValue: [])
+            _dayOfMonth = State(initialValue: 1)
+            _intervalDays = State(initialValue: 1)
+            _timesPerWeek = State(initialValue: timesPerWeek)
+        case nil:
+            _rhythmKind = State(initialValue: .weekdays)
+            _selectedWeekdays = State(initialValue: [])
+            _dayOfMonth = State(initialValue: 1)
+            _intervalDays = State(initialValue: 1)
+            _timesPerWeek = State(initialValue: 1)
+        }
+
+        if let kind = madeOf?.kind {
+            // Changing: the picker and the three fields are shown, filled from the kind
+            // `whatItIsMadeOf(_:)` says, and never let a thumb in — a kind is set when a
+            // commitment is defined and never changes. `design.md` § *The seam*.
+            switch kind {
+            case .tick:
+                _kindChoice = State(initialValue: .tick)
+                _lowest = State(initialValue: "")
+                _highest = State(initialValue: "")
+                _target = State(initialValue: "")
+            case .number(let range):
+                _kindChoice = State(initialValue: .number)
+                _lowest = State(initialValue: range.map { "\($0.lowest)" } ?? "")
+                _highest = State(initialValue: range.map { "\($0.highest)" } ?? "")
+                _target = State(initialValue: "")
+            case .note:
+                _kindChoice = State(initialValue: .note)
+                _lowest = State(initialValue: "")
+                _highest = State(initialValue: "")
+                _target = State(initialValue: "")
+            case .total(let target):
+                _kindChoice = State(initialValue: .total)
+                _lowest = State(initialValue: "")
+                _highest = State(initialValue: "")
+                _target = State(initialValue: "\(target.amount)")
+            }
+        } else {
+            // Defining: the kind offered for a new commitment is always the tick, and the three
+            // fields start empty — nothing has been typed into them yet.
+            _kindChoice = State(initialValue: screen.kindToOffer)
+            _lowest = State(initialValue: "")
+            _highest = State(initialValue: "")
+            _target = State(initialValue: "")
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Name", text: $name)
+
+                    Picker("Rhythm", selection: $rhythmKind) {
+                        ForEach(RhythmKind.allCases) { kind in
+                            Text(kind.rawValue).tag(kind)
                         }
-                        if !screen.categoriesInUse.isEmpty {
-                            Section("Already in use") {
-                                ForEach(screen.categoriesInUse, id: \.self) { existing in
-                                    Button(existing) {
-                                        categoryTyped = existing
+                    }
+                    .disabled(!canChangeRhythmAndKeptFrom)
+
+                    switch rhythmKind {
+                    case .weekdays:
+                        ForEach(allWeekdays, id: \.self) { weekday in
+                            Toggle(
+                                weekdayName(weekday),
+                                isOn: Binding(
+                                    get: { selectedWeekdays.contains(weekday) },
+                                    set: { isOn in
+                                        if isOn {
+                                            selectedWeekdays.insert(weekday)
+                                        } else {
+                                            selectedWeekdays.remove(weekday)
+                                        }
                                     }
+                                ))
+                        }
+                        .disabled(!canChangeRhythmAndKeptFrom)
+                    case .dayOfMonth:
+                        Stepper("Day \(dayOfMonth)", value: $dayOfMonth, in: 1...31)
+                            .disabled(!canChangeRhythmAndKeptFrom)
+                    case .everyNDays:
+                        LabeledContent("Every") {
+                            TextField("Days", value: $intervalDays, format: .number)
+                                .keyboardType(.numberPad)
+                            Text("day(s)")
+                        }
+                        .disabled(!canChangeRhythmAndKeptFrom)
+                    case .weeklyQuota:
+                        Stepper("\(timesPerWeek) time(s) a week", value: $timesPerWeek, in: 1...7)
+                            .disabled(!canChangeRhythmAndKeptFrom)
+                    }
+
+                    DatePicker("Kept from", selection: $keptFromDate, displayedComponents: [.date])
+                        .disabled(!canChangeRhythmAndKeptFrom)
+
+                    TextField("Category (optional)", text: $category)
+                    if !screen.categoriesInUse.isEmpty {
+                        Menu("Use an existing category") {
+                            ForEach(screen.categoriesInUse, id: \.self) { existing in
+                                Button(existing) {
+                                    category = existing
                                 }
                             }
                         }
                     }
-                    .navigationTitle("Category for \(commitment.name)")
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                categorising = nil
-                            }
+
+                    Picker("Kind", selection: $kindChoice) {
+                        ForEach(CommitmentsScreen.KindChoice.allCases, id: \.self) { kind in
+                            Text(kindChoiceName(kind)).tag(kind)
                         }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Save") {
-                                screen.put(
-                                    commitment,
-                                    under: categoryTyped.isEmpty ? nil : categoryTyped)
-                                categorising = nil
-                            }
-                        }
+                    }
+                    .disabled(changing != nil)
+
+                    // Plain `TextField`s bound to `String`: no formatter, no `keyboardType` that
+                    // forbids a minus or a separator, and nothing that blocks a character — this
+                    // screen says "that is not a number" out loud rather than the shell silently
+                    // refusing the keystroke. `design.md` § *One reading of a typed number*.
+                    switch kindChoice {
+                    case .tick, .note:
+                        EmptyView()
+                    case .number:
+                        TextField("Lowest", text: $lowest)
+                            .disabled(changing != nil)
+                        TextField("Highest", text: $highest)
+                            .disabled(changing != nil)
+                    case .total:
+                        TextField("Target", text: $target)
+                            .disabled(changing != nil)
+                    }
+
+                    if let refusal {
+                        refusalText(refusal)
+                    }
+                }
+            }
+            .navigationTitle(changing == nil ? "Define a commitment" : "Change \(changing!.name)")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(changing == nil ? "Add" : "Save") {
+                        save()
                     }
                 }
             }
         }
     }
 
-    /// The words a person reads for a refused change, in the shell's own vocabulary — the same
-    /// shape `RosterState`'s three cases already map to. One case, `.namesNothing` through
-    /// `.notKept`, one sentence; nothing here decides whether a refusal happened, only what it is
-    /// called.
-    @ViewBuilder
-    private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
-        switch refusal {
-        case .namesNothing:
-            Text("Give it a name.")
-        case .dueOnNoDay:
-            Text("Choose at least one weekday.")
-        case .rhythmOutOfRange:
-            Text("That number isn't one this rhythm accepts.")
-        case .alreadyKept:
-            Text("Already being kept.")
-        case .notKept:
-            Text("The roster could not be read or could not be written.")
-        }
-    }
-
     /// The `Rhythm` the form is currently offering, from whichever fields `rhythmKind` selects.
-    /// Read by `define()` to hand off, and by the preview to say it in words as it is built.
     private var rhythmBeingBuilt: Rhythm {
         switch rhythmKind {
         case .weekdays:
@@ -459,11 +636,13 @@ struct CommitmentsView: View {
         }
     }
 
-    /// Hands `rhythmBeingBuilt` to `define`, alongside the name typed and the day picked. A
-    /// number the calendar will not take is not judged here — `screen.define` refuses it as
+    /// Hands `rhythmBeingBuilt` to `screen.change` where this sheet is open to change a
+    /// commitment, and to `screen.define` otherwise, alongside the name typed and the day picked.
+    /// A number the calendar will not take is not judged here — the screen refuses it as
     /// `.rhythmOutOfRange` — so the only guard left is the date picker's instant failing to
-    /// convert, which a `DatePicker` cannot actually produce.
-    private func define() {
+    /// convert, which a `DatePicker` cannot actually produce. Dismisses on a change kept; stays
+    /// open with every field exactly as typed on a refusal, and says why.
+    private func save() {
         let components = Calendar.current.dateComponents(
             [.year, .month, .day], from: keptFromDate)
         guard
@@ -471,14 +650,22 @@ struct CommitmentsView: View {
                 year: components.year!, month: components.month!, day: components.day!)
         else { return }
 
-        let refusal = screen.define(
-            name: name, on: rhythmBeingBuilt, keptFrom: keptFrom,
-            under: category.isEmpty ? nil : category)
+        if let commitment = changing {
+            // A change takes four things and never a kind — it is set when a commitment is
+            // defined and never changes, so the picker and the three fields above are shown and
+            // never sent. `design.md` § *The seam*.
+            refusal = screen.change(
+                commitment, toName: name, on: rhythmBeingBuilt, keptFrom: keptFrom,
+                under: category.isEmpty ? nil : category)
+        } else {
+            refusal = screen.define(
+                name: name, on: rhythmBeingBuilt, keptFrom: keptFrom,
+                under: category.isEmpty ? nil : category, kind: kindChoice, lowest: lowest,
+                highest: highest, target: target)
+        }
 
         if refusal == nil {
-            name = ""
-            category = ""
-            selectedWeekdays = []
+            dismiss()
         }
     }
 }

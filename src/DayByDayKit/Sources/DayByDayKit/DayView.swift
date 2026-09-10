@@ -173,20 +173,11 @@ public struct DayView: Hashable, Sendable {
         }
     }
 
-    /// What this day view says its day is: the weekday, the day of the month, the month and the
-    /// year — "Monday 31 August 2026" — with "Today · " in front of it when `today` is this day
-    /// view's own date. The words are this package's own and do not follow the device's locale;
-    /// see ADR-1022.
-    public func title(asOf today: CalendarDate) -> String {
-        let weekday = DayTitle.weekdayNames[date.weekday]!
-        let month = DayTitle.monthNames[date.month]!
-        let dateWords = "\(weekday) \(date.day) \(month) \(date.year)"
-
-        guard date == today else {
-            return dateWords
-        }
-
-        return "Today · \(dateWords)"
+    /// What this day view says its day is: the three-letter name of the weekday its date falls
+    /// on, and nothing else. The words are this package's own and do not follow the device's
+    /// locale; see ADR-1022.
+    public var title: String {
+        DayTitle.weekdayNames[date.weekday]!
     }
 
     /// A category, or no category at all, together with the rows under it that are due on this

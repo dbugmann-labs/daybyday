@@ -93,4 +93,98 @@ public struct History: Hashable, Sendable {
         amounts.removeLast()
         additions[day] = amounts.isEmpty ? nil : amounts
     }
+
+    /// Carries every record held of `commitment` over to `changed`, on the same date each was
+    /// made for. See `openspec/specs/record/spec.md` § *A history carries every record of one
+    /// commitment over to another*.
+    public mutating func carryOver(_ commitment: Commitment, to changed: Commitment) -> Bool {
+        guard commitment != changed else {
+            return true
+        }
+
+        let matchingTicks = ticks.filter { $0.commitment == commitment }
+        let matchingNumbers = numbers.filter { $0.key.commitment == commitment }
+        let matchingNotes = notes.filter { $0.key.commitment == commitment }
+        let matchingAdditions = additions.filter { $0.key.commitment == commitment }
+
+        guard
+            !(matchingTicks.isEmpty && matchingNumbers.isEmpty && matchingNotes.isEmpty
+                && matchingAdditions.isEmpty)
+        else {
+            return true
+        }
+
+        let holdsAny =
+            ticks.contains { $0.commitment == changed }
+            || numbers.keys.contains { $0.commitment == changed }
+            || notes.keys.contains { $0.commitment == changed }
+            || additions.keys.contains { $0.commitment == changed }
+        guard !holdsAny else {
+            return false
+        }
+
+        var newTicks: Set<Tick> = []
+        for tick in matchingTicks {
+            guard let newTick = Tick(changed, on: tick.date) else {
+                return false
+            }
+            newTicks.insert(newTick)
+        }
+
+        var newNumbers: [RecordedDay: Decimal] = [:]
+        for (day, value) in matchingNumbers {
+            guard let newNumber = Number(value, for: changed, on: day.date) else {
+                return false
+            }
+            newNumbers[RecordedDay(commitment: changed, date: day.date)] = newNumber.number
+        }
+
+        var newNotes: [RecordedDay: String] = [:]
+        for (day, text) in matchingNotes {
+            guard let newNote = Note(text, for: changed, on: day.date) else {
+                return false
+            }
+            newNotes[RecordedDay(commitment: changed, date: day.date)] = newNote.text
+        }
+
+        var newAdditions: [RecordedDay: [Decimal]] = [:]
+        for (day, amounts) in matchingAdditions {
+            var carriedAmounts: [Decimal] = []
+            for amount in amounts {
+                guard let newAddition = Addition(amount, for: changed, on: day.date) else {
+                    return false
+                }
+                carriedAmounts.append(newAddition.amount)
+            }
+            newAdditions[RecordedDay(commitment: changed, date: day.date)] = carriedAmounts
+        }
+
+        for tick in matchingTicks {
+            ticks.remove(tick)
+        }
+        ticks.formUnion(newTicks)
+
+        for day in matchingNumbers.keys {
+            numbers[day] = nil
+        }
+        for (day, value) in newNumbers {
+            numbers[day] = value
+        }
+
+        for day in matchingNotes.keys {
+            notes[day] = nil
+        }
+        for (day, value) in newNotes {
+            notes[day] = value
+        }
+
+        for day in matchingAdditions.keys {
+            additions[day] = nil
+        }
+        for (day, value) in newAdditions {
+            additions[day] = value
+        }
+
+        return true
+    }
 }

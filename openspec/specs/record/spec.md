@@ -637,7 +637,11 @@ would be exactly the record the product promises not to lose. Taking a tick back
 same way, and so SHALL a number added and a number taken back, a note added and a note taken back,
 and an addition made and a day's last addition taken back: nothing about a number, a note or an
 addition is held only in memory, and an addition the store reports as written is one already at its
-place.
+place. **Carrying every record of one commitment over to another SHALL be kept the same way too**,
+and it is the one change that touches every record a place holds at once: the store's own requirement
+for it is *A store carries every record of one commitment over to another, at its place*, and what a
+store holds after one is every record it held before, each of the one commitment now a record of the
+other.
 
 A store SHALL persist a tick as exactly what a tick is — its commitment, with the name, the
 schedule, the kept-from day and the kind that commitment is made of, and its calendar date — and
@@ -2074,3 +2078,158 @@ commitment whose kind is not a total, and a date the commitment is not due on.
   is taken back three times
 - **THEN** the history is the same as a history that has taken no record at all
 - **AND** taking it back a fourth time leaves it the same again
+
+### Requirement: A history carries every record of one commitment over to another
+
+A history SHALL **carry over** every record it holds of one commitment to another, on being given the
+two. Every tick, every number, every note and every addition of the first SHALL afterwards be a record
+of the second, on the same calendar date each was made for; the first SHALL afterwards hold none; and
+the history SHALL report that it carried them. A number SHALL be carried over digit for digit, a note
+character for character, and a day's additions in the order they were made — carrying over moves what
+a record is *of* and changes nothing a record *holds*.
+
+This exists because a commitment has no identity of its own and a record embeds the whole commitment
+by value, so the only way a person's history can survive their renaming a commitment, or correcting
+the day they have been keeping it from, is for every record of the old value to become a record of
+the new one. ADR-1023, amended for `add-commitment-editing` (#148).
+
+**It SHALL carry all of them or none of them.** Where any record the history holds of the first
+commitment could not be a record of the second — a date the second commitment is not due on, or a
+kind whose record the second does not take — the history SHALL refuse, SHALL report that it carried
+nothing, and SHALL be left exactly as it was, with every record still a record of the first. The
+formation rules are not softened for a carry-over and nothing is dropped to make one succeed: a
+record that could not have been made is not a record this system will write, and a history that
+silently lost the ones that did not fit would be the false record this product exists to remove.
+
+A history that holds **no** record of the first commitment SHALL carry nothing and SHALL NOT refuse:
+there is nothing to move and nothing has gone wrong. A history asked to carry a commitment's records
+over **to that same commitment** SHALL likewise change nothing and SHALL NOT refuse.
+
+A history SHALL refuse, and be left exactly as it was, where it already holds **any** record of the
+second commitment, on any date. Carrying over is not merging: two records for one day would have to
+become one, and which of them survived would be a choice about a person's history that nothing here
+is entitled to make.
+
+A history SHALL NOT consult the present moment, the device's clock, its time zone or its locale here
+either, and SHALL judge no date except by asking the second commitment whether it is due on it.
+
+#### Scenario: every record of a commitment is carried over to another, on the dates each was made for
+
+- **WHEN** a history holding a tick for a commitment named "Gym" on a schedule listing all seven
+  weekdays, kept from 1 January 2026, on Monday 3 August 2026 and another on Tuesday 4 August 2026 is
+  asked to carry that commitment's records over to a commitment named "Gym 🏋️" alike in every other
+  way
+- **THEN** the history reports that it carried them over
+- **AND** it answers that "Gym 🏋️" was kept on Monday 3 August 2026 and on Tuesday 4 August 2026
+- **AND** it answers that "Gym" was kept on neither
+
+#### Scenario: a number, a note and a day's additions are carried over exactly
+
+- **WHEN** a history holding a number of 72.45 for a commitment named "Weight" of the number kind, a
+  note reading " kept the promise " for one named "Journal" of the note kind, and additions of
+  30, 12.5 and 30 in that order for one named "Protein" of the total kind with a target of 120 — all
+  three on a schedule listing all seven weekdays, kept from 1 January 2026, all on Monday
+  3 August 2026 — is asked to carry each over to a commitment alike in every way but named
+  "Bodyweight", "Journalling" and "Protein grams"
+- **THEN** the history reports of each that it carried them over
+- **AND** it answers 72.45 for "Bodyweight", that same note character for character for
+  "Journalling", and 72.5 added for "Protein grams" on that day
+- **AND** taking back the last addition of "Protein grams" on that day leaves 42.5 added
+
+#### Scenario: carrying over is refused where a record sits on a date the other commitment is not due on
+
+- **WHEN** a history holding a tick for a commitment named "Gym" on a schedule listing all seven
+  weekdays, kept from 1 June 2026, on Monday 3 August 2026 is asked to carry that commitment's
+  records over to a commitment named "Gym" alike in every other way but kept from 1 September 2026
+- **THEN** the history reports that it carried nothing over
+- **AND** it answers that the commitment kept from 1 June 2026 was kept on Monday 3 August 2026
+- **AND** it is the same history as one that was never asked
+
+#### Scenario: carrying over is refused where the two commitments differ in the kind their days take
+
+- **WHEN** a history holding a number of 72.45 for a commitment named "Weight" of the number kind on
+  a schedule listing all seven weekdays, kept from 1 January 2026, on Monday 3 August 2026 is asked
+  to carry that commitment's records over to a commitment alike in every other way of the note kind
+- **THEN** the history reports that it carried nothing over
+- **AND** it is the same history as one that was never asked
+
+#### Scenario: carrying over the records of a commitment that has none refuses nothing and changes nothing
+
+- **WHEN** a history holding a tick for a commitment named "Journaling" on a schedule listing all
+  seven weekdays, kept from 1 January 2026, on Monday 3 August 2026 is asked to carry the records of
+  a commitment named "Gym" alike in every other way over to one named "Gym 🏋️"
+- **THEN** the history reports that it carried nothing over and does not refuse
+- **AND** it is the same history as one that was never asked
+
+#### Scenario: carrying a commitment's records over to that same commitment changes nothing and refuses nothing
+
+- **WHEN** a history holding a tick for a commitment named "Gym" on a schedule listing all seven
+  weekdays, kept from 1 January 2026, on Monday 3 August 2026 is asked to carry that commitment's
+  records over to that same commitment
+- **THEN** the history does not refuse
+- **AND** it is the same history as one that was never asked
+
+#### Scenario: carrying over to a commitment the history already holds a record of is refused
+
+- **WHEN** a history holding a tick for a commitment named "Gym" on a schedule listing all seven
+  weekdays, kept from 1 January 2026, on Monday 3 August 2026 and a tick for one named "Run" alike in
+  every other way on Tuesday 4 August 2026 is asked to carry "Gym"'s records over to "Run"
+- **THEN** the history reports that it carried nothing over
+- **AND** it is the same history as one that was never asked
+
+### Requirement: A store carries every record of one commitment over to another, at its place
+
+A store SHALL carry every record it holds of one commitment over to another, and SHALL keep that at
+its place **before** it reports it carried, so that a store opened at the same place afterwards — by
+the app opened again, or by anything else — holds those records under the second commitment and none
+under the first. There is no separate step at which the carry-over is saved, for the reason there is
+none for a tick.
+
+A store SHALL report exactly what its history reports and MUST NOT turn the history's refusal into an
+error. A carry-over the history refused SHALL keep nothing at the place and leave the store's history
+exactly as it was, and so SHALL one the history had nothing to carry for: a store keeps what a change
+made, and a change that made none has nothing to keep.
+
+A store that **could not write** SHALL refuse, SHALL leave its history exactly as it was, and SHALL
+say so as it already does for every other change it could not keep — the history a store reports is
+never ahead of what is kept at its place, and this change is the largest one it makes, so a
+half-written place is the one outcome that must not be reachable.
+
+The **form on disk does not move** for a carry-over. It writes different commitment values into
+records the store already keeps in exactly that shape, and adds no key, no field and no version to
+what a record is.
+
+#### Scenario: records carried over through a store are read back under the other commitment by a store opened afterwards
+
+- **WHEN** a tick for a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, on Monday 3 August 2026 is added to a store; that store carries "Gym"'s records
+  over to a commitment named "Gym 🏋️" alike in every other way; and a store is opened afterwards at
+  the same place
+- **THEN** the first store reports that it carried them over
+- **AND** the later store's history answers that "Gym 🏋️" was kept on Monday 3 August 2026 and that
+  "Gym" was not
+
+#### Scenario: a carry-over a store's history refuses keeps nothing at its place
+
+- **WHEN** a tick for a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 June 2026, on Monday 3 August 2026 is added to a store, and that store is asked to carry "Gym"'s
+  records over to a commitment named "Gym" alike in every other way but kept from 1 September 2026
+- **THEN** the store reports that it carried nothing over, without an error
+- **AND** the content at that place is byte-for-byte what it was before the store was asked
+
+#### Scenario: a carry-over with nothing to carry keeps nothing at a store's place
+
+- **WHEN** a tick for a commitment named "Journaling" on a schedule listing all seven weekdays, kept
+  from 1 January 2026, on Monday 3 August 2026 is added to a store, and that store is asked to carry
+  the records of a commitment named "Gym" alike in every other way over to one named "Gym 🏋️"
+- **THEN** the store reports that it carried nothing over, without an error
+- **AND** the content at that place is byte-for-byte what it was before the store was asked
+
+#### Scenario: a store that could not write a carry-over leaves its history exactly as it was
+
+- **WHEN** a tick for a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, on Monday 3 August 2026 is added to a store; what is at that place is then made
+  impossible to write; and the store is asked to carry "Gym"'s records over to a commitment named
+  "Gym 🏋️" alike in every other way
+- **THEN** the store says the change could not be kept
+- **AND** its history answers that "Gym" was kept on Monday 3 August 2026 and that "Gym 🏋️" was not
