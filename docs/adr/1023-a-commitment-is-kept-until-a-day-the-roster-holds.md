@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-03
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — carrying records over refuses rather than merges, and why refusing is the
+  right half of that choice; `condense-record-spec` (#205) deletes the requirement prose that
+  carried the argument
 - Amended: 2026-09-09 — changing a commitment is answered without a mutable part: a rename and a
   corrected kept-from day carry the records over to a second commitment, a rhythm change supersedes
 - Amended: 2026-09-07 — a commitments screen hands the day *before* the one it was handed, for a
@@ -129,6 +132,15 @@ Four things are part of the decision rather than incidental to it:
   run, and once records exist against both values the link cannot be reconstructed. And **removed** now
   covers a commitment the roster superseded as well as one a person got rid of, which widens a word
   that describes an act the person did not perform.
+
+- **A carry-over refuses rather than merges.** Asked to carry one commitment's records over to a
+  second the history already holds **any** record of, on any date, it refuses whole and moves
+  nothing. Merging is the obvious alternative and it is refused on principle rather than on cost:
+  two records for one day would have to become one, and choosing which of them survived — or how
+  they combined — is a decision about what a person actually did that nothing here is entitled to
+  make. Refusing leaves both sets exactly as they are and leaves that choice with the person, who is
+  the only one who knows. It is also why the all-or-none rule above is stated as a refusal and never
+  as a reconciliation: there is no rule that could reconcile two true records of one day.
 
 ## Alternatives considered
 
