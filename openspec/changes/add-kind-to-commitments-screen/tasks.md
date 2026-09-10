@@ -81,20 +81,20 @@ commitments screen refuses a range that is not a range, and a target that is not
 them together and after § 3's. `Refusal` gains exactly two cases and `RefusedChange` gains none —
 `design.md` § *Two refusals, not six* and § *The kinds of refused change stay at seven*.
 
-- [ ] 4.1 `a commitments screen refuses a range whose lowest is above its highest`.
-- [ ] 4.2 `a commitments screen refuses a range end that is not a number`.
-- [ ] 4.3 `a commitments screen refuses a range with one end typed and the other blank`.
-- [ ] 4.4 `a commitments screen refuses a target that is not a number`.
-- [ ] 4.5 `a commitments screen refuses a target that is not above zero`.
-- [ ] 4.6 `a commitments screen refuses a total with nothing in its target field`.
-- [ ] 4.7 `a range end and a target of more than thirty-eight significant digits are not numbers` —
+- [x] 4.1 `a commitments screen refuses a range whose lowest is above its highest`.
+- [x] 4.2 `a commitments screen refuses a range end that is not a number`.
+- [x] 4.3 `a commitments screen refuses a range with one end typed and the other blank`.
+- [x] 4.4 `a commitments screen refuses a target that is not a number`.
+- [x] 4.5 `a commitments screen refuses a target that is not above zero`.
+- [x] 4.6 `a commitments screen refuses a total with nothing in its target field`.
+- [x] 4.7 `a range end and a target of more than thirty-eight significant digits are not numbers` —
   a 1 followed by thirty-nine 9s is refused and a 1 followed by thirty-seven 9s is not. Build both
   literals in the test rather than typing them out, and count them there.
-- [ ] 4.8 `a commitments screen accepts a range of one value, and one whose ends are negative and zero`.
-- [ ] 4.9 `a commitments screen accepts a target with a decimal fraction, below one`.
-- [ ] 4.10 `a range a commitments screen refuses is told apart from a target and from its other refusals`
+- [x] 4.8 `a commitments screen accepts a range of one value, and one whose ends are negative and zero`.
+- [x] 4.9 `a commitments screen accepts a target with a decimal fraction, below one`.
+- [x] 4.10 `a range a commitments screen refuses is told apart from a target and from its other refusals`
   — four asks, four distinct refusals.
-- [ ] 4.11 `a commitments screen holds a refused range against defining a commitment` — both new
+- [x] 4.11 `a commitments screen holds a refused range against defining a commitment` — both new
   refusals are held as `.defining(…)`, which already exists.
 
 ## 5. What the change sheet is told — two red-green cycles
