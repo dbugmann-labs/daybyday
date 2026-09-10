@@ -61,15 +61,15 @@ against, and changing it later is twenty edits.
   reads the three texts through `TypedNumber`. **Check while this is red that the 63 existing
   `define` call sites still compile untouched**; if any needs editing, the defaults are wrong and
   that is worth finding now rather than in § 9.
-- [ ] 3.3 `a commitment of the number kind defined with both range fields blank carries no range` —
+- [x] 3.3 `a commitment of the number kind defined with both range fields blank carries no range` —
   `Blank.saysNothing` is asked before the reading, `design.md` § *Blank is asked before the reading*.
-- [ ] 3.4 `a range end and a target are read as a number entry reads a number` — a comma separator,
+- [x] 3.4 `a range end and a target are read as a number entry reads a number` — a comma separator,
   surrounding blank space and a trailing zero, on both a range end and a target. If this goes red in
   a way that implicates `TypedNumber` rather than the call, § 2 was not the pure move it claimed to
   be: stop and report.
-- [ ] 3.5 `a range typed on a kind with no room for one is ignored rather than refused`.
-- [ ] 3.6 `a target typed on a kind with no room for one is ignored rather than refused`.
-- [ ] 3.7 `a commitment alike in every way but the kind it takes is not one a commitments screen already keeps`
+- [x] 3.5 `a range typed on a kind with no room for one is ignored rather than refused`.
+- [x] 3.6 `a target typed on a kind with no room for one is ignored rather than refused`.
+- [x] 3.7 `a commitment alike in every way but the kind it takes is not one a commitments screen already keeps`
   — expect this to go green with no change to `define` beyond 3.2's, because the roster already
   compares whole values. A red here is a finding about the roster, not about this screen: report what
   it says before changing anything.
