@@ -9,6 +9,10 @@
 - Date: 2026-09-09
 - Amended: 2026-09-09 — the released motion was built and tried on a device, and the device
   answered. Retitled with the remedy, because the old title said the old one.
+- Amended: 2026-09-10 — **the remedy is now specified**, by the delta of `add-adjacent-day-views`
+  (#184), and the two questions this record left open by name are answered. Four decisions that
+  outlive that Story land in § *Amendment, 2026-09-10* below rather than in a new record, because
+  this is the file that posed two of them.
 - Deciders: Diego Bugmann
 
 ## Context
@@ -143,7 +147,9 @@ sitting next to a real list, and handing the two to a diff is one line away.
   But the evidence that rejected it was gathered on a *drag*, and the owner's complaint is about
   the drag specifically: nothing happens "during the drag itself". A tap has no during. So released
   motion on a chevron is neither condemned by this finding nor vindicated by it, and it is a
-  question for the Story rather than something to be assumed either way here.
+  question for the Story rather than something to be assumed either way here. **Answered
+  2026-09-10** — a chevron plays the same settle a drag ends with, in the same direction. See
+  § *Amendment, 2026-09-10*.
 - **A day change still takes time, and the day landed on may not be argued with.** Moving several
   days quickly — three swipes in a row, or a chevron pressed repeatedly — must end on the day the
   last act asked for. Drawing may lag behind the moves; it may never change which day the screen is
@@ -159,7 +165,8 @@ sitting next to a real list, and handing the two to a diff is one line away.
   replacement, which cost nothing to keep. Under paging, the part that follows the thumb is direct
   manipulation rather than motion, and only the settle at release is played. Which of those a
   reduced-motion setting should govern is the Story's to answer with the platform's own behaviour
-  in hand, not to be assumed from this record.
+  in hand, not to be assumed from this record. **Answered 2026-09-10** — the played half only. See
+  § *Amendment, 2026-09-10*.
 - **Nothing automated proves any of this, and this record is what that costs.** The smoke layer is
   one XCUITest asserting the day screen draws (ADR-1029), and it passed the released motion
   without comment, as it would pass anything that ends on the right day. The check is the owner
@@ -173,6 +180,46 @@ sitting next to a real list, and handing the two to a diff is one line away.
 - **This record covers the day change only.** The gap between the day's title and the toolbar,
   tightened by the same chore and the only thing it now ships, is spacing under the precedent of
   #180 and needs nothing beyond the measured comment already in the code.
+
+## Amendment, 2026-09-10: what the Story settled
+
+The Story this record named, `add-adjacent-day-views` (#184), was grilled on 2026-09-10 and its delta
+written. The kit's half is that a day screen says the day view either side of the one it is showing,
+without moving onto it — exactly the blocker the Decision above named. That is a requirement, so it
+lives in `openspec/specs/day-screen/spec.md` and not here. **Four answers do not live there, because
+they are about drawing rather than about behaviour, and they outlive the Story.**
+
+**A chevron plays the same settle a drag ends with, in the same direction** — leftwards onto the next
+day, rightwards onto the previous. This closes the third Consequence above. A tap has no *during*, so
+the device evidence that rejected released motion does not reach it; what decided it instead is that
+one move drawn two different ways depending on which control asked for it is the worse outcome, and
+the Consequence above already fixed the direction for both. The `Today` button is untouched and still
+replaces, for the two reasons the Decision gives.
+
+**Reduce Motion governs the played half only.** The drag goes on tracking the finger; the settle at
+release, and a chevron tap, become an instant change rather than a slide. This closes the sixth
+Consequence. Apple documents no automatic Reduce Motion behaviour for SwiftUI paging at all, and the
+HIG lists tracking animations directly with people's gestures among the ways to *reduce* motion — so
+direct manipulation is the mitigation here and not the target. The practical consequence is that the
+pager is written by hand: a container whose settle cannot be turned off cannot honour this.
+
+**What pages is the day's rows, and the controls stay put.** The chevrons, the weekday, the day
+picker and the `Today` button are a fixed row above the day's commitments, and the commitments are
+what travel — the home-screen model the owner named, where the icons move and the dock does not. The
+accepted cost, taken with eyes open: mid-drag the weekday still names the day being left. The two
+messages a screen draws about a record or a roster it could not read stay with the controls as well,
+because they are facts about the screen rather than about a day.
+
+**The day picker always replaces, never slides**, including when the day picked happens to be one day
+away. Same reason `Today` never animates: a control that can jump any distance should not sometimes
+slide, or the drawing becomes a fact about the number of days rather than about the act.
+
+**One risk is carried rather than closed, and it is a platform fact rather than a decision.** Apple
+documents nothing either way about nesting a vertically scrolling `List` inside a horizontally paging
+container, and the app targets iOS 26.0; only the phone settles whether scrolling, row taps and the
+page gesture co-exist. The Story carries it as a rule-5 stop: if the paging cannot be had without
+moving a line that could be wrong in a way a test would catch, that is reported and stopped, not
+pushed through. ADR-1019's guard does not move.
 
 ## Alternatives considered
 
