@@ -102,6 +102,18 @@ public final class CommitmentsScreen {
     /// The day to offer as the day a commitment is kept from: the day this screen was handed.
     public private(set) var dayToKeepFrom: CalendarDate
 
+    /// Which of the four kinds a form is offering. Deliberately not `Commitment.Kind`, which
+    /// carries the range or the target as a formed value: this is the picker, and what a person
+    /// typed for the other two arrives beside it as text. `design.md` § *The seam*.
+    public enum KindChoice: Hashable, Sendable, CaseIterable {
+        case tick, number, note, total
+    }
+
+    /// The kind to offer for a new commitment: always the tick. It is the same answer
+    /// `dayToKeepFrom` gives, for the same reason — a form that chose its own starting kind
+    /// would be deciding, in a layer nothing regresses, which kind is the ordinary one.
+    public var kindToOffer: KindChoice { .tick }
+
     /// The commitment a stop has been asked for and not yet confirmed or cancelled.
     public private(set) var awaitingConfirmation: Commitment?
 
@@ -170,6 +182,11 @@ public final class CommitmentsScreen {
         /// number of intervals in either direction. `design.md` § *An interval rhythm's grid
         /// moves with the day it is kept from*.
         case wouldLeaveARecordedDayNotDue
+        /// A range whose lowest is above its highest, whose end is not a number, or with one
+        /// end typed and the other blank.
+        case rangeIsNotARange
+        /// A target that is not a number, not above zero, or blank.
+        case targetIsNotATarget
     }
 
     /// What a commitment on either of this screen's lists is made of — the value a sheet fills
@@ -183,13 +200,22 @@ public final class CommitmentsScreen {
         /// `false` for a commitment its roster has stopped keeping: it has no days left for a
         /// rhythm to decide about, so the only change it takes is a rename.
         public let canChangeRhythmAndKeptFrom: Bool
+        /// The kind this commitment's days take, with the range or the target that kind
+        /// carries. Shown, and not one of the four a change is asked with: a kind is set when a
+        /// commitment is defined and never changes. `design.md` § *The seam*.
+        public let kind: Commitment.Kind
     }
 
-    /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`, and
-    /// `keptFrom`, and takes it on. Takes a commitment the roster has stopped up again.
-    public func define(name: String, on rhythm: Rhythm, keptFrom: CalendarDate, under category: String?)
-        -> Refusal?
-    {
+    /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`,
+    /// `keptFrom` and `kind`, and takes it on. Takes a commitment the roster has stopped up
+    /// again. `lowest`, `highest` and `target` are the number kind's range and the total kind's
+    /// target, exactly as a person typed them — read only for the kind that has room for them,
+    /// `design.md` § *A range or a target left in a field the chosen kind has no room for is
+    /// ignored*.
+    public func define(
+        name: String, on rhythm: Rhythm, keptFrom: CalendarDate, under category: String?,
+        kind: KindChoice = .tick, lowest: String = "", highest: String = "", target: String = ""
+    ) -> Refusal? {
         if case .weekdays(let weekdays) = rhythm, weekdays.isEmpty {
             refusedChange = .defining(.dueOnNoDay)
             return .dueOnNoDay
@@ -200,10 +226,36 @@ public final class CommitmentsScreen {
             return .rhythmOutOfRange
         }
 
-        guard let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom) else {
+        guard !Blank.saysNothing(name) else {
             refusedChange = .defining(.namesNothing)
             return .namesNothing
         }
+
+        let formedKind: Commitment.Kind
+        switch kind {
+        case .tick:
+            formedKind = .tick
+        case .number:
+            switch Self.range(lowest: lowest, highest: highest) {
+            case .success(let range):
+                formedKind = .number(range: range)
+            case .failure(let refusal):
+                refusedChange = .defining(refusal)
+                return refusal
+            }
+        case .note:
+            formedKind = .note
+        case .total:
+            switch Self.target(target) {
+            case .success(let target):
+                formedKind = .total(target: target)
+            case .failure(let refusal):
+                refusedChange = .defining(refusal)
+                return refusal
+            }
+        }
+
+        let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom, kind: formedKind)!
 
         guard let rosterStore else {
             refusedChange = .defining(.notKept)
@@ -225,6 +277,51 @@ public final class CommitmentsScreen {
         return nil
     }
 
+    /// What reading a range or a target from what a person typed comes back as: the same shape
+    /// `Swift.Result` offers, without asking `Refusal` to conform to `Error` merely to be handed
+    /// back alongside the value — nothing above this seam throws or catches one.
+    private enum Reading<Value> {
+        case success(Value)
+        case failure(Refusal)
+    }
+
+    /// `lowest` and `highest` read as a range for the number kind — `nil` where both are blank,
+    /// which is no range and is kept; `.rangeIsNotARange` where one is blank and the other is
+    /// not, where either does not read as a number, or where the lowest reads above the highest.
+    /// `design.md` § *Blank is asked before the reading*.
+    private static func range(
+        lowest: String, highest: String
+    ) -> Reading<Commitment.Range?> {
+        let lowestIsBlank = Blank.saysNothing(lowest)
+        let highestIsBlank = Blank.saysNothing(highest)
+
+        if lowestIsBlank, highestIsBlank {
+            return .success(nil)
+        }
+        guard !lowestIsBlank, !highestIsBlank else {
+            return .failure(.rangeIsNotARange)
+        }
+        guard case .number(let lowestValue) = TypedNumber.read(lowest),
+            case .number(let highestValue) = TypedNumber.read(highest)
+        else {
+            return .failure(.rangeIsNotARange)
+        }
+        guard let range = Commitment.Range(lowest: lowestValue, highest: highestValue) else {
+            return .failure(.rangeIsNotARange)
+        }
+        return .success(range)
+    }
+
+    /// `text` read as a target for the total kind — `.targetIsNotATarget` where it is blank,
+    /// does not read as a number, or reads as a number not above zero.
+    private static func target(_ text: String) -> Reading<Commitment.Target> {
+        guard case .number(let value) = TypedNumber.read(text), let target = Commitment.Target(value)
+        else {
+            return .failure(.targetIsNotATarget)
+        }
+        return .success(target)
+    }
+
     /// What `commitment` is made of, so a form opened to change it starts from what that
     /// commitment is rather than from what a new one would be. `nil` for a commitment on neither
     /// of this screen's lists — kept or stopped are the only two a change can reach.
@@ -238,7 +335,8 @@ public final class CommitmentsScreen {
 
         return Change(
             name: commitment.name, rhythm: Rhythm(commitment.schedule), keptFrom: commitment.keptFrom,
-            category: entry.category, canChangeRhythmAndKeptFrom: entry.keptUntil == nil)
+            category: entry.category, canChangeRhythmAndKeptFrom: entry.keptUntil == nil,
+            kind: commitment.kind)
     }
 
     /// `category`, or nothing where `category` holds nothing but blank space — the same

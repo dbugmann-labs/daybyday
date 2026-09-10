@@ -483,6 +483,14 @@ two commitments the same one. A row reads it to know what to offer before anythi
 recorded; the day-one week is nine ticks. Agreed 2026-09-06 at the Feature grill of `FEAT: record`
 (#53).
 
+**Amended 2026-09-10**, at the grill of `add-kind-to-commitments-screen` (#142). A **row** has read a
+kind since #137, and a **commitments screen** now writes one: it is the fifth thing that screen
+defines a commitment from, and the last part of a commitment that had no way of being set from a
+phone. Nothing about what a kind *is* changes — it is still set when the commitment is defined, still
+one of the four things that make two commitments the same one, and still not something a **change**
+can touch, which is why a person who wants a different kind defines a different commitment and keeps
+the one they had, with everything recorded against it.
+
 **Number** — the kind of record that holds one decimal for the day: a weight, a mood. Entered once,
 and entered again it is replaced, so there is still one record per commitment per day. It carries no
 unit — the name says kilograms — and it keeps the day by being there. A commitment of this kind may
@@ -1138,6 +1146,21 @@ the row's *Category* action offered beside *Stop* and *Remove*: it is the change
 field, reached the same way any change is. One consequence is accepted knowingly: a **stopped**
 commitment's category becomes changeable, which `put` always refused, because a change may alter a
 stopped commitment's name and category and now nothing else on this screen refuses it.
+
+**Amended 2026-09-10**, at the grill of `add-kind-to-commitments-screen` (#142). A commitments screen
+defines a commitment from **five** things: a name, a rhythm, the day it is kept from, a category and
+the **kind** its days take, all four kinds offered and the **tick** offered for a new one. The
+2026-09-09 amendment's reasoning that they are "four rather than five" is withdrawn — one form still
+serves both acts, and what a **change** does with the fifth field is *show* it and never ask about it,
+because a kind never changes. What the screen says a commitment is made of now includes the kind,
+with the **range** or the **target** that kind carries, so a sheet opened on "Mood" reads Number, 1 to
+10 rather than a form that has quietly shed two fields. This is also the first screen field a person
+types a **number** into that the **app shell** does not form for them: a range end and a target arrive
+as text, exactly as typed, and the screen judges them — deliberately unlike three of the four
+rhythms, whose number the shell has already made, and deliberately like a **number entry** on a day
+screen's row. Two refusals come with it, *a range that is not a range* and *a target that is not a
+target*, each collapsing three ways to fail for ADR-1021's reason; neither is a new **kind** of
+refused change, so the seven below stand. ADR-1046.
 
 **The kinds of refused change are seven, and they are counted in one place and numbered nowhere.**
 Withdrawing the category kind renumbers every kind after it, so the ordinals above are withdrawn with

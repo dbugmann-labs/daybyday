@@ -559,6 +559,16 @@ it after every commitment already there, **under the category it was offered und
 report that it was added; a commitment offered **without a category being said at all** SHALL be
 added under none.
 
+**Equal means equal in the whole of what a commitment is, and a kind is more than which of the four
+it is.** Two commitments alike in name, schedule and the day they are kept from, both of the number
+kind, are the same commitment only where the **range** that kind carries is the same range — and a
+range of 1 to 10, a range of 1 to 5 and no range at all are three different things to say about one
+name. A roster that compared the kind while ignoring what it carries would refuse a commitment a
+person deliberately declared differently, and there would be no way to say so twice; a roster that
+compared nothing about the kind would refuse two commitments this capability has said since
+`add-commitment-kind` are two. It compares whole values, and a **target** is the same story on the
+total kind.
+
 **A commitment may be offered with a category or without one, and the two are different asks.** A
 commitment offered with a category is offered by something that has a category to say — a form a
 person has just filled in — and the category it says is applied. A commitment offered without one is
@@ -706,6 +716,19 @@ one neither states them nor narrows them.
 - **THEN** the roster reports that the commitment was added
 - **AND** the roster holds two commitments, the number one first and the note one second
 - **AND** offering the number one again is refused
+
+#### Scenario: two number commitments alike in every way but the range their kind carries are both held
+
+- **WHEN** a roster holding a commitment named "Mood" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, of the number kind with a range of 1 to 10, is given one named
+  "Mood" alike in name, schedule and the day it is kept from, of the number kind with a range of 1 to
+  5
+- **THEN** the roster reports that the commitment was added
+- **AND** the roster holds two commitments, the one ranged 1 to 10 first and the one ranged 1 to 5
+  second
+- **AND** a commitment alike in every way of the number kind carrying no range, given to that roster
+  afterwards, is added as a third
+- **AND** offering the one ranged 1 to 10 again is refused
 
 #### Scenario: offering a commitment the roster has removed takes it up again, in the place it was taken on in
 
@@ -1627,6 +1650,14 @@ this app wrote. The last of those follows from what the three states are: a remo
 has a kept-until day, so an entry claiming removal without one describes a state a roster has never
 been in.
 
+**A commitment of the number kind carrying only one end of a range is one that could not be formed**,
+and is refused with the rest. A **range** is both ends or neither, so a file holding a lowest without
+a highest describes a commitment this app has never written and never could: there is no such value
+to read it back as, and inventing the missing end would put a bound on a person's commitment that
+nobody typed. This is stated rather than left to follow, because it is the one of the four that is a
+fact about a *part* of a commitment rather than about the commitment or the roster, and it has been
+refused and tested since `add-commitment-kind` without a scenario of its own to say so.
+
 #### Scenario: content that is not a roster store is refused and left as it was
 
 - **WHEN** a roster store is opened at a place holding content that is not a roster store — a run of
@@ -1651,6 +1682,16 @@ been in.
 - **AND** a roster store at a place holding the same commitment twice — alike in name, schedule and
   the day it is kept from — is refused the same way
 - **AND** the content at each of the three places is byte-for-byte what it was before
+
+#### Scenario: a roster store holding a commitment with half a range is refused
+
+- **WHEN** a roster store is opened at a place holding a roster store in the form this app writes,
+  whose one commitment is of the number kind carrying a lowest of 40 and no highest at all
+- **THEN** opening is refused with an error
+- **AND** the error says the content is not a roster store rather than that it is from a later form
+- **AND** a roster store at a place holding one commitment of the number kind carrying a highest of
+  150 and no lowest at all is refused the same way
+- **AND** the content at each of the two places is byte-for-byte what it was before
 
 #### Scenario: a roster store holding a commitment removed with no day it was kept until is refused
 
@@ -1953,17 +1994,28 @@ A roster that has stopped nothing SHALL list nothing as stopped.
 
 ### Requirement: A commitments screen defines a commitment from a name, a rhythm and the day it is kept from
 
-A commitments screen SHALL define a commitment from four things and no others: a name, a rhythm,
-the day it is kept from, and the **category** to put it under, which may be none. **Changing a
-commitment takes the same four and no others**, which is why they are four rather than five: one form
-serves both, and a fifth thing here would be a field a change had nothing to do with. The commitment so
-formed SHALL be taken on at the roster place before either of the screen's lists says so, and SHALL
-then be last in what the screen keeps, in the group of the category it was given, because that is
+A commitments screen SHALL define a commitment from five things and no others: a name, a rhythm,
+the day it is kept from, the **category** to put it under, which may be none, and the **kind** its
+days take. **Changing a commitment takes four of the five** — every one but the kind, which is set
+when a commitment is defined and never changes, so a change is neither asked for one nor able to
+produce one. One form still serves both acts; what a change does with the fifth field is show it and
+never ask about it. The commitment so formed SHALL be taken on at the roster place before either of
+the screen's lists says so, and SHALL then be last in what the screen keeps, in the group of the
+category it was given, because that is
 the place the roster gives it — **unless the roster already holds that commitment stopped or
 removed, in which case it is taken up again in the place it has**, again because that is
 the place the roster gives it. Defining is therefore the one way back to a removed commitment, and
-the screen does nothing of its own to make it so: it hands the roster four things and reports what
-the roster answers.
+the screen does nothing of its own to make it so: it hands the roster what the form said and reports
+what the roster answers.
+
+**The kind is one of the things that decide which commitment was named**, so two commitments alike in
+name, rhythm and the day they are kept from but not in their kind are two commitments here exactly as
+they are two in a roster. A screen already keeping "Weight" as a tick SHALL NOT refuse "Weight" as a
+number as a commitment it already keeps, and defining "Weight" as a number SHALL NOT take a stopped
+"Weight" tick up again. That is the roster's rule reported rather than a rule of this screen's, and
+it is the honest answer to a person who has decided a tick is not what that day should take: the
+commitment they had stays exactly as it was, with everything recorded against it, and the one they
+have just described is a new one.
 
 **A commitment taken up again by being defined again is put under the category the form carried**,
 whatever category it was under before, and under none where the form carried none. That is the
@@ -1987,6 +2039,61 @@ Three of the four are a number, and a rhythm SHALL carry that number as the pers
 by nothing on the way. A rhythm is what a person said, not what the system was able to make of it,
 so the judging happens in one place — the screen, when it is asked to define — and the requirement
 below says what it does there.
+
+A **kind** SHALL be one of four, and all four SHALL be offered: a tick, a number, a note and a
+total. It follows the shape the rhythm above has and is not left to whatever draws the screen — a
+form offering three of them would be a rule about what a person may keep, decided in a layer nothing
+regresses.
+
+**A commitments screen SHALL offer, as the kind for a new commitment, the tick.** It is the plain
+kind and the common case — the day-one week is nine ticks — and a weight, a note or a total is the
+deliberate choice that should cost the tap. It is also the same default a commitment formed without a
+kind takes and the same kind every commitment written before kinds existed reads back as, so the form,
+the value and a roster read off an older file all mean one thing by saying nothing. For a commitment
+the screen already holds there is no kind to offer, because a kind is not one of the things a change
+is asked with; what that commitment's kind *is* is said by *A commitments screen says what a
+commitment it is asked to change is made of*.
+
+**A range and a target reach this screen as the person typed them, and this screen judges them.** A
+number kind's two range ends and a total kind's target SHALL each be taken as text, exactly as
+typed, and SHALL NOT be judged, formed or blocked before they arrive. This is a deliberate departure
+from the shape a **rhythm** number arrives in: three of the four rhythms carry a number the app shell
+has already made, and all this screen judges of one is whether the rhythm allows it. It matches
+instead the shape a **number entry** takes on a day screen, and for that surface's reason — "that is
+not a number" is a refusal a person reads beside the field they typed it in, where a field the shell
+silently refuses to accept a character into is a person left guessing, and the shell goes on deciding
+nothing. ADR-1046.
+
+**A range end and a target SHALL be read as a number entry reads a committed number, and there SHALL
+be one such reading in this system rather than two.** No locale is consulted; blank space at either
+end is disregarded; what is left may carry a leading minus, SHALL hold at least one digit, SHALL hold
+no character that is not a digit but for at most one separator, which may be a full stop or a comma,
+and SHALL hold no more than thirty-eight significant digits. A text that reading does not hold as a
+number is not a number here, and SHALL NOT be rounded, truncated or otherwise adjusted to fit: a
+bound or a target a person did not type is one they meet later without knowing why, and this system
+already refuses to keep a number it cannot keep exactly (ADR-1040).
+
+**Whether a field is blank SHALL be asked before it is read as a number**, and the two answers are
+different things. A field holding nothing but blank space is not a number that failed to read; it is
+a field nobody filled in, and what that means belongs to the kind — no range where both ends are
+blank, and no target at all, which a total cannot be defined without.
+
+**Both range fields blank is no range.** A commitment of the number kind defined with both ends blank
+SHALL be of the number kind carrying no range, and any number is then a number for it — two spaces and
+an untouched field say the same thing, so clearing a range is not a delete-every-character operation.
+**One end filled and the other blank is not no range**, and is refused by the requirement below: a
+typed floor is something a person deliberately entered, and reading it as "no range at all" throws it
+away. Blank is decided by the one test this package asks for the question (ADR-1039), so a character
+that occupies no width is a character like any other: a range end holding a zero-width space alone is
+a range end that is not a number, not an empty one.
+
+**A range or a target left in a field the chosen kind has no room for SHALL be ignored, and SHALL NOT
+be refused.** A commitment defined of the tick or the note kind carries neither, whatever those fields
+hold; one of the number kind takes its range and ignores a target; one of the total kind takes its
+target and ignores a range. A person who typed a range and then chose Note is not asking for a range,
+and refusing something nobody asked for is noise in front of the thing they did ask for. This is held
+against the one-end-blank rule deliberately, and the two do not disagree: there the person had chosen
+the kind the field belongs to, and the bound they typed meant something.
 
 **The day a commitment is kept from SHALL also be the start date of an interval rhythm.** The
 commitment is due on the day a person started keeping it and every N days after it. The two remain
@@ -2045,6 +2152,13 @@ any way the calendar does not.
 - **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
   nothing has been kept
 - **THEN** the day it offers to keep a commitment from is Monday 31 August 2026
+
+#### Scenario: a commitments screen offers the tick kind for a new commitment
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept
+- **THEN** the kind it offers for a new commitment is the tick kind
+- **AND** a screen opened at a place keeping a commitment of the total kind offers the tick kind too
 
 #### Scenario: a commitments screen accepts a day to keep from that has not arrived and one long past
 
@@ -2110,6 +2224,77 @@ any way the calendar does not.
 - **THEN** neither is refused
 - **AND** what it keeps is two groups, the first " Supplements " with both spaces holding
   "Creatine", the second "Supplements" holding "Magnesium"
+
+#### Scenario: a commitment of each of the four kinds is defined through a commitments screen and kept with that kind
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and four commitments on a weekday-set rhythm of all seven weekdays, kept
+  from that same day, under no category, are defined through it — "Gym" of the tick kind; "Mood" of
+  the number kind with a lowest of "1" and a highest of "10"; "Journal" of the note kind; and
+  "Protein" of the total kind with a target of "120"
+- **THEN** none of the four is refused
+- **AND** a roster store opened afterwards at that place holds four commitments equal, one for one
+  and in that order, to commitments formed directly from those names, that schedule and that day, of
+  the tick kind, the number kind with a range of 1 to 10, the note kind, and the total kind with a
+  target of 120
+
+#### Scenario: a commitment of the number kind defined with both range fields blank carries no range
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Weight" on a weekday-set rhythm of all seven
+  weekdays, kept from that same day, under no category, of the number kind with a lowest of "" and a
+  highest of "", is defined through it
+- **THEN** it is not refused
+- **AND** a roster store opened afterwards at that place holds one commitment, of the number kind
+  carrying no range
+- **AND** a screen alike in every way defining "Weight" with a lowest of "   " and a highest of "  "
+  keeps a commitment of the number kind carrying no range too
+
+#### Scenario: a range end and a target are read as a number entry reads a number
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and two commitments on a weekday-set rhythm of all seven weekdays, kept from
+  that same day, under no category, are defined through it — "Temperature" of the number kind with a
+  lowest of " -40,5 " and a highest of "150.00", and "Dose" of the total kind with a target of "0,5"
+- **THEN** neither is refused
+- **AND** a roster store opened afterwards at that place holds "Temperature" of the number kind with
+  a range whose lowest is -40.5 and whose highest is 150, and "Dose" of the total kind with a target
+  of 0.5
+
+#### Scenario: a range typed on a kind with no room for one is ignored rather than refused
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and two commitments on a weekday-set rhythm of all seven weekdays, kept from
+  that same day, under no category, are defined through it — "Journal" of the note kind with a lowest
+  of "10" and a highest of "1" left in the range fields, and "Protein" of the total kind with a target
+  of "120" and a lowest of "not a number" left in the range fields
+- **THEN** neither is refused
+- **AND** a roster store opened afterwards at that place holds "Journal" of the note kind and
+  "Protein" of the total kind with a target of 120
+- **AND** a screen alike in every way defining "Gym" of the tick kind with the same range fields
+  filled in keeps a commitment of the tick kind
+
+#### Scenario: a target typed on a kind with no room for one is ignored rather than refused
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Mood" on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, under no category, of the number kind with a lowest of "1", a highest of
+  "10" and a target of "0" left in the target field, is defined through it
+- **THEN** it is not refused
+- **AND** a roster store opened afterwards at that place holds one commitment, of the number kind
+  with a range whose lowest is 1 and whose highest is 10
+
+#### Scenario: a commitment alike in every way but the kind it takes is not one a commitments screen already keeps
+
+- **WHEN** a commitment named "Weight" on a schedule listing all seven weekdays, kept from
+  1 January 2026, of the tick kind, is taken on at a roster place; a commitments screen is opened at
+  that roster place as of Monday 31 August 2026; and a commitment named "Weight" on a weekday-set
+  rhythm of all seven weekdays, kept from 1 January 2026, under no category, of the number kind
+  carrying no range, is defined through it
+- **THEN** it is not refused
+- **AND** what the screen keeps is two entries, both named "Weight"
+- **AND** a screen alike in every way whose roster had stopped the tick "Weight" instead keeps one
+  entry named "Weight", of the number kind, and has stopped one named "Weight"
 
 ### Requirement: A commitments screen refuses a name that says nothing, and a rhythm due on no day
 
@@ -5035,8 +5220,22 @@ rhythm in the first place.
 It SHALL also say **whether the rhythm and the day kept from can be changed at all**: they can for a
 commitment its roster is keeping, and they cannot for one it has stopped keeping. A stopped
 commitment has no days left for a rhythm to decide about, so the only change it takes is a rename.
-The **kind** its days take is not among the four and is not said here: a kind never changes, so a
-form has nothing to offer for it.
+
+It SHALL also say the **kind** that commitment's days take, together with the **range** or the
+**target** that kind carries: the number kind's range, or that it carries none; the total kind's
+target; and nothing beside a tick or a note, which carry nothing. The kind is **not** among the four
+a change is asked with and never will be — a kind is set when a commitment is defined and changing
+one is what defining a different commitment is — so this is said to be *shown* and never to be asked
+about. Nothing needs saying about whether it can be changed, which is where it parts from the rhythm
+and the day kept from: no commitment's kind can be, so there is no per-commitment answer to give.
+
+**It is said because a form that had lost it would read as a different form.** Someone opening
+"Mood" should see Number, 1 to 10 — the five things they defined it from — rather than a sheet that
+has quietly shed two of them, and a screen that said nothing would leave whatever draws it to
+invent what a form shows. This is the same answer the rhythm and the day kept from already get for a
+**stopped** commitment: every control is there, and the ones that cannot be changed do not let a
+thumb in. What a form draws and which of its fields a thumb reaches are the drawing's, exactly as
+they already are for everything else this screen answers.
 
 This says what a commitment *is*, and no words a person reads. What a form draws, where it is reached
 from and which of its fields it lets a thumb into are the drawing's, exactly as they already are for
@@ -5082,12 +5281,37 @@ everything else this screen answers. ADR-1022.
 - **AND** it says nothing about what a commitment named "Run" alike in every other way, which its
   roster has never held, is made of
 
+#### Scenario: a commitments screen says the kind a commitment it keeps takes, with what that kind carries
+
+- **WHEN** a commitment named "Gym" of the tick kind, one named "Mood" of the number kind with a
+  range of 1 to 10, one named "Journal" of the note kind, and one named "Protein" of the total kind
+  with a target of 120, all on a schedule listing all seven weekdays and all kept from 1 January
+  2026, are taken on at a roster place; and a commitments screen is opened at that roster place as of
+  Monday 31 August 2026
+- **THEN** what it says each is made of names the tick kind, the number kind carrying a range whose
+  lowest is 1 and whose highest is 10, the note kind, and the total kind carrying a target of 120, in
+  that order
+
+#### Scenario: a commitments screen says a number commitment carrying no range takes the number kind and no range
+
+- **WHEN** a commitment named "Weight" of the number kind carrying no range, and one named "Gym" of
+  the tick kind, both on a schedule listing all seven weekdays and kept from 1 January 2026, are
+  taken on at a roster place; "Weight" is stopped there as of Sunday 30 August 2026; and a
+  commitments screen is opened at that roster place as of Monday 31 August 2026
+- **THEN** what it says "Weight" is made of names the number kind carrying no range
+- **AND** it says that "Weight"'s rhythm and the day it is kept from cannot be changed
+
 ### Requirement: A commitments screen changes a commitment on either of its lists
 
-A commitments screen SHALL change a commitment on either of its lists, from the same four things it
-defines one from and no others: a **name**, a **rhythm**, the **day it is kept from**, and the
-**category** to put it under, which may be none. It SHALL work out from those four which of two acts
-the change needs, and where it needs both it SHALL perform them in one order and no other.
+A commitments screen SHALL change a commitment on either of its lists, from four things and no
+others: a **name**, a **rhythm**, the **day it is kept from**, and the **category** to put it under,
+which may be none. They are four of the **five** a commitment is defined from, and the fifth is the
+**kind** its days take: a kind is set when a commitment is defined and never changes, so a change is
+neither asked for one nor able to produce one. A form opened to change a commitment shows that
+commitment's kind, because *A commitments screen says what a commitment it is asked to change is made
+of* says it — showing a thing and asking for it are different, and a change does only the first. It
+SHALL work out from those four which of two acts the change needs, and where it needs both it SHALL
+perform them in one order and no other.
 
 - **A different name, a different day kept from, or both, on the rhythm the commitment already runs
   on.** The screen SHALL carry every record of that commitment over to the changed one at the record
@@ -5131,7 +5355,12 @@ commitment — and then writes the roster, which is exactly the repair. Where no
 nothing is written at the record place at all.
 
 **The kind its days take is not one of the four and SHALL NOT change.** The changed commitment SHALL
-be of the kind the commitment it replaces is of, on every one of the acts above. ADR-1030.
+be of the kind the commitment it replaces is of, on every one of the acts above, and SHALL carry
+whatever that kind carries unchanged with it — the **range** a number kind declares and the **target**
+a total kind requires travel with the kind and are no more asked for here than it is. ADR-1030. A
+fifth thing asked for here would buy a refusal for a state the form cannot produce, and the way a
+person gets the commitment they now want is the way this capability has always given them: define
+it, which leaves the one they had exactly as it stands, with everything recorded against it.
 
 **A change is the only act on this screen that writes a category without a move.** The category is
 one of the four, picked from the categories the screen offers or typed; a commitment given one is
@@ -5505,3 +5734,163 @@ offering: the word it writes is the one the group it landed in already carries.
 - **THEN** what it keeps is two groups, "Supplements" holding "Creatine" and then "supplements"
   holding "Magnesium"
 - **AND** the categories it offers are "Supplements" and then "supplements"
+
+### Requirement: A commitments screen refuses a range that is not a range, and a target that is not a target
+
+A commitments screen SHALL refuse to define a commitment of the **number** kind whose range is not a
+range, and one of the **total** kind whose target is not a target. Nothing SHALL be kept at the roster
+place, neither of the screen's lists SHALL change, and each SHALL be held as a refused change against
+**defining a commitment**, exactly as every other refusal this screen makes is.
+
+**A range is not a range** when its lowest is above its highest, when either end is not a number, or
+when one end holds something and the other is blank. **A target is not a target** when it is not a
+number, when it is not above zero, or when it is blank — a total whose sum has nothing to reach is
+not a total, so a missing target is a refusal here rather than a commitment with none.
+
+**Two refusals, not six and not one.** The three ways a range fails are one refusal, told apart from
+every other this screen makes but not from each other, because what a person does about any of them
+is the same thing: put something else in the two fields they are already looking at. The three ways a
+target fails are one refusal for the same reason, over the one field. The two are told apart from
+each other, because the fields differ and so does the act. That is ADR-1021's rule applied exactly
+where *A commitments screen refuses a rhythm number the calendar will not take* already applies it,
+and it is why this Story adds two reasons a change can be refused for while adding no new kind of
+change to be refused: the kinds of change a person can ask for are counted in *A commitments screen
+holds the change it refused and why, one at a time* and are untouched here.
+
+**This screen refuses exactly what the value refuses, and invents nothing.** A range whose lowest is
+above its highest, a range end that is not a number, a target that is not above zero and a target that
+is not a number are each a refusal `commitment` already makes where the value is formed; this is that
+refusal surfaced in something a person can read, and not a second one. The `commitment` capability's
+rules for a range and a target are unchanged by this requirement. It is therefore the opposite of a
+weekday set with no days in it, which is a value the rule engine accepts and this screen refuses
+(ADR-1028), and the same shape as the rhythm numbers, which the engine refuses to form at all.
+
+**A half-written range is the one of the six the value cannot be asked about**, because a range is
+both ends or neither and there is no such value as half a range to offer anything. It is refused here
+for the reason the value has none: a typed floor is something a person deliberately entered, and
+reading it as "no range at all" throws away what they said, while inventing the other end would put a
+bound on their commitment that nobody typed. Both ends blank is not this refusal and is not a refusal
+at all — it is a commitment of the number kind carrying no range, which the requirement above says.
+
+**What a range and a target allow SHALL be accepted at both ends of it.** A lowest equal to its
+highest is a range of exactly one value; a range end may be negative and may be zero; and a target
+may carry a decimal fraction and SHALL NOT be rounded to a whole number, so the smallest target this
+screen takes is the smallest number above zero it can read and never one. A number typed with more
+significant digits than this system keeps exactly is **not a number** by the reading the requirement
+above fixes, and is refused as such rather than kept shortened.
+
+#### Scenario: a commitments screen refuses a range whose lowest is above its highest
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Mood" on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, under no category, of the number kind with a lowest of "10" and a highest
+  of "1", is defined through it
+- **THEN** it is refused as a range that is not a range
+- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
+
+#### Scenario: a commitments screen refuses a range end that is not a number
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Mood" on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, under no category, of the number kind with a lowest of "one" and a highest
+  of "10", is defined through it
+- **THEN** it is refused as a range that is not a range
+- **AND** a commitment alike in every way with a lowest of "1" and a highest of "1e2" is refused the
+  same way
+- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
+
+#### Scenario: a commitments screen refuses a range with one end typed and the other blank
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Weight" on a weekday-set rhythm of all seven
+  weekdays, kept from that same day, under no category, of the number kind with a lowest of "40" and
+  a highest of "", is defined through it
+- **THEN** it is refused as a range that is not a range
+- **AND** a commitment alike in every way with a lowest of "  " and a highest of "150" is refused the
+  same way
+- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
+
+#### Scenario: a commitments screen refuses a target that is not a number
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Protein" on a weekday-set rhythm of all seven
+  weekdays, kept from that same day, under no category, of the total kind with a target of "120g", is
+  defined through it
+- **THEN** it is refused as a target that is not a target
+- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
+
+#### Scenario: a commitments screen refuses a target that is not above zero
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Protein" on a weekday-set rhythm of all seven
+  weekdays, kept from that same day, under no category, of the total kind with a target of "0", is
+  defined through it
+- **THEN** it is refused as a target that is not a target
+- **AND** a commitment alike in every way with a target of "-1" is refused the same way
+- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
+
+#### Scenario: a commitments screen refuses a total with nothing in its target field
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Protein" on a weekday-set rhythm of all seven
+  weekdays, kept from that same day, under no category, of the total kind with a target of "", is
+  defined through it
+- **THEN** it is refused as a target that is not a target
+- **AND** a commitment alike in every way with a target of "   " is refused the same way
+- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
+
+#### Scenario: a range end and a target of more than thirty-eight significant digits are not numbers
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Mood" on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, under no category, of the number kind with a lowest of "1" and a highest
+  of a 1 followed by thirty-nine 9s, is defined through it; and then one named "Protein" alike in
+  rhythm, day and category, of the total kind with a target of that same number
+- **THEN** the first is refused as a range that is not a range and the second as a target that is not
+  a target
+- **AND** a commitment named "Mood" alike in every way whose highest is a 1 followed by
+  thirty-seven 9s is not refused
+- **AND** what the screen keeps is that one entry, named "Mood"
+
+#### Scenario: a commitments screen accepts a range of one value, and one whose ends are negative and zero
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and two commitments on a weekday-set rhythm of all seven weekdays, kept from
+  that same day, under no category, are defined through it — "Doses" of the number kind with a lowest
+  of "7" and a highest of "7", and "Weight change" of the number kind with a lowest of "-40.5" and a
+  highest of "0"
+- **THEN** neither is refused
+- **AND** a roster store opened afterwards at that place holds "Doses" with a range whose lowest and
+  highest are both 7, and "Weight change" with a range whose lowest is -40.5 and whose highest is 0
+
+#### Scenario: a commitments screen accepts a target with a decimal fraction, below one
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and two commitments on a weekday-set rhythm of all seven weekdays, kept from
+  that same day, under no category, are defined through it — "Dose" of the total kind with a target
+  of "0.5" and "Vitamin D" of the total kind with a target of "0.0001"
+- **THEN** neither is refused
+- **AND** a roster store opened afterwards at that place holds "Dose" with a target of 0.5 and
+  "Vitamin D" with a target of 0.0001
+
+#### Scenario: a range a commitments screen refuses is told apart from a target and from its other refusals
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and four commitments on a weekday-set rhythm of all seven weekdays, kept
+  from that same day, under no category, are defined through it — "Mood" of the number kind with a
+  lowest of "10" and a highest of "1"; "Protein" of the total kind with a target of "0"; "   " of the
+  tick kind; and "Finances" of the tick kind on a day-of-the-month rhythm of the 32nd instead
+- **THEN** the first is refused as a range that is not a range, the second as a target that is not a
+  target, the third as a name that says nothing and the fourth as a rhythm number the calendar will
+  not take, each of the four told apart from the other three
+- **AND** what the screen keeps is nothing, and nothing is kept at that roster place
+
+#### Scenario: a commitments screen holds a refused range against defining a commitment
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place where
+  nothing has been kept, and a commitment named "Mood" on a weekday-set rhythm of all seven weekdays,
+  kept from that same day, under no category, of the number kind with a lowest of "10" and a highest
+  of "1", is defined through it
+- **THEN** the screen holds that refusal, against defining a commitment
+- **AND** a screen alike in every way asked afterwards to define "Protein" of the total kind with a
+  target of "0" holds that refusal instead, against defining a commitment

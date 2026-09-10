@@ -29,6 +29,15 @@ private func weekdayName(_ weekday: Weekday) -> String {
     }
 }
 
+private func kindChoiceName(_ kind: CommitmentsScreen.KindChoice) -> String {
+    switch kind {
+    case .tick: "Tick"
+    case .number: "Number"
+    case .note: "Note"
+    case .total: "Total"
+    }
+}
+
 /// Turns the calendar date `screen` hands back into the instant a SwiftUI `DatePicker` needs —
 /// the reverse of `ContentView.today()`, and, like it, edge code per ADR-1004: both read
 /// `Calendar.current`, the device's own calendar, so the two conversions agree.
@@ -62,6 +71,10 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
         Text("Take it up again first to change its rhythm.")
     case .wouldLeaveARecordedDayNotDue:
         Text("Choose a day that leaves every recorded day due.")
+    case .rangeIsNotARange:
+        Text("That's not a range.")
+    case .targetIsNotATarget:
+        Text("That's not a target.")
     }
 }
 
@@ -414,6 +427,10 @@ private struct CommitmentSheet: View {
     @State private var intervalDays: Int
     @State private var timesPerWeek: Int
     @State private var keptFromDate: Date
+    @State private var kindChoice: CommitmentsScreen.KindChoice
+    @State private var lowest: String
+    @State private var highest: String
+    @State private var target: String
     @State private var refusal: CommitmentsScreen.Refusal?
     @Environment(\.dismiss) private var dismiss
 
@@ -463,6 +480,41 @@ private struct CommitmentSheet: View {
             _dayOfMonth = State(initialValue: 1)
             _intervalDays = State(initialValue: 1)
             _timesPerWeek = State(initialValue: 1)
+        }
+
+        if let kind = madeOf?.kind {
+            // Changing: the picker and the three fields are shown, filled from the kind
+            // `whatItIsMadeOf(_:)` says, and never let a thumb in — a kind is set when a
+            // commitment is defined and never changes. `design.md` § *The seam*.
+            switch kind {
+            case .tick:
+                _kindChoice = State(initialValue: .tick)
+                _lowest = State(initialValue: "")
+                _highest = State(initialValue: "")
+                _target = State(initialValue: "")
+            case .number(let range):
+                _kindChoice = State(initialValue: .number)
+                _lowest = State(initialValue: range.map { "\($0.lowest)" } ?? "")
+                _highest = State(initialValue: range.map { "\($0.highest)" } ?? "")
+                _target = State(initialValue: "")
+            case .note:
+                _kindChoice = State(initialValue: .note)
+                _lowest = State(initialValue: "")
+                _highest = State(initialValue: "")
+                _target = State(initialValue: "")
+            case .total(let target):
+                _kindChoice = State(initialValue: .total)
+                _lowest = State(initialValue: "")
+                _highest = State(initialValue: "")
+                _target = State(initialValue: "\(target.amount)")
+            }
+        } else {
+            // Defining: the kind offered for a new commitment is always the tick, and the three
+            // fields start empty — nothing has been typed into them yet.
+            _kindChoice = State(initialValue: screen.kindToOffer)
+            _lowest = State(initialValue: "")
+            _highest = State(initialValue: "")
+            _target = State(initialValue: "")
         }
     }
 
@@ -525,6 +577,30 @@ private struct CommitmentSheet: View {
                         }
                     }
 
+                    Picker("Kind", selection: $kindChoice) {
+                        ForEach(CommitmentsScreen.KindChoice.allCases, id: \.self) { kind in
+                            Text(kindChoiceName(kind)).tag(kind)
+                        }
+                    }
+                    .disabled(changing != nil)
+
+                    // Plain `TextField`s bound to `String`: no formatter, no `keyboardType` that
+                    // forbids a minus or a separator, and nothing that blocks a character — this
+                    // screen says "that is not a number" out loud rather than the shell silently
+                    // refusing the keystroke. `design.md` § *One reading of a typed number*.
+                    switch kindChoice {
+                    case .tick, .note:
+                        EmptyView()
+                    case .number:
+                        TextField("Lowest", text: $lowest)
+                            .disabled(changing != nil)
+                        TextField("Highest", text: $highest)
+                            .disabled(changing != nil)
+                    case .total:
+                        TextField("Target", text: $target)
+                            .disabled(changing != nil)
+                    }
+
                     if let refusal {
                         refusalText(refusal)
                     }
@@ -575,13 +651,17 @@ private struct CommitmentSheet: View {
         else { return }
 
         if let commitment = changing {
+            // A change takes four things and never a kind — it is set when a commitment is
+            // defined and never changes, so the picker and the three fields above are shown and
+            // never sent. `design.md` § *The seam*.
             refusal = screen.change(
                 commitment, toName: name, on: rhythmBeingBuilt, keptFrom: keptFrom,
                 under: category.isEmpty ? nil : category)
         } else {
             refusal = screen.define(
                 name: name, on: rhythmBeingBuilt, keptFrom: keptFrom,
-                under: category.isEmpty ? nil : category)
+                under: category.isEmpty ? nil : category, kind: kindChoice, lowest: lowest,
+                highest: highest, target: target)
         }
 
         if refusal == nil {

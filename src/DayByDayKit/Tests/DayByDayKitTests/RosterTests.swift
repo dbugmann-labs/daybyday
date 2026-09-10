@@ -572,6 +572,37 @@ func twoCommitmentsAlikeInEveryWayButTheKindTheirDaysTakeAreBothHeld() {
     #expect(!addedAgain)
 }
 
+@Test("two number commitments alike in every way but the range their kind carries are both held")
+func twoNumberCommitmentsAlikeInEveryWayButTheRangeTheirKindCarriesAreBothHeld() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let rangeOneToTen = Commitment.Range(lowest: 1, highest: 10)!
+    let rangeOneToFive = Commitment.Range(lowest: 1, highest: 5)!
+    let oneToTen = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: rangeOneToTen))!
+    let oneToFive = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: rangeOneToFive))!
+    let noRange = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+
+    var roster = Roster()
+    _ = roster.add(oneToTen)
+
+    let added = roster.add(oneToFive)
+
+    #expect(added)
+    #expect(roster.commitments == [oneToTen, oneToFive])
+
+    let addedThird = roster.add(noRange)
+
+    #expect(addedThird)
+    #expect(roster.commitments == [oneToTen, oneToFive, noRange])
+
+    let addedAgain = roster.add(oneToTen)
+
+    #expect(!addedAgain)
+}
+
 @Test("removing a commitment a roster keeps says so and records the day it was kept until")
 func removingACommitmentARosterKeepsSaysSoAndRecordsTheDayItWasKeptUntil() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])

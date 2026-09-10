@@ -364,6 +364,487 @@ func aCommitmentDefinedOnEachOfTheFourRhythmsIsReadBackOnTheScheduleThatRhythmNa
 }
 
 @MainActor
+@Test("a commitment of each of the four kinds is defined through a commitments screen and kept with that kind")
+func aCommitmentOfEachOfTheFourKindsIsDefinedThroughACommitmentsScreenAndKeptWithThatKind() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let dailySchedule: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let tickRefusal = screen.define(
+        name: "Gym", on: dailyRhythm, keptFrom: monday, under: nil, kind: .tick)
+    let numberRefusal = screen.define(
+        name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "1", highest: "10")
+    let noteRefusal = screen.define(
+        name: "Journal", on: dailyRhythm, keptFrom: monday, under: nil, kind: .note)
+    let totalRefusal = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total, target: "120")
+
+    #expect(tickRefusal == nil)
+    #expect(numberRefusal == nil)
+    #expect(noteRefusal == nil)
+    #expect(totalRefusal == nil)
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    let expected = [
+        Commitment(name: "Gym", schedule: dailySchedule, keptFrom: monday, kind: .tick)!,
+        Commitment(
+            name: "Mood", schedule: dailySchedule, keptFrom: monday,
+            kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!,
+        Commitment(name: "Journal", schedule: dailySchedule, keptFrom: monday, kind: .note)!,
+        Commitment(
+            name: "Protein", schedule: dailySchedule, keptFrom: monday,
+            kind: .total(target: Commitment.Target(120)!))!,
+    ]
+    #expect(rosterStore.roster.commitments == expected)
+}
+
+@MainActor
+@Test("a commitment of the number kind defined with both range fields blank carries no range")
+func aCommitmentOfTheNumberKindDefinedWithBothRangeFieldsBlankCarriesNoRange() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Weight", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "", highest: "")
+
+    #expect(refusal == nil)
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    #expect(rosterStore.roster.commitments.map(\.kind) == [.number(range: nil)])
+
+    let blankSpaceRosterPlace = freshRosterPlace()
+    let blankSpaceScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: blankSpaceRosterPlace)
+    _ = blankSpaceScreen.define(
+        name: "Weight", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "   ", highest: "  ")
+
+    let blankSpaceRosterStore = try RosterStore(at: blankSpaceRosterPlace)
+    #expect(blankSpaceRosterStore.roster.commitments.map(\.kind) == [.number(range: nil)])
+}
+
+@MainActor
+@Test("a range end and a target are read as a number entry reads a number")
+func aRangeEndAndATargetAreReadAsANumberEntryReadsANumber() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let temperatureRefusal = screen.define(
+        name: "Temperature", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: " -40,5 ", highest: "150.00")
+    let doseRefusal = screen.define(
+        name: "Dose", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total, target: "0,5")
+
+    #expect(temperatureRefusal == nil)
+    #expect(doseRefusal == nil)
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    #expect(
+        rosterStore.roster.commitments.map(\.kind) == [
+            .number(range: Commitment.Range(lowest: -40.5, highest: 150)),
+            .total(target: Commitment.Target(0.5)!),
+        ])
+}
+
+@MainActor
+@Test("a range typed on a kind with no room for one is ignored rather than refused")
+func aRangeTypedOnAKindWithNoRoomForOneIsIgnoredRatherThanRefused() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let journalRefusal = screen.define(
+        name: "Journal", on: dailyRhythm, keptFrom: monday, under: nil, kind: .note,
+        lowest: "10", highest: "1")
+    let proteinRefusal = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total,
+        lowest: "not a number", target: "120")
+
+    #expect(journalRefusal == nil)
+    #expect(proteinRefusal == nil)
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    #expect(
+        rosterStore.roster.commitments.map(\.kind) == [.note, .total(target: Commitment.Target(120)!)])
+
+    let tickRosterPlace = freshRosterPlace()
+    let tickScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: tickRosterPlace)
+    let gymRefusal = tickScreen.define(
+        name: "Gym", on: dailyRhythm, keptFrom: monday, under: nil, kind: .tick,
+        lowest: "10", highest: "1")
+
+    #expect(gymRefusal == nil)
+
+    let tickRosterStore = try RosterStore(at: tickRosterPlace)
+    #expect(tickRosterStore.roster.commitments.map(\.kind) == [.tick])
+}
+
+@MainActor
+@Test("a target typed on a kind with no room for one is ignored rather than refused")
+func aTargetTypedOnAKindWithNoRoomForOneIsIgnoredRatherThanRefused() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "1", highest: "10", target: "0")
+
+    #expect(refusal == nil)
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    #expect(
+        rosterStore.roster.commitments.map(\.kind)
+            == [.number(range: Commitment.Range(lowest: 1, highest: 10))])
+}
+
+@MainActor
+@Test("a commitment alike in every way but the kind it takes is not one a commitments screen already keeps")
+func aCommitmentAlikeInEveryWayButTheKindItTakesIsNotOneACommitmentsScreenAlreadyKeeps() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let tickWeight = Commitment(name: "Weight", schedule: daily, keptFrom: keptFrom, kind: .tick)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(tickWeight)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let refusal = screen.define(
+        name: "Weight", on: dailyRhythm, keptFrom: keptFrom, under: nil, kind: .number)
+
+    #expect(refusal == nil)
+    #expect(screen.kept.map(\.name) == ["Weight", "Weight"])
+
+    let stoppedRosterPlace = freshRosterPlace()
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let stoppedRosterStore = try RosterStore(at: stoppedRosterPlace)
+    try stoppedRosterStore.add(tickWeight)
+    try stoppedRosterStore.retire(tickWeight, keptUntil: sunday)
+
+    let stoppedScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: stoppedRosterPlace)
+    let secondRefusal = stoppedScreen.define(
+        name: "Weight", on: dailyRhythm, keptFrom: keptFrom, under: nil, kind: .number)
+
+    #expect(secondRefusal == nil)
+    #expect(stoppedScreen.kept.map(\.name) == ["Weight"])
+    #expect(stoppedScreen.kept.map(\.kind) == [.number(range: nil)])
+    #expect(stoppedScreen.stopped.map(\.name) == ["Weight"])
+    #expect(stoppedScreen.stopped.map(\.kind) == [.tick])
+}
+
+@MainActor
+@Test("a commitments screen refuses a range whose lowest is above its highest")
+func aCommitmentsScreenRefusesARangeWhoseLowestIsAboveItsHighest() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "10", highest: "1")
+
+    #expect(refusal == .rangeIsNotARange)
+    #expect(screen.kept.isEmpty)
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a commitments screen refuses a range end that is not a number")
+func aCommitmentsScreenRefusesARangeEndThatIsNotANumber() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "one", highest: "10")
+    let secondRefusal = screen.define(
+        name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "1", highest: "1e2")
+
+    #expect(refusal == .rangeIsNotARange)
+    #expect(secondRefusal == .rangeIsNotARange)
+    #expect(screen.kept.isEmpty)
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a commitments screen refuses a range with one end typed and the other blank")
+func aCommitmentsScreenRefusesARangeWithOneEndTypedAndTheOtherBlank() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Weight", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "40", highest: "")
+    let secondRefusal = screen.define(
+        name: "Weight", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "  ", highest: "150")
+
+    #expect(refusal == .rangeIsNotARange)
+    #expect(secondRefusal == .rangeIsNotARange)
+    #expect(screen.kept.isEmpty)
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a commitments screen refuses a target that is not a number")
+func aCommitmentsScreenRefusesATargetThatIsNotANumber() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total,
+        target: "120g")
+
+    #expect(refusal == .targetIsNotATarget)
+    #expect(screen.kept.isEmpty)
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a commitments screen refuses a target that is not above zero")
+func aCommitmentsScreenRefusesATargetThatIsNotAboveZero() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total, target: "0")
+    let secondRefusal = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total, target: "-1")
+
+    #expect(refusal == .targetIsNotATarget)
+    #expect(secondRefusal == .targetIsNotATarget)
+    #expect(screen.kept.isEmpty)
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a commitments screen refuses a total with nothing in its target field")
+func aCommitmentsScreenRefusesATotalWithNothingInItsTargetField() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total, target: "")
+    let secondRefusal = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total,
+        target: "   ")
+
+    #expect(refusal == .targetIsNotATarget)
+    #expect(secondRefusal == .targetIsNotATarget)
+    #expect(screen.kept.isEmpty)
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a range end and a target of more than thirty-eight significant digits are not numbers")
+func aRangeEndAndATargetOfMoreThanThirtyEightSignificantDigitsAreNotNumbers() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let fortyDigits = "1" + String(repeating: "9", count: 39)
+    let thirtyEightDigits = "1" + String(repeating: "9", count: 37)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let moodRefusal = screen.define(
+        name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "1", highest: fortyDigits)
+    let proteinRefusal = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total,
+        target: fortyDigits)
+
+    #expect(moodRefusal == .rangeIsNotARange)
+    #expect(proteinRefusal == .targetIsNotATarget)
+
+    let acceptedRefusal = screen.define(
+        name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "1", highest: thirtyEightDigits)
+
+    #expect(acceptedRefusal == nil)
+    #expect(screen.kept.map(\.name) == ["Mood"])
+}
+
+@MainActor
+@Test("a commitments screen accepts a range of one value, and one whose ends are negative and zero")
+func aCommitmentsScreenAcceptsARangeOfOneValueAndOneWhoseEndsAreNegativeAndZero() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let dosesRefusal = screen.define(
+        name: "Doses", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "7", highest: "7")
+    let weightChangeRefusal = screen.define(
+        name: "Weight change", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "-40.5", highest: "0")
+
+    #expect(dosesRefusal == nil)
+    #expect(weightChangeRefusal == nil)
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    #expect(
+        rosterStore.roster.commitments.map(\.kind) == [
+            .number(range: Commitment.Range(lowest: 7, highest: 7)),
+            .number(range: Commitment.Range(lowest: -40.5, highest: 0)),
+        ])
+}
+
+@MainActor
+@Test("a commitments screen accepts a target with a decimal fraction, below one")
+func aCommitmentsScreenAcceptsATargetWithADecimalFractionBelowOne() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let doseRefusal = screen.define(
+        name: "Dose", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total, target: "0.5")
+    let vitaminDRefusal = screen.define(
+        name: "Vitamin D", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total,
+        target: "0.0001")
+
+    #expect(doseRefusal == nil)
+    #expect(vitaminDRefusal == nil)
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    #expect(
+        rosterStore.roster.commitments.map(\.kind) == [
+            .total(target: Commitment.Target(0.5)!),
+            .total(target: Commitment.Target(0.0001)!),
+        ])
+}
+
+@MainActor
+@Test("a range a commitments screen refuses is told apart from a target and from its other refusals")
+func aRangeACommitmentsScreenRefusesIsToldApartFromATargetAndFromItsOtherRefusals() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let moodRefusal = screen.define(
+        name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "10", highest: "1")
+    let proteinRefusal = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total, target: "0")
+    let blankRefusal = screen.define(
+        name: "   ", on: dailyRhythm, keptFrom: monday, under: nil, kind: .tick)
+    let financesRefusal = screen.define(
+        name: "Finances", on: .dayOfMonth(32), keptFrom: monday, under: nil, kind: .tick)
+
+    #expect(moodRefusal == .rangeIsNotARange)
+    #expect(proteinRefusal == .targetIsNotATarget)
+    #expect(blankRefusal == .namesNothing)
+    #expect(financesRefusal == .rhythmOutOfRange)
+    #expect(moodRefusal != proteinRefusal)
+    #expect(moodRefusal != blankRefusal)
+    #expect(moodRefusal != financesRefusal)
+    #expect(proteinRefusal != blankRefusal)
+    #expect(proteinRefusal != financesRefusal)
+    #expect(blankRefusal != financesRefusal)
+    #expect(screen.kept.isEmpty)
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a commitments screen holds a refused range against defining a commitment")
+func aCommitmentsScreenHoldsARefusedRangeAgainstDefiningACommitment() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    _ = screen.define(
+        name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "10", highest: "1")
+
+    #expect(screen.refusedChange == .defining(.rangeIsNotARange))
+
+    _ = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total, target: "0")
+
+    #expect(screen.refusedChange == .defining(.targetIsNotATarget))
+}
+
+@MainActor
 @Test("a commitment defined on an interval rhythm counts from the day it is kept from")
 func aCommitmentDefinedOnAnIntervalRhythmCountsFromTheDayItIsKeptFrom() throws {
     let rosterPlace = freshRosterPlace()
@@ -398,6 +879,30 @@ func aCommitmentsScreenOffersTheDayItWasHandedAsTheDayToKeepACommitmentFrom() {
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
 
     #expect(screen.dayToKeepFrom == monday)
+}
+
+@MainActor
+@Test("a commitments screen offers the tick kind for a new commitment")
+func aCommitmentsScreenOffersTheTickKindForANewCommitment() throws {
+    let emptyRosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let emptyScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: emptyRosterPlace)
+
+    #expect(emptyScreen.kindToOffer == .tick)
+
+    let totalRosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: target))!
+    let totalRosterStore = try RosterStore(at: totalRosterPlace)
+    try totalRosterStore.add(protein)
+
+    let totalScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: totalRosterPlace)
+
+    #expect(totalScreen.kindToOffer == .tick)
 }
 
 @MainActor
@@ -4357,6 +4862,65 @@ func aCommitmentsScreenSaysNothingAboutACommitmentOnNeitherOfItsLists() throws {
 
     #expect(screen.whatItIsMadeOf(gym) == nil)
     #expect(screen.whatItIsMadeOf(run) == nil)
+}
+
+@MainActor
+@Test("a commitments screen says the kind a commitment it keeps takes, with what that kind carries")
+func aCommitmentsScreenSaysTheKindACommitmentItKeepsTakesWithWhatThatKindCarries() throws {
+    let rosterPlace = freshRosterPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(mood)
+    try rosterStore.add(journal)
+    try rosterStore.add(protein)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.whatItIsMadeOf(gym)?.kind == .tick)
+    #expect(
+        screen.whatItIsMadeOf(mood)?.kind
+            == .number(range: Commitment.Range(lowest: 1, highest: 10)))
+    #expect(screen.whatItIsMadeOf(journal)?.kind == .note)
+    #expect(screen.whatItIsMadeOf(protein)?.kind == .total(target: Commitment.Target(120)!))
+}
+
+@MainActor
+@Test("a commitments screen says a number commitment carrying no range takes the number kind and no range")
+func aCommitmentsScreenSaysANumberCommitmentCarryingNoRangeTakesTheNumberKindAndNoRange() throws {
+    let rosterPlace = freshRosterPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(weight)
+    try rosterStore.add(gym)
+    try rosterStore.retire(weight, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.whatItIsMadeOf(weight)?.kind == .number(range: nil))
+    #expect(screen.whatItIsMadeOf(weight)?.canChangeRhythmAndKeptFrom == false)
 }
 
 @MainActor

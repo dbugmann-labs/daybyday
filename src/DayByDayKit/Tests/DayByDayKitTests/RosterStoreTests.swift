@@ -438,6 +438,60 @@ func aRosterStoreHoldingWhatCouldNotBeARosterIsRefused() throws {
     #expect(try Data(contentsOf: halfRangePlace) == halfRangeBytes)
 }
 
+@Test("a roster store holding a commitment with half a range is refused")
+func aRosterStoreHoldingACommitmentWithHalfARangeIsRefused() throws {
+    let lowestOnlyPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: lowestOnlyPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let lowestOnlyBytes = Data(
+        """
+        {
+          "version": 1,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "number": { "lowest": 40 } }
+              }
+            }
+          ]
+        }
+        """.utf8)
+    try lowestOnlyBytes.write(to: lowestOnlyPlace)
+
+    let highestOnlyPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: highestOnlyPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let highestOnlyBytes = Data(
+        """
+        {
+          "version": 1,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "number": { "highest": 150 } }
+              }
+            }
+          ]
+        }
+        """.utf8)
+    try highestOnlyBytes.write(to: highestOnlyPlace)
+
+    #expect(throws: RosterStoreError.notAStore(at: lowestOnlyPlace)) {
+        try RosterStore(at: lowestOnlyPlace)
+    }
+    #expect(throws: RosterStoreError.notAStore(at: highestOnlyPlace)) {
+        try RosterStore(at: highestOnlyPlace)
+    }
+    #expect(try Data(contentsOf: lowestOnlyPlace) == lowestOnlyBytes)
+    #expect(try Data(contentsOf: highestOnlyPlace) == highestOnlyBytes)
+}
+
 @Test("a commitment of each kind is read back as the same commitment")
 func aCommitmentOfEachKindIsReadBackAsTheSameCommitment() throws {
     let place = freshPlace()
