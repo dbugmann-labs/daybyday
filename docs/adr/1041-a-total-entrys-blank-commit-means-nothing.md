@@ -4,6 +4,9 @@
   2026-09-08 (answers 4 and 9); this record is written by that change
 - Date: 2026-09-08
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — the total entry's field opening empty moves from § *Context*, where it was
+  a fact this decision leaned on, into the decision itself, because
+  `condense-day-screen-spec` (#201) deletes the requirement prose that carried the argument.
 
 ## Context
 
@@ -39,6 +42,13 @@ being above zero. Every addition is above zero, so *sum above zero* and *the day
 are the same question, and the row answers the second from the first without ever seeing the list.
 
 **There is no act that clears a day.** Repeated take-back is the only way back.
+
+**A total entry's field is not prefilled, and nothing says a value for one to be prefilled from.**
+A commit in a total entry is an addition, so a field opening on the day's 90 and committed unread
+would make the day 180. The sum a total entry says is for reading and never for editing — the first
+thing in this system of which that is true, and the reason the number entry's rule does not carry
+over: a number entry shows the number the day holds because committing it again is a replacement,
+and a person editing 70.5 to 71 has to see the 70.5.
 
 ## Consequences
 

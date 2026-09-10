@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — decision 5's list of scenario titles known to be false grows from two to
+  three, the third being `day-screen`'s, and decision 2's untried split mechanism is tried and
+  recorded as accepted. Both by `condense-day-screen-spec` (#201), the first editorial Story
+  written under this record.
 
 ## Context
 
@@ -56,9 +60,10 @@ those folders rather than on the first overrun.
 CI check 2 leave no other: `openspec/specs/` is written by `/opsx:archive` alone, and
 `scripts/check-spec-containment.ts` fails any `chore/` branch touching a capability spec. An
 **editorial Story** therefore has a change folder, a G4 and an archive like any other, and four
-properties that make it unlike one: its delta is `## MODIFIED Requirements` **carrying every
-requirement in full**, every scenario title is unchanged, **no test changes**, and there is no seam,
-which `design.md` says and explains. Rule 3's one-scenario loop is moot because there is no red.
+properties that make it unlike one: its delta **carries every requirement in full** — as
+`## MODIFIED Requirements`, or as REMOVED plus ADDED where one requirement splits under decision 1
+— every scenario title is unchanged, **no test changes**, and there is no seam, which `design.md`
+says and explains. Rule 3's one-scenario loop is moot because there is no red.
 
 **This is not folded into behaviour Stories.** Letting each requirement get concise the next time one
 modifies it was the cheaper option, and was rejected because a MODIFIED block carries the whole
@@ -68,8 +73,11 @@ one diff.
 **Scenario pruning is a different change and is not authorised here.** The archiver's
 `findMissingCurrentScenarios` throws when a MODIFIED block omits a scenario the current spec holds —
 *"current spec contains scenario(s) not present in the modified block ... Refresh the change spec
-before archiving"* — so a condensing Story keeps every title. Whether REMOVED plus ADDED under one
-heading is accepted has never been tried; verify it on a scratch change before planning on it.
+before archiving"* — so a condensing Story keeps every title. **REMOVED plus ADDED under one
+heading is accepted**, tried on a scratch OpenSpec root before the first Story planned on it:
+`openspec validate --strict` and `openspec archive` both take it, and the added requirements land at
+the end of the spec file rather than in the removed one's place. A requirement too big for the prose
+budget can therefore be split, at the cost of where it sits in the file.
 
 **3. The schema is not forked.** A fork into `openspec/schemas/` copies instruction text that drifts
 from upstream on every upgrade; `rules` and `context` suffice, and the one template gap is one rule.
@@ -79,8 +87,9 @@ found" sections, no red/green diaries, no re-issued seam. Leaving every still-tr
 it was, so a second G4 could be read as a diff, is what turned two reopenings into folders of 1,600
 and 2,000 lines; the G4 diff is the PR's diff, and the PR already has one.
 
-**5. Two scenario titles in `openspec/specs/commitment/spec.md` are false and are kept on purpose.**
-The prose that says so today is rationale the condensing Story deletes, so the fact lives here:
+**5. Three scenario titles are false and are kept on purpose** — two in
+`openspec/specs/commitment/spec.md` and one in `openspec/specs/day-screen/spec.md`. The prose that
+says so today is rationale the condensing Story deletes, so the fact lives here:
 
 - *two commitments alike in name and not in rhythm are two entries a person cannot tell apart* — the
   test asserts two entries both named "Vitamins" and that stopping the first leaves one, which holds;
@@ -88,9 +97,15 @@ The prose that says so today is rationale the condensing Story deletes, so the f
   it asserts exactly that.
 - *a commitment stopped through a commitments screen is kept until the day the screen was handed* —
   the test asserts the commitment is kept until **the day before** the one the screen was handed.
+- *a day screen returned to does not read its record again* — a screen that **is** keeping a record
+  does read it again, which `add-commitment-editing` (#148) settled when a rename gave the record
+  place a second writer. The test asserts the narrower thing that is still true: a screen that could
+  not read its record is returned to after the bytes at the place are removed, and
+  `#expect(screen.recordState == .unreadable)` still holds, with its one row still drawn — a screen
+  not keeping a record does not start keeping one by being returned to.
 
-Both are kept because the archiver forbids dropping a scenario, and the only way to drop one is a
-rename that moves the whole block to the bottom of the spec at archive time.
+All three are kept because the archiver forbids dropping a scenario, and the only way to drop one is
+a rename that moves the whole block to the bottom of the spec at archive time.
 
 ## Consequences
 

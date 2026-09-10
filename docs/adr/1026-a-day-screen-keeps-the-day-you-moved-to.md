@@ -4,6 +4,9 @@
   (#93) on 2026-09-04, answered against the recommendation; this record is written by that change
 - Date: 2026-09-04
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — a day view is a value rather than a window, which is what lets this
+  decision hold no state of its own; recorded here by `condense-day-screen-spec` (#201), which
+  deletes the requirement prose that argued it.
 
 ## Context
 
@@ -56,6 +59,17 @@ displayed, and a tap would then offer a tick for a day that has not arrived. Giv
 the exception is `shownDay == today`, evaluated before the new today is assigned. There is no flag,
 no "has been moved" bit, and nothing to reset: a screen stepped back onto today, or sent back to it,
 is in exactly the state a screen that never moved is in, and greets the next morning the same way.
+
+**A day view is a value, and that is what makes holding no state possible.** A day view is an
+answer given from a history as that history stood, and not a window onto one: ticking a history
+after a day view was formed from it changes nothing, and the answer that takes the new tick into
+account is a day view formed again. Two day views a person could not tell apart are the same day
+view — the same commitments, in the same groups, in the same order, on the same date, from the same
+history — and a difference in what one was handed that never reaches a row makes no difference to
+it. A screen can therefore keep two days and form its view again from them, which is why the
+exception above needs a comparison and nothing else; it is also what lets ADR-1043 hold three day
+views at once while a day change pages under the finger. The rules stay stated in `day-screen`'s
+*A day view is a value*, and the reasoning is here because this is the decision that rests on them.
 
 ## Consequences
 

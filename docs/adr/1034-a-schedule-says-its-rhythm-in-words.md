@@ -4,6 +4,9 @@
   shows a rule to a person
 - Date: 2026-09-06
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — the decision that a row says its rhythm *always*, and not only where two
+  rows would otherwise read alike, is recorded here. It was argued in `day-screen`'s requirement
+  prose and nowhere else, and `condense-day-screen-spec` (#201) deletes that prose.
 - Renumbered: 2026-09-07 — written as `1033`, which `add-number-record` (#138) had already
   claimed at commit `7f476e2`; this record took the next free number, since
   `docs/adr/README.md` § *Numbering* gives a number to whoever claimed it first and never
@@ -54,6 +57,16 @@ Three consequences are part of the decision rather than incidental to it:
   day. Both are true of the schedule and neither is part of the rhythm a person chose.
 - **A payload accessor is not a smaller version of this.** It is a different decision, and it moves
   the composing into the app shell, which `CONTEXT.md` § *App shell* forbids by name.
+
+**Every row on a day view says its rhythm, always.** A row says the words whether or not its
+commitment is kept on that date and whatever else the row offers or does not — a row for a day that
+has not arrived offers nothing at all and still says them. The rhythm a thing runs on is part of
+reading the day, at the one screen a person visits daily, rather than a disambiguation added when
+two names happen to repeat. The rejected alternative was exactly that: say the rhythm only where
+two rows would otherwise read alike, which makes what a row says depend on the other rows beside
+it, and makes a day view's answer about one commitment depend on the rest of them. The rhythm is
+still not a fourth thing a row is — the words are read off the commitment the row already holds, so
+two rows alike in commitment, date and record agree on the rhythm they say.
 
 ## Consequences
 

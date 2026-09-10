@@ -4,6 +4,10 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-10 — decision 12 is added: whether a control is offered is the screen's own
+  answer, because the screen gives out neither of the two days it would be worked out from. That
+  reasoning had no home and lived in `day-screen`'s requirement prose, which
+  `condense-day-screen-spec` (#201) deletes.
 - Amended: 2026-09-09 — the merged branch was used for a day and the owner asked for the circle to
   go: *"I really don't like the blue circle that is drawn next to a commitment when it is due."*
   **Decision 4 is reversed** — an unkept tick row draws no mark at all — and with it the accent
@@ -246,6 +250,20 @@ what it offers. The mark is absent on such a row, not dimmed. And a **day-level 
 or marking the whole screen when the day it shows has not arrived — was not pursued: the requirement
 is deliberately per-row, so that a kind added later which offers nothing on a day that *has* arrived
 is covered without any of this being reopened.
+
+**12. Whether a control is offered is the screen's own answer, and nothing outside works it out.**
+This sits one step earlier than the decisions above rather than beside them: they say how what is
+offered is *drawn*, and this says who knows. A day screen gives out neither the today it was handed
+nor the day it is showing, so nothing holding one of them can compare the two; the way back to today
+is therefore something the screen answers, and a caller deciding whether to draw that control asks it
+and nothing else. **The answer is about the control and not about the position.** It must not be
+phrased as, or stand in for, whether the screen is showing its today — the two coincide, and saying
+the second would make the screen's own today readable through an answer that exists to hide it, and
+would leave the next control added anywhere judged by an answer that was never about it. Offering
+none is not a refusal either: the way back stays something a day screen does from whatever day it is
+showing, including from its today, where it leaves the screen showing that today. `CONTEXT.md`
+§ *Offered* holds the rule — what bounds an offer is what the screen holds the answer to — and this
+is why it lands on the screen for this control.
 
 ### Where each decision lands, and which of them a person sees every day
 

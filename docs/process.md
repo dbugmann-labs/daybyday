@@ -442,8 +442,9 @@ no behaviour change: tooling, dependency bumps, docs, CI. If you find yourself r
 **Rewriting a capability spec with no behaviour change is still a Story**, and that is not an
 exception to the sentence above but a consequence of two rules that leave no other lane: rule 2 gives
 `openspec/specs/` to `/opsx:archive` alone, and CI check 2 fails any `chore/` branch that touches a
-capability spec. Such an **editorial Story** runs the ordinary pipeline with a MODIFIED-only delta,
-every scenario title unchanged and no test changed at all. ADR-1047.
+capability spec. Such an **editorial Story** runs the ordinary pipeline with a delta that carries
+every requirement in full — MODIFIED, or REMOVED plus ADDED where one splits — with every
+scenario title unchanged and no test changed at all. ADR-1047.
 
 **The one thing that touches `src/` on this lane is the app shell**, which is why the table above
 says a chore branch may. It is not an exception to the sentence before it, because a shell adds no

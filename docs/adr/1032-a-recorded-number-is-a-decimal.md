@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-06
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — why a comma and a full stop are read alike is recorded here, as a
+  consequence of this choice rather than a rule of one screen's; `condense-day-screen-spec` (#201)
+  deletes the requirement prose that carried the argument.
 
 ## Context
 
@@ -48,6 +51,15 @@ these numbers must refuse a value that is not a number **outright**, rather than
 comparison to do it. `openspec/specs/commitment/spec.md` says so in *A range is a lowest and a
 highest…* and in *A target is a number above zero*, and each carries a scenario that fails an
 implementation that leans on the comparison.
+
+**A second thing comes with it and is not visible at the call site either: a comma and a full stop
+are the same separator.** An iPhone's decimal keypad prints whichever one the region the phone is
+set to says, so a field that refuses the key on its own keyboard is broken. Every place in this
+product that reads a decimal a person typed therefore takes either and reads both the same way, so
+the number kept is the same number whichever key the keypad drew. That belongs here rather than on
+a screen, because it follows from a person typing the number this record chose the
+type for: the day screen's entries, the commitments screen's range and target, and anything later
+that reads a typed decimal all inherit it. A requirement states the rule; the reason is this line.
 
 ## Alternatives considered
 

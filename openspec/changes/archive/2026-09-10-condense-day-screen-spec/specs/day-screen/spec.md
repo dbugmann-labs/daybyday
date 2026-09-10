@@ -1,13 +1,4 @@
-# Day Screen Specification
-
-## Purpose
-
-Describes what one calendar date asks of a person and what they did about it — the commitments due
-on that date, each with whether it is kept, in the order the day view was handed them. It is where
-`commitment`'s answer about a date and `record`'s answer about a tick are brought together for a
-single day, and it is what the screen a person lands on draws.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: A day view is the commitments due on a date, each with whether it is kept
 
@@ -3998,6 +3989,26 @@ what the screen is telling SHALL be left as it was.
   says of the day before is ticked
 - **THEN** it is telling nothing on any row
 - **AND** ticking that row is not refused with an error
+
+## REMOVED Requirements
+
+### Requirement: A row is a commitment's line on a date
+**Reason**: split into the two requirements added below — row identity and contents, and
+what a row gives back — with no change of behaviour.
+**Migration**: every scenario of this requirement is carried verbatim to one of the two, ten to
+the first and four to the second; no test moves.
+
+### Requirement: A day screen says the reach of its day picker
+
+**Reason**: Split into the two requirements added below, which carry its rules between them; no behaviour changes.
+**Migration**: Every scenario is carried verbatim to one of the two, none dropped and none renamed.
+
+### Requirement: A day screen says the day view of the day before the one it is showing and of the day after
+
+**Reason**: Split into the two requirements added below, which carry its rules between them; no behaviour changes.
+**Migration**: Every scenario is carried verbatim to one of the two, none dropped and none renamed.
+
+## ADDED Requirements
 
 ### Requirement: A row is its commitment, its date and what that day holds
 
