@@ -160,9 +160,8 @@ public final class CommitmentsScreen {
     }
 
     /// Why a change was refused. `nil` from any of the seven below means it was kept at the
-    /// place before that call returned. `Error` so `range(lowest:highest:)` and `target(_:)` can
-    /// hand one back through `Result` alongside the value they read.
-    public enum Refusal: Error, Equatable, Sendable {
+    /// place before that call returned.
+    public enum Refusal: Equatable, Sendable {
         /// A name that is empty or made only of blank space.
         case namesNothing
         /// A weekday set with no days in it — the one refusal the rule engine does not make.
@@ -278,13 +277,21 @@ public final class CommitmentsScreen {
         return nil
     }
 
+    /// What reading a range or a target from what a person typed comes back as: the same shape
+    /// `Swift.Result` offers, without asking `Refusal` to conform to `Error` merely to be handed
+    /// back alongside the value — nothing above this seam throws or catches one.
+    private enum Reading<Value> {
+        case success(Value)
+        case failure(Refusal)
+    }
+
     /// `lowest` and `highest` read as a range for the number kind — `nil` where both are blank,
     /// which is no range and is kept; `.rangeIsNotARange` where one is blank and the other is
     /// not, where either does not read as a number, or where the lowest reads above the highest.
     /// `design.md` § *Blank is asked before the reading*.
     private static func range(
         lowest: String, highest: String
-    ) -> Result<Commitment.Range?, Refusal> {
+    ) -> Reading<Commitment.Range?> {
         let lowestIsBlank = Blank.saysNothing(lowest)
         let highestIsBlank = Blank.saysNothing(highest)
 
@@ -307,7 +314,7 @@ public final class CommitmentsScreen {
 
     /// `text` read as a target for the total kind — `.targetIsNotATarget` where it is blank,
     /// does not read as a number, or reads as a number not above zero.
-    private static func target(_ text: String) -> Result<Commitment.Target, Refusal> {
+    private static func target(_ text: String) -> Reading<Commitment.Target> {
         guard case .number(let value) = TypedNumber.read(text), let target = Commitment.Target(value)
         else {
             return .failure(.targetIsNotATarget)
