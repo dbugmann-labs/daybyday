@@ -116,10 +116,10 @@ the honest outcome — **do not invent a production change to manufacture one**,
 writing the test because it would pass. If either goes red, report what it says before changing
 anything.
 
-- [ ] 6.1 `two number commitments alike in every way but the range their kind carries are both held`
+- [x] 6.1 `two number commitments alike in every way but the range their kind carries are both held`
   — in `RosterTests.swift`, beside `two commitments alike in every way but the kind their days take
   are both held`, which is the test this one exists to cover the gap in. Do **not** edit that test.
-- [ ] 6.2 `a roster store holding a commitment with half a range is refused` — in
+- [x] 6.2 `a roster store holding a commitment with half a range is refused` — in
   `RosterStoreTests.swift`. The malformed place it needs is already built inside `a roster store
   holding what could not be a roster is refused`, as that test's fourth place; **leave that test
   exactly as it is** and write the new one standing on its own, with both halves of the half-range
