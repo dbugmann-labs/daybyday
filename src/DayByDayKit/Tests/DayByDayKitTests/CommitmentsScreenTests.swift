@@ -401,6 +401,30 @@ func aCommitmentsScreenOffersTheDayItWasHandedAsTheDayToKeepACommitmentFrom() {
 }
 
 @MainActor
+@Test("a commitments screen offers the tick kind for a new commitment")
+func aCommitmentsScreenOffersTheTickKindForANewCommitment() throws {
+    let emptyRosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let emptyScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: emptyRosterPlace)
+
+    #expect(emptyScreen.kindToOffer == .tick)
+
+    let totalRosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .total(target: target))!
+    let totalRosterStore = try RosterStore(at: totalRosterPlace)
+    try totalRosterStore.add(protein)
+
+    let totalScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: totalRosterPlace)
+
+    #expect(totalScreen.kindToOffer == .tick)
+}
+
+@MainActor
 @Test("a commitments screen accepts a day to keep from that has not arrived and one long past")
 func aCommitmentsScreenAcceptsADayToKeepFromThatHasNotArrivedAndOneLongPast() {
     let rosterPlace = freshRosterPlace()

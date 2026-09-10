@@ -102,6 +102,18 @@ public final class CommitmentsScreen {
     /// The day to offer as the day a commitment is kept from: the day this screen was handed.
     public private(set) var dayToKeepFrom: CalendarDate
 
+    /// Which of the four kinds a form is offering. Deliberately not `Commitment.Kind`, which
+    /// carries the range or the target as a formed value: this is the picker, and what a person
+    /// typed for the other two arrives beside it as text. `design.md` § *The seam*.
+    public enum KindChoice: Hashable, Sendable, CaseIterable {
+        case tick, number, note, total
+    }
+
+    /// The kind to offer for a new commitment: always the tick. It is the same answer
+    /// `dayToKeepFrom` gives, for the same reason — a form that chose its own starting kind
+    /// would be deciding, in a layer nothing regresses, which kind is the ordinary one.
+    public var kindToOffer: KindChoice { .tick }
+
     /// The commitment a stop has been asked for and not yet confirmed or cancelled.
     public private(set) var awaitingConfirmation: Commitment?
 
