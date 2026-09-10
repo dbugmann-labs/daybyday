@@ -456,15 +456,39 @@ public final class DayScreen {
         dayView = dayViewOfShownDay()
     }
 
+    /// The day view of `day`, drawn from `roster` and `recordStore`'s history exactly as they
+    /// stand now — asks neither again.
+    private func dayView(on day: CalendarDate) -> DayView {
+        DayView(of: roster.groups(on: day), on: day, in: recordStore?.history ?? History())
+    }
+
     /// The day view of `shownDay`, drawn from `roster` and `recordStore`'s history exactly as
     /// they stand now — asks neither again. Shared by every caller that re-forms `dayView` after
     /// changing what it is drawn from or which day it is drawn for: the writes `tick` and
     /// `enter(_:on:)` keep before re-forming it, and the moves `showPreviousDay`, `showNextDay`
     /// and `showToday` that only step the day already held.
     private func dayViewOfShownDay() -> DayView {
-        DayView(
-            of: roster.groups(on: shownDay), on: shownDay,
-            in: recordStore?.history ?? History())
+        dayView(on: shownDay)
+    }
+
+    /// The day view of the calendar date one day before `shownDay`, or `nil` where `shownDay` is
+    /// 1 January 1583. Formed for that day's own roster answer, never from `dayView`'s groups or
+    /// from `roster.groups(on: shownDay)` — `design.md` § *The neighbour is formed for its own
+    /// day*. Reads neither the roster nor the record again, and changes nothing about the screen.
+    public var previousDayView: DayView? {
+        guard let previousDate = shownDay.adding(days: -1) else {
+            return nil
+        }
+        return dayView(on: previousDate)
+    }
+
+    /// The day view of the calendar date one day after `shownDay`, or `nil` where `shownDay` is
+    /// 31 December 9999. The same as `previousDayView`, one day the other way.
+    public var nextDayView: DayView? {
+        guard let nextDate = shownDay.adding(days: 1) else {
+            return nil
+        }
+        return dayView(on: nextDate)
     }
 
     /// Shows the calendar day before the one being shown. Leaves the screen exactly as it is when

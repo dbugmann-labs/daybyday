@@ -1,6 +1,6 @@
 ## 1. Before a line is written
 
-- [ ] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
+- [x] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
   From `src/DayByDayKit`, `swift test` reports **1015 tests passing** — measured 2026-09-10 on this
   branch, whose only commit is the grill, on `84dfa5c`. Re-measure it rather than trusting that
   sentence; a different number is a stop. From the repo root, `pnpm run check:scenarios` should
@@ -14,7 +14,7 @@
   modified requirement changes prose and nothing a test can see; if making any box below pass needs
   one of them edited, that is a **stop and a G4 question**.
 
-- [ ] 1.2 Confirm the six facts the shape rests on, before writing any test, and stop and report if
+- [x] 1.2 Confirm the six facts the shape rests on, before writing any test, and stop and report if
   any is false (`design.md` § *Context*): `DayScreen`'s `today`, `shownDay`, `recordStore` and
   `roster` are all still `private` (`DayScreen.swift:24`–`:27`); `dayView` is still stored and still
   formed in ten places, three of them inline rather than through `dayViewOfShownDay()` (`:75`,
@@ -26,7 +26,7 @@
   still the roster's per-date answer (`Roster.swift:58`). If the guard in any of the three write
   methods has moved or widened, stop: § 3b exists because it is where it is.
 
-- [ ] 1.3 Re-read this box before § 2 and again before § 4. `day-screen` is the busiest capability in
+- [x] 1.3 Re-read this box before § 2 and again before § 4. `day-screen` is the busiest capability in
   the repository: if another Story delta-ing it merges to `main` while this branch is open, a clean
   rebase can still leave this delta describing a spec that has moved — and this one restates a whole
   shipped requirement, which makes it more exposed than most. Check with
@@ -43,40 +43,40 @@ The whole of the implementation is two computed properties and one private helpe
 `Roster`, or to any existing member of `DayScreen` beyond `dayViewOfShownDay()` gaining a parameter,
 that is a stop.
 
-- [ ] 2.1 `a day screen says the day view of the day before the one it is showing` — adds
+- [x] 2.1 `a day screen says the day view of the day before the one it is showing` — adds
   `previousDayView`.
-- [ ] 2.2 `a day screen says the day view of the day after the one it is showing` — adds
+- [x] 2.2 `a day screen says the day view of the day after the one it is showing` — adds
   `nextDayView`.
-- [ ] 2.3 `a day screen says the day one calendar day either side and no day further` — one day, not
+- [x] 2.3 `a day screen says the day one calendar day either side and no day further` — one day, not
   two, and across a month boundary. 2026 is not a leap year, so the day before Sunday 1 March 2026 is
   Saturday 28 February 2026.
-- [ ] 2.4 `saying the day either side of a day screen leaves the day it is showing exactly as it was`
+- [x] 2.4 `saying the day either side of a day screen leaves the day it is showing exactly as it was`
   — reading either answer moves nothing. If either property is not `get`-only, stop.
-- [ ] 2.5 `a day screen moved to another day says the day either side of that day`
-- [ ] 2.6 `a day screen sent back to today says the day either side of that today`
-- [ ] 2.7 `a day screen showing a day picked on its day picker says the day either side of that day`
-- [ ] 2.8 `a day screen shown again on a new day says the day either side of that day` — 2.5 to 2.8
+- [x] 2.5 `a day screen moved to another day says the day either side of that day`
+- [x] 2.6 `a day screen sent back to today says the day either side of that today`
+- [x] 2.7 `a day screen showing a day picked on its day picker says the day either side of that day`
+- [x] 2.8 `a day screen shown again on a new day says the day either side of that day` — 2.5 to 2.8
   are the four ways the day being shown moves, and they are what a **stored** pair of neighbours
   would have to be refreshed at. They pass for free against the computed pair `design.md` names, and
   that is the point of writing them: an implementation that stores instead must keep all four green.
-- [ ] 2.9 `a day screen says a day either side drawn from the commitments its roster had not stopped keeping on that day`
+- [x] 2.9 `a day screen says a day either side drawn from the commitments its roster had not stopped keeping on that day`
   — **the box that separates a right implementation from the likely wrong one.** An implementation
   that formed a neighbour from `roster.groups(on: shownDay)`, or from the groups already inside
   `dayView`, passes every other box in § 2 and fails this one. If making it pass needs
   `DayView.previousDay(of:in:)` or `nextDay(of:in:)`, read `design.md` § *The seam* first: those take
   the groups they are handed, which is exactly the wrong day's.
-- [ ] 2.10 `a day screen says a day either side drawn from the record it already holds`
-- [ ] 2.11 `saying the day either side of a day screen does not read its record or its roster again`
+- [x] 2.10 `a day screen says a day either side drawn from the record it already holds`
+- [x] 2.11 `saying the day either side of a day screen does not read its record or its roster again`
   — if `Self.open` or `Self.openRoster` is reachable from either property, that is a stop.
-- [ ] 2.12 `a tick made on the day a day screen is showing leaves the day either side of it as it was`
-- [ ] 2.13 `a day screen that cannot read its record says the day either side of it with nothing kept`
-- [ ] 2.14 `a day screen that cannot read its roster says the day either side of it and neither holds rows`
+- [x] 2.12 `a tick made on the day a day screen is showing leaves the day either side of it as it was`
+- [x] 2.13 `a day screen that cannot read its record says the day either side of it with nothing kept`
+- [x] 2.14 `a day screen that cannot read its roster says the day either side of it and neither holds rows`
   — 2.13 and 2.14 are `grill.md` § *Settled* 6: a store failure must not take the gesture away as
   well.
-- [ ] 2.15 `a day screen goes on telling what it was telling on a row when it is asked the day either side of it`
+- [x] 2.15 `a day screen goes on telling what it was telling on a row when it is asked the day either side of it`
   — the notice survives being asked. This is the box that closes ADR-1043's rejected workaround by
   name: if either property sets `notice`, or clears it, stop.
-- [ ] 2.16 `a day screen returned to says the day either side of it from the roster it then holds`
+- [x] 2.16 `a day screen returned to says the day either side of it from the roster it then holds`
 
 ## 3. `day-screen` — the ends of the calendar, and where a change may be made
 
@@ -84,11 +84,11 @@ Seven scenarios over two requirements, in the same file. One red-green cycle eac
 
 ### 3a. A day screen says no day view before the first supported date and none after the last — three scenarios
 
-- [ ] 3.1 `a day screen showing the first supported date says no day view before it and says the day after`
+- [x] 3.1 `a day screen showing the first supported date says no day view before it and says the day after`
   — the absence comes from `CalendarDate.adding(days:)` answering `nil`, not from a date comparison
   written here. If a literal 1583 or 9999 appears in `DayScreen.swift`, stop.
-- [ ] 3.2 `a day screen showing the last supported date says no day view after it and says the day before`
-- [ ] 3.3 `a day screen moved off an end of the calendar says a day view either side of it` — the
+- [x] 3.2 `a day screen showing the last supported date says no day view after it and says the day before`
+- [x] 3.3 `a day screen moved off an end of the calendar says a day view either side of it` — the
   absence is about the calendar and never about the screen.
 
 ### 3b. A day screen makes every change on the day it is showing and none either side — four scenarios
@@ -100,10 +100,10 @@ shown*). They are still written and still start red, because they cannot compile
 **No box here may change any of those three guards.** If one of them looks like it wants widening to
 "any row this screen can draw", that is the exact regression these four fences exist to catch.
 
-- [ ] 3.4 `ticking a row a day screen says of the day before changes nothing`
-- [ ] 3.5 `entering a number on a row a day screen says of the day after changes nothing`
-- [ ] 3.6 `taking back the last addition on a row a day screen says of the day before changes nothing`
-- [ ] 3.7 `a day screen tells nothing on a row of a day either side of the one it is showing`
+- [x] 3.4 `ticking a row a day screen says of the day before changes nothing`
+- [x] 3.5 `entering a number on a row a day screen says of the day after changes nothing`
+- [x] 3.6 `taking back the last addition on a row a day screen says of the day before changes nothing`
+- [x] 3.7 `a day screen tells nothing on a row of a day either side of the one it is showing`
 
 ## 4. The app shell — the day screen pages under the finger
 
@@ -112,25 +112,25 @@ checks off one by one. **The shell computes no day and holds none**: it reads th
 the screen and moves it with the same `showPreviousDay()` and `showNextDay()` the chevrons already
 call.
 
-- [ ] 4.1 Lift the fixed controls out of the day `List`: the day-title `HStack` (chevrons and
+- [x] 4.1 Lift the fixed controls out of the day `List`: the day-title `HStack` (chevrons and
   `DatePicker`), the conditional `Today` button and the two store messages become a fixed row above
   the paged content, and the `ForEach` over the day's groups is what pages.
   `grill.md` § *Settled* 9. The store messages stay with the controls — they are facts about the
   screen, not about a day.
-- [ ] 4.2 Draw three day lists in an `HStack`, each the width of the container: `screen.previousDayView`,
+- [x] 4.2 Draw three day lists in an `HStack`, each the width of the container: `screen.previousDayView`,
   `screen.dayView`, `screen.nextDayView`. Translate them by the drag's own `width` through
   `.simultaneousGesture`, keeping the existing test that a drag whose vertical travel exceeds its
   horizontal is not a day move. Where a neighbour is `nil` there is no page to reveal: the drag
   resists and settles back.
-- [ ] 4.3 On a carry, call `screen.showPreviousDay()` or `screen.showNextDay()` and **never
+- [x] 4.3 On a carry, call `screen.showPreviousDay()` or `screen.showNextDay()` and **never
   `screen.showDay(_:)`** — that one is bounded by the day picker's reach and would silently refuse a
   page back below the roster's earliest kept-from day, which the chevrons and the swipe deliberately
   reach past. If a box here needs `showDay(_:)`, stop and report it.
-- [ ] 4.4 Keep `ForEach(Array(group.rows.enumerated()), id: \.offset)` exactly as it is, in all three
+- [x] 4.4 Keep `ForEach(Array(group.rows.enumerated()), id: \.offset)` exactly as it is, in all three
   lists, and hand no two days' rows to one `ForEach` to diff. ADR-1043 and
   `docs/open-questions.md` § *The shell identifies rows by position*: a paged screen makes that
   temptation worse, not safer. Any change to the keying is a **stop**.
-- [ ] 4.5 Animate the settle at release, and a chevron tap, in the direction of the move — leftwards
+- [x] 4.5 Animate the settle at release, and a chevron tap, in the direction of the move — leftwards
   onto the next day, rightwards onto the previous. Read `@Environment(\.accessibilityReduceMotion)`
   and make both an instant change where it is set, leaving the drag tracking the finger either way
   (`grill.md` § *Settled* 8 and 11). The day picker and `Today` replace where they stand and animate
@@ -161,21 +161,21 @@ proposal commit, not by the implementation** (`design.md` § *ADR-1043 is amende
 gains the term the grill declared*). These boxes confirm rather than write, and each is tickable
 while reading what is already there:
 
-- [ ] 5.1 Confirm `CONTEXT.md` § *Adjacent day view* still describes what shipped — one day either
+- [x] 5.1 Confirm `CONTEXT.md` § *Adjacent day view* still describes what shipped — one day either
   side, formed for that day's own roster answer, none past either end of the calendar, drawn and
   never acted on. If the implementation needed a rule that paragraph does not carry, that is a **stop
   and a G4 question**, not an edit to slip in.
-- [ ] 5.2 Confirm ADR-1043's four amended decisions still describe what shipped: the chevron plays
+- [x] 5.2 Confirm ADR-1043's four amended decisions still describe what shipped: the chevron plays
   the same settle in the same direction, Reduce Motion governs the played half only, the day's rows
   page while the controls stay put, and the day picker always replaces. If the phone answered
   differently at § 4.7, **report it** — the record is amended by a later act, never quietly at the
   end of an implementation.
-- [ ] 5.3 Confirm no further ADR was written by this branch:
+- [x] 5.3 Confirm no further ADR was written by this branch:
   `git diff --stat origin/main... -- docs/adr/` reports **only** `1043-a-day-change-pages-under-the-finger.md`.
   ADR-1019, ADR-1029, ADR-1042 and ADR-1045 are **used** here, not amended.
-- [ ] 5.4 Confirm `openspec/specs/` was not hand-edited on this branch (rule 2):
+- [x] 5.4 Confirm `openspec/specs/` was not hand-edited on this branch (rule 2):
   `git diff --stat origin/main... -- openspec/specs/` reports nothing.
-- [ ] 5.5 Leave `docs/backlog.md` and `docs/open-questions.md` alone. § *The shell identifies rows by
+- [x] 5.5 Leave `docs/backlog.md` and `docs/open-questions.md` alone. § *The shell identifies rows by
   position* stays open — this Story does not close it, and closing it is a grooming pass's act rather
   than a Story branch's. Confirm neither file has been touched by this branch before the review.
 
