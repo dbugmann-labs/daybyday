@@ -183,10 +183,10 @@ tidy-up (rule 5).
 
 ## 9. Before the review, and what the janitor does at the archive
 
-- [ ] 9.1 `swift test` from `src/DayByDayKit` — **1058** green: 1036 from § 1.1 plus the 22 tests of
+- [x] 9.1 `swift test` from `src/DayByDayKit` — **1058** green: 1036 from § 1.1 plus the 22 tests of
   §§ 3–6, none deleted and none renamed. From the repo root, `pnpm run verify` green and `pnpm run
   checks` reporting `78/78 scenario(s) covered`.
-- [ ] 9.2 `openspec validate add-kind-to-commitments-screen --strict` exits 0, and `openspec validate
+- [x] 9.2 `openspec validate add-kind-to-commitments-screen --strict` exits 0, and `openspec validate
   --all --strict --no-interactive` exits 0.
 - [ ] 9.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/add-kind-to-commitments-screen/` or anywhere under `openspec/specs/` is a
