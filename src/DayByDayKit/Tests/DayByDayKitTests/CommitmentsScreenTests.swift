@@ -706,24 +706,24 @@ func aRangeEndAndATargetOfMoreThanThirtyEightSignificantDigitsAreNotNumbers() th
     let dailyRhythm: Rhythm = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
-    let thirtyNineDigits = "1" + String(repeating: "9", count: 39)
-    let thirtySevenNines = "1" + String(repeating: "9", count: 37)
+    let fortyDigits = "1" + String(repeating: "9", count: 39)
+    let thirtyEightDigits = "1" + String(repeating: "9", count: 37)
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
 
     let moodRefusal = screen.define(
         name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
-        lowest: "1", highest: thirtyNineDigits)
+        lowest: "1", highest: fortyDigits)
     let proteinRefusal = screen.define(
         name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total,
-        target: thirtyNineDigits)
+        target: fortyDigits)
 
     #expect(moodRefusal == .rangeIsNotARange)
     #expect(proteinRefusal == .targetIsNotATarget)
 
     let acceptedRefusal = screen.define(
         name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
-        lowest: "1", highest: thirtySevenNines)
+        lowest: "1", highest: thirtyEightDigits)
 
     #expect(acceptedRefusal == nil)
     #expect(screen.kept.map(\.name) == ["Mood"])
