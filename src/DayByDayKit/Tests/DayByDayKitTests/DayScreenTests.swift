@@ -6816,14 +6816,14 @@ func tickingARowADayScreenSaysOfTheDayBeforeChangesNothing() throws {
         startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
         keepingRosterAt: rosterPlace)
     let dayViewWhenOpened = screen.dayView
-    let recordExistedWhenOpened = FileManager.default.fileExists(atPath: place.path)
+    let bytesWhenOpened = try? Data(contentsOf: place)
 
     try screen.tick(screen.previousDayView!.rows[0])
 
     #expect(!(screen.previousDayView?.rows.first?.isKept ?? true))
     #expect(screen.previousDayView == DayView(of: [journaling], on: sunday, in: History()))
     #expect(screen.dayView == dayViewWhenOpened)
-    #expect(FileManager.default.fileExists(atPath: place.path) == recordExistedWhenOpened)
+    #expect((try? Data(contentsOf: place)) == bytesWhenOpened)
 }
 
 @MainActor
@@ -6842,13 +6842,13 @@ func enteringANumberOnARowADayScreenSaysOfTheDayAfterChangesNothing() throws {
     let screen = DayScreen(
         startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
     let dayViewWhenOpened = screen.dayView
-    let recordExistedWhenOpened = FileManager.default.fileExists(atPath: place.path)
+    let bytesWhenOpened = try? Data(contentsOf: place)
 
     try screen.enter("72", on: screen.nextDayView!.rows[0])
 
     #expect(screen.nextDayView?.rows.first?.numberEntry(asOf: monday)?.number == nil)
     #expect(screen.dayView == dayViewWhenOpened)
-    #expect(FileManager.default.fileExists(atPath: place.path) == recordExistedWhenOpened)
+    #expect((try? Data(contentsOf: place)) == bytesWhenOpened)
 }
 
 @MainActor

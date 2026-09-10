@@ -101,8 +101,19 @@ struct ContentView: View {
     // swiping." `nil` between drags. Read by `pagedDayContent` to disable the day `List`s' own
     // scrolling for exactly as long as this drag owns the horizontal axis, so the two can never
     // both be live inside one continuous drag the way comparing each sample's ratio on its own
-    // allowed.
+    // allowed. Cleared both by `onEnded`'s `defer`, for a drag that finishes, and by the
+    // `onChange(of: isDraggingDay)` below, for one that is *cancelled* instead — see that
+    // property.
     @State private var lockedDragAxis: Axis?
+    // Mirrors whether `daySwipeGesture` currently has a finger down, off SwiftUI's own
+    // gesture-active state rather than off `onChanged`/`onEnded` — a `@GestureState` resets
+    // itself to its initial value the moment the gesture it is `updating` stops being active,
+    // whether that is a normal `onEnded` or a *cancellation* (an incoming call banner, the app
+    // backgrounded with the finger down), neither of which reaches `onEnded`. That reset is what
+    // `pagedDayContent`'s `onChange(of: isDraggingDay)` clears `lockedDragAxis` from, so a
+    // cancelled drag can never leave the day lists unable to scroll the way a reset that lived
+    // only in `onEnded`'s `defer` would.
+    @GestureState private var isDraggingDay = false
 
     var body: some View {
         NavigationStack {
@@ -320,11 +331,14 @@ struct ContentView: View {
         // The gap below the last of these controls — `Today` where it shows, otherwise the day
         // row itself — down to where `pagedDayContent` starts. Lifting the four controls out of
         // the `List` (`tasks.md` § 4.1) took the `List`'s own top content margin out with them,
-        // and the phone walk (PR #194) reported what was left too tight. This machine cannot
-        // launch the Simulator to read the gap on screen the way #180 and ADR-1043's chore did,
-        // so this is not a measured value: it reuses the 24pt already established above, for the
-        // same visual weight on both sides of this fixed block, and is left for the owner's
-        // re-walk to confirm.
+        // and the phone walk (PR #194) reported what was left too tight. Not measured against a
+        // booted Simulator the way #180 and ADR-1043's chore did, and the way the category
+        // heading's inset below is ("Measured on this SDK"): the constraint is the session's, not
+        // the machine's — a cold Simulator boot is silent long enough to trip this harness's own
+        // stream watchdog, and ADR-1019 records the Simulator booting here without issue
+        // otherwise. So this reuses the 24pt already established above, for the same visual
+        // weight on both sides of this fixed block. The second phone walk (PR #194) confirmed it
+        // on a paired iPhone: the gap reads right on both a today and a non-today day.
         .padding(.bottom, 24)
     }
 
@@ -340,6 +354,15 @@ struct ContentView: View {
     /// width of the container and translated by `dragTranslation`. No `List` is ever nested
     /// inside another scroll view, and no two days' rows are ever handed to one `ForEach`:
     /// `design.md` § *What the shell draws*, `tasks.md` § 4.2 and § 4.4.
+    ///
+    /// **Reading `screen.dayView` here, alongside both neighbours, is load-bearing and not just
+    /// what this view happens to draw.** `DayScreen` is `@Observable` over `recordStore`, a
+    /// reference; a tick mutates the history behind that reference without the reference itself
+    /// changing, so SwiftUI's observation has nothing to diff on `previousDayView` or
+    /// `nextDayView` alone. `dayView` is reassigned on every write, so reading it here is what
+    /// carries the redraw to the neighbours too. A view built to hold only the neighbours would
+    /// not be told a tick had landed on one — `design.md` § *Computed, not stored, and that is
+    /// the load-bearing choice* names the wrinkle; do not drop this read while chasing it away.
     private var pagedDayContent: some View {
         GeometryReader { proxy in
             let width = proxy.size.width
@@ -362,6 +385,15 @@ struct ContentView: View {
             .simultaneousGesture(daySwipeGesture(pageWidth: width))
             .onAppear { pageWidth = width }
             .onChange(of: width) { _, newWidth in pageWidth = newWidth }
+            // The cancellation half of the reset described on `lockedDragAxis` and
+            // `isDraggingDay` above: when SwiftUI resets `isDraggingDay` to `false` — on a
+            // completed drag or a cancelled one alike — this clears the lock too, so a drag that
+            // never reaches `onEnded` cannot leave the day lists permanently unscrollable.
+            .onChange(of: isDraggingDay) { _, dragging in
+                if !dragging {
+                    lockedDragAxis = nil
+                }
+            }
         }
     }
 
@@ -529,6 +561,9 @@ struct ContentView: View {
     /// would reveal is absent, settling back on release rather than carrying.
     private func daySwipeGesture(pageWidth: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 40)
+            .updating($isDraggingDay) { _, isDraggingDay, _ in
+                isDraggingDay = true
+            }
             .onChanged { value in
                 if lockedDragAxis == nil {
                     lockedDragAxis =

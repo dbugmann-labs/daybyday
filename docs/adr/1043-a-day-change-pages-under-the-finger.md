@@ -1,11 +1,11 @@
 # 1043. A day change pages under the finger
 
-- Status: proposed 2026-09-09 as motion played on release, built on `chore/day-screen-motion`, put
-  on a real phone the same day and **rejected there by the owner**. The diagnosis it was written
-  on stands and is why this file is still here; the remedy it named does not, and is superseded by
-  the one below — a day screen that pages under the finger, which this branch may not build and
-  which is owed to the Story `add-adjacent-day-views` (#184). The motion is reverted. **This chore
-  ships the tightened gap and no motion at all.**
+- Status: accepted — proposed 2026-09-09 as motion played on release, built on
+  `chore/day-screen-motion`, put on a real phone the same day and **rejected there by the owner**.
+  The diagnosis it was written on stands and is why this file is still here; the remedy it named
+  does not, and is superseded by the one below — a day screen that pages under the finger, built
+  and walked twice on a device by the Story `add-adjacent-day-views` (#184). The motion is
+  reverted. **This chore ships the tightened gap and no motion at all.**
 - Date: 2026-09-09
 - Amended: 2026-09-09 — the released motion was built and tried on a device, and the device
   answered. Retitled with the remedy, because the old title said the old one.
@@ -13,6 +13,9 @@
   (#184), and the two questions this record left open by name are answered. Four decisions that
   outlive that Story land in § *Amendment, 2026-09-10* below rather than in a new record, because
   this is the file that posed two of them.
+- Amended: 2026-09-10 — **the remedy has now been built and walked twice on a paired iPhone**, and
+  the risk the Amendment above carried as unsettled — whether scrolling, row taps and the page
+  gesture co-exist on iOS 26 — is answered: they do. Status moves from proposed to accepted.
 - Deciders: Diego Bugmann
 
 ## Context
