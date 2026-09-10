@@ -848,6 +848,32 @@ this list reads that first. And the `Today` button never animates: it is a butto
 acknowledges its own press, and it is a jump of arbitrary distance that no one-day slide could
 describe honestly. ADR-1043.
 
+**Amended 2026-09-10**, at the grill of `add-adjacent-day-views` (#184). The day change **pages under
+the finger**: the day being dragged toward is already drawn and moves with the thumb, a release short
+of the threshold settles it back and changes nothing at all, and a release past it carries the day
+the rest of the way. A **chevron** plays that same settle, in the same direction — leftwards onto the
+next day, rightwards onto the previous — because a tap has no *during* and one move drawn two
+different ways depending on how it was asked for is the worse outcome. What pages is **the day's
+rows**; the chevrons, the weekday, the **day picker** and the `Today` button are a fixed row of
+controls above them, which is the home-screen model the owner named: the icons travel, the dock
+stays. The `Today` button and the day picker both go on **replacing where they stand**, however near
+the day picked, since a control that can jump any distance must not sometimes slide. A person who has
+asked for less motion keeps the tracking and loses the played half: the drag still follows the
+finger, and the settle at release, like a chevron tap, becomes an instant change. The two constraints
+above are unchanged — the whole day moves and never its rows, and `Today` never animates. What makes
+any of it possible is the **adjacent day view** below. ADR-1043.
+
+**Adjacent day view** — the day view of the day before or the day after the one a **day screen** is
+showing, answered without moving onto it. There is none past either end of the calendar. It is formed
+exactly as the shown day's is, from the screen's record and from the commitments its **roster** had
+not stopped keeping *on that adjacent day*, so it is what the screen would hold had it been moved
+there — a commitment stopped yesterday has a row on the page arriving from the left and none on the
+day being stood on, which is what makes what is seen arriving what is got when it lands. A day screen
+draws nothing and acts on nothing through it: every tick, number, note and addition is still made on
+the day being shown. It is one day either side and never a run of them, and asking for it moves
+nothing, reads nothing and ends nothing the screen is telling on a row. Agreed 2026-09-10 at the
+grill of `add-adjacent-day-views` (#184).
+
 **Day picker** — the control a day screen offers for reaching a day without stepping through every
 day between: a person picks the day and the screen shows it. It is **its own control**, beside the
 chevrons and the `Today` button rather than in place of either, and never the **day title**; and it

@@ -77,6 +77,10 @@ private func date(from calendarDate: CalendarDate) -> Date {
 struct ContentView: View {
     @State private var screen = DayScreen(startingFrom: dayOneCommitments, asOf: today())
     @Environment(\.scenePhase) private var scenePhase
+    // `openspec/changes/add-adjacent-day-views/design.md` § *What the shell draws*: the settle
+    // at release and a chevron tap are animated, and Reduce Motion turns that half off — the
+    // drag itself goes on tracking the finger either way.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showingCommitments = false
     @State private var commitmentsScreen: CommitmentsScreen?
     @State private var enteringRow: DayView.Row?
@@ -85,23 +89,147 @@ struct ContentView: View {
     @State private var enteringNoteText = ""
     @State private var enteringTotalRow: DayView.Row?
     @State private var enteringTotalText = ""
+    // The paged day content's own width, measured off `GeometryReader` and used both to size the
+    // full slide a carry or a chevron tap settles to and as the threshold a drag must cross to
+    // carry. `dragTranslation` is the live offset applied to the three-list `HStack`: the drag's
+    // own `width` while a finger is down, and the settle's target while one is not.
+    @State private var pageWidth: CGFloat = 0
+    @State private var dragTranslation: CGFloat = 0
+    // Which axis the current drag has committed to, decided once from the first sample
+    // `daySwipeGesture` sees and held until the finger lifts — the owner's own words from the
+    // phone walk: "once I start swiping, no more scrolling, and once I start scrolling, no more
+    // swiping." `nil` between drags. Read by `pagedDayContent` to disable the day `List`s' own
+    // scrolling for exactly as long as this drag owns the horizontal axis, so the two can never
+    // both be live inside one continuous drag the way comparing each sample's ratio on its own
+    // allowed. Cleared both by `onEnded`'s `defer`, for a drag that finishes, and by the
+    // `onChange(of: isDraggingDay)` below, for one that is *cancelled* instead — see that
+    // property.
+    @State private var lockedDragAxis: Axis?
+    // Mirrors whether `daySwipeGesture` currently has a finger down, off SwiftUI's own
+    // gesture-active state rather than off `onChanged`/`onEnded` — a `@GestureState` resets
+    // itself to its initial value the moment the gesture it is `updating` stops being active,
+    // whether that is a normal `onEnded` or a *cancellation* (an incoming call banner, the app
+    // backgrounded with the finger down), neither of which reaches `onEnded`. That reset is what
+    // `pagedDayContent`'s `onChange(of: isDraggingDay)` clears `lockedDragAxis` from, so a
+    // cancelled drag can never leave the day lists unable to scroll the way a reset that lived
+    // only in `onEnded`'s `defer` would.
+    @GestureState private var isDraggingDay = false
 
     var body: some View {
         NavigationStack {
-            dayList
-                .navigationDestination(isPresented: $showingCommitments) {
-                    if let commitmentsScreen {
-                        CommitmentsView(screen: commitmentsScreen)
+            VStack(spacing: 0) {
+                dayControls
+                pagedDayContent
+            }
+            .navigationDestination(isPresented: $showingCommitments) {
+                if let commitmentsScreen {
+                    CommitmentsView(screen: commitmentsScreen)
+                }
+            }
+            .toolbar {
+                ToolbarItem {
+                    Button("Commitments") {
+                        commitmentsScreen = CommitmentsScreen(asOf: today())
+                        showingCommitments = true
                     }
                 }
-                .toolbar {
-                    ToolbarItem {
-                        Button("Commitments") {
-                            commitmentsScreen = CommitmentsScreen(asOf: today())
-                            showingCommitments = true
+            }
+            .alert(
+                enteringRow?.name ?? "",
+                isPresented: Binding(
+                    get: { enteringRow != nil },
+                    set: { isPresented in
+                        if !isPresented {
+                            enteringRow = nil
+                        }
+                    }
+                ),
+                presenting: enteringRow
+            ) { row in
+                TextField(row.numberEntry(asOf: today())?.hint ?? "", text: $enteringText)
+                    .keyboardType(.decimalPad)
+                Button("Save") {
+                    try? screen.enter(enteringText, on: row)
+                    enteringRow = nil
+                }
+                Button("Cancel", role: .cancel) {
+                    enteringRow = nil
+                }
+            }
+            .sheet(
+                isPresented: Binding(
+                    get: { enteringNoteRow != nil },
+                    set: { isPresented in
+                        if !isPresented {
+                            enteringNoteRow = nil
+                        }
+                    }
+                )
+            ) {
+                if let row = enteringNoteRow {
+                    NavigationStack {
+                        TextEditor(text: $enteringNoteText)
+                            .padding()
+                            .navigationTitle(row.name)
+                            .navigationBarTitleDisplayMode(.inline)
+                            .toolbar {
+                                ToolbarItem(placement: .cancellationAction) {
+                                    Button("Cancel") {
+                                        enteringNoteRow = nil
+                                    }
+                                }
+                                ToolbarItem(placement: .confirmationAction) {
+                                    Button("Save") {
+                                        try? screen.enter(enteringNoteText, on: row)
+                                        enteringNoteRow = nil
+                                    }
+                                }
+                            }
+                    }
+                }
+            }
+            .sheet(
+                isPresented: Binding(
+                    get: { enteringTotalRow != nil },
+                    set: { isPresented in
+                        if !isPresented {
+                            enteringTotalRow = nil
+                        }
+                    }
+                )
+            ) {
+                if let row = enteringTotalRow {
+                    NavigationStack {
+                        VStack {
+                            TextField("Amount", text: $enteringTotalText)
+                                .keyboardType(.decimalPad)
+                                .padding()
+                            if row.offersTakeBackLast(asOf: today()) {
+                                Button("Take back last", role: .destructive) {
+                                    try? screen.takeBackLast(on: row)
+                                    enteringTotalRow = nil
+                                }
+                            }
+                            Spacer()
+                        }
+                        .navigationTitle(row.name)
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Cancel") {
+                                    enteringTotalRow = nil
+                                }
+                            }
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Save") {
+                                    try? screen.enter(enteringTotalText, on: row)
+                                    enteringTotalRow = nil
+                                }
+                            }
                         }
                     }
                 }
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
@@ -117,11 +245,18 @@ struct ContentView: View {
         }
     }
 
-    private var dayList: some View {
-        List {
+    /// The controls that stay put while the day's rows page beneath them: the chevrons and the
+    /// day picker, the conditional `Today` button, and the two store messages — facts about the
+    /// screen rather than about a day. `design.md` § *What the shell draws*: "the icons travel,
+    /// the dock stays." Drawn outside the paged `List`s entirely, on purpose — ADR-1019's amended
+    /// guard is that nothing here decides anything a test cannot already see decided behind the
+    /// seam; this view only reads what `screen` already computed and calls the two moves the
+    /// chevrons already called before this Story.
+    private var dayControls: some View {
+        VStack(spacing: 8) {
             HStack {
                 Button {
-                    screen.showPreviousDay()
+                    playSettle(towards: .previous)
                 } label: {
                     Image(systemName: "chevron.left")
                 }
@@ -134,7 +269,8 @@ struct ContentView: View {
                 // which the shell computes neither end of, per ADR-1019's 2026-09-04 amendment.
                 // `.labelsHidden()` because the weekday text beside it already labels the row; the
                 // default (non-`.graphical`) style is what B-040 asked for and B-007 explicitly
-                // left out.
+                // left out. The picker always replaces where it stands and animates nothing,
+                // whatever a page settle is doing (`design.md` § *What the shell draws*).
                 DatePicker(
                     "Day",
                     selection: Binding(
@@ -156,7 +292,7 @@ struct ContentView: View {
                 .labelsHidden()
                 Spacer()
                 Button {
-                    screen.showNextDay()
+                    playSettle(towards: .next)
                 } label: {
                     Image(systemName: "chevron.right")
                 }
@@ -189,127 +325,122 @@ struct ContentView: View {
             case .writtenByALaterVersion:
                 Text("The roster was written by a newer version of DayByDay and must not be deleted.")
             }
+        }
+        .padding(.horizontal)
+        .padding(.top, 24)
+        // The gap below the last of these controls — `Today` where it shows, otherwise the day
+        // row itself — down to where `pagedDayContent` starts. Lifting the four controls out of
+        // the `List` (`tasks.md` § 4.1) took the `List`'s own top content margin out with them,
+        // and the phone walk (PR #194) reported what was left too tight. Not measured against a
+        // booted Simulator the way #180 and ADR-1043's chore did, and the way the category
+        // heading's inset below is ("Measured on this SDK"): the constraint is the session's, not
+        // the machine's — a cold Simulator boot is silent long enough to trip this harness's own
+        // stream watchdog, and ADR-1019 records the Simulator booting here without issue
+        // otherwise. So this reuses the 24pt already established above, for the same visual
+        // weight on both sides of this fixed block. The second phone walk (PR #194) confirmed it
+        // on a paired iPhone: the gap reads right on both a today and a non-today day.
+        .padding(.bottom, 24)
+    }
 
-            // A `Section` per group, the category as its header and none where there is no
-            // category — the same arrangement `CommitmentsView`'s kept list takes, and where this
-            // screen's own half of the boundary before the ungrouped rows comes from.
-            // `design.md` § *The shell rides this Story*.
-            ForEach(screen.dayView.groups, id: \.category) { group in
-                Section {
-                    // `Row` carries no identity of its own beyond `isKept` and `name`
-                    // (`DayView.swift` keeps `commitment` and `date` internal to the kit), and
-                    // `isKept` is exactly what a tap flips — keying `ForEach` on the row's value
-                    // would make SwiftUI see a tap as one row removed and another inserted. The
-                    // offset within this group's own `ForEach` is stable across a tap, exactly as
-                    // the flat offset was, so it stands in as the identity instead.
-                    ForEach(Array(group.rows.enumerated()), id: \.offset) { _, row in
-                        let entry = row.numberEntry(asOf: today())
-                        let noteEntry = row.noteEntry(asOf: today())
-                        let totalEntry = row.totalEntry(asOf: today())
-                        let isTarget = row.offersAnything(asOf: today())
-                        // Concrete, not `.primary`/`.secondary` — those are hierarchical and
-                        // resolve against the enclosing `Button`'s accent tint, which is the
-                        // whole of why the name reads blue today. ADR-1045 decision 9.
-                        let nameColor: Color = row.isKept ? .secondary : .primary
-                        // Decision 4, reversed by ADR-1045's third amendment: an unkept tick
-                        // row carries no mark at all. The trailing slot holds a mark only where
-                        // the row is kept, so the open `circle` that used to say "not yet kept,
-                        // but you can" is gone and nothing takes its place.
-                        let markSystemName: String? = row.isKept ? "checkmark" : nil
-                        // Decision 8: the checkmark takes the system green — the concrete
-                        // `Color.green`, never a hierarchical style, so it reads green inside
-                        // the enclosing `Button` and outside it alike. It is the only mark this
-                        // slot draws now, and it is still stated explicitly, since it is not
-                        // drawn inside a `Button` reliably.
-                        let markColor: Color = Color.green
-                        // Resets the hierarchy the rhythm inside `commitmentLine` still reads
-                        // `.secondary` against, so it reads grey rather than the Button's accent
-                        // tint, without editing that file. Decision 11: the strikethrough goes on
-                        // this child `Text`, not the composed one — measured (ADR-1045) to stay on
-                        // the name, survive the interpolation and take the child's own colour,
-                        // where `.strikethrough()` on the composed `Text` would draw a second rule
-                        // across the rhythm's own baseline as well.
-                        let nameLine: Text =
-                            commitmentLine(
-                                Text(row.name)
-                                    .foregroundStyle(nameColor)
-                                    .strikethrough(row.isKept),
-                                rhythmInWords: row.rhythmInWords
-                            )
-                            .foregroundStyle(Color.primary)
-                        let label = HStack {
-                            VStack(alignment: .leading) {
-                                nameLine
-                                if let totalEntry {
-                                    Text(totalEntry.soFarOfTarget)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                                if row == screen.notice?.row {
-                                    Text(screen.notice?.cause ?? "Not saved. Try again.")
-                                        .font(.caption)
-                                        .foregroundStyle(.red)
-                                }
-                            }
-                            if markSystemName != nil || entry != nil || noteEntry != nil || totalEntry != nil {
-                                Spacer()
-                            }
-                            if let markSystemName {
-                                Image(systemName: markSystemName)
-                                    .foregroundStyle(markColor)
-                            }
-                            if entry != nil || noteEntry != nil || totalEntry != nil {
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
+    /// The day the finger is asked to carry towards: `.previous` reveals `screen.previousDayView`
+    /// and moves the page rightward under it; `.next` reveals `screen.nextDayView` and moves the
+    /// page leftward. `design.md` § *What the shell draws*: leftwards onto the next day,
+    /// rightwards onto the previous — a chevron tap plays the same settle a completed drag does.
+    private enum Neighbour {
+        case previous, next
+    }
+
+    /// Three lists in a row — the day before, the day being shown and the day after — each the
+    /// width of the container and translated by `dragTranslation`. No `List` is ever nested
+    /// inside another scroll view, and no two days' rows are ever handed to one `ForEach`:
+    /// `design.md` § *What the shell draws*, `tasks.md` § 4.2 and § 4.4.
+    ///
+    /// **Reading `screen.dayView` here, alongside both neighbours, is load-bearing and not just
+    /// what this view happens to draw.** `DayScreen` is `@Observable` over `recordStore`, a
+    /// reference; a tick mutates the history behind that reference without the reference itself
+    /// changing, so SwiftUI's observation has nothing to diff on `previousDayView` or
+    /// `nextDayView` alone. `dayView` is reassigned on every write, so reading it here is what
+    /// carries the redraw to the neighbours too. A view built to hold only the neighbours would
+    /// not be told a tick had landed on one — `design.md` § *Computed, not stored, and that is
+    /// the load-bearing choice* names the wrinkle; do not drop this read while chasing it away.
+    private var pagedDayContent: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            HStack(spacing: 0) {
+                dayList(for: screen.previousDayView)
+                    .frame(width: width)
+                dayList(for: screen.dayView)
+                    .frame(width: width)
+                    .accessibilityIdentifier("CurrentDayList")
+                dayList(for: screen.nextDayView)
+                    .frame(width: width)
+            }
+            .offset(x: -width + dragTranslation)
+            .clipped()
+            // Disables all three `List`s' own scrolling for exactly as long as this drag has
+            // locked the horizontal axis — the other half of the lock `daySwipeGesture` keeps in
+            // `lockedDragAxis`. `.scrollDisabled` is an environment value every `List` beneath
+            // reads, so setting it once here reaches all three without touching `dayList(for:)`.
+            .scrollDisabled(lockedDragAxis == .horizontal)
+            .simultaneousGesture(daySwipeGesture(pageWidth: width))
+            .onAppear { pageWidth = width }
+            .onChange(of: width) { _, newWidth in pageWidth = newWidth }
+            // The cancellation half of the reset described on `lockedDragAxis` and
+            // `isDraggingDay` above: when SwiftUI resets `isDraggingDay` to `false` — on a
+            // completed drag or a cancelled one alike — this clears the lock too, so a drag that
+            // never reaches `onEnded` cannot leave the day lists permanently unscrollable.
+            .onChange(of: isDraggingDay) { _, dragging in
+                if !dragging {
+                    lockedDragAxis = nil
+                }
+            }
+        }
+    }
+
+    /// One day's rows, in a plain `List` — the same groups, the same per-row rendering and the
+    /// same `ForEach(Array(group.rows.enumerated()), id: \.offset)` keying this screen has always
+    /// used, now driven by whichever of the three day views this list was handed. `nil` — only
+    /// possible at either end of the calendar — draws an empty list; the drag never reveals it,
+    /// because it resists at that end (`daySwipeGesture`).
+    @ViewBuilder
+    private func dayList(for dayView: DayView?) -> some View {
+        List {
+            if let dayView {
+                // A `Section` per group, the category as its header and none where there is no
+                // category — the same arrangement `CommitmentsView`'s kept list takes.
+                // `design.md` § *The shell rides this Story*.
+                ForEach(dayView.groups, id: \.category) { group in
+                    Section {
+                        // `Row` carries no identity of its own beyond `isKept` and `name`
+                        // (`DayView.swift` keeps `commitment` and `date` internal to the kit),
+                        // and `isKept` is exactly what a tap flips — keying `ForEach` on the
+                        // row's value would make SwiftUI see a tap as one row removed and
+                        // another inserted. The offset within this group's own `ForEach` is
+                        // stable across a tap, exactly as the flat offset was, so it stands in
+                        // as the identity instead.
+                        ForEach(Array(group.rows.enumerated()), id: \.offset) { _, row in
+                            rowView(row)
                         }
-                        // `isTarget` decides whether there is a tap at all; the four `nil`
-                        // checks above stay only to decide which sheet a tap opens.
-                        // ADR-1045.
-                        if isTarget {
-                            Button {
-                                if let entry {
-                                    enteringText = entry.number.map { "\($0)" } ?? ""
-                                    enteringRow = row
-                                } else if let noteEntry {
-                                    enteringNoteText = noteEntry.note ?? ""
-                                    enteringNoteRow = row
-                                } else if totalEntry != nil {
-                                    enteringTotalText = ""
-                                    enteringTotalRow = row
-                                } else {
-                                    try? screen.tick(row)
-                                }
-                            } label: {
-                                label
-                            }
-                        } else {
-                            // Decisions 3 and 5, ADR-1045: a row that offers nothing recedes as
-                            // one thing — the name, the rhythm and any mark fade together rather
-                            // than by three different amounts.
-                            label
-                                .opacity(0.5)
+                    } header: {
+                        if let category = group.category {
+                            // The platform's own padding around a category heading, dropped.
+                            // Measured on this SDK (iPhone 17 simulator, iOS 26.5) rather than
+                            // assumed, the way `.listSectionSpacing(12)` below was: the gap
+                            // between the card above and the card this heading belongs to read
+                            // 52.33pt untouched and reads 40.00pt with these insets, and the
+                            // heading itself has not moved sideways — the 16pt leading and
+                            // trailing are the platform's own, restated because
+                            // `listRowInsets` replaces all four.
+                            //
+                            // **40.00pt is the floor, and it is not these insets that set it.**
+                            // The heading's row will not lay out under 28pt however small they
+                            // go — negative values only slide the words inside it — so what is
+                            // left is that 28 plus the 12 below. Anything tighter has to come
+                            // out of `.listSectionSpacing`, and that is the gap before the
+                            // ungrouped rows, which is the one the owner asked to keep.
+                            Text(category)
+                                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                         }
-                    }
-                } header: {
-                    if let category = group.category {
-                        // The platform's own padding around a category heading, dropped. Measured
-                        // on this SDK (iPhone 17 simulator, iOS 26.5) rather than assumed, the way
-                        // `.listSectionSpacing(12)` below was: the gap between the card above and
-                        // the card this heading belongs to read 52.33pt untouched and reads 40.00pt
-                        // with these insets, and the heading itself has not moved sideways — the
-                        // 16pt leading and trailing are the platform's own, restated because
-                        // `listRowInsets` replaces all four.
-                        //
-                        // **40.00pt is the floor, and it is not these insets that set it.** The
-                        // heading's row will not lay out under 28pt however small they go —
-                        // negative values only slide the words inside it — so what is left is that
-                        // 28 plus the 12 below. Anything tighter has to come out of
-                        // `.listSectionSpacing`, and that is the gap before the ungrouped rows,
-                        // which is the one the owner asked to keep.
-                        Text(category)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                     }
                 }
             }
@@ -317,139 +448,196 @@ struct ContentView: View {
         // Same measured value as `CommitmentsView`'s kept list — see the comment there for how
         // it was determined.
         .listSectionSpacing(12)
-        // The gap between the toolbar and the day's title row — not `.listSectionSpacing` above,
-        // which is the gap the *category headings* sit under, and not a `listRowInsets` on a
-        // section header, since the day-title row is bare content, not a section. Measured on
-        // this SDK (iPhone 17 simulator, iOS 26.5) the same way as `.listSectionSpacing(12)`
-        // above: with no `.contentMargins` at all, the day-title card's top edge read 151.0pt
-        // from the top of the screen. Calibrated against `for: .automatic` specifically —
-        // `for: .scrollContent` was tried first and moved the card by less than it was asked to,
-        // an unexplained partial effect this comment does not rely on — by setting it to 0pt and
-        // to 40pt: the card read 116.0pt and 156.0pt respectively, a full point-for-point 40pt
-        // move for a 40pt ask, so `for: .automatic` has no hidden offset to account for and the
-        // platform's own unstated default here is 151.0 − 116.0 = 35.0pt. 24 is about two thirds
-        // of that, the same proportion `.listSectionSpacing(12)` above took off its own 17.7pt
-        // default, and reads 140.0pt on screen — an 11.0pt tightening, confirmed rather than
-        // interpolated. Not pushed toward a floor: the owner's ask was "slightly smaller," not
-        // "as small as possible," and this leaves a clearly visible gap under the toolbar.
-        .contentMargins(.top, 24, for: .automatic)
-        .simultaneousGesture(daySwipeGesture)
-        .alert(
-            enteringRow?.name ?? "",
-            isPresented: Binding(
-                get: { enteringRow != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        enteringRow = nil
-                    }
+    }
+
+    /// One row's content and the tap that acts on it — pulled out of `dayList(for:)` so the same
+    /// rendering runs for all three days without being written three times. Acting on a row from
+    /// a neighbouring day is inert: `DayScreen.tick`, `enter(_:on:)` and `takeBackLast(on:)` each
+    /// return early on a row `screen.dayView.rows` does not contain, which every row here but the
+    /// centre list's is — `openspec/specs/day-screen/spec.md`'s *A day screen makes every change
+    /// on the day it is showing and none on a day either side of it*.
+    @ViewBuilder
+    private func rowView(_ row: DayView.Row) -> some View {
+        let entry = row.numberEntry(asOf: today())
+        let noteEntry = row.noteEntry(asOf: today())
+        let totalEntry = row.totalEntry(asOf: today())
+        let isTarget = row.offersAnything(asOf: today())
+        // Concrete, not `.primary`/`.secondary` — those are hierarchical and resolve against
+        // the enclosing `Button`'s accent tint, which is the whole of why the name reads blue
+        // today. ADR-1045 decision 9.
+        let nameColor: Color = row.isKept ? .secondary : .primary
+        // Decision 4, reversed by ADR-1045's third amendment: an unkept tick row carries no
+        // mark at all. The trailing slot holds a mark only where the row is kept, so the open
+        // `circle` that used to say "not yet kept, but you can" is gone and nothing takes its
+        // place.
+        let markSystemName: String? = row.isKept ? "checkmark" : nil
+        // Decision 8: the checkmark takes the system green — the concrete `Color.green`, never
+        // a hierarchical style, so it reads green inside the enclosing `Button` and outside it
+        // alike. It is the only mark this slot draws now, and it is still stated explicitly,
+        // since it is not drawn inside a `Button` reliably.
+        let markColor: Color = Color.green
+        // Resets the hierarchy the rhythm inside `commitmentLine` still reads `.secondary`
+        // against, so it reads grey rather than the Button's accent tint, without editing that
+        // file. Decision 11: the strikethrough goes on this child `Text`, not the composed one
+        // — measured (ADR-1045) to stay on the name, survive the interpolation and take the
+        // child's own colour, where `.strikethrough()` on the composed `Text` would draw a
+        // second rule across the rhythm's own baseline as well.
+        let nameLine: Text =
+            commitmentLine(
+                Text(row.name)
+                    .foregroundStyle(nameColor)
+                    .strikethrough(row.isKept),
+                rhythmInWords: row.rhythmInWords
+            )
+            .foregroundStyle(Color.primary)
+        let label = HStack {
+            VStack(alignment: .leading) {
+                nameLine
+                if let totalEntry {
+                    Text(totalEntry.soFarOfTarget)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-            ),
-            presenting: enteringRow
-        ) { row in
-            TextField(row.numberEntry(asOf: today())?.hint ?? "", text: $enteringText)
-                .keyboardType(.decimalPad)
-            Button("Save") {
-                try? screen.enter(enteringText, on: row)
-                enteringRow = nil
+                if row == screen.notice?.row {
+                    Text(screen.notice?.cause ?? "Not saved. Try again.")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
-            Button("Cancel", role: .cancel) {
-                enteringRow = nil
+            if markSystemName != nil || entry != nil || noteEntry != nil || totalEntry != nil {
+                Spacer()
+            }
+            if let markSystemName {
+                Image(systemName: markSystemName)
+                    .foregroundStyle(markColor)
+            }
+            if entry != nil || noteEntry != nil || totalEntry != nil {
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
-        .sheet(
-            isPresented: Binding(
-                get: { enteringNoteRow != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        enteringNoteRow = nil
-                    }
+        // `isTarget` decides whether there is a tap at all; the four `nil` checks above stay
+        // only to decide which sheet a tap opens. ADR-1045.
+        if isTarget {
+            Button {
+                if let entry {
+                    enteringText = entry.number.map { "\($0)" } ?? ""
+                    enteringRow = row
+                } else if let noteEntry {
+                    enteringNoteText = noteEntry.note ?? ""
+                    enteringNoteRow = row
+                } else if totalEntry != nil {
+                    enteringTotalText = ""
+                    enteringTotalRow = row
+                } else {
+                    try? screen.tick(row)
                 }
-            )
-        ) {
-            if let row = enteringNoteRow {
-                NavigationStack {
-                    TextEditor(text: $enteringNoteText)
-                        .padding()
-                        .navigationTitle(row.name)
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("Cancel") {
-                                    enteringNoteRow = nil
-                                }
-                            }
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Save") {
-                                    try? screen.enter(enteringNoteText, on: row)
-                                    enteringNoteRow = nil
-                                }
-                            }
-                        }
-                }
+            } label: {
+                label
             }
-        }
-        .sheet(
-            isPresented: Binding(
-                get: { enteringTotalRow != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        enteringTotalRow = nil
-                    }
-                }
-            )
-        ) {
-            if let row = enteringTotalRow {
-                NavigationStack {
-                    VStack {
-                        TextField("Amount", text: $enteringTotalText)
-                            .keyboardType(.decimalPad)
-                            .padding()
-                        if row.offersTakeBackLast(asOf: today()) {
-                            Button("Take back last", role: .destructive) {
-                                try? screen.takeBackLast(on: row)
-                                enteringTotalRow = nil
-                            }
-                        }
-                        Spacer()
-                    }
-                    .navigationTitle(row.name)
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                enteringTotalRow = nil
-                            }
-                        }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Save") {
-                                try? screen.enter(enteringTotalText, on: row)
-                                enteringTotalRow = nil
-                            }
-                        }
-                    }
-                }
-            }
+        } else {
+            // Decisions 3 and 5, ADR-1045: a row that offers nothing recedes as one thing —
+            // the name, the rhythm and any mark fade together rather than by three different
+            // amounts.
+            label
+                .opacity(0.5)
         }
     }
 
-    /// ADR-1042: a horizontal swipe on the day screen moves the day it is showing, beside the
-    /// chevrons rather than instead of them — the same `showPreviousDay()` and `showNextDay()`
-    /// they call, so a move with nowhere to go behaves exactly as a chevron tap already does.
-    /// `minimumDistance` keeps a plain tap on a row or a button from ever reaching `onEnded`, and
-    /// comparing the two axes keeps an ordinary vertical scroll from being read as a day move.
-    /// `.simultaneousGesture` is what lets the list's own scrolling and its rows' own taps keep
-    /// working underneath it — this recognizer only ever acts on release.
-    private var daySwipeGesture: some Gesture {
+    /// ADR-1042, carried forward by `design.md` § *What the shell draws*: a horizontal drag on
+    /// the day screen moves the day it is showing, beside the chevrons rather than instead of
+    /// them, calling the same `showPreviousDay()` and `showNextDay()` they call — never
+    /// `showDay(_:)`, which is bounded by the day picker's reach and would silently refuse a
+    /// page back below the roster's earliest kept-from day. `minimumDistance` keeps a plain tap
+    /// on a row or a button from ever reaching either closure. What is new since the phone walk
+    /// (PR #194) is that the axis is decided once, from the first sample this gesture sees, and
+    /// held in `lockedDragAxis` until the finger lifts — comparing each sample's own ratio on its
+    /// own let a single continuous drag flip axes mid-flight, which is how a vertical scroll and
+    /// a horizontal page both ran at once. A drag that locks vertical only stops paging here;
+    /// `pagedDayContent`'s `.scrollDisabled(lockedDragAxis == .horizontal)` is what stops a
+    /// horizontally locked drag from also scrolling the `List` underneath. The page tracks the
+    /// finger live (`dragTranslation`) once locked horizontal, and resists where the neighbour it
+    /// would reveal is absent, settling back on release rather than carrying.
+    private func daySwipeGesture(pageWidth: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 40)
-            .onEnded { value in
-                guard abs(value.translation.width) > abs(value.translation.height) else {
+            .updating($isDraggingDay) { _, isDraggingDay, _ in
+                isDraggingDay = true
+            }
+            .onChanged { value in
+                if lockedDragAxis == nil {
+                    lockedDragAxis =
+                        abs(value.translation.width) > abs(value.translation.height)
+                        ? .horizontal : .vertical
+                }
+                guard lockedDragAxis == .horizontal else {
                     return
                 }
                 if value.translation.width < 0 {
-                    screen.showNextDay()
+                    dragTranslation = screen.nextDayView == nil ? 0 : value.translation.width
                 } else {
-                    screen.showPreviousDay()
+                    dragTranslation = screen.previousDayView == nil ? 0 : value.translation.width
                 }
             }
+            .onEnded { value in
+                defer { lockedDragAxis = nil }
+                guard lockedDragAxis == .horizontal else {
+                    settle(to: 0, then: nil)
+                    return
+                }
+
+                let width = value.translation.width
+                let carries = abs(width) > pageWidth / 3
+                if width < 0, screen.nextDayView != nil, carries {
+                    settle(to: -pageWidth) { screen.showNextDay() }
+                } else if width > 0, screen.previousDayView != nil, carries {
+                    settle(to: pageWidth) { screen.showPreviousDay() }
+                } else {
+                    settle(to: 0, then: nil)
+                }
+            }
+    }
+
+    /// Plays a chevron tap's settle: the same full-page slide a carried drag ends with, in the
+    /// same direction — leftwards onto the next day, rightwards onto the previous
+    /// (`design.md` § *What the shell draws*). Where there is no day view on that side the page
+    /// has nowhere to go, so the day is moved directly with no slide to play — `showPreviousDay()`
+    /// and `showNextDay()` are themselves already a no-op there.
+    private func playSettle(towards neighbour: Neighbour) {
+        switch neighbour {
+        case .previous:
+            guard screen.previousDayView != nil else {
+                screen.showPreviousDay()
+                return
+            }
+            settle(to: pageWidth) { screen.showPreviousDay() }
+        case .next:
+            guard screen.nextDayView != nil else {
+                screen.showNextDay()
+                return
+            }
+            settle(to: -pageWidth) { screen.showNextDay() }
+        }
+    }
+
+    /// Slides `dragTranslation` to `target` and, once that finishes, resets it to zero and runs
+    /// `move` — the day-changing call, made only after the page has visually finished travelling
+    /// to it. Skipped entirely where `reduceMotion` is set: the settle becomes an instant change,
+    /// exactly as `design.md` § *What the shell draws* asks, and the drag's own live tracking
+    /// above is untouched by this either way — the HIG lists tracking directly with a gesture as
+    /// a way to reduce motion, not a target for removing it.
+    private func settle(to target: CGFloat, then move: (() -> Void)?) {
+        guard !reduceMotion else {
+            dragTranslation = 0
+            move?()
+            return
+        }
+
+        withAnimation(.easeOut, completionCriteria: .logicallyComplete) {
+            dragTranslation = target
+        } completion: {
+            dragTranslation = 0
+            move?()
+        }
     }
 }

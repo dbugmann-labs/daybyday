@@ -24,9 +24,13 @@ final class WalkthroughUITests: XCTestCase {
         // Moved a day back before either assertion below, so the *Today* button is proved rather
         // than assumed: `add-offered-today-control` (#174) hides it on the today the screen was
         // handed, and this is the one control this smoke layer would otherwise never see drawn.
-        // The move itself is ADR-1042's horizontal swipe on the list, the same recognizer a row
-        // that offers nothing still sits under.
-        let list = app.collectionViews.firstMatch
+        // The move itself is ADR-1042's horizontal swipe, the same recognizer a row that offers
+        // nothing still sits under. `add-adjacent-day-views` pages the day's rows across three
+        // `List`s rather than one (`design.md` § *What the shell draws*), so `firstMatch` no
+        // longer names a particular one — `"CurrentDayList"` is the identifier
+        // `ContentView.pagedDayContent` gives the centre list, the one under the finger before
+        // any drag.
+        let list = app.collectionViews["CurrentDayList"]
         _ = list.waitForExistence(timeout: 60)
         list.swipeRight()
 
@@ -36,11 +40,13 @@ final class WalkthroughUITests: XCTestCase {
             app.buttons["Today"].waitForExistence(timeout: 60),
             "the day screen drew no Today button")
 
-        // A row for something the day-one week asks for. Which commitments are due on the day the
-        // test happens to run is the kit's business and changes with the calendar, so this asserts
-        // that *some* row was drawn rather than naming one — the misspelled-binding failure is a
-        // list with nothing in it, not a list with the wrong thing in it.
-        let rows = app.collectionViews.buttons
+        // A row for something the day-one week asks for, on the day now being shown. Which
+        // commitments are due on the day the test happens to run is the kit's business and
+        // changes with the calendar, so this asserts that *some* row was drawn rather than naming
+        // one — the misspelled-binding failure is a list with nothing in it, not a list with the
+        // wrong thing in it. Scoped to the current day's list alone, now that the day before and
+        // the day after are drawn beside it.
+        let rows = list.buttons
         XCTAssertGreaterThan(
             rows.count, 0, "the day screen drew no commitment rows at all")
     }
