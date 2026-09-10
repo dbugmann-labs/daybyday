@@ -23,7 +23,7 @@ this branch rather than remembered:
   refuses to drop them". The only supported way to lose a scenario is to remove the whole
   requirement, which is why the category requirement is `REMOVED` and re-landed as `ADDED` while the
   other three are `MODIFIED`.
-- **The kit suite is 1017 tests** on this branch (`swift test` from `src/DayByDayKit`, 2026-09-09),
+- **The kit suite is 1015 tests** on this branch (`swift test` from `src/DayByDayKit`, 2026-09-10),
   and `pnpm run check:scenarios` reports **`86/88`** before a line is written — 78 of the delta's 88
   scenarios are restated unchanged and already have passing tests, and eight more keep their titles
   while changing underneath. **That check therefore proves nothing about eight of the ten scenarios
@@ -287,7 +287,7 @@ recorded it in `design.md`, and that precedent holds (`grill.md` § *Settled* 12
   swipe in either direction reveals something, and the reversal is one line of `CommitmentsView`.
 - **Four acceptance tests are deleted, eight are rewritten and two are added**, on a suite where the
   count is the regression check. → `tasks.md` names every one of them and states the expected count,
-  **1017 → 1015**. A different number at the end is a stop, not a number to write down. The eight
+  **1015 → 1013**. A different number at the end is a stop, not a number to write down. The eight
   rewrites are the exposure: each keeps its title, so `pnpm run check:scenarios` reads them as
   covered whether or not they have been touched, and nothing but the compiler catches a missed one —
   which is exactly what deleting `put` at the end of § 4 is for.

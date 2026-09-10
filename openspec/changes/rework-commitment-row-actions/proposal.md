@@ -75,8 +75,8 @@ None.
   why, and it is a fact read out of the roster-store requirement rather than a preference.
 - **Tests** — four acceptance tests are deleted with the scenarios they carry, **eight** are
   rewritten to reach the same guarantee through the change sheet, and two are added for the
-  guarantees the withdrawal would otherwise leave untested. The suite goes from **1017** to
-  **1015**. The delta declares **88** scenarios, of which 78 already have passing tests that must
+  guarantees the withdrawal would otherwise leave untested. The suite goes from **1015** to
+  **1013**. The delta declares **88** scenarios, of which 78 already have passing tests that must
   not be touched.
 - **App shell** — `src/DayByDay/DayByDay/CommitmentsView.swift`: both lists' `.swipeActions`, the
   row tap, the category sheet, the `.categorising` refusal line and the `EditButton()`.

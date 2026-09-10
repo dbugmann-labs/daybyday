@@ -1,12 +1,12 @@
 ## 1. Before a line is written
 
 - [ ] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
-  From `src/DayByDayKit`, `swift test` reports **1017 tests passing** — measured 2026-09-09 on this
-  branch, whose only commit is the propose commit, sitting on `797a7e1` — `origin/main` as of
-  2026-09-09. Re-measure it rather than trusting that sentence; a different number is a stop. From the repo root, `pnpm run
-  check:scenarios` reports **`86/88 scenario(s) covered`** before a line is written — measured, not
-  predicted — and names `a category set through a commitments screen's change is kept at the roster
-  place` as next.
+  From `src/DayByDayKit`, `swift test` reports **1015 tests passing** — measured 2026-09-10 on this
+  branch, whose commits are the propose commit and two documentation corrections to it, sitting on
+  `84dfa5c` — `origin/main` as of 2026-09-10. Re-measure it rather than trusting that sentence; a
+  different number is a stop. From the repo root, `pnpm run check:scenarios` reports
+  **`86/88 scenario(s) covered`** before a line is written — measured, not predicted — and names `a
+  category set through a commitments screen's change is kept at the roster place` as next.
 
   **That 86 is not progress and it is not a safety net.** Seventy-eight of this delta's eighty-eight
   scenarios are restated unchanged by `MODIFIED` and already have passing tests, and **eight more of
@@ -87,7 +87,7 @@ by the number if the file has moved under you.
   — `:3763`. The change names the category already there, so it reaches nothing and ends no standing
   refusal.
 
-- [ ] 3.9 `swift test` from `src/DayByDayKit` — still **1017** passing, because nothing has been
+- [ ] 3.9 `swift test` from `src/DayByDayKit` — still **1015** passing, because nothing has been
   deleted or added since § 2. Then, from the repo root:
 
   ```bash
@@ -124,7 +124,7 @@ by the number if the file has moved under you.
   `Roster.put`, `RosterStore.put` and `RosterDocument`'s use of the first are **not** touched —
   `design.md` § *The kit below the seam keeps its `put`*.
 
-- [ ] 4.3 `swift test` from `src/DayByDayKit` — **1015** passing: 1017, less the four of § 4.1, plus
+- [ ] 4.3 `swift test` from `src/DayByDayKit` — **1013** passing: 1015, less the four of § 4.1, plus
   the two of § 2. A different number is a stop, not a number to write down. From the repo root,
   `pnpm run check:scenarios` reports `88/88`.
 
@@ -199,7 +199,7 @@ see, not a tidy-up (rule 5).
 
 ## 7. Before the review, and what the janitor does at the archive
 
-- [ ] 7.1 `swift test` from `src/DayByDayKit` — **1015** green, the number § 4.3 landed on. From the
+- [ ] 7.1 `swift test` from `src/DayByDayKit` — **1013** green, the number § 4.3 landed on. From the
   repo root, `pnpm run verify` green and `pnpm run checks` reporting `88/88 scenario(s) covered`.
   `xcodebuild build` for the `DayByDay` scheme against an iPhone 17 simulator succeeds, because § 5
   touched the app target and nothing in `swift test` compiles it.
