@@ -161,12 +161,15 @@ box here that seems to need a kit change is a stop.
   `editMode` binding so the drag handles and the `.sectionActions` *Move up* / *Move down* buttons
   both keep working unchanged. Its `.accessibilityLabel` carries *Reorder* and its state. The word
   *Edit* leaves the screen.
-- [ ] 5.6 `pnpm run phone`, then walk it: on a kept row swipe right and get the pencil, swipe left
+- [x] 5.6 `pnpm run phone`, then walk it: on a kept row swipe right and get the pencil, swipe left
   and get stop-then-trash, full-swipe left and confirm it **stops** rather than removes; on a stopped
   row the same with play; tap a row and confirm nothing happens; enter reorder mode and confirm the
   drag handles and both group buttons are there and the icon reads as selected; set a category on the
   change sheet and confirm *Already in use* offers what it should. Record what you saw in this box.
   A simulator is not this box (see #186's G7): it is the phone.
+
+  **Walked 2026-09-10** by the repo owner on the physical iPhone (not a simulator), all six items:
+  "everything works like a charm."
 
 ## 6. The documentation that already landed
 
