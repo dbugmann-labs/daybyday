@@ -1,6 +1,6 @@
 ## 1. Before a line is written
 
-- [ ] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
+- [x] 1.1 Confirm the starting point, and report rather than work around a different one (rule 5).
   From `src/DayByDayKit`, `swift test` reports **1015 tests passing** — measured 2026-09-10 on this
   branch, whose commits are the propose commit and two documentation corrections to it, sitting on
   `84dfa5c` — `origin/main` as of 2026-09-10. Re-measure it rather than trusting that sentence; a
@@ -15,7 +15,7 @@
   genuinely new scenarios of § 2 show as missing. § 3 names all eight by hand, and § 4.2 is what
   turns a forgotten one into a compile error.
 
-- [ ] 1.2 Confirm the four facts the shape rests on, before writing any test, and stop and report if
+- [x] 1.2 Confirm the four facts the shape rests on, before writing any test, and stop and report if
   any is false (`design.md` § *Context*): `CommitmentsScreen.put(_:under:)` is still declared at
   `CommitmentsScreen.swift:567` and `RefusedChange.categorising` at `:143`; `change(_:toName:on:
   keptFrom:under:)` at `:253` still passes its `category` through to `rosterStore.change(_:to:
@@ -25,7 +25,7 @@
   roster's own `put` would then be as orphaned as the screen's, and `design.md` § *The kit below the
   seam keeps its `put`* is written on it being there.
 
-- [ ] 1.3 Re-read this box before § 2 and again before § 5. `commitment` is the busiest capability in
+- [x] 1.3 Re-read this box before § 2 and again before § 5. `commitment` is the busiest capability in
   the repo and this delta touches seven of its requirements. If another Story delta-ing it merges to
   `main` while this branch is open, a clean rebase can still leave this delta describing a spec that
   has moved. Check with `git fetch origin && git log --oneline origin/main --
@@ -47,10 +47,10 @@ appear is the honest outcome here — **do not invent a production change to man
 not skip writing the test because it would pass. If either goes red, that is a finding: report what
 it says before changing anything.
 
-- [ ] 2.1 `a category set through a commitments screen's change is kept at the roster place` — the
+- [x] 2.1 `a category set through a commitments screen's change is kept at the roster place` — the
   category reaches the roster place, and a screen opened afterwards at that place draws the same two
   groups.
-- [ ] 2.2 `a category taken off through a commitments screen's change draws its commitment among the ones under none`
+- [x] 2.2 `a category taken off through a commitments screen's change draws its commitment among the ones under none`
   — a category of three spaces takes one off. If this goes red, the normalisation in 1.2 has moved.
 
 ## 3. The eight scenarios that keep their titles and change underneath
@@ -66,28 +66,28 @@ to hold exactly as it does now.
 The line numbers are where each sits on this branch today; find it by its `@Test` title rather than
 by the number if the file has moved under you.
 
-- [ ] 3.1 `a category no longer under any commitment kept is no longer offered` — `:3199`.
-- [ ] 3.2 `a commitments screen does not fold the case of a category it is given` — `:3223`. Two
+- [x] 3.1 `a category no longer under any commitment kept is no longer offered` — `:3199`.
+- [x] 3.2 `a commitments screen does not fold the case of a category it is given` — `:3223`. Two
   calls to swap, "Supplements" and "supplements", and the point of the test is that they stay two.
-- [ ] 3.3 `a commitments screen holds a refused category change against the commitment it was asked about`
+- [x] 3.3 `a commitments screen holds a refused category change against the commitment it was asked about`
   — `:3381`. The refusal is now held as `.changing(gym, .notKept)`, **not** `.categorising`.
-- [ ] 3.4 `a commitments screen holds nothing against a category change that asks for no change at all`
+- [x] 3.4 `a commitments screen holds nothing against a category change that asks for no change at all`
   — `:3407`. Rebuilt around a change naming the category the commitment is **already** under, which
   is what "no change at all" means once the act is a change.
-- [ ] 3.5 `a commitment given a category is drawn in that group and returns when the category is taken off`
+- [x] 3.5 `a commitment given a category is drawn in that group and returns when the category is taken off`
   — `:2895`, under *A commitments screen lists the commitments its roster keeps*. Two calls: one
   setting "Supplements", one clearing it.
-- [ ] 3.6 `a commitments screen that cannot read its roster does nothing when it is asked to put a commitment under a category`
+- [x] 3.6 `a commitments screen that cannot read its roster does nothing when it is asked to put a commitment under a category`
   — `:3437`. **The title stays exactly as it is**, and `design.md` § *Every scenario that reaches a
   category through the withdrawn act* says why: it names the person's ask, the body names the act,
   and renaming the requirement to drop it is the worse trade. Do not "fix" it.
-- [ ] 3.7 `what a commitments screen holds about a refused change ends when a category change is kept`
+- [x] 3.7 `what a commitments screen holds about a refused change ends when a category change is kept`
   — `:3736`.
-- [ ] 3.8 `what a commitments screen holds about a refused change stands when a category change puts a commitment under the category it is already under`
+- [x] 3.8 `what a commitments screen holds about a refused change stands when a category change puts a commitment under the category it is already under`
   — `:3763`. The change names the category already there, so it reaches nothing and ends no standing
   refusal.
 
-- [ ] 3.9 `swift test` from `src/DayByDayKit` — still **1015** passing, because nothing has been
+- [x] 3.9 `swift test` from `src/DayByDayKit` — still **1015** passing, because nothing has been
   deleted or added since § 2. Then, from the repo root:
 
   ```bash
@@ -100,7 +100,7 @@ by the number if the file has moved under you.
 
 ## 4. Take `put` off the seam
 
-- [ ] 4.1 Delete these four tests, whole. Each names an act that no longer exists, and each is listed
+- [x] 4.1 Delete these four tests, whole. Each names an act that no longer exists, and each is listed
   in the delta's `## REMOVED Requirements` block with where its guarantee went:
   - `a commitment is put under a category through a commitments screen and kept at the roster place`
     (`:2992`) — re-landed as 2.1.
@@ -113,7 +113,7 @@ by the number if the file has moved under you.
     (`:3090`) — answered by `a change a commitments screen could not keep leaves both places as they
     were` and by 3.3.
 
-- [ ] 4.2 Remove `put(_:under:)` (`CommitmentsScreen.swift:567`) and the `categorising` case from
+- [x] 4.2 Remove `put(_:under:)` (`CommitmentsScreen.swift:567`) and the `categorising` case from
   `RefusedChange` (`:143`) from the seam, and fix the two doc comments that count what is left: the
   `RefusedChange` comment at `:134`–`:136`, whose "the four changes … rather than in one place for
   all five" was already one short before this Story and is two short after it, and the `changing`
@@ -124,7 +124,7 @@ by the number if the file has moved under you.
   `Roster.put`, `RosterStore.put` and `RosterDocument`'s use of the first are **not** touched —
   `design.md` § *The kit below the seam keeps its `put`*.
 
-- [ ] 4.3 `swift test` from `src/DayByDayKit` — **1013** passing: 1015, less the four of § 4.1, plus
+- [x] 4.3 `swift test` from `src/DayByDayKit` — **1013** passing: 1015, less the four of § 4.1, plus
   the two of § 2. A different number is a stop, not a number to write down. From the repo root,
   `pnpm run check:scenarios` reports `88/88`.
 
@@ -134,20 +134,20 @@ None of this is specified (`design.md` § *The shell rides this Story*), all of 
 `src/DayByDay/DayByDay/CommitmentsView.swift`, and none of it may change anything behind the seam. A
 box here that seems to need a kit change is a stop.
 
-- [ ] 5.1 Take out the category sheet — the `categorising` and `categoryTyped` state (`:95`,
+- [x] 5.1 Take out the category sheet — the `categorising` and `categoryTyped` state (`:95`,
   `:96`), the `.sheet` that draws it (`:364`–`:405`, the third of the three `.sheet` modifiers, the
   one whose binding reads `categorising != nil`), and the `if case .categorising` refusal line
   (`:234`). The `screen.categoriesInUse` reads at `:535` and `:537`, inside `CommitmentSheet`, stay:
   they are what the `ADDED` requirement is about. The two at `:205` and in the comments above it are
   the group-move arithmetic and stay too.
-- [ ] 5.2 Take the row tap off **both** lists — `.contentShape(Rectangle())` and `.onTapGesture`
+- [x] 5.2 Take the row tap off **both** lists — `.contentShape(Rectangle())` and `.onTapGesture`
   (`:143`–`:146` on the kept list, `:250`–`:253` on the stopped one). After this the swipe is the
   only way to the change sheet, which is the owner's decision against the recommendation
   (`grill.md` § *Settled* 4).
-- [ ] 5.3 Give both lists a leading edge carrying one action: *Edit*, `Image(systemName: "pencil")`,
+- [x] 5.3 Give both lists a leading edge carrying one action: *Edit*, `Image(systemName: "pencil")`,
   `.tint(.accentColor)`, opening `sheetTarget = .changing(commitment)`. One action, so a full swipe
   opens the sheet.
-- [ ] 5.4 Redraw the trailing edge on both lists as icons with tints, keeping today's declaration
+- [x] 5.4 Redraw the trailing edge on both lists as icons with tints, keeping today's declaration
   order: kept list *Stop* (`stop.circle`, `.tint(.orange)`) then *Remove* (`trash`, `role:
   .destructive`, `.tint(.red)`); stopped list *Resume* (`play.circle`, `.tint(.green)`) then
   *Remove*. Every button keeps an `.accessibilityLabel` carrying the word it used to draw. **Whether
@@ -155,7 +155,7 @@ box here that seems to need a kit change is a stop.
   about `swipeActions` rather than about this document** — the expectation is that the order does not
   move and a full swipe already stops rather than removes. Confirm it in 5.6 and report a difference
   rather than reordering around it.
-- [ ] 5.5 Replace `EditButton()` in the toolbar (`:294`) with a toggle drawing
+- [x] 5.5 Replace `EditButton()` in the toolbar (`:294`) with a toggle drawing
   `Image(systemName: "arrow.up.arrow.down")`, shown as selected while editing, driving the same
   `editMode` binding so the drag handles and the `.sectionActions` *Move up* / *Move down* buttons
   both keep working unchanged. Its `.accessibilityLabel` carries *Reorder* and its state. The word
@@ -175,23 +175,23 @@ sentence false. Tick each when you have confirmed it still says the truth, and *
 rather than editing quietly** — a change to either file after G4 is a finding the reviewer should
 see, not a tidy-up (rule 5).
 
-- [ ] 6.1 `CONTEXT.md` § *Move* carries **Corrected 2026-09-09**, withdrawing the clause that named
+- [x] 6.1 `CONTEXT.md` § *Move* carries **Corrected 2026-09-09**, withdrawing the clause that named
   the row's *Category* action as the way to refile across groups and putting the change sheet's
   category field in its place. Confirm it still matches what § 5 built.
-- [ ] 6.2 `CONTEXT.md` § *Commitments screen* carries **Amended 2026-09-09**, withdrawing the same
+- [x] 6.2 `CONTEXT.md` § *Commitments screen* carries **Amended 2026-09-09**, withdrawing the same
   clause a second time and withdrawing the two ordinals that entry states — the group move as the
   seventh kind of refused change, a change as the eighth. Confirm the seven kinds it names are the
   seven the archived spec ends up with.
-- [ ] 6.3 `docs/adr/1042-the-horizontal-swipe-belongs-to-the-day.md` carries an
+- [x] 6.3 `docs/adr/1042-the-horizontal-swipe-belongs-to-the-day.md` carries an
   `- Amended: 2026-09-09 — …` line under `Deciders` and reads as one coherent decision (ADR-1020):
   depiction is decided per screen, the commitments screen's row swipe is undepicted, the day
   screen's chevrons stay, and the frequency argument is why. **If the phone walk in 5.6 changed any
   of that — a hint added, an edge left unclaimed, the tap put back — this ADR is wrong and that is a
   stop**, because it is the one decision in this Story that closes a door for later requirements.
   No second ADR is written and this one is not superseded (`grill.md` § *Settled* 12).
-- [ ] 6.4 No new term was landed and none should be. If § 5 turned one up, that is a finding to
+- [x] 6.4 No new term was landed and none should be. If § 5 turned one up, that is a finding to
   report, not a term to add (`grill.md` § *Terms landed in CONTEXT.md*).
-- [ ] 6.5 `docs/backlog.md` is **not** touched, deliberately: B-042 is delivered by this Story and
+- [x] 6.5 `docs/backlog.md` is **not** touched, deliberately: B-042 is delivered by this Story and
   B-041's *Principle* line is weakened by it, but that file lives on `chore/backlog` and editing it
   from a Story branch invites the rebase conflict rule 5 calls a stop. Both are the next grooming
   pass's (`grill.md` § *Settled* 13, 14). Tick this by confirming `git status` shows
@@ -199,11 +199,11 @@ see, not a tidy-up (rule 5).
 
 ## 7. Before the review, and what the janitor does at the archive
 
-- [ ] 7.1 `swift test` from `src/DayByDayKit` — **1013** green, the number § 4.3 landed on. From the
+- [x] 7.1 `swift test` from `src/DayByDayKit` — **1013** green, the number § 4.3 landed on. From the
   repo root, `pnpm run verify` green and `pnpm run checks` reporting `88/88 scenario(s) covered`.
   `xcodebuild build` for the `DayByDay` scheme against an iPhone 17 simulator succeeds, because § 5
   touched the app target and nothing in `swift test` compiles it.
-- [ ] 7.2 `openspec validate rework-commitment-row-actions --strict` exits 0, and `openspec validate
+- [x] 7.2 `openspec validate rework-commitment-row-actions --strict` exits 0, and `openspec validate
   --all --strict --no-interactive` exits 0.
 - [ ] 7.3 Rebase onto current `main` and push with `--force-with-lease`. A conflict inside
   `openspec/changes/rework-commitment-row-actions/` or anywhere under `openspec/specs/` is a **stop**,
