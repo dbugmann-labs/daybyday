@@ -377,3 +377,62 @@ to them, not cut.
 3. Whether phase 2 stops after `record` (recommended: decide after `commitment` lands).
 4. Whether phase 3 happens at all (recommended: not until the rules have run for a few Stories
    and the duplicates are still felt).
+
+## Execution checklist, written 2026-09-10
+
+State on the day this was written: PR #187 open and unmerged; no Story open; six Stories archived
+since `4e64641` (`add-day-picker`, `add-commitment-editing`, `shorten-day-title`,
+`add-adjacent-day-views`, `add-kind-to-commitments-screen`, `rework-commitment-row-actions`),
+which added sixteen requirements and rewrote others across `commitment` (+1,651 lines),
+`day-screen` (+1,087) and `record` (+161), plus ADR-1046 and amendments to five older ADRs. Every
+Feature issue is closed (#6 schedule, #26 commitment, #27 day-screen, #53 record) and so is the
+Epic (#1); an editorial Story reopens its Feature and the Epic through the ordinary pipeline. The
+next free ADR number is 1047, to be re-verified at the time. The six new change folders run
+582–780 lines with no reopening among them: `design.md` 208–310 and `tasks.md` 235–342, which
+puts the ordinary folder at roughly twice the phase 1 budgets — a data point for the ADR, not a
+reason to move the caps before they have been tried.
+
+Each step ends at something you read. Steps 1–7 are one chore PR; steps 8–11 are one Story each.
+
+1. **Merge PR #187** (you), then `git worktree remove ../daybyday-concise-specs-plan`.
+2. **Cut the chore worktree** from `origin/main`: `../daybyday-concise-artifacts`,
+   branch `chore/concise-artifacts`, `git branch --unset-upstream`, `pnpm install`.
+3. **Re-baseline.** A script lists every requirement block that is new or changed since
+   `4e64641` (the sixteen ADDED headings plus every MODIFIED block, found by diffing block by
+   block, not by heading). Three survey subagents, one each for `commitment`, `day-screen` and
+   `record`, read exactly those blocks with the rubric in § *Before taking this up* and write
+   `survey-2026-09-10-<capability>.md` beside the seven reports. Re-measure all five specs and
+   refresh the phase 2 table and the totals in this document from the current files.
+4. **Write `openspec/config.yaml`** as drafted above. Prove it is read: `openspec new change
+   scratch`, then `openspec instructions specs --change scratch --json` must show the `rules`
+   and `context` fields populated; delete the scratch folder before committing.
+5. **Edit the four documents** — conductor's own work under rule 6: `spec-author.md` (budgets as
+   a numbered step; "edit in place" replacing the left-as-it-was practice; an editorial Story
+   names no seam and says so), `reviewer.md` (standards axis checks the budgets; fidelity axis
+   for an editorial Story is the survey's *Rules at risk* list), `implementer.md` (ticks boxes,
+   writes nothing else into `tasks.md`), `docs/process.md` §9 (DoR: within budgets; seam named
+   *or* `design.md` states that no test changes and why).
+6. **Write ADR-1047** and its README row: the budgets and where each is enforced; the editorial
+   Story lane (MODIFIED-only delta, no test change, no seam, rule 3 moot); no schema fork; and
+   the two facts from `commitment` lines 1631–1638 and 2255–2260 that a scenario title can be
+   false and kept because the archiver forbids dropping it.
+7. **Optionally the advisory lint** — decision 2. `scripts/check-artifact-budgets.ts`, wired
+   into `pnpm run checks`, exit 0 always, one warning line per overrun. Then `pnpm run checks`,
+   `pnpm run verify`, commit as `chore(process): budget the change folder and the spec prose`,
+   push, open the PR. **You read and merge it**; then the worktree is removed.
+8. **Story 1, `condense-day-screen-spec`.** `orchestrator` writes the Story issue under #27.
+   The conductor cuts the worktree and grills from the two survey lists for `day-screen` (the
+   rationale with no ADR home; the rules with no scenario) — one question each, in rounds.
+   `spec-author` writes the folder: a MODIFIED delta carrying every requirement, the sixteen
+   new ones included, every scenario title unchanged; `design.md` with no seam and the reason;
+   `tasks.md` with one box per requirement ("its *Rules at risk* sentences are each a
+   SHALL/MUST in the rewritten text") plus validate and the archive handover. Draft PR; **G4 is
+   you reading `git diff --no-index` of the current spec against the delta.** `implementer`
+   works the checklist and ticks; `reviewer` reports on fidelity against the survey; `janitor`
+   archives; **G8 is you reading the archive commit**; merge; worktree removed.
+9. **Story 2, `condense-commitment-spec`**, the same way, under #26.
+10. **Story 3, `condense-record-spec`**, the same way, under #53.
+11. **Decide `schedule`** (decision 3); if yes, Story 4 under #6.
+12. **Close out**: move the entry in `docs/open-questions.md` to *Settled*, add a paragraph to
+    `docs/retrospective.md` on what the budgets did to the first Story written under them, and
+    take decision 4 on phase 3 — only after trying REMOVED plus ADDED on a scratch change.
