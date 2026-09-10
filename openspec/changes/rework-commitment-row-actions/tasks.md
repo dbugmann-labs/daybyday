@@ -228,17 +228,30 @@ see, not a tidy-up (rule 5).
      **gone**, with all nine of its scenarios.
   2. *A commitments screen offers the categories in use* is **present**, with exactly five
      scenarios.
-  3. The five modified requirements — *holds the change it refused and why, one at a time*, *moves a
-     group among the groups it draws*, *changes a commitment on either of its lists*, *lists the
-     commitments its roster keeps, in the order they were taken on*, and *What a commitments screen
-     holds about a refused change lasts until the app is shown again or a change is kept* — hold 16,
-     10, 21, 12 and 17 scenarios respectively, and **the word "seventh" and the word "eighth" appear
-     nowhere in the file** alongside "kind of refused change".
-  4. **No other requirement moved, was reworded, or lost or gained a scenario** — in particular *A
+  3. The **six** modified requirements — *holds the change it refused and why, one at a time*,
+     *moves a group among the groups it draws*, *changes a commitment on either of its lists*,
+     *lists the commitments its roster keeps, in the order they were taken on*, *A commitments
+     screen that cannot read its roster lists nothing and changes nothing* and *What a commitments
+     screen holds about a refused change lasts until the app is shown again or a change is kept* —
+     hold 16, 10, 21, 12, **7** and 17 scenarios respectively. Only one of the six changes its
+     count: *changes a commitment on either of its lists* goes from 19 to 21, the two scenarios of
+     § 2. The other five hold the number they already hold and are modified in their prose, in a
+     scenario's body, or in both — *cannot read its roster* most quietly of all, one **WHEN** clause
+     rewritten in *a commitments screen that cannot read its roster does nothing when it is asked to
+     put a commitment under a category* and nothing else in the requirement touched.
+
+     Alongside those counts, **the words "sixth" and "seventh" appear nowhere in the file**. Both
+     are in it today and both go: the "sixth" leaves with the requirement point 1 removes, and the
+     "seventh" is rewritten out of *moves a group among the groups it draws*, which now names a
+     refused **group move** instead of numbering it. That leaves the "fifth" of point 4 as the only
+     ordinal in the file still naming a kind of refused change.
+  4. **No requirement other than the eight named in points 1 to 3 moved, was reworded, or lost or
+     gained a scenario** — the one removed, the one added, and the six modified. In particular *A
      roster puts a commitment under a category*, *A roster store keeps a roster at a place, across
      the app being closed and opened again* and *A commitments screen moves a commitment among the
      ones it keeps*, all three of which this delta deliberately leaves alone, the last one still
-     calling its refusal the **fifth** kind, which stays true.
+     calling its refusal the **fifth** kind, which stays true: the kind this delta withdraws was the
+     **sixth**, so the kinds numbered before it keep their numbers.
   5. `openspec validate --archived` exits 0, and nothing landed in `day-screen`, `record`,
      `schedule` or `cli-version`.
 
