@@ -160,8 +160,9 @@ public final class CommitmentsScreen {
     }
 
     /// Why a change was refused. `nil` from any of the seven below means it was kept at the
-    /// place before that call returned.
-    public enum Refusal: Equatable, Sendable {
+    /// place before that call returned. `Error` so `range(lowest:highest:)` and `target(_:)` can
+    /// hand one back through `Result` alongside the value they read.
+    public enum Refusal: Error, Equatable, Sendable {
         /// A name that is empty or made only of blank space.
         case namesNothing
         /// A weekday set with no days in it — the one refusal the rule engine does not make.
@@ -182,6 +183,11 @@ public final class CommitmentsScreen {
         /// number of intervals in either direction. `design.md` § *An interval rhythm's grid
         /// moves with the day it is kept from*.
         case wouldLeaveARecordedDayNotDue
+        /// A range whose lowest is above its highest, whose end is not a number, or with one
+        /// end typed and the other blank.
+        case rangeIsNotARange
+        /// A target that is not a number, not above zero, or blank.
+        case targetIsNotATarget
     }
 
     /// What a commitment on either of this screen's lists is made of — the value a sheet fills
@@ -197,11 +203,16 @@ public final class CommitmentsScreen {
         public let canChangeRhythmAndKeptFrom: Bool
     }
 
-    /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`, and
-    /// `keptFrom`, and takes it on. Takes a commitment the roster has stopped up again.
-    public func define(name: String, on rhythm: Rhythm, keptFrom: CalendarDate, under category: String?)
-        -> Refusal?
-    {
+    /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`,
+    /// `keptFrom` and `kind`, and takes it on. Takes a commitment the roster has stopped up
+    /// again. `lowest`, `highest` and `target` are the number kind's range and the total kind's
+    /// target, exactly as a person typed them — read only for the kind that has room for them,
+    /// `design.md` § *A range or a target left in a field the chosen kind has no room for is
+    /// ignored*.
+    public func define(
+        name: String, on rhythm: Rhythm, keptFrom: CalendarDate, under category: String?,
+        kind: KindChoice = .tick, lowest: String = "", highest: String = "", target: String = ""
+    ) -> Refusal? {
         if case .weekdays(let weekdays) = rhythm, weekdays.isEmpty {
             refusedChange = .defining(.dueOnNoDay)
             return .dueOnNoDay
@@ -212,10 +223,36 @@ public final class CommitmentsScreen {
             return .rhythmOutOfRange
         }
 
-        guard let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom) else {
+        guard !Blank.saysNothing(name) else {
             refusedChange = .defining(.namesNothing)
             return .namesNothing
         }
+
+        let formedKind: Commitment.Kind
+        switch kind {
+        case .tick:
+            formedKind = .tick
+        case .number:
+            switch Self.range(lowest: lowest, highest: highest) {
+            case .success(let range):
+                formedKind = .number(range: range)
+            case .failure(let refusal):
+                refusedChange = .defining(refusal)
+                return refusal
+            }
+        case .note:
+            formedKind = .note
+        case .total:
+            switch Self.target(target) {
+            case .success(let target):
+                formedKind = .total(target: target)
+            case .failure(let refusal):
+                refusedChange = .defining(refusal)
+                return refusal
+            }
+        }
+
+        let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom, kind: formedKind)!
 
         guard let rosterStore else {
             refusedChange = .defining(.notKept)
@@ -235,6 +272,43 @@ public final class CommitmentsScreen {
         refusedChange = nil
         refreshLists(from: rosterStore)
         return nil
+    }
+
+    /// `lowest` and `highest` read as a range for the number kind — `nil` where both are blank,
+    /// which is no range and is kept; `.rangeIsNotARange` where one is blank and the other is
+    /// not, where either does not read as a number, or where the lowest reads above the highest.
+    /// `design.md` § *Blank is asked before the reading*.
+    private static func range(
+        lowest: String, highest: String
+    ) -> Result<Commitment.Range?, Refusal> {
+        let lowestIsBlank = Blank.saysNothing(lowest)
+        let highestIsBlank = Blank.saysNothing(highest)
+
+        if lowestIsBlank, highestIsBlank {
+            return .success(nil)
+        }
+        guard !lowestIsBlank, !highestIsBlank else {
+            return .failure(.rangeIsNotARange)
+        }
+        guard case .number(let lowestValue) = TypedNumber.read(lowest),
+            case .number(let highestValue) = TypedNumber.read(highest)
+        else {
+            return .failure(.rangeIsNotARange)
+        }
+        guard let range = Commitment.Range(lowest: lowestValue, highest: highestValue) else {
+            return .failure(.rangeIsNotARange)
+        }
+        return .success(range)
+    }
+
+    /// `text` read as a target for the total kind — `.targetIsNotATarget` where it is blank,
+    /// does not read as a number, or reads as a number not above zero.
+    private static func target(_ text: String) -> Result<Commitment.Target, Refusal> {
+        guard case .number(let value) = TypedNumber.read(text), let target = Commitment.Target(value)
+        else {
+            return .failure(.targetIsNotATarget)
+        }
+        return .success(target)
     }
 
     /// What `commitment` is made of, so a form opened to change it starts from what that

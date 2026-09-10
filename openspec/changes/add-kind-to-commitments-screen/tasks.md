@@ -56,7 +56,7 @@ against, and changing it later is twenty edits.
 
 - [x] 3.1 `a commitments screen offers the tick kind for a new commitment` — adds
   `CommitmentsScreen.KindChoice` and `kindToOffer`.
-- [ ] 3.2 `a commitment of each of the four kinds is defined through a commitments screen and kept with that kind`
+- [x] 3.2 `a commitment of each of the four kinds is defined through a commitments screen and kept with that kind`
   — the big one. `define` gains `kind:`, `lowest:`, `highest:` and `target:`, all defaulted, and
   reads the three texts through `TypedNumber`. **Check while this is red that the 63 existing
   `define` call sites still compile untouched**; if any needs editing, the defaults are wrong and

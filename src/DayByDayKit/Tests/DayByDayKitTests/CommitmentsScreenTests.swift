@@ -364,6 +364,49 @@ func aCommitmentDefinedOnEachOfTheFourRhythmsIsReadBackOnTheScheduleThatRhythmNa
 }
 
 @MainActor
+@Test("a commitment of each of the four kinds is defined through a commitments screen and kept with that kind")
+func aCommitmentOfEachOfTheFourKindsIsDefinedThroughACommitmentsScreenAndKeptWithThatKind() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let dailyRhythm: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let dailySchedule: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let tickRefusal = screen.define(
+        name: "Gym", on: dailyRhythm, keptFrom: monday, under: nil, kind: .tick)
+    let numberRefusal = screen.define(
+        name: "Mood", on: dailyRhythm, keptFrom: monday, under: nil, kind: .number,
+        lowest: "1", highest: "10")
+    let noteRefusal = screen.define(
+        name: "Journal", on: dailyRhythm, keptFrom: monday, under: nil, kind: .note)
+    let totalRefusal = screen.define(
+        name: "Protein", on: dailyRhythm, keptFrom: monday, under: nil, kind: .total, target: "120")
+
+    #expect(tickRefusal == nil)
+    #expect(numberRefusal == nil)
+    #expect(noteRefusal == nil)
+    #expect(totalRefusal == nil)
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    let expected = [
+        Commitment(name: "Gym", schedule: dailySchedule, keptFrom: monday, kind: .tick)!,
+        Commitment(
+            name: "Mood", schedule: dailySchedule, keptFrom: monday,
+            kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!,
+        Commitment(name: "Journal", schedule: dailySchedule, keptFrom: monday, kind: .note)!,
+        Commitment(
+            name: "Protein", schedule: dailySchedule, keptFrom: monday,
+            kind: .total(target: Commitment.Target(120)!))!,
+    ]
+    #expect(rosterStore.roster.commitments == expected)
+}
+
+@MainActor
 @Test("a commitment defined on an interval rhythm counts from the day it is kept from")
 func aCommitmentDefinedOnAnIntervalRhythmCountsFromTheDayItIsKeptFrom() throws {
     let rosterPlace = freshRosterPlace()
