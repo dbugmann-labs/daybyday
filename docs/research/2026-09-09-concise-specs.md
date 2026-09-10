@@ -24,10 +24,14 @@ shorter, and should the existing specs be rewritten to the same shape?
 |---|---|---|---|---|---|
 | `cli-version` | 51 | 2 | 4 | 367 | 116 |
 | `schedule` | 740 | 18 | 78 | 7,593 | 3,448 |
-| `record` | 2,076 | 15 | 159 | 25,729 | 8,473 |
-| `commitment` | 4,741 | 36 | 336 | 57,271 | 20,493 |
-| `day-screen` | 4,907 | 43 | 355 | 62,630 | 21,757 |
-| **Total** | **12,515** | **114** | **932** | **153,590** | **54,287** |
+| `record` | 2,235 | 17 | 170 | 27,705 | 9,244 |
+| `commitment` | 5,896 | 41 | 406 | 72,140 | 26,522 |
+| `day-screen` | 5,562 | 48 | 399 | 71,412 | 24,847 |
+| **Total** | **14,484** | **126** | **1,057** | **179,217** | **64,177** |
+
+*Re-measured 2026-09-10 on `main` at `662809f`. On 2026-09-09 at `4e64641` the totals were 12,515
+lines, 114 requirements, 932 scenarios, 153,590 words and 54,287 words of prose; the six Stories
+archived in between added 16 requirements, rewrote 21 and removed 4.*
 
 "Requirement prose" is the text between a `### Requirement:` heading and its first scenario. It
 is **35% of the words**. The other 65% is scenarios, and every one of the 932 scenarios is
@@ -110,10 +114,22 @@ in the installed package, not from memory.
 
 ## The proposed `openspec/config.yaml`
 
+**Corrected 2026-09-10.** The first draft of this block wrote each rule as a plain scalar, and a
+bare `word: word` inside one (`normative only: SHALL/MUST`) is a YAML mapping. `openspec` 1.10.0
+then prints *could not parse … ignoring it* and runs with no context and no rules — a warning,
+never a failure, which is exactly how it would have gone unnoticed. Every rule is now a folded
+scalar (`>-`), and the block below is the file as committed and proven: `openspec instructions`
+returns 3 / 5 / 5 / 5 rules for proposal / specs / design / tasks, the context on all four, and
+`operationGuidance` on apply and archive.
+
 ```yaml
+# Governed by ADR-1047; every rule below is repeated for the reviewer in
+# .claude/agents/reviewer.md. Rules are folded scalars (>-) because a bare
+# "word: word" inside a list item is a YAML mapping and the CLI then ignores
+# the whole file with a parse warning — it does not fail.
 schema: spec-driven
 
-context: |
+context: >-
   DayByDay: an iPhone app. The engine and screens are a Swift package, DayByDayKit, under
   src/; the SwiftUI shell draws what the screens answer. AGENTS.md and CONTEXT.md are binding.
   Every `#### Scenario:` title becomes an acceptance test name verbatim and CI checks it.
@@ -122,57 +138,77 @@ context: |
 
 rules:
   proposal:
-    - Hard cap 60 lines. Why at most 6 lines; What Changes at most 12 one-line bullets;
+    - >-
+      Hard cap 60 lines. Why at most 6 lines; What Changes at most 12 one-line bullets;
       Capabilities names capability paths and ADDED/MODIFIED/REMOVED only; Impact at most
       12 lines naming files and directories.
-    - No Swift declarations, member names, test counts, tool versions, commit SHAs, dates or
+    - >-
+      No Swift declarations, member names, test counts, tool versions, commit SHAs, dates or
       Story history anywhere in this file.
-    - Do not account for documents the change leaves alone.
+    - >-
+      Do not account for documents the change leaves alone.
   specs:
-    - Requirement prose is normative only: SHALL/MUST sentences, 40 to 150 words, one or two
+    - >-
+      Requirement prose is normative only: SHALL/MUST sentences, 40 to 150 words, one or two
       paragraphs. No rationale, no alternatives, no "this is the decision", no bold
       sentences, no Story or issue history.
-    - Every rule a scenario tests is a SHALL/MUST sentence, never only a consequence, a
+    - >-
+      Every rule a scenario tests is a SHALL/MUST sentence, never only a consequence, a
       "so that" or a "therefore".
-    - State each rule once, in the requirement it belongs to. Cross-reference another
+    - >-
+      State each rule once, in the requirement it belongs to. Cross-reference another
       requirement in one clause only where a test depends on it; never restate it.
-    - Scenarios are WHEN/THEN/AND bullets only. One scenario per distinct behaviour: a
+    - >-
+      Scenarios are WHEN/THEN/AND bullets only. One scenario per distinct behaviour: a
       fixture variation is an extra AND on the existing scenario, and a copy per record
       kind only where the kinds answer differently.
-    - A MODIFIED requirement carries the whole block verbatim except the sentences that
+    - >-
+      A MODIFIED requirement carries the whole block verbatim except the sentences that
       change.
   design:
-    - Hard cap 150 lines: Context at most 20, Goals/Non-Goals 12, Decisions 80, Risks 20,
+    - >-
+      Hard cap 150 lines: Context at most 20, Goals/Non-Goals 12, Decisions 80, Risks 20,
       Open Questions 12.
-    - Always include "### The seam" under Decisions: each new or changed member as one
+    - >-
+      Always include "### The seam" under Decisions: each new or changed member as one
       signature line, no doc comments, no bodies.
-    - One decision is at most 12 lines: the choice, why, then each rejected alternative in
+    - >-
+      One decision is at most 12 lines: the choice, why, then each rejected alternative in
       one line. A decision that outlives the change goes to docs/adr/ and is cited by number.
-    - Context states each fact the design turns on once, as its current measured value. No
+    - >-
+      Context states each fact the design turns on once, as its current measured value. No
       chronology of measurements and no review-pass or reopening history; on a reopen, edit
       in place.
-    - Reference proposal.md and the delta instead of restating them. Open Questions lists
+    - >-
+      Reference proposal.md and the delta instead of restating them. Open Questions lists
       only what is still open, or "None." with the reason.
   tasks:
-    - One box per scenario, one line: the title verbatim plus at most one clause naming the
+    - >-
+      One box per scenario, one line: the title verbatim plus at most one clause naming the
       wrong implementation it catches. Setup, shell, gates and the archive handover at most
       80 lines together.
-    - Never paste source, test bodies, build recipes, command transcripts or logs. A
+    - >-
+      Never paste source, test bodies, build recipes, command transcripts or logs. A
       verification is one line: what ran, the count, pass or fail.
-    - State the rule-5 stop once at the top of the file. One test-count assertion for the
+    - >-
+      State the rule-5 stop once at the top of the file. One test-count assertion for the
       whole file, in the final gate box, read off a run and never derived by arithmetic.
-    - No "what review pass N found" sections and no red/green diary. On a reopen, edit the
+    - >-
+      No "what review pass N found" sections and no red/green diary. On a reopen, edit the
       boxes that change and add the new scenario boxes.
-    - Every box tickable before /opsx:archive; a post-archive check is prose inside a box
+    - >-
+      Every box tickable before /opsx:archive; a post-archive check is prose inside a box
       that says who ticks it and when.
 
 operations:
   apply:
     guidance:
-      - Tick boxes as they complete. Add no prose, logs or code to tasks.md.
+      - >-
+        Tick boxes as they complete. Add no prose, logs or code to tasks.md.
   archive:
     guidance:
-      - Report the archive in three lines: what moved, what the spec diff touched, what
+      - >-
+        Report the archive in three lines: what moved, what the spec diff touched, what
         is left for the janitor.
 ```
 
@@ -275,6 +311,37 @@ Story that reopened a change folder after this date is one more data point for t
 survey — if one grew past the phase 1 budgets, note which rule would have caught it before
 writing the config.
 
+### The re-baseline of 2026-09-10
+
+Done as step 3 of the checklist below, on `main` at `662809f`. The block list is
+`2026-09-09-concise-specs/rebaseline-2026-09-10-changed-blocks.md` and the four reports are
+`survey-2026-09-10-record.md`, `survey-2026-09-10-commitment-modified.md`,
+`survey-2026-09-10-commitment-added.md` and `survey-2026-09-10-day-screen.md`. What they add to the
+seven originals, in order of how much it matters to the rewrite:
+
+- **A shipped rule was reversed and the old sentence's shape survived.** `day-screen`'s *reads its
+  roster again when it is returned to* now re-reads the record too (#148); the earlier survey's
+  note for it records the retired rule. A trimmer working from the old notes preserves a rule that
+  no longer holds. The new report supersedes the old entry.
+- **The blocks written after the first survey repeat its worst habit at full strength.** The seven
+  ADDED `commitment` blocks average 678 prose words; `commitment`'s *already-kept vs.
+  could-not-be-written* grew 85% and gained no scenario, so its three new rules live in prose
+  alone. Around twenty rules across the new blocks have **no scenario at all**; the reports list
+  them, and the grill for each Story asks whether each becomes a scenario or is recorded as
+  knowingly untested.
+- **Rules stated in two places with no scenario under either**: `day-screen`'s move-vs-draw pair
+  appears in both *a move with nowhere to go* and *no day view before the first date*. Trim both
+  and it is stated nowhere — the same failure the first survey caught between its requirements 5
+  and 19.
+- **Rationale with no ADR home, new since the plan**: `commitment`'s rule that the seven refusal
+  kinds are never numbered (a rule about how requirements are written, not behaviour), the
+  record-place-before-roster-place write order, the aggregate earliest-day question, the
+  offering-and-case rule for categories, half-a-range, ignore-rather-than-refuse, and
+  one-act-one-outcome; `record`'s note fidelity and merge-vs-refuse; `day-screen`'s day-picker
+  floor and clamp (in the archived `add-day-picker` design only). Each is a grill question.
+- **Verdicts moved**: no block in the re-baselined scope is `keep`, and four `commitment` blocks
+  that were `trim` are now `rewrite`.
+
 ## The plan
 
 ### Phase 0 — this PR
@@ -299,14 +366,14 @@ large one, so the first folder read against the budgets is one where an overrun 
 
 | Order | Change id | Prose words now → after | Scenarios | Why this order |
 |---|---|---|---|---|
-| 1 | `condense-day-screen-spec` | 21,757 → ~5,975 | 355, unchanged | largest, and 21 of 43 requirements exceed 4× the target |
-| 2 | `condense-commitment-spec` | 20,493 → ~7,875 | 336, unchanged | second largest; eight requirements (8, 9, 12, 15, 30, 31, 35, 36) hold half the prose |
-| 3 | `condense-record-spec` | 8,473 → ~2,230 | 159, unchanged | nine of fifteen need re-extraction; two requirements to split |
+| 1 | `condense-day-screen-spec` | 24,847 → ~6,600 | 399, unchanged | largest; every one of the 15 blocks changed since the survey is over 150 words |
+| 2 | `condense-commitment-spec` | 26,522 → ~8,750 | 406, unchanged | second largest; the seven ADDED blocks average 678 prose words each |
+| 3 | `condense-record-spec` | 9,244 → ~2,520 | 170, unchanged | nine of seventeen need re-extraction; two requirements to split |
 | 4 | `condense-schedule-spec` | 3,448 → ~1,835 | 78, unchanged | optional — the saving is 1,600 words; do it only if 1–3 went smoothly |
 | — | `cli-version` | 116 → 103 | 4 | leave alone; it is the reference shape |
 
-Total: 54,287 → ~18,000 prose words (−67%), 153,590 → ~117,000 words overall, roughly 12,500 →
-9,500 lines — **as of `4e64641`; the re-baseline refreshes every figure in this table.** The scenarios are untouched, which is why the file count of lines falls by only a
+Total: 64,177 → ~19,800 prose words (−69%), 179,217 → ~135,000 words overall, roughly 14,500 →
+11,000 lines — **as of `662809f`, refreshed by the 2026-09-10 re-baseline.** The scenarios are untouched, which is why the file count of lines falls by only a
 quarter while the prose falls by two-thirds.
 
 Each Story runs the ordinary pipeline with three adaptations:

@@ -189,7 +189,10 @@ named in the change's `design.md`, drivable without spawning a process or captur
 streams. Fewer seams are better, an existing seam beats a new one, and a `design.md` naming none
 fails the Definition of Ready. The openspec `design` template has **no seam section** — add
 `### The seam` under Decisions yourself, or you will write a `design.md` that validates and
-still fails the DoR. The rest of the vocabulary is in `CONTEXT.md`.
+still fails the DoR. The one Story that names none is an **editorial Story** (ADR-1047): a
+MODIFIED-only delta that changes no behaviour and no test, whose `design.md` says so instead.
+Every artifact also has a **budget** (ADR-1047, `openspec/config.yaml`), enforced by `reviewer`
+at G7 and warned about by `pnpm run check:budgets`. The rest of the vocabulary is in `CONTEXT.md`.
 
 ## Context discipline
 

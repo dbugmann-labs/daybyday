@@ -439,6 +439,12 @@ need an Epic, and you would abandon the process within a month. Chore branches a
 no behaviour change: tooling, dependency bumps, docs, CI. If you find yourself reaching for
 `chore/` to add behaviour, that is the process telling you to write a Story.
 
+**Rewriting a capability spec with no behaviour change is still a Story**, and that is not an
+exception to the sentence above but a consequence of two rules that leave no other lane: rule 2 gives
+`openspec/specs/` to `/opsx:archive` alone, and CI check 2 fails any `chore/` branch that touches a
+capability spec. Such an **editorial Story** runs the ordinary pipeline with a MODIFIED-only delta,
+every scenario title unchanged and no test changed at all. ADR-1047.
+
 **The one thing that touches `src/` on this lane is the app shell**, which is why the table above
 says a chore branch may. It is not an exception to the sentence before it, because a shell adds no
 behaviour: everything it puts on screen was answered, specified and tested behind the seam
@@ -633,7 +639,10 @@ finished — never per-commit — so it can never push you into writing tests in
 - [ ] Change folder exists; `openspec validate <change-id> --strict` exits 0
 - [ ] The delta uses ADDED / MODIFIED / REMOVED correctly against current specs, and every
       requirement has scenarios covering its error and edge cases, not just the happy path
-- [ ] Seam(s) named in `design.md`
+- [ ] Seam(s) named in `design.md` — **or** `design.md` states that no test changes and why, which
+      is what an editorial Story looks like (ADR-1047)
+- [ ] The change folder is within the budgets of ADR-1047 (`pnpm run check:budgets` warns, never
+      blocks)
 - [ ] Draft PR open on the branch, rebased onto current `main`
 - [ ] Human `G4: approved <digest>` comment on the issue, signing the folder as it now stands
 

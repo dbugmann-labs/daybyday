@@ -1,32 +1,87 @@
+# Governed by ADR-1047; every rule below is repeated for the reviewer in
+# .claude/agents/reviewer.md. Rules are folded scalars (>-) because a bare
+# "word: word" inside a list item is a YAML mapping and the CLI then ignores
+# the whole file with a parse warning — it does not fail.
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: >-
+  DayByDay: an iPhone app. The engine and screens are a Swift package, DayByDayKit, under
+  src/; the SwiftUI shell draws what the screens answer. AGENTS.md and CONTEXT.md are binding.
+  Every `#### Scenario:` title becomes an acceptance test name verbatim and CI checks it.
+  A spec states the rule and stops; rationale lives in docs/adr/ and design.md.
+  Say each thing once, in the one artifact it belongs to.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - >-
+      Hard cap 60 lines. Why at most 6 lines; What Changes at most 12 one-line bullets;
+      Capabilities names capability paths and ADDED/MODIFIED/REMOVED only; Impact at most
+      12 lines naming files and directories.
+    - >-
+      No Swift declarations, member names, test counts, tool versions, commit SHAs, dates or
+      Story history anywhere in this file.
+    - >-
+      Do not account for documents the change leaves alone.
+  specs:
+    - >-
+      Requirement prose is normative only: SHALL/MUST sentences, 40 to 150 words, one or two
+      paragraphs. No rationale, no alternatives, no "this is the decision", no bold
+      sentences, no Story or issue history.
+    - >-
+      Every rule a scenario tests is a SHALL/MUST sentence, never only a consequence, a
+      "so that" or a "therefore".
+    - >-
+      State each rule once, in the requirement it belongs to. Cross-reference another
+      requirement in one clause only where a test depends on it; never restate it.
+    - >-
+      Scenarios are WHEN/THEN/AND bullets only. One scenario per distinct behaviour: a
+      fixture variation is an extra AND on the existing scenario, and a copy per record
+      kind only where the kinds answer differently.
+    - >-
+      A MODIFIED requirement carries the whole block verbatim except the sentences that
+      change.
+  design:
+    - >-
+      Hard cap 150 lines: Context at most 20, Goals/Non-Goals 12, Decisions 80, Risks 20,
+      Open Questions 12.
+    - >-
+      Always include "### The seam" under Decisions: each new or changed member as one
+      signature line, no doc comments, no bodies.
+    - >-
+      One decision is at most 12 lines: the choice, why, then each rejected alternative in
+      one line. A decision that outlives the change goes to docs/adr/ and is cited by number.
+    - >-
+      Context states each fact the design turns on once, as its current measured value. No
+      chronology of measurements and no review-pass or reopening history; on a reopen, edit
+      in place.
+    - >-
+      Reference proposal.md and the delta instead of restating them. Open Questions lists
+      only what is still open, or "None." with the reason.
+  tasks:
+    - >-
+      One box per scenario, one line: the title verbatim plus at most one clause naming the
+      wrong implementation it catches. Setup, shell, gates and the archive handover at most
+      80 lines together.
+    - >-
+      Never paste source, test bodies, build recipes, command transcripts or logs. A
+      verification is one line: what ran, the count, pass or fail.
+    - >-
+      State the rule-5 stop once at the top of the file. One test-count assertion for the
+      whole file, in the final gate box, read off a run and never derived by arithmetic.
+    - >-
+      No "what review pass N found" sections and no red/green diary. On a reopen, edit the
+      boxes that change and add the new scenario boxes.
+    - >-
+      Every box tickable before /opsx:archive; a post-archive check is prose inside a box
+      that says who ticks it and when.
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+operations:
+  apply:
+    guidance:
+      - >-
+        Tick boxes as they complete. Add no prose, logs or code to tasks.md.
+  archive:
+    guidance:
+      - >-
+        Report the archive in three lines: what moved, what the spec diff touched, what
+        is left for the janitor.

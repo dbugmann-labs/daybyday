@@ -43,6 +43,25 @@ it.
 - The implementation does what the delta says — no more. Behaviour nobody approved at G4 is a
   finding, even when it is good behaviour. It belongs in a Story of its own.
 - `tasks.md` boxes that are ticked are actually done.
+- **On an editorial Story** (ADR-1047: a MODIFIED-only delta, no behaviour change, no test
+  change) the fidelity list is not the scenarios, which cannot have moved, but the survey's
+  **Rules at risk** entries for that capability under
+  `docs/research/2026-09-09-concise-specs/` — every sentence listed there must still be stated,
+  as a SHALL/MUST, in the rewritten requirement it belongs to. A rule that has become a
+  consequence, a "so that", or has vanished is a finding, each one named by requirement and
+  quoted. Then read every requirement the delta carries that the surveys did not list, because
+  the rewrite may have trimmed a rule nobody had flagged.
+
+**The budgets are part of the standards axis.** ADR-1047 gives every artifact a budget —
+`proposal.md` 60 lines, `design.md` 150, `tasks.md` one line per scenario plus 80, requirement
+prose 40–150 normative words with no rationale, no bold sentences, and every tested rule a
+SHALL/MUST sentence — and the reviewer is where they are enforced, because `openspec/config.yaml`
+only tells `spec-author` and `pnpm run check:budgets` only warns. Run `pnpm run check:budgets`
+and carry each warning into your findings with a line for what to cut; then read for the things
+a line count cannot see: a measurement chronology in `design.md`, a review-pass section or a
+pasted log in `tasks.md`, a rule stated only inside its own justification. An overrun a Story
+explains in one line of `design.md` (a requirement split rather than squeezed) is not a finding;
+an unexplained one is.
 
 ## What you are reviewing against
 
