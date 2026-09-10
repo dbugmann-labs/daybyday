@@ -188,7 +188,16 @@ struct ContentView: View {
                     }
                 }
             }
-            .sheet(
+            // A total takes an amount in an alert over the day, the same way a number entry takes
+            // a number, rather than in a sheet that replaces the day with a screen. Adding to a
+            // running total is a few keystrokes against a number you already know, and the sheet
+            // spent a whole screen and two navigation animations on them. The message says what
+            // the row was saying — `soFarOfTarget`, the package's own words — because the alert
+            // now covers the row that said it. Nothing here decides anything: the amount still
+            // goes to `DayScreen.enter(_:on:)` as typed and the take-back is still offered exactly
+            // where `offersTakeBackLast(asOf:)` says it is, which is what the sheet did too.
+            .alert(
+                enteringTotalRow?.name ?? "",
                 isPresented: Binding(
                     get: { enteringTotalRow != nil },
                     set: { isPresented in
@@ -196,38 +205,27 @@ struct ContentView: View {
                             enteringTotalRow = nil
                         }
                     }
-                )
-            ) {
-                if let row = enteringTotalRow {
-                    NavigationStack {
-                        VStack {
-                            TextField("Amount", text: $enteringTotalText)
-                                .keyboardType(.decimalPad)
-                                .padding()
-                            if row.offersTakeBackLast(asOf: today()) {
-                                Button("Take back last", role: .destructive) {
-                                    try? screen.takeBackLast(on: row)
-                                    enteringTotalRow = nil
-                                }
-                            }
-                            Spacer()
-                        }
-                        .navigationTitle(row.name)
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("Cancel") {
-                                    enteringTotalRow = nil
-                                }
-                            }
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Save") {
-                                    try? screen.enter(enteringTotalText, on: row)
-                                    enteringTotalRow = nil
-                                }
-                            }
-                        }
+                ),
+                presenting: enteringTotalRow
+            ) { row in
+                TextField("Amount", text: $enteringTotalText)
+                    .keyboardType(.decimalPad)
+                Button("Save") {
+                    try? screen.enter(enteringTotalText, on: row)
+                    enteringTotalRow = nil
+                }
+                if row.offersTakeBackLast(asOf: today()) {
+                    Button("Take back last", role: .destructive) {
+                        try? screen.takeBackLast(on: row)
+                        enteringTotalRow = nil
                     }
+                }
+                Button("Cancel", role: .cancel) {
+                    enteringTotalRow = nil
+                }
+            } message: { row in
+                if let totalEntry = row.totalEntry(asOf: today()) {
+                    Text(totalEntry.soFarOfTarget)
                 }
             }
         }
