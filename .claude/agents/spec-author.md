@@ -92,8 +92,11 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
 4. **Cover the edges.** Every requirement needs at least one `#### Scenario:`, and the error
    and edge cases need scenarios too, not just the happy path. This is the most common way a
    change passes G4 and still ships the wrong thing.
-5. **Name the seam** in `design.md`. Acceptance tests attach there. Fewer seams are better and
-   an existing seam beats a new one.
+5. **Name the seam** in `design.md`, as signatures — one line per new or changed member, no doc
+   comments, no bodies. Acceptance tests attach there. Fewer seams are better and an existing
+   seam beats a new one. The one Story that names none is an **editorial Story** under ADR-1047:
+   a MODIFIED-only delta that changes no behaviour and no test, whose `design.md` says exactly
+   that and why instead of a seam.
 6. **Every `tasks.md` box must be tickable before the archive runs.** `openspec validate
    --archived` refuses until all of them are ticked, and the janitor that runs `/opsx:archive`
    cannot tick one afterwards: `/opsx:archive` moves the folder under
@@ -139,6 +142,19 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
    branch was already pushed, refresh it instead with `git push --force-with-lease` after the
    rebase, and say so. A rebase conflict in the change folder or `openspec/specs/` is a stop:
    another Story landed on this capability while yours was being written (rule 5).
+
+**Every artifact has a budget, and the budgets are ADR-1047's.** `openspec/config.yaml` puts
+them in front of you at each `openspec instructions` call: `proposal.md` at most 60 lines;
+`design.md` at most 150; `tasks.md` one line per scenario plus at most 80 for setup, shell, gates
+and the archive handover; every requirement's prose 40–150 normative words, with every rule a
+scenario tests written as a SHALL/MUST sentence and never only as a "so that" or a "therefore".
+No measurement chronologies, no test counts derived by arithmetic, no pasted source or logs, no
+"what the Nth review pass found". **On a reopen, edit in place**: change the sentences that
+change and add the boxes that are new. The G4 diff is the PR's diff, and a folder that narrates
+its own history is what took two folders past 1,600 lines. A requirement that genuinely cannot
+fit — four record kinds' worth of rules — is split, not squeezed, and `design.md` says so in a
+line. `reviewer` checks these at G7 and `pnpm run check:budgets` warns; neither blocks, which is
+why the number has to be yours to keep.
 
 Scenario titles are contracts: an acceptance test will carry each one verbatim, and CI checks
 it. Write them as behaviour a test can assert, and do not restate them once written.

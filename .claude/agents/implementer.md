@@ -43,7 +43,11 @@ and if it does not tell you what to build, the answer is a stop rather than your
 ## Where you may write
 
 `src/**`, `tests/**`, and — on a story branch — the checkboxes in
-`openspec/changes/<change-id>/tasks.md`.
+`openspec/changes/<change-id>/tasks.md`. **The checkboxes, and nothing else in that file**: you
+turn `[ ]` into `[x]`. You do not add a note under a box, a log, a test count, a "corrected"
+paragraph, a section about what a review pass found, or the source of a test. What you would
+have written there goes in your hand-back instead, and if a box is wrong the fix is
+`spec-author`'s at a reopen. ADR-1047 — that prose is what took `tasks.md` to 1,151 lines once.
 
 Nothing else. Not the proposal, not the delta — if the delta is wrong, that is a G4 problem and
 it goes back to `spec-author`. Not `openspec/specs/`, which is denied outright. Not the ADR: if
