@@ -87,8 +87,9 @@ by the number if the file has moved under you.
   — `:3763`. The change names the category already there, so it reaches nothing and ends no standing
   refusal.
 
-- [x] 3.9 `swift test` from `src/DayByDayKit` — still **1015** passing, because nothing has been
-  deleted or added since § 2. Then, from the repo root:
+- [x] 3.9 `swift test` from `src/DayByDayKit` — **1017** passing: the 1015 of § 1.1 plus the two
+  tests § 2 adds, because § 3 rewrites test bodies and neither deletes nor adds one. Then, from the
+  repo root:
 
   ```bash
   grep -c 'screen\.put(' src/DayByDayKit/Tests/DayByDayKitTests/CommitmentsScreenTests.swift
