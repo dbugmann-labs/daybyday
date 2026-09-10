@@ -158,24 +158,24 @@ false. Tick each when you have confirmed it still says the truth, and **report a
 than editing quietly** — a change to any of them after G4 is a finding the reviewer should see, not a
 tidy-up (rule 5).
 
-- [ ] 8.1 `CONTEXT.md` § *Commitments screen* carries **Amended 2026-09-10**: five things rather than
+- [x] 8.1 `CONTEXT.md` § *Commitments screen* carries **Amended 2026-09-10**: five things rather than
   four, the "four rather than five" reasoning withdrawn, the kind said with its range or target, a
   range end and a target arriving as text, and the two refusals that are not new kinds of refused
   change. Confirm the seven kinds it still names are seven.
-- [ ] 8.2 `CONTEXT.md` § *Kind* carries **Amended 2026-09-10**: a row has read one since #137 and a
+- [x] 8.2 `CONTEXT.md` § *Kind* carries **Amended 2026-09-10**: a row has read one since #137 and a
   commitments screen now writes one, with nothing about what a kind *is* changed. **No new term was
   landed and none should be** — if §§ 3–7 turned one up, that is a finding to report, not a term to
   add (`grill.md` § *Terms landed in CONTEXT.md*).
-- [ ] 8.3 `docs/adr/1046-a-screen-judges-what-was-typed.md` exists, is `accepted`, and its row is the
+- [x] 8.3 `docs/adr/1046-a-screen-judges-what-was-typed.md` exists, is `accepted`, and its row is the
   last in `docs/adr/README.md`. **If § 7's phone walk changed the shape — the shell formatting a
   number before `define` sees it, or a keyboard type that refuses a minus or a comma — this ADR is
   wrong and that is a stop**, because it is the one decision here that fixes where a rule lives.
-- [ ] 8.4 `docs/open-questions.md` — **this one is work.** Move *Two of #137's tests do not match
+- [x] 8.4 `docs/open-questions.md` — **this one is work.** Move *Two of #137's tests do not match
   their scenarios clause for clause, and check 4 cannot see it* to the closed section, naming § 6's
   two scenarios and this Story, and say plainly whether either went red. It is left to this point
   rather than written at propose time because it claims two tests exist, and at propose time they did
   not. Leave every other entry alone.
-- [ ] 8.5 `docs/backlog.md` is **not** touched. The want the grill left — changing a range or a
+- [x] 8.5 `docs/backlog.md` is **not** touched. The want the grill left — changing a range or a
   target on an existing commitment (`grill.md` § *Settled* 10) — is already captured as **B-043** on
   `chore/backlog`, and that file lives on that branch: editing it from a Story branch invites the
   rebase conflict rule 5 calls a stop. Tick this by confirming `git status` shows `docs/backlog.md`

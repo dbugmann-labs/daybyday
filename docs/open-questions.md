@@ -210,17 +210,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   **#141 has not merged** — this chore lands ahead of that Story's archive, on its own `tasks.md`
   § 17.5 — so `main` does not carry any of this yet and both faces are a forward reference until it
   does.
-- **Two of #137's tests do not match their scenarios clause for clause, and check 4 cannot see it.**
-  Found at `add-commitment-kind`'s second review, 2026-09-06. The G7 fix for a half-written range
-  added a fourth malformed place to the test named *a roster store holding what could not be a roster
-  is refused*, whose scenario is base spec and says "each of the three places"; the behaviour is
-  approved (*a range is both ends or neither*), but the store-level refusal has no scenario of its own.
-  And the roster test *two commitments alike in every way but the kind their days take are both held*
-  adds the same range twice, so a roster that compared the kind's case while ignoring its range would
-  still pass it — the implementation compares whole values, so it is a coverage gap and not a bug.
-  `scripts/check-scenario-coverage.ts` maps scenario to test and never test to scenario, which is why
-  neither shows. Owed by whichever Story next touches `commitment`'s roster or store requirements,
-  as one scenario each.
 - **`RecordStore.init` can throw outside `RecordStoreError`.** Surfaced at #56's review,
   2026-09-02. A place that exists but cannot be read as data — a directory, a file without
   read permission, or on iOS a store protected by data protection when the app is launched
@@ -438,6 +427,20 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `main` yet.
 
 ## Settled
+
+- 2026-09-10 — **the two scenarios owed since #137's second review are written, and neither went
+  red.** Open since `add-commitment-kind`'s second review, 2026-09-06, as *Two of #137's tests do
+  not match their scenarios clause for clause, and check 4 cannot see it* — owed to whichever Story
+  next touched `commitment`'s roster or store requirements. `add-kind-to-commitments-screen` (#142)
+  pays it, against the owner's decision at that Story's grill (round 2) and against the
+  recommendation, since #142 touches `commitment`'s roster and store requirements anyway. *Two
+  number commitments alike in every way but the range their kind carries are both held*
+  (`RosterTests.swift`) and *a roster store holding a commitment with half a range is refused*
+  (`RosterStoreTests.swift`) were both written and run before either had a production change to
+  drive: both passed on the first run, confirming rather than fixing the behaviour — the roster
+  already compares whole values and the store already refuses a half-written range, exactly as the
+  entry said. No test was skipped for being expected to pass, and neither test edits the ones it
+  stands beside.
 
 - 2026-09-09 — **the reordered-row lag was the kept list's per-group `ForEach` keyed on
   `\.offset`, introduced by #147, and keying it on the commitment's own value instead fixed it.**
