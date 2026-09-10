@@ -95,6 +95,14 @@ struct ContentView: View {
     // own `width` while a finger is down, and the settle's target while one is not.
     @State private var pageWidth: CGFloat = 0
     @State private var dragTranslation: CGFloat = 0
+    // Which axis the current drag has committed to, decided once from the first sample
+    // `daySwipeGesture` sees and held until the finger lifts — the owner's own words from the
+    // phone walk: "once I start swiping, no more scrolling, and once I start scrolling, no more
+    // swiping." `nil` between drags. Read by `pagedDayContent` to disable the day `List`s' own
+    // scrolling for exactly as long as this drag owns the horizontal axis, so the two can never
+    // both be live inside one continuous drag the way comparing each sample's ratio on its own
+    // allowed.
+    @State private var lockedDragAxis: Axis?
 
     var body: some View {
         NavigationStack {
@@ -309,6 +317,15 @@ struct ContentView: View {
         }
         .padding(.horizontal)
         .padding(.top, 24)
+        // The gap below the last of these controls — `Today` where it shows, otherwise the day
+        // row itself — down to where `pagedDayContent` starts. Lifting the four controls out of
+        // the `List` (`tasks.md` § 4.1) took the `List`'s own top content margin out with them,
+        // and the phone walk (PR #194) reported what was left too tight. This machine cannot
+        // launch the Simulator to read the gap on screen the way #180 and ADR-1043's chore did,
+        // so this is not a measured value: it reuses the 24pt already established above, for the
+        // same visual weight on both sides of this fixed block, and is left for the owner's
+        // re-walk to confirm.
+        .padding(.bottom, 24)
     }
 
     /// The day the finger is asked to carry towards: `.previous` reveals `screen.previousDayView`
@@ -337,6 +354,11 @@ struct ContentView: View {
             }
             .offset(x: -width + dragTranslation)
             .clipped()
+            // Disables all three `List`s' own scrolling for exactly as long as this drag has
+            // locked the horizontal axis — the other half of the lock `daySwipeGesture` keeps in
+            // `lockedDragAxis`. `.scrollDisabled` is an environment value every `List` beneath
+            // reads, so setting it once here reaches all three without touching `dayList(for:)`.
+            .scrollDisabled(lockedDragAxis == .horizontal)
             .simultaneousGesture(daySwipeGesture(pageWidth: width))
             .onAppear { pageWidth = width }
             .onChange(of: width) { _, newWidth in pageWidth = newWidth }
@@ -496,15 +518,24 @@ struct ContentView: View {
     /// them, calling the same `showPreviousDay()` and `showNextDay()` they call — never
     /// `showDay(_:)`, which is bounded by the day picker's reach and would silently refuse a
     /// page back below the roster's earliest kept-from day. `minimumDistance` keeps a plain tap
-    /// on a row or a button from ever reaching either closure, and comparing the two axes keeps
-    /// an ordinary vertical scroll from being read as a day move — both exactly as before this
-    /// Story. What is new is that the page now tracks the finger live (`dragTranslation`) and
-    /// resists where the neighbour it would reveal is absent, settling back on release rather
-    /// than carrying.
+    /// on a row or a button from ever reaching either closure. What is new since the phone walk
+    /// (PR #194) is that the axis is decided once, from the first sample this gesture sees, and
+    /// held in `lockedDragAxis` until the finger lifts — comparing each sample's own ratio on its
+    /// own let a single continuous drag flip axes mid-flight, which is how a vertical scroll and
+    /// a horizontal page both ran at once. A drag that locks vertical only stops paging here;
+    /// `pagedDayContent`'s `.scrollDisabled(lockedDragAxis == .horizontal)` is what stops a
+    /// horizontally locked drag from also scrolling the `List` underneath. The page tracks the
+    /// finger live (`dragTranslation`) once locked horizontal, and resists where the neighbour it
+    /// would reveal is absent, settling back on release rather than carrying.
     private func daySwipeGesture(pageWidth: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: 40)
             .onChanged { value in
-                guard abs(value.translation.width) > abs(value.translation.height) else {
+                if lockedDragAxis == nil {
+                    lockedDragAxis =
+                        abs(value.translation.width) > abs(value.translation.height)
+                        ? .horizontal : .vertical
+                }
+                guard lockedDragAxis == .horizontal else {
                     return
                 }
                 if value.translation.width < 0 {
@@ -514,7 +545,8 @@ struct ContentView: View {
                 }
             }
             .onEnded { value in
-                guard abs(value.translation.width) > abs(value.translation.height) else {
+                defer { lockedDragAxis = nil }
+                guard lockedDragAxis == .horizontal else {
                     settle(to: 0, then: nil)
                     return
                 }

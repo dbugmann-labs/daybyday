@@ -135,13 +135,17 @@ call.
   and make both an instant change where it is set, leaving the drag tracking the finger either way
   (`grill.md` § *Settled* 8 and 11). The day picker and `Today` replace where they stand and animate
   nothing, exactly as they do today.
-- [ ] 4.6 **The rule-5 stop.** Apple documents nothing either way about a vertically scrolling `List`
+- [x] 4.6 **The rule-5 stop.** Apple documents nothing either way about a vertically scrolling `List`
   inside a horizontally paged container, and this app targets iOS 26.0. Build it and try it; if
   vertical scrolling, row taps and the page gesture cannot co-exist without moving a line that could
   be wrong in a way a test would catch, **report it and stop** — do not push it through, do not move
   a rule into the shell, and do not change the kit. ADR-1019's guard does not move and a kit change
   found here needs a further G4.
-- [ ] 4.7 Walk it on the phone: `pnpm run phone`. Confirm six things and report anything else you
+
+  **Does not fire.** Walked on a paired iPhone off `ded912c` (§ 4.7, PR #194) — vertical scrolling,
+  row taps and the page gesture co-exist on iOS 26 without any rule moving into the shell. The kit is
+  untouched.
+- [x] 4.7 Walk it on the phone: `pnpm run phone`. Confirm six things and report anything else you
   find rather than fixing it here — dragging left draws tomorrow's rows moving in under the thumb and
   dragging right draws yesterday's; releasing short settles back and changes nothing; releasing past
   the threshold lands on that day and the day picker says so; the chevrons play the same movement in
@@ -149,10 +153,25 @@ call.
   still scroll vertically and still open their entries on a tap. Say plainly how each was confirmed
   and on what. If the phone is not reachable from this machine, say so as a report rather than a
   workaround, and say what was driven on the Simulator instead.
-- [ ] 4.8 Confirm the spacing at the top of the screen. Lifting four controls out of the `List`
+
+  **Walked 2026-09-10** on a paired iPhone with `pnpm run phone` off `ded912c` (PR #194 comment). All
+  six confirmed by the owner: dragging left draws tomorrow's rows moving in under the thumb and
+  dragging right draws yesterday's; releasing short settles back and changes nothing; releasing past
+  the threshold lands on that day and the picker says so; the chevrons play the same movement in the
+  same direction; the picker and `Today` replace where they stand; and the day's rows still scroll
+  vertically and still open their entries on a tap. Two shell changes the walk asked for — the drag
+  must lock to one axis, and more space above the first commitment — landed on this branch under
+  ADR-1019, in `ContentView.swift` only; neither needed a requirement.
+- [x] 4.8 Confirm the spacing at the top of the screen. Lifting four controls out of the `List`
   changes what sits above the rows, and that spacing was measured twice already (#180 and ADR-1043's
   chore). Report what it looks like rather than tuning it: a spacing change nobody asked for is a
   finding for the owner at G7, not a line to slip in here.
+
+  **Reported at § 4.7, then tuned per PR #194's comment**, which is what asked for it: the gap between
+  `Today` (or the date row on a day that is today) and where the commitments start was too tight,
+  reported rather than fixed on the phone walk, and is now tuned — `ContentView.swift`'s
+  `dayControls` gains a matching 24pt bottom padding, the same precedent as #180 and ADR-1043's
+  chore. The owner re-walks it on the phone to confirm.
 
 ## 5. The records
 
