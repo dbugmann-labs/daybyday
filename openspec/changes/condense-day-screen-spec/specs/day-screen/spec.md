@@ -1178,7 +1178,8 @@ again or returned to, and when a tick is made. The roster asked SHALL be the one
 was last shown or the screen last returned to, whichever happened later, with any change kept since;
 asking MUST NOT open the place. A commitment the roster stopped or removed SHALL have a row up to
 and including the day it was kept until, and none after; a day screen MUST NOT tell the two apart in
-any way: not in the row drawn, in what it says or offers, nor in its group.
+any way: not in the row drawn, in what it says or offers, nor in its group. A group with nothing due
+produces no group, as *A day view is a value* states.
 
 #### Scenario: a day screen draws the commitments its roster keeps, in the order they were taken on
 
@@ -2232,8 +2233,9 @@ keeping a record. A number the commitment refuses SHALL keep nothing and SHALL l
 as it was. The change SHALL be kept at the screen's record place before its day view says so, and
 the day view SHALL then be formed again from the record as it stands rather than altered; a change
 that could not be kept SHALL be refused, reported to the caller, and SHALL leave the day view
-exactly as it was. A number entered on a day that already holds one replaces it. Taking one back
-SHALL reach the place whether or not the day holds a number, and SHALL be refused only by the place.
+exactly as it was. A number entered on a day that already holds one SHALL replace it. Taking one
+back SHALL reach the place whether or not the day holds a number, and SHALL be refused only by the
+place.
 Entering a number or taking one back MUST NOT write to the roster's place or change what the screen
 says about its roster.
 
@@ -2644,8 +2646,8 @@ number committed on a note row is kept as a note.
 
 Entering a note and taking one back SHALL answer as entering a number and taking one back do,
 behaviour for behaviour, under the requirement on entering a number. A note written on a day that
-already holds one replaces it. No note a person commits SHALL be refused for anything but the place
-refusing to take it.
+already holds one SHALL replace it. No note a person commits SHALL be refused for anything but the
+place refusing to take it.
 
 #### Scenario: entering a note on a row makes the day screen say the commitment is kept
 
@@ -3903,9 +3905,8 @@ December 9999 SHALL say none of the day after it; the absence is the whole of th
 absence SHALL be about the calendar and about nothing else: a screen showing either end SHALL go on
 saying the day view on its other side, and a screen showing any other date SHALL say one on both
 sides, whatever its roster holds, whatever its record holds, whether its day view has any rows, and
-whichever day it was handed as today. The absence SHALL NOT be read as an answer about moving:
-whether a move has anywhere to go is not answered here and is not answered anywhere, and a caller
-MUST NOT stand a move down on the strength of it.
+whichever day it was handed as today. The absence SHALL NOT be read as an answer about moving,
+which *A move with nowhere to go leaves a day screen exactly as it was* states.
 
 #### Scenario: a day screen showing the first supported date says no day view before it and says the day after
 

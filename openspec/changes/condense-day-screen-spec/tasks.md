@@ -7,7 +7,7 @@ conflict in this folder or in `openspec/specs/`.
 **Every box in § 2 asks the same three things of one requirement**, and is ticked only when all
 three hold: every *Rules at risk* sentence the surveys list for it is a SHALL/MUST sentence in the
 rewritten prose; every scenario under it is byte-for-byte what it is today, title and body; and its
-prose is 40–150 words, or is one of the sixteen `design.md` § *Overruns the budget* lists with the
+prose is 40–150 words, or is one of the seventeen `design.md` § *Overruns the budget* lists with the
 reason it carries. A clause after a heading is the trap that requirement carries and nothing
 more — the three things are still what the tick means.
 
@@ -73,7 +73,7 @@ and `survey-2026-09-10-day-screen.md` for boxes 2.9, 2.10, 2.11, 2.16, 2.20, 2.2
 - [ ] 3.1 `openspec validate condense-day-screen-spec --strict` exits 0.
 - [ ] 3.2 `pnpm run check:scenarios` exits 0 — every scenario title in the delta still names a test
       that exists, which is what "byte-for-byte" means mechanically.
-- [ ] 3.3 `pnpm run check:budgets` reports no requirement over 150 words except the sixteen
+- [ ] 3.3 `pnpm run check:budgets` reports no requirement over 150 words except the seventeen
       `design.md` § *Overruns the budget, and why each one is over* lists, and no artifact over its
       own budget.
 - [ ] 3.4 `swift test` in `src/DayByDayKit` passes and reports the same number of tests as it does

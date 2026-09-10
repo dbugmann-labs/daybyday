@@ -98,10 +98,9 @@ so the fact moves to ADR-1047's list of knowingly-false titles, which grows from
 
 ### Overruns the budget, and why each one is over
 
-The rewrite takes this capability's requirement prose from 24,847 words to 8,390. Sixteen
-requirements are still over 150, because the first rule — every *Rules at risk* sentence present as
-its own SHALL/MUST — outranks the word cap where the two collide. **Treat one as a finding only
-where a sentence in it is rationale rather than a rule**; this list is what puts Decisions over 80.
+Requirement prose goes from 24,847 words to 8,390, and seventeen requirements are still over 150,
+because rule 1 — every *Rules at risk* sentence present as its own SHALL/MUST — outranks the word
+cap. **A finding only where a sentence is rationale rather than a rule**; this list puts Decisions over 80.
 
 - *A day view is the commitments due on a date, each with whether it is kept* — 171; the formation rule plus survey A's three at-risk sentences.
 - *A row offers the tick that keeps its commitment, and refuses one for a day that has not arrived* — 214; four at-risk sentences and the tick round-trip contract.
@@ -113,9 +112,10 @@ where a sentence in it is rationale rather than a rule**; this list is what puts
 - *A day screen makes and takes back the tick a row offers, and keeps it before the day view says so* — 205; three at-risk sentences and the refusal-reporting contract.
 - *A day screen that cannot read its record draws the day and keeps nothing* — 205; three at-risk sentences, including both refusal reasons kept apart.
 - *A day screen re-reads its day and its record when the app is shown again* — 249; four at-risk sentences, and the one to split first if a split is ever authorised.
+- *A day screen draws the commitments its roster had not stopped keeping on the day it is showing* — 166; three at-risk sentences, the six moments, and the group deferral.
 - *A day screen tells on the row that was tapped that a change could not be kept* — 256; four causes quoted verbatim and three at-risk sentences.
 - *What a day screen tells on a row lasts until the app is shown again, a change is kept, or the day it is showing changes* — 167; three ends and the four things that are not one.
-- *A day screen enters the number a row's entry takes, and keeps it before the day view says so* — 257; states the family's eight shared behaviours in full.
+- *A day screen enters the number a row's entry takes, and keeps it before the day view says so* — 258; states the family's eight shared behaviours in full.
 - *A day screen reads what an entry is committed with as a number, as a take-back, or as neither* — 283; the whole number grammar the total's reading defers to.
 - *A row is its commitment, its date and what that day holds* — 153; a split half three words over, carrying identity and per-kind contents.
 - *A row gives back what a screen draws and what a tap makes* — 172; the other half, four give-backs and the rhythm rules.
