@@ -2,7 +2,7 @@
 
 `proposal.md` § *Why* says what this is for, and `grill.md`'s settled answers are what the delta is
 written on. `openspec/specs/day-screen/spec.md` holds 51 requirements and 399 scenarios; the delta
-carries 19 requirements and 176 scenarios, and drops 27. No member is new or changed, which makes this
+carries 19 requirements and 177 scenarios, and drops 26. No member is new or changed, which makes this
 a *pruning Story*; § *The seam* lists where the keepers' tests attach.
 
 The archiver in `openspec` 1.10.0 refuses a MODIFIED block omitting a current scenario and takes
@@ -17,9 +17,10 @@ grill item 9's clause, and *A day screen draws the commitments…* from 166 to 1
 
 ## Goals / Non-Goals
 
-**Goals:** the twenty-seven drops of grill items 2 and 17 and their tests gone, with everything each
-asserted still asserted by its keeper; grill item 9's false sentence made true; the two kept tests of
-grill item 4 brought to their unchanged scenarios first, a red on either stopping every deletion.
+**Goals:** the twenty-six drops of grill items 2, 17 and 20 and their tests gone, with everything
+each asserted still asserted by its keeper; grill item 9's false sentence made true; the two kept
+tests of grill item 4 brought to their unchanged scenarios first, a red on either stopping every
+deletion.
 
 **Non-Goals:** no requirement prose changed but the three sentences of grill items 7 and 9; no
 scenario title changed; no test added, and no kept test edited but those two; no line under
@@ -57,14 +58,13 @@ DayScreen.shown(asOf today: CalendarDate)
 DayScreen.returnedTo()
 ```
 
-### Twenty-seven scenarios are dropped, and seventeen headings change as little as keeps each true
+### Twenty-six scenarios are dropped, and seventeen headings change as little as keeps each true
 
-Grill items 2, 6, 14 and 17. Rejected: RENAMED, per ADR-1047 decision 2; a split Story (item 6);
-dropping the two not-arrived scenarios as an exception to decision 6's condition 1 (item 17).
+Grill items 2, 6, 14, 17 and 20. Rejected: RENAMED, per ADR-1047 decision 2; a split Story (item 6);
+dropping the three withdrawn scenarios as exceptions to decision 6's condition 1 (items 17 and 20).
 
 | # | Dropped | Keeper, which asserts the same | Test file |
 |---|---|---|---|
-| 1 | a commitment ticked on the date has a row that says it is kept | a tick on another date does not make the row say it is kept | `DayViewTests` |
 | 1 | a commitment not ticked on the date has a row that says it is not kept | a tick for a commitment the day view was not handed adds no row | `DayViewTests` |
 | 2 | a row offers the tick for its commitment on the date the day view is of | a row's answer follows the day it is asked as of rather than the day the day view was formed | `DayViewTests` |
 | 3 | rows are in the order the commitments were handed over | a kept commitment keeps its place among the ones that are not kept | `DayViewTests` |
@@ -114,7 +114,7 @@ dropping the two not-arrived scenarios as an exception to decision 6's condition
   box is ticked only once its keeper's own `#expect` has been read, and `reviewer` confirms each pair
   in source at G7.
 - **A test left behind, or the wrong one deleted**, passes `check:scenarios`. → The gates search `src/`
-  for all twenty-seven titles and read the test count off a run on this branch and on `main`.
+  for all twenty-six titles and read the test count off a run on this branch and on `main`.
 - **A strengthened test that goes red** shows a kept test never proved its scenario. → A stop before
   any deletion (grill item 15): the folder returns to G4 with that strengthening and the drops resting
   on it withdrawn, and the defect becomes a Story of its own.

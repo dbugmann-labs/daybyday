@@ -8,7 +8,7 @@ names, or a rebase conflict in this folder or in `openspec/specs/`.
 This is a pruning Story: no test is written, and rule 3's loop has no red. **§ 2 is finished before
 any § 3 box is started.** Each § 3 deletion box is ticked only once the keeper `design.md` names for
 it has been read and its own `#expect` holds every value the deleted test asserted. The only other
-edits to `src/` are § 2's two kept tests and § 3's two restorations. § 4 is one box per carried
+edits to `src/` are § 2's two kept tests and § 3's three restorations. § 4 is one box per carried
 requirement rather than per scenario, because no carried scenario has work of its own.
 
 ## 2. The two kept tests — both run before any deletion
@@ -22,9 +22,9 @@ and the correction becomes a Story of its own.
 - [x] 2.1 Bring `a row's answer follows the day it is asked as of rather than the day the day view was formed` to check the second asking offers a tick, not only that it equals one
 - [x] 2.2 Bring `committing nothing at all in a total entry keeps nothing and takes nothing back` to check kept after the spaces and line breaks, and on the screen opened afterwards
 
-## 3. The twenty-seven deletions and two restorations — one box per scenario
+## 3. The twenty-six deletions and three restorations — one box per scenario
 
-- [x] 3.1 Delete `a commitment ticked on the date has a row that says it is kept` from `DayViewTests.swift` — the keeper never asserts the name, which a row takes from its commitment
+- [ ] 3.1 Restore `a commitment ticked on the date has a row that says it is kept` in `DayViewTests.swift` from `origin/main`, unchanged — withdrawn by grill item 20
 - [x] 3.2 Delete `a commitment not ticked on the date has a row that says it is not kept` from `DayViewTests.swift`
 - [x] 3.3 Delete `a row offers the tick for its commitment on the date the day view is of` from `DayViewTests.swift` — rests on 2.1
 - [x] 3.4 Delete `rows are in the order the commitments were handed over` from `DayViewTests.swift`
@@ -61,7 +61,7 @@ names, and every test under it passes.
 
 - [x] 4.1 *A day screen holds the day view of the day it was handed, formed from the record kept at its place* — only the sentence adding a picked day differs
 - [x] 4.2 *A day screen draws the commitments its roster had not stopped keeping on the day it is showing* — only the cited heading of 4.6 differs
-- [x] 4.3 *A day view holds the commitments due on a date, each with whether it is kept*
+- [ ] 4.3 *A day view holds the commitments due on a date, each with whether it is kept* — the scenario of 3.1 is carried in place
 - [x] 4.4 *A row offers the tick that keeps its commitment, and offers none for a day that has not arrived*
 - [x] 4.5 *A day view's rows are in the order it was handed its commitments*
 - [x] 4.6 *A day view is a value and nothing else*
@@ -83,19 +83,19 @@ names, and every test under it passes.
 
 - [ ] 5.1 `openspec validate drop-duplicate-day-screen-scenarios --strict` exits 0.
 - [ ] 5.2 `pnpm run check:scenarios` exits 0 — every title the delta carries still names a test.
-- [ ] 5.3 None of the twenty-seven dropped titles is found as an exact test name under `src/`, each
-      title of 3.14 and 3.15 is found exactly once and byte-identical to `origin/main`, and
+- [ ] 5.3 None of the twenty-six dropped titles is found as an exact test name under `src/`, each
+      title of 3.1, 3.14 and 3.15 is found exactly once and byte-identical to `origin/main`, and
       `git diff --stat origin/main -- src/` lists only `DayViewTests.swift` and `DayScreenTests.swift`.
 - [ ] 5.4 `pnpm run check:budgets` warns about nothing in this folder but the ten requirements
       `design.md` § Context names, and `pnpm run verify` passes.
-- [ ] 5.5 `swift test` in `src/DayByDayKit` passes and reports twenty-seven fewer tests than on `main`,
+- [ ] 5.5 `swift test` in `src/DayByDayKit` passes and reports twenty-six fewer tests than on `main`,
       both counts read off a run and never derived.
 - [ ] 5.6 **The archive handover — `implementer` ticks this in its last commit before the archive**,
       on the evidence that 2.1–5.5 are ticked and that the instruction below is written here for the
       janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of
       the sync it prints, then reads the spec diff it produced: in `openspec/specs/day-screen/spec.md`
       the seventeen requirements of 4.3–4.19 leave their places and reappear after every other
-      requirement, in that order, under their new headings; the twenty-seven dropped scenarios are gone;
+      requirement, in that order, under their new headings; the twenty-six dropped scenarios are gone;
       the sentences 4.1 and 4.2 name are the delta's; and nothing else moves. After the archive commit,
       `git status` is clean and `openspec/changes/drop-duplicate-day-screen-scenarios/` no longer
       exists, its deletion committed with the archive, and `pnpm run checks` runs after that commit

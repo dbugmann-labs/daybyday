@@ -194,6 +194,26 @@ second, independent one: 29 of 29 confirmed, none refuted.*
     ground that the name is one statement (DayView.swift:57), read whether or not the row is kept,
     so no guard differs that removing one could expose.*
 
+*Stop before the second G4, 2026-09-11: one question, asked after a verifier ran the
+exact-statement test on the remaining drops.*
+
+20. **A third drop is withdrawn, reversing item 19, and the count goes from 27 to 26.** `a
+    commitment ticked on the date has a row that says it is kept` stays in the spec, and its test is
+    restored from `main` unchanged. This replaces item 2's bullet for it.
+    - The spec goes from 399 to 373 scenarios, and the tests from 1036 to 1010.
+    - *A day view is the commitments due on a date, each with whether it is kept* still loses one
+      scenario, so it keeps its new heading.
+
+    *Condition 1's code-path clause, as applied from here on, requires the keeper's test to
+    execute the statement behind every value the dropped test asserts. This drop fails that: with
+    the name statement (DayView.swift:57) altered in a scratch copy, the dropped test went red and
+    the keeper stayed green. The keeper never asserts the name. The only scenario that does, `a
+    tick for a commitment the day view was not handed adds no row`, asserts it on a row that is not
+    kept, so the cover is split, which #214 item 2 settled is not cover. Item 19 rested on the
+    conductor's G7 recommendation, which was wrong by that reading. Drops 10 and 22 pass the same
+    test: the only mutations that separate them from their keepers add code the source does not
+    have.*
+
 ## Terms landed in CONTEXT.md
 
 None. *Pruning Story* already stands, and nothing settled here names a new thing.

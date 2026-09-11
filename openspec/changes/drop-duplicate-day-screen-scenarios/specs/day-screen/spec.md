@@ -154,10 +154,9 @@ produces no group, as *A day view is a value and nothing else* states.
 ### Requirement: A day view is the commitments due on a date, each with whether it is kept
 
 **Reason**: Added back below as *A day view holds the commitments due on a date, each with whether
-it is kept*, without scenarios another under it already asserts.
-**Migration**: Dropped with their tests: `a commitment ticked on the date has a row that says it is
-kept` and `a commitment not ticked on the date has a row that says it is not kept`. The rest is
-carried verbatim.
+it is kept*, without a scenario another under it already asserts.
+**Migration**: Dropped with its test: `a commitment not ticked on the date has a row that says it is
+not kept`. The rest is carried verbatim.
 
 ### Requirement: A row offers the tick that keeps its commitment, and refuses one for a day that has not arrived
 
@@ -312,6 +311,14 @@ due, or none at all, SHALL hold no rows rather than refuse.
   of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
   1 January 2026
 - **THEN** the day view holds no rows
+
+#### Scenario: a commitment ticked on the date has a row that says it is kept
+
+- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026, from a history holding a tick for
+  that commitment on that date
+- **THEN** the day view holds one row
+- **AND** that row is named "Gym" and says the commitment is kept
 
 #### Scenario: a day view of no commitments at all has no rows
 
