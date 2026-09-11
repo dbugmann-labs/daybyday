@@ -1,6 +1,6 @@
 # Grill — drop-duplicate-schedule-scenarios
 
-*13 questions over 2 rounds, 2026-09-11. Line numbers are `openspec/specs/schedule/spec.md` at
+*13 questions over 2 rounds and a residual round of 3, 2026-09-11. Line numbers are `openspec/specs/schedule/spec.md` at
 `633d031`; re-anchor by title.*
 
 ## Settled
@@ -15,7 +15,7 @@
 3. **What is droppable**, for this Story and for ADR-1047 to state. A scenario may be dropped only
    if all four hold: (1) a kept scenario **under the same requirement** asserts everything it
    asserts, literally or through the same code path shown in source; (2) it is not the only test
-   whose name states a prohibition; (3) it is not the only scenario varying a clause of its
+   named for a prohibition its requirement states as a MUST NOT (narrowed in item 11); (3) it is not the only scenario varying a clause of its
    requirement's rule; (4) it does not pin a date, week or year boundary. *Chosen so the next
    pruning Story works from a rule, not a re-grill; each clause is one answer below.*
 4. **Each dropped scenario's test is deleted in this PR, and no test is added.** The test count
@@ -73,6 +73,20 @@
    touch `docs/backlog.md`.
 10. **The survey's "nine candidates" are ten.** Its own list names ten titles; the archived
     `condense-schedule-spec` records repeated "nine". This file counts from the list.
+
+*Residual round, 2026-09-11, three questions asked before G4 after a verifier read the folder.*
+
+11. **Condition 2 covers only a prohibition the requirement states as a MUST NOT**, not any title
+    containing "not". *Read broadly, it forbade dropping `the eleventh, twelfth and thirteenth are
+    said with th and not with st, nd and rd`, approved in item 5, whose requirement states no MUST
+    NOT for those days; the clause came from the clamp-words scenario, which is.*
+12. **This Story's G7 is not the budget review ADR-1047 carried forward;** that review is owed at
+    the first behaviour Story, one that is neither editorial nor pruning. *The rehearsal tests
+    whether a behaviour Story's folder is written within the caps, and a pruning folder's
+    `design.md` is a list of drops.*
+13. **The comment on the kept test `ScheduleTests.swift:235-237`, which cites the deleted 1500
+    case, is corrected in this Story**, comment only, no assertion changed. *Deleting the 1500 test
+    makes it false, so the Story that deletes it fixes it; G7 checks the diff is comment-only.*
 
 ## Terms landed in CONTEXT.md
 

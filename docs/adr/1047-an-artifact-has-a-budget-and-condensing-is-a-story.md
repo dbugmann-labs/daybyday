@@ -5,8 +5,10 @@
 - Deciders: Diego Bugmann
 - Amended: 2026-09-11 — decision 6 added: a scenario another under the same requirement already
   asserts may be dropped, under four conditions, by a **pruning Story** that deletes exactly its
-  test; decision 2 no longer says pruning is unauthorised. By `drop-duplicate-schedule-scenarios`
-  (#211), the first pruning Story.
+  test; decisions 2 and 5 no longer say dropping one is unauthorised. The budget review the entry
+  below carries to "the first ordinary Story" is owed at the first **behaviour Story**, neither
+  editorial nor pruning, and decision 1 says so. By `drop-duplicate-schedule-scenarios` (#211), the
+  first pruning Story, whose G7 is not that review.
 - Amended: 2026-09-11 — the budgets are confirmed unchanged. The review decision 1 promised is
   carried to the first ordinary Story's G7, because every Story written under them so far is
   editorial; what those four showed is recorded under decision 1, and none of it moves a cap.
@@ -72,8 +74,9 @@ review.** `proposal.md` and `tasks.md` held on all four. One `design.md` in four
 § *Open Questions* must each name every entry, and both lists grow with the spec rather than the
 decision; without them the four files run 98 to 117. The requirements still over 150 words are
 pre-budget prose kept whole by rule, spread so widely that twice the cap still leaves seventeen
-over, so neither moves a number. The review is still owed on an ordinary folder, at the first
-ordinary Story's G7. Measurements: `docs/research/2026-09-09-concise-specs.md`
+over, so neither moves a number. The review is still owed at the G7 of the first **behaviour
+Story**, one neither editorial nor pruning; a pruning Story's G7 is not it either, because its
+`design.md` is a list of drops. Measurements: `docs/research/2026-09-09-concise-specs.md`
 § *Outcome, 2026-09-11*.
 
 **2. A spec may be condensed with no behaviour change, and the lane for that is a Story.** Rule 2 and
@@ -127,9 +130,10 @@ says so today is rationale the condensing Story deletes, so the fact lives here:
   `#expect(screen.recordState == .unreadable)` still holds, with its one row still drawn — a screen
   not keeping a record does not start keeping one by being returned to.
 
-All three are kept because the archiver forbids dropping a scenario, and the only way to drop one is
-removing its requirement and adding it back under a new heading, which moves the whole block to the
-bottom of the spec at archive time.
+All three are kept because an editorial Story drops no scenario: the archiver refuses a dropped
+scenario under a kept heading, and the only way to drop one is removing its requirement and adding it
+back under a new heading, which moves the whole block to the bottom of the spec at archive time.
+Dropping one is a pruning Story's, and only under decision 6's four conditions.
 
 **6. A scenario another already asserts may be dropped, and the lane for that is a pruning Story.**
 A **pruning Story** runs the ordinary pipeline and its gates, changes no behaviour and keeps its seam,
@@ -138,7 +142,8 @@ all four hold:
 
 1. a kept scenario **under the same requirement** asserts everything it asserts, literally or
    through the same code path shown in source;
-2. it is not the only test whose name states a prohibition;
+2. it is not the only test named for a prohibition its requirement states as a MUST NOT — a title
+   that merely says "not" names no such prohibition;
 3. it is not the only scenario varying a clause of its requirement's rule;
 4. it does not pin a date, week or year boundary.
 

@@ -16,7 +16,8 @@ so a test whose scenario is gone passes every check.
 asserted still asserted by its keeper; the rule for what may be dropped stated in ADR-1047.
 
 **Non-Goals:** no prose change beyond the two cross-references; no kept scenario edited, folded or
-renamed; no test added or edited; no other capability. The reverse coverage want (grill answer 8) and
+renamed; no test added, and no kept test edited but for the one comment the deletions make false
+(grill answer 13); no other capability. The reverse coverage want (grill answer 8) and
 B-025's quote of a renamed heading (grill answer 9) go to `chore/backlog` after the archive.
 
 ## Decisions
@@ -25,7 +26,8 @@ B-025's quote of a renamed heading (grill answer 9) go to `chore/backlog` after 
 
 No member is new or changed, which is what makes this a *pruning Story* and not a behaviour Story.
 Every scenario the delta carries is already driven at one of two shipped members by a test carrying
-its title verbatim, and each goes on passing there. Rule 3's loop has no red: the work is deletion.
+its title verbatim, and each goes on passing there. Rule 3's loop has no red: the work is deletion,
+and one comment on a kept test.
 
 ```swift
 CalendarDate.init?(year: Int, month: Int, day: Int)
@@ -53,13 +55,22 @@ case is the same fixture saying "Every 14 days". Rejected: the survey's weekday 
 is said by its own three-letter name*, which never asserts a joined string; leaving the tests in place,
 which no check would ever flag.
 
+Conditions 2–4 hold for all six. Two titles contain "not", and neither is named for a MUST NOT:
+refusing a year before 1583 is a SHALL its keeper is named for too, and *the eleventh, twelfth and
+thirteenth are said with th and not with st, nd and rd* sits under a requirement whose only MUST NOT
+is the clamp, whose test is kept (grill answer 11). None is the only scenario varying a clause, and
+none pins a boundary: 1582, not 1500, is the pin below the year range. The keeper's test comment,
+which cites the 1500 case, is corrected with no assertion changed (grill answer 13).
+
 ### What may be dropped is ADR-1047 decision 6
 
-Grill answers 1–3. A scenario may be dropped only if all four hold: a kept scenario under the same
-requirement asserts everything it asserts, literally or through the same code path shown in source;
-it is not the only test whose name states a prohibition; it is not the only scenario varying a clause
-of its requirement's rule; and it does not pin a date, week or year boundary. The amendment also names
-the lane, the test deletion and the heading mechanism. Rejected: a new ADR; widening *editorial
+Grill answers 1–3 and 11. A scenario may be dropped only if all four hold: a kept scenario under the
+same requirement asserts everything it asserts, literally or through the same code path shown in
+source; it is not the only test named for a prohibition its requirement states as a MUST NOT; it is
+not the only scenario varying a clause of its requirement's rule; and it does not pin a date, week or
+year boundary. The amendment also names the lane, the test deletion and the heading mechanism, brings
+decision 5 into line, and has decision 1 owe the budget review to the first behaviour Story rather
+than to this Story's G7 (grill answer 12). Rejected: a new ADR; widening *editorial
 Story*, every definition of which says no test changes.
 
 ### Seven candidates are kept
@@ -101,6 +112,7 @@ which grill answer 9 leaves out of this change. Rejected: RENAMED, refused as AD
 
 ## Open Questions
 
-None. `grill.md` § *Left open* is "None.", every survey candidate has a settled answer, and writing
-the delta raised no residual round: the new headings were the only choice left to this change, made to
-the rule grill answer 7 set.
+None. `grill.md` § *Left open* is "None.", every survey candidate has a settled answer, and the new
+headings were the only choice left to this change, made to the rule grill answer 7 set. The residual
+round of three raised after a verifier read this folder is settled in grill answers 11–13 and folded
+in above: condition 2's reading, which Story's G7 owes the budget review, and the stale comment.

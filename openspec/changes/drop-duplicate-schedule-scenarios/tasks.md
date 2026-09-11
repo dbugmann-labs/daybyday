@@ -5,14 +5,14 @@ rule 5): the archiver refusing a block, a keeper test that does not assert what 
 does, a carried scenario that is not byte-for-byte what it is today, or a rebase conflict in this
 folder, in `docs/adr/` or in `openspec/specs/`.
 
-This is a pruning Story: no test is written and none is edited, so rule 3's loop has no red. A § 2 box
-is one deletion, ticked only once the keeper `design.md` names for it has been read and its own
-`#expect` holds every value the deleted test asserted. § 3 is one box per carried requirement rather
+This is a pruning Story: no test is written, and the one edit to a kept test is 2.7's comment, so
+rule 3's loop has no red. Each of 2.1–2.6 is one deletion, ticked only once the keeper `design.md`
+names for it has been read and its own `#expect` holds every value the deleted test asserted. § 3 is one box per carried requirement rather
 than per scenario, because no carried scenario has work of its own: each is ticked when that
 requirement's prose and scenarios are byte-for-byte the current spec's, except the one cross-reference
 its line names, and no test under it is touched.
 
-## 2. The six deletions — one box per dropped scenario
+## 2. The six deletions — one box per dropped scenario, and the comment they make false
 
 - [ ] 2.1 Delete `a date before the Gregorian calendar's adoption is not a calendar date` from `ScheduleTests.swift` — its keeper refuses 1582 through the same year guard
 - [ ] 2.2 Delete `a weekday-set schedule says its weekdays as three-letter names` from `ScheduleTests.swift` — the keeper is the week-order test, not the one-name-each test
@@ -20,6 +20,7 @@ its line names, and no test under it is touched.
 - [ ] 2.4 Delete `the eleventh, twelfth and thirteenth are said with th and not with st, nd and rd` from `DayOfMonthScheduleTests.swift` — the 1st-to-31st list holds all six strings
 - [ ] 2.5 Delete `a weekly-quota schedule says its number of times a week` from `WeeklyQuotaScheduleTests.swift`
 - [ ] 2.6 Delete `an every-N-days schedule says its interval in days` from `EveryNDaysScheduleTests.swift` — the keeper's first case is the same fixture
+- [ ] 2.7 Correct the comment on `the last day before the first full Gregorian year is not a calendar date` in `ScheduleTests.swift` so it no longer cites the 1500 case 2.1 deletes — comment only, no assertion changed
 
 ## 3. The carried requirements — one box per requirement in the delta
 
@@ -34,8 +35,9 @@ its line names, and no test under it is touched.
 
 - [ ] 4.1 `openspec validate drop-duplicate-schedule-scenarios --strict` exits 0.
 - [ ] 4.2 `pnpm run check:scenarios` exits 0 — every title the delta carries still names a test.
-- [ ] 4.3 None of the six dropped titles is found under `src/`, and `git diff --stat origin/main -- src/`
-      lists only the four test files of § 2, with deletions only.
+- [ ] 4.3 None of the six dropped titles is found under `src/`, `git diff --stat origin/main -- src/`
+      lists only the four test files of § 2, and every line `git diff origin/main -- src/` adds is
+      inside 2.7's comment.
 - [ ] 4.4 `pnpm run check:budgets` warns about nothing in this folder, and `pnpm run verify` passes.
 - [ ] 4.5 `swift test` in `src/DayByDayKit` passes and reports six fewer tests than on `main`, both
       counts read off a run and never derived.

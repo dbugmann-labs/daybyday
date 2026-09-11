@@ -9,11 +9,13 @@ to say what may be dropped, and applies that rule to `schedule` first.
 
 - Six scenarios are dropped, each asserted in full by a kept scenario under the same requirement.
 - The test carrying each dropped title is deleted in this change, and no test is added.
+- One kept test's comment, which cites a deleted case, is corrected; no assertion changes.
 - The five requirements that lose a scenario are REMOVED and ADDED back under a reworded heading.
 - Each added requirement keeps its prose and every other scenario verbatim.
 - The two in-spec references to a renamed heading follow it, one of them in a MODIFIED requirement.
 - The added requirements land at the end of the spec, which is the one position change.
-- ADR-1047 gains the rule for what a pruning Story may drop, and decision 2 points to it.
+- ADR-1047 gains the rule for what a pruning Story may drop; decisions 2 and 5 agree with it, and
+  decision 1 owes the budget review to the first behaviour Story.
 - **No behaviour changes, no scenario title changes, and no seam is new or changed.**
 
 ## Capabilities
@@ -30,9 +32,12 @@ None.
 
 - `openspec/changes/drop-duplicate-schedule-scenarios/` — this folder.
 - `openspec/specs/schedule/spec.md` — six scenarios, five headings, two cross-references.
-- `src/DayByDayKit/Tests/DayByDayKitTests/ScheduleTests.swift` — two tests deleted.
+- `src/DayByDayKit/Tests/DayByDayKitTests/ScheduleTests.swift` — two tests deleted, one kept test's
+  comment corrected.
 - `src/DayByDayKit/Tests/DayByDayKitTests/DayOfMonthScheduleTests.swift` — two tests deleted.
 - `src/DayByDayKit/Tests/DayByDayKitTests/WeeklyQuotaScheduleTests.swift` — one test deleted.
 - `src/DayByDayKit/Tests/DayByDayKitTests/EveryNDaysScheduleTests.swift` — one test deleted.
-- `docs/adr/1047-an-artifact-has-a-budget-and-condensing-is-a-story.md` — decision 6 added.
+- `docs/adr/1047-an-artifact-has-a-budget-and-condensing-is-a-story.md` — decision 6 added;
+  decisions 1, 2 and 5 amended to agree with it.
 - `docs/adr/README.md` — the 1047 row extended.
+- `CONTEXT.md` — *Pruning Story* added.
