@@ -59,37 +59,37 @@ and the correction becomes a Story of its own.
 Each is ticked when its prose and scenarios are byte-for-byte the current spec's but for what its line
 names, and every test under it passes.
 
-- [ ] 4.1 *A day screen holds the day view of the day it was handed, formed from the record kept at its place* — only the sentence adding a picked day differs
-- [ ] 4.2 *A day screen draws the commitments its roster had not stopped keeping on the day it is showing* — only the cited heading of 4.6 differs
-- [ ] 4.3 *A day view holds the commitments due on a date, each with whether it is kept*
-- [ ] 4.4 *A row offers the tick that keeps its commitment, and offers none for a day that has not arrived*
-- [ ] 4.5 *A day view's rows are in the order it was handed its commitments*
-- [ ] 4.6 *A day view is a value and nothing else*
-- [ ] 4.7 *A day screen makes and takes back the tick a row offers, and keeps the change before the day view says so*
-- [ ] 4.8 *A day screen re-reads its day and its places when the app is shown again*
-- [ ] 4.9 *A day screen tells on the row that was tapped that its change could not be kept*
-- [ ] 4.10 *What a day screen tells on a row lasts only until the app is shown again, a change is kept, or the day it is showing changes*
-- [ ] 4.11 *A day screen tells nothing on a row where there was no change to refuse*
-- [ ] 4.12 *A day screen reads its roster again whenever it is returned to*
-- [ ] 4.13 *A day screen enters the number a row's entry takes, and keeps the change before the day view says so*
-- [ ] 4.14 *A note entry says the whole note the day already holds, and says nothing else*
-- [ ] 4.15 *A day screen enters the note a row's entry takes, and keeps the change before the day view says so*
-- [ ] 4.16 *A day screen adds what is committed in a row's total entry, and keeps the change before the day view says so*
-- [ ] 4.17 *A day screen answers whether it offers the way back to today*
-- [ ] 4.18 *A day view says its day as its weekday*
-- [ ] 4.19 *A day screen says which day it is showing* — only the cited heading of 4.17 differs, its paragraph rewrapped
+- [x] 4.1 *A day screen holds the day view of the day it was handed, formed from the record kept at its place* — only the sentence adding a picked day differs
+- [x] 4.2 *A day screen draws the commitments its roster had not stopped keeping on the day it is showing* — only the cited heading of 4.6 differs
+- [x] 4.3 *A day view holds the commitments due on a date, each with whether it is kept*
+- [x] 4.4 *A row offers the tick that keeps its commitment, and offers none for a day that has not arrived*
+- [x] 4.5 *A day view's rows are in the order it was handed its commitments*
+- [x] 4.6 *A day view is a value and nothing else*
+- [x] 4.7 *A day screen makes and takes back the tick a row offers, and keeps the change before the day view says so*
+- [x] 4.8 *A day screen re-reads its day and its places when the app is shown again*
+- [x] 4.9 *A day screen tells on the row that was tapped that its change could not be kept*
+- [x] 4.10 *What a day screen tells on a row lasts only until the app is shown again, a change is kept, or the day it is showing changes*
+- [x] 4.11 *A day screen tells nothing on a row where there was no change to refuse*
+- [x] 4.12 *A day screen reads its roster again whenever it is returned to*
+- [x] 4.13 *A day screen enters the number a row's entry takes, and keeps the change before the day view says so*
+- [x] 4.14 *A note entry says the whole note the day already holds, and says nothing else*
+- [x] 4.15 *A day screen enters the note a row's entry takes, and keeps the change before the day view says so*
+- [x] 4.16 *A day screen adds what is committed in a row's total entry, and keeps the change before the day view says so*
+- [x] 4.17 *A day screen answers whether it offers the way back to today*
+- [x] 4.18 *A day view says its day as its weekday*
+- [x] 4.19 *A day screen says which day it is showing* — only the cited heading of 4.17 differs, its paragraph rewrapped
 
 ## 5. The gates
 
-- [ ] 5.1 `openspec validate drop-duplicate-day-screen-scenarios --strict` exits 0.
-- [ ] 5.2 `pnpm run check:scenarios` exits 0 — every title the delta carries still names a test.
-- [ ] 5.3 None of the twenty-nine dropped titles is found as an exact test name under `src/`, and
+- [x] 5.1 `openspec validate drop-duplicate-day-screen-scenarios --strict` exits 0.
+- [x] 5.2 `pnpm run check:scenarios` exits 0 — every title the delta carries still names a test.
+- [x] 5.3 None of the twenty-nine dropped titles is found as an exact test name under `src/`, and
       `git diff --stat origin/main -- src/` lists only `DayViewTests.swift` and `DayScreenTests.swift`.
-- [ ] 5.4 `pnpm run check:budgets` warns about nothing in this folder but the ten requirements
+- [x] 5.4 `pnpm run check:budgets` warns about nothing in this folder but the ten requirements
       `design.md` § Context names, and `pnpm run verify` passes.
-- [ ] 5.5 `swift test` in `src/DayByDayKit` passes and reports twenty-nine fewer tests than on `main`,
+- [x] 5.5 `swift test` in `src/DayByDayKit` passes and reports twenty-nine fewer tests than on `main`,
       both counts read off a run and never derived.
-- [ ] 5.6 **The archive handover — `implementer` ticks this in its last commit before the archive**,
+- [x] 5.6 **The archive handover — `implementer` ticks this in its last commit before the archive**,
       on the evidence that 2.1–5.5 are ticked and that the instruction below is written here for the
       janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of
       the sync it prints, then reads the spec diff it produced: in `openspec/specs/day-screen/spec.md`
