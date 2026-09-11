@@ -1,14 +1,6 @@
 import Testing
 import DayByDayKit
 
-@Test("an every-N-days schedule says its interval in days")
-func anEveryNDaysScheduleSaysItsIntervalInDays() {
-    let start = CalendarDate(year: 2026, month: 8, day: 31)!
-    let schedule = Schedule.everyNDays(DayInterval(days: 14)!, from: start)
-
-    #expect(schedule.inWords == "Every 14 days")
-}
-
 @Test("an every-N-days schedule says the same words whatever its start date")
 func anEveryNDaysScheduleSaysTheSameWordsWhateverItsStartDate() {
     let firstStart = CalendarDate(year: 2026, month: 8, day: 31)!

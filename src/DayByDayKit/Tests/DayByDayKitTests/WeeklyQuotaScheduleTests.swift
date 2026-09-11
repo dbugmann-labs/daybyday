@@ -1,13 +1,6 @@
 import Testing
 import DayByDayKit
 
-@Test("a weekly-quota schedule says its number of times a week")
-func aWeeklyQuotaScheduleSaysItsNumberOfTimesAWeek() {
-    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
-
-    #expect(schedule.inWords == "3x a week")
-}
-
 @Test("a weekly quota of seven times a week is not said as every day")
 func aWeeklyQuotaOfSevenTimesAWeekIsNotSaidAsEveryDay() {
     let quotaSchedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 7)!)

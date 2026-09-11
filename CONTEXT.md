@@ -78,6 +78,12 @@ moves no scenario. Runs the ordinary pipeline and its gates. ADR-1047.
 `spec-author` by `openspec/config.yaml`, enforced by `reviewer` at G7, warned about by
 `pnpm run check:budgets`. ADR-1047.
 
+**Pruning Story** — a Story that drops scenarios another scenario under the same requirement
+already asserts, deletes exactly their tests and adds none; it changes no behaviour and keeps its
+seam. Unlike an *editorial Story*, its tests change. A scenario cannot leave a requirement whose
+heading is kept, so each requirement that loses one is REMOVED and ADDED under a new heading. What
+may be dropped is ADR-1047's to say. Runs the ordinary pipeline and its gates.
+
 ## Product principles
 
 The rules a want is judged against. These are not backlog entries — they are what decides

@@ -1,30 +1,6 @@
 import Testing
 import DayByDayKit
 
-@Test("a day-of-month schedule says its day as an ordinal")
-func aDayOfMonthScheduleSaysItsDayAsAnOrdinal() {
-    let schedule = Schedule.dayOfMonth(DayOfMonth(day: 25)!)
-
-    #expect(schedule.inWords == "The 25th")
-}
-
-@Test("the eleventh, twelfth and thirteenth are said with th and not with st, nd and rd")
-func theEleventhTwelfthAndThirteenthAreSaidWithThAndNotWithStNdAndRd() {
-    let eleventh = Schedule.dayOfMonth(DayOfMonth(day: 11)!)
-    let twelfth = Schedule.dayOfMonth(DayOfMonth(day: 12)!)
-    let thirteenth = Schedule.dayOfMonth(DayOfMonth(day: 13)!)
-    let twentyFirst = Schedule.dayOfMonth(DayOfMonth(day: 21)!)
-    let twentySecond = Schedule.dayOfMonth(DayOfMonth(day: 22)!)
-    let twentyThird = Schedule.dayOfMonth(DayOfMonth(day: 23)!)
-
-    #expect(eleventh.inWords == "The 11th")
-    #expect(twelfth.inWords == "The 12th")
-    #expect(thirteenth.inWords == "The 13th")
-    #expect(twentyFirst.inWords == "The 21st")
-    #expect(twentySecond.inWords == "The 22nd")
-    #expect(twentyThird.inWords == "The 23rd")
-}
-
 @Test("every day of the month from the first to the thirty-first is said as its own ordinal")
 func everyDayOfTheMonthFromTheFirstToTheThirtyFirstIsSaidAsItsOwnOrdinal() {
     let schedules = (1...31).map { Schedule.dayOfMonth(DayOfMonth(day: $0)!) }
