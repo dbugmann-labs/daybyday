@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-09-08
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — three corollaries of this decision are written down here by
+  `condense-commitment-spec` (#204), which deletes the requirement prose that carried them: a roster
+  store never writes the groups, the categories in use are offered rather than case-folded, and a
+  change that touches both places is one act on the roster.
 
 ## Context
 
@@ -56,6 +60,24 @@ Both screens then draw what they are handed. That is what leaves
 The day view SHALL NOT impose an order of its own"* — **untouched by categories entirely**. The day
 view's only contribution is a rule that is genuinely its own: a group with nothing due on the date
 is not drawn, because a day view says what a date asks of you.
+
+**A roster store never writes the groups.** The grouping rule being the roster's reaches storage:
+groups are a reading of the roster's one order, worked out again on every read, so a store that wrote
+them would keep the same fact twice and could read a file back whose groups disagreed with the order
+beside them. ADR-1031 governs which forms a store reads and what each reads back as; it says nothing
+about what a form may hold, so this corollary belongs to the grouping rule rather than to it.
+
+**Offering the categories in use is a safety mechanism, not a convenience.** A phone capitalises the
+first letter of a field, so "Supplements" typed once and "supplements" typed the next time would
+silently become two groups. The alternative — folding case when matching — has the app decide which
+of a person's spellings they meant, and the word is the person's by the decision above. Offering the
+words already in use removes the problem instead of judging them, and a word matching none of them is
+taken exactly as typed and becomes a group of its own.
+
+**A change that touches both places is still one act on the roster.** Changing a commitment reaches
+the record place as well, because the records already written are carried over to the changed
+commitment; it is nonetheless one of the acts this record enumerates, and what a commitments screen
+holds about a refused change ends once a change is kept, however many places that change touched.
 
 ## Consequences
 

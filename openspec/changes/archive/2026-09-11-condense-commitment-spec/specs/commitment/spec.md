@@ -1,14 +1,4 @@
-# commitment Specification
-
-## Purpose
-
-Describes what a commitment is to DayByDay — the name a person gave something they owe themselves,
-the schedule deciding which days it is due on, and the day from which they have been keeping it —
-and how it answers whether it is due on a calendar date. The `schedule` capability owns the rules;
-this one owns the thing that carries one, which is what a screen lists, what a person reads, and
-what a tick is eventually recorded against.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: A commitment is a name, a schedule, and the day it is kept from
 
@@ -4530,6 +4520,16 @@ number and SHALL be refused as such rather than kept shortened.
 - **THEN** the screen holds that refusal, against defining a commitment
 - **AND** a screen alike in every way asked afterwards to define "Protein" of the total kind with a
   target of "0" holds that refusal instead, against defining a commitment
+
+## REMOVED Requirements
+
+### Requirement: A commitments screen changes a commitment on either of its lists
+**Reason**: split into the two requirements added below — which act a change performs, and what a
+change is refused for — with no change of behaviour.
+**Migration**: every scenario of this requirement is carried verbatim to one of the two, thirteen to
+the first and eight to the second; no test moves.
+
+## ADDED Requirements
 
 ### Requirement: A commitments screen works out which act a change on either of its lists needs
 

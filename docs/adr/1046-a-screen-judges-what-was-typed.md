@@ -5,6 +5,9 @@
   explained in the delta; whether it was owed a record of its own was left to `spec-author`
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — what a half-written range is, and why a value the chosen kind has no room for
+  is ignored rather than refused, are added to the decision by `condense-commitment-spec` (#204),
+  which deletes the requirement prose that carried both arguments.
 
 ## Context
 
@@ -51,6 +54,20 @@ group is the same thing (ADR-1021).
 
 **The rhythm numbers are deliberately left as they are.** This is not a rule that the screen must
 take everything as text; it is a rule about which numbers a person can spell wrongly.
+
+**A half-written range is its own refusal, because there is no such value as half a range.** A range
+is both ends or neither, so a lowest typed with the highest left blank names nothing the value can be
+asked about: reading it as "no range at all" throws away a bound the person deliberately entered, and
+inventing the other end puts a bound on their commitment that nobody typed. Both ends left blank is
+not this refusal and is not a refusal at all — it is a commitment of the number kind carrying no
+range.
+
+**A range or a target left in a field the chosen kind has no room for is ignored, and not refused.**
+A tick or a note carries neither whatever those fields hold; a number kind takes its range and
+ignores a target; a total kind takes its target and ignores a range. A person who typed a range and
+then chose Note is not asking for a range, and refusing something nobody asked for is noise in front
+of the thing they did ask for. It does not disagree with the rule above: there the person had chosen
+the kind the field belongs to, so the bound they typed meant something.
 
 ## Consequences
 
