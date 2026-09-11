@@ -66,11 +66,11 @@ and across the turn of a year. The answer MUST NOT vary with the host's time zon
 ### Requirement: A calendar date names a day that exists
 
 A calendar date SHALL be a year, a month of that year and a day of that month. The system SHALL form
-one from a combination of the three naming a day, in a year *A calendar date lies within the years
-the system supports* accepts, and SHALL refuse to form one naming no day. It MUST refuse rather than
-adjust: a day past the end of its month MUST NOT become a day of the following month, and a month
-past the twelfth MUST NOT become a month of the following year. No schedule SHALL be asked about a
-date that does not exist.
+one from a combination of the three naming a day, in a year *A calendar date is formed only within
+the years the system supports* accepts, and SHALL refuse to form one naming no day. It MUST refuse
+rather than adjust: a day past the end of its month MUST NOT become a day of the following month,
+and a month past the twelfth MUST NOT become a month of the following year. No schedule SHALL be
+asked about a date that does not exist.
 
 It SHALL also judge each component as the number it was offered, and MUST NOT accept a date in which
 a component was treated as absent or unspecified because its value was extreme. It MUST NOT form a
@@ -114,40 +114,6 @@ date with a component missing.
 
 - **WHEN** the year 2026, the month January and the largest integer the platform can represent
   offered as a day are offered as a calendar date
-- **THEN** no calendar date is formed
-
-### Requirement: A calendar date lies within the years the system supports
-
-The system SHALL form a calendar date only for a year from 1583 through 9999 inclusive, and SHALL
-refuse every year outside that range even when the three components name a day that plainly exists.
-It MUST refuse such a year rather than adjust it: a year outside the range MUST NOT be clamped to
-the nearest supported year, and no schedule SHALL be asked about a date the system declines to form.
-This requirement SHALL bound the year alone, and the month and the day SHALL be bounded as *A
-calendar date names a day that exists* says.
-
-#### Scenario: a date before the Gregorian calendar's adoption is not a calendar date
-
-- **WHEN** the year 1500, the month January and the day 1 are offered as a calendar date
-- **THEN** no calendar date is formed
-
-#### Scenario: the last day before the first full Gregorian year is not a calendar date
-
-- **WHEN** the year 1582, the month December and the day 31 are offered as a calendar date
-- **THEN** no calendar date is formed
-
-#### Scenario: the first day of the first full Gregorian year is a calendar date
-
-- **WHEN** the year 1583, the month January and the day 1 are offered as a calendar date
-- **THEN** a calendar date is formed for 1 January 1583
-
-#### Scenario: the last day of the last supported year is a calendar date
-
-- **WHEN** the year 9999, the month December and the day 31 are offered as a calendar date
-- **THEN** a calendar date is formed for 31 December 9999
-
-#### Scenario: a year past the last supported year is not a calendar date
-
-- **WHEN** the year 10000, the month January and the day 1 are offered as a calendar date
 - **THEN** no calendar date is formed
 
 ### Requirement: A day-of-month schedule is due on that day of the month
@@ -508,7 +474,36 @@ NOT decide whether two schedules name one rhythm from the dates they are due on.
 - **WHEN** a schedule of every 1000 days starting on 31 August 2026 is said in words
 - **THEN** it says "Every 1000 days"
 
-### Requirement: A weekday-set schedule is said as its weekdays, in week order from Monday
+### Requirement: A calendar date is formed only within the years the system supports
+
+The system SHALL form a calendar date only for a year from 1583 through 9999 inclusive, and SHALL
+refuse every year outside that range even when the three components name a day that plainly exists.
+It MUST refuse such a year rather than adjust it: a year outside the range MUST NOT be clamped to
+the nearest supported year, and no schedule SHALL be asked about a date the system declines to form.
+This requirement SHALL bound the year alone, and the month and the day SHALL be bounded as *A
+calendar date names a day that exists* says.
+
+#### Scenario: the last day before the first full Gregorian year is not a calendar date
+
+- **WHEN** the year 1582, the month December and the day 31 are offered as a calendar date
+- **THEN** no calendar date is formed
+
+#### Scenario: the first day of the first full Gregorian year is a calendar date
+
+- **WHEN** the year 1583, the month January and the day 1 are offered as a calendar date
+- **THEN** a calendar date is formed for 1 January 1583
+
+#### Scenario: the last day of the last supported year is a calendar date
+
+- **WHEN** the year 9999, the month December and the day 31 are offered as a calendar date
+- **THEN** a calendar date is formed for 31 December 9999
+
+#### Scenario: a year past the last supported year is not a calendar date
+
+- **WHEN** the year 10000, the month January and the day 1 are offered as a calendar date
+- **THEN** no calendar date is formed
+
+### Requirement: A weekday-set schedule is said as the weekdays it lists, in week order from Monday
 
 A schedule that is a set of weekdays SHALL be said as the three-letter English names of the weekdays
 it lists, "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" and "Sun", separated by a comma and a single
@@ -517,11 +512,6 @@ whichever days it holds.
 
 A set listing every weekday SHALL be said as "Every day" rather than as seven names. A set listing
 no weekday SHALL have words like every other schedule, and SHALL be said as "No day".
-
-#### Scenario: a weekday-set schedule says its weekdays as three-letter names
-
-- **WHEN** a schedule listing Monday, Wednesday and Saturday is said in words
-- **THEN** it says "Mon, Wed, Sat"
 
 #### Scenario: a weekday-set schedule says its weekdays in week order from Monday
 
@@ -546,7 +536,7 @@ no weekday SHALL have words like every other schedule, and SHALL be said as "No 
 - **WHEN** a schedule listing no weekday at all is said in words
 - **THEN** it says "No day"
 
-### Requirement: An every-N-days schedule is said as its interval, and never as its start date
+### Requirement: An every-N-days schedule is said as its interval of days, and never as its start date
 
 A schedule that is an interval of days SHALL be said as the word "Every", a space, the number of
 days in digits, a space, and the word "days". An interval of one day SHALL be said as "Every day",
@@ -555,11 +545,6 @@ schedules that name the same rhythm.
 
 The start date MUST NOT be said in any form. Two schedules of the same interval and different start
 dates SHALL say the same words.
-
-#### Scenario: an every-N-days schedule says its interval in days
-
-- **WHEN** a schedule of every 14 days starting on 31 August 2026 is said in words
-- **THEN** it says "Every 14 days"
 
 #### Scenario: an every-N-days schedule says the same words whatever its start date
 
@@ -578,7 +563,7 @@ dates SHALL say the same words.
 - **WHEN** a schedule of every 2 days starting on 31 August 2026 is said in words
 - **THEN** it says "Every 2 days"
 
-### Requirement: A day-of-month schedule is said as the ordinal of its day
+### Requirement: A day-of-month schedule is said as the ordinal of its day of the month
 
 A schedule that is a day of the month SHALL be said as the word "The", a space, the day number in
 digits, and that number's English ordinal suffix. The suffix SHALL be "st" for 1, 21 and 31, "nd"
@@ -587,18 +572,6 @@ for 2 and 22, "rd" for 3 and 23, and "th" for every other day from 1 through 31,
 
 The words MUST NOT say the clamp onto a short month that *A month too short for the scheduled day is
 due on its last day* describes, and SHALL be the same in every month of every year.
-
-#### Scenario: a day-of-month schedule says its day as an ordinal
-
-- **WHEN** a schedule on the 25th of the month is said in words
-- **THEN** it says "The 25th"
-
-#### Scenario: the eleventh, twelfth and thirteenth are said with th and not with st, nd and rd
-
-- **WHEN** the schedules on the 11th, the 12th and the 13th of the month are each said in words
-- **THEN** they say "The 11th", "The 12th" and "The 13th"
-- **AND** the schedules on the 21st, the 22nd and the 23rd, said in words, say "The 21st", "The
-  22nd" and "The 23rd"
 
 #### Scenario: every day of the month from the first to the thirty-first is said as its own ordinal
 
@@ -614,18 +587,13 @@ due on its last day* describes, and SHALL be the same in every month of every ye
 - **WHEN** a schedule on the 31st of the month is said in words
 - **THEN** it says "The 31st"
 
-### Requirement: A weekly-quota schedule is said as a number of times a week
+### Requirement: A weekly-quota schedule is said as its number of times a week
 
 A schedule that is a weekly quota SHALL be said as the number of times in digits, the letter "x"
 with no space before it, a space, and the words "a week". Every number from one through seven SHALL
 be said that way, with no special case at either end: one time a week MUST NOT be said as "Once a
 week", and seven times a week MUST NOT be said as "Every day". A weekday set of all seven SHALL be
-said as *A weekday-set schedule is said as its weekdays, in week order from Monday* says.
-
-#### Scenario: a weekly-quota schedule says its number of times a week
-
-- **WHEN** a schedule of 3 times a week is said in words
-- **THEN** it says "3x a week"
+said as *A weekday-set schedule is said as the weekdays it lists, in week order from Monday* says.
 
 #### Scenario: a weekly quota of seven times a week is not said as every day
 
