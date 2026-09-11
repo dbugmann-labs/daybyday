@@ -136,9 +136,10 @@ back under a new heading, which moves the whole block to the bottom of the spec 
 Dropping one is a pruning Story's, and only under decision 6's four conditions.
 
 **6. A scenario another already asserts may be dropped, and the lane for that is a pruning Story.**
-A **pruning Story** runs the ordinary pipeline and its gates, changes no behaviour and keeps its seam,
-and differs from an editorial Story in one thing: its tests change. It may drop a scenario only if
-all four hold:
+A **pruning Story** runs the ordinary pipeline and its gates and changes no behaviour, as an
+editorial Story does, and is unlike one on each point decision 2 lists: a requirement that loses a
+scenario is not carried in full, the dropped titles do not survive, its tests change, and `design.md`
+names the seam its kept tests already attach at. It may drop a scenario only if all four hold:
 
 1. a kept scenario **under the same requirement** asserts everything it asserts, literally or
    through the same code path shown in source;
