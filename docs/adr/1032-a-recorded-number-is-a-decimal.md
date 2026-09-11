@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-06
 - Deciders: Diego Bugmann
+- Amended: 2026-09-10 — the fidelity this record fixes for numbers is fixed for text with it: a note
+  is kept in the exact Unicode form it was typed in, not merely in one that means the same;
+  `condense-record-spec` (#205) deletes the requirement prose that carried the argument.
 - Amended: 2026-09-10 — why a comma and a full stop are read alike is recorded here, as a
   consequence of this choice rather than a rule of one screen's; `condense-day-screen-spec` (#201)
   deletes the requirement prose that carried the argument.
@@ -60,6 +63,15 @@ the number kept is the same number whichever key the keypad drew. That belongs h
 a screen, because it follows from a person typing the number this record chose the
 type for: the day screen's entries, the commitments screen's range and target, and anything later
 that reads a typed decimal all inherit it. A requirement states the rule; the reason is this line.
+
+**What this record promises about a number is owed to text as well, for the same reason.** A number
+is kept digit for digit; a note is kept **in the exact Unicode form it was typed in** — the same
+characters in the same composition, and not merely some sequence that means the same writing.
+Normalising on the way to disk is the free alternative and it is refused: a letter typed as one code
+point and the same letter typed as a letter plus a combining mark are different things a person may
+put back differently, and a store that quietly picks one of them keeps a sentence the person did not
+write. That is the same false record a `Double` makes of a typed number, one type further out, so it
+is recorded here rather than in each requirement that carries the rule.
 
 ## Alternatives considered
 

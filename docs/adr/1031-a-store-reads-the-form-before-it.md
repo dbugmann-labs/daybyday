@@ -2,6 +2,9 @@
 
 - Status: accepted
 - Date: 2026-09-06
+- Amended: 2026-09-10 — which shape belongs to which form is judged against the form each part was
+  first written at and never against the newest; `condense-record-spec` (#205) deletes the
+  requirement prose that argued it.
 - Amended: 2026-09-06 — this record's own reversal trigger fired at `add-number-record` (#138), one
   day later. A store reads **every** form it has written rather than one step back, and in exchange
   each form is read as the shape that form has rather than leniently. The title moved with the
@@ -55,6 +58,18 @@ everything else. It writes nothing when it opens.**
   change (ADR-1017).
 - **A form number no build ever wrote is refused as content that is not a store**, not as an earlier
   form. Version 0 says nothing about the shape of what follows it.
+
+**Which shape belongs to which form is judged against the form each part was first written at, and
+never against whichever form is newest.** A number's place in the record document arrived at the
+third form, a note's at the fourth and an addition's at the fifth, and each of those answers stays
+where it is whatever a sixth form adds: a store goes on expecting a number from the third form
+onwards rather than from the newest one. Judging against the newest instead would let every new form
+silently re-declare the shape of the forms before it, so the strictness above would say no more than
+"this form holds whatever the current build writes" — the lenient reading this record exists to
+refuse, arriving by the back door. It is why `numbersIntroducedInVersion`,
+`notesIntroducedInVersion` and `additionsIntroducedInVersion` are constants of their own rather than
+offsets from `currentVersion`, and the rule stays stated in `record`'s own requirement, where three
+refusal scenarios rest on it.
 
 ## Reading three forms
 

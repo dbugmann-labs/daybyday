@@ -1,13 +1,4 @@
-# record Specification
-
-## Purpose
-
-Describes what a tick is to DayByDay — a commitment on a calendar date it was due on, and nothing
-more — and how a history of ticks answers whether a commitment was kept on a day. It is the record
-the product exists to keep: every screen that shows a day as done or not done reads it, and the store
-that makes it survive the app being closed persists exactly this shape and nothing it invented.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: A tick is of a commitment on a calendar date it is due on
 
@@ -1349,6 +1340,18 @@ that shape, and adds no key, no field and no version to what a record is.
   "Gym 🏋️" alike in every other way
 - **THEN** the store says the change could not be kept
 - **AND** its history answers that "Gym" was kept on Monday 3 August 2026 and that "Gym 🏋️" was not
+
+## REMOVED Requirements
+
+### Requirement: A store reads a history kept before a commitment carried a kind
+**Reason**: Split into the two requirements added below; no behaviour changes.
+**Migration**: Every scenario is carried verbatim to one of the two added requirements.
+
+### Requirement: A store keeps a history at a place, across the app being closed and opened again
+**Reason**: Split into the two requirements added below; no behaviour changes.
+**Migration**: Every scenario is carried verbatim to one of the two added requirements.
+
+## ADDED Requirements
 
 ### Requirement: A store reads every form it has written
 
