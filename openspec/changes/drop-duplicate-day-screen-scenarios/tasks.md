@@ -19,40 +19,40 @@ back as it is on `main`, delete nothing, and report. The folder then returns to 
 strengthening and the drops resting on it withdrawn — 3.3 rests on 2.1, and 3.25 and 3.26 on 2.2 —
 and the correction becomes a Story of its own.
 
-- [ ] 2.1 Bring `a row's answer follows the day it is asked as of rather than the day the day view was formed` to check the second asking offers a tick, not only that it equals one
-- [ ] 2.2 Bring `committing nothing at all in a total entry keeps nothing and takes nothing back` to check kept after the spaces and line breaks, and on the screen opened afterwards
+- [x] 2.1 Bring `a row's answer follows the day it is asked as of rather than the day the day view was formed` to check the second asking offers a tick, not only that it equals one
+- [x] 2.2 Bring `committing nothing at all in a total entry keeps nothing and takes nothing back` to check kept after the spaces and line breaks, and on the screen opened afterwards
 
 ## 3. The twenty-nine deletions — one box per dropped scenario
 
-- [ ] 3.1 Delete `a commitment ticked on the date has a row that says it is kept` from `DayViewTests.swift` — the keeper never asserts the name, which a row takes from its commitment
-- [ ] 3.2 Delete `a commitment not ticked on the date has a row that says it is not kept` from `DayViewTests.swift`
-- [ ] 3.3 Delete `a row offers the tick for its commitment on the date the day view is of` from `DayViewTests.swift` — rests on 2.1
-- [ ] 3.4 Delete `rows are in the order the commitments were handed over` from `DayViewTests.swift`
-- [ ] 3.5 Delete `two day views of the same commitments, date and history are the same day view` from `DayViewTests.swift`
-- [ ] 3.6 Delete `ticking a row that says its commitment is not kept makes the day screen say it is kept` from `DayScreenTests.swift`
-- [ ] 3.7 Delete `a tick made on a day screen is held by a day screen opened afterwards at the same place` from `DayScreenTests.swift` — its note sibling stays; its number and addition siblings are 3.20 and 3.26
-- [ ] 3.8 Delete `a day screen shown again reads the record again` from `DayScreenTests.swift`
-- [ ] 3.9 Delete `a refused tick is told on the row that was tapped` from `DayScreenTests.swift` — its title is a prefix of its keeper's; delete only the exact name
-- [ ] 3.10 Delete `a value that is not a number is told on the row, saying so` from `DayScreenTests.swift`
-- [ ] 3.11 Delete `what a day screen tells on a row ends when the same change is made again and is kept` from `DayScreenTests.swift` — every other "ends when … kept" test stays
-- [ ] 3.12 Delete `a commit on a day screen that is not keeping a record is told nothing on the row` from `DayScreenTests.swift`
-- [ ] 3.13 Delete `a commit on a note row on a day screen that is not keeping a record is told nothing on the row` from `DayScreenTests.swift`
-- [ ] 3.14 Delete `a commit on a row for a day that has not arrived is told nothing on the row` from `DayScreenTests.swift`
-- [ ] 3.15 Delete `a commit on a note row for a day that has not arrived is told nothing on the row` from `DayScreenTests.swift`
-- [ ] 3.16 Delete `a tap on a row a day screen's day view does not hold is told nothing on the row` from `DayScreenTests.swift`
-- [ ] 3.17 Delete `a commit on a row that offers no number entry is told nothing on the row` from `DayScreenTests.swift` — its take-back sibling, told nothing on a row offering no take-back, stays
-- [ ] 3.18 Delete `what a day screen tells on a row stands when the screen is returned to and reads its record again` from `DayScreenTests.swift`
-- [ ] 3.19 Delete `entering a number on a row makes the day screen say the commitment is kept` from `DayScreenTests.swift`
-- [ ] 3.20 Delete `a number entered on a day screen is held by a day screen opened afterwards at the same place` from `DayScreenTests.swift`
-- [ ] 3.21 Delete `the number entry a row offers says the number just entered on it` from `DayScreenTests.swift`
-- [ ] 3.22 Delete `a note entry says the note the history holds for that commitment on that date` from `DayViewTests.swift`
-- [ ] 3.23 Delete `entering a note on a row makes the day screen say the commitment is kept` from `DayScreenTests.swift`
-- [ ] 3.24 Delete `the note entry a row offers says the note just entered on it` from `DayScreenTests.swift`
-- [ ] 3.25 Delete `reaching the target makes the day screen say the commitment is kept` from `DayScreenTests.swift` — rests on 2.2
-- [ ] 3.26 Delete `an addition entered on a day screen is held by a day screen opened afterwards at the same place` from `DayScreenTests.swift` — rests on 2.2
-- [ ] 3.27 Delete `a day screen showing the today it was handed offers no way back to today` from `DayScreenTests.swift`
-- [ ] 3.28 Delete `a day view says its day as the three-letter name of its weekday` from `DayViewTests.swift`
-- [ ] 3.29 Delete `a day screen says the day it is showing` from `DayScreenTests.swift`
+- [x] 3.1 Delete `a commitment ticked on the date has a row that says it is kept` from `DayViewTests.swift` — the keeper never asserts the name, which a row takes from its commitment
+- [x] 3.2 Delete `a commitment not ticked on the date has a row that says it is not kept` from `DayViewTests.swift`
+- [x] 3.3 Delete `a row offers the tick for its commitment on the date the day view is of` from `DayViewTests.swift` — rests on 2.1
+- [x] 3.4 Delete `rows are in the order the commitments were handed over` from `DayViewTests.swift`
+- [x] 3.5 Delete `two day views of the same commitments, date and history are the same day view` from `DayViewTests.swift`
+- [x] 3.6 Delete `ticking a row that says its commitment is not kept makes the day screen say it is kept` from `DayScreenTests.swift`
+- [x] 3.7 Delete `a tick made on a day screen is held by a day screen opened afterwards at the same place` from `DayScreenTests.swift` — its note sibling stays; its number and addition siblings are 3.20 and 3.26
+- [x] 3.8 Delete `a day screen shown again reads the record again` from `DayScreenTests.swift`
+- [x] 3.9 Delete `a refused tick is told on the row that was tapped` from `DayScreenTests.swift` — its title is a prefix of its keeper's; delete only the exact name
+- [x] 3.10 Delete `a value that is not a number is told on the row, saying so` from `DayScreenTests.swift`
+- [x] 3.11 Delete `what a day screen tells on a row ends when the same change is made again and is kept` from `DayScreenTests.swift` — every other "ends when … kept" test stays
+- [x] 3.12 Delete `a commit on a day screen that is not keeping a record is told nothing on the row` from `DayScreenTests.swift`
+- [x] 3.13 Delete `a commit on a note row on a day screen that is not keeping a record is told nothing on the row` from `DayScreenTests.swift`
+- [x] 3.14 Delete `a commit on a row for a day that has not arrived is told nothing on the row` from `DayScreenTests.swift`
+- [x] 3.15 Delete `a commit on a note row for a day that has not arrived is told nothing on the row` from `DayScreenTests.swift`
+- [x] 3.16 Delete `a tap on a row a day screen's day view does not hold is told nothing on the row` from `DayScreenTests.swift`
+- [x] 3.17 Delete `a commit on a row that offers no number entry is told nothing on the row` from `DayScreenTests.swift` — its take-back sibling, told nothing on a row offering no take-back, stays
+- [x] 3.18 Delete `what a day screen tells on a row stands when the screen is returned to and reads its record again` from `DayScreenTests.swift`
+- [x] 3.19 Delete `entering a number on a row makes the day screen say the commitment is kept` from `DayScreenTests.swift`
+- [x] 3.20 Delete `a number entered on a day screen is held by a day screen opened afterwards at the same place` from `DayScreenTests.swift`
+- [x] 3.21 Delete `the number entry a row offers says the number just entered on it` from `DayScreenTests.swift`
+- [x] 3.22 Delete `a note entry says the note the history holds for that commitment on that date` from `DayViewTests.swift`
+- [x] 3.23 Delete `entering a note on a row makes the day screen say the commitment is kept` from `DayScreenTests.swift`
+- [x] 3.24 Delete `the note entry a row offers says the note just entered on it` from `DayScreenTests.swift`
+- [x] 3.25 Delete `reaching the target makes the day screen say the commitment is kept` from `DayScreenTests.swift` — rests on 2.2
+- [x] 3.26 Delete `an addition entered on a day screen is held by a day screen opened afterwards at the same place` from `DayScreenTests.swift` — rests on 2.2
+- [x] 3.27 Delete `a day screen showing the today it was handed offers no way back to today` from `DayScreenTests.swift`
+- [x] 3.28 Delete `a day view says its day as the three-letter name of its weekday` from `DayViewTests.swift`
+- [x] 3.29 Delete `a day screen says the day it is showing` from `DayScreenTests.swift`
 
 ## 4. The carried requirements — one box per requirement in the delta
 

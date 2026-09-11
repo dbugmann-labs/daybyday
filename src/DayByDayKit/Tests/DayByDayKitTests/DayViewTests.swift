@@ -65,37 +65,6 @@ func aCommitmentWhoseScheduleIsDueButWhichIsKeptFromALaterDayHasNoRow() {
     #expect(onWednesday.rows.map(\.name) == ["Gym"])
 }
 
-@Test("a commitment ticked on the date has a row that says it is kept")
-func aCommitmentTickedOnTheDateHasARowThatSaysItIsKept() {
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    var history = History()
-    history.add(Tick(gym, on: monday)!)
-
-    let dayView = DayView(of: [gym], on: monday, in: history)
-
-    #expect(dayView.rows.count == 1)
-    #expect(dayView.rows[0].name == "Gym")
-    #expect(dayView.rows[0].isKept)
-}
-
-@Test("a commitment not ticked on the date has a row that says it is not kept")
-func aCommitmentNotTickedOnTheDateHasARowThatSaysItIsNotKept() {
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let history = History()
-
-    let dayView = DayView(of: [gym], on: monday, in: history)
-
-    #expect(dayView.rows.count == 1)
-    #expect(dayView.rows[0].name == "Gym")
-    #expect(!dayView.rows[0].isKept)
-}
-
 @Test("a tick for a commitment the day view was not handed adds no row")
 func aTickForACommitmentTheDayViewWasNotHandedAddsNoRow() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -229,26 +198,6 @@ func aRowCarriesTheCommitmentsNameExactlyAsItWasGiven() {
     #expect(dayView.rows[1].name == "🏋️")
 }
 
-@Test("rows are in the order the commitments were handed over")
-func rowsAreInTheOrderTheCommitmentsWereHandedOver() {
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
-    let run = Commitment(
-        name: "Run", schedule: .weekdays([.monday, .thursday]), keptFrom: keptFrom)!
-    let vitamins = Commitment(
-        name: "Vitamins",
-        schedule: .weekdays([
-            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-        ]), keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let history = History()
-
-    let dayView = DayView(of: [gym, run, vitamins], on: monday, in: history)
-
-    #expect(dayView.rows.map(\.name) == ["Gym", "Run", "Vitamins"])
-}
-
 @Test("handing the same commitments in the opposite order reverses the rows")
 func handingTheSameCommitmentsInTheOppositeOrderReversesTheRows() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -321,23 +270,6 @@ func aCommitmentHandedTwiceHasTwoRows() {
     #expect(dayView.rows.count == 2)
     #expect(dayView.rows.map(\.name) == ["Gym", "Gym"])
     #expect(dayView.rows.map(\.isKept) == [false, false])
-}
-
-@Test("two day views of the same commitments, date and history are the same day view")
-func twoDayViewsOfTheSameCommitmentsDateAndHistoryAreTheSameDayView() {
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
-    let run = Commitment(
-        name: "Run", schedule: .weekdays([.monday, .thursday]), keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    var history = History()
-    history.add(Tick(gym, on: monday)!)
-
-    let first = DayView(of: [gym, run], on: monday, in: history)
-    let second = DayView(of: [gym, run], on: monday, in: history)
-
-    #expect(first == second)
 }
 
 @Test("two day views of the same commitments and history on different dates are different day views")
@@ -428,22 +360,6 @@ func twoDayViewsDifferingOnlyInATickForACommitmentNeitherWasHandedAreTheSameDayV
     #expect(second.rows.map(\.name) == ["Gym"])
     #expect(!second.rows[0].isKept)
     #expect(first == second)
-}
-
-@Test("a row offers the tick for its commitment on the date the day view is of")
-func aRowOffersTheTickForItsCommitmentOnTheDateTheDayViewIsOf() {
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let history = History()
-
-    let dayView = DayView(of: [gym], on: monday, in: history)
-
-    let tick = dayView.rows[0].tick(asOf: monday)
-
-    #expect(tick != nil)
-    #expect(tick == Tick(gym, on: monday))
 }
 
 @Test("adding the tick a row offers makes a day view formed again say the commitment is kept")
@@ -564,6 +480,7 @@ func aRowsAnswerFollowsTheDayItIsAskedAsOfRatherThanTheDayTheDayViewWasFormed() 
     let row = dayView.rows[0]
 
     #expect(row.tick(asOf: tuesday) == nil)
+    #expect(row.tick(asOf: wednesday) != nil)
     #expect(row.tick(asOf: wednesday) == Tick(gym, on: wednesday))
 }
 
@@ -1095,14 +1012,6 @@ func twoRowsForCommitmentsAlikeInNameAndNotInRhythmSayDifferentRhythms() {
     #expect(dayView.rows.map(\.name) == ["Vitamins", "Vitamins"])
     #expect(dayView.rows[0].rhythmInWords == "Mon, Wed")
     #expect(dayView.rows[1].rhythmInWords == "Every day")
-}
-
-@Test("a day view says its day as the three-letter name of its weekday")
-func aDayViewSaysItsDayAsTheThreeLetterNameOfItsWeekday() {
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let dayView = DayView(of: [Commitment](), on: monday, in: History())
-
-    #expect(dayView.title == "Mon")
 }
 
 @Test("every weekday is said by its own name")
@@ -1654,23 +1563,6 @@ func twoRowsForTheSameNoteCommitmentAndDateHoldingTheSameNoteAreTheSameRow() {
     #expect(firstView.rows[0].isKept)
     #expect(secondView.rows[0].isKept)
     #expect(firstView.rows[0] == secondView.rows[0])
-}
-
-@Test("a note entry says the note the history holds for that commitment on that date")
-func aNoteEntrySaysTheNoteTheHistoryHoldsForThatCommitmentOnThatDate() {
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let journal = Commitment(
-        name: "Journal", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
-        kind: .note)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    var history = History()
-    history.add(Note("Ran 8k before work. Knee held up.", for: journal, on: monday)!)
-
-    let dayView = DayView(of: [journal], on: monday, in: history)
-
-    let entry = dayView.rows[0].noteEntry(asOf: monday)
-
-    #expect(entry?.note == "Ran 8k before work. Knee held up.")
 }
 
 @Test("a note entry says a note of many lines and many characters whole")
