@@ -1236,6 +1236,9 @@ func aDaysAdditionsAreReadBackInTheOrderTheyWereMade() throws {
     try later.removeLastAddition(for: protein, on: monday)
 
     #expect(later.history.total(for: protein, on: monday) == 75)
+
+    let evenLater = try RecordStore(at: place)
+    #expect(evenLater.history.total(for: protein, on: monday) == 75)
 }
 
 @Test("a day's last addition taken back is not held by a store opened afterwards at the same place")
