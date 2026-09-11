@@ -72,6 +72,22 @@ describe('deriveStoryStatus', () => {
     expect(s.blocker).toContain('predates')
   })
 
+  // An editorial or pruning Story's delta scenarios already match existing tests the moment the
+  // folder is written (ADR-1047 decisions 2 and 6), so at G4 — before any code is allowed by
+  // rule 1 — "fully covered" can only mean that, never an ordinary Story mid red-green. The
+  // preview of what comes next must say so rather than send the implementer to write a red test
+  // that cannot exist.
+  it('previews tasks.md rather than a red test at G4 when every delta scenario is already covered', () => {
+    const ordinary = deriveStoryStatus(facts({ approval: null }))
+    expect(ordinary.next).toContain('writes one failing test for "a commitment every 3 days is due on the anchor day"')
+
+    const pruned = deriveStoryStatus(
+      facts({ approval: null, change: change({ scenarios: { total: 3, covered: 3, next: null } }) }),
+    )
+    expect(pruned.next).not.toContain('failing test')
+    expect(pruned.next).toContain('tasks.md')
+  })
+
   // The ordering that matters most: a Story can be fully written, valid, seamed and still
   // unapproved. Every later rule must sit behind the approval check or status will hand work
   // to an implementer that hard rule 1 forbids from starting.
