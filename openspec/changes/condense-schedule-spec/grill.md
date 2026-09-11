@@ -46,6 +46,14 @@ one *Rules at risk* sentence is asserted by a scenario filed under a different r
    words because saying nothing reads as a rhythm missing rather than empty (req 15). The spec
    prose keeps the three rules and loses the three arguments.
 
+   **Corrected 2026-09-11, after G4 and G7.** The quota-of-seven argument turned out false while
+   the delta was written: `record` holds at most one tick per commitment a day, and req 12 says a
+   quota of exactly seven means one completion on each day of the week, so a quota of seven asks
+   for exactly what a weekday set of all seven does. ADR-1034 records the rule with the reason that
+   actually holds, and says the former argument is not carried. This corrects a fact rather than a
+   preference, so it was not raised as a residual round; the owner read it in `design.md` § Risks
+   at G4 and in the G7 findings.
+
 4. **No requirement splits, and the misfiled scenario stays where it is.** All 18 requirements go
    under `## MODIFIED Requirements`; the largest, req 13 at 351 words, is projected to 85. The
    scenario *an interval longer than the supported years is due only on its start date* sits under

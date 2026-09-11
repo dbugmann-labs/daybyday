@@ -4,8 +4,10 @@
 - Date: 2026-08-30
 - Deciders: Diego Bugmann
 - Amended: 2026-09-11 — a formed calendar date gives its three numbers back and none of them can be
-  assigned, and why. `add-commitments-screen` (#104) added the rule with its argument in `schedule`'s
-  requirement prose, and `condense-schedule-spec` (#208) deletes that prose.
+  assigned, and why; and a four-digit year is past the horizon of any commitment.
+  `add-commitments-screen` (#104) added the first rule with its argument in `schedule`'s requirement
+  prose, the second sat in that capability's year-range requirement, and `condense-schedule-spec`
+  (#208) deletes both.
 
 ## Context
 
@@ -54,7 +56,8 @@ Three consequences are part of the decision rather than incidental to it:
   is deliberate, because a year comparison is one comparison and the autumn of 1582 is worth
   nothing to this product. The upper bound is the other half of the same guard: it keeps the year
   inside a range the engine judges itself, so no year can reach `DateComponents` large enough to be
-  read back as unspecified. Recorded here
+  read back as unspecified, and a four-digit year is well past the horizon of any commitment a person
+  keeps. Recorded here
   because it is part of what a calendar date *is* in this system, and #9, #10 and #11 inherit it.
 - **Conversion between an instant and a calendar date happens at the edges** — where "what day is
   it today?" is asked of the device, and where a tick is written to or read from storage. The

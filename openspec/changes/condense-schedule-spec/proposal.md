@@ -34,10 +34,10 @@ None.
 
 - `openspec/changes/condense-schedule-spec/` — this folder.
 - `openspec/specs/schedule/spec.md` — the prose of every requirement, and nothing else in it.
-- `docs/adr/1004-the-rule-engine-speaks-calendar-dates.md` — a calendar date reads back, and no part
-  of it can be assigned.
+- `docs/adr/1004-the-rule-engine-speaks-calendar-dates.md` — the read-back, and the year's horizon.
+- `docs/adr/1015-a-weekly-quota-is-due-every-day.md` — a never-met quota, and where its cost is stated.
+- `docs/adr/1028-a-screen-may-refuse-what-the-engine-accepts.md` — its quote cut to words kept.
 - `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md` — three arguments the prose carried alone.
 - `docs/adr/1051-a-short-month-is-due-on-its-last-day.md` — new: the clamp, and why not skip.
-- `docs/adr/README.md` — one row added, two extended.
-- `docs/open-questions.md` — the known-gaps entry no longer says the read-back requirement's prose
-  names the gaps it leaves open.
+- `docs/adr/README.md` — one row added, four extended.
+- `docs/open-questions.md` — no longer says the read-back requirement names the gaps it leaves.

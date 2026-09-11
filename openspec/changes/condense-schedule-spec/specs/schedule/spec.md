@@ -58,14 +58,15 @@ and across the turn of a year. The answer MUST NOT vary with the host's time zon
 ### Requirement: A calendar date names a day that exists
 
 A calendar date SHALL be a year, a month of that year and a day of that month. The system SHALL form
-one from a combination of the three that names a day in a supported year, and SHALL refuse to form
-one from a combination that names no day. It MUST refuse rather than adjust: a day past the end of
-its month MUST NOT become a day of the following month, and a month past the twelfth MUST NOT become
-a month of the following year. No schedule SHALL be asked about a date that does not exist.
+one from a combination of the three naming a day, in a year *A calendar date lies within the years
+the system supports* accepts, and SHALL refuse to form one naming no day. It MUST refuse rather than
+adjust: a day past the end of its month MUST NOT become a day of the following month, and a month
+past the twelfth MUST NOT become a month of the following year. No schedule SHALL be asked about a
+date that does not exist.
 
-The system SHALL also judge each of the three components as the number it was offered, and MUST NOT
-accept a date in which a component was treated as absent or unspecified because its value was
-extreme. It MUST NOT form a date with a component missing.
+It SHALL also judge each component as the number it was offered, and MUST NOT accept a date in which
+a component was treated as absent or unspecified because its value was extreme. It MUST NOT form a
+date with a component missing.
 
 #### Scenario: a day beyond the end of its month is not a calendar date
 
@@ -409,7 +410,7 @@ The system SHALL form a weekly quota only from a whole number of times from 1 th
 and MUST refuse every other number rather than adjust it: zero MUST NOT be read as a commitment with
 nothing to do, a negative number MUST NOT be read as any obligation, and a number above seven MUST
 NOT be reduced to seven. No schedule SHALL be built on a number outside that range. A quota of
-exactly seven SHALL be valid.
+exactly seven SHALL be valid and SHALL mean one completion on each day of the week.
 
 #### Scenario: a quota below one time a week is not a weekly quota
 
@@ -470,19 +471,16 @@ one, judged the same way the first was.
 
 ### Requirement: A schedule says the rhythm it runs on in words
 
-A schedule SHALL say, in words, the rhythm it runs on; that answer is its **rhythm in words**. It
-SHALL be read off the schedule and off nothing else, consulting no calendar date, and SHALL be the
-same whatever day it is asked on, whatever day it is asked about, and whether or not any commitment
-carries it. It SHALL say the shape and its number and nothing else, as *An every-N-days schedule is
-said as its interval, and never as its start date* and *A day-of-month schedule is said as the
-ordinal of its day* say.
+A schedule SHALL say the rhythm it runs on in words, its **rhythm in words**. It SHALL be read off
+the schedule alone, consulting no calendar date, and SHALL be the same whatever day it is asked on,
+whatever day it is asked about, and whether or not any commitment carries it. It SHALL say the shape
+and its number and nothing else.
 
 The words SHALL be this capability's own English and MUST NOT be taken from the device's language,
 region, locale or calendar preferences. Every number SHALL be said in digits, with no grouping
 separator and no leading zero. Two schedules that name the same rhythm SHALL say the same words, and
-a weekday set of all seven and an interval of one day SHALL name the same rhythm. Being due on the
-same dates MUST NOT make two schedules one rhythm, as *A weekly-quota schedule is said as a number
-of times a week* says of a quota of seven.
+a weekday set of all seven and an interval of one day SHALL name the same rhythm. The system MUST
+NOT decide whether two schedules name one rhythm from the dates they are due on.
 
 #### Scenario: each of the four schedule shapes says the rhythm it runs on in words
 

@@ -70,12 +70,13 @@ turn, each of which records the rule's neighbouring fact and says nothing about 
 
 The rewrite deletes it rather than restating it (survey § 2): the supported years and refusing rather
 than adjusting are **ADR-1004**'s; not being due before the start date is **ADR-1013**'s; a quota due
-on every date, completion being no schedule question, the ceiling of seven (a day holds at most one
-record of a commitment, in its § *Decision*) and the extension shared
-with all seven weekdays are **ADR-1015**'s; words in the package's own English are **ADR-1022**'s and
-**ADR-1034**'s, as is saying the shape and its number and nothing else; a screen refusing the empty
-weekday set is **ADR-1028**'s. The note that the eleventh to the thirteenth defeat a last-digit rule is
-a comment on the suffix table, and goes with no home.
+on every date, completion being no schedule question, the ceiling of seven and the extension shared
+with all seven weekdays are **ADR-1015**'s; the package's own English is **ADR-1022**'s and
+**ADR-1034**'s, as is the shape and its number only; a screen refusing the empty weekday set is
+**ADR-1028**'s. Three had no home and gain one: a four-digit year being past any commitment's horizon
+joins ADR-1004's amendment, and a never-met quota being a never-due commitment and the all-seven-days
+cost now stated in the record amend **ADR-1015**; **ADR-1028**'s quote of the spec is cut to words it
+keeps. The eleventh-to-thirteenth note is a comment on the suffix table, and goes with no home.
 
 ### No requirement splits, and the misfiled scenario stays where it is
 
@@ -92,18 +93,14 @@ the read-back requirement, which is over budget only on history this Story delet
 
 Grill answer 5. Every scenario block stays byte-identical under the heading it sits under now, because
 a title is a contract a CI check reads. Frontier § E finds no false title in `schedule`, so ADR-1047
-decision 5 needs no amendment. Rejected: taking the survey's nine duplicate-scenario candidates now —
+decision 5 needs no amendment. One positive SHALL is added rather than kept: the calendar-date
+requirement now says a combination naming a day is formed, because *the twenty-ninth of February in
+a leap year is a calendar date* asserts it and no current SHALL states it. Rejected: taking the survey's nine duplicate-scenario candidates now —
 each deletes a passing test, which is the plan's next phase and not an editorial Story's.
 
 ## Overruns the budget
 
-Requirement prose goes from 3,448 words to 1,996, and one requirement is still over 150.
-
-- *A schedule says the rhythm it runs on in words* — 196; it alone states the rules every shape's
-  words share: read off the schedule alone and the same whatever day is asked, the shape and its
-  number only, this capability's English and never the device's, digits with no grouping separator
-  and no leading zero, and one rhythm one set of words while shared due dates never make one rhythm —
-  plus one-clause references to the start-date, ordinal and quota-of-seven wording requirements.
+None. Every requirement's prose is within 40–150 words, as `pnpm run check:budgets` reports.
 
 ## Risks / Trade-offs
 
@@ -132,4 +129,5 @@ and whether or not a commitment carries it; the weekday-set and day-of-month sha
 direction; a surface stopping a quota once its week is complete decides that from tick records; month
 and day are bounded by the calendar-date requirement and not by the year range; a schedule on the
 thirtieth in a common February; and no leading zero in a rhythm in words. Nothing else is open:
-`grill.md` § *Left open* is "None.", and writing these artifacts raised no residual round.
+`grill.md` § *Left open* is "None.", and no residual round was raised, but a settled answer was
+corrected on a fact — the quota-of-seven argument (`grill.md` answer 3, *Corrected 2026-09-11*).

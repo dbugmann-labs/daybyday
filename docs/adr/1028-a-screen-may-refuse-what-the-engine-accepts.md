@@ -3,6 +3,9 @@
 - Status: accepted — the decision is the owner's, taken at the grill of `add-commitments-screen`
   (#104) on 2026-09-04, question 4 of twelve
 - Date: 2026-09-04
+- Amended: 2026-09-11 — the quote of `openspec/specs/schedule/spec.md` below credits the spec only
+  with words it still holds; `condense-schedule-spec` (#208) deleted "membership is the whole rule".
+  The decision is unchanged.
 - Amended: 2026-09-06 — this record's Context said that for every refusal made by the value
   itself, "every screen simply reports what the value said". The screen shipped in #104's first
   implementation pass did not; the amendment at the foot records what was done about it. The
@@ -13,8 +16,9 @@
 
 `Schedule.weekdays(Set<Weekday>)` accepts the empty set. That is deliberate and it is pinned:
 `openspec/specs/schedule/spec.md` § *A weekday-set schedule is due on the weekdays it lists* says
-"membership is the whole rule", `CONTEXT.md` § *Weekday set* says "an empty set is due on none",
-and `ScheduleTests.swift` carries a passing acceptance test asserting exactly that. The value is
+such a schedule is due exactly when a date's weekday "is a member of the set" and that "a set that
+lists no weekday SHALL be due on none", `CONTEXT.md` § *Weekday set* says "an empty set is due on
+none", and `ScheduleTests.swift` carries a passing acceptance test asserting exactly that. The value is
 total, the rule is one line, and there is no date in the supported range on which such a schedule
 is due.
 

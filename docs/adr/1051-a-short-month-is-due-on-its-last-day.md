@@ -53,8 +53,10 @@ two schedules about each other.
   and year.** 31 February is not a calendar date, so that construction fails in exactly the months the
   clamp exists for, and a failed construction is not an answer of "not due".
 - **"The last day of the month" is not a fifth rule shape.** Under the clamp it is the 31st.
-- **Reversing this is a delta against one requirement and its short-month scenarios**, and nothing
-  else in the capability depends on which way it went.
+- **Reversing this is a behaviour Story against three requirements, not one**: the short-month
+  requirement and its scenarios; the day-of-month requirement, whose exactly one due date in every
+  month, never none, holds only under the clamp; and the ordinal wording, whose rule and scenario that
+  the clamp is never said would have nothing left to refer to.
 
 ## Alternatives considered
 

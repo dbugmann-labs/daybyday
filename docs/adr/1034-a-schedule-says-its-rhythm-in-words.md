@@ -79,17 +79,20 @@ commitment a commitments screen makes, the start date is the day the commitment 
 formed some other way may carry a start date that disagrees with that day, and its words still say
 only the interval. A weekly quota of seven is said "7x a week" and never "Every day", although it is
 due on every date as a weekday set of all seven is (ADR-1015) and, a day holding at most one
-completion of it, asks for one on each day. The reason that holds is the one this record already
-gives: the words say the shape and its number, a weekly quota's shape is a count of times in a week
-said in one form for every number from one to seven — "1x a week" and not "Once a week" is the same
-rule at the other end — and "Every day" is the words of the shapes that name days, so being due on
-the same dates does not make two shapes one rhythm; this is the wording B-017 and B-025 would
-reopen. The spec's former argument, that "Every day" would read an obligation a quota of seven does
-not carry, contradicted the spec's own rule that a quota of seven means one completion on each day
-and `record`'s rule of at most one tick per commitment a day, and it is not carried here. And a
-weekday set listing no day is said "No day" rather than nothing, although a commitments screen
-refuses to define a commitment on one (ADR-1028): the system forms it and a roster can hold it, and
-an entry saying nothing would read as a rhythm missing rather than empty.
+completion of it, asks for one on each day. The reason that holds builds on this record's rule that
+the words say the shape and its number, and adds what the record had not said — why an interval of
+one day gets "Every day" and a quota of seven does not: an interval of one day and a weekday set of
+all seven are both shapes that say which days, and name the same days, so they share one rhythm and
+one set of words; a weekly quota's shape is a count of times in a week, said in one form for every
+number from one to seven — "1x a week" and not "Once a week" is the same rule at the other end — and
+names no days, so being due on the same dates does not make it their rhythm. This is the wording
+B-017 and B-025 would reopen. The spec's former argument, that "Every day" would read an
+obligation a quota of seven does not carry, contradicted the spec's own rule that a quota of seven
+means one completion on each day and `record`'s rule of at most one tick per commitment a day, and
+it is not carried here. And a weekday set listing no day is said "No day" rather than nothing,
+although a commitments screen refuses to define a commitment on one (ADR-1028): the system forms it
+and a roster can hold it, and an entry saying nothing would read as a rhythm missing rather than
+empty.
 
 ## Consequences
 
