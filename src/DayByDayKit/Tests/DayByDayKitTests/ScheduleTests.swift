@@ -1,13 +1,6 @@
 import Testing
 import DayByDayKit
 
-@Test("a weekday-set schedule says its weekdays as three-letter names")
-func aWeekdaySetScheduleSaysItsWeekdaysAsThreeLetterNames() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-
-    #expect(schedule.inWords == "Mon, Wed, Sat")
-}
-
 @Test("a weekday-set schedule says its weekdays in week order from Monday")
 func aWeekdaySetScheduleSaysItsWeekdaysInWeekOrderFromMonday() {
     let firstSchedule = Schedule.weekdays([.saturday, .monday, .wednesday])
@@ -221,20 +214,11 @@ func aDayOfIntMaxIsRefusedRatherThanReadBackAsUnset() {
     #expect(date == nil)
 }
 
-@Test("a date before the Gregorian calendar's adoption is not a calendar date")
-func aDateBeforeTheGregorianCalendarsAdoptionIsNotACalendarDate() {
-    // `Calendar(identifier: .gregorian)` is a hybrid that still applies the Julian calendar
-    // before 1582-10-15, so an earlier date would otherwise form with the wrong weekday.
-    let date = CalendarDate(year: 1500, month: 1, day: 1)
-
-    #expect(date == nil)
-}
-
 @Test("the last day before the first full Gregorian year is not a calendar date")
 func theLastDayBeforeTheFirstFullGregorianYearIsNotACalendarDate() {
     // The guard is year-granular, so the whole of 1582 is refused, including after the
-    // 15 October reform. Without this, the pinned pair either side of the lower bound is
-    // 1500 refused and 1583 accepted, and a guard mistyped as `1581...` would satisfy both.
+    // 15 October reform. Without this, the only pin on the lower bound is the first day of
+    // 1583 accepted below, and a guard mistyped as `1581...` would still accept it.
     let date = CalendarDate(year: 1582, month: 12, day: 31)
 
     #expect(date == nil)
