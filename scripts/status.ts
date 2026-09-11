@@ -334,6 +334,14 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
     const pr = prNotReady(f, 4, 'Propose', 'spec-author', 'G4 — you read the PR and sign it.')
     if (pr !== null) return pr
 
+    // Rule 1 forbids implementation before G4, so the only way every delta scenario can already
+    // have a matching test at this point — before approval, before any code is allowed — is an
+    // editorial or pruning Story (ADR-1047 decisions 2 and 6): its scenarios carry titles that
+    // already match tests for unchanged behaviour, from the moment the folder was written. An
+    // ordinary Story cannot reach "fully covered" here by any legitimate path, so the two cases
+    // cannot be confused at this specific check.
+    const fullyCovered = c.scenarios.total > 0 && c.scenarios.covered === c.scenarios.total
+
     return {
       stage: 4,
       stageName: 'Propose — G4',
@@ -349,7 +357,9 @@ export function deriveStoryStatus(f: StoryFacts): StoryStatus {
         })),
         { label: 'Approve', command: `gh issue comment ${f.issue} --body '${markerBody(c.digest, '<name>')}'` },
       ],
-      next: `Stage 5 — the implementer writes one failing test for "${c.scenarios.next ?? 'the first scenario'}".`,
+      next: fullyCovered
+        ? 'Stage 6 — every delta scenario already has a matching test, so there is nothing to write red; the implementer works tasks.md.'
+        : `Stage 5 — the implementer writes one failing test for "${c.scenarios.next ?? 'the first scenario'}".`,
       unobservable: null,
     }
   }

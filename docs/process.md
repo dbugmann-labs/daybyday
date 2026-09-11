@@ -446,6 +446,11 @@ capability spec. Such an **editorial Story** runs the ordinary pipeline with a d
 every requirement in full — MODIFIED, or REMOVED plus ADDED where one splits — with every
 scenario title unchanged and no test changed at all. ADR-1047.
 
+**Dropping a scenario another already asserts is a Story for the same two reasons**, and it is not
+an editorial Story. A **pruning Story** deletes exactly the tests of the scenarios it drops and adds
+none, keeps its seam, and gives each requirement that loses a scenario a new heading, because
+OpenSpec refuses a dropped scenario under a kept one. What may be dropped is ADR-1047 decision 6's.
+
 **The one thing that touches `src/` on this lane is the app shell**, which is why the table above
 says a chore branch may. It is not an exception to the sentence before it, because a shell adds no
 behaviour: everything it puts on screen was answered, specified and tested behind the seam
@@ -650,6 +655,8 @@ finished — never per-commit — so it can never push you into writing tests in
 ### DoD — a Story is finished
 
 - [ ] Every scenario in the delta has a passing, name-matched acceptance test
+- [ ] On a pruning Story, exactly the tests of the dropped scenarios deleted and none added
+      (ADR-1047)
 - [ ] `pnpm run verify` green; full CI green
 - [ ] PR rebased onto current `main` before the review, and out of draft after the archive
 - [ ] `code-review` clean on both axes

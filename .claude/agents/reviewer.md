@@ -51,6 +51,18 @@ it.
   consequence, a "so that", or has vanished is a finding, each one named by requirement and
   quoted. Then read every requirement the delta carries that the surveys did not list, because
   the rewrite may have trimmed a rule nobody had flagged.
+- **On a pruning Story** (ADR-1047 decision 6: scenarios another scenario already asserts are
+  dropped, exactly their tests deleted, no behaviour change, the seam kept) the fidelity list is
+  `design.md`'s list of dropped scenarios. Check it both ways against the scenarios the delta no
+  longer carries and the test names the diff removes — the same titles and the same count in all
+  three — and check by script that every scenario the delta does carry is byte-identical to the
+  current spec. For each drop, confirm in the source, not in `grill.md` or `design.md`, that a kept
+  scenario under the same requirement asserts everything the dropped one did and that none of
+  decision 6's four conditions is broken. A requirement that loses a scenario takes a new heading:
+  it must stay true of every scenario left under it, and its prose may change only where a
+  cross-reference follows a renamed heading. Anything in `src/` or `tests/` that is not a deletion
+  needs a `tasks.md` box permitting it, and a helper only a deleted test used is a finding.
+  `check:scenarios` checks scenario → test only, so a test left behind is yours to catch.
 
 **The budgets are part of the standards axis.** ADR-1047 gives every artifact a budget —
 `proposal.md` 60 lines, `design.md` 150, `tasks.md` one line per scenario plus 80, requirement
