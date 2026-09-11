@@ -171,6 +171,29 @@ second, independent one: 29 of 29 confirmed, none refuted.*
     a dated *Settled* entry, which stay under item 8's rule. *Found by `spec-author`. Item 12's
     search covered `docs/backlog.md` and `docs/adr/`, but not the rest of `docs/`.*
 
+*G7, 2026-09-11: three reviewer findings, decided by the human after the first G4.*
+
+17. **Two drops are withdrawn, taking the count from 29 to 27.** Both of these scenarios stay in
+    the spec, and their tests are restored from `main` unchanged. This replaces item 2's bullet for
+    them.
+    - `a commit on a row for a day that has not arrived is told nothing on the row`
+    - `a commit on a note row for a day that has not arrived is told nothing on the row`
+
+    The spec goes from 399 to 372 scenarios, and the tests from 1036 to 1009. *A day screen tells
+    nothing on a row where there was no tick to refuse* still loses four scenarios, so it keeps its
+    new heading. *The reviewer found the flaw in item 2's claim of one code path. That claim cited
+    three separate date guards (DayView.swift:75-77, 108-110 and 132-134), but the total-row keeper
+    runs only the last. In a scratch copy, the reviewer removed the number and note guards, and the
+    keeper stayed green: a total row is refused at those getters' kind guard anyway. The cover
+    therefore lives only under other requirements, which fails condition 1. Accepting it as an
+    exception to ADR-1047 decision 6 was the alternative.*
+18. **`design.md` § Open Questions says "None." and points to `grill.md`**, with no history of the
+    rounds. *This was a G7 standards finding, and cheap to fix while the folder is re-signed.*
+19. **The keeper for `a commitment ticked on the date has a row that says it is kept` stays as it
+    is.** *G7 noted that the keeper never reads the name on a kept row. Item 2 accepted it on the
+    ground that the name is one statement (DayView.swift:57), read whether or not the row is kept,
+    so no guard differs that removing one could expose.*
+
 ## Terms landed in CONTEXT.md
 
 None. *Pruning Story* already stands, and nothing settled here names a new thing.

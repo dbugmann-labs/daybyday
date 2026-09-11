@@ -216,10 +216,9 @@ made again and is kept`. The rest is carried verbatim.
 refuse*, without scenarios another under it already asserts.
 **Migration**: Dropped with their tests: `a commit on a day screen that is not keeping a record is
 told nothing on the row`, `a commit on a note row on a day screen that is not keeping a record is
-told nothing on the row`, `a commit on a row for a day that has not arrived is told nothing on the
-row`, `a commit on a note row for a day that has not arrived is told nothing on the row`, `a tap on
-a row a day screen's day view does not hold is told nothing on the row` and `a commit on a row that
-offers no number entry is told nothing on the row`. The rest is carried verbatim.
+told nothing on the row`, `a tap on a row a day screen's day view does not hold is told nothing on
+the row` and `a commit on a row that offers no number entry is told nothing on the row`. The rest is
+carried verbatim.
 
 ### Requirement: A day screen reads its roster again when it is returned to
 
@@ -1245,6 +1244,15 @@ likewise be told nothing and SHALL NOT end what is already told.
   is then ticked on the first screen
 - **THEN** the first day screen still tells, on its own row, that the change could not be kept
 
+#### Scenario: a commit on a row for a day that has not arrived is told nothing on the row
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
+  listing all seven weekdays, kept from 1 January 2026; it is moved to the day after; and "300" is
+  committed on its one row
+- **THEN** the day screen tells nothing on any row
+- **AND** its day view still says the commitment is not kept on Tuesday 1 September 2026
+
 #### Scenario: a commit on a row a day screen's day view does not hold is told nothing and does not end what is already told
 
 - **WHEN** two day screens of a commitment named "Weight" of the number kind with a range of 40 to
@@ -1263,6 +1271,14 @@ likewise be told nothing and SHALL NOT end what is already told.
 - **THEN** the day screen tells nothing on any row
 - **AND** its day view still says the commitment is not kept on that date
 - **AND** committing "30" and then nothing at all on that row tells nothing on any row either
+
+#### Scenario: a commit on a note row for a day that has not arrived is told nothing on the row
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Journal" of the note kind, on a schedule listing all seven weekdays,
+  kept from 1 January 2026; it is moved to the day after; and "Ran 8k." is committed on its one row
+- **THEN** the day screen tells nothing on any row
+- **AND** its day view still says the commitment is not kept on Tuesday 1 September 2026
 
 #### Scenario: a commit on a total row on a day screen that is not keeping a record is told nothing on the row
 

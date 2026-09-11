@@ -6,10 +6,10 @@ does, a carried requirement that is not byte-for-byte what it is today but for t
 names, or a rebase conflict in this folder or in `openspec/specs/`.
 
 This is a pruning Story: no test is written, and rule 3's loop has no red. **§ 2 is finished before
-any § 3 box is started.** Each § 3 box is one deletion, ticked only once the keeper `design.md` names
-for it has been read and its own `#expect` holds every value the deleted test asserted. The only
-other edits to `src/` are § 2's two kept tests. § 4 is one box per carried requirement rather than
-per scenario, because no carried scenario has work of its own.
+any § 3 box is started.** Each § 3 deletion box is ticked only once the keeper `design.md` names for
+it has been read and its own `#expect` holds every value the deleted test asserted. The only other
+edits to `src/` are § 2's two kept tests and § 3's two restorations. § 4 is one box per carried
+requirement rather than per scenario, because no carried scenario has work of its own.
 
 ## 2. The two kept tests — both run before any deletion
 
@@ -22,7 +22,7 @@ and the correction becomes a Story of its own.
 - [x] 2.1 Bring `a row's answer follows the day it is asked as of rather than the day the day view was formed` to check the second asking offers a tick, not only that it equals one
 - [x] 2.2 Bring `committing nothing at all in a total entry keeps nothing and takes nothing back` to check kept after the spaces and line breaks, and on the screen opened afterwards
 
-## 3. The twenty-nine deletions — one box per dropped scenario
+## 3. The twenty-seven deletions and two restorations — one box per scenario
 
 - [x] 3.1 Delete `a commitment ticked on the date has a row that says it is kept` from `DayViewTests.swift` — the keeper never asserts the name, which a row takes from its commitment
 - [x] 3.2 Delete `a commitment not ticked on the date has a row that says it is not kept` from `DayViewTests.swift`
@@ -37,8 +37,8 @@ and the correction becomes a Story of its own.
 - [x] 3.11 Delete `what a day screen tells on a row ends when the same change is made again and is kept` from `DayScreenTests.swift` — every other "ends when … kept" test stays
 - [x] 3.12 Delete `a commit on a day screen that is not keeping a record is told nothing on the row` from `DayScreenTests.swift`
 - [x] 3.13 Delete `a commit on a note row on a day screen that is not keeping a record is told nothing on the row` from `DayScreenTests.swift`
-- [x] 3.14 Delete `a commit on a row for a day that has not arrived is told nothing on the row` from `DayScreenTests.swift`
-- [x] 3.15 Delete `a commit on a note row for a day that has not arrived is told nothing on the row` from `DayScreenTests.swift`
+- [ ] 3.14 Restore `a commit on a row for a day that has not arrived is told nothing on the row` in `DayScreenTests.swift` from `origin/main`, unchanged — withdrawn by grill item 17
+- [ ] 3.15 Restore `a commit on a note row for a day that has not arrived is told nothing on the row` in `DayScreenTests.swift` from `origin/main`, unchanged — withdrawn by grill item 17
 - [x] 3.16 Delete `a tap on a row a day screen's day view does not hold is told nothing on the row` from `DayScreenTests.swift`
 - [x] 3.17 Delete `a commit on a row that offers no number entry is told nothing on the row` from `DayScreenTests.swift` — its take-back sibling, told nothing on a row offering no take-back, stays
 - [x] 3.18 Delete `what a day screen tells on a row stands when the screen is returned to and reads its record again` from `DayScreenTests.swift`
@@ -69,7 +69,7 @@ names, and every test under it passes.
 - [x] 4.8 *A day screen re-reads its day and its places when the app is shown again*
 - [x] 4.9 *A day screen tells on the row that was tapped that its change could not be kept*
 - [x] 4.10 *What a day screen tells on a row lasts only until the app is shown again, a change is kept, or the day it is showing changes*
-- [x] 4.11 *A day screen tells nothing on a row where there was no change to refuse*
+- [ ] 4.11 *A day screen tells nothing on a row where there was no change to refuse* — the two scenarios of 3.14 and 3.15 are carried in place
 - [x] 4.12 *A day screen reads its roster again whenever it is returned to*
 - [x] 4.13 *A day screen enters the number a row's entry takes, and keeps the change before the day view says so*
 - [x] 4.14 *A note entry says the whole note the day already holds, and says nothing else*
@@ -81,20 +81,21 @@ names, and every test under it passes.
 
 ## 5. The gates
 
-- [x] 5.1 `openspec validate drop-duplicate-day-screen-scenarios --strict` exits 0.
-- [x] 5.2 `pnpm run check:scenarios` exits 0 — every title the delta carries still names a test.
-- [x] 5.3 None of the twenty-nine dropped titles is found as an exact test name under `src/`, and
+- [ ] 5.1 `openspec validate drop-duplicate-day-screen-scenarios --strict` exits 0.
+- [ ] 5.2 `pnpm run check:scenarios` exits 0 — every title the delta carries still names a test.
+- [ ] 5.3 None of the twenty-seven dropped titles is found as an exact test name under `src/`, each
+      title of 3.14 and 3.15 is found exactly once and byte-identical to `origin/main`, and
       `git diff --stat origin/main -- src/` lists only `DayViewTests.swift` and `DayScreenTests.swift`.
-- [x] 5.4 `pnpm run check:budgets` warns about nothing in this folder but the ten requirements
+- [ ] 5.4 `pnpm run check:budgets` warns about nothing in this folder but the ten requirements
       `design.md` § Context names, and `pnpm run verify` passes.
-- [x] 5.5 `swift test` in `src/DayByDayKit` passes and reports twenty-nine fewer tests than on `main`,
+- [ ] 5.5 `swift test` in `src/DayByDayKit` passes and reports twenty-seven fewer tests than on `main`,
       both counts read off a run and never derived.
-- [x] 5.6 **The archive handover — `implementer` ticks this in its last commit before the archive**,
+- [ ] 5.6 **The archive handover — `implementer` ticks this in its last commit before the archive**,
       on the evidence that 2.1–5.5 are ticked and that the instruction below is written here for the
       janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of
       the sync it prints, then reads the spec diff it produced: in `openspec/specs/day-screen/spec.md`
       the seventeen requirements of 4.3–4.19 leave their places and reappear after every other
-      requirement, in that order, under their new headings; the twenty-nine dropped scenarios are gone;
+      requirement, in that order, under their new headings; the twenty-seven dropped scenarios are gone;
       the sentences 4.1 and 4.2 name are the delta's; and nothing else moves. After the archive commit,
       `git status` is clean and `openspec/changes/drop-duplicate-day-screen-scenarios/` no longer
       exists, its deletion committed with the archive, and `pnpm run checks` runs after that commit

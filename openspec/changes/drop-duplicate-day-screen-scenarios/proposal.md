@@ -7,7 +7,7 @@ decision 6 says which may be dropped; this change applies it to `day-screen`, as
 
 ## What Changes
 
-- Twenty-nine scenarios are dropped, each asserted in full by a kept scenario under the same
+- Twenty-seven scenarios are dropped, each asserted in full by a kept scenario under the same
   requirement.
 - The test carrying each dropped title is deleted in this change, and no test is added.
 - The seventeen requirements that lose a scenario are REMOVED and ADDED back under a reworded heading.
@@ -33,9 +33,9 @@ None.
 ## Impact
 
 - `openspec/changes/drop-duplicate-day-screen-scenarios/` — this folder.
-- `openspec/specs/day-screen/spec.md` — twenty-nine scenarios, seventeen headings, two sentences.
+- `openspec/specs/day-screen/spec.md` — twenty-seven scenarios, seventeen headings, three sentences.
 - `src/DayByDayKit/Tests/DayByDayKitTests/DayViewTests.swift` — seven tests deleted, one kept test
   corrected.
-- `src/DayByDayKit/Tests/DayByDayKitTests/DayScreenTests.swift` — twenty-two tests deleted, one kept
+- `src/DayByDayKit/Tests/DayByDayKitTests/DayScreenTests.swift` — twenty tests deleted, one kept
   test corrected.
 - `docs/adr/1026-a-day-screen-keeps-the-day-you-moved-to.md` — one heading reference.

@@ -2,7 +2,7 @@
 
 `proposal.md` § *Why* says what this is for, and `grill.md`'s settled answers are what the delta is
 written on. `openspec/specs/day-screen/spec.md` holds 51 requirements and 399 scenarios; the delta
-carries 19 requirements and 174 scenarios, and drops 29. No member is new or changed, which makes this
+carries 19 requirements and 176 scenarios, and drops 27. No member is new or changed, which makes this
 a *pruning Story*; § *The seam* lists where the keepers' tests attach.
 
 The archiver in `openspec` 1.10.0 refuses a MODIFIED block omitting a current scenario and takes
@@ -17,7 +17,7 @@ grill item 9's clause, and *A day screen draws the commitments…* from 166 to 1
 
 ## Goals / Non-Goals
 
-**Goals:** the twenty-nine scenarios of grill item 2 and their tests gone, with everything each
+**Goals:** the twenty-seven drops of grill items 2 and 17 and their tests gone, with everything each
 asserted still asserted by its keeper; grill item 9's false sentence made true; the two kept tests of
 grill item 4 brought to their unchanged scenarios first, a red on either stopping every deletion.
 
@@ -57,9 +57,10 @@ DayScreen.shown(asOf today: CalendarDate)
 DayScreen.returnedTo()
 ```
 
-### Twenty-nine scenarios are dropped, and seventeen headings change as little as keeps each true
+### Twenty-seven scenarios are dropped, and seventeen headings change as little as keeps each true
 
-Grill items 2, 6 and 14. Rejected: RENAMED, per ADR-1047 decision 2; a split Story (item 6).
+Grill items 2, 6, 14 and 17. Rejected: RENAMED, per ADR-1047 decision 2; a split Story (item 6);
+dropping the two not-arrived scenarios as an exception to decision 6's condition 1 (item 17).
 
 | # | Dropped | Keeper, which asserts the same | Test file |
 |---|---|---|---|
@@ -75,7 +76,6 @@ Grill items 2, 6 and 14. Rejected: RENAMED, per ADR-1047 decision 2; a split Sto
 | 7 | a value that is not a number is told on the row, saying so | a value that is not a number committed in a total entry is told the same thing a number entry tells | `DayScreenTests` |
 | 8 | what a day screen tells on a row ends when the same change is made again and is kept | what a day screen tells on a row ends when a change is kept on another row | `DayScreenTests` |
 | 9 | a commit on a day screen that is not keeping a record is told nothing on the row; a commit on a note row on a day screen that is not keeping a record is told nothing on the row | a commit on a total row on a day screen that is not keeping a record is told nothing on the row | `DayScreenTests` |
-| 9 | a commit on a row for a day that has not arrived is told nothing on the row; a commit on a note row for a day that has not arrived is told nothing on the row | a commit on a total row for a day that has not arrived is told nothing on the row | `DayScreenTests` |
 | 9 | a tap on a row a day screen's day view does not hold is told nothing on the row | a tap on a row a day screen's day view does not hold does not end what is already told | `DayScreenTests` |
 | 9 | a commit on a row that offers no number entry is told nothing on the row | a commit on a row that offers no entry at all is told nothing on the row | `DayScreenTests` |
 | 10 | what a day screen tells on a row stands when the screen is returned to and reads its record again | a day screen returned to goes on telling what it was telling on a row | `DayScreenTests` |
@@ -114,7 +114,7 @@ Grill items 2, 6 and 14. Rejected: RENAMED, per ADR-1047 decision 2; a split Sto
   box is ticked only once its keeper's own `#expect` has been read, and `reviewer` confirms each pair
   in source at G7.
 - **A test left behind, or the wrong one deleted**, passes `check:scenarios`. → The gates search `src/`
-  for all twenty-nine titles and read the test count off a run on this branch and on `main`.
+  for all twenty-seven titles and read the test count off a run on this branch and on `main`.
 - **A strengthened test that goes red** shows a kept test never proved its scenario. → A stop before
   any deletion (grill item 15): the folder returns to G4 with that strengthening and the drops resting
   on it withdrawn, and the defect becomes a Story of its own.
@@ -123,10 +123,4 @@ Grill items 2, 6 and 14. Rejected: RENAMED, per ADR-1047 decision 2; a split Sto
 
 ## Open Questions
 
-None. `grill.md` § *Left open* is "None.", every drop and every surveyed candidate has a verdict, and
-the seventeen headings were the only wording left to this change. The residual round raised after a
-verifier read this folder is settled in grill items 14–16 and folded in above: the seven longest
-headings are cut to the smallest true change, with the references to rows 4 and 15 following; both
-strengthenings run first, and a red is a stop before any deletion; and in `docs/open-questions.md`,
-§ *Known gaps* quotes row 7 by a prefix its new heading keeps, while § *Settled* quotes full headings
-in a dated entry that stays, as ADR-1037 and ADR-1038 do.
+None. Every question this change raised is settled in `grill.md`, whose § *Left open* is "None.".
