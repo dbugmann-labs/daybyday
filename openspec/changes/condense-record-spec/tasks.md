@@ -20,34 +20,34 @@ supersedes the first for box 2.5, whose prose has gained a sentence since the fi
 
 ## 2. `record` — one box per requirement, in spec order
 
-- [ ] 2.1 *A store reads a history kept before a commitment carried a kind* — **splits in two**, the reading mechanism against what each earlier form means; the rule that a part is judged against the form it was first written at stays normative, because three refusal scenarios rest on it, and only its argument goes to ADR-1031
-- [ ] 2.2 *A tick is of a commitment on a calendar date it is due on* — the "false record this product exists to remove" sentence goes; the refusal it sits beside is already normative and stays
-- [ ] 2.3 *A history answers whether a commitment was kept on a day from the ticks it holds* — holds the only statement of two rules: the sum is compared against the target in that order and never the reverse, and a target is a floor a day must reach and never a ceiling
-- [ ] 2.4 *A tick can be taken back* — already inside the budget at 129 words; only ADR-1033's by-name rationale goes
-- [ ] 2.5 *A store keeps a history at a place, across the app being closed and opened again* — **splits in two**, durability against what a store persists per record kind; keep kind-as-persisted, the prohibition on persisting a day's sum, text kept in the exact form it was typed in, and the sentence extending write-before-report to a carry-over
-- [ ] 2.6 *A store that cannot be read is refused rather than emptied* — keep the exclusion that what a day's additions may sum to is `day-screen`'s cap and not this capability's; a scenario depends on it
-- [ ] 2.7 *A number is of a number commitment on a calendar date it is due on* — keep the refusal of a not-a-number value at formation; the asymmetry argument behind it is ADR-1032's
-- [ ] 2.8 *A history answers what number a commitment has on a day from the numbers it holds* — "a record nothing can read back is not a record" goes outright, homed nowhere
-- [ ] 2.9 *A number can be taken back* — taking back names the commitment and the date and never the value; the argument is ADR-1033's
-- [ ] 2.10 *A note is of a note commitment on a calendar date it is due on* — blank is one test asked in one way (ADR-1039) keeps its rule and its reference; the exact-Unicode-form rule stays as a sentence and its argument moves to ADR-1032
-- [ ] 2.11 *A history answers what note a commitment has on a day from the notes it holds* — see 2.8
-- [ ] 2.12 *A note can be taken back* — see 2.9
-- [ ] 2.13 *An addition is of a total commitment on a calendar date it is due on* — keep the rule that an addition carries no position of its own among its day's additions; the target restatement goes, 2.3 holds it, and so does the defence of the `day-screen` cap
-- [ ] 2.14 *A history answers what a commitment has added on a day from the additions it holds* — keep the surface rule that a history gives out the sum and never the additions themselves
-- [ ] 2.15 *The last addition a day holds can be taken back* — keep all three prohibitions: only the last goes, none by naming its amount, and none clearing a day's additions in one act
-- [ ] 2.16 *A history carries every record of one commitment over to another* — keep the all-or-none refusal and the sentence about the clock and the due date; "carrying over is not merging" goes to ADR-1023
-- [ ] 2.17 *A store carries every record of one commitment over to another, at its place* — holds the most losable rule in scope: a carry-over adds no key, no field and no version to what a record is on disk, and no test would miss it
+- [x] 2.1 *A store reads a history kept before a commitment carried a kind* — **splits in two**, the reading mechanism against what each earlier form means; the rule that a part is judged against the form it was first written at stays normative, because three refusal scenarios rest on it, and only its argument goes to ADR-1031
+- [x] 2.2 *A tick is of a commitment on a calendar date it is due on* — the "false record this product exists to remove" sentence goes; the refusal it sits beside is already normative and stays
+- [x] 2.3 *A history answers whether a commitment was kept on a day from the ticks it holds* — holds the only statement of two rules: the sum is compared against the target in that order and never the reverse, and a target is a floor a day must reach and never a ceiling
+- [x] 2.4 *A tick can be taken back* — already inside the budget at 129 words; only ADR-1033's by-name rationale goes
+- [x] 2.5 *A store keeps a history at a place, across the app being closed and opened again* — **splits in two**, durability against what a store persists per record kind; keep kind-as-persisted, the prohibition on persisting a day's sum, text kept in the exact form it was typed in, and the sentence extending write-before-report to a carry-over
+- [x] 2.6 *A store that cannot be read is refused rather than emptied* — keep the exclusion that what a day's additions may sum to is `day-screen`'s cap and not this capability's; a scenario depends on it
+- [x] 2.7 *A number is of a number commitment on a calendar date it is due on* — keep the refusal of a not-a-number value at formation; the asymmetry argument behind it is ADR-1032's
+- [x] 2.8 *A history answers what number a commitment has on a day from the numbers it holds* — "a record nothing can read back is not a record" goes outright, homed nowhere
+- [x] 2.9 *A number can be taken back* — taking back names the commitment and the date and never the value; the argument is ADR-1033's
+- [x] 2.10 *A note is of a note commitment on a calendar date it is due on* — blank is one test asked in one way (ADR-1039) keeps its rule and its reference; the exact-Unicode-form rule stays as a sentence and its argument moves to ADR-1032
+- [x] 2.11 *A history answers what note a commitment has on a day from the notes it holds* — see 2.8
+- [x] 2.12 *A note can be taken back* — see 2.9
+- [x] 2.13 *An addition is of a total commitment on a calendar date it is due on* — keep the rule that an addition carries no position of its own among its day's additions; the target restatement goes, 2.3 holds it, and so does the defence of the `day-screen` cap
+- [x] 2.14 *A history answers what a commitment has added on a day from the additions it holds* — keep the surface rule that a history gives out the sum and never the additions themselves
+- [x] 2.15 *The last addition a day holds can be taken back* — keep all three prohibitions: only the last goes, none by naming its amount, and none clearing a day's additions in one act
+- [x] 2.16 *A history carries every record of one commitment over to another* — keep the all-or-none refusal and the sentence about the clock and the due date; "carrying over is not merging" goes to ADR-1023
+- [x] 2.17 *A store carries every record of one commitment over to another, at its place* — holds the most losable rule in scope: a carry-over adds no key, no field and no version to what a record is on disk, and no test would miss it
 
 ## 3. The gates
 
-- [ ] 3.1 `openspec validate condense-record-spec --strict` exits 0.
-- [ ] 3.2 `pnpm run check:scenarios` exits 0 — every scenario title in the delta still names a test
+- [x] 3.1 `openspec validate condense-record-spec --strict` exits 0.
+- [x] 3.2 `pnpm run check:scenarios` exits 0 — every scenario title in the delta still names a test
       that exists, which is what "byte-for-byte" means mechanically.
-- [ ] 3.3 `pnpm run check:budgets` reports no requirement over 150 words except the ones
+- [x] 3.3 `pnpm run check:budgets` reports no requirement over 150 words except the ones
       `design.md` § *Overruns the budget* lists, and no artifact over its own budget.
-- [ ] 3.4 `swift test` in `src/DayByDayKit` passes and reports the same number of tests as it does
+- [x] 3.4 `swift test` in `src/DayByDayKit` passes and reports the same number of tests as it does
       on `main` — read off both runs, never derived — because this Story touches no test file.
-- [ ] 3.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
+- [x] 3.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
       on the evidence that 3.1–3.4 are ticked and that the instruction below is written here for the
       janitor to carry out. The janitor runs `/opsx:archive`, then reads the spec diff it produced:
       `openspec/specs/record/spec.md` must differ in requirement prose only, with every
