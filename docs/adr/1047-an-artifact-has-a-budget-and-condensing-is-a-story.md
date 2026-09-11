@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-11 — decision 6 added: a scenario another under the same requirement already
+  asserts may be dropped, under four conditions, by a **pruning Story** that deletes exactly its
+  test; decision 2 no longer says pruning is unauthorised. By `drop-duplicate-schedule-scenarios`
+  (#211), the first pruning Story.
 - Amended: 2026-09-11 — the budgets are confirmed unchanged. The review decision 1 promised is
   carried to the first ordinary Story's G7, because every Story written under them so far is
   editorial; what those four showed is recorded under decision 1, and none of it moves a cap.
@@ -86,7 +90,7 @@ modifies it was the cheaper option, and was rejected because a MODIFIED block ca
 requirement: the rewrite would land inside a behaviour delta and G4 would read two kinds of change in
 one diff.
 
-**Scenario pruning is a different change and is not authorised here.** The archiver's
+**Dropping a scenario is not an editorial Story's to do; decision 6 is its lane.** The archiver's
 `findMissingCurrentScenarios` throws when a MODIFIED block omits a scenario the current spec holds —
 *"current spec contains scenario(s) not present in the modified block ... Refresh the change spec
 before archiving"* — so a condensing Story keeps every title. **REMOVED plus ADDED under new
@@ -127,8 +131,32 @@ All three are kept because the archiver forbids dropping a scenario, and the onl
 removing its requirement and adding it back under a new heading, which moves the whole block to the
 bottom of the spec at archive time.
 
+**6. A scenario another already asserts may be dropped, and the lane for that is a pruning Story.**
+A **pruning Story** runs the ordinary pipeline and its gates, changes no behaviour and keeps its seam,
+and differs from an editorial Story in one thing: its tests change. It may drop a scenario only if
+all four hold:
+
+1. a kept scenario **under the same requirement** asserts everything it asserts, literally or
+   through the same code path shown in source;
+2. it is not the only test whose name states a prohibition;
+3. it is not the only scenario varying a clause of its requirement's rule;
+4. it does not pin a date, week or year boundary.
+
+The four are conjunctive, so resemblance is never enough. Each dropped scenario's test is deleted in
+the same pull request and no test is added, and `design.md` lists every dropped title beside its
+keeper and its test file. The mechanism is decision 2's: a requirement that loses a scenario is
+REMOVED and ADDED under a heading reworded as little as keeps it true and distinct, carrying its prose
+and every other scenario verbatim, and every in-spec reference to the old heading follows it in the
+same delta. **Recorded here rather than in a record of its own**, so that one file holds every rule
+for reducing a spec; widening *editorial Story* was refused, because every definition of that term
+says no test changes. First applied by `drop-duplicate-schedule-scenarios` (#211).
+
 ## Consequences
 
+- **A pruning Story's deleted tests are nobody's check but G7's.** `pnpm run check:scenarios` reads
+  scenario → test only, so a test left behind after its scenario is dropped passes for ever; the
+  reviewer compares `design.md`'s list against the diff, and the Story's own gates search for each
+  dropped title and read the test count off a run.
 - **The reviewer gains a checklist item that can be counted**, and an editorial Story gives it a
   fidelity axis it does not otherwise have: the survey's *Rules at risk* list, not the delta's
   scenario list. `design.md` § The seam loses its doc comments, which `tasks.md` re-issued anyway.
