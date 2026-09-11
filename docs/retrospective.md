@@ -216,3 +216,89 @@ document because they are the same kind of thing: a rule the process states and 
   The one review finding deferred rather than fixed.
 - **Whether any of this holds at three concurrent Stories.** Every judgement above is drawn
   from a sample of one, run by its own author. That is the largest caveat on this document.
+
+## 9. Condensing the specs, 2026-09-10 to 2026-09-11
+
+Issue #199: chore PR #200 (budgets, `openspec/config.yaml`, ADR-1047, `check:budgets`), then four
+editorial Stories — `condense-day-screen-spec` (#201, PR #203), `condense-commitment-spec` (#204,
+PR #207), `condense-record-spec` (#205, PR #206), `condense-schedule-spec` (#208, PR #209). The plan
+is `docs/research/2026-09-09-concise-specs.md`. Written at `2a98cf6`. A bare time is UTC and names a
+#199 comment; times before 21:00 are 2026-09-10, times after 05:00 are 2026-09-11.
+
+**The re-baseline caught two defects before any Story ran.** Step 3 surveyed the 37 requirement
+blocks changed between `4e64641` and `662809f`. `day-screen`'s *A day screen reads its roster again
+when it is returned to* had been reversed by #148 while the old sentence's shape survived; the
+earlier survey's note recorded the retired rule, so a rewrite working from it would have kept a rule
+that no longer held (plan § *The re-baseline of 2026-09-10*; box 2.24 of #201's `tasks.md`). Step 4
+found that the `openspec/config.yaml` block drafted in the plan did not parse — a bare `word: word`
+in a plain list item is a YAML mapping — and `openspec` 1.10.0 printed *could not parse … ignoring
+it*, exited 0, and delivered no context and no rules to any artifact. Rewritten as folded scalars,
+wording unchanged, `openspec instructions` returned 3 / 5 / 5 / 5 rules for proposal / specs /
+design / tasks (15:13:35Z).
+
+**Every delta was written by parallel rewrite agents over requirement ranges, assembled by script,
+then verified.** On all four Stories the script found every scenario byte-identical and present
+once, and `openspec validate --strict` exited 0. Every defect below was found with both green.
+
+On `day-screen` the first G4 was signed at 17:16:47Z. Verification ran after it and failed four
+boxes, repaired in `cd1ae7d` and named in `fa453a7`'s message. Box 2.17's requirement had lost the
+one-clause deferral to *A day view is a value*'s group rule that the box said to keep; restoring it
+took the requirement to 166 words and `design.md`'s overrun list from sixteen to seventeen. Boxes
+2.27 and 2.31 said a number, and a note, entered on a day already holding one "replaces it", a bare
+declarative; both became "SHALL replace it". Box 2.47's requirement stated the move-versus-draw pair
+a second time instead of cross-referencing box 2.11's requirement. That cost the second G4
+(17:42:48Z). G7 then found six defects the three verification agents had cleared, four fixed in
+`8c70a17`: the significant-digit count had lost its second bound, so the spec refused a number the
+code keeps; the total entry deferred to "the eight answers" of a requirement enumerating no eight;
+`proposal.md` § *Impact* named one file wrongly and omitted three; and one entry requirement
+restated a rule its siblings had dropped. That cost the third G4 (18:47:03Z; 18:55:12Z).
+
+`commitment` ran its verifiers before G4: 39 PASS, 3 FAIL over 41 boxes — a sentence whose
+grammatical subject the rewrite had changed, the offset's lower bound dropped, and a false reason in
+`design.md` for a cut (20:28:13Z). G7 found five more (05:29:42Z). The one rated HIGH was a clause
+putting the stopped list in the order commitments were taken on, which a scenario in the same
+requirement disproves. It entered through replacement wording the conductor relayed for an earlier
+fix; box 2.16 had been ticked on a verifier PASS. At the fix round the agents refused two relayed
+instructions after reading the scenarios (05:35:36Z). On `record` the pre-tick verifiers returned
+16 PASS / 1 FAIL, a rule carried by a bare declarative, and G7 found four more: two MUST NOT
+prohibitions lost, which no WHEN/THEN scenario can assert; a "SHALL carry nothing else" closure
+lost; eight requirements unwrapped at 243–695 characters a line; and a request to delete three
+sentences as unsourced, which `spec-author` rejected because `AND` lines in current scenarios assert
+all three (05:21:05Z, 05:34:11Z). The rewrite agents had swept for "so that", "because" and
+"therefore"; the bare declaratives survived that sweep. On `schedule` the verifier passed 18/18
+before G4, and G7's 3 should-fix findings sat in ADRs: ADR-1051 said nothing else depended on the
+clamp where two requirements do, ADR-1015 and ADR-1028 cited spec text the delta removed, and a
+sentence the Story's own ADR called "the spec's rule" had been dropped. No check reads an ADR that
+quotes a spec (06:46:56Z).
+
+**What G4 cost the human was not measured.** `docs/process.md` §4 prices the stops at "roughly
+45–90 minutes of your own time per Story", the grill "15–30 minutes" of it, G4 and G7 "answered in
+a word". The record holds diff sizes, signatures and timestamps, not reading time, and this section
+does not estimate it.
+
+| Story | G4 read, lines added / removed | `G4: approved` comments | first at G4 → first approval |
+|---|---|---|---|
+| `day-screen` #201 | 914 / 2,015 | 3 | 16:04:28Z → 17:16:47Z |
+| `commitment` #204 | 938 / 2,014 | 2 | 20:07:09Z → 05:05:13Z |
+| `record` #205 | 872 / 1,330 | 3 | 19:56:09Z → 20:05:45Z |
+| `schedule` #208 | 105 / 211 | 2 | PR opened 05:54:41Z → 05:58:51Z |
+
+The `schedule` row is measured here — `6daa59e`'s delta against the spec at `a88ce0a` — because
+#199 records no at-G4 comment for it; `commitment` was first put at 20:07:09Z on 941 / 2,016 and
+re-put at 20:28:13Z. Of the ten signatures, the six after each Story's first followed an edit to the
+signed folder. `day-screen`'s second and third came 10 minutes after `cd1ae7d` (16 lines added, 15
+removed) and 89 seconds after `8c70a17` (21 / 21). `record`'s second (05:05:02Z) and `commitment`'s
+first (05:05:13Z) were recorded 11 seconds apart. `openspec/specs/day-screen/spec.md` was 5,562
+lines at `662809f` and is 4,450 at `2a98cf6`.
+
+**The rehearsal has not run.** Plan § *Phase 1*: "Whatever Story is proposed first after phase 1
+merges is the first one written under the new rules"; #199's body records phase 1 landing "in the
+gap before the next Story". PR #200 merged at 2026-09-10T15:30:59Z. On 2026-09-11 `gh issue list
+--state all --limit 15` shows four Stories created since, all editorial, and there is no open Story,
+`story/*` branch or unarchived change folder. What the editorial Stories showed about the caps:
+`commitment`'s `design.md` is 169 lines against 150 by `check:budgets` and says so in the file, its
+31 overruns and 21 knowingly-untested rules being 52 entries (05:41:04Z). `day-screen`'s stayed
+inside 150 lines while two decisions ran 20 and 19 lines against "at most 12" and § *Open
+Questions* 14 against 12, unreported, because `scripts/check-artifact-budgets.ts` counts
+`design.md` as one file (18:55:12Z). Requirements over 150 words at merge: 17 on `day-screen`, 31 of
+42 on `commitment`, 8 of 19 on `record`, none of 18 on `schedule`.

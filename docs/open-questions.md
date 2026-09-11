@@ -17,18 +17,6 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 ## Open technical decisions
 
-- **Whether the specs and change folders should be made concise, and how.** The capability specs are
-  12,515 lines, 35% of it requirement prose that is two-thirds rationale already recorded in ADRs and
-  one-third rules, some twenty of which are stated only in sentences that read as commentary; the change
-  folders have grown from 167 lines to over 2,000, almost entirely on reopening history and pasted logs.
-  `docs/research/2026-09-09-concise-specs.md` measures both, drafts the `openspec/config.yaml` rules that
-  would hold future artifacts down, and lays out a phased plan: a re-baseline first, because several
-  Stories will ship before it is taken up and every requirement they add is unsurveyed; then the config
-  and agent edits as one chore in a gap between Stories; then one editorial Story per capability whose
-  delta is MODIFIED-only and whose tests do not change, because rule 2 and CI check 2 leave no other lane. It also says where it
-  disagrees with the ask: most of the size is scenarios, and rules alone will not hold without the
-  reviewer checking them. Four decisions are listed at its end; none is taken.
-
 - **When an ADR number is claimed.** Today it is taken at Stage 4, when the file is written,
   and merged at Stage 9 — so two branches open at once can both write the same number and
   neither learns of it until a rebase conflicts in `docs/adr/README.md`. Story #11 hit it twice
@@ -100,6 +88,33 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   below as the surface it would move, and `add-total-record`'s rejection of a `Records` struct for
   the writer — recorded in § *Settled* — as the half of the shape that is already argued.
   Recorded 2026-09-08, at #141's G7.
+
+- **`design.md`'s sub-budgets are invisible to `check:budgets`, which measures whole files only.**
+  `openspec/config.yaml`'s `design` rules cap Context at 20 lines, Goals/Non-Goals at 12, Decisions at
+  80 with each decision at 12, Risks at 20 and Open Questions at 12, inside a 150-line file total — but
+  `scripts/check-artifact-budgets.ts` (ADR-1047) counts only the whole file, so a section running over
+  its own cap passes silently as long as the file stays at or under 150. `condense-day-screen-spec`
+  (#201) hit this at the section level, on purpose: two decision blocks ran 20 and 19 lines and
+  § Open Questions ran 14, all against a 12-line cap and all invisible, while the file landed exactly
+  at 150. `condense-commitment-spec` (#204) hit the same wall at the file level: naming all 31
+  over-budget requirements and the rules kept deliberately untested together took `design.md` to 169
+  lines against 150, disclosed in the file rather than trimmed, on the judgement that dropping an entry
+  from either list is the worse failure. #204's close-out reads two Stories hitting this as evidence the
+  150-line cap is wrong for a spec this size, not that the files are wrong to have it. Whether the fix
+  is the cap, the sub-budgets, or a lint that reads them is undecided. Recorded 2026-09-11, at #199's
+  close-out; surfaced at #201's G7 (2026-09-10) and #204's G7 (2026-09-11).
+
+- **`grill-frontier.md` is a second conductor-written file in every editorial change folder, against
+  `AGENTS.md` § *The conductor* — "it writes exactly one file, `grill.md`."** Each of the four
+  condensing Stories has the conductor index the surveys' *Rationale needing a home* and *Rules at
+  risk* entries into a `grill-frontier.md` beside `grill.md`, as the frontier the grill's rounds are
+  asked from. It carries no analysis of its own and sits under no ADR-1047 budget, since only
+  `grill.md` and the ordinary change-folder artifacts are named. It is not inert: `condense-commitment-spec`
+  (#204) traced a misattributed rule to its own frontier index, which had then propagated uncorrected
+  into `design.md` § Open Questions until a G7 finding caught it. Bless it as a second file the
+  conductor may write for a grill this size, or fold its index into `grill.md` itself. Recorded
+  2026-09-11, at #199's close-out; surfaced at #201's G7 (2026-09-10) and repeated at #208's close-out
+  (2026-09-11).
 
 ## Known gaps
 
@@ -438,7 +453,41 @@ Things that are built, or deliberately not built, in a state someone will trip o
   no G4: a chore, or whatever next touches `Digits`. `Digits.swift` arrives with #141 and is not on
   `main` yet.
 
+- **ADR-1031's stated reversal trigger, a fifth form or a form that differs by more than a field,
+  appears to have fired with no amendment recording it.** `RecordDocument.currentVersion` is `5`
+  (`RecordDocument.swift:15`), reached by `add-total-record` (#171, merged 2026-09-09), after the
+  2026-09-08 amendment restated the trigger at a fourth form. The ADR carries three amendments, the
+  latest 2026-09-10 for `condense-record-spec` (#205) deleting the requirement prose that argued one
+  of its rules; none addresses a fifth form arriving. The decision reads as unaffected on inspection
+  — five forms each differing from its predecessors by one field still read under the single
+  `1...currentVersion` comparison the decision describes — so this looks like a missing stamp rather
+  than a wrong decision, per ADR-1020's rule to amend a record in place when a trigger it named itself
+  fires. Surfaced at #205's G4, 2026-09-10, and left alone there as outside that Story's scope.
+
 ## Settled
+
+- 2026-09-11 — **specs and change folders are made concise through per-artifact and per-requirement
+  budgets, advisory only, and a dedicated editorial-Story lane.** `docs/research/2026-09-09-concise-specs.md`
+  measured the problem and ADR-1047 decided it: `openspec/config.yaml` states the budgets `spec-author`
+  writes to (60 lines for `proposal.md`, 150 for `design.md`, one line per scenario plus 80 for
+  `tasks.md`, 40–150 normative words per requirement), `pnpm run check:budgets` warns on an overrun and
+  never blocks, and `reviewer` enforces the same numbers at G7 on its standards axis. A capability spec
+  may be condensed with no behaviour change through an **editorial Story**: its delta carries every
+  requirement in full — as `## MODIFIED Requirements`, or as REMOVED plus ADDED where a requirement
+  cannot reach 150 words and splits — every scenario title is unchanged and no test changes, so rule
+  3's red-green loop is moot. The schema is not forked. Tracked at #199: a chore (PR #200) landed the
+  config, the four agent edits and the advisory lint, then four editorial Stories condensed one
+  capability spec each, every one of them with every scenario byte-identical to `main`:
+  `condense-day-screen-spec` (PR #203) took `day-screen`'s prose from 24,847 to 8,374 words over 399
+  scenarios; `condense-commitment-spec` (PR #207) took `commitment`'s from 26,522 to 11,414 over 406;
+  `condense-record-spec` (PR #206) took `record`'s from 9,244 to 3,287 over 170; `condense-schedule-spec`
+  (PR #209) took `schedule`'s from 3,448 to 1,960 over 78, the one Story with no requirement left over
+  budget. **Phase 3 — dropping the roughly 118 scenarios the plan found duplicated — is taken up at
+  #199's close-out**, one capability at a time, each as its own Story outside #199. It is not an
+  editorial Story: every drop deletes a passing test, which that lane forbids, and a scenario leaves a
+  requirement only through REMOVED plus ADDED under a new heading — MODIFIED with a scenario omitted,
+  REMOVED plus ADDED under the same heading, and RENAMED plus MODIFIED are each refused by
+  `openspec validate --strict` and by `openspec archive` on 1.10.0 (ADR-1047, amended 2026-09-11).
 
 - 2026-09-10 — **the two scenarios owed since #137's second review are written, and neither went
   red.** Open since `add-commitment-kind`'s second review, 2026-09-06, as *Two of #137's tests do
