@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-09-02
 - Deciders: Diego Bugmann
+- Amended: 2026-09-11 — a quota that could never be met is recorded here as the same failure as a
+  commitment that never comes due, and the all-seven-days cost as stated in this record, the spec
+  stating only the rule it follows from. `schedule`'s requirement prose carried both, and
+  `condense-schedule-spec` (#208) deletes it.
 
 ## Context
 
@@ -49,9 +53,9 @@ Three consequences are part of the decision rather than incidental to it:
   rejected below.
 - **A quota is one to seven.** Zero is a commitment with nothing to do and eight is a promise no
   week can keep, because a day holds at most one record of a commitment — `CONTEXT.md` **Record**,
-  agreed with the owner on 2026-09-02. Out-of-range numbers
-  are refused at construction, the stance `CalendarDate`, `DayOfMonth` and `DayInterval` already
-  take.
+  agreed with the owner on 2026-09-02. A quota that could never be met is the same failure as a
+  commitment that never comes due, which this product exists to remove. Out-of-range numbers are
+  refused at construction, the stance `CalendarDate`, `DayOfMonth` and `DayInterval` already take.
 
 This ADR takes effect when the Story that carries it merges. The repo owner's G4 signature on the
 change folder it belongs to is its acceptance; if G4 declines, this file goes with the branch rather
@@ -61,7 +65,9 @@ than being superseded.
 
 - **A consumer that draws every due commitment will show a three-times-a-week commitment on all
   seven days of its week** — correct for the first three, unhelpful for the last four. This is the
-  cost, it is stated in the spec rather than hidden, and it is the day screen's to fix with ticks.
+  cost, and it is stated here rather than hidden: the spec states the rule it follows from, that being
+  due means a day the commitment may be done on and never that it is still outstanding, and it is the
+  day screen's to fix with ticks.
 - **`schedule` is finished as a capability at four shapes**, and every commitment on the owner's
   day-one list can be expressed by one of them.
 - **A future "has this week been met?" belongs somewhere else** — a capability that can see ticks —

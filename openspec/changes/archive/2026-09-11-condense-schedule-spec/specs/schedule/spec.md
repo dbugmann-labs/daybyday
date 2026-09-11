@@ -1,12 +1,4 @@
-# schedule Specification
-
-## Purpose
-Describes how DayByDay decides whether a commitment is due on a given day. It is the contract
-every screen and every stored tick rests on: the day list asks this question of each commitment
-before it draws a row, and it asks it of a date rather than of the present moment, so that a day
-in the past answers the same way today as it did when it was today.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: A weekday-set schedule is due on the weekdays it lists
 
