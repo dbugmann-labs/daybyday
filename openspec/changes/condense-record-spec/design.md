@@ -79,14 +79,14 @@ requirements; the added halves land at the end of the spec file, which nothing r
 
 ### Overruns the budget
 
-Measured on the delta, six requirements are over 150 prose words — rule 1, every *Rules at risk*
-sentence present as its own SHALL/MUST, outranks the word cap and ADR-1047's consequence allows it.
-`survey-record.md` § 5's prose was right to list requirement 15 here; its own table row's ~140 was not.
+Measured, eight requirements are over 150 prose words: rule 1 outranks the cap, as ADR-1047 allows.
 
 - *A history answers whether a commitment was kept on a day from the ticks it holds* — 304; four record kinds' keeping rules, the total-and-target rules, the comparison direction and the isolation rules, across 20 scenarios.
 - *A store that cannot be read is refused rather than emptied* — 282; the refusal contract, the enumerated list of what cannot be a record, and the per-addition re-forming rule with its `day-screen` exclusion.
 - *A history answers what a commitment has added on a day from the additions it holds* — 219; nine distinct rules, from order and accumulate-not-replace through zero-is-a-true-answer to sum-not-the-list.
 - *A number is of a number commitment on a calendar date it is due on* — 208; two refusal families, the four range rules, the not-a-number rule and the three-part identity, each separately tested.
+- *A note is of a note commitment on a calendar date it is due on* — 171; the two refusal families, the blank-space test with both prohibitions against accepting or substituting, and the kept-exactly-as-given rule.
+- *An addition is of a total commitment on a calendar date it is due on* — 168; the three-part shape with its carries-nothing-else closure, the refusals of zero, of below zero and of a non-number with their two prohibitions, and the no-ceiling exclusion.
 - *A store persists each kind of record as exactly what it is* — 167; the fidelity half of the requirement-5 split: four persistence shapes, three fidelity standards, four prohibitions, addition order.
 - *The last addition a day holds can be taken back* — 167; eleven rules, including the three take-back prohibitions and "as though it had never been made" with its three consequences, each now its own SHALL.
 
@@ -99,7 +99,9 @@ sentence present as its own SHALL/MUST, outranks the word cap and ADR-1047's con
 - **Two surveys disagree about requirement 5 and about the file's line numbers.** The older one was
   written against a 2,076-line file and one requirement has gained a sentence since. → The
   2026-09-10 survey supersedes it wherever they overlap, and every box in `tasks.md` names which
-  survey it reads.
+  survey it reads. Where that survey disagrees with itself, its § 5 prose was right to list
+  requirement 15 among the over-budget requirements and its table row's ~140-word estimate was
+  wrong: the rewritten requirement measures 167.
 - **A split turns one heading into four blocks**, so a rule the old prose stated once can be dropped
   twice, each half taking it for the other's. → The scenario allocation is fixed above and in
   `grill.md`, and box 2.1 and box 2.5 name what each split must still carry.

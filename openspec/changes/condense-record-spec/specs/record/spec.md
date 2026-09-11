@@ -704,9 +704,17 @@ date.
 
 ### Requirement: A note is of a note commitment on a calendar date it is due on
 
-A note SHALL be a commitment, a calendar date and one text, and nothing else; the system SHALL refuse to form one for a commitment on a calendar date it is not due on, and for a commitment whose kind is not a note on any date, whatever that day holds; it MUST refuse rather than adjust or substitute.
+A note SHALL be a commitment, a calendar date and one text, and nothing else; the system SHALL
+refuse to form one for a commitment on a calendar date it is not due on, and for a commitment whose
+kind is not a note on any date, whatever that day holds; it MUST refuse rather than adjust or
+substitute.
 
-A text empty or made only of blank space SHALL be refused. Blank space SHALL mean whitespace judged by the test a commitment name is judged by, and a character that test does not call whitespace SHALL NOT be blank space here. Every other text SHALL be a note, of any length and any script, and MAY hold a line break. It SHALL be kept exactly as given, blank space at its start or end included. Two notes SHALL be the same exactly when their commitment, date and text all are.
+A text empty or made only of blank space SHALL be refused; the system MUST NOT accept such a text
+and keep no note, and MUST NOT substitute a placeholder of its own. Blank space SHALL mean
+whitespace judged by the test a commitment name is judged by, and a character that test does not
+call whitespace SHALL NOT be blank space here. Every other text SHALL be a note, of any length and
+any script, and MAY hold a line break. It SHALL be kept exactly as given, blank space at its start
+or end included. Two notes SHALL be the same exactly when their commitment, date and text all are.
 
 #### Scenario: a note is recorded for a note commitment on a date it is due on
 
@@ -788,9 +796,16 @@ A text empty or made only of blank space SHALL be refused. Blank space SHALL mea
 
 ### Requirement: A history answers what note a commitment has on a day from the notes it holds
 
-A history SHALL hold notes beside the ticks and numbers it holds, and SHALL answer what note a commitment has on a calendar date: the note it holds for it on that date, character for character, and no note where it holds none. The answer SHALL depend on the commitment and the date alone: no commitment's note SHALL be read as another's, nor one date's as another's. A commitment whose kind is not a note, or a date it is not due on, SHALL be answered no note rather than refused.
+A history SHALL hold notes beside the ticks and numbers it holds, and SHALL answer what note a
+commitment has on a calendar date: the note it holds for it on that date, character for character,
+and no note where it holds none. The answer SHALL depend on the commitment and the date alone: no
+commitment's note SHALL be read as another's, nor one date's as another's. A commitment whose kind
+is not a note, or a date it is not due on, SHALL be answered no note rather than refused.
 
-A commitment's day SHALL hold at most one note, a later one replacing it and leaving the same history as one it alone was added to. A text the system refuses SHALL leave the history exactly as it was. Two histories holding the same ticks, numbers and notes SHALL be the same history, whatever their order of arrival.
+A commitment's day SHALL hold at most one note, a later one replacing it and leaving the same
+history as one it alone was added to. A text the system refuses SHALL leave the history exactly as
+it was. Two histories holding the same ticks, numbers and notes SHALL be the same history, whatever
+their order of arrival.
 
 #### Scenario: a history that has taken no note has no note for a commitment on a day
 
@@ -877,9 +892,16 @@ A commitment's day SHALL hold at most one note, a later one replacing it and lea
 
 ### Requirement: A note can be taken back
 
-A history SHALL let the note it holds for a commitment on a calendar date be taken back, named by that commitment and that date rather than by the text.
+A history SHALL let the note it holds for a commitment on a calendar date be taken back, named by
+that commitment and that date rather than by the text.
 
-Taking a note back SHALL leave the history as though that note had never been added: the day SHALL hold no note, the commitment SHALL be not kept on that date, and every other note, tick and number SHALL stand exactly as it did, on other days and for other commitments. Nothing of a note taken back SHALL be kept, and a history given a note and then taken back SHALL be the same history as one never given one. Taking back where the history holds no such note SHALL leave it unchanged rather than being refused, whether the day was never written on, the commitment's kind is not a note, or it is not due on that date.
+Taking a note back SHALL leave the history as though that note had never been added: the day SHALL
+hold no note, the commitment SHALL be not kept on that date, and every other note, tick and number
+SHALL stand exactly as it did, on other days and for other commitments. Nothing of a note taken back
+SHALL be kept, and a history given a note and then taken back SHALL be the same history as one never
+given one. Taking back where the history holds no such note SHALL leave it unchanged rather than
+being refused, whether the day was never written on, the commitment's kind is not a note, or it is
+not due on that date.
 
 #### Scenario: a note taken back leaves the day holding no note and the commitment not kept on it
 
@@ -926,9 +948,17 @@ Taking a note back SHALL leave the history as though that note had never been ad
 
 ### Requirement: An addition is of a total commitment on a calendar date it is due on
 
-An addition SHALL be a commitment, a calendar date and one decimal number, with no position of its own among its day's additions. The system SHALL refuse an addition for a commitment on a date it is not due on, or whose kind is not a total, and MUST refuse rather than adjust.
+An addition SHALL be a commitment, a calendar date and one decimal number, and SHALL carry nothing
+else: no unit, no time of day, no time zone, no note beside it, and no position of its own among its
+day's additions. The system SHALL refuse an addition for a commitment on a date it is not due on, or
+whose kind is not a total, and MUST refuse rather than adjust.
 
-It SHALL refuse zero, every amount below zero, and any value that is not a number; it MUST NOT accept such an amount and add nothing, and MUST NOT substitute an amount of its own. Every other amount SHALL be an addition, kept exactly as given, no digit added or dropped. This capability SHALL set no ceiling: what a day's additions may sum to is decided where a person makes one. Two additions SHALL be the same exactly when their commitment, date and amount all are, which SHALL NOT make a day given two alike hold one.
+It SHALL refuse zero, every amount below zero, and any value that is not a number; it MUST NOT
+accept such an amount and add nothing, and MUST NOT substitute an amount of its own. Every other
+amount SHALL be an addition, kept exactly as given, no digit added or dropped. This capability SHALL
+set no ceiling: what a day's additions may sum to is decided where a person makes one. Two additions
+SHALL be the same exactly when their commitment, date and amount all are, which SHALL NOT make a day
+given two alike hold one.
 
 #### Scenario: an addition is recorded for a total commitment on a date it is due on
 
@@ -999,9 +1029,20 @@ It SHALL refuse zero, every amount below zero, and any value that is not a numbe
 
 ### Requirement: A history answers what a commitment has added on a day from the additions it holds
 
-A history SHALL hold additions beside the ticks, numbers and notes it holds, and SHALL answer what a commitment has added on a calendar date: the sum of those it holds for it on that date. A day SHALL hold every addition made on it, in the order they were made, and a second alike in every way to one already there SHALL be held beside it rather than replacing it. A history SHALL give out the sum and SHALL NOT give out the additions themselves.
+A history SHALL hold additions beside the ticks, numbers and notes it holds, and SHALL answer what a
+commitment has added on a calendar date: the sum of those it holds for it on that date. A day SHALL
+hold every addition made on it, in the order they were made, and a second alike in every way to one
+already there SHALL be held beside it rather than replacing it. A history SHALL give out the sum and
+SHALL NOT give out the additions themselves.
 
-The sum SHALL be zero where the day holds no addition and never nothing, so a history that has taken no addition SHALL answer zero, and so SHALL one asked about a commitment whose kind is not a total, or about a date it is not due on. Every addition is above zero, so a sum above zero SHALL mean the day holds at least one and a sum of zero that it holds none. The answer SHALL depend on the commitment and the date alone. An amount the system refuses SHALL leave the history exactly as it was. Two histories holding the same ticks, numbers, notes and additions in the same order on every day SHALL be the same history, and two holding one day's additions in different orders SHALL be different.
+The sum SHALL be zero where the day holds no addition and never nothing, so a history that has taken
+no addition SHALL answer zero, and so SHALL one asked about a commitment whose kind is not a total,
+or about a date it is not due on. Every addition is above zero, so a sum above zero SHALL mean the
+day holds at least one and a sum of zero that it holds none. The answer SHALL depend on the
+commitment and the date alone. An amount the system refuses SHALL leave the history exactly as it
+was. Two histories holding the same ticks, numbers, notes and additions in the same order on every
+day SHALL be the same history, and two holding one day's additions in different orders SHALL be
+different.
 
 #### Scenario: a history that has taken no addition answers a total of zero for a commitment on a day
 
@@ -1098,9 +1139,17 @@ The sum SHALL be zero where the day holds no addition and never nothing, so a hi
 
 ### Requirement: The last addition a day holds can be taken back
 
-A history SHALL let the last addition of a commitment on a calendar date be taken back, named by that commitment and date. Only the last SHALL go, and no other SHALL go except by taking back the ones after it, one at a time. The system MUST NOT offer taking an addition back by its amount, and MUST NOT offer clearing a day's additions in one act.
+A history SHALL let the last addition of a commitment on a calendar date be taken back, named by
+that commitment and date. Only the last SHALL go, and no other SHALL go except by taking back the
+ones after it, one at a time. The system MUST NOT offer taking an addition back by its amount, and
+MUST NOT offer clearing a day's additions in one act.
 
-Taking it back SHALL leave the history as though that addition had never been made, keeping nothing of it: the additions before it SHALL stand in order, the sum SHALL be short by exactly the amount that went, and every other record SHALL stand exactly as it did; a history taken back to none SHALL be the same as one never given any. Taking back where it holds no such addition SHALL leave it unchanged rather than being refused, whether the day holds none, the commitment's kind is not a total, or it is not due on that date.
+Taking it back SHALL leave the history as though that addition had never been made, keeping nothing
+of it: the additions before it SHALL stand in order, the sum SHALL be short by exactly the amount
+that went, and every other record SHALL stand exactly as it did; a history taken back to none SHALL
+be the same as one never given any. Taking back where it holds no such addition SHALL leave it
+unchanged rather than being refused, whether the day holds none, the commitment's kind is not a
+total, or it is not due on that date.
 
 #### Scenario: the last addition taken back leaves the day short by exactly that amount
 
@@ -1169,9 +1218,16 @@ Taking it back SHALL leave the history as though that addition had never been ma
 
 ### Requirement: A history carries every record of one commitment over to another
 
-A history SHALL carry over every record it holds of one commitment to another: each SHALL afterwards be a record of the second, on the date it was made for, the first SHALL hold none, and the history SHALL report that it carried them. A number SHALL be carried digit for digit, a note character for character, a day's additions in their order.
+A history SHALL carry over every record it holds of one commitment to another: each SHALL afterwards
+be a record of the second, on the date it was made for, the first SHALL hold none, and the history
+SHALL report that it carried them. A number SHALL be carried digit for digit, a note character for
+character, a day's additions in their order.
 
-It SHALL carry all of them or none: where any record of the first could not be one of the second, or it already holds one of the second on any date, it SHALL refuse, report that it carried nothing, and be left exactly as it was. A history holding no record of the first, or asked to carry a commitment's records over to itself, SHALL change nothing and SHALL NOT refuse. It SHALL judge no date except by asking the second commitment whether it is due.
+It SHALL carry all of them or none: where any record of the first could not be one of the second, or
+it already holds one of the second on any date, it SHALL refuse, report that it carried nothing, and
+be left exactly as it was. A history holding no record of the first, or asked to carry a
+commitment's records over to itself, SHALL change nothing and SHALL NOT refuse. It SHALL judge no
+date except by asking the second commitment whether it is due.
 
 #### Scenario: every record of a commitment is carried over to another, on the dates each was made for
 
@@ -1239,9 +1295,16 @@ It SHALL carry all of them or none: where any record of the first could not be o
 
 ### Requirement: A store carries every record of one commitment over to another, at its place
 
-A store SHALL carry every record of one commitment over to another, and SHALL keep that at its place before it reports it carried, so a store opened at that place afterwards SHALL hold them under the second commitment and none under the first.
+A store SHALL carry every record of one commitment over to another, and SHALL keep that at its place
+before it reports it carried, so a store opened at that place afterwards SHALL hold them under the
+second commitment and none under the first.
 
-A store SHALL report exactly what its history reports, and MUST NOT turn the history's refusal into an error. A carry-over the history refused SHALL keep nothing at the place, and so SHALL one the history had nothing to carry for. A store that could not write SHALL refuse, SHALL leave its history exactly as it was, and SHALL say so as for every other change it could not keep. The form on disk SHALL NOT move for a carry-over: it writes different commitment values into records already kept in that shape, and adds no key, no field and no version to what a record is.
+A store SHALL report exactly what its history reports, and MUST NOT turn the history's refusal into
+an error. A carry-over the history refused SHALL keep nothing at the place, and so SHALL one the
+history had nothing to carry for. A store that could not write SHALL refuse, SHALL leave its history
+exactly as it was, and SHALL say so as for every other change it could not keep. The form on disk
+SHALL NOT move for a carry-over: it writes different commitment values into records already kept in
+that shape, and adds no key, no field and no version to what a record is.
 
 #### Scenario: records carried over through a store are read back under the other commitment by a store opened afterwards
 
