@@ -1,7 +1,7 @@
 /// A note recorded for a note commitment on a calendar date it is due on. See
 /// `openspec/specs/record/spec.md` § *A note is of a note commitment on a calendar date it is due
-/// on* for the behaviour contract and this change's `design.md` for why the seam is shaped this
-/// way.
+/// on, and holds one text* for the behaviour contract and this change's `design.md` for why the
+/// seam is shaped this way.
 public struct Note: Hashable, Sendable {
     let commitment: Commitment
     let date: CalendarDate

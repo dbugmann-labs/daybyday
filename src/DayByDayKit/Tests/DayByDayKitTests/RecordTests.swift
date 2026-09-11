@@ -2,18 +2,6 @@ import Foundation
 import Testing
 import DayByDayKit
 
-@Test("a tick is formed for a commitment on a date it is due on")
-func aTickIsFormedForACommitmentOnADateItIsDueOn() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-
-    let tick = Tick(commitment, on: monday)
-
-    #expect(tick != nil)
-}
-
 @Test("a commitment takes no tick on a date it is not due on")
 func aCommitmentTakesNoTickOnADateItIsNotDueOn() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -153,35 +141,6 @@ func anEmptyHistoryHasKeptNothing() {
     #expect(!history.isKept(commitment, on: monday))
 }
 
-@Test("a commitment ticked on a date was kept on that date")
-func aCommitmentTickedOnADateWasKeptOnThatDate() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let tick = Tick(commitment, on: monday)!
-
-    var history = History()
-    history.add(tick)
-
-    #expect(history.isKept(commitment, on: monday))
-}
-
-@Test("a commitment ticked on one date was not kept on another date it is due on")
-func aCommitmentTickedOnOneDateWasNotKeptOnAnotherDateItIsDueOn() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
-    let tick = Tick(commitment, on: monday)!
-
-    var history = History()
-    history.add(tick)
-
-    #expect(!history.isKept(commitment, on: wednesday))
-}
-
 @Test("a tick of one commitment does not keep another on the same date")
 func aTickOfOneCommitmentDoesNotKeepAnotherOnTheSameDate() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -196,21 +155,6 @@ func aTickOfOneCommitmentDoesNotKeepAnotherOnTheSameDate() {
 
     #expect(!history.isKept(run, on: monday))
     #expect(history.isKept(gym, on: monday))
-}
-
-@Test("a commitment was not kept on a date it is not due on")
-func aCommitmentWasNotKeptOnADateItIsNotDueOn() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
-    let tick = Tick(commitment, on: monday)!
-
-    var history = History()
-    history.add(tick)
-
-    #expect(!history.isKept(commitment, on: tuesday))
 }
 
 @Test("a history answers each date on its own across a week")
@@ -277,21 +221,6 @@ func twoHistoriesHoldingTheSameTicksAreTheSameHistory() {
     second.add(onMonday)
 
     #expect(first == second)
-}
-
-@Test("a tick taken back leaves the commitment not kept on that date")
-func aTickTakenBackLeavesTheCommitmentNotKeptOnThatDate() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let tick = Tick(commitment, on: monday)!
-
-    var history = History()
-    history.add(tick)
-    history.remove(tick)
-
-    #expect(!history.isKept(commitment, on: monday))
 }
 
 @Test("taking back a tick leaves the same commitment's ticks on other dates standing")
@@ -605,22 +534,6 @@ func aHistoryThatHasTakenNoNumberHasNoNumberForACommitmentOnADay() {
     #expect(history.number(for: commitment, on: monday) == nil)
 }
 
-@Test("a number added to a history is the number that commitment has on that day")
-func aNumberAddedToAHistoryIsTheNumberThatCommitmentHasOnThatDay() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let range = Commitment.Range(lowest: 40, highest: 150)!
-    let commitment = Commitment(
-        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
-    let number = Number(70.5, for: commitment, on: monday)!
-
-    var history = History()
-    history.add(number)
-
-    #expect(history.number(for: commitment, on: monday) == 70.5)
-}
-
 @Test("a number of one commitment is not the number of another on the same date")
 func aNumberOfOneCommitmentIsNotTheNumberOfAnotherOnTheSameDate() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -708,19 +621,19 @@ func twoHistoriesHoldingTheSameNumbersAreTheSameHistory() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
     let range = Commitment.Range(lowest: 40, highest: 150)!
     let commitment = Commitment(
         name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
     let onMonday = Number(70.5, for: commitment, on: monday)!
-    let onSaturday = Number(71, for: commitment, on: saturday)!
+    let onWednesday = Number(71, for: commitment, on: wednesday)!
 
     var first = History()
     first.add(onMonday)
-    first.add(onSaturday)
+    first.add(onWednesday)
 
     var second = History()
-    second.add(onSaturday)
+    second.add(onWednesday)
     second.add(onMonday)
 
     #expect(first == second)
@@ -869,21 +782,6 @@ func aHistoryGivenANumberAndThenTakenBackIsTheSameAsOneNeverGivenOne() {
     #expect(history == History())
 }
 
-@Test("a number commitment with a number recorded on a date was kept on that date")
-func aNumberCommitmentWithANumberRecordedOnADateWasKeptOnThatDate() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let range = Commitment.Range(lowest: 40, highest: 150)!
-    let commitment = Commitment(
-        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
-
-    var history = History()
-    history.add(Number(70.5, for: commitment, on: monday)!)
-
-    #expect(history.isKept(commitment, on: monday))
-}
-
 @Test("a number commitment due on a date with no number recorded was not kept on it")
 func aNumberCommitmentDueOnADateWithNoNumberRecordedWasNotKeptOnIt() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -968,18 +866,6 @@ func aNumberCommitmentWithANumberOnADateStillTakesNoTickOnIt() {
 
     #expect(Tick(commitment, on: monday) == nil)
     #expect(history.number(for: commitment, on: monday) == 70.5)
-}
-
-@Test("a note is recorded for a note commitment on a date it is due on")
-func aNoteIsRecordedForANoteCommitmentOnADateItIsDueOn() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-
-    let note = Note("Ran 8k before work. Knee held up.", for: commitment, on: monday)
-
-    #expect(note != nil)
 }
 
 @Test("a note commitment takes no note on a date it is not due on")
@@ -1143,21 +1029,6 @@ func aHistoryThatHasTakenNoNoteHasNoNoteForACommitmentOnADay() {
     #expect(history.note(for: commitment, on: monday) == nil)
 }
 
-@Test("a note added to a history is the note that commitment has on that day")
-func aNoteAddedToAHistoryIsTheNoteThatCommitmentHasOnThatDay() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
-    let text = "Ran 8k before work. Knee held up."
-    let note = Note(text, for: commitment, on: monday)!
-
-    var history = History()
-    history.add(note)
-
-    #expect(history.note(for: commitment, on: monday) == text)
-}
-
 @Test("a note on one date is not the note on another date the same commitment is due on")
 func aNoteOnOneDateIsNotTheNoteOnAnotherDateTheSameCommitmentIsDueOn() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -1257,17 +1128,17 @@ func twoHistoriesHoldingTheSameNotesAreTheSameHistory() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
     let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
     let onMonday = Note("Ran 8k.", for: commitment, on: monday)!
-    let onSaturday = Note("Rested.", for: commitment, on: saturday)!
+    let onWednesday = Note("Rested.", for: commitment, on: wednesday)!
 
     var first = History()
     first.add(onMonday)
-    first.add(onSaturday)
+    first.add(onWednesday)
 
     var second = History()
-    second.add(onSaturday)
+    second.add(onWednesday)
     second.add(onMonday)
 
     #expect(first == second)
@@ -1408,19 +1279,6 @@ func aNoteCommitmentWithANoteOnADateStillTakesNoTickOnIt() {
     #expect(history.note(for: commitment, on: monday) == "Ran 8k.")
 }
 
-@Test("a note commitment with a note recorded on a date was kept on that date")
-func aNoteCommitmentWithANoteRecordedOnADateWasKeptOnThatDate() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
-
-    var history = History()
-    history.add(Note("Ran 8k before work. Knee held up.", for: commitment, on: monday)!)
-
-    #expect(history.isKept(commitment, on: monday))
-}
-
 @Test("a note commitment due on a date with no note recorded was not kept on it")
 func aNoteCommitmentDueOnADateWithNoNoteRecordedWasNotKeptOnIt() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -1474,18 +1332,6 @@ func aNoteCommitmentWithANoteOnADateStillTakesNoNumberOnIt() {
 
     #expect(Number(70.5, for: commitment, on: monday) == nil)
     #expect(history.note(for: commitment, on: monday) == "Ran 8k.")
-}
-
-@Test("an addition is recorded for a total commitment on a date it is due on")
-func anAdditionIsRecordedForATotalCommitmentOnADateItIsDueOn() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let target = Commitment.Target(120)!
-    let protein = Commitment(
-        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
-
-    #expect(Addition(30, for: protein, on: monday) != nil)
 }
 
 @Test("a total commitment takes no addition on a date it is not due on")
@@ -1632,20 +1478,6 @@ func aHistoryThatHasTakenNoAdditionAnswersATotalOfZeroForACommitmentOnADay() {
     let history = History()
 
     #expect(history.total(for: protein, on: monday) == 0)
-}
-
-@Test("an addition added to a history is the total that commitment has on that day")
-func anAdditionAddedToAHistoryIsTheTotalThatCommitmentHasOnThatDay() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let protein = Commitment(
-        name: "Protein", schedule: schedule, keptFrom: keptFrom,
-        kind: .total(target: Commitment.Target(120)!))!
-    var history = History()
-    history.add(Addition(30, for: protein, on: monday)!)
-
-    #expect(history.total(for: protein, on: monday) == 30)
 }
 
 @Test("additions made on one day accumulate rather than replace one another")

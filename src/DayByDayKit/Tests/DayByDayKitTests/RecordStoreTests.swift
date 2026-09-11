@@ -20,40 +20,6 @@ func aStoreOpenedWhereNothingHasBeenKeptHoldsAnEmptyHistory() throws {
     #expect(store.history == History())
 }
 
-@Test("a tick added to a store is held by a second store opened at the same place while the first is still open")
-func aTickAddedToAStoreIsHeldByASecondStoreOpenedAtTheSamePlaceWhileTheFirstIsStillOpen() throws {
-    let place = freshPlace()
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let tick = Tick(commitment, on: monday)!
-
-    let first = try RecordStore(at: place)
-    try first.add(tick)
-    let second = try RecordStore(at: place)
-
-    #expect(second.history.isKept(commitment, on: monday))
-}
-
-@Test("a tick taken back is not held by a store opened afterwards at the same place")
-func aTickTakenBackIsNotHeldByAStoreOpenedAfterwardsAtTheSamePlace() throws {
-    let place = freshPlace()
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let tick = Tick(commitment, on: monday)!
-
-    let first = try RecordStore(at: place)
-    try first.add(tick)
-    try first.remove(tick)
-    let later = try RecordStore(at: place)
-
-    #expect(!later.history.isKept(commitment, on: monday))
-    #expect(later.history == History())
-}
-
 @Test("a store opened again holds exactly the ticks added and not taken back")
 func aStoreOpenedAgainHoldsExactlyTheTicksAddedAndNotTakenBack() throws {
     let place = freshPlace()
@@ -388,26 +354,6 @@ func aNumberAddedToAStoreIsHeldByASecondStoreOpenedAtTheSamePlaceWhileTheFirstIs
     #expect(second.history.isKept(commitment, on: monday))
 }
 
-@Test("a number taken back is not held by a store opened afterwards at the same place")
-func aNumberTakenBackIsNotHeldByAStoreOpenedAfterwardsAtTheSamePlace() throws {
-    let place = freshPlace()
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let range = Commitment.Range(lowest: 40, highest: 150)!
-    let commitment = Commitment(
-        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let number = Number(70.5, for: commitment, on: monday)!
-
-    let first = try RecordStore(at: place)
-    try first.add(number)
-    try first.removeNumber(for: commitment, on: monday)
-    let later = try RecordStore(at: place)
-
-    #expect(later.history.number(for: commitment, on: monday) == nil)
-    #expect(later.history == History())
-}
-
 @Test("a number entered again is kept once by a store opened afterwards, as the later number")
 func aNumberEnteredAgainIsKeptOnceByAStoreOpenedAfterwardsAsTheLaterNumber() throws {
     let place = freshPlace()
@@ -616,7 +562,7 @@ func aStoreWhoseShapeAndDeclaredFormDisagreeAboutNumbersIsRefused() throws {
     let currentFormWithoutNumbersBytes = Data(
         """
         {
-          "version": 4,
+          "version": 5,
           "ticks": [],
           "notes": [
             {
@@ -629,7 +575,8 @@ func aStoreWhoseShapeAndDeclaredFormDisagreeAboutNumbersIsRefused() throws {
               "date": { "year": 2026, "month": 8, "day": 31 },
               "text": "Ran 8k."
             }
-          ]
+          ],
+          "additions": []
         }
         """.utf8)
     try currentFormWithoutNumbersBytes.write(to: currentFormWithoutNumbersPlace)
@@ -845,32 +792,14 @@ func aNoteAddedToAStoreIsHeldByASecondStoreOpenedAtTheSamePlaceWhileTheFirstIsSt
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let note = Note("Ran 8k.", for: commitment, on: monday)!
+    let note = Note("Ran 8k before work. Knee held up.", for: commitment, on: monday)!
 
     let first = try RecordStore(at: place)
     try first.add(note)
     let second = try RecordStore(at: place)
 
-    #expect(second.history.note(for: commitment, on: monday) == "Ran 8k.")
+    #expect(second.history.note(for: commitment, on: monday) == "Ran 8k before work. Knee held up.")
     #expect(second.history.isKept(commitment, on: monday))
-}
-
-@Test("a note taken back is not held by a store opened afterwards at the same place")
-func aNoteTakenBackIsNotHeldByAStoreOpenedAfterwardsAtTheSamePlace() throws {
-    let place = freshPlace()
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let note = Note("Ran 8k.", for: commitment, on: monday)!
-
-    let first = try RecordStore(at: place)
-    try first.add(note)
-    try first.removeNote(for: commitment, on: monday)
-    let later = try RecordStore(at: place)
-
-    #expect(later.history.note(for: commitment, on: monday) == nil)
-    #expect(later.history == History())
 }
 
 @Test("a note written again is kept once by a store opened afterwards, as the later note")
@@ -1233,7 +1162,7 @@ func aStoreWhoseShapeAndDeclaredFormDisagreeAboutNotesIsRefused() throws {
         at: currentFormWithoutNotesPlace.deletingLastPathComponent(),
         withIntermediateDirectories: true)
     let currentFormWithoutNotesBytes = Data(
-        #"{"version": 4, "ticks": [], "numbers": []}"#.utf8)
+        #"{"version": 5, "ticks": [], "numbers": [], "additions": []}"#.utf8)
     try currentFormWithoutNotesBytes.write(to: currentFormWithoutNotesPlace)
 
     let earlyFormNeitherPlace = freshPlace()
@@ -1291,19 +1220,25 @@ func aDaysAdditionsAreReadBackInTheOrderTheyWereMade() throws {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let store = try RecordStore(at: place)
-    try store.add(Addition(45, for: protein, on: monday)!)
     try store.add(Addition(30, for: protein, on: monday)!)
+    try store.add(Addition(45, for: protein, on: monday)!)
+    try store.add(Addition(50, for: protein, on: monday)!)
 
     let later = try RecordStore(at: place)
 
-    #expect(later.history.total(for: protein, on: monday) == 75)
+    var expected = History()
+    expected.add(Addition(30, for: protein, on: monday)!)
+    expected.add(Addition(45, for: protein, on: monday)!)
+    expected.add(Addition(50, for: protein, on: monday)!)
+    #expect(later.history == expected)
+    #expect(later.history.total(for: protein, on: monday) == 125)
 
     try later.removeLastAddition(for: protein, on: monday)
 
-    #expect(later.history.total(for: protein, on: monday) == 45)
+    #expect(later.history.total(for: protein, on: monday) == 75)
 
     let evenLater = try RecordStore(at: place)
-    #expect(evenLater.history.total(for: protein, on: monday) == 45)
+    #expect(evenLater.history.total(for: protein, on: monday) == 75)
 }
 
 @Test("a day's last addition taken back is not held by a store opened afterwards at the same place")
@@ -1318,11 +1253,18 @@ func aDaysLastAdditionTakenBackIsNotHeldByAStoreOpenedAfterwardsAtTheSamePlace()
 
     let first = try RecordStore(at: place)
     try first.add(Addition(30, for: protein, on: monday)!)
+    try first.add(Addition(90, for: protein, on: monday)!)
     try first.removeLastAddition(for: protein, on: monday)
     let later = try RecordStore(at: place)
 
-    #expect(later.history.total(for: protein, on: monday) == 0)
-    #expect(later.history == History())
+    #expect(later.history.total(for: protein, on: monday) == 30)
+    var expected = History()
+    expected.add(Addition(30, for: protein, on: monday)!)
+    #expect(later.history == expected)
+
+    try later.removeLastAddition(for: protein, on: monday)
+    let evenLater = try RecordStore(at: place)
+    #expect(evenLater.history == History())
 }
 
 @Test("two additions alike in every way on one day are both read back")

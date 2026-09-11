@@ -2,8 +2,8 @@ import Foundation
 
 /// An addition recorded for a total commitment on a calendar date it is due on. See
 /// `openspec/specs/record/spec.md` § *An addition is of a total commitment on a calendar date it
-/// is due on* for the behaviour contract and this change's `design.md` for why the seam is
-/// shaped this way.
+/// is due on, and holds one amount* for the behaviour contract and this change's `design.md` for
+/// why the seam is shaped this way.
 public struct Addition: Hashable, Sendable {
     let commitment: Commitment
     let date: CalendarDate

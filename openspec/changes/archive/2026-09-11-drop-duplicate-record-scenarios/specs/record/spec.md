@@ -1,417 +1,4 @@
-# record Specification
-
-## Purpose
-
-Describes what a tick is to DayByDay — a commitment on a calendar date it was due on, and nothing
-more — and how a history of ticks answers whether a commitment was kept on a day. It is the record
-the product exists to keep: every screen that shows a day as done or not done reads it, and the store
-that makes it survive the app being closed persists exactly this shape and nothing it invented.
-
-## Requirements
-
-### Requirement: A store that cannot be read is refused rather than emptied
-
-Opening a store at a place holding something this app cannot read as a store SHALL be refused with
-an error. The store MUST NOT answer with an empty history, overwrite, move or delete what is there,
-or keep the part of it that could be read: the whole SHALL be refused and what is at that place left
-unchanged. What this app cannot read as a store SHALL include content that is not a store at all, a
-store written in a form later than the one this app knows, and a store holding something that could
-not be a record: a date that names no day, a commitment on a date it is not due on, a record against
-a commitment of another kind, a number outside the range its commitment declares, a note whose text
-says nothing, an addition of an amount that is not above zero, or a day carrying no addition at all.
-
-Every rule a record is formed by SHALL be applied again to what comes off the place, and this
-capability SHALL add no rule there and drop none: a note SHALL NOT be read back more leniently than
-it was written. Each addition SHALL be re-formed on its own, and no rule SHALL be applied across a
-day. A store holding a day whose additions sum to more than this system can keep exactly SHALL be
-read rather than refused, and that day SHALL answer whatever its additions come to. What a day's
-additions may sum to SHALL be judged in the `day-screen` capability and never in this one, and no
-rule of that kind SHALL be applied to what comes off the place.
-
-#### Scenario: content that is not a store is refused and left as it was
-
-- **WHEN** a store is opened at a place holding content that is not a store — a run of bytes that
-  is not what the store writes
-- **THEN** opening is refused with an error
-- **AND** the content at that place is byte-for-byte what it was before
-
-#### Scenario: a store written in a later form than this app knows is refused
-
-- **WHEN** a store is opened at a place holding a store written in a form one later than the form
-  this app writes, holding no ticks
-- **THEN** opening is refused with an error
-- **AND** the content at that place is byte-for-byte what it was before
-
-#### Scenario: a store holding what could not be a tick is refused
-
-- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one tick
-  is of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, on Tuesday 1 September 2026 — a date the commitment is not due on
-- **THEN** opening is refused with an error
-- **AND** a store at a place holding one tick on 30 February 2026, a date that names no day, is
-  refused the same way
-- **AND** the content at each place is byte-for-byte what it was before
-
-#### Scenario: a store holding a number its commitment would refuse is refused
-
-- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one number
-  is 300 for a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026 — a
-  number outside its commitment's range
-- **THEN** opening is refused with an error
-- **AND** a store at a place holding one number of 70.5 against a commitment alike in every way but
-  of the tick kind is refused the same way
-- **AND** a store at a place holding one number of 70.5 on Tuesday 1 September 2026, a date its
-  commitment is not due on, is refused the same way
-- **AND** the content at each place is byte-for-byte what it was before
-
-#### Scenario: a store holding a note that could not be a note is refused
-
-- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one note
-  holds a text of three spaces, for a commitment named "Journal" of the note kind, on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026 — a
-  text that says nothing
-- **THEN** opening is refused with an error
-- **AND** a store at a place holding one note holding "Ran 8k." against a commitment alike in every
-  way but of the tick kind is refused the same way
-- **AND** a store at a place holding one note holding "Ran 8k." on Tuesday 1 September 2026, a date
-  its commitment is not due on, is refused the same way
-- **AND** the content at each place is byte-for-byte what it was before
-
-#### Scenario: a store holding what could not be an addition is refused
-
-- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one day of
-  additions holds an amount of 0, for a commitment named "Protein" of the total kind with a target of
-  120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday
-  31 August 2026 — an amount that is not above zero
-- **THEN** opening is refused with an error
-- **AND** a store at a place holding a day of additions holding -30 is refused the same way
-- **AND** a store at a place holding one addition of 30 against a commitment alike in every way but
-  of the tick kind is refused the same way
-- **AND** a store at a place holding one addition of 30 on Tuesday 1 September 2026, a date its
-  commitment is not due on, is refused the same way
-- **AND** a store at a place holding a day carrying no addition at all is refused the same way
-- **AND** the content at each place is byte-for-byte what it was before
-
-#### Scenario: a store holding a day whose additions sum past what can be kept exactly is read rather than refused
-
-- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one day
-  holds an addition of a whole number of thirty-eight nines and then an addition of 0.5 — two amounts
-  each of which is an addition, and a day no person using this app could have made, because their
-  exact sum needs thirty-nine significant digits — for a commitment named "Protein" of the total kind
-  with a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
-  2026, on Monday 31 August 2026
-- **THEN** it opens without error
-- **AND** it answers that the commitment was kept on that date, its day's sum being far past 120
-- **AND** the content at that place is byte-for-byte what it was before
-
-### Requirement: A number is of a number commitment on a calendar date it is due on
-
-A number SHALL be exactly a commitment, a calendar date and one decimal number and nothing else: no
-unit, no time of day, no time zone, no note beside it, no order.
-
-The system SHALL refuse to form a number on a date its commitment is not due on, a date before its
-kept-from day and every date of a schedule due on none included, and for a commitment whose kind is
-not a number on any date, whether or not that day holds a note or additions; it MUST refuse rather
-than adjust or substitute. Where a commitment declares a range, a number below the lowest or above
-the highest SHALL be refused and one at either end or between SHALL be formed; a range is bounds
-only, and SHALL NOT require a whole number, fix a step or enumerate the values it allows. Where it
-declares none, every number SHALL be formed, negative, zero or very large alike. A value that is not
-a number SHALL be refused where the record is formed, range or no range. A number formed SHALL be
-the number given rather than one rounded or shortened. Two numbers SHALL be the same number exactly
-where commitment, date and number are alike.
-
-#### Scenario: a number is recorded for a number commitment on a date it is due on
-
-- **WHEN** 70.5 is offered for a commitment named "Weight" of the number kind with a range of 40 to
-  150, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday
-  31 August 2026
-- **THEN** a number is recorded
-- **AND** 70.5 is offered for a commitment alike in every way but of the number kind with no range,
-  on that same date, and a number is recorded
-
-#### Scenario: a number commitment takes no number on a date it is not due on
-
-- **WHEN** 70.5 is offered for a commitment named "Weight" of the number kind with no range, on a
-  schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Tuesday 1 September
-  2026
-- **THEN** no number is recorded
-- **AND** no number is recorded for the same commitment kept from Wednesday 2 September 2026 on
-  Monday 31 August 2026, a date its schedule is due on but its kept-from day is not reached by
-- **AND** no number is recorded for a commitment alike in every way but on a schedule listing no
-  weekday at all, on any date from Monday 31 August through Sunday 6 September 2026
-
-#### Scenario: a commitment whose kind is not a number takes no number on a date it is due on
-
-- **WHEN** 70.5 is offered for a commitment named "Gym" of the tick kind, on a schedule listing
-  Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026 — a date it is
-  due on
-- **THEN** no number is recorded
-- **AND** no number is recorded for a commitment alike in every way but of the note kind, nor for one
-  of the total kind with a target of 120
-- **AND** a number is recorded for a commitment alike in every way but of the number kind with no
-  range
-
-#### Scenario: a number outside the commitment's range is not recorded
-
-- **WHEN** 300 is offered for a commitment named "Weight" of the number kind with a range of 40 to
-  150, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday
-  31 August 2026
-- **THEN** no number is recorded
-- **AND** no number is recorded for 39.9 on that same commitment and date
-- **AND** a number is recorded for 70.5 on that same commitment and date
-
-#### Scenario: a number at either end of the commitment's range is recorded
-
-- **WHEN** 40 is offered for a commitment named "Weight" of the number kind with a range of 40 to
-  150, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday
-  31 August 2026
-- **THEN** a number is recorded
-- **AND** a number is recorded for 150 on that same commitment and date
-- **AND** a number is recorded for 100 on a commitment alike in every way but with a range of 100 to
-  100, which takes exactly one value
-
-#### Scenario: a number between two whole numbers is recorded on a range of whole numbers
-
-- **WHEN** 5.5 is offered for a commitment named "Mood" of the number kind with a range of 1 to 10,
-  on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August
-  2026
-- **THEN** a number is recorded, and it is 5.5 rather than 5 or 6
-
-#### Scenario: a number commitment with no range takes any number
-
-- **WHEN** each of -12.75, 0, 0.000001 and 98765432109876543210.5 is offered for a commitment named
-  "Weight" of the number kind with no range, on a schedule listing Monday, Wednesday and Saturday,
-  kept from 1 January 2026, on Monday 31 August 2026
-- **THEN** a number is recorded for every one of them
-- **AND** each records the number it was given rather than one rounded or shortened
-
-#### Scenario: a value that is not a number is not recorded
-
-- **WHEN** a value that is not a number is offered for a commitment named "Weight" of the number kind
-  with no range, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on
-  Monday 31 August 2026
-- **THEN** no number is recorded
-- **AND** no number is recorded for that same value on a commitment alike in every way but with a
-  range of 40 to 150
-
-#### Scenario: two numbers are the same exactly when their commitment, date and number all are
-
-- **WHEN** two numbers of 70.5 are recorded, both for a commitment named "Weight" of the number kind
-  with no range, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, and
-  both on Monday 31 August 2026
-- **THEN** the two are the same number
-- **AND** a number of 71 for that same commitment on that same date is a different number from either
-- **AND** a number of 70.5 for that same commitment on Wednesday 2 September 2026 is different again
-- **AND** so is a number of 70.5 on Monday 31 August 2026 for a commitment alike in every way but
-  named "Weight before breakfast"
-
-#### Scenario: a note commitment with a note on a date still takes no number on it
-
-- **WHEN** a note holding "Ran 8k." for a commitment named "Journal" of the note kind, on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026 is
-  added to a history, and 70.5 is then offered for that same commitment on that same date
-- **THEN** no number is recorded
-- **AND** the history still answers that the commitment has "Ran 8k." on that date
-
-#### Scenario: a total commitment with additions on a date still takes no number on it
-
-- **WHEN** additions of 30 and then 90 for a commitment named "Protein" of the total kind with a
-  target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on
-  Monday 31 August 2026 are added to a history, and 70.5 is then offered for that same commitment on
-  that same date
-- **THEN** no number is recorded
-- **AND** the history still answers that the commitment has added 120 on that date
-
-### Requirement: A number can be taken back
-
-A history SHALL let the number it holds for a commitment on a calendar date be taken back by that
-commitment and that date rather than by the number itself. Taking a number back SHALL leave the
-history as though that number had never been added: the day SHALL hold no number, the commitment
-SHALL be not kept on that date, and every other number SHALL stand exactly as it did, as SHALL every
-tick. The system MUST NOT keep anything of a number that was taken back, and a history given a
-number and then taken back SHALL be the same history as one that was never given one. Taking back
-where the history holds no number there SHALL leave the history unchanged rather than being refused,
-whether nothing was ever entered, the commitment's kind is not a number, or it is not due on that
-date.
-
-#### Scenario: a number taken back leaves the day holding no number and the commitment not kept on it
-
-- **WHEN** a number of 70.5 for a commitment named "Weight" of the number kind with a range of 40 to
-  150, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday
-  31 August 2026 is added to a history, and that commitment's number on that date is taken back
-- **THEN** the history answers that the commitment has no number on Monday 31 August 2026
-- **AND** that it was not kept on that date
-
-#### Scenario: taking back a number leaves the same commitment's numbers on other days standing
-
-- **WHEN** numbers of 70.5 on Monday 31 August 2026 and 71 on Saturday 5 September 2026, both for a
-  commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule listing
-  Monday, Wednesday and Saturday, kept from 1 January 2026, are added to a history, and the number on
-  31 August is taken back
-- **THEN** the history answers that the commitment has 71 on Saturday 5 September 2026
-- **AND** that it has no number on Monday 31 August 2026
-
-#### Scenario: taking back a number leaves another commitment's number on the same day standing
-
-- **WHEN** a number of 70.5 for a commitment named "Weight" and a number of 8 for a commitment named
-  "Mood", both of the number kind with no range, both on a schedule listing Monday, Wednesday and
-  Saturday and both kept from 1 January 2026, are added to a history on Monday 31 August 2026, and
-  "Weight"'s number on that date is taken back
-- **THEN** the history answers that "Mood" has 8 on Monday 31 August 2026
-- **AND** that "Weight" has no number on it
-
-#### Scenario: taking back a number where the history holds none leaves it unchanged
-
-- **WHEN** a number of 70.5 for a commitment named "Weight" of the number kind with a range of 40 to
-  150, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Saturday
-  5 September 2026 is added to a history, and that commitment's number on Monday 31 August 2026,
-  which the history does not hold, is taken back
-- **THEN** the history is the same as it was before the number was taken back
-- **AND** taking back a number for a commitment alike in every way but of the tick kind, and taking
-  one back on Tuesday 1 September 2026, each leave it unchanged too
-
-#### Scenario: a history given a number and then taken back is the same as one never given one
-
-- **WHEN** a number of 70.5 for a commitment named "Weight" of the number kind with a range of 40 to
-  150, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday
-  31 August 2026 is added to a history and then taken back
-- **THEN** the history is the same as a history that has taken no record at all
-
-### Requirement: A note can be taken back
-
-A history SHALL let the note it holds for a commitment on a calendar date be taken back, named by
-that commitment and that date rather than by the text.
-
-Taking a note back SHALL leave the history as though that note had never been added: the day SHALL
-hold no note, the commitment SHALL be not kept on that date, and every other note, tick and number
-SHALL stand exactly as it did, on other days and for other commitments. Nothing of a note taken back
-SHALL be kept, and a history given a note and then taken back SHALL be the same history as one never
-given one. Taking back where the history holds no such note SHALL leave it unchanged rather than
-being refused, whether the day was never written on, the commitment's kind is not a note, or it is
-not due on that date.
-
-#### Scenario: a note taken back leaves the day holding no note and the commitment not kept on it
-
-- **WHEN** a note holding "Ran 8k." for a commitment named "Journal" of the note kind, on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026 is
-  added to a history, and that commitment's note on that date is taken back
-- **THEN** the history answers that the commitment has no note on Monday 31 August 2026
-- **AND** that it was not kept on that date
-
-#### Scenario: taking back a note leaves the same commitment's notes on other days standing
-
-- **WHEN** notes holding "Ran 8k." on Monday 31 August 2026 and "Rested." on Saturday 5 September
-  2026, both for a commitment named "Journal" of the note kind, on a schedule listing Monday,
-  Wednesday and Saturday, kept from 1 January 2026, are added to a history, and the note on
-  31 August is taken back
-- **THEN** the history answers that the commitment has "Rested." on Saturday 5 September 2026
-- **AND** that it has no note on Monday 31 August 2026
-
-#### Scenario: taking back a note leaves another commitment's note on the same day standing
-
-- **WHEN** a note holding "Ran 8k." for a commitment named "Journal" and a note holding "Slept
-  badly." for a commitment named "Sleep", both of the note kind, both on a schedule listing Monday,
-  Wednesday and Saturday and both kept from 1 January 2026, are added to a history on Monday
-  31 August 2026, and "Journal"'s note on that date is taken back
-- **THEN** the history answers that "Sleep" has "Slept badly." on Monday 31 August 2026
-- **AND** that "Journal" has no note on it
-
-#### Scenario: taking back a note where the history holds none leaves it unchanged
-
-- **WHEN** a note holding "Ran 8k." for a commitment named "Journal" of the note kind, on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Saturday 5 September 2026 is
-  added to a history, and that commitment's note on Monday 31 August 2026, which the history does
-  not hold, is taken back
-- **THEN** the history is the same as it was before the note was taken back
-- **AND** taking back a note for a commitment alike in every way but of the tick kind, and taking
-  one back on Tuesday 1 September 2026, each leave it unchanged too
-
-#### Scenario: a history given a note and then taken back is the same as one never given one
-
-- **WHEN** a note holding "Ran 8k." for a commitment named "Journal" of the note kind, on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026 is
-  added to a history and then taken back
-- **THEN** the history is the same as a history that has taken no record at all
-
-### Requirement: The last addition a day holds can be taken back
-
-A history SHALL let the last addition of a commitment on a calendar date be taken back, named by
-that commitment and date. Only the last SHALL go, and no other SHALL go except by taking back the
-ones after it, one at a time. The system MUST NOT offer taking an addition back by its amount, and
-MUST NOT offer clearing a day's additions in one act.
-
-Taking it back SHALL leave the history as though that addition had never been made, keeping nothing
-of it: the additions before it SHALL stand in order, the sum SHALL be short by exactly the amount
-that went, and every other record SHALL stand exactly as it did; a history taken back to none SHALL
-be the same as one never given any. Taking back where it holds no such addition SHALL leave it
-unchanged rather than being refused, whether the day holds none, the commitment's kind is not a
-total, or it is not due on that date.
-
-#### Scenario: the last addition taken back leaves the day short by exactly that amount
-
-- **WHEN** additions of 30 and then 90 for a commitment named "Protein" of the total kind with a
-  target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on
-  Monday 31 August 2026 are added to a history, and that commitment's last addition on that date is
-  taken back
-- **THEN** the history answers 30 for that commitment on that date
-- **AND** it answers that the commitment was not kept on that date
-
-#### Scenario: taking back the last addition twice removes the two most recent, in the order they were made
-
-- **WHEN** additions of 30, then 45, then 50 for a commitment named "Protein" of the total kind with
-  a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026,
-  on Monday 31 August 2026 are added to a history, and that commitment's last addition on that date
-  is taken back twice
-- **THEN** the history answers 30 for that commitment on that date
-- **AND** the history is the same as one the addition of 30 alone was added to
-
-#### Scenario: taking back the only addition a day holds leaves the day holding none
-
-- **WHEN** an addition of 120 for a commitment named "Protein" of the total kind with a target of
-  120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday
-  31 August 2026 is added to a history, and that commitment's last addition on that date is taken
-  back
-- **THEN** the history answers zero for that commitment on that date
-- **AND** it answers that the commitment was not kept on that date
-- **AND** the history is the same as a history that has taken no record at all
-
-#### Scenario: taking back the last addition leaves the same commitment's other days standing
-
-- **WHEN** additions of 30 on Monday 31 August 2026 and 45 on Saturday 5 September 2026, both for a
-  commitment named "Protein" of the total kind with a target of 120, on a schedule listing Monday,
-  Wednesday and Saturday, kept from 1 January 2026, are added to a history, and the last addition on
-  31 August is taken back
-- **THEN** the history answers 45 for that commitment on Saturday 5 September 2026
-- **AND** zero for it on Monday 31 August 2026
-
-#### Scenario: taking back the last addition leaves another commitment's day standing
-
-- **WHEN** additions of 30 for a commitment named "Protein" and 45 for a commitment named "Water",
-  both of the total kind with a target of 120, both on a schedule listing Monday, Wednesday and
-  Saturday and both kept from 1 January 2026, are added to a history on Monday 31 August 2026, and
-  "Protein"'s last addition on that date is taken back
-- **THEN** the history answers 45 for "Water" on Monday 31 August 2026
-- **AND** zero for "Protein" on it
-
-#### Scenario: taking back where the day holds no addition leaves the history unchanged
-
-- **WHEN** an addition of 30 for a commitment named "Protein" of the total kind with a target of
-  120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Saturday
-  5 September 2026 is added to a history, and that commitment's last addition on Monday 31 August
-  2026, which the history holds none for, is taken back
-- **THEN** the history is the same as it was before
-- **AND** taking the last addition back for a commitment alike in every way but of the tick kind,
-  and taking one back on Tuesday 1 September 2026, each leave it unchanged too
-
-#### Scenario: a history given additions and taken back one by one is the same as one never given any
-
-- **WHEN** additions of 30, then 45, then 50 for a commitment named "Protein" of the total kind with
-  a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026,
-  on Monday 31 August 2026 are added to a history, and that commitment's last addition on that date
-  is taken back three times
-- **THEN** the history is the same as a history that has taken no record at all
-- **AND** taking it back a fourth time leaves it the same again
+## MODIFIED Requirements
 
 ### Requirement: A history carries every record of one commitment over to another
 
@@ -538,291 +125,81 @@ that shape, and adds no key, no field and no version to what a record is.
 - **THEN** the store says the change could not be kept
 - **AND** its history answers that "Gym" was kept on Monday 3 August 2026 and that "Gym 🏋️" was not
 
-### Requirement: A store reads every form it has written
+## REMOVED Requirements
 
-A store SHALL read a history kept in any form this app has written, the current form and every form
-before it. It SHALL refuse a form later than the one it writes, and SHALL refuse a form number this
-app has never written, one below the earliest, with an error saying the content is not a store
-rather than that it is from a later form. A store SHALL read each form as the shape that form has,
-and SHALL refuse one whose shape and declared form disagree. Which shape belongs to which form SHALL
-be judged against the form each part was first written at, never the newest: numbers arrived at the
-third form, notes the fourth, additions the fifth. Opening a store MUST NOT change what is at its
-place, which SHALL stay byte-for-byte what it was: a store SHALL write only when a change is kept.
+### Requirement: A tick is of a commitment on a calendar date it is due on
 
-#### Scenario: reading a history kept in an earlier form changes nothing at its place
+**Reason**: Added back below as *A tick is of a commitment on a calendar date it is due on, and
+nothing else*, without a scenario another under it already asserts; no behaviour changes.
+**Migration**: `a tick is formed for a commitment on a date it is due on` is dropped and its test
+deleted; every other scenario is carried verbatim.
 
-- **WHEN** a store is opened at a place holding a history written in the form used before a
-  commitment carried a kind, and nothing is added to it and nothing taken back
-- **THEN** the content at that place is byte-for-byte what it was before
+### Requirement: A history answers whether a commitment was kept on a day from the ticks it holds
 
-#### Scenario: a store written in a form this app has never written is refused
+**Reason**: Added back below as *A history answers whether a commitment was kept on a day from the
+records it holds*, without scenarios another under it already asserts; no behaviour changes.
+**Migration**: `a commitment ticked on a date was kept on that date`, `a commitment ticked on one
+date was not kept on another date it is due on`, `a commitment was not kept on a date it is not due
+on`, `a number commitment with a number recorded on a date was kept on that date` and `a note
+commitment with a note recorded on a date was kept on that date` are dropped and their tests
+deleted; every other scenario is carried verbatim.
 
-- **WHEN** a store is opened at a place holding a store whose form is one below the earliest form
-  this app has ever written, holding no ticks
-- **THEN** opening is refused with an error
-- **AND** the error says the content is not a store rather than that it is from a later form
-- **AND** the content at that place is byte-for-byte what it was before
+### Requirement: A tick can be taken back
 
-#### Scenario: a store whose shape and declared form disagree about numbers is refused
+**Reason**: Added back below as *A tick a history holds can be taken back*, without a scenario
+another under it already asserts; no behaviour changes.
+**Migration**: `a tick taken back leaves the commitment not kept on that date` is dropped and its
+test deleted; every other scenario is carried verbatim.
 
-- **WHEN** a store is opened at a place holding a store written in the form used before a day could
-  hold a number, which nonetheless holds one number
-- **THEN** opening is refused with an error
-- **AND** a store at a place holding a store in the form this app writes, with no place for numbers
-  in it at all, is refused the same way
-- **AND** the error says the content is not a store rather than that it is from a later form
-- **AND** the content at each place is byte-for-byte what it was before
+### Requirement: A history answers what number a commitment has on a day from the numbers it holds
 
-#### Scenario: a store whose shape and declared form disagree about notes is refused
+**Reason**: Added back below as *A history answers what number a commitment has on a calendar date
+from the numbers it holds*, without a scenario another under it already asserts; no behaviour
+changes.
+**Migration**: `a number added to a history is the number that commitment has on that day` is
+dropped and its test deleted; every other scenario is carried verbatim.
 
-- **WHEN** a store is opened at a place holding a store written in the form used before a day could
-  hold a note, which nonetheless holds one note
-- **THEN** opening is refused with an error
-- **AND** a store at a place holding a store in the form this app writes, with no place for notes in
-  it at all, is refused the same way
-- **AND** a store written in the form used before a day could hold a number, holding neither numbers
-  nor notes, is read without error, because that form is expected to carry neither
-- **AND** the error says the content is not a store rather than that it is from a later form
-- **AND** the content at each place is byte-for-byte what it was before
+### Requirement: A note is of a note commitment on a calendar date it is due on
 
-#### Scenario: a store whose shape and declared form disagree about additions is refused
+**Reason**: Added back below as *A note is of a note commitment on a calendar date it is due on, and
+holds one text*, without a scenario another under it already asserts; no behaviour changes.
+**Migration**: `a note is recorded for a note commitment on a date it is due on` is dropped and its
+test deleted; every other scenario is carried verbatim.
 
-- **WHEN** a store is opened at a place holding a store written in the form used before a day could
-  hold an addition, which nonetheless holds one addition
-- **THEN** opening is refused with an error
-- **AND** a store at a place holding a store in the form this app writes, with no place for additions
-  in it at all, is refused the same way
-- **AND** a store written in the form used before a day could hold a note, holding neither notes nor
-  additions, is read without error, because that form is expected to carry neither
-- **AND** the error says the content is not a store rather than that it is from a later form
-- **AND** the content at each place is byte-for-byte what it was before
+### Requirement: A history answers what note a commitment has on a day from the notes it holds
 
-### Requirement: Each earlier form is read as the record it always was
+**Reason**: Added back below as *A history answers what note a commitment has on a calendar date
+from the notes it holds*, without a scenario another under it already asserts; no behaviour changes.
+**Migration**: `a note added to a history is the note that commitment has on that day` is dropped
+and its test deleted; every other scenario is carried verbatim.
 
-A history kept in the form written before a commitment carried a kind SHALL be read with every
-tick's commitment of the plain kind. A history kept in the form written before a day could hold a
-number SHALL be read with every tick as it stands and no number on any day; one kept before a day
-could hold a note, with every tick and number as they stand and no note on any day; and one kept
-before a day could hold an addition, with every tick, number and note as they stand and no addition
-on any day; such a history SHALL answer a total of zero on every day and every total commitment not
-kept. The next change kept there SHALL be written whole in the form this app writes, and every tick,
-number and note the earlier form held SHALL still be in it.
+### Requirement: An addition is of a total commitment on a calendar date it is due on
 
-#### Scenario: a history kept before a commitment carried a kind is read with every commitment of the plain kind
+**Reason**: Added back below as *An addition is of a total commitment on a calendar date it is due
+on, and holds one amount*, without a scenario another under it already asserts; no behaviour
+changes.
+**Migration**: `an addition is recorded for a total commitment on a date it is due on` is dropped
+and its test deleted; every other scenario is carried verbatim.
 
-- **WHEN** a store is opened at a place holding a history written in the form used before a
-  commitment carried a kind, holding one tick for a commitment named "Gym" on a schedule listing
-  Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026
-- **THEN** it opens without error
-- **AND** its history is the same as a history that tick was added to, for a commitment of the tick
-  kind
-- **AND** it answers that the commitment was kept on Monday 31 August 2026
+### Requirement: A history answers what a commitment has added on a day from the additions it holds
 
-#### Scenario: a tick added over a history kept in an earlier form is read back beside the ticks already there
+**Reason**: Added back below as *A history answers what a commitment has added on a calendar date
+from the additions it holds*, without a scenario another under it already asserts; no behaviour
+changes.
+**Migration**: `an addition added to a history is the total that commitment has on that day` is
+dropped and its test deleted; every other scenario is carried verbatim.
 
-- **WHEN** a store is opened at a place holding a history written in the form used before a
-  commitment carried a kind, holding one tick for a commitment named "Gym" on a schedule listing
-  Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026; a tick for
-  that same commitment on Wednesday 2 September 2026 is added to it; and a store is opened
-  afterwards at the same place
-- **THEN** the later store's history is the same as a history both those ticks were added to
-- **AND** it answers that the commitment was kept on both dates
+### Requirement: A store keeps what it is given before it reports it kept
 
-#### Scenario: a history kept before a day could hold a number is read, and no day in it holds a number
+**Reason**: Added back below as *A store keeps every change it is given before it reports it kept*,
+without scenarios another under it already asserts; no behaviour changes.
+**Migration**: `a tick added to a store is held by a second store opened at the same place while the
+first is still open`, `a tick taken back is not held by a store opened afterwards at the same
+place`, `a number taken back is not held by a store opened afterwards at the same place` and `a note
+taken back is not held by a store opened afterwards at the same place` are dropped and their tests
+deleted; every other scenario is carried verbatim.
 
-- **WHEN** a store is opened at a place holding a history written in the form used before a day could
-  hold a number, holding one tick for a commitment named "Gym" of the tick kind, on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026
-- **THEN** it opens without error
-- **AND** its history is the same as a history that tick was added to
-- **AND** it answers that the commitment was kept on Monday 31 August 2026
-- **AND** it answers that a commitment named "Weight" of the number kind with no range, on that same
-  schedule and kept from that same day, has no number on that date
-- **AND** the content at that place is byte-for-byte what it was before
-
-#### Scenario: a number added over a history kept before a day could hold a number is read back beside the ticks already there
-
-- **WHEN** a store is opened at a place holding a history written in the form used before a day could
-  hold a number, holding one tick for a commitment named "Gym" of the tick kind, on a schedule
-  listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026; a
-  number of 70.5 for a commitment named "Weight" of the number kind with a range of 40 to 150, on
-  that same schedule and kept from that same day, on Monday 31 August 2026 is added to it; and a
-  store is opened afterwards at the same place
-- **THEN** the later store's history is the same as a history that tick and that number were both
-  added to
-- **AND** it answers that "Gym" was kept on that date and that "Weight" has 70.5 on it
-
-#### Scenario: a history kept before a day could hold a note is read, and no day in it holds a note
-
-- **WHEN** a store is opened at a place holding a history written in the form used before a day could
-  hold a note, holding one tick for a commitment named "Gym" of the tick kind and one number of 70.5
-  for a commitment named "Weight" of the number kind with a range of 40 to 150, both on a schedule
-  listing Monday, Wednesday and Saturday and both kept from 1 January 2026, on Monday 31 August 2026
-- **THEN** it opens without error
-- **AND** its history is the same as a history that tick and that number were added to
-- **AND** it answers that "Gym" was kept on Monday 31 August 2026 and that "Weight" has 70.5 on it
-- **AND** it answers that a commitment named "Journal" of the note kind, on that same schedule and
-  kept from that same day, has no note on that date
-- **AND** the content at that place is byte-for-byte what it was before
-
-#### Scenario: a note added over a history kept before a day could hold a note is read back beside the records already there
-
-- **WHEN** a store is opened at a place holding a history written in the form used before a day could
-  hold a note, holding one tick for a commitment named "Gym" of the tick kind and one number of 70.5
-  for a commitment named "Weight" of the number kind with a range of 40 to 150, both on a schedule
-  listing Monday, Wednesday and Saturday and both kept from 1 January 2026, on Monday 31 August 2026;
-  a note holding "Ran 8k." for a commitment named "Journal" of the note kind, on that same schedule
-  and kept from that same day, on Monday 31 August 2026 is added to it; and a store is opened
-  afterwards at the same place
-- **THEN** the later store's history is the same as a history that tick, that number and that note
-  were all added to
-- **AND** it answers that "Gym" was kept on that date, that "Weight" has 70.5 on it, and that
-  "Journal" has "Ran 8k." on it
-
-#### Scenario: a history kept before a day could hold an addition is read, and no day in it holds one
-
-- **WHEN** a store is opened at a place holding a history written in the form used before a day could
-  hold an addition, holding one tick for a commitment named "Gym" of the tick kind, one number of
-  70.5 for a commitment named "Weight" of the number kind with a range of 40 to 150, and one note
-  holding "Ran 8k." for a commitment named "Journal" of the note kind, all three on a schedule listing
-  Monday, Wednesday and Saturday and all kept from 1 January 2026, on Monday 31 August 2026
-- **THEN** it opens without error
-- **AND** its history is the same as a history that tick, that number and that note were added to
-- **AND** it answers that "Gym" was kept on Monday 31 August 2026, that "Weight" has 70.5 on it and
-  that "Journal" has "Ran 8k." on it
-- **AND** it answers that a commitment named "Protein" of the total kind with a target of 120, on
-  that same schedule and kept from that same day, has added zero on that date and was not kept on it
-- **AND** the content at that place is byte-for-byte what it was before
-
-#### Scenario: an addition made over a history kept before a day could hold an addition is read back beside the records already there
-
-- **WHEN** a store is opened at a place holding a history written in the form used before a day could
-  hold an addition, holding one tick for a commitment named "Gym" of the tick kind and one note
-  holding "Ran 8k." for a commitment named "Journal" of the note kind, both on a schedule listing
-  Monday, Wednesday and Saturday and both kept from 1 January 2026, on Monday 31 August 2026;
-  additions of 30 and then 90 for a commitment named "Protein" of the total kind with a target of
-  120, on that same schedule and kept from that same day, on Monday 31 August 2026 are made to it;
-  and a store is opened afterwards at the same place
-- **THEN** the later store's history is the same as a history that tick, that note and those two
-  additions were added to, in that order
-- **AND** it answers that "Gym" was kept on that date, that "Journal" has "Ran 8k." on it, and that
-  "Protein" has added 120 on it and was kept on it
-
-### Requirement: A store persists each kind of record as exactly what it is
-
-A store SHALL persist each record as exactly what it is and nothing else: its commitment whole, kind
-included, its calendar date, and the number, text or amounts it carries, in the order they were
-made. A record read back SHALL be the same record that was added: every schedule shape, any name,
-any supported date, numbers and amounts digit for digit, notes character for character at every
-length and in every script, blank space and line breaks included, each character in the very form
-given. A store MUST NOT round or shorten a number or an amount, trim, re-spell or otherwise tidy a
-note, or pass a date through an instant, a time zone or a locale. The order read back SHALL be the
-order they were made in, which names the addition a take-back removes. A store SHALL keep the later
-of two numbers or two notes given for one day, hold every addition a day was given, and MUST NOT
-persist the day's sum.
-
-#### Scenario: ticks of commitments on every schedule shape are read back as the same ticks
-
-- **WHEN** ticks are added to a store for one commitment on each schedule shape the system has — a
-  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
-  2026, on Monday 31 August 2026; a commitment named "Finances" on a schedule on the 25th of the
-  month, kept from 1 January 2026, on 25 September 2026; a commitment named "Plants" on a schedule
-  of every 3 days starting on 25 August 2026, kept from 1 September 2026, on 3 September 2026; and a
-  commitment named "Reading" on a weekly quota of 3 times a week, kept from 1 January 2026, on
-  Monday 7 September 2026 — and a store is opened afterwards at the same place
-- **THEN** the later store's history is the same as a history to which those same ticks were added
-- **AND** it answers that each of the four commitments was kept on its date
-
-#### Scenario: a commitment name is read back exactly, whatever it contains
-
-- **WHEN** a tick is added to a store for a commitment whose name is "Zürich — „langer“ Lauf 🏃" followed
-  by a line break and the word "Sonntags", on a schedule listing Monday, Wednesday and Saturday, kept
-  from 1 January 2026, on Monday 31 August 2026, and a store is opened afterwards at the same place
-- **THEN** the later store's history answers that a commitment with exactly that name, schedule and
-  kept-from day was kept on Monday 31 August 2026
-- **AND** its history is the same as a history that tick was added to
-
-#### Scenario: a tick in the first supported year and one in the last are read back unchanged
-
-- **WHEN** ticks are added to a store for a commitment on a schedule listing Monday, Wednesday and
-  Saturday, kept from 1 January 1583, on Monday 3 January 1583 and on Monday 27 December 9999, and a
-  store is opened afterwards at the same place
-- **THEN** the later store's history answers that the commitment was kept on both dates
-- **AND** its history is the same as a history those two ticks were added to
-
-#### Scenario: a number entered again is kept once by a store opened afterwards, as the later number
-
-- **WHEN** a number of 70.5 and then a number of 71.2, both for a commitment named "Weight" of the
-  number kind with a range of 40 to 150, on a schedule listing Monday, Wednesday and Saturday, kept
-  from 1 January 2026, on Monday 31 August 2026, are added to a store, and a store is opened
-  afterwards at the same place
-- **THEN** the later store's history is the same as a history the second number alone was added to
-- **AND** it answers that the commitment has 71.2 on Monday 31 August 2026
-
-#### Scenario: a number is read back exactly as it was given, whatever its digits
-
-- **WHEN** numbers of 70.5, 0.000001, -12.75, 0 and 98765432109876543210.5 are added to a store, each
-  for a commitment of the number kind with no range named after the number it carries, all on a
-  schedule listing Monday, Wednesday and Saturday and all kept from 1 January 2026, on Monday
-  31 August 2026, and a store is opened afterwards at the same place
-- **THEN** the later store's history answers each commitment with exactly the number it was given,
-  neither rounded nor shortened
-- **AND** its history is the same as a history those same numbers were added to
-
-#### Scenario: a note written again is kept once by a store opened afterwards, as the later note
-
-- **WHEN** a note holding "Ran 8k." and then a note holding "Ran 8k. Knee held up.", both for a
-  commitment named "Journal" of the note kind, on a schedule listing Monday, Wednesday and Saturday,
-  kept from 1 January 2026, on Monday 31 August 2026, are added to a store, and a store is opened
-  afterwards at the same place
-- **THEN** the later store's history is the same as a history the second note alone was added to
-- **AND** it answers that the commitment has "Ran 8k. Knee held up." on Monday 31 August 2026
-
-#### Scenario: a note is read back exactly as it was written, whatever it contains
-
-- **WHEN** notes are added to a store for commitments of the note kind, all on a schedule listing
-  Monday, Wednesday and Saturday and all kept from 1 January 2026, on Monday 31 August 2026, each
-  commitment named after the note it carries, holding in turn: a note of three lines separated by
-  line breaks; a note of one emoji made of several joined characters; a note in a right-to-left
-  script; a note whose letters are written as a plain letter followed by a separate accent mark; a
-  note beginning and ending with a space; and a note of a hundred thousand characters — and a store
-  is opened afterwards at the same place
-- **THEN** the later store's history answers each commitment with exactly the note it was given,
-  character for character, neither shortened nor trimmed nor re-spelled
-- **AND** the note whose letters were written as a plain letter followed by a separate accent mark
-  reads back written that way still, rather than as the single accented letter that says the same
-  thing
-- **AND** its history is the same as a history those same notes were added to
-
-#### Scenario: a day's additions are read back in the order they were made
-
-- **WHEN** additions of 30, then 45, then 50 for a commitment named "Protein" of the total kind with
-  a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on
-  Monday 31 August 2026 are added to a store, and a store is opened afterwards at the same place
-- **THEN** the later store's history is the same as a history those three additions were added to in
-  that same order
-- **AND** it answers that the commitment has added 125 on that date
-- **AND** taking that day's last addition back on the later store leaves it answering 75, so the
-  addition of 50 was the one the order named
-
-#### Scenario: two additions alike in every way on one day are both read back
-
-- **WHEN** additions of 30 and then 30 again for a commitment named "Protein" of the total kind with
-  a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on
-  Monday 31 August 2026 are added to a store, and a store is opened afterwards at the same place
-- **THEN** the later store's history answers that the commitment has added 60 on that date
-- **AND** taking that day's last addition back on the later store leaves it answering 30 rather than
-  zero
-
-#### Scenario: an amount is read back exactly as it was given, whatever its digits
-
-- **WHEN** additions of 0.000001, 30, 119.95 and a whole number of thirty-eight nines are added to a
-  store, each for a commitment of the total kind with a target of 120 named after the amount it
-  carries, all on a schedule listing Monday, Wednesday and Saturday and all kept from 1 January 2026,
-  on Monday 31 August 2026, and a store is opened afterwards at the same place
-- **THEN** the later store's history answers each commitment with exactly the amount it was given,
-  neither rounded nor shortened
-- **AND** its history is the same as a history those same additions were added to
+## ADDED Requirements
 
 ### Requirement: A tick is of a commitment on a calendar date it is due on, and nothing else
 
