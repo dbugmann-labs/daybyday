@@ -77,14 +77,14 @@ delta deletes; ADR-1047 needs no amendment, because this Story adds no third.
 
 ### Overruns the budget
 
-Requirement prose goes from 26,522 words to 11,426, and **thirty-one requirements are still over
+Requirement prose goes from 26,522 words to 11,414, and **thirty-one requirements are still over
 150**, because rule 1 — every *Rules at risk* sentence present as its own SHALL/MUST — outranks the
 word cap; a finding only where a sentence is rationale rather than a rule. This list and the
-twenty-two below are why `check:budgets` reports this file at 167 lines against 150: naming all
-fifty-three entries costs that, and dropping one of them would be the worse failure.
+twenty-one below are why `check:budgets` reports this file at 169 lines against 150: naming all
+fifty-two entries costs that, and dropping one of them would be the worse failure.
 
 - *A roster holds the commitments a person keeps, in the order they were taken on* — 630; five rule families with five at-risk sentences among them, and no survey proposes a division.
-- *A commitments screen defines a commitment from a name, a rhythm and the day it is kept from* — 563; fifteen rules over eighteen scenarios, two unshortenable: both digit bounds in one sentence, and ignore-rather-than-refuse stated for all three kinds because *refuses a range that is not a range* defers to it.
+- *A commitments screen defines a commitment from a name, a rhythm and the day it is kept from* — 586; fifteen rules over eighteen scenarios, two unshortenable: both digit bounds in one sentence, and ignore-rather-than-refuse stated for all three kinds because *refuses a range that is not a range* defers to it.
 - *A roster refuses a commitment it already holds* — 530; grill answer 3, stays single: it owns the equality rule, both forms of the category ask and the take-up-again rule, and two later requirements defer to it.
 - *A roster store keeps a roster at a place, across the app being closed and opened again* — 518; grill answer 3, stays single: write-before-report, report-what-the-roster-reports, four persistence rules and store independence, over thirty-five scenarios.
 - *A commitments screen works out which act a change on either of its lists needs* — 445; three acts and the order they combine in, the interval grid, the write order, the kind, the category and the no-op — the larger half of the only split.
@@ -92,9 +92,9 @@ fifty-three entries costs that, and dropping one of them would be the worse fail
 - *A roster store reads a roster kept before a commitment carried a kind* — 394; three earlier forms read three ways, the write-only-on-change rule, and form-agreement in both directions for two fields.
 - *A commitments screen moves a commitment among the ones it keeps* — 359; a second arithmetic turning a place inside a group into a place in the roster's order, with both bounds on the offset, four asks that do nothing, and one refusal.
 - *A roster puts a commitment under a category* — 359; a category's identity rules, three MUST NOTs against any list of categories, its persistence across the three states, one refusal and the accepted no-op.
-- *A commitments screen moves a group among the groups it draws* — 351; the offset shared with the roster, the stopped list's reorder, the past-date price read back through the place it keeps, three asks that do nothing and one refusal.
 - *A commitments screen holds the change it refused and why, one at a time* — 350; the eleven-item no-change enumeration is the rule and every item a distinct case, and the no-numbering rule that binds the rest of the spec is stated only here.
 - *A roster removes a commitment it holds, and never lets it go* — 341; eleven scenarios, the kept-until rule both ways, two refusals, value semantics, and a not-the-same-roster sentence of forty-four words no scenario proves another way.
+- *A commitments screen moves a group among the groups it draws* — 340; the offset shared with the roster, the stopped list's reorder, the past-date price read back through the place it keeps, three asks that do nothing and one refusal.
 - *A roster stops keeping a commitment, on the day it was kept until* — 339; the stop, three refusals with the day-standing rule, accept-any-date and leaves-the-record-alone, across nine scenarios.
 - *A commitments screen refuses a range that is not a range, and a target that is not a target* — 333; two refusal families of three causes each, three exclusions and four acceptance bounds.
 - *A roster moves a commitment among the ones it keeps* — 329; the offset's placement arithmetic, the two offsets that hold the sequence still but not the category, two refusals and the no-date guarantees, over sixteen scenarios.
@@ -106,11 +106,11 @@ fifty-three entries costs that, and dropping one of them would be the worse fail
 - *A roster supersedes a commitment it is keeping with another, from a day* — 272; a three-part act, two refusals, the date rules including both supported bounds, and the no-link rule.
 - *A commitments screen refuses a change it cannot make* — 271; five refusals it inherits, two of its own, and the interval boundary that is accepted rather than refused.
 - *What a commitments screen holds about a refused change lasts until the app is shown again or a change is kept* — 252; seven change kinds and five no-op cases, each an enumerated item of the rule, plus the record-place rule no scenario asserts.
-- *A commitments screen says what a commitment it is asked to change is made of* — 219; four things said, the interval carve-out, changeability, and the kind with what it carries.
+- *A commitments screen says what a commitment it is asked to change is made of* — 222; four things said, the interval carve-out, changeability, and the kind with what it carries.
 - *A roster changes a commitment it holds for another, in the place it holds it* — 210; the replacement guarantees, two refusals, the change-for-itself case and value semantics.
 - *A commitments screen offers the categories in use* — 186; five rules on what is offered, plus the two MUST NOTs on case.
 - *A roster answers the earliest day anything it holds has been kept from* — 179; eight rules, three of them with no scenario, and nothing that can be said in fewer words.
-- *A commitment is a name, a schedule, and the day it is kept from* — 165; the four parts, three MUST NOTs on forming one, and equality across all four including what the kind carries.
+- *A commitment is a name, a schedule, and the day it is kept from* — 177; the four parts, three MUST NOTs on forming one, equality across all four with the kind's comparison deferred to *A roster refuses a commitment it already holds* in one clause, and the kind's fixity.
 - *A roster store that cannot be read is refused rather than emptied* — 165; three unreadable cases plus the half-a-range case each carry a scenario, and refuse-rather-than-empty is three MUST NOTs.
 - *A commitment's kind is a tick, a number, a note or a total* — 163; four kinds, per-kind parameters, the two belonging rules, the formed-at-all rule, the default and the due-ness exclusion.
 - *A range is a lowest and a highest, and the lowest is not above the highest* — 158; both-ends-required, inclusivity, refuse-not-adjust, where the refusal is made, and the not-a-number end.
@@ -124,7 +124,10 @@ fifty-three entries costs that, and dropping one of them would be the worse fail
 - **A cross-reference that names a count falsifies itself**, the seven refusal kinds being the live
   case. → Stated in one requirement, recorded in ADR-1049, named rather than numbered elsewhere.
 - **A rule stated once and deferred to from elsewhere can be deleted twice**, because a
-  per-requirement trim reads each copy as the other's restatement. → Named in both boxes.
+  per-requirement trim reads each copy as the other's restatement. → Named in both boxes. One
+  restatement is knowingly left: *A commitment is a name, a schedule, and the day it is kept from*
+  reads back its kind, which *A commitment's kind is a tick, a number, a note or a total* owns with
+  its own scenario. It was found after G7, was not authorised, and stands.
 - **One requirement contradicted itself, and the rewrite chose.** *A commitments screen says what a
   commitment it is asked to change is made of* said both that every control the form draws is present
   with the unchangeable ones refusing a touch, and, four lines on, that what a form draws and which of
@@ -136,7 +139,7 @@ fifty-three entries costs that, and dropping one of them would be the worse fail
 
 ## Open Questions
 
-**Twenty-two rules stay knowingly untested**, each kept as a SHALL/MUST sentence with no scenario:
+**Twenty-one rules stay knowingly untested**, each kept as a SHALL/MUST sentence with no scenario:
 
 - the kept-from floor does not shift the schedule's own start date or phase
 - neither a changed nor a superseded commitment gains a fifth part
@@ -144,23 +147,22 @@ fifty-three entries costs that, and dropping one of them would be the worse fail
 - a roster store does not write its commitments grouped by category
 - a change of commitment reaches the record place, and a roster store is not what reaches it
 - a commitment the screen already holds offers no kind at all to a change
-- a range end or a target holds no more than thirty-eight significant digits
 - an end holding only a zero-width space is refused as not a number, never as blank
 - changing another commitment's fields into a duplicate of this one is refused
 - ending what is held is one act, however many places the change touched
-- a change asked about a commitment on neither list is a no-op rather than a refusal
-- neither stopping nor removing raises the earliest day, and taking one up again does not lower it
+- a change asked about a commitment on neither list does not end a refusal the screen is holding
+- taking a commitment up again does not lower the earliest day anything is kept from
 - the earliest day consults no present moment, no time zone and no locale
 - a commitment reads back its name and its kind and never the day it is kept from
 - a supersession is supported on the very first and the very last supported date
 - every control a change form draws is present, and the ones that cannot change refuse a touch
 - the record place is written before the roster place
 - where nothing is carried over, nothing at all is written at the record place
-- the already-holds-it refusal covers the record place as well as the roster place
+- a place that could not be written covers the record place as well as the roster place
 - the roster holds no link between a superseded commitment and the one that replaces it
 - a number commitment with both range ends blank is a number with no range, not a refusal
 - a group landing after the last category's last commitment lands there whatever state that one is in
 
-**One want captures all twenty-two**, filed on the backlog branch after G4: *cover the commitment
+**One want captures all twenty-one**, filed on the backlog branch after G4: *cover the commitment
 rules the condensing surveys found testable but untested, with a scenario each* — its id assigned on
 filing. Nothing else is open: `grill.md` § *Left open* is "None." and no residual round arose here.

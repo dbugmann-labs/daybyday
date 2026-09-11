@@ -12,9 +12,9 @@ from, MUST NOT supply one of its own, and MUST NOT consult the present moment. T
 default to the plain kind, a tick.
 
 Two commitments SHALL be the same commitment when their name, their schedule, the day they are kept
-from and their kind, with whatever that kind carries, are all the same, and different when any
-differs. The kind SHALL be fixed when the commitment is formed, SHALL NOT change afterwards, and no
-change SHALL reach it.
+from and their kind are all the same, and different when any of the four differs; the kind is
+compared as *A roster refuses a commitment it already holds* says. The kind SHALL be fixed when the
+commitment is formed, SHALL NOT change afterwards, and no change SHALL reach it.
 
 #### Scenario: a commitment reads back the name it was given
 
@@ -71,8 +71,7 @@ result, and MUST NOT substitute a placeholder of its own.
 Every other name SHALL be accepted, and SHALL be stored exactly as it was given, including any blank
 space at the start or the end of it. There SHALL be no upper bound on a name's length, no
 restriction on the script it is written in, no character the system reserves, and no name the system
-rewrites. Two names differing only by blank space SHALL be different names, and commitments alike in
-every other part SHALL then be different commitments.
+rewrites.
 
 #### Scenario: an empty name is not a commitment
 
@@ -1557,11 +1556,11 @@ in no groups at all.
 A commitments screen SHALL list, separately from the commitments its roster is keeping, the
 commitments that roster has stopped keeping — in the order the roster holds them, each as a name and
 the rhythm it runs on in words, exactly as the first list is. A stopped commitment SHALL never be
-moved, and what has been stopped SHALL be listed in the order those commitments were taken on. A
-commitment the roster has removed SHALL be in neither list, and every other SHALL be in exactly one of
-the two and never in both. A roster that has stopped nothing SHALL list nothing as stopped. That list
-SHALL NOT be grouped, and SHALL be one flat list whatever categories its commitments are under. A
-commitment taken up again from this list SHALL be drawn in the group of the category it was under.
+moved. A commitment the roster has removed SHALL be in neither list, and every other SHALL be in
+exactly one of the two and never in both. A roster that has stopped nothing SHALL list nothing as
+stopped. That list SHALL NOT be grouped, and SHALL be one flat list whatever categories its
+commitments are under. A commitment taken up again from this list SHALL be drawn in the group of the
+category it was under.
 
 #### Scenario: a commitments screen lists what its roster has stopped keeping, in the order they were taken on
 
@@ -1647,32 +1646,34 @@ day it is kept from, a category, which may be none, and the kind its days take. 
 four of them, every one but the kind, and a commitment the screen already holds SHALL be offered no
 kind at all. What is formed SHALL be taken on at the roster place before either list says so, and
 SHALL then be last in what the screen keeps, in the group of the category given — unless the roster
-holds it stopped or removed, when it SHALL be taken up again in the place it has, under
-the category the form carried. Two commitments alike but for their kind SHALL be two here as in a roster. A rhythm SHALL be one of four, all four offered — a weekday set, a day of
-the month, an interval of whole days, a weekly quota — and an interval rhythm carries no start date. A
-kind SHALL likewise be one of four, all four offered — a tick, a number, a note, a total — and the
-tick SHALL be the kind offered for a new commitment. A category of nothing but blank space is no
-category and SHALL NOT be refused; every other SHALL be kept exactly as given, blank space at its ends
-and all. The day a commitment is kept from SHALL also be an interval rhythm's start date on this
-screen, though the two remain distinct in the model and may disagree where something else forms the
-commitment. This screen SHALL offer the day it was handed for a new commitment, SHALL
-accept any calendar date the system supports, the future included, and MUST NOT judge that date against
-it or bound it beyond the calendar.
+holds it stopped or removed, when it SHALL be taken up again in the place it has, under the category
+the form carried. Two commitments alike but for their kind SHALL be two here as in a roster. A
+rhythm SHALL be one of four, all four offered — a weekday set, a day of the month, an interval of
+whole days, a weekly quota — and an interval rhythm carries no start date. Three of the four take a
+number, which a rhythm SHALL carry as the person gave it, judged by nothing on the way. A kind SHALL
+likewise be one of four, all four offered — a tick, a number, a note, a total — and the tick SHALL
+be the kind offered for a new commitment. A category of nothing but blank space is no category and
+SHALL NOT be refused; every other SHALL be kept exactly as given, blank space at its ends and all.
+The day a commitment is kept from SHALL also be an interval rhythm's start date on this screen,
+though the two remain distinct in the model and may disagree where something else forms the
+commitment. This screen SHALL offer the day it was handed for a new commitment, SHALL accept any
+calendar date the system supports, the future included, and MUST NOT judge that date against it or
+bound it beyond the calendar.
 
-A number kind's two range ends and a total kind's target SHALL each be taken as text exactly as typed,
-and SHALL NOT be judged, formed or blocked before they arrive. Each SHALL be read as a number entry
-reads a committed number, and there SHALL be one such reading rather than two: no
-locale consulted, blank space at either end disregarded, and what is left may carry a leading minus,
-SHALL hold at least one digit, SHALL hold no character that is not a digit but for at most one
-separator, a full stop or a comma, and SHALL hold no more than thirty-eight significant digits. What
-that reading does not hold as a number SHALL NOT be rounded, truncated or adjusted to fit.
-Whether a field is blank SHALL be asked before it is read as a number, blank being decided by the one
-test this package asks for the question. A range end holding a zero-width space alone SHALL be
-refused as not a number rather than as empty. Both range ends blank SHALL be a commitment of the
-number kind carrying no range, while one end filled and the other blank is not no range. A range or a
-target left in a field the chosen kind has no room for SHALL be ignored, and SHALL NOT be refused: the
-tick and note kinds carry neither whatever those fields hold, the number kind takes its range and
-ignores a target, and the total kind takes its target and ignores a range.
+A number kind's two range ends and a total kind's target SHALL each be taken as text exactly as
+typed, and SHALL NOT be judged, formed or blocked before they arrive. Each SHALL be read as a number
+entry reads a committed number, and there SHALL be one such reading rather than two: no locale
+consulted, blank space at either end disregarded, and what is left may carry a leading minus, SHALL
+hold at least one digit, SHALL hold no character that is not a digit but for at most one separator,
+a full stop or a comma, and SHALL hold no more than thirty-eight significant digits. What that
+reading does not hold as a number SHALL NOT be rounded, truncated or adjusted to fit. Whether a
+field is blank SHALL be asked before it is read as a number, blank being decided by the one test
+this package asks for the question. A range end holding a zero-width space alone SHALL be refused as
+not a number rather than as empty. Both range ends blank SHALL be a commitment of the number kind
+carrying no range, while one end filled and the other blank is not no range. A range or a target
+left in a field the chosen kind has no room for SHALL be ignored, and SHALL NOT be refused: the tick
+and note kinds carry neither whatever those fields hold, the number kind takes its range and ignores
+a target, and the total kind takes its target and ignores a range.
 
 #### Scenario: a commitment defined through a commitments screen is kept at the roster place before either list says so
 
@@ -2315,26 +2316,27 @@ condition SHALL last only until the app is shown again, since being shown reads 
 
 ### Requirement: A commitments screen holds the change it refused and why, one at a time
 
-Where a change asked of a commitments screen is refused, the screen SHALL hold which change was asked
-for and why it was refused, as well as answering the refusal to the caller. The change held SHALL be
-one of the seven a person can ask for — defining a commitment, stopping keeping one, taking a stopped
-one up again, removing one, moving one, moving a whole group, changing one — and for the five asked
-about a commitment already on one of its lists it SHALL name that commitment: the one it was asked
-about, not the one the change would have produced. A refused group move SHALL name the category
-instead. The seven are counted here and numbered nowhere else: a requirement that introduces one SHALL
-name it, and SHALL NOT identify it by its position among them.
+Where a change asked of a commitments screen is refused, the screen SHALL hold which change was
+asked for and why it was refused, as well as answering the refusal to the caller. The change held
+SHALL be one of the seven a person can ask for — defining a commitment, stopping keeping one, taking
+a stopped one up again, removing one, moving one, moving a whole group, changing one — and for the
+five asked about a commitment already on one of its lists it SHALL name that commitment: the one it
+was asked about, not the one the change would have produced. A refused group move SHALL name the
+category instead. The seven are counted here and numbered nowhere else: a requirement that
+introduces one SHALL name it, and SHALL NOT identify it by its position among them.
 
 Why it was refused SHALL be the same refusal answered to the caller and no more, and a commitments
 screen SHALL hold no words a person reads. It SHALL hold at most one refused change at a time, the
-change asked for last. A call asking for no change at all SHALL NOT be a refusal, and each SHALL leave
-the screen holding no refused change and leave whatever it holds exactly as it was: a stop asked about a
-commitment it does not keep; a stop confirmed with nothing awaiting confirmation; a
+change asked for last. A call asking for no change at all SHALL NOT be a refusal, and each SHALL
+leave the screen holding no refused change and leave whatever it holds exactly as it was: a stop
+asked about a commitment it does not keep; a stop confirmed with nothing awaiting confirmation; a
 take-up-again of one it has not stopped; a removal asked about a commitment on neither list; a
 removal confirmed with nothing awaiting removal; a removal confirmed while the name typed back does
-not match; a move of one it does not keep; a move into a group it draws none of, or to
-an offset that group does not have; a group move of a group it draws none of, those under no category
-among them, or to an offset its category groups do not have; a change asked about a commitment on neither list; and a change that names what a commitment
-already is. A name typed back that does not match is not a refusal.
+not match; a move of one it does not keep; a move into a group it draws none of, or to an offset
+that group does not have; a group move of a group it draws none of, those under no category among
+them, or to an offset its category groups do not have; a change asked about a commitment on neither
+list; and a change that names what a commitment already is. A name typed back that does not match is
+not a refusal.
 
 #### Scenario: a commitments screen holds a refused definition against defining a commitment
 
@@ -3843,7 +3845,7 @@ could not keep at the roster place SHALL be refused as a roster that could not b
 name the category it was asked to move, and SHALL leave both lists as they were; a refused group
 move is the only kind of refused change this screen holds that names something other than a
 commitment. A group move that leaves a group where it is drawn SHALL change nothing, SHALL say
-nothing, SHALL refuse nothing and SHALL NOT answer a refused change the screen is already holding.
+nothing and SHALL refuse nothing.
 
 #### Scenario: a group moved through a commitments screen is drawn where it was moved to, and is kept there
 
@@ -4254,8 +4256,8 @@ commitment its roster is keeping, and they cannot for one it has stopped keeping
 kind that commitment's days take, with the range or the target that kind carries — the number kind's
 range, or that it carries none; the total kind's target; nothing beside a tick or a note. The kind
 is not one of the four, so it SHALL be shown, SHALL never be asked about, and nothing SHALL be said
-about whether it can be changed. Every control the form draws SHALL be there, and the ones that
-cannot be changed SHALL NOT let a thumb in.
+about whether it can be changed. A control for each of the things above SHALL be drawn, and the ones
+that cannot be changed SHALL NOT let a thumb in.
 
 #### Scenario: a commitments screen says what a commitment it keeps is made of, on each of the four rhythms
 
