@@ -209,7 +209,7 @@ shape it lacks, not the quota.
   > kept this week (something like 1/3x a week)"
 
 - **Touches, from that wording** — the string it wants changed is `schedule`'s, not a screen's.
-  *A schedule says the rhythm it runs on in words* and *A weekly-quota schedule is said as a number
+  *A schedule says the rhythm it runs on in words* and *A weekly-quota schedule is said as its number
   of times a week* are what produce "3x a week", and neither has ever been given a history. "1/3x a
   week" is that string with a count of kept days put inside it, so either those words stop being the
   schedule's alone or the count is drawn beside them and the words are left as they are. They are
