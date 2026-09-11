@@ -69,7 +69,8 @@ history — and a difference in what one was handed that never reaches a row mak
 it. A screen can therefore keep two days and form its view again from them, which is why the
 exception above needs a comparison and nothing else; it is also what lets ADR-1043 hold three day
 views at once while a day change pages under the finger. The rules stay stated in `day-screen`'s
-*A day view is a value*, and the reasoning is here because this is the decision that rests on them.
+*A day view is a value made of its groups and its date*, and the reasoning is here because this is
+the decision that rests on them.
 
 ## Consequences
 
