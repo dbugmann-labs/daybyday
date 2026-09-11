@@ -448,6 +448,42 @@ decision it records is the owner's, twice.*
   views — so a single change touches most of `day-screen` at once; splitting them costs the "no
   rule in that spec rests on prose alone" framing its single sentence states.
 
+### B-045 — every record rule has a scenario that proves it
+
+*Captured 2026-09-11.*
+
+> Cover the seven `record` rules the condensing survey found normative but untested — the sum is
+> compared against the target in that order and never the reverse, a non-default kind round-trips
+> through a store as the kind it is, a store persists no day's sum, a history gives out the sum and
+> never the additions themselves, the three take-back prohibitions, a carry-over adds no key, no
+> field and no version to what a record is on disk, and an addition carries no position of its own
+> — so that no rule in that spec rests on prose alone.
+
+- **Trigger** — the next Story that modifies one of these requirements and trims a rule nobody
+  tests. `condense-record-spec` (#205) demonstrated the danger twice over: two MUST NOT
+  prohibitions and a "SHALL carry nothing else" closure were dropped by the rewrite and survived
+  every mechanical check, and only a reviewer holding the old text beside the new one caught them.
+  Neither was on any survey's *Rules at risk* list.
+- **Touches** — `record`. The list of seven lives in
+  `openspec/changes/archive/2026-09-11-condense-record-spec/design.md` § *Open Questions*, and the
+  surveys behind it are `docs/research/2026-09-09-concise-specs/survey-record.md` and
+  `survey-2026-09-10-record.md`.
+- **Principle** — tested against *five percent of seven things*: **fails**, the same way B-044
+  does — it adds no capability a person can do, and makes seven already-shipped rules provable
+  where they now rest on prose alone. Captured anyway, for the same reason: a rule with no scenario
+  is what a later trim removes without anyone noticing.
+- **Open** — **several of the seven cannot be given a scenario at all.** "A store persists no day's
+  sum", "a history gives out the sum and never the additions themselves", and two of the three
+  take-back prohibitions are **absences** — the lack of a surface — and a WHEN/THEN cannot assert
+  that something was not offered. Whether those belong on this list beside the ones that can be
+  tested, or belong somewhere else entirely, is undecided; it is the same question B-044 raises
+  about its own two untestable-by-construction rules.
+- **Open** — this is the second capability to produce such a list, after B-044 for
+  `day-screen`, and `condense-commitment-spec` and `condense-schedule-spec` are running now and
+  will each produce a third and a fourth. Whether these become one Feature over all four
+  capabilities or one Story each is a grooming decision, and clustering them is cheaper than
+  splitting one later.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
