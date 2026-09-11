@@ -59,6 +59,8 @@ flowchart TD
   I208["Story 208 — condense-schedule-spec"]
   I211["Story 211 — drop-duplicate-schedule-scenarios"]
   I214["Story 214 — drop-duplicate-record-scenarios"]
+  I215["Story 215 — drop-duplicate-day-screen-scenarios"]
+  I216["Story 216 — drop-duplicate-commitment-scenarios"]
 
   I1 --> I26
   I1 --> I27
@@ -76,6 +78,7 @@ flowchart TD
   I26 --> I168
   I26 --> I192
   I26 --> I204
+  I26 --> I216
   I26 --> I42
   I27 --> I100
   I27 --> I174
@@ -84,6 +87,7 @@ flowchart TD
   I27 --> I182
   I27 --> I184
   I27 --> I201
+  I27 --> I215
   I27 --> I70
   I27 --> I71
   I27 --> I72
@@ -97,6 +101,7 @@ flowchart TD
   I53 --> I141
   I53 --> I142
   I53 --> I205
+  I53 --> I214
   I53 --> I55
   I53 --> I56
   I6 --> I10
@@ -112,10 +117,10 @@ flowchart TD
   class I9 story,done
   class I10 story,done
   class I11 story,done
-  class I26 feature,settled
-  class I27 feature,settled
+  class I26 feature
+  class I27 feature
   class I42 story,done
-  class I53 feature,settled
+  class I53 feature
   class I55 story,done
   class I56 story,done
   class I70 story,done
@@ -152,4 +157,6 @@ flowchart TD
   class I205 story,done
   class I208 story,done
   class I211 story,done
-  class I214 story,orphan
+  class I214 story
+  class I215 story
+  class I216 story
