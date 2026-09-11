@@ -10,12 +10,12 @@ in the past answers the same way today as it did when it was today.
 
 ### Requirement: A weekday-set schedule is due on the weekdays it lists
 
-A commitment whose schedule is a set of weekdays SHALL be due on a calendar date exactly when
-the weekday of that date is a member of the set, and SHALL NOT be due on any other date.
-Membership is the whole rule: the system MUST NOT consider the current time, the device's time
-zone, the locale, or which day the user considers the week to begin on. A set that lists every
-weekday is therefore due on every date, and a set that lists no weekday is due on none — the
-system MUST answer both rather than treat either as an error.
+A commitment whose schedule is a set of weekdays SHALL be due on a calendar date exactly when the
+weekday of that date is a member of the set, and SHALL NOT be due on any other date. The system MUST
+NOT consider the current time, the device's time zone, the locale, or which day the user considers
+the week to begin on. A set that lists every weekday SHALL be due on every date, and a set that
+lists no weekday SHALL be due on none; the system MUST answer both rather than treat either as an
+error.
 
 #### Scenario: a date on a listed weekday is due
 
@@ -47,11 +47,9 @@ system MUST answer both rather than treat either as an error.
 
 ### Requirement: The weekday of a calendar date follows the Gregorian calendar
 
-The system SHALL determine which weekday a calendar date falls on from the Gregorian calendar
-and from nothing else, for every calendar date it accepts. This MUST hold across the boundaries
-where a wrong answer is easiest to produce and hardest to notice: the leap day of a leap year,
-and the turn of a year. The answer MUST NOT vary with the host's time zone or locale, which it
-cannot, because a calendar date carries neither.
+The system SHALL determine which weekday a calendar date falls on from the Gregorian calendar and
+from nothing else, for every calendar date it accepts. This MUST hold on the leap day of a leap year
+and across the turn of a year. The answer MUST NOT vary with the host's time zone or locale.
 
 #### Scenario: a leap day is placed on its Gregorian weekday
 
@@ -67,15 +65,16 @@ cannot, because a calendar date carries neither.
 
 ### Requirement: A calendar date names a day that exists
 
-A calendar date is a year, a month of that year and a day of that month. The system SHALL refuse
-to form a calendar date from a combination of the three that names no day, and MUST refuse it
-rather than adjust it: a day past the end of its month MUST NOT become a day of the following
-month, and a month past the twelfth MUST NOT become a month of the following year. A date that
-does not exist has no weekday, so no schedule may be asked about one.
+A calendar date SHALL be a year, a month of that year and a day of that month. The system SHALL form
+one from a combination of the three naming a day, in a year *A calendar date lies within the years
+the system supports* accepts, and SHALL refuse to form one naming no day. It MUST refuse rather than
+adjust: a day past the end of its month MUST NOT become a day of the following month, and a month
+past the twelfth MUST NOT become a month of the following year. No schedule SHALL be asked about a
+date that does not exist.
 
-The system SHALL also judge each of the three components as the number it was offered, and MUST
-NOT accept a date in which a component was treated as absent or unspecified because its value was
-extreme. A date with a component missing is not three numbers, so it names no day either.
+It SHALL also judge each component as the number it was offered, and MUST NOT accept a date in which
+a component was treated as absent or unspecified because its value was extreme. It MUST NOT form a
+date with a component missing.
 
 #### Scenario: a day beyond the end of its month is not a calendar date
 
@@ -120,25 +119,11 @@ extreme. A date with a component missing is not three numbers, so it names no da
 ### Requirement: A calendar date lies within the years the system supports
 
 The system SHALL form a calendar date only for a year from 1583 through 9999 inclusive, and SHALL
-refuse every year outside that range even when the three components name a day that plainly
-exists. The refusal MUST be a refusal rather than an adjustment: a year outside the range MUST NOT
-be clamped to the nearest supported year, and no schedule may be asked about a date the system
-declines to form.
-
-The lower bound is what makes the Gregorian promise above keepable, and it is drawn at a whole
-year on purpose. The Gregorian calendar was adopted on 15 October 1582, and a calendar reaching
-back past that day applies the Julian one before it, which places a date before the reform on a
-weekday the Gregorian calendar does not give it. The reform fell inside a year, so 1583 is the
-first year that is Gregorian throughout, and the system refuses the whole of 1582 rather than the
-part of it that precedes 15 October. That over-refuses the seventy-eight days from 15 October to
-31 December 1582, whose weekdays it could in fact have answered correctly. It is refused anyway,
-because the bound is then a comparison of years, and eleven weeks of the sixteenth century are
-worth nothing to a product about commitments a person keeps this month.
-
-The upper bound keeps the year inside a range the system judges for itself, so that no year large
-enough to be read back as unspecified reaches the calendar underneath — the month and the day are
-bounded by the requirement above, not by this one. A four-digit year is well past the horizon of
-any commitment a person keeps.
+refuse every year outside that range even when the three components name a day that plainly exists.
+It MUST refuse such a year rather than adjust it: a year outside the range MUST NOT be clamped to
+the nearest supported year, and no schedule SHALL be asked about a date the system declines to form.
+This requirement SHALL bound the year alone, and the month and the day SHALL be bounded as *A
+calendar date names a day that exists* says.
 
 #### Scenario: a date before the Gregorian calendar's adoption is not a calendar date
 
@@ -169,11 +154,11 @@ any commitment a person keeps.
 
 A commitment whose schedule is a day of the month SHALL be due on a calendar date exactly when the
 day of the month that date falls on is the scheduled day, and SHALL NOT be due on any other date,
-save where the next requirement places it on the last day of a month too short to hold it. The rule
-is monthly and unbounded: it repeats in every month of every year the system supports, it is
-anchored to no start month, and the system MUST NOT consider the weekday the date falls on, the
-current time, the device's time zone or the locale. Exactly one date in any month therefore
-satisfies a day-of-month schedule — never none, and never two.
+save as *A month too short for the scheduled day is due on its last day* says. The rule SHALL repeat
+in every month of every year the system supports and SHALL be anchored to no start month. The system
+MUST NOT consider the weekday the date falls on, the current time, the device's time zone or the
+locale. Exactly one date in every month SHALL satisfy a day-of-month schedule, never none and never
+two.
 
 #### Scenario: a date on the scheduled day of the month is due
 
@@ -201,19 +186,14 @@ satisfies a day-of-month schedule — never none, and never two.
 ### Requirement: A month too short for the scheduled day is due on its last day
 
 When a month has fewer days than the scheduled day of the month, the commitment SHALL be due on the
-last day of that month. It MUST NOT be skipped in that month, and it MUST NOT roll into the month
-after: a schedule on the 31st is due on 28 February and not on 3 March. The last day is the true
-length of that particular month — 28 or 29 days of February according to whether the year is a leap
-year, 30 days of the four short months — so the system MUST NOT substitute a fixed shortest month.
-A month long enough to hold the scheduled day is untouched by this rule: the commitment is due on
-the scheduled day itself and on no other date in that month.
+last day of that month, MUST NOT be skipped in that month, and MUST NOT roll into the month after.
+The last day SHALL be taken from that particular month's true length, 28 or 29 days of February by
+whether the year is a leap year and 30 of a thirty-day month, and MUST NOT be taken from a fixed
+shortest month. A month long enough to hold the scheduled day SHALL be untouched by this rule: the
+commitment SHALL be due on the scheduled day itself and on no other date in that month.
 
-This is what keeps a monthly commitment monthly. A schedule on the 31st that were simply absent from
-February, April, June, September and November would come due in seven months of the year and pass
-five of them in silence, and a commitment that quietly never comes due is the failure this product
-exists to remove. The consequence is accepted rather than hidden: in a common February, schedules on
-the 28th, 29th, 30th and 31st all fall on the same date, which is the correct reading of "the end of
-every month" and not a collision to be resolved.
+In a common February, schedules on the 28th, 29th, 30th and 31st SHALL all be due on the same date,
+and the system MUST NOT treat that as a collision to be resolved.
 
 #### Scenario: a schedule on the thirty-first is due on the last day of a thirty-day month
 
@@ -248,9 +228,8 @@ every month" and not a collision to be resolved.
 
 The system SHALL form a day of the month only from a number from 1 through 31 inclusive, and MUST
 refuse every other number rather than adjust it: a number past 31 MUST NOT be reduced to the end of
-a month, and a number below 1 MUST NOT be read as counting backwards from the end of one. A number
-outside that range names no day of any month, so no schedule may be built on one — the same refusal,
-for the same reason, that stops a calendar date being formed from a combination that names no day.
+a month, and a number below 1 MUST NOT be read as counting backwards from the end of one. No
+schedule SHALL be built on a number outside that range.
 
 #### Scenario: a day of the month past the thirty-first is not a day of the month
 
@@ -271,19 +250,15 @@ for the same reason, that stops a calendar date being formed from a combination 
 ### Requirement: An every-N-days schedule is due on its start date and every interval after it
 
 A commitment whose schedule is an interval of days SHALL be due on a calendar date exactly when that
-date is the schedule's start date, or falls a whole number of intervals after it — when the number of
-days from the start date to the date is zero, or an exact multiple of the interval. It SHALL NOT be
+date is the schedule's start date or falls a whole number of intervals after it, and SHALL NOT be
 due on any other date.
 
-The count is a count of calendar days, and every day counts once: the leap day of a leap year is a
-day of the interval like any other, and the system MUST NOT vary the count by the length of the
-months the two dates fall in, by the weekday either falls on, by the turn of a year, by the current
-time, by the device's time zone or by the locale. The rule repeats forward without end for as long
-as the supported year range allows a date to be formed; no month, week or year resets it, and there
-is no final occurrence.
-
-Both the start date and the date asked about are calendar dates, so both already carry the validity
-and supported-year rules above and this requirement adds nothing to them.
+The count SHALL be of calendar days, every day counting once and the leap day of a leap year
+included, and MUST NOT vary by the length of the months the two dates fall in, the weekday either
+falls on, the turn of a year, the current time, the device's time zone or the locale. The rule SHALL
+repeat forward without end while the supported years allow a date to be formed, with no month, week
+or year resetting it and no final occurrence. An interval longer than the supported years SHALL be
+answered as *An interval is a whole number of days, at least one* says.
 
 #### Scenario: a schedule is due on its start date
 
@@ -345,18 +320,9 @@ and supported-year rules above and this requirement adds nothing to them.
 
 A commitment whose schedule is an interval of days SHALL NOT be due on any calendar date earlier
 than its start date. The system MUST NOT project the interval backwards: a date a whole number of
-intervals before the start date is not due, and neither is any other earlier date. The start date is
-where the rule begins, not a phase reference for arithmetic that runs in both directions.
-
-This is what stops the product inventing a history. A commitment is decided on some day, and the
-days before it are days on which nothing had been committed to; because an unticked due day reads as
-a day the commitment was missed, a rule that reached backwards would fill the past with misses that
-never happened, on a screen whose whole purpose is to show what was actually kept.
-
-The interval is the only rule shape this can be said of, because it is the only one carrying a date
-of its own. The weekday-set and day-of-month shapes are anchored to the calendar rather than to a
-start, and remain due on every date they match in either direction; this requirement does not change
-them.
+intervals before the start date SHALL NOT be due, and neither SHALL any other earlier date. The
+weekday-set and day-of-month shapes SHALL be anchored to the calendar rather than to a start, and
+SHALL remain due on every date they match in either direction.
 
 #### Scenario: a date a whole interval before the start date is not due
 
@@ -375,15 +341,13 @@ them.
 
 The system SHALL form an interval only from a whole number of days of one or more, and MUST refuse
 zero and every negative number rather than adjust them: zero MUST NOT be read as "every day", and a
-negative number MUST NOT be read as an interval running backwards. A number outside that range names
-no rhythm, so no schedule may be built on one — the same refusal, for the same reason, that stops a
-calendar date being formed from a combination that names no day.
+negative number MUST NOT be read as an interval running backwards. No schedule SHALL be built on a
+number outside that range. An interval of one day SHALL be valid, and a schedule on it SHALL be due
+on every date from its start date onwards.
 
-An interval of one day is valid, and means a commitment due on every date from its start date
-onwards. There is no upper bound: a number of days larger than the entire supported range of years
-names a schedule that comes due on its start date and never again, which is a defined answer rather
-than an error, and the system MUST give that answer rather than refusing the interval or losing the
-arithmetic to overflow.
+An interval SHALL have no upper bound. A number of days larger than the entire supported range of
+years SHALL name a schedule that comes due on its start date and never again, and the system MUST
+give that answer rather than refusing the interval or losing the arithmetic to overflow.
 
 #### Scenario: an interval of no days is not an interval
 
@@ -403,24 +367,15 @@ arithmetic to overflow.
 
 ### Requirement: A weekly-quota schedule is due on every date
 
-A commitment whose schedule is a weekly quota — a number of times to be done within a week, on any
-days — SHALL be due on every calendar date the system forms. A quota constrains how many times, not
-which days, so every day of every week is a day the commitment runs on; the system MUST NOT consider
-the weekday the date falls on, which week the date belongs to, where a week begins, how many times
-the quota asks for, the current time, the device's time zone or the locale. A quota of one and a
-quota of seven therefore answer alike on every date, and both answer alike to a schedule listing all
-seven weekdays. Two rules having the same extension is not a contradiction, and this capability does
-not resolve one.
+A commitment whose schedule is a weekly quota, a number of times to be done within a week on any
+days, SHALL be due on every calendar date the system forms. The system MUST NOT consider the weekday
+the date falls on, which week the date belongs to, where a week begins, how many times the quota
+asks for, the current time, the device's time zone or the locale.
 
-**Whether the week's quota has already been met is not a question this capability answers, and this
-requirement MUST NOT be read as claiming that it is.** Due-ness here says the day is one on which
-the commitment may be done; it does not say the commitment is still outstanding. Answering that
-needs a record of what was ticked, which is a question asked of a commitment's history rather than
-of a date, and the system SHALL keep it outside this capability: a surface that stops showing a
-weekly quota once its week is complete MUST decide that from tick records, not from this predicate.
-The consequence is stated rather than hidden — a consumer that draws every due commitment and
-nothing else will show a three-times-a-week commitment on all seven days of the week, which is
-correct for the first three and unhelpful for the last four.
+Being due SHALL mean that the day is one on which the commitment may be done, and MUST NOT mean that
+the commitment is still outstanding. The system SHALL keep the question of whether a week's quota
+has been met outside this capability: a surface that stops showing a weekly quota once its week is
+complete MUST decide that from tick records, not from this predicate.
 
 #### Scenario: a weekly quota is due on every date of a week
 
@@ -461,16 +416,9 @@ correct for the first three and unhelpful for the last four.
 
 The system SHALL form a weekly quota only from a whole number of times from 1 through 7 inclusive,
 and MUST refuse every other number rather than adjust it: zero MUST NOT be read as a commitment with
-nothing to do, a negative number names no obligation, and a number above seven MUST NOT be reduced
-to seven. A number outside that range names no weekly rhythm, so no schedule may be built on one —
-the same refusal, for the same reason, that stops a calendar date being formed from a combination
-that names no day.
-
-Seven is the ceiling because a day records at most one completion of a commitment, so a week holds
-at most seven of them and an eighth would be a promise no week could ever keep. A quota that can
-never be met is the same failure as a commitment that never comes due, which this capability already
-refuses elsewhere. A quota of exactly seven is valid and means one completion on each day of the
-week.
+nothing to do, a negative number MUST NOT be read as any obligation, and a number above seven MUST
+NOT be reduced to seven. No schedule SHALL be built on a number outside that range. A quota of
+exactly seven SHALL be valid and SHALL mean one completion on each day of the week.
 
 #### Scenario: a quota below one time a week is not a weekly quota
 
@@ -495,31 +443,12 @@ week.
 
 ### Requirement: A calendar date gives back the year, the month and the day it names
 
-A calendar date SHALL give back the three numbers it names — the year, the month and the day — and
-SHALL give each of them back exactly as it was offered, unadjusted. Forming a calendar date from
-the three a formed one gives back SHALL give an equal date: the read-back is the inverse of the
-forming the requirements above describe, and it loses nothing on the way.
-
-The three SHALL be readable and SHALL NOT be writable. A calendar date whose components could be
-assigned one at a time could be walked, between two dates that both exist, through a combination
-that names none — 31 January with its month set to February — and the refusals above would then be
-a rule about how a date is first made rather than a rule about every calendar date that exists. The
-only way to have a different calendar date is to form a new one, which is judged the same way the
-first was.
-
-This is the half of ADR-1004's conversion that could not be performed. That decision put calendar
-dates in the rule engine and instants at the edge, and an edge converts in both directions: turning
-an instant into a calendar date is a matter of asking a calendar for its components, and turning a
-calendar date back into an instant is not possible at all unless those three numbers can be read.
-The first thing to need it is a screen seeding a date picker with the day it offers to keep a
-commitment from, which speaks instants and has no other way to be told which day that is. Without
-the read-back such a screen must read a clock of its own, and then it is showing a day nobody
-handed it.
-
-This requirement is about a calendar date and nothing else. A day of the month, an interval of days
-and a weekly quota still give their numbers back to nothing outside the module, and a calendar date
-is still not ordered — `docs/open-questions.md` § *Known gaps* carries both, and neither is closed
-here.
+A calendar date SHALL give back the three numbers it names, the year, the month and the day, and
+SHALL give each back exactly as it was offered, unadjusted. The read-back SHALL be the inverse of
+forming and SHALL lose nothing: a calendar date formed from the three numbers a formed one gives
+back SHALL be formed and SHALL equal the one that gave them back. The three numbers SHALL be
+readable and SHALL NOT be writable, and a different calendar date SHALL be had only by forming a new
+one, judged the same way the first was.
 
 #### Scenario: a calendar date gives back the three numbers it was formed from
 
@@ -550,29 +479,16 @@ here.
 
 ### Requirement: A schedule says the rhythm it runs on in words
 
-A schedule SHALL say, in words, the rhythm it runs on. That answer is its **rhythm in words**, and
-it is read off the schedule and off nothing else: no calendar date is asked for and none is
-consulted, so a schedule says the same words whatever day it is asked on, whatever day it is asked
-about, and whether or not any commitment carries it.
+A schedule SHALL say the rhythm it runs on in words, its **rhythm in words**. It SHALL be read off
+the schedule alone, consulting no calendar date, and SHALL be the same whatever day it is asked on,
+whatever day it is asked about, and whether or not any commitment carries it. It SHALL say the shape
+and its number and nothing else.
 
-It SHALL say the shape and its number and nothing else. In particular an every-N-days schedule
-MUST NOT say its start date, and a day-of-month schedule MUST NOT say that a month too short for
-its day is due on that month's last day — both are true of the schedule and neither is part of the
-rhythm a person reads beside a name. The four requirements below fix the words for each shape.
-
-The words SHALL be this capability's own — the English fixed here — and MUST NOT be taken from the
-device's language, region, locale or calendar preferences, exactly as a day title's words are not
-(ADR-1022). The same schedule is said in the same words on every device, which is what makes a
-rhythm in words something a scenario can state at all. Every number SHALL be said in digits, with
-no grouping separator and no leading zero, which is the same rule stated of the part a formatter
-would otherwise decide.
-
-Two schedules that name the same rhythm SHALL say the same words: a weekday set of all seven and
-an interval of one day are both said as "Every day", because they are one rhythm written two ways.
-This is a rule about the *rhythm* and not about which dates the schedule is due on. A weekly quota
-of seven times a week is due on exactly the same dates as those two and is a different rhythm — it
-asks for seven days in any week rather than for every day — so it is said in its own words and not
-as "Every day".
+The words SHALL be this capability's own English and MUST NOT be taken from the device's language,
+region, locale or calendar preferences. Every number SHALL be said in digits, with no grouping
+separator and no leading zero. Two schedules that name the same rhythm SHALL say the same words, and
+a weekday set of all seven and an interval of one day SHALL name the same rhythm. The system MUST
+NOT decide whether two schedules name one rhythm from the dates they are due on.
 
 #### Scenario: each of the four schedule shapes says the rhythm it runs on in words
 
@@ -594,18 +510,13 @@ as "Every day".
 
 ### Requirement: A weekday-set schedule is said as its weekdays, in week order from Monday
 
-A schedule that is a set of weekdays SHALL be said as the three-letter English names of the
-weekdays it lists — "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" — separated by a comma and a
-single space: "Mon, Wed, Sat". The names SHALL be in week order beginning at Monday, whatever order
-the set was built in and whichever days it holds; a weekday set is a set and carries no order of
-its own, so the order is this capability's and Monday is where it starts.
+A schedule that is a set of weekdays SHALL be said as the three-letter English names of the weekdays
+it lists, "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" and "Sun", separated by a comma and a single
+space. The names SHALL be in week order beginning at Monday, whatever order the set was built in and
+whichever days it holds.
 
-A set listing every weekday SHALL be said as "Every day" rather than as seven names, which is what
-a person means by it. A set listing no weekday SHALL be said as "No day". The empty set is a
-schedule the system forms and a roster can hold — it is due on no date, and this capability accepts
-it rather than treating it as an error — so it has words like every other schedule, even though a
-commitments screen refuses to define a commitment on one (ADR-1028). Saying nothing at all for it
-would leave an entry that reads as though its rhythm were missing rather than empty.
+A set listing every weekday SHALL be said as "Every day" rather than as seven names. A set listing
+no weekday SHALL have words like every other schedule, and SHALL be said as "No day".
 
 #### Scenario: a weekday-set schedule says its weekdays as three-letter names
 
@@ -638,16 +549,12 @@ would leave an entry that reads as though its rhythm were missing rather than em
 ### Requirement: An every-N-days schedule is said as its interval, and never as its start date
 
 A schedule that is an interval of days SHALL be said as the word "Every", a space, the number of
-days in digits, a space, and the word "days" — "Every 14 days". An interval of one day SHALL be
-said as "Every day", with no number and no plural, which is the same rhythm a weekday set of all
-seven names and therefore the same words.
+days in digits, a space, and the word "days". An interval of one day SHALL be said as "Every day",
+with no number and no plural, as *A schedule says the rhythm it runs on in words* says of two
+schedules that name the same rhythm.
 
-The start date MUST NOT be said, in any form. Two schedules of the same interval and different
-start dates SHALL say the same words. This is the rule rather than an omission: on every commitment
-a commitments screen makes, the start date is the day the commitment is kept from, so a start date
-said beside a name would repeat a day the person already chose. A commitment formed some other way
-may carry a start date that disagrees with the day it is kept from, and its rhythm in words says
-neither — what the words say is the interval.
+The start date MUST NOT be said in any form. Two schedules of the same interval and different start
+dates SHALL say the same words.
 
 #### Scenario: an every-N-days schedule says its interval in days
 
@@ -674,15 +581,12 @@ neither — what the words say is the interval.
 ### Requirement: A day-of-month schedule is said as the ordinal of its day
 
 A schedule that is a day of the month SHALL be said as the word "The", a space, the day number in
-digits, and that number's English ordinal suffix — "The 25th". The suffix SHALL be "st" for 1, 21
-and 31, "nd" for 2 and 22, "rd" for 3 and 23, and "th" for every other day from 1 through 31. The
-eleventh, twelfth and thirteenth take "th" although they end in 1, 2 and 3, which is the one place
-a rule written from the last digit alone gets English wrong.
+digits, and that number's English ordinal suffix. The suffix SHALL be "st" for 1, 21 and 31, "nd"
+for 2 and 22, "rd" for 3 and 23, and "th" for every other day from 1 through 31, the 11th, 12th and
+13th included.
 
-The rule that a month too short for the scheduled day is due on that month's last day MUST NOT be
-said. "The 31st" is said as "The 31st" in every month of every year, and the words say nothing
-about February. The clamp is a fact about which dates the schedule is due on, and a rhythm in words
-says the rhythm a person chose.
+The words MUST NOT say the clamp onto a short month that *A month too short for the scheduled day is
+due on its last day* describes, and SHALL be the same in every month of every year.
 
 #### Scenario: a day-of-month schedule says its day as an ordinal
 
@@ -713,14 +617,10 @@ says the rhythm a person chose.
 ### Requirement: A weekly-quota schedule is said as a number of times a week
 
 A schedule that is a weekly quota SHALL be said as the number of times in digits, the letter "x"
-with no space before it, a space, and the words "a week" — "3x a week". Every number from one
-through seven SHALL be said that way, with no special case at either end: one time a week is said
-as "1x a week" and not as "Once a week", and seven times a week is said as "7x a week".
-
-Seven times a week is deliberately not said as "Every day". A quota of seven is due on every date,
-as a weekday set of all seven is (ADR-1015), but it asks for seven completions in a week on any
-days of it rather than for one on each day, and a person reading "Every day" beside a name would
-read an obligation the schedule does not carry.
+with no space before it, a space, and the words "a week". Every number from one through seven SHALL
+be said that way, with no special case at either end: one time a week MUST NOT be said as "Once a
+week", and seven times a week MUST NOT be said as "Every day". A weekday set of all seven SHALL be
+said as *A weekday-set schedule is said as its weekdays, in week order from Monday* says.
 
 #### Scenario: a weekly-quota schedule says its number of times a week
 
