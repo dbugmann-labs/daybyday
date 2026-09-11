@@ -484,6 +484,46 @@ decision it records is the owner's, twice.*
   capabilities or one Story each is a grooming decision, and clustering them is cheaper than
   splitting one later.
 
+### B-046 — every commitment rule has a scenario that proves it
+
+*Captured 2026-09-11.*
+
+> Cover the twenty-one `commitment` rules the condensing surveys found normative but untested —
+> among them that the kept-from floor does not shift a schedule's own start date or phase, that a
+> roster store never writes its commitments grouped by category, that the earliest-day answer
+> consults no present moment, no time zone and no locale, that the record place is written before
+> the roster place, and that taking a commitment up again does not lower the earliest day — so that
+> no rule in that spec rests on prose alone.
+
+- **Trigger** — the next Story that modifies one of these requirements and trims a rule nobody
+  tests. `condense-commitment-spec` (#204) demonstrated the danger from the other direction: the
+  rewrite *introduced* a rule saying the stopped list is in the order commitments were taken on,
+  which a scenario in that same requirement disproves, and it survived every mechanical check, a
+  ticked box and a verifier's PASS. Only a reviewer reading the prose against the scenario caught
+  it. A rule with no scenario is equally a rule nothing contradicts when it is written wrong.
+- **Touches** — `commitment`. The list of twenty-one lives in
+  `openspec/changes/archive/2026-09-11-condense-commitment-spec/design.md` § *Open Questions*, and
+  the surveys behind it are `docs/research/2026-09-09-concise-specs/survey-commitment-A.md`,
+  `survey-commitment-B.md`, `survey-2026-09-10-commitment-modified.md` and
+  `survey-2026-09-10-commitment-added.md`.
+- **Principle** — tested against *five percent of seven things*: **fails**, the same way B-044 and
+  B-045 do — it adds no capability a person can do, and makes twenty-one already-shipped rules
+  provable where they now rest on prose alone. Captured anyway, for the same reason.
+- **Open** — **the list was wrong four times before it was right**, which is the reason to read it
+  before working it rather than taking it as a specification. Two entries had scenarios already,
+  one was tested in the half it claimed was not, and one named a rule the spec does not state at
+  all — a misattribution that originated in this Story's own frontier index and propagated into
+  `design.md` before G7 caught it. Whoever picks this up should re-derive each of the twenty-one
+  against the spec before writing a test for it.
+- **Open** — one of the twenty-one is **untestable by construction**, not merely untested: no
+  requirement may identify a refusal by its position among the seven kinds, which is a rule about
+  how the spec is written and now half of ADR-1049. It is the same question B-044 and B-045 raise
+  about their own such entries.
+- **Open** — this is the third capability to produce such a list, after B-044 for `day-screen` and
+  B-045 for `record`, with `condense-schedule-spec` (#208) running now and due to produce a fourth.
+  B-045 already names the grouping question: one Feature over all four capabilities, or one Story
+  each. Four lists make that a grooming decision worth taking rather than deferring again.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
