@@ -15,8 +15,8 @@ decision 6 says which may be dropped; this change applies it to `day-screen`, as
   the spec, which is the one position change.
 - Two requirements are MODIFIED in place: one follows a renamed heading it cites, and one names a
   day picked on the day picker among what changes the day a screen is showing, as its siblings do.
-- Two kept tests are brought to their unchanged scenarios, no assertion weakened; one that fails is
-  withdrawn from this change rather than bent to pass.
+- Two kept tests are brought to their unchanged scenarios before any deletion, no assertion
+  weakened; a red on either stops the change before anything is deleted and returns it to G4.
 - ADR-1026's live reference to a renamed heading follows it.
 - **No behaviour changes, no scenario title changes, and no seam is new or changed.**
 

@@ -13,9 +13,9 @@ The today SHALL be given to a day screen and never asked for, this capability re
 consulting no time zone or locale. A day screen SHALL hold two separate days: the today it was
 handed, as of which every question it asks is asked, and the day it is showing, which SHALL begin as
 that same today and SHALL be the one a move changes. A day screen MUST NOT keep only one of them. It
-SHALL hold the day it is showing until it is moved, a day is picked on its day picker, or the app is
-shown again, and SHALL be moved onto another day by nothing else, neither by time passing nor by a
-tick made on it; its today SHALL be replaced only when the app is shown again.
+SHALL hold the day it is showing until it is moved, a day is picked, or the app is shown again, and
+SHALL be moved onto another day by nothing else, neither by time passing nor by a tick made on it;
+its today SHALL be replaced only when the app is shown again.
 
 #### Scenario: a day screen opened where nothing has been kept holds the day view of that day with nothing kept
 
@@ -63,7 +63,7 @@ was last shown or the screen last returned to, whichever happened later, with an
 asking MUST NOT open the place. A commitment the roster stopped or removed SHALL have a row up to
 and including the day it was kept until, and none after; a day screen MUST NOT tell the two apart in
 any way: not in the row drawn, in what it says or offers, nor in its group. A group with nothing due
-produces no group, as *A day view is a value made of its groups and its date* states.
+produces no group, as *A day view is a value and nothing else* states.
 
 #### Scenario: a day screen draws the commitments its roster keeps, in the order they were taken on
 
@@ -175,8 +175,8 @@ rest is carried verbatim.
 
 ### Requirement: A day view is a value
 
-**Reason**: Added back below as *A day view is a value made of its groups and its date*, without a
-scenario another under it already asserts.
+**Reason**: Added back below as *A day view is a value and nothing else*, without a scenario another
+under it already asserts.
 **Migration**: Dropped with its test: `two day views of the same commitments, date and history are
 the same day view`. The rest is carried verbatim.
 
@@ -190,23 +190,23 @@ afterwards at the same place`. The rest is carried verbatim.
 
 ### Requirement: A day screen re-reads its day and its record when the app is shown again
 
-**Reason**: Added back below as *A day screen re-reads its day, its record and its roster when the
-app is shown again*, without a scenario another under it already asserts.
+**Reason**: Added back below as *A day screen re-reads its day and its places when the app is shown
+again*, without a scenario another under it already asserts.
 **Migration**: Dropped with its test: `a day screen shown again reads the record again`. The rest is
 carried verbatim.
 
 ### Requirement: A day screen tells on the row that was tapped that a change could not be kept
 
-**Reason**: Added back below as *A day screen tells on the row that was tapped that the change the
-row offers could not be kept*, without scenarios another under it already asserts.
+**Reason**: Added back below as *A day screen tells on the row that was tapped that its change could
+not be kept*, without scenarios another under it already asserts.
 **Migration**: Dropped with their tests: `a refused tick is told on the row that was tapped` and `a
 value that is not a number is told on the row, saying so`. The rest is carried verbatim.
 
 ### Requirement: What a day screen tells on a row lasts until the app is shown again, a change is kept, or the day it is showing changes
 
-**Reason**: Added back below as *What a day screen tells on a row lasts until the app is shown
-again, a change is kept at the record's place, or the day it is showing changes*, without a scenario
-another under it already asserts.
+**Reason**: Added back below as *What a day screen tells on a row lasts only until the app is shown
+again, a change is kept, or the day it is showing changes*, without a scenario another under it
+already asserts.
 **Migration**: Dropped with its test: `what a day screen tells on a row ends when the same change is
 made again and is kept`. The rest is carried verbatim.
 
@@ -262,22 +262,22 @@ afterwards at the same place`. The rest is carried verbatim.
 
 ### Requirement: A day screen says whether it offers the way back to today
 
-**Reason**: Added back below as *A day screen says whether it offers the way back to the today it
-was handed*, without a scenario another under it already asserts.
+**Reason**: Added back below as *A day screen answers whether it offers the way back to today*,
+without a scenario another under it already asserts.
 **Migration**: Dropped with its test: `a day screen showing the today it was handed offers no way
 back to today`. The rest is carried verbatim.
 
 ### Requirement: A day view says its day as a weekday
 
-**Reason**: Added back below as *A day view says its day as the name of its weekday*, without a
-scenario another under it already asserts.
+**Reason**: Added back below as *A day view says its day as its weekday*, without a scenario another
+under it already asserts.
 **Migration**: Dropped with its test: `a day view says its day as the three-letter name of its
 weekday`. The rest is carried verbatim.
 
 ### Requirement: A day screen says the day it is showing
 
-**Reason**: Added back below as *A day screen says the day it is showing as its day view's day
-title*, without a scenario another under it already asserts.
+**Reason**: Added back below as *A day screen says which day it is showing*, without a scenario
+another under it already asserts.
 **Migration**: Dropped with its test: `a day screen says the day it is showing`. The rest is carried
 verbatim.
 
@@ -548,7 +548,7 @@ handing the same commitment to a day view twice SHALL give two rows.
 - **THEN** the day view holds two rows, both named "Gym"
 - **AND** both say the commitment is not kept
 
-### Requirement: A day view is a value made of its groups and its date
+### Requirement: A day view is a value and nothing else
 
 A day view SHALL be the groups it holds and the calendar date it was formed on, and nothing else.
 Two day views SHALL be the same day view when they are of the same date and hold the same groups in
@@ -700,7 +700,7 @@ the screen says about its roster.
 - **AND** a day screen opened afterwards at that place as of Tuesday 1 September 2026 says the
   commitment is not kept on that date
 
-### Requirement: A day screen re-reads its day, its record and its roster when the app is shown again
+### Requirement: A day screen re-reads its day and its places when the app is shown again
 
 A day screen SHALL be told when the app has been shown — opened from nothing, or brought back in
 front of a person — and SHALL be handed the day it has been shown on. It SHALL then take that day as
@@ -857,7 +857,7 @@ carries across.
 - **THEN** its day view says the commitment is kept on Sunday 30 August 2026
 - **AND** its day picker still opens on Sunday 30 August 2026, the screen not having moved
 
-### Requirement: A day screen tells on the row that was tapped that the change the row offers could not be kept
+### Requirement: A day screen tells on the row that was tapped that its change could not be kept
 
 Where a change a row offers cannot be kept, a day screen SHALL tell it on the row tapped or
 committed on and SHALL refuse the change to the caller as well; where the value given was refused
@@ -1005,7 +1005,7 @@ record.
 - **AND** the day screen tells, on that row, that the change could not be kept
 - **AND** what it tells names no cause
 
-### Requirement: What a day screen tells on a row lasts until the app is shown again, a change is kept at the record's place, or the day it is showing changes
+### Requirement: What a day screen tells on a row lasts only until the app is shown again, a change is kept, or the day it is showing changes
 
 A day screen SHALL go on telling it, on the same row, until one of exactly three things happens, and
 SHALL then tell nothing on any row. Nothing else SHALL end it, time passing included. The app being
@@ -1836,7 +1836,7 @@ otherwise.
 - **THEN** the content at the roster place is byte-for-byte what it was after the screen was opened
 - **AND** the day screen says it is keeping its roster
 
-### Requirement: A day screen says whether it offers the way back to the today it was handed
+### Requirement: A day screen answers whether it offers the way back to today
 
 A day screen SHALL say whether it offers the way back to the today it was handed, offering it where
 the day being shown is not that today and none where it is. The answer SHALL be about the control
@@ -1925,7 +1925,7 @@ screen shows, including its today, leaving it showing that today.
 - **AND** it says it is not keeping a record
 - **AND** sent back, it offers no way back to today and still says it is not keeping a record
 
-### Requirement: A day view says its day as the name of its weekday
+### Requirement: A day view says its day as its weekday
 
 A day view SHALL say the day it is of in words, as its day title, read off its date and off nothing
 else: it MUST NOT read a clock, and MUST NOT depend on the rows it holds or on whether any is kept.
@@ -1965,16 +1965,16 @@ it is SHALL be said by the day picker, never here.
 - **THEN** it holds no rows
 - **AND** it says "Wed"
 
-### Requirement: A day screen says the day it is showing as its day view's day title
+### Requirement: A day screen says which day it is showing
 
 A day screen SHALL say the day it is showing, and that SHALL be its day view's day title, to which
 it adds nothing; the words SHALL follow the day being shown and nothing else. They MUST NOT follow
 the today the screen was handed, and no word, mark or spacing SHALL tell a screen showing its today
-from one showing any other day; whether it is that today is answered by *A day screen says whether
-it offers the way back to the today it was handed*. A day screen MUST NOT read a clock to say its
-day, and SHALL go on saying the day it was handed until it is moved, a day is picked, or the app is
-shown again. A tick made on it MUST NOT change what it says the day is. It SHALL say its day whether
-or not it is keeping a record or a roster.
+from one showing any other day; whether it is that today is answered by *A day screen answers
+whether it offers the way back to today*. A day screen MUST NOT read a clock to say its day, and
+SHALL go on saying the day it was handed until it is moved, a day is picked, or the app is shown
+again. A tick made on it MUST NOT change what it says the day is. It SHALL say its day whether or
+not it is keeping a record or a roster.
 
 #### Scenario: a day screen says its day the same way whether or not it is showing its today
 

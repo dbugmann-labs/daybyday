@@ -5,27 +5,28 @@ rule 5): the archiver refusing a block, a keeper test that does not assert what 
 does, a carried requirement that is not byte-for-byte what it is today but for the sentences § 4
 names, or a rebase conflict in this folder or in `openspec/specs/`.
 
-This is a pruning Story: no test is written, and rule 3's loop has no red. § 2 comes first because
-two § 3 deletions rest on its keepers. Each § 3 box is one deletion, ticked only once the keeper
-`design.md` names for it has been read and its own `#expect` holds every value the deleted test
-asserted. The only other edits to `src/` are § 2's two kept tests. § 4 is one box per carried
-requirement rather than per scenario, because no carried scenario has work of its own.
+This is a pruning Story: no test is written, and rule 3's loop has no red. **§ 2 is finished before
+any § 3 box is started.** Each § 3 box is one deletion, ticked only once the keeper `design.md` names
+for it has been read and its own `#expect` holds every value the deleted test asserted. The only
+other edits to `src/` are § 2's two kept tests. § 4 is one box per carried requirement rather than
+per scenario, because no carried scenario has work of its own.
 
-## 2. The two kept tests — one attempt each, settled one of two ways
+## 2. The two kept tests — both run before any deletion
 
-Each box asks for an attempt, not a result: bring the test to its unchanged scenario, title and every
-assertion kept. **Kept:** the test passes. **Withdrawn** (grill item 4): it goes red, is put back as
-it is on `main`, and the red is reported as a stop; the correction leaves this Story and the rest
-proceeds. The box is ticked once the attempt has settled either way.
+Each box brings a kept test to its unchanged scenario, title and every assertion kept, and is ticked
+when that test passes. **A red on either is a stop before any deletion** (grill item 15): put the test
+back as it is on `main`, delete nothing, and report. The folder then returns to G4 with that
+strengthening and the drops resting on it withdrawn — 3.3 rests on 2.1, and 3.25 and 3.26 on 2.2 —
+and the correction becomes a Story of its own.
 
-- [ ] 2.1 Try `a row's answer follows the day it is asked as of rather than the day the day view was formed` with the second asking checked to offer a tick, not only to equal one
-- [ ] 2.2 Try `committing nothing at all in a total entry keeps nothing and takes nothing back` with kept checked after the spaces and line breaks, and on the screen opened afterwards
+- [ ] 2.1 Bring `a row's answer follows the day it is asked as of rather than the day the day view was formed` to check the second asking offers a tick, not only that it equals one
+- [ ] 2.2 Bring `committing nothing at all in a total entry keeps nothing and takes nothing back` to check kept after the spaces and line breaks, and on the screen opened afterwards
 
 ## 3. The twenty-nine deletions — one box per dropped scenario
 
 - [ ] 3.1 Delete `a commitment ticked on the date has a row that says it is kept` from `DayViewTests.swift` — the keeper never asserts the name, which a row takes from its commitment
 - [ ] 3.2 Delete `a commitment not ticked on the date has a row that says it is not kept` from `DayViewTests.swift`
-- [ ] 3.3 Delete `a row offers the tick for its commitment on the date the day view is of` from `DayViewTests.swift` — after 2.1 has settled
+- [ ] 3.3 Delete `a row offers the tick for its commitment on the date the day view is of` from `DayViewTests.swift` — rests on 2.1
 - [ ] 3.4 Delete `rows are in the order the commitments were handed over` from `DayViewTests.swift`
 - [ ] 3.5 Delete `two day views of the same commitments, date and history are the same day view` from `DayViewTests.swift`
 - [ ] 3.6 Delete `ticking a row that says its commitment is not kept makes the day screen say it is kept` from `DayScreenTests.swift`
@@ -47,8 +48,8 @@ proceeds. The box is ticked once the attempt has settled either way.
 - [ ] 3.22 Delete `a note entry says the note the history holds for that commitment on that date` from `DayViewTests.swift`
 - [ ] 3.23 Delete `entering a note on a row makes the day screen say the commitment is kept` from `DayScreenTests.swift`
 - [ ] 3.24 Delete `the note entry a row offers says the note just entered on it` from `DayScreenTests.swift`
-- [ ] 3.25 Delete `reaching the target makes the day screen say the commitment is kept` from `DayScreenTests.swift` — after 2.2 has settled
-- [ ] 3.26 Delete `an addition entered on a day screen is held by a day screen opened afterwards at the same place` from `DayScreenTests.swift` — after 2.2 has settled
+- [ ] 3.25 Delete `reaching the target makes the day screen say the commitment is kept` from `DayScreenTests.swift` — rests on 2.2
+- [ ] 3.26 Delete `an addition entered on a day screen is held by a day screen opened afterwards at the same place` from `DayScreenTests.swift` — rests on 2.2
 - [ ] 3.27 Delete `a day screen showing the today it was handed offers no way back to today` from `DayScreenTests.swift`
 - [ ] 3.28 Delete `a day view says its day as the three-letter name of its weekday` from `DayViewTests.swift`
 - [ ] 3.29 Delete `a day screen says the day it is showing` from `DayScreenTests.swift`
@@ -58,25 +59,25 @@ proceeds. The box is ticked once the attempt has settled either way.
 Each is ticked when its prose and scenarios are byte-for-byte the current spec's but for what its line
 names, and every test under it passes.
 
-- [ ] 4.1 *A day screen holds the day view of the day it was handed, formed from the record kept at its place* — only the sentence naming a pick on the day picker differs
+- [ ] 4.1 *A day screen holds the day view of the day it was handed, formed from the record kept at its place* — only the sentence adding a picked day differs
 - [ ] 4.2 *A day screen draws the commitments its roster had not stopped keeping on the day it is showing* — only the cited heading of 4.6 differs
 - [ ] 4.3 *A day view holds the commitments due on a date, each with whether it is kept*
 - [ ] 4.4 *A row offers the tick that keeps its commitment, and offers none for a day that has not arrived*
 - [ ] 4.5 *A day view's rows are in the order it was handed its commitments*
-- [ ] 4.6 *A day view is a value made of its groups and its date*
+- [ ] 4.6 *A day view is a value and nothing else*
 - [ ] 4.7 *A day screen makes and takes back the tick a row offers, and keeps the change before the day view says so*
-- [ ] 4.8 *A day screen re-reads its day, its record and its roster when the app is shown again*
-- [ ] 4.9 *A day screen tells on the row that was tapped that the change the row offers could not be kept*
-- [ ] 4.10 *What a day screen tells on a row lasts until the app is shown again, a change is kept at the record's place, or the day it is showing changes*
+- [ ] 4.8 *A day screen re-reads its day and its places when the app is shown again*
+- [ ] 4.9 *A day screen tells on the row that was tapped that its change could not be kept*
+- [ ] 4.10 *What a day screen tells on a row lasts only until the app is shown again, a change is kept, or the day it is showing changes*
 - [ ] 4.11 *A day screen tells nothing on a row where there was no change to refuse*
 - [ ] 4.12 *A day screen reads its roster again whenever it is returned to*
 - [ ] 4.13 *A day screen enters the number a row's entry takes, and keeps the change before the day view says so*
 - [ ] 4.14 *A note entry says the whole note the day already holds, and says nothing else*
 - [ ] 4.15 *A day screen enters the note a row's entry takes, and keeps the change before the day view says so*
 - [ ] 4.16 *A day screen adds what is committed in a row's total entry, and keeps the change before the day view says so*
-- [ ] 4.17 *A day screen says whether it offers the way back to the today it was handed*
-- [ ] 4.18 *A day view says its day as the name of its weekday*
-- [ ] 4.19 *A day screen says the day it is showing as its day view's day title* — only the cited heading of 4.17 differs, its paragraph rewrapped
+- [ ] 4.17 *A day screen answers whether it offers the way back to today*
+- [ ] 4.18 *A day view says its day as its weekday*
+- [ ] 4.19 *A day screen says which day it is showing* — only the cited heading of 4.17 differs, its paragraph rewrapped
 
 ## 5. The gates
 
@@ -84,8 +85,8 @@ names, and every test under it passes.
 - [ ] 5.2 `pnpm run check:scenarios` exits 0 — every title the delta carries still names a test.
 - [ ] 5.3 None of the twenty-nine dropped titles is found as an exact test name under `src/`, and
       `git diff --stat origin/main -- src/` lists only `DayViewTests.swift` and `DayScreenTests.swift`.
-- [ ] 5.4 `pnpm run check:budgets` warns about nothing in this folder but the eleven requirements
-      `design.md` names, and `pnpm run verify` passes.
+- [ ] 5.4 `pnpm run check:budgets` warns about nothing in this folder but the ten requirements
+      `design.md` § Context names, and `pnpm run verify` passes.
 - [ ] 5.5 `swift test` in `src/DayByDayKit` passes and reports twenty-nine fewer tests than on `main`,
       both counts read off a run and never derived.
 - [ ] 5.6 **The archive handover — `implementer` ticks this in its last commit before the archive**,
@@ -94,8 +95,9 @@ names, and every test under it passes.
       the sync it prints, then reads the spec diff it produced: in `openspec/specs/day-screen/spec.md`
       the seventeen requirements of 4.3–4.19 leave their places and reappear after every other
       requirement, in that order, under their new headings; the twenty-nine dropped scenarios are gone;
-      the sentences 4.1 and 4.2 name are the delta's; and nothing else moves. `git status` after the
-      archive commit shows the source folder's deletion committed with it, and `pnpm run checks` runs
-      after that commit exists. **Any other drift is a stop and a report, never a hand-edit** — rule 2
-      denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`,
-      so a box left unticked here cannot be reached afterwards.
+      the sentences 4.1 and 4.2 name are the delta's; and nothing else moves. After the archive commit,
+      `git status` is clean and `openspec/changes/drop-duplicate-day-screen-scenarios/` no longer
+      exists, its deletion committed with the archive, and `pnpm run checks` runs after that commit
+      exists. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies
+      `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a
+      box left unticked here cannot be reached afterwards.

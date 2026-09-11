@@ -2,7 +2,8 @@
 
 `proposal.md` § *Why* says what this is for, and `grill.md`'s settled answers are what the delta is
 written on. `openspec/specs/day-screen/spec.md` holds 51 requirements and 399 scenarios; the delta
-carries 19 requirements and 174 scenarios, and drops 29.
+carries 19 requirements and 174 scenarios, and drops 29. No member is new or changed, which makes this
+a *pruning Story*; § *The seam* lists where the keepers' tests attach.
 
 The archiver in `openspec` 1.10.0 refuses a MODIFIED block omitting a current scenario and takes
 REMOVED plus ADDED under a new heading, appending each added requirement after every surviving one in
@@ -10,22 +11,25 @@ delta order (ADR-1047 decision 2). `pnpm run check:scenarios` reads scenario →
 whose scenario is gone passes every check. Every dropped test sits in `DayViewTests.swift` or
 `DayScreenTests.swift`, in the `DayByDayKitTests` target; none is a UI test.
 
+Ten requirements stay over 150 words. Rows 1, 2, 4–8 and 11 of the heading table below are carried
+verbatim. *A day screen holds the day view of the day it was handed…* grows from 227 to 231 words by
+grill item 9's clause, and *A day screen draws the commitments…* from 166 to 169 by row 4's heading.
+
 ## Goals / Non-Goals
 
 **Goals:** the twenty-nine scenarios of grill item 2 and their tests gone, with everything each
 asserted still asserted by its keeper; grill item 9's false sentence made true; the two kept tests of
-grill item 4 brought to their unchanged scenarios, or withdrawn where that goes red.
+grill item 4 brought to their unchanged scenarios first, a red on either stopping every deletion.
 
-**Non-Goals:** no requirement prose changed but the three sentences below; no scenario title changed;
-no test added, and no kept test edited but those two; no line under `Sources/` changed; the five
-route-driven pairs of grill item 3 kept; ADR-1047 and `CONTEXT.md` unedited (grill item 10).
-`docs/backlog.md`'s quote (grill item 12), #199's box 14 and its outcome comment follow the merge.
+**Non-Goals:** no requirement prose changed but the three sentences of grill items 7 and 9; no
+scenario title changed; no test added, and no kept test edited but those two; no line under
+`Sources/` changed; the five route-driven pairs of grill item 3 kept; ADR-1047 and `CONTEXT.md`
+unedited (grill item 10). `docs/backlog.md`'s quote (grill item 12), #199's box 14 and its outcome
+comment follow the merge.
 
 ## Decisions
 
 ### The seam
-
-No member is new or changed, which makes this a *pruning Story*. The keepers' tests attach at:
 ```swift
 DayView.init(of commitments: [Commitment], on date: CalendarDate, in history: History)
 DayView.rows: [DayView.Row]
@@ -55,6 +59,8 @@ DayScreen.returnedTo()
 
 ### Twenty-nine scenarios are dropped, and seventeen headings change as little as keeps each true
 
+Grill items 2, 6 and 14. Rejected: RENAMED, per ADR-1047 decision 2; a split Story (item 6).
+
 | # | Dropped | Keeper, which asserts the same | Test file |
 |---|---|---|---|
 | 1 | a commitment ticked on the date has a row that says it is kept | a tick on another date does not make the row say it is kept | `DayViewTests` |
@@ -82,39 +88,25 @@ DayScreen.returnedTo()
 | 16 | a day view says its day as the three-letter name of its weekday | every weekday is said by its own name | `DayViewTests` |
 | 17 | a day screen says the day it is showing | a day screen says the day it was handed rather than the day it really is | `DayScreenTests` |
 
-Grill items 2, 5 and 6; `#` is the row of the table below, and each new heading restates a clause of
-its own prose. Rows 1, 2, 4–8 and 11 and both MODIFIED requirements stay over 150 words, verbatim;
-row 17 reaches 154 only by its renamed reference. Rejected: the five route pairs (item 3); sparing
-base cases (item 2); a split Story, which reorders the same (item 6); RENAMED (ADR-1047).
-
 | # | Removed | Added |
 |---|---|---|
 | 1 | A day view is the commitments due on a date, each with whether it is kept | A day view holds the commitments due on a date, each with whether it is kept |
 | 2 | A row offers the tick that keeps its commitment, and refuses one for a day that has not arrived | A row offers the tick that keeps its commitment, and offers none for a day that has not arrived |
 | 3 | A day view is in the order it was handed its commitments | A day view's rows are in the order it was handed its commitments |
-| 4 | A day view is a value | A day view is a value made of its groups and its date |
+| 4 | A day view is a value | A day view is a value and nothing else |
 | 5 | A day screen makes and takes back the tick a row offers, and keeps it before the day view says so | A day screen makes and takes back the tick a row offers, and keeps the change before the day view says so |
-| 6 | A day screen re-reads its day and its record when the app is shown again | A day screen re-reads its day, its record and its roster when the app is shown again |
-| 7 | A day screen tells on the row that was tapped that a change could not be kept | A day screen tells on the row that was tapped that the change the row offers could not be kept |
-| 8 | What a day screen tells on a row lasts until the app is shown again, a change is kept, or the day it is showing changes | What a day screen tells on a row lasts until the app is shown again, a change is kept at the record's place, or the day it is showing changes |
+| 6 | A day screen re-reads its day and its record when the app is shown again | A day screen re-reads its day and its places when the app is shown again |
+| 7 | A day screen tells on the row that was tapped that a change could not be kept | A day screen tells on the row that was tapped that its change could not be kept |
+| 8 | What a day screen tells on a row lasts until the app is shown again, a change is kept, or the day it is showing changes | What a day screen tells on a row lasts only until the app is shown again, a change is kept, or the day it is showing changes |
 | 9 | A day screen tells nothing on a row where there was no tick to refuse | A day screen tells nothing on a row where there was no change to refuse |
 | 10 | A day screen reads its roster again when it is returned to | A day screen reads its roster again whenever it is returned to |
 | 11 | A day screen enters the number a row's entry takes, and keeps it before the day view says so | A day screen enters the number a row's entry takes, and keeps the change before the day view says so |
 | 12 | A note entry says the note the day already holds, and says nothing else | A note entry says the whole note the day already holds, and says nothing else |
 | 13 | A day screen enters the note a row's entry takes, and keeps it before the day view says so | A day screen enters the note a row's entry takes, and keeps the change before the day view says so |
 | 14 | A day screen adds what is committed in a row's total entry, and keeps it before the day view says so | A day screen adds what is committed in a row's total entry, and keeps the change before the day view says so |
-| 15 | A day screen says whether it offers the way back to today | A day screen says whether it offers the way back to the today it was handed |
-| 16 | A day view says its day as a weekday | A day view says its day as the name of its weekday |
-| 17 | A day screen says the day it is showing | A day screen says the day it is showing as its day view's day title |
-
-### Three sentences follow, and two kept tests are brought to their scenarios
-
-Grill items 4 and 7–9. *A day screen draws the commitments…* cites row 4's new heading and row 17
-cites row 15's; *A day screen holds the day view of the day it was handed…* names a pick among what
-changes the day shown. References by description stay true because the ADDED blocks keep spec order.
-ADR-1026's live reference follows row 4 in this change; ADR-1037, ADR-1038 and `docs/open-questions.md`
-§ *Settled* quote inside dated entries and stay, and its § *Known gaps* quotes row 7 by a prefix the
-new heading keeps. `tasks.md` § 2's two tests take their scenarios' values or are withdrawn, never bent.
+| 15 | A day screen says whether it offers the way back to today | A day screen answers whether it offers the way back to today |
+| 16 | A day view says its day as a weekday | A day view says its day as its weekday |
+| 17 | A day screen says the day it is showing | A day screen says which day it is showing |
 
 ## Risks / Trade-offs
 
@@ -123,13 +115,18 @@ new heading keeps. `tasks.md` § 2's two tests take their scenarios' values or a
   in source at G7.
 - **A test left behind, or the wrong one deleted**, passes `check:scenarios`. → The gates search `src/`
   for all twenty-nine titles and read the test count off a run on this branch and on `main`.
-- **A strengthened test that goes red** shows a kept test never proved its scenario. → Withdrawn, never
-  bent (grill item 4); the defect becomes a Story of its own, and the rest proceeds.
+- **A strengthened test that goes red** shows a kept test never proved its scenario. → A stop before
+  any deletion (grill item 15): the folder returns to G4 with that strengthening and the drops resting
+  on it withdrawn, and the defect becomes a Story of its own.
 - **Seventeen requirements move to the end of the spec**, the day view's definition among them. →
   Accepted at the grill (item 6); `docs/backlog.md`'s quote follows on `chore/backlog` after the archive.
 
 ## Open Questions
 
 None. `grill.md` § *Left open* is "None.", every drop and every surveyed candidate has a verdict, and
-the seventeen headings were the only wording left to this change, written to grill item 1's rule. No
-residual round was raised.
+the seventeen headings were the only wording left to this change. The residual round raised after a
+verifier read this folder is settled in grill items 14–16 and folded in above: the seven longest
+headings are cut to the smallest true change, with the references to rows 4 and 15 following; both
+strengthenings run first, and a red is a stop before any deletion; and in `docs/open-questions.md`,
+§ *Known gaps* quotes row 7 by a prefix its new heading keeps, while § *Settled* quotes full headings
+in a dated entry that stays, as ADR-1037 and ADR-1038 do.

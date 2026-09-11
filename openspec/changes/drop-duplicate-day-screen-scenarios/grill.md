@@ -150,6 +150,27 @@ second, independent one: 29 of 29 confirmed, none refuted.*
     - Survey C kept one refused-value scenario while dropping its twin.
     - All three surveys missed twenty-one drops.
 
+*Residual round, 2026-09-11: two questions asked before G4, after a verifier read the folder.*
+
+14. **The seven headings that added a clause of four to seven words are cut back** to the smallest
+    change that keeps them true and distinct. That is the one-to-three-word size of the other ten,
+    and of #211's and #214's headings. ADR-1026:72 and the in-spec references follow the shorter
+    headings. The new heading of *A day screen tells on the row that was tapped that a change could
+    not be kept* still opens with the words `docs/open-questions.md:304` quotes. *Asked because grill
+    item 1 says "as little as keeps it true", and the delta's changes ranged from one word to seven.
+    One of the seven, quoted inside* A day screen says the day it is showing, *took that requirement
+    from 150 words to 154.*
+15. **Both kept-test strengthenings of item 4 run before any deletion.** If either one goes red, the
+    implementer stops before deleting anything. The folder then returns to G4 with that
+    strengthening, and the drops that rest on it, withdrawn. The correction becomes a Story of its
+    own. This replaces item 4's "the rest proceeds", which could only ever have meant "after a
+    second approval". *Asked because the signed folder left a dependent deletion that could be
+    neither ticked nor skipped. It could have been asked at the grill, and was missed there.*
+16. **`docs/open-questions.md` quotes renamed headings, and the grill's search missed it.** It
+    quotes one prefix under *Known gaps*, which item 14 keeps true. It also quotes full headings in
+    a dated *Settled* entry, which stay under item 8's rule. *Found by `spec-author`. Item 12's
+    search covered `docs/backlog.md` and `docs/adr/`, but not the rest of `docs/`.*
+
 ## Terms landed in CONTEXT.md
 
 None. *Pruning Story* already stands, and nothing settled here names a new thing.
