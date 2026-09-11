@@ -3,6 +3,12 @@
 - Status: accepted
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-11 — the budgets are confirmed unchanged. The review decision 1 promised is
+  carried to the first ordinary Story's G7, because every Story written under them so far is
+  editorial; what those four showed is recorded under decision 1, and none of it moves a cap.
+  Decision 2's mechanism is corrected on `openspec` 1.10.0: REMOVED plus ADDED is refused under the
+  same heading and accepted only under new ones, and a rename does not carry a dropped scenario
+  past the archiver. At #199's close-out.
 - Amended: 2026-09-10 — decision 5's list of scenario titles known to be false grows from two to
   three, the third being `day-screen`'s, and decision 2's untried split mechanism is tried and
   recorded as accepted. Both by `condense-day-screen-spec` (#201), the first editorial Story
@@ -56,6 +62,16 @@ a check refusing a merge over a word count is not proportionate to one.
 only the outliers. **Review the numbers after the first Stories written under them**, on evidence from
 those folders rather than on the first overrun.
 
+**The first Stories written under the budgets were the four editorial ones, and they are not the
+review.** `proposal.md` and `tasks.md` held on all four. One `design.md` in four ran over,
+`condense-commitment-spec`'s at 169 lines against 150, because § *Overruns the budget* and
+§ *Open Questions* must each name every entry, and both lists grow with the spec rather than the
+decision; without them the four files run 98 to 117. The requirements still over 150 words are
+pre-budget prose kept whole by rule, spread so widely that twice the cap still leaves seventeen
+over, so neither moves a number. The review is still owed on an ordinary folder, at the first
+ordinary Story's G7. Measurements: `docs/research/2026-09-09-concise-specs.md`
+§ *Outcome, 2026-09-11*.
+
 **2. A spec may be condensed with no behaviour change, and the lane for that is a Story.** Rule 2 and
 CI check 2 leave no other: `openspec/specs/` is written by `/opsx:archive` alone, and
 `scripts/check-spec-containment.ts` fails any `chore/` branch touching a capability spec. An
@@ -73,11 +89,14 @@ one diff.
 **Scenario pruning is a different change and is not authorised here.** The archiver's
 `findMissingCurrentScenarios` throws when a MODIFIED block omits a scenario the current spec holds —
 *"current spec contains scenario(s) not present in the modified block ... Refresh the change spec
-before archiving"* — so a condensing Story keeps every title. **REMOVED plus ADDED under one
-heading is accepted**, tried on a scratch OpenSpec root before the first Story planned on it:
+before archiving"* — so a condensing Story keeps every title. **REMOVED plus ADDED under new
+headings is accepted**, tried on a scratch OpenSpec root before the first Story planned on it:
 `openspec validate --strict` and `openspec archive` both take it, and the added requirements land at
-the end of the spec file rather than in the removed one's place. A requirement too big for the prose
-budget can therefore be split, at the cost of where it sits in the file.
+the end of the spec file rather than in the removed one's place. The same heading under both is
+refused (*"Requirement present in both ADDED and REMOVED"*), and so is a RENAMED plus MODIFIED pair
+that omits a scenario, because the scenario check follows the rename — both tried on 1.10.0 at
+#199's close-out. A requirement too big for the prose budget can therefore be split, at the cost of
+where it sits in the file.
 
 **3. The schema is not forked.** A fork into `openspec/schemas/` copies instruction text that drifts
 from upstream on every upgrade; `rules` and `context` suffice, and the one template gap is one rule.
@@ -105,7 +124,8 @@ says so today is rationale the condensing Story deletes, so the fact lives here:
   not keeping a record does not start keeping one by being returned to.
 
 All three are kept because the archiver forbids dropping a scenario, and the only way to drop one is
-a rename that moves the whole block to the bottom of the spec at archive time.
+removing its requirement and adding it back under a new heading, which moves the whole block to the
+bottom of the spec at archive time.
 
 ## Consequences
 
@@ -114,8 +134,8 @@ a rename that moves the whole block to the bottom of the spec at archive time.
   scenario list. `design.md` § The seam loses its doc comments, which `tasks.md` re-issued anyway.
 - **Nothing here can fail a build**, so an over-budget artifact merges if the reviewer and the human
   let it. The cost of this rule is a warning nobody reads; the cost of the other is a blocked Story.
-- **A handful of requirements will exceed 150 words honestly** — the ones carrying four record kinds'
-  worth of rules. Split them, or say in `design.md` which are over and why.
+- **Many requirements rewritten from pre-budget prose exceed 150 words honestly** — the ones
+  carrying four record kinds' worth of rules. Split them, or say in `design.md` which are over and why.
 - **G4 on a condensing Story is not a 45–90 minute read.** The delta is a whole file, so the read is
   `git diff --no-index` against the current spec — hours for a large capability, not §12's 45–90.
 

@@ -503,3 +503,77 @@ Each step ends at something you read. Steps 1–7 are one chore PR; steps 8–11
 12. **Close out**: move the entry in `docs/open-questions.md` to *Settled*, add a paragraph to
     `docs/retrospective.md` on what the budgets did to the first Story written under them, and
     take decision 4 on phase 3 — only after trying REMOVED plus ADDED on a scratch change.
+
+## Outcome, 2026-09-11
+
+Measured after all four editorial Stories merged: `condense-day-screen-spec` (#203, `8c4143d`),
+`condense-commitment-spec` (#207, `bc096ac`), `condense-record-spec` (#206, `4158432`),
+`condense-schedule-spec` (#209, `94d2341`). Before is `662809f`, the commit § *The re-baseline of
+2026-09-10* reports against.
+
+| Spec | Lines | Requirements | Scenarios | Words | Prose words |
+|---|---|---|---|---|---|
+| `cli-version` | 51 → 51 | 2 → 2 | 4 → 4 | 367 → 367 | 116 → 116 |
+| `schedule` | 740 → 640 | 18 → 18 | 78 → 78 | 7,593 → 6,105 | 3,448 → 1,960 |
+| `record` | 2,235 → 1,838 | 17 → 19 | 170 → 170 | 27,705 → 21,767 | 9,244 → 3,287 |
+| `commitment` | 5,896 → 4,822 | 41 → 42 | 406 → 406 | 72,140 → 57,047 | 26,522 → 11,414 |
+| `day-screen` | 5,562 → 4,450 | 48 → 51 | 399 → 399 | 71,412 → 55,008 | 24,847 → 8,374 |
+| **Total** | **14,484 → 11,801** | **126 → 132** | **1,057 → 1,057** | **179,217 → 140,294** | **64,177 → 25,151** |
+
+Lines fell 18% and prose 61%, against the plan's estimate of ~69% to ~19,800; the gap was not
+attributed by measurement. Six requirements were
+added by splitting (`day-screen` three, `commitment` one, `record` two); none merged; no scenario
+title changed.
+
+**Requirements still over 150 prose words**: `cli-version` 0, `schedule` 0, `record` 8, `day-screen`
+17, `commitment` 31 — 56 total. Each list matches its `design.md` § *Overruns the budget* exactly,
+title for title:
+`openspec/changes/archive/2026-09-11-condense-record-spec/design.md`,
+`openspec/changes/archive/2026-09-10-condense-day-screen-spec/design.md`,
+`openspec/changes/archive/2026-09-11-condense-commitment-spec/design.md`. `day-screen`'s design.md
+states 8,390 words, not the 8,374 measured here; two commits after it was written (`cd1ae7d`,
+`8c70a17`) corrected four sentences at review, after the total was last written down — the
+seventeen-title list itself is unaffected.
+
+**Change folders against the budgets** (proposal.md ≤60 lines, design.md ≤150, tasks.md ≤80 + one
+line per scenario, requirement prose 40–150 words; no cap on the delta spec file, `grill.md` or
+`grill-frontier.md`):
+
+| Folder | proposal | design | tasks (cap) | delta spec | grill.md | grill-frontier.md |
+|---|---|---|---|---|---|---|
+| `condense-day-screen-spec` | 59 | 150 | 90 (479) | 4,462 | 60 | 93 |
+| `condense-commitment-spec` | 59 | **169 (over)** | 125 (486) | 4,823 | 104 | 190 |
+| `condense-record-spec` | 57 | 123 | 59 (250) | 1,842 | 90 | 243 |
+| `condense-schedule-spec` | 44 | 134 | 58 (158) | 633 | 96 | 310 |
+
+Only `commitment`'s `design.md` is over, by 19 lines; its own § *Overruns the budget* says naming
+all fifty-two entries its two lists need costs the overrun and dropping one was judged worse.
+
+**The rehearsal.** Plan decision 1 named the first ordinary Story proposed after PR #200 merged
+(2026-09-10T15:30:59Z) as the rehearsal. None exists: every issue opened after #200 is one of the
+four condense Stories (#201, #204, #205, #208) or the tracking issue #199, still open;
+`openspec/changes/` holds only `archive/`; `git log origin/main --since 2026-09-10T15:00` runs from
+`662809f` through the four condense merges and two chore PRs (#202, graph regens) with no other
+Story; `gh pr list --state all` shows none open or merged for an ordinary Story since. The budgets
+have therefore never been read against an ordinary folder, only against the four editorial ones
+above, whose `tasks.md` cap is inflated by scenario count and whose `design.md` carries a section
+(*Overruns the budget*) no other Story's template asks for. The comparison is instead the six
+pre-budget folders the checklist preamble names — `add-day-picker`, `add-commitment-editing`,
+`shorten-day-title`, `add-adjacent-day-views`, `add-kind-to-commitments-screen`,
+`rework-commitment-row-actions` — measured the same way: proposal.md 87–134 lines, design.md
+209–311, tasks.md 236–343. Every design.md and tasks.md in the set is over the new caps by roughly
+double; no proposal.md clears the new 60-line cap either. What this leaves unmeasured is whether an
+ordinary Story's `spec-author`, working from `openspec/config.yaml`'s rules rather than only the
+editorial checklist, lands inside these budgets on its own — the open question phase 1 called this
+rehearsal for.
+
+**Method.** One script (`measure/measure.mjs`, this session's scratch folder) replicates
+`scripts/check-artifact-budgets.ts`'s own counting: prose is the text from a `### Requirement:`
+heading to its first `#### Scenario:` line, heading and scenario line excluded, split on whitespace.
+Two line-counting conventions were compared: counting `\n` bytes (`wc -l` on a file with a trailing
+newline) reproduces this plan's 14,484 for `662809f` exactly; `text.split('\n').length` — what the
+lint's own `lineCount` helper uses — reproduces the #199 comment's 14,489, one line high per file
+from each spec file's trailing newline. Every other 662809f total (126 requirements, 1,057
+scenarios, 179,217 words, 64,177 prose words) reproduced exactly under either convention. The spec
+table uses the `wc -l` convention; the change-folder table uses the lint's, one line higher per
+file, because that is the count a budget is judged by. The script was not kept.
