@@ -524,6 +524,37 @@ decision it records is the owner's, twice.*
   B-045 already names the grouping question: one Feature over all four capabilities, or one Story
   each. Four lists make that a grooming decision worth taking rather than deferring again.
 
+### B-047 — no test outlives the scenario it was written for
+
+*Captured 2026-09-11.*
+
+> A reverse scenario-coverage check: a test whose name matches no scenario fails, so a pruning
+> Story cannot leave an orphan behind. Today 119 of 1,176 tests match no scenario — 114 are the
+> tooling's own TypeScript tests and 3 Swift unit tests, orphans on purpose, which need an
+> allowlist — and 2 in CommitmentsScreenTests.swift ("has never held", "name ends in a newline")
+> are WHEN/THEN-shaped with no scenario and no spec history. From #211's grill, item 8.
+
+- **Trigger** — the next pruning Story. ADR-1047 decision 6 has it delete exactly the tests of the
+  scenarios it drops, and `check:scenarios` checks scenario → test only (`scripts/lib/coverage.ts`),
+  so a test left behind passes unflagged. On #211 the only guard was the reviewer comparing the
+  dropped list against the diff at G7.
+- **Touches** — `unclaimed`: the tooling behind CI check 4, not a capability spec. The two
+  ambiguous tests are `commitment`'s, in
+  `src/DayByDayKit/Tests/DayByDayKitTests/CommitmentsScreenTests.swift`.
+- **Principle** — tested against *five percent of seven things*: **fails**, as B-044 to B-046 do —
+  it adds nothing a person can do, and keeps the tests and the specs saying the same thing.
+  Captured because #211's grill decided it should be (item 8), and a pruning Story is the thing
+  that would leave the orphan.
+- **Open** — the allowlist. 117 tests match no scenario on purpose; whether it names them one by
+  one, excludes the tooling's TypeScript suite wholesale, or marks a below-the-seam Swift test in
+  its own source, is undecided.
+- **Open** — the two `CommitmentsScreenTests.swift` tests: a leftover from a scenario since
+  renamed, or an edge case nobody wrote a scenario for. `git log -S` finds neither title under
+  `openspec/`. Each needs a scenario, a deletion or an allowlist entry, and which is `commitment`'s
+  question, not the check's.
+- **Open** — binding or advisory. Check 4 binds in CI; a reverse direction that binds fails the
+  build the day it lands unless the allowlist and the two tests are settled first.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
