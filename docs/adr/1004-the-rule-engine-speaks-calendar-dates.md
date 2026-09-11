@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-08-30
 - Deciders: Diego Bugmann
+- Amended: 2026-09-11 — a formed calendar date gives its three numbers back and none of them can be
+  assigned, and why. `add-commitments-screen` (#104) added the rule with its argument in `schedule`'s
+  requirement prose, and `condense-schedule-spec` (#208) deletes that prose.
 
 ## Context
 
@@ -58,6 +61,17 @@ Three consequences are part of the decision rather than incidental to it:
   engine never performs it, so no rule is ever a function of where the phone is.
 - **A weekday is a named case, not an integer.** Foundation numbers weekdays from 1 for Sunday
   and ISO 8601 from 1 for Monday; a public integer picks a fight between two correct conventions.
+
+**A formed calendar date gives back its year, its month and its day, and none of the three can be
+assigned.** Conversion at the edges runs in both directions: an instant becomes a calendar date by
+asking a calendar for its components, and a calendar date becomes an instant again only if those
+three numbers can be read, so the read-back is the half of that conversion this type has to make
+possible. Each number is given back exactly as it was offered, and a date formed again from the three
+is equal to the first. None is writable, because a calendar date changed one component at a time
+could be walked, between two dates that both exist, through a combination that names none — 31
+January with its month set to February — and the refusal above would then govern how a date is first
+made rather than every calendar date that exists. The only way to a different calendar date is to
+form a new one, which is judged exactly as the first was.
 
 ## Consequences
 
