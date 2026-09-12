@@ -593,7 +593,7 @@ months later.
   no message. A row for a day that has not arrived is drawn — it still says what the day will ask —
   but it is not a target, which is what `day-screen`'s own prose already argued for. Since #141
   every kind's entry refuses a future day, so this is one rule over every row rather than four. It
-  amends a shipped requirement, *A day screen tells nothing on a row where there was no tick to
+  amends a shipped requirement, *A day screen tells nothing on a row where there was no change to
   refuse*, whose third silent case stops being reachable.
 - 2026-09-08 — get to a day weeks back without stepping through every day between → the same
   `FEAT: day-screen` (#27), a Story of its own and the only one here needing new kit surface. A date
