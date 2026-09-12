@@ -3,6 +3,14 @@
 - Status: accepted
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-12 — the config's reach is corrected and a fourth enforcement place added. This
+  record said `openspec/config.yaml` "reaches `/opsx:propose` and nothing else"; on 1.10.0 it also
+  reaches `/opsx:update`, which fetches artifact rules while revising, and `operations.*.guidance`
+  reaches `/opsx:apply` and `/opsx:archive`, both of which also receive `context`. Decision 1's
+  "three places" is now four: `pnpm run check:config` asserts the file still parses the way the CLI
+  parses it, because two ways of breaking it cost an artifact its whole ruleset while every other
+  signal stays green. `design.md` gains a Migration rule, inside the existing 150-line cap; no
+  budget number moves. By `chore/openspec-config`.
 - Amended: 2026-09-12 — decision 6 gains the discriminator that proves its condition 1: whether the
   divergence between a dropped test and its keeper reaches a predicate on a statement both of them
   execute. Condition 1's own clause is tightened with it, no longer reading a literal match of
@@ -42,8 +50,11 @@ were each reopened for a second and third G4, and each reopening added history r
 text — pasted test sources, build recipes, run logs, red/green diaries, "what the Nth review pass
 found" sections, one `design.md` § Context of 132 lines holding five successive measurements. What
 OpenSpec 1.10.0 offers against this was read out of the installed package: `openspec/config.yaml`
-takes `context` and `rules.<artifact>`, injected into the instructions `/opsx:propose` reads, and
-nothing in them is enforced — the stock schema says "keep it concise" and the folders grew anyway.
+takes `context`, injected into every artifact's instructions and into apply and archive alike;
+`rules.<artifact>`, injected into that one artifact's; and `operations.apply` / `operations.archive`
+guidance. Those instructions are what `/opsx:propose` and `/opsx:update` read while writing and
+revising, and what `/opsx:apply` and `/opsx:archive` read while executing. Nothing in any of them is
+enforced — the stock schema says "keep it concise" and the folders grew anyway.
 
 ## Decision
 
@@ -60,13 +71,25 @@ nothing in them is enforced — the stock schema says "keep it concise" and the 
   alternatives, no bold sentences, no Story history, and **every rule a scenario tests stated as a
   SHALL/MUST sentence** rather than only as a consequence or a "so that".
 
-**Where each is enforced, and it is three places, not one.** `openspec/config.yaml` tells
-`spec-author` what to write, and reaches `/opsx:propose` and nothing else. `.claude/agents/reviewer.md`
-is the enforcement: the standards axis checks the budgets at G7 and reports an overrun as a finding.
-`scripts/check-artifact-budgets.ts` is an **advisory lint** in `pnpm run checks`, one warning line per
-overrun, **exit 0 always and not in CI**. Advisory is the decision, not a stage on the way to binding:
-`docs/process.md` §12 calls this apparatus the ceiling of what one person at 4–8h/week can carry, and
-a check refusing a merge over a word count is not proportionate to one.
+**Where each is enforced, and it is four places, not one.** `openspec/config.yaml` tells
+`spec-author` what to write, reaching `/opsx:propose` and `/opsx:update`.
+`.claude/agents/reviewer.md` is the enforcement: the standards axis checks the budgets at G7 and
+reports an overrun as a finding. `scripts/check-artifact-budgets.ts` is an **advisory lint** in
+`pnpm run checks`, one warning line per overrun, **exit 0 always and not in CI**. Advisory is the
+decision, not a stage on the way to binding: `docs/process.md` §12 calls this apparatus the ceiling
+of what one person at 4–8h/week can carry, and a check refusing a merge over a word count is not
+proportionate to one.
+
+**The fourth place guards the first, and it does fail.** `scripts/check-config.ts` asserts the config
+still says what it means to say, because the channel is silent when it breaks: an entry under
+`rules.<artifact>` that YAML reads as a mapping rather than a string costs that artifact **every** rule
+it has, and an artifact id matching no artifact costs the same, while `openspec validate --all
+--strict` exits 0 and the CLI's only complaint reaches stderr inside a subagent. `spec-author` would
+then draft under no budget at all with every signal green, which is not a word count and not a
+judgement — so it exits 1. What it only *warns* about is drift between the numbers in
+`scripts/lib/budgets.ts` and the wording of the rule stating them, since which copy is wrong is a
+judgement and that is the line §12 draws. Both failure modes were reproduced against
+`@fission-ai/openspec` 1.10.0 before the check was written.
 
 **The caps are deliberately set below the current norm.** The six Stories archived on 2026-09-09 and
 2026-09-10 had no reopening among them and still run 582–780 lines, `design.md` at 208–310 and

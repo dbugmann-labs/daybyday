@@ -75,6 +75,14 @@ pasted log in `tasks.md`, a rule stated only inside its own justification. An ov
 explains in one line of `design.md` (a requirement split rather than squeezed) is not a finding;
 an unexplained one is.
 
+**A change that touches a persisted type owes `### Migration`.** ADR-1047 gives `design.md` one
+more required section, conditionally: where the Story alters a persisted type or its encoding, at
+most six lines under Decisions naming what happens to records already on a phone, with
+"None — additive" valid and required where it applies. The condition is yours to judge, not the
+Story's to declare — if the diff changes a stored type, its `Codable` conformance or a stored key,
+and `design.md` is silent, that is a finding. This is the one artifact rule whose absence a line
+count cannot show, because the section missing entirely is what puts the file *under* budget.
+
 ## What you are reviewing against
 
 The change folder at the path the human approved at G4, which is why review runs **before** the

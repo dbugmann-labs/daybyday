@@ -7,9 +7,9 @@
  * nothing measured it. The budgets themselves live in `openspec/config.yaml`'s `rules`, where
  * `spec-author` reads them while drafting. That file is prose for an agent, not a machine-
  * readable contract: the OpenSpec CLI never parses `rules` back out to enforce it, so nothing
- * there catches an overrun after the fact. The numbers below are duplicated from it on purpose,
- * because this is the only place that can check them once the artifact is written. Keep the two
- * in sync by hand — nothing currently asserts they agree.
+ * there catches an overrun after the fact. This check is the place that measures the artifact
+ * once it is written; it reads the numbers from `scripts/lib/budgets.ts`, which `check:config`
+ * asserts still match the wording in `openspec/config.yaml`.
  *
  * This never blocks. A budget is a shape to notice, not a rule the pipeline is trusted to have
  * gotten right yet, so a change over budget still proposes, still gates at G4, still merges.
@@ -19,16 +19,17 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
+import {
+  DESIGN_LINES_MAX,
+  PROPOSAL_LINES_MAX,
+  REQUIREMENT_WORDS_MAX,
+  REQUIREMENT_WORDS_THIN,
+  TASKS_BASE_LINES,
+} from './lib/budgets.ts'
 import { currentBranch, deltaCapabilities, locateChange, parseBranch, skip, type ChangeLocation } from './lib/ci.ts'
 import { deltaScenarios } from './lib/coverage.ts'
 
 const CHECK = 'artifact budgets'
-
-const REQUIREMENT_WORDS_MAX = 150
-const REQUIREMENT_WORDS_THIN = 40
-const PROPOSAL_LINES_MAX = 60
-const DESIGN_LINES_MAX = 150
-const TASKS_BASE_LINES = 80
 
 /** One line per overrun — same one-line shape as pass/skip/note, flagged as a warning. */
 function warn(check: string, detail: string): void {

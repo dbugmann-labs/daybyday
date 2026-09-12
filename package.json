@@ -18,13 +18,14 @@
     "verify": "pnpm run lint && pnpm run typecheck && pnpm run test",
     "check:specs": "node scripts/check-spec-containment.ts",
     "check:scenarios": "node scripts/check-scenario-coverage.ts",
-    "checks": "pnpm run check:specs && pnpm run check:scenarios && pnpm run check:g4 && pnpm run check:hygiene && pnpm run check:archived && pnpm run check:budgets",
+    "checks": "pnpm run check:specs && pnpm run check:scenarios && pnpm run check:g4 && pnpm run check:hygiene && pnpm run check:archived && pnpm run check:budgets && pnpm run check:config",
     "spec:validate": "openspec validate --all --strict --no-interactive",
     "spec:validate:archived": "openspec validate --archived",
     "check:g4": "node scripts/check-g4-approval.ts",
     "check:hygiene": "node scripts/check-commit-hygiene.ts",
     "check:archived": "node scripts/check-archived.ts",
     "check:budgets": "node scripts/check-artifact-budgets.ts",
+    "check:config": "node scripts/check-config.ts",
     "graph": "node scripts/generate-graph.ts",
     "phone": "node scripts/install-on-phone.ts",
     "status": "node scripts/status.ts"
@@ -36,6 +37,7 @@
     "eslint": "^10.8.1",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.67.0",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "yaml": "^2.9.0"
   }
 }
