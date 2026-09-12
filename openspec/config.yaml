@@ -1,7 +1,12 @@
 # Governed by ADR-1047; every rule below is repeated for the reviewer in
 # .claude/agents/reviewer.md. Rules are folded scalars (>-) because a bare
-# "word: word" inside a list item is a YAML mapping and the CLI then ignores
-# the whole file with a parse warning — it does not fail.
+# "word: word" inside a list item is a YAML mapping, and the CLI then drops
+# that artifact's rules — all of them, the valid siblings in the same list
+# included. The rest of the file loads normally, so it still looks healthy;
+# the only complaint goes to stderr of `openspec instructions`, inside
+# /opsx:propose, where no human reads it. `pnpm run check:config` is what
+# actually catches it, and an unknown artifact id, which costs a ruleset the
+# same way. Both reproduced against @fission-ai/openspec 1.10.0 on 2026-09-12.
 schema: spec-driven
 
 context: >-
@@ -57,6 +62,10 @@ rules:
     - >-
       Reference proposal.md and the delta instead of restating them. Open Questions lists
       only what is still open, or "None." with the reason.
+    - >-
+      A change that alters a persisted type or its encoding carries "### Migration" under
+      Decisions, in at most 6 lines, naming what happens to records already on a phone.
+      "None — additive" is valid and required where it applies.
   tasks:
     - >-
       One box per scenario, one line: the title verbatim plus at most one clause naming the
@@ -80,6 +89,14 @@ operations:
     guidance:
       - >-
         Tick boxes as they complete. Add no prose, logs or code to tasks.md.
+      - >-
+        Never run the DayByDayUITests bundle. It needs a cold simulator boot and then runs for
+        minutes without output, which outruns an agent session's output watchdog and kills the
+        run with work uncommitted. CI's ui-smoke job is where that bundle runs — ADR-1029,
+        docs/running-the-app.md.
+      - >-
+        swift test --filter takes the test function name, not the scenario title. A filter that
+        matches nothing prints "0 tests passed" and exits 0, which reads as green.
   archive:
     guidance:
       - >-
