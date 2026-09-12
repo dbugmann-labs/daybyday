@@ -562,6 +562,38 @@ decision it records is the owner's, twice.*
 - **Open** — binding or advisory. Check 4 binds in CI; a reverse direction that binds fails the
   build the day it lands unless the allowlist and the two tests are settled first.
 
+### B-048 — a test that cannot fail is not a test
+
+*Captured 2026-09-12, at the grill and G7 of `drop-duplicate-commitment-scenarios` (#216).*
+
+> Three `commitment` tests pass against a mutant that breaks the very rule they are named for. Each
+> asserts that something did **not** change rather than that the right thing happened, so the
+> assertion holds however the code behaves. Found by mutation while proving scenario cover, and by
+> no check.
+
+- **Trigger** — the next Story that touches one of the three, or any pruning Story that wants to
+  rest a drop on one of them as its keeper. None of #216's eight drops depended on any of them,
+  which is why they were recorded rather than fixed.
+- **Touches** — `commitment`, below the seam, in `src/DayByDayKit/Tests/DayByDayKitTests/`. The
+  three, each with the mutation that exposes it:
+  - the four *a change that leaves the roster as it was keeps nothing at its place* tests stay green
+    when all four `if nextRoster != roster` guards are removed from `RosterStore`, because `write`
+    is byte-stable and rewriting an unchanged roster is byte-identical. With the guards gone **all
+    1,002 tests pass**, so nothing in the suite covers that sentence of the rule.
+  - the *stopping* / *removing a commitment leaves every earlier date answering as it did* pair are
+    blind to whether their own mutator recorded anything: the returned `Bool` is discarded, so
+    making `retire` or `remove` a no-op leaves both green.
+  - *a commitment taken up again through a commitments screen moves from what it has stopped to what
+    it keeps* cannot tell "its own place" from "the front of the list": with `Roster.addTakingUpAgain`
+    mutated to remove-and-insert-at-0 it stays green. That rule is still pinned at roster level by
+    *a commitment taken up again keeps the place it was taken on in*, which the same mutation reddens.
+- **Principle** — tested against *five percent of seven things*: **fails**, as B-044 to B-047 do. It
+  adds nothing a person can do. Captured because a test that cannot fail is worse than a missing
+  one: it reads as cover in every check and in every review, and `check:scenarios` counts it.
+- **Open** — whether this merges with B-047, which is the same subject from the other side: B-047
+  asks that no test outlive its scenario, this asks that no test outlive its ability to fail. A
+  grooming pass should decide.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
