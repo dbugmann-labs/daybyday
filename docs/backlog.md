@@ -594,6 +594,69 @@ decision it records is the owner's, twice.*
   asks that no test outlive its scenario, this asks that no test outlive its ability to fail. A
   grooming pass should decide.
 
+### B-049 — put a one-off thing on a day and tick it off there
+
+*Captured 2026-09-12.*
+
+> "I want to be able to add daily TODO's, that can just be ticked off on that exact day.. Those
+> are not commitments, just something that is due on a date."
+
+> "It should be possible to add them on any day, and also to tick them on any day"
+
+- **Trigger** — something lands that is owed once, on a date, and never again: a form to send back
+  by Friday, a call to make on the 20th. Nothing in the app can hold it today.
+- **Touches** — `commitment` and `day-screen`, possibly `schedule`. It is deliberately *not* a
+  commitment as `CONTEXT.md` defines one — a name, a schedule, a kept-from day and a kind — and
+  every schedule shape the `schedule` capability holds recurs without end: weekday set, day of the
+  month, every N days, weekly quota. Whether a one-off is a fifth schedule shape due on exactly one
+  date, or a thing of its own standing beside the roster, is the clustering question and is not
+  answered here.
+- **Principle** — tested against *five percent of seven things*: **passes**, and cleanly. It makes
+  a new kind of thing possible rather than deepening one that exists, and it is the first want that
+  asks for something the roster cannot express at all. *Nothing congratulates you* is untouched: a
+  ticked one-off goes quiet like every other row.
+- **Open** — the two sentences disagree. "Ticked off on that exact day" and "tick them on any day"
+  cannot both be the rule: is a one-off tickable only from its own date, the way every kind of
+  record already refuses a date its commitment is not due on, or from whatever day screen you
+  happen to be on?
+- **Open** — where is one added? *Entered where you stand* points at the day screen you are
+  looking at, which would make this the first thing in the app brought into existence anywhere but
+  the commitments screen. The commitments screen is the cheaper answer and the worse one.
+- **Open** — what becomes of a one-off never ticked. It stays on its date and is gone from view
+  the next morning, or it follows you forward until it is done. The second is what most people
+  mean by a to-do and is a rule no existing row has.
+
+### B-050 — see why something was refused, in red, where it went wrong
+
+*Captured 2026-09-12.*
+
+> "Errors should (across the entire app) be red and visible where it failed.. E.g. when a name is
+> missing when creating a commitment, it just shows a new row at the bottom in white.. Not ideal at
+> all.. Please use something more state of the art across the entire application"
+
+- **Trigger** — every refused entry: a commitment defined with no name or no weekday, a rhythm
+  number the calendar will not take, an amount that will not add, a range that is not a range.
+- **Touches** — the app shell, and probably only the app shell. The two patterns already built
+  disagree with each other. A day screen draws its refusal **on the row it happened on, in `.red`**
+  (`src/DayByDay/DayByDay/ContentView.swift:499`). A commitments screen draws every one of its nine
+  refusals through a single `refusalText` helper that returns a bare `Text` in the default colour,
+  appended as the last row of the form section (`src/DayByDay/DayByDay/CommitmentsView.swift:58`,
+  drawn at `:604`) — which is the white row at the bottom, exactly as described. Below the seam
+  there is nothing missing: `commitment` § *A commitments screen holds the change it refused and
+  why it was refused, one at a time* already holds both the change and the cause, and says in as
+  many words that the screen "SHALL hold no words a person reads".
+- **Principle** — tested against *an iPhone, in your hand*: **passes**. A refusal at the foot of a
+  scrolling form is one you never see on a phone — the sheet that refuses a name has a name field,
+  a rhythm picker, a kind picker and a date picker above the place the message lands. The field you
+  got wrong is the only place a refusal can be read at a glance.
+- **Open** — "state of the art" is a look, not a rule, and the choice is the owner's: red text
+  under the offending field, a red field border, an inline alert, a transient banner. It also
+  decides whether the day screen's row notice — already red, but a row rather than a field —
+  changes or is the pattern everything else copies.
+- **Open** — is there anything here to specify at all? If the answer is only *which control the
+  words hang off and what colour they are*, ADR-1019 makes it a chore on the shell rather than a
+  Story, and nothing about it reaches a capability spec.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
