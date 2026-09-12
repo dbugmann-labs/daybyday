@@ -345,46 +345,6 @@ decision it records is the owner's, twice.*
   not in the SDK this project builds against, and its `sources` are item ids. Worth re-reading
   before anyone hand-writes a gesture again.
 
-### B-042 — act on a commitment with one swipe, and keep the mode for reordering
-
-*Captured 2026-09-09, after the phone walk of `add-commitment-editing` (#148).*
-
-> "I was thinking to rename the 'Edit' just to 'Reorder', and to offer editing (Edit / Remove /
-> Stop / Resume) as swipe actions.. what is your suggestion here, and what is state of the art?
-> you can also think about 2 different swipe actions (left / right)"
-
-> "Category as a swipe action is really not needed anymore, it can be done with the edit, so this
-> has to be removed"
-
-> "I want to have icons instead of words for the swipe actions - just nicer"
-
-- **Trigger** — every visit to the commitments screen that is not just reading it: stopping
-  something, renaming it, getting rid of it. Today each of those either needs a mode entered first
-  or sits in a row of word-labelled buttons that grows every time a Story adds one.
-- **Touches** — `commitment` (#26). Three of the four acts already have shipped requirements and
-  seams behind them and are only being re-reached — `askToStopKeeping`/`confirmStopKeeping`,
-  `askToRemove`/`confirmRemoving`, `keepAgain`, and the change sheet #148 landed. **The fourth is
-  not**: dropping the *Category* swipe leaves `CommitmentsScreen.put(_:under:)` with no caller in
-  the app, so *A commitments screen puts a commitment under a category, and offers the categories
-  in use* would be a shipped, tested requirement nothing can reach. That is the delta, and it is
-  why this is a Story rather than a chore.
-- **Principle** — tested against *five percent of seven things*: **it loses**, as B-041 does. Every
-  act it touches already works; this makes them nicer to reach. *An iPhone, in your hand* is what
-  argues for it, and the honest weight is that the owner walked the feature on the phone and this
-  is what they came back with.
-- **Open** — which edge carries what. The suggestion made at capture, on Mail's and Reminders'
-  convention: **leading edge Edit**, benign and most frequent; **trailing edge Stop-or-Resume then
-  Remove**, destructive outermost so a full swipe removes. Never more than three a side before the
-  labels truncate. Not decided.
-- **Open** — icons or words. Icons are what Mail uses and they fit more per side, but they are
-  learned rather than read, and *Stop keeping* is not a verb with an obvious glyph. The want asks
-  for icons; whether every one of the four has an icon a person will guess is the question.
-- **Open** — does the renamed *Reorder* mode keep anything but `.onMove`? If editing leaves it,
-  the mode does one thing, and a mode that does one thing may not need to be a mode at all.
-- **Open** — this reverses a decision taken hours earlier, and deliberately: the grill of #148
-  settled at Q12 that the sheet and the swipe both set a category, and the phone walk changed the
-  owner's mind. Recorded so the next pass does not read it as an oversight.
-
 ### B-043 — change a number's range or a total's target without starting the commitment over
 
 *Captured 2026-09-10, at the grill of `add-kind-to-commitments-screen` (#142).*
@@ -415,184 +375,6 @@ decision it records is the owner's, twice.*
   new range would refuse.
 - **Open** — a narrowed range with records already outside it. Refuse the change, as #148 refuses
   a day already recorded on that would be left not due, or accept it and let the old days stand?
-
-### B-044 — every day-screen rule has a scenario that proves it
-
-*Captured 2026-09-10.*
-
-> Cover the eight day-screen rules the condensing surveys found testable but untested — a row's
-> zero sum, the unprefilled total field, two rows that are the same row, an entry closed
-> uncommitted, a take-back on a day holding no number, the neighbour day views' non-regression and
-> four independences, and the day picker's four reach rules — with a scenario each, so that no
-> rule in that spec rests on prose alone.
-
-- **Trigger** — the next Story that modifies one of these eight requirements and trims a rule
-  nobody tests, the same way `add-commitment-editing` (#148) already left a scenario title
-  documented-wrong — *a day screen returned to does not read its record again* — with nothing
-  short of a survey to notice.
-- **Touches** — `day-screen`. The list of eight lives in
-  `openspec/changes/condense-day-screen-spec/design.md` § *Open Questions* (on the Story branch
-  `story/201-condense-day-screen-spec`, archived later) and in
-  `docs/research/2026-09-09-concise-specs/survey-2026-09-10-day-screen.md`.
-- **Principle** — tested against *five percent of seven things*: **fails**, plainly — this adds no
-  capability a person can do; it makes eight already-shipped rules provable where they now rest on
-  prose alone. Captured anyway, because a rule with no scenario is exactly the thing a later trim
-  removes without anyone noticing, which is what the condensing Story that surfaced these eight
-  exists to guard against.
-- **Open** — the surveys also found rules that are **untestable by construction**, not merely
-  untested: block 8's *"The answer SHALL be about the control and not about the position … it
-  MUST NOT be phrased as, or stand in for, whether the screen is showing its today"*, and block
-  14's *"whether a move has anywhere to go is not answered here and is not answered anywhere, and
-  a caller MUST NOT stand a move down on the strength of it."* Whether either belongs on this list
-  at all, beside the eight that can actually be given a scenario, is undecided.
-- **Open** — one Story, or one per requirement. The eight span several requirements across the
-  capability — row formation, an entry's commit-and-read, the day picker, the neighbour day
-  views — so a single change touches most of `day-screen` at once; splitting them costs the "no
-  rule in that spec rests on prose alone" framing its single sentence states.
-
-### B-045 — every record rule has a scenario that proves it
-
-*Captured 2026-09-11.*
-
-> Cover the seven `record` rules the condensing survey found normative but untested — the sum is
-> compared against the target in that order and never the reverse, a non-default kind round-trips
-> through a store as the kind it is, a store persists no day's sum, a history gives out the sum and
-> never the additions themselves, the three take-back prohibitions, a carry-over adds no key, no
-> field and no version to what a record is on disk, and an addition carries no position of its own
-> — so that no rule in that spec rests on prose alone.
-
-- **Trigger** — the next Story that modifies one of these requirements and trims a rule nobody
-  tests. `condense-record-spec` (#205) demonstrated the danger twice over: two MUST NOT
-  prohibitions and a "SHALL carry nothing else" closure were dropped by the rewrite and survived
-  every mechanical check, and only a reviewer holding the old text beside the new one caught them.
-  Neither was on any survey's *Rules at risk* list.
-- **Touches** — `record`. The list of seven lives in
-  `openspec/changes/archive/2026-09-11-condense-record-spec/design.md` § *Open Questions*, and the
-  surveys behind it are `docs/research/2026-09-09-concise-specs/survey-record.md` and
-  `survey-2026-09-10-record.md`.
-- **Principle** — tested against *five percent of seven things*: **fails**, the same way B-044
-  does — it adds no capability a person can do, and makes seven already-shipped rules provable
-  where they now rest on prose alone. Captured anyway, for the same reason: a rule with no scenario
-  is what a later trim removes without anyone noticing.
-- **Open** — **several of the seven cannot be given a scenario at all.** "A store persists no day's
-  sum", "a history gives out the sum and never the additions themselves", and two of the three
-  take-back prohibitions are **absences** — the lack of a surface — and a WHEN/THEN cannot assert
-  that something was not offered. Whether those belong on this list beside the ones that can be
-  tested, or belong somewhere else entirely, is undecided; it is the same question B-044 raises
-  about its own two untestable-by-construction rules.
-- **Open** — this is the second capability to produce such a list, after B-044 for
-  `day-screen`, and `condense-commitment-spec` and `condense-schedule-spec` are running now and
-  will each produce a third and a fourth. Whether these become one Feature over all four
-  capabilities or one Story each is a grooming decision, and clustering them is cheaper than
-  splitting one later.
-
-### B-046 — every commitment rule has a scenario that proves it
-
-*Captured 2026-09-11.*
-
-> Cover the twenty-two `commitment` rules found normative but untested — twenty-one from the
-> condensing surveys and one from #216's frontier — among them that the kept-from floor does not
-> shift a schedule's own start date or phase, that a roster store never writes its commitments
-> grouped by category, that the earliest-day answer consults no present moment, no time zone and no
-> locale, that the record place is written before the roster place, and that taking a commitment up
-> again does not lower the earliest day — so that no rule in that spec rests on prose alone.
-
-- **Trigger** — the next Story that modifies one of these requirements and trims a rule nobody
-  tests. `condense-commitment-spec` (#204) demonstrated the danger from the other direction: the
-  rewrite *introduced* a rule saying the stopped list is in the order commitments were taken on,
-  which a scenario in that same requirement disproves, and it survived every mechanical check, a
-  ticked box and a verifier's PASS. Only a reviewer reading the prose against the scenario caught
-  it. A rule with no scenario is equally a rule nothing contradicts when it is written wrong.
-- **Touches** — `commitment`. The list of twenty-one lives in
-  `openspec/changes/archive/2026-09-11-condense-commitment-spec/design.md` § *Open Questions*, and
-  the surveys behind it are `docs/research/2026-09-09-concise-specs/survey-commitment-A.md`,
-  `survey-commitment-B.md`, `survey-2026-09-10-commitment-modified.md` and
-  `survey-2026-09-10-commitment-added.md`.
-- **Principle** — tested against *five percent of seven things*: **fails**, the same way B-044 and
-  B-045 do — it adds no capability a person can do, and makes twenty-two already-shipped rules
-  provable where they now rest on prose alone. Captured anyway, for the same reason.
-- **Open** — **the list was wrong four times before it was right**, which is the reason to read it
-  before working it rather than taking it as a specification. Two entries had scenarios already,
-  one was tested in the half it claimed was not, and one named a rule the spec does not state at
-  all — a misattribution that originated in this Story's own frontier index and propagated into
-  `design.md` before G7 caught it. Whoever picks this up should re-derive each of the twenty-two
-  against the spec before writing a test for it.
-- **Open** — **the twenty-second is not in that archived list.** #216's frontier found that
-  *A commitments screen that cannot read its roster lists nothing and changes nothing* names five
-  verbs in its prose and only three of them have a scenario. #216 dropped no scenario of that
-  requirement, so it owed the gap no delta and recorded it here instead. Expect more of the same:
-  the surveys were built for condensing, not for coverage.
-- **Open** — one of the twenty-one is **untestable by construction**, not merely untested: no
-  requirement may identify a refusal by its position among the seven kinds, which is a rule about
-  how the spec is written and now half of ADR-1049. It is the same question B-044 and B-045 raise
-  about their own such entries.
-- **Open** — this is the third capability to produce such a list, after B-044 for `day-screen` and
-  B-045 for `record`, with `condense-schedule-spec` (#208) running now and due to produce a fourth.
-  B-045 already names the grouping question: one Feature over all four capabilities, or one Story
-  each. Four lists make that a grooming decision worth taking rather than deferring again.
-
-### B-047 — no test outlives the scenario it was written for
-
-*Captured 2026-09-11.*
-
-> A reverse scenario-coverage check: a test whose name matches no scenario fails, so a pruning
-> Story cannot leave an orphan behind. Today 119 of 1,176 tests match no scenario — 114 are the
-> tooling's own TypeScript tests and 3 Swift unit tests, orphans on purpose, which need an
-> allowlist — and 2 in CommitmentsScreenTests.swift ("has never held", "name ends in a newline")
-> are WHEN/THEN-shaped with no scenario and no spec history. From #211's grill, item 8.
-
-- **Trigger** — the next pruning Story. ADR-1047 decision 6 has it delete exactly the tests of the
-  scenarios it drops, and `check:scenarios` checks scenario → test only (`scripts/lib/coverage.ts`),
-  so a test left behind passes unflagged. On #211 the only guard was the reviewer comparing the
-  dropped list against the diff at G7.
-- **Touches** — `unclaimed`: the tooling behind CI check 4, not a capability spec. The two
-  ambiguous tests are `commitment`'s, in
-  `src/DayByDayKit/Tests/DayByDayKitTests/CommitmentsScreenTests.swift`.
-- **Principle** — tested against *five percent of seven things*: **fails**, as B-044 to B-046 do —
-  it adds nothing a person can do, and keeps the tests and the specs saying the same thing.
-  Captured because #211's grill decided it should be (item 8), and a pruning Story is the thing
-  that would leave the orphan.
-- **Open** — the allowlist. 117 tests match no scenario on purpose; whether it names them one by
-  one, excludes the tooling's TypeScript suite wholesale, or marks a below-the-seam Swift test in
-  its own source, is undecided.
-- **Open** — the two `CommitmentsScreenTests.swift` tests: a leftover from a scenario since
-  renamed, or an edge case nobody wrote a scenario for. `git log -S` finds neither title under
-  `openspec/`. Each needs a scenario, a deletion or an allowlist entry, and which is `commitment`'s
-  question, not the check's.
-- **Open** — binding or advisory. Check 4 binds in CI; a reverse direction that binds fails the
-  build the day it lands unless the allowlist and the two tests are settled first.
-
-### B-048 — a test that cannot fail is not a test
-
-*Captured 2026-09-12, at the grill and G7 of `drop-duplicate-commitment-scenarios` (#216).*
-
-> Three `commitment` tests pass against a mutant that breaks the very rule they are named for. Each
-> asserts that something did **not** change rather than that the right thing happened, so the
-> assertion holds however the code behaves. Found by mutation while proving scenario cover, and by
-> no check.
-
-- **Trigger** — the next Story that touches one of the three, or any pruning Story that wants to
-  rest a drop on one of them as its keeper. None of #216's eight drops depended on any of them,
-  which is why they were recorded rather than fixed.
-- **Touches** — `commitment`, below the seam, in `src/DayByDayKit/Tests/DayByDayKitTests/`. The
-  three, each with the mutation that exposes it:
-  - the four *a change that leaves the roster as it was keeps nothing at its place* tests stay green
-    when all four `if nextRoster != roster` guards are removed from `RosterStore`, because `write`
-    is byte-stable and rewriting an unchanged roster is byte-identical. With the guards gone **all
-    1,002 tests pass**, so nothing in the suite covers that sentence of the rule.
-  - the *stopping* / *removing a commitment leaves every earlier date answering as it did* pair are
-    blind to whether their own mutator recorded anything: the returned `Bool` is discarded, so
-    making `retire` or `remove` a no-op leaves both green.
-  - *a commitment taken up again through a commitments screen moves from what it has stopped to what
-    it keeps* cannot tell "its own place" from "the front of the list": with `Roster.addTakingUpAgain`
-    mutated to remove-and-insert-at-0 it stays green. That rule is still pinned at roster level by
-    *a commitment taken up again keeps the place it was taken on in*, which the same mutation reddens.
-- **Principle** — tested against *five percent of seven things*: **fails**, as B-044 to B-047 do. It
-  adds nothing a person can do. Captured because a test that cannot fail is worse than a missing
-  one: it reads as cover in every check and in every review, and `check:scenarios` counts it.
-- **Open** — whether this merges with B-047, which is the same subject from the other side: B-047
-  asks that no test outlive its scenario, this asks that no test outlive its ability to fail. A
-  grooming pass should decide.
 
 ### B-049 — put a one-off thing on a day and tick it off there
 
@@ -657,45 +439,63 @@ decision it records is the owner's, twice.*
   words hang off and what colour they are*, ADR-1019 makes it a chore on the shell rather than a
   Story, and nothing about it reaches a capability spec.
 
-### B-051 — every schedule rule has a scenario that proves it
-
-*Captured 2026-09-12, from the seventh grooming sweep. The wording is the sweep's.*
-
-> Cover the twelve `schedule` rules `condense-schedule-spec` (#208) left knowingly untested — that
-> a calendar date's three numbers are not writable, that each of the five due-ness answers excludes
-> the current time, the time zone and the locale, that a rhythm in words is the same whatever day it
-> is asked on or about and whether or not a commitment carries it, that the weekday-set and
-> day-of-month shapes match in either direction, that a surface stopping a quota once its week is
-> complete decides that from tick records, that month and day are bounded by the calendar-date
-> requirement and not by the year range, a schedule on the thirtieth in a common February, and no
-> leading zero in a rhythm in words — with a scenario each, so that no rule in that spec rests on
-> prose alone.
-
-- **Trigger** — the next Story that modifies one of these requirements and trims a rule nobody
-  tests, the same danger B-044, B-045 and B-046 record for the other three capabilities. B-046
-  predicted this fourth list in as many words and no pass captured it; the seventh sweep did.
-- **Touches** — `schedule`. The list of twelve lives in
-  `openspec/changes/archive/2026-09-11-condense-schedule-spec/design.md` § *Open Questions*, and
-  the survey behind it is `docs/research/2026-09-09-concise-specs/survey-schedule-cli.md`.
-- **Principle** — tested against *five percent of seven things*: **fails**, exactly as B-044 to
-  B-046 do — it adds no capability a person can do, and makes twelve already-shipped rules provable
-  where they now rest on prose alone. Captured anyway, for the same reason, and so that the four
-  lists are judged as one set rather than three and a straggler.
-- **Open** — at least one of the twelve is **untestable by construction**: a calendar date's three
-  numbers not being writable is enforced by the compiler, and a WHEN/THEN cannot assert a `let`. The
-  time-zone and locale exclusions are absences of the same shape B-045 names. Whether those belong on
-  this list beside the ones that can be given a scenario is the same question all three siblings
-  raise and none answers.
-- **Open** — this is the fourth and last list. Whether the four become one Feature over four
-  capabilities, one Story each reopening `schedule` (#6), `commitment` (#26), `day-screen` (#27) and
-  `record` (#53), or something else, is the grooming decision B-045 named and B-046 said four lists
-  would make worth taking.
 
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-12 — every schedule rule has a scenario that proves it (B-051) → Story #221
+  `cover-schedule-rules`, reopening `FEAT: schedule` (#6), under the umbrella chore #225. First of
+  four and the only one unblocked, because it carries the amendment to ADR-1047 that the other
+  three inherit: a **covering Story** adds scenarios and the tests for them, changes no behaviour,
+  names the seam its tests attach at, and accepts a test that is green the moment it is written.
+  ADR-1047 had two lanes and neither fitted — an editorial Story changes no tests, a pruning Story
+  says in as many words that no test is added. The list is re-derived at the Story's own grill
+  rather than taken from `condense-schedule-spec`'s.
+
+- 2026-09-12 — every record rule has a scenario that proves it (B-045) → Story #222
+  `cover-record-rules`, reopening `FEAT: record` (#53), blocked by #221. The entry's own question is
+  answered: **one Story each, and no Feature at all.** A Feature anchors on one capability spec and
+  these span four, so this repeats the shape #199 used for the eight condensing and pruning
+  Stories — an umbrella chore, four Stories, each reopening the Feature that passed G1 long ago.
+  Several of its seven rules are absences a WHEN/THEN cannot assert; those stay in the spec and get
+  a bullet of their own under `docs/open-questions.md` § *Known gaps*, written by this Story.
+
+- 2026-09-12 — every day-screen rule has a scenario that proves it (B-044) → Story #223
+  `cover-day-screen-rules`, reopening `FEAT: day-screen` (#27), blocked by #221. Its other question —
+  one Story or one per requirement — is answered one Story: eight rules over eight requirements is
+  the second-lightest of the four. Its two untestable-by-construction rules are kept and recorded
+  the same way record's absences are.
+
+- 2026-09-12 — every commitment rule has a scenario that proves it (B-046), and a test that cannot
+  fail is not a test (B-048) → Story #224 `cover-commitment-rules`, reopening `FEAT: commitment`
+  (#26), blocked by #221. Taken as **one Story against the recommendation to split it**: twenty-one
+  rules over fourteen requirements, three of them 397, 222 and 220 lines, all carried in full by the
+  delta. It is the largest of the four and the one whose list was wrong four times, so the list is
+  re-derived from the spec at its grill; a fifth error was found at this pass, that folder's own
+  `design.md` saying twenty-two testable while listing twenty-one. B-048's three mutation-blind
+  tests ride with it and are **the one place mutation is required** — green on arrival is the rule
+  everywhere else, and rewriting a test that cannot fail is worth nothing without proof it now can.
+  B-048's own question, whether it merges with B-047, is answered no: the three named tests came
+  here and the check stayed there.
+
+- 2026-09-12 — no test outlives the scenario it was written for (B-047) → **a chore**, item 5 of the
+  umbrella #225, to land after all four Stories. The reverse coverage check binds CI and its
+  allowlist of 117 deliberate orphans is unsettled, while nothing in the four needs it: every
+  scenario they add arrives with a matching test, so they never stress the reverse direction. The
+  two ambiguous `CommitmentsScreenTests.swift` tests it must classify are also cleaner to judge once
+  #224 has re-derived that capability's list.
+
+- 2026-09-12 — act on a commitment with one swipe, and keep the mode for reordering (B-042) →
+  **shipped**, `FEAT: commitment` (#26), Story #192 `rework-commitment-row-actions`, merged
+  2026-09-10. All four parts landed: swipe actions on both lists, *Edit* renamed to *Reorder*, the
+  Category swipe withdrawn along with `CommitmentsScreen.put(_:under:)` behind it, and icons rather
+  than words. **The entry was never moved when the Story merged.** Its change folder cites B-042 by
+  id four times, so the promotion was real and only the bookkeeping was missed; the seventh pass
+  found it still in *Wants* and moved it. B-041, which argues from this row, was already amended on
+  2026-09-10 to say the one-tap Category action it rested on is gone.
 
 - 2026-09-09 — reach the commitment form when I want it, not always under the list (B-037), and
   build a rhythm without being told what it will say (B-036) → both **shipped**, inside
@@ -1125,3 +925,48 @@ found nothing.
     - **Singleton**: B-005, whose drop the fifth pass told this one to propose. Proposed at the
       cluster stop and **not taken** — the reply named a cluster and not the drop — so it stays a
       want and the seventh pass should propose it again.
+
+- 2026-09-12 — pass over 19 wants, the seventh.
+  - **Sweep** — one silence, confirmed and captured before clustering: **B-051**, the fourth and
+    last of the untested-rule lists. `condense-schedule-spec` (#208) left twelve `schedule` rules
+    knowingly untested exactly as the other three condensing Stories did, and B-046 predicted the
+    fourth list in as many words, but no pass had captured it — so the cluster would have been
+    judged on three lists and a straggler. Day-one week: every line has a spec and the shell seeds
+    it; the one partly served is still *yuno 5× a week*, which is B-025. Lifecycle verbs: every verb
+    on all four capabilities is claimed, shipped, or declined on record; `schedule`'s missing fifth
+    shape, a thing due on exactly one date, is B-049. Checked and **not** a gap: a number row and a
+    note row draw nothing of the value entered — both grills chose that deliberately, so it is
+    decided rather than silent. `docs/open-questions.md` held no want in disguise; its row-identity
+    gap is still a Story and still unowned, as the fifth pass said.
+  - **Housekeeping** — **B-042 was found still in *Wants* having shipped whole on 2026-09-10** as
+    Story #192, cited by id four times in that Story's own change folder. Moved to *Decided* by this
+    pass. That is the second bookkeeping miss of its kind and the first where the Story itself named
+    the entry, so nothing but the move was missing.
+  - **Taken forward** — cluster A, no rule rests on prose alone: B-044, B-045, B-046, B-051, with
+    B-047 and B-048. Grilled in three rounds, twelve questions, three facts dispatched and none
+    asked of the owner. **No Feature was minted and there was no G1**: a Feature anchors on one
+    capability spec and this spans four, so the pass repeated #199's shape — umbrella chore #225,
+    four Stories, each reopening the Feature that passed G1 long ago, accepted at G2. Settled: the
+    covering Story is a third lane and amends ADR-1047 in place (#221 carries it); tests are
+    **accepted green on arrival**, against the recommendation, with B-048's three the single
+    exception where mutation is required; rules nothing can prove stay in their specs and each Story
+    writes its own bullet under § *Known gaps*, one per capability, so no two branches edit the same
+    lines; every list is re-derived at its own grill, because the archived ones were built for
+    condensing and commitment's was wrong four times before a fifth error turned up at this pass.
+    Order: #221 schedule, then #222 record, #223 day-screen, #224 commitment. `/to-tickets` was not
+    used — it reads a Feature issue and there was none, and the grill produced the breakdown it
+    exists to produce.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **B**, the commitments screen: B-050 is a shell chore under ADR-1019 and needs no pass — ask
+      for it when it grates. B-043 is a Story reopening `commitment` (#26). B-041 stays until the
+      SDK this project builds against carries `reorderable(collectionID:)`.
+    - **C**, a one-off on a day: B-049. **The only want in the file that passes *five percent of
+      seven things* cleanly**, and the first that the roster cannot express at all. Recommended at
+      the cluster stop as the second choice and not taken; it needs a new capability and either a
+      second Epic or an amendment to #1's outcome, which is a session of its own.
+    - **D**, restore: B-009. **Recommended at the cluster stop for the third pass running and not
+      taken.** Still the only want whose absence costs the record rather than comfort.
+    - **E**, standing in a quota: B-025, B-017. Blocked on *Week turnover*, which nothing yet forces.
+    - **F**, looking back: B-007, B-011. Excluded by Epic #1 by name, so a new Epic.
+    - **G**, entry affordances: B-034, and B-032, which Epic #1 also excludes by name.
+    - **H**, a reminder: B-039. Unclaimed, and the one want that asks whether this app may nag.
