@@ -657,6 +657,40 @@ decision it records is the owner's, twice.*
   words hang off and what colour they are*, ADR-1019 makes it a chore on the shell rather than a
   Story, and nothing about it reaches a capability spec.
 
+### B-051 — every schedule rule has a scenario that proves it
+
+*Captured 2026-09-12, from the seventh grooming sweep. The wording is the sweep's.*
+
+> Cover the twelve `schedule` rules `condense-schedule-spec` (#208) left knowingly untested — that
+> a calendar date's three numbers are not writable, that each of the five due-ness answers excludes
+> the current time, the time zone and the locale, that a rhythm in words is the same whatever day it
+> is asked on or about and whether or not a commitment carries it, that the weekday-set and
+> day-of-month shapes match in either direction, that a surface stopping a quota once its week is
+> complete decides that from tick records, that month and day are bounded by the calendar-date
+> requirement and not by the year range, a schedule on the thirtieth in a common February, and no
+> leading zero in a rhythm in words — with a scenario each, so that no rule in that spec rests on
+> prose alone.
+
+- **Trigger** — the next Story that modifies one of these requirements and trims a rule nobody
+  tests, the same danger B-044, B-045 and B-046 record for the other three capabilities. B-046
+  predicted this fourth list in as many words and no pass captured it; the seventh sweep did.
+- **Touches** — `schedule`. The list of twelve lives in
+  `openspec/changes/archive/2026-09-11-condense-schedule-spec/design.md` § *Open Questions*, and
+  the survey behind it is `docs/research/2026-09-09-concise-specs/survey-schedule-cli.md`.
+- **Principle** — tested against *five percent of seven things*: **fails**, exactly as B-044 to
+  B-046 do — it adds no capability a person can do, and makes twelve already-shipped rules provable
+  where they now rest on prose alone. Captured anyway, for the same reason, and so that the four
+  lists are judged as one set rather than three and a straggler.
+- **Open** — at least one of the twelve is **untestable by construction**: a calendar date's three
+  numbers not being writable is enforced by the compiler, and a WHEN/THEN cannot assert a `let`. The
+  time-zone and locale exclusions are absences of the same shape B-045 names. Whether those belong on
+  this list beside the ones that can be given a scenario is the same question all three siblings
+  raise and none answers.
+- **Open** — this is the fourth and last list. Whether the four become one Feature over four
+  capabilities, one Story each reopening `schedule` (#6), `commitment` (#26), `day-screen` (#27) and
+  `record` (#53), or something else, is the grooming decision B-045 named and B-046 said four lists
+  would make worth taking.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
