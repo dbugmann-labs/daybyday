@@ -313,10 +313,12 @@ decision it records is the owner's, twice.*
 - **Trigger** — reorganising the list after a few commitments have piled up under the wrong words,
   with a thumb, on the phone.
 - **Touches** — `commitment`, and only the app shell. **The requirement already exists and is
-  tested**: *a commitment dropped among another group's entries is put under that group's category*
-  and its neighbours are shipped scenarios of the commitments screen, reached at
-  `CommitmentsScreen.move(_:toOffset:under:)`. Nothing is owed below the seam — what is missing is
-  a gesture that reaches them.
+  tested**: *an offset a commitments screen is given is counted over the group a drop landed in and
+  not over the roster's own order* and its neighbours are shipped scenarios of the commitments
+  screen, reached at `CommitmentsScreen.move(_:toOffset:under:)`. Nothing is owed below the seam —
+  what is missing is a gesture that reaches them. This named *a commitment dropped among another
+  group's entries is put under that group's category* until 2026-09-12, when #216 dropped that
+  scenario as one the keeper above already asserts.
 - **Principle** — tested against *five percent of seven things*: **it loses.** The row's *Category*
   action already refiles across groups in one tap, so this deepens something that works rather than
   making a new thing possible. *An iPhone, in your hand* is the principle that argues for it — a
