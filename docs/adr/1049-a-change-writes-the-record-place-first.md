@@ -18,11 +18,11 @@ the records already written against it are carried over to the changed commitmen
 place**, where the commitment itself is replaced. They are separate files and nothing makes one write
 of both, so one of them goes first and the choice has a failure mode either way.
 
-The second is a rule about how the spec is written. *A commitments screen holds the change it refused
-and why, one at a time* enumerates the seven kinds of change a person can ask for. Requirements
-elsewhere have to refer to one of them, and referring to it by position is the natural shorthand.
-Neither rule has a scenario, and the second could not have one: no behaviour distinguishes a spec
-that obeys it from one that does not.
+The second is a rule about how the spec is written. *A commitments screen holds the change it
+refused and why it was refused, one at a time* enumerates the seven kinds of change a person can ask
+for. Requirements elsewhere have to refer to one of them, and referring to it by position is the
+natural shorthand. Neither rule has a scenario, and the second could not have one: no behaviour
+distinguishes a spec that obeys it from one that does not.
 
 ## Decision
 
