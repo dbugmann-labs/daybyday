@@ -5,9 +5,10 @@
 - Deciders: Diego Bugmann
 - Amended: 2026-09-12 — decision 6 gains the discriminator that proves its condition 1: whether the
   divergence between a dropped test and its keeper reaches a predicate on a statement both of them
-  execute. Decision 5's list of false titles reads two rather than three, the first having been
-  dropped under decision 6. By `drop-duplicate-commitment-scenarios` (#216), the fourth pruning
-  Story and the last one planned.
+  execute. Condition 1's own clause is tightened with it, no longer reading a literal match of
+  assertions as cover on its own. Decision 5's list of false titles reads two rather than three, the
+  first having been dropped under decision 6. By `drop-duplicate-commitment-scenarios` (#216), the
+  fourth pruning Story and the last one planned.
 - Amended: 2026-09-11 — decision 6 added: a scenario another under the same requirement already
   asserts may be dropped, under four conditions, by a **pruning Story** that deletes exactly its
   test; decisions 2 and 5 no longer say dropping one is unauthorised. The budget review the entry
@@ -143,8 +144,9 @@ editorial Story does, and is unlike one on each point decision 2 lists: a requir
 scenario is not carried in full, the dropped titles do not survive, its tests change, and `design.md`
 names the seam its kept tests already attach at. It may drop a scenario only if all four hold:
 
-1. a kept scenario **under the same requirement** asserts everything it asserts, literally or
-   through the same code path shown in source;
+1. a kept scenario **under the same requirement** asserts everything it asserts, and reaches it
+   through the same code path shown in source; assertions that match literally are not by themselves
+   that showing, which the paragraph after the four sets out;
 2. it is not the only test named for a prohibition its requirement states as a MUST NOT — a title
    that merely says "not" names no such prohibition;
 3. it is not the only scenario varying a clause of its requirement's rule;
