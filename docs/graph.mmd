@@ -61,6 +61,10 @@ flowchart TD
   I214["Story 214 — drop-duplicate-record-scenarios"]
   I215["Story 215 — drop-duplicate-day-screen-scenarios"]
   I216["Story 216 — drop-duplicate-commitment-scenarios"]
+  I221["Story 221 — cover-schedule-rules"]
+  I222["Story 222 — cover-record-rules"]
+  I223["Story 223 — cover-day-screen-rules"]
+  I224["Story 224 — cover-commitment-rules"]
 
   I1 --> I26
   I1 --> I27
@@ -79,6 +83,7 @@ flowchart TD
   I26 --> I192
   I26 --> I204
   I26 --> I216
+  I26 --> I224
   I26 --> I42
   I27 --> I100
   I27 --> I174
@@ -88,6 +93,7 @@ flowchart TD
   I27 --> I184
   I27 --> I201
   I27 --> I215
+  I27 --> I223
   I27 --> I70
   I27 --> I71
   I27 --> I72
@@ -102,25 +108,27 @@ flowchart TD
   I53 --> I142
   I53 --> I205
   I53 --> I214
+  I53 --> I222
   I53 --> I55
   I53 --> I56
   I6 --> I10
   I6 --> I11
   I6 --> I208
   I6 --> I211
+  I6 --> I221
   I6 --> I8
   I6 --> I9
 
-  class I1 epic,done
-  class I6 feature,done
+  class I1 epic
+  class I6 feature
   class I8 story,done
   class I9 story,done
   class I10 story,done
   class I11 story,done
-  class I26 feature,done
-  class I27 feature,done
+  class I26 feature
+  class I27 feature
   class I42 story,done
-  class I53 feature,done
+  class I53 feature
   class I55 story,done
   class I56 story,done
   class I70 story,done
@@ -160,3 +168,7 @@ flowchart TD
   class I214 story,done
   class I215 story,done
   class I216 story,done
+  class I221 story
+  class I222 story
+  class I223 story
+  class I224 story
