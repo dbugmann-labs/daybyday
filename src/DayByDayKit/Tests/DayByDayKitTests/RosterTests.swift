@@ -283,21 +283,6 @@ func aCommitmentTakenUpAgainKeepsThePlaceItWasTakenOnIn() {
     #expect(roster.commitments == [waterPlants, gymAgain, journaling])
 }
 
-@Test("stopping a commitment a roster keeps says so and takes it out of the commitments read back")
-func stoppingACommitmentARosterKeepsSaysSoAndTakesItOutOfTheCommitmentsReadBack() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-
-    var roster = Roster()
-    _ = roster.add(gym)
-
-    let stopped = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
-
-    #expect(stopped)
-    #expect(roster.commitments.isEmpty)
-}
-
 @Test("stopping one commitment leaves the others where they were")
 func stoppingOneCommitmentLeavesTheOthersWhereTheyWere() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])

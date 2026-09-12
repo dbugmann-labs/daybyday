@@ -249,17 +249,6 @@ func anEveryNDaysOccurrenceBeforeTheDayItIsKeptFromIsNotDue() {
     #expect(commitment.isDue(on: firstLandingOnOrAfterFloor))
 }
 
-@Test("a commitment reads back the kind it was given")
-func aCommitmentReadsBackTheKindItWasGiven() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-
-    let commitment = Commitment(
-        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))
-
-    #expect(commitment?.kind == .number(range: nil))
-}
-
 @Test("a commitment of each of the four kinds is formed and reads its kind back")
 func aCommitmentOfEachOfTheFourKindsIsFormedAndReadsItsKindBack() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])

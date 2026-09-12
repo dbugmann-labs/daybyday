@@ -3,6 +3,12 @@
 - Status: accepted
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-12 — decision 6 gains the discriminator that proves its condition 1: whether the
+  divergence between a dropped test and its keeper reaches a predicate on a statement both of them
+  execute. Condition 1's own clause is tightened with it, no longer reading a literal match of
+  assertions as cover on its own. Decision 5's list of false titles reads two rather than three, the
+  first having been dropped under decision 6. By `drop-duplicate-commitment-scenarios` (#216), the
+  fourth pruning Story and the last one planned.
 - Amended: 2026-09-11 — decision 6 added: a scenario another under the same requirement already
   asserts may be dropped, under four conditions, by a **pruning Story** that deletes exactly its
   test; decisions 2 and 5 no longer say dropping one is unauthorised. The budget review the entry
@@ -113,14 +119,10 @@ found" sections, no red/green diaries, no re-issued seam. Leaving every still-tr
 it was, so a second G4 could be read as a diff, is what turned two reopenings into folders of 1,600
 and 2,000 lines; the G4 diff is the PR's diff, and the PR already has one.
 
-**5. Three scenario titles are false and are kept on purpose** — two in
+**5. Two scenario titles are false and are kept on purpose** — one in
 `openspec/specs/commitment/spec.md` and one in `openspec/specs/day-screen/spec.md`. The prose that
 says so today is rationale the condensing Story deletes, so the fact lives here:
 
-- *two commitments alike in name and not in rhythm are two entries a person cannot tell apart* — the
-  test asserts two entries both named "Vitamins" and that stopping the first leaves one, which holds;
-  the entries say different rhythms, so a person can in fact tell them apart, and the scenario after
-  it asserts exactly that.
 - *a commitment stopped through a commitments screen is kept until the day the screen was handed* —
   the test asserts the commitment is kept until **the day before** the one the screen was handed.
 - *a day screen returned to does not read its record again* — a screen that **is** keeping a record
@@ -130,10 +132,11 @@ says so today is rationale the condensing Story deletes, so the fact lives here:
   `#expect(screen.recordState == .unreadable)` still holds, with its one row still drawn — a screen
   not keeping a record does not start keeping one by being returned to.
 
-All three are kept because an editorial Story drops no scenario: the archiver refuses a dropped
-scenario under a kept heading, and the only way to drop one is removing its requirement and adding it
-back under a new heading, which moves the whole block to the bottom of the spec at archive time.
-Dropping one is a pruning Story's, and only under decision 6's four conditions.
+Both are kept because an editorial Story drops no scenario: the archiver refuses a dropped scenario
+under a kept heading, and the only way to drop one is removing its requirement and adding it back
+under a new heading, which moves the whole block to the bottom of the spec at archive time. Dropping
+one is a pruning Story's, and only under decision 6's four conditions — which is how the title this
+list carried first left it, dropped by `drop-duplicate-commitment-scenarios` (#216).
 
 **6. A scenario another already asserts may be dropped, and the lane for that is a pruning Story.**
 A **pruning Story** runs the ordinary pipeline and its gates and changes no behaviour, as an
@@ -141,12 +144,22 @@ editorial Story does, and is unlike one on each point decision 2 lists: a requir
 scenario is not carried in full, the dropped titles do not survive, its tests change, and `design.md`
 names the seam its kept tests already attach at. It may drop a scenario only if all four hold:
 
-1. a kept scenario **under the same requirement** asserts everything it asserts, literally or
-   through the same code path shown in source;
+1. a kept scenario **under the same requirement** asserts everything it asserts, and reaches it
+   through the same code path shown in source; assertions that match literally are not by themselves
+   that showing, which the paragraph after the four sets out;
 2. it is not the only test named for a prohibition its requirement states as a MUST NOT — a title
    that merely says "not" names no such prohibition;
 3. it is not the only scenario varying a clause of its requirement's rule;
 4. it does not pin a date, week or year boundary.
+
+**Condition 1 is proven by mutation**, and the question it asks is whether the divergence between a
+dropped test and its keeper reaches a **predicate on a statement both tests execute**. A disjunction
+or a boundary means each test pins its own arm of it and the cover is not there; an unconditional
+statement, or a field the read path never reads, means the cover holds. Literal cover — the keeper's
+own `#expect` asserting the same value — is not by itself enough, and a claim resting on several
+guards rather than on one statement is the failure that withdrew three drops on #215. Stated by
+`drop-duplicate-commitment-scenarios` (#216), where this test withdrew two candidates a full
+verification had passed — one pinning its own arm of a disjunction, one a boundary.
 
 The four are conjunctive, so resemblance is never enough. Each dropped scenario's test is deleted in
 the same pull request and no test is added, and `design.md` lists every dropped title beside its
