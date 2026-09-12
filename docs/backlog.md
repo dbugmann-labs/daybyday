@@ -209,7 +209,7 @@ shape it lacks, not the quota.
   > kept this week (something like 1/3x a week)"
 
 - **Touches, from that wording** — the string it wants changed is `schedule`'s, not a screen's.
-  *A schedule says the rhythm it runs on in words* and *A weekly-quota schedule is said as a number
+  *A schedule says the rhythm it runs on in words* and *A weekly-quota schedule is said as its number
   of times a week* are what produce "3x a week", and neither has ever been given a history. "1/3x a
   week" is that string with a count of kept days put inside it, so either those words stop being the
   schedule's alone or the count is drawn beside them and the words are left as they are. They are
@@ -313,10 +313,12 @@ decision it records is the owner's, twice.*
 - **Trigger** — reorganising the list after a few commitments have piled up under the wrong words,
   with a thumb, on the phone.
 - **Touches** — `commitment`, and only the app shell. **The requirement already exists and is
-  tested**: *a commitment dropped among another group's entries is put under that group's category*
-  and its neighbours are shipped scenarios of the commitments screen, reached at
-  `CommitmentsScreen.move(_:toOffset:under:)`. Nothing is owed below the seam — what is missing is
-  a gesture that reaches them.
+  tested**: *an offset a commitments screen is given is counted over the group a drop landed in and
+  not over the roster's own order* and its neighbours are shipped scenarios of the commitments
+  screen, reached at `CommitmentsScreen.move(_:toOffset:under:)`. Nothing is owed below the seam —
+  what is missing is a gesture that reaches them. This named *a commitment dropped among another
+  group's entries is put under that group's category* until 2026-09-12, when #216 dropped that
+  scenario as one the keeper above already asserts.
 - **Principle** — tested against *five percent of seven things*: **it loses.** The row's *Category*
   action already refiles across groups in one tap, so this deepens something that works rather than
   making a new thing possible. *An iPhone, in your hand* is the principle that argues for it — a
@@ -343,51 +345,157 @@ decision it records is the owner's, twice.*
   not in the SDK this project builds against, and its `sources` are item ids. Worth re-reading
   before anyone hand-writes a gesture again.
 
-### B-042 — act on a commitment with one swipe, and keep the mode for reordering
+### B-043 — change a number's range or a total's target without starting the commitment over
 
-*Captured 2026-09-09, after the phone walk of `add-commitment-editing` (#148).*
+*Captured 2026-09-10, at the grill of `add-kind-to-commitments-screen` (#142).*
 
-> "I was thinking to rename the 'Edit' just to 'Reorder', and to offer editing (Edit / Remove /
-> Stop / Resume) as swipe actions.. what is your suggestion here, and what is state of the art?
-> you can also think about 2 different swipe actions (left / right)"
+> "Out of scope — capture as a want" — the owner's answer at round 1 of that grill, choosing it
+> over taking a range and target change into #142 and over ruling one out for good. The want is
+> the third option that answer leaves standing rather than a sentence said unprompted, and it is
+> recorded that way so a later pass does not read it as something asked for out of the blue.
 
-> "Category as a swipe action is really not needed anymore, it can be done with the edit, so this
-> has to be removed"
+- **Trigger** — the day a mood turns out to want one to five rather than one to ten, or a protein
+  target moves from 120 grams to 140. Neither is a mistake being corrected; both are a person
+  changing their mind about a commitment they intend to keep.
+- **Touches** — `commitment` (#26). It is not a new kind of anything: #142 lands the range and the
+  target on the form that defines a commitment, and this is the same two fields reached from the
+  change sheet, which #148 built. The machinery it needs already exists — a range is part of what
+  a commitment *is*, so a changed range is a different commitment, which is exactly what a rhythm
+  change already handles by **superseding**. What is new is the refusal set and the sheet letting
+  a thumb into two fields #142 deliberately locks.
+- **Principle** — tested against *five percent of seven things*: **it loses**, as B-041 and B-042
+  do. Every commitment can already declare a range and a target once #142 lands; this deepens
+  that rather than making a new kind of record possible. Captured anyway, because the alternative
+  a person has today is to define a second commitment and abandon the first, which splits a
+  history the product exists to keep whole.
+- **Open** — does a changed range **supersede**, as a rhythm change does, or **carry over**, as a
+  rename does? Superseding is the structurally honest answer and it costs the person the run of
+  days under the old range as a separate commitment. Carrying over would rewrite records against
+  a bound they were never judged by — including, for a narrowed range, days holding a number the
+  new range would refuse.
+- **Open** — a narrowed range with records already outside it. Refuse the change, as #148 refuses
+  a day already recorded on that would be left not due, or accept it and let the old days stand?
 
-> "I want to have icons instead of words for the swipe actions - just nicer"
+### B-049 — put a one-off thing on a day and tick it off there
 
-- **Trigger** — every visit to the commitments screen that is not just reading it: stopping
-  something, renaming it, getting rid of it. Today each of those either needs a mode entered first
-  or sits in a row of word-labelled buttons that grows every time a Story adds one.
-- **Touches** — `commitment` (#26). Three of the four acts already have shipped requirements and
-  seams behind them and are only being re-reached — `askToStopKeeping`/`confirmStopKeeping`,
-  `askToRemove`/`confirmRemoving`, `keepAgain`, and the change sheet #148 landed. **The fourth is
-  not**: dropping the *Category* swipe leaves `CommitmentsScreen.put(_:under:)` with no caller in
-  the app, so *A commitments screen puts a commitment under a category, and offers the categories
-  in use* would be a shipped, tested requirement nothing can reach. That is the delta, and it is
-  why this is a Story rather than a chore.
-- **Principle** — tested against *five percent of seven things*: **it loses**, as B-041 does. Every
-  act it touches already works; this makes them nicer to reach. *An iPhone, in your hand* is what
-  argues for it, and the honest weight is that the owner walked the feature on the phone and this
-  is what they came back with.
-- **Open** — which edge carries what. The suggestion made at capture, on Mail's and Reminders'
-  convention: **leading edge Edit**, benign and most frequent; **trailing edge Stop-or-Resume then
-  Remove**, destructive outermost so a full swipe removes. Never more than three a side before the
-  labels truncate. Not decided.
-- **Open** — icons or words. Icons are what Mail uses and they fit more per side, but they are
-  learned rather than read, and *Stop keeping* is not a verb with an obvious glyph. The want asks
-  for icons; whether every one of the four has an icon a person will guess is the question.
-- **Open** — does the renamed *Reorder* mode keep anything but `.onMove`? If editing leaves it,
-  the mode does one thing, and a mode that does one thing may not need to be a mode at all.
-- **Open** — this reverses a decision taken hours earlier, and deliberately: the grill of #148
-  settled at Q12 that the sheet and the swipe both set a category, and the phone walk changed the
-  owner's mind. Recorded so the next pass does not read it as an oversight.
+*Captured 2026-09-12.*
+
+> "I want to be able to add daily TODO's, that can just be ticked off on that exact day.. Those
+> are not commitments, just something that is due on a date."
+
+> "It should be possible to add them on any day, and also to tick them on any day"
+
+- **Trigger** — something lands that is owed once, on a date, and never again: a form to send back
+  by Friday, a call to make on the 20th. Nothing in the app can hold it today.
+- **Touches** — `commitment` and `day-screen`, possibly `schedule`. It is deliberately *not* a
+  commitment as `CONTEXT.md` defines one — a name, a schedule, a kept-from day and a kind — and
+  every schedule shape the `schedule` capability holds recurs without end: weekday set, day of the
+  month, every N days, weekly quota. Whether a one-off is a fifth schedule shape due on exactly one
+  date, or a thing of its own standing beside the roster, is the clustering question and is not
+  answered here.
+- **Principle** — tested against *five percent of seven things*: **passes**, and cleanly. It makes
+  a new kind of thing possible rather than deepening one that exists, and it is the first want that
+  asks for something the roster cannot express at all. *Nothing congratulates you* is untouched: a
+  ticked one-off goes quiet like every other row.
+- **Open** — the two sentences disagree. "Ticked off on that exact day" and "tick them on any day"
+  cannot both be the rule: is a one-off tickable only from its own date, the way every kind of
+  record already refuses a date its commitment is not due on, or from whatever day screen you
+  happen to be on?
+- **Open** — where is one added? *Entered where you stand* points at the day screen you are
+  looking at, which would make this the first thing in the app brought into existence anywhere but
+  the commitments screen. The commitments screen is the cheaper answer and the worse one.
+- **Open** — what becomes of a one-off never ticked. It stays on its date and is gone from view
+  the next morning, or it follows you forward until it is done. The second is what most people
+  mean by a to-do and is a rule no existing row has.
+
+### B-050 — see why something was refused, in red, where it went wrong
+
+*Captured 2026-09-12.*
+
+> "Errors should (across the entire app) be red and visible where it failed.. E.g. when a name is
+> missing when creating a commitment, it just shows a new row at the bottom in white.. Not ideal at
+> all.. Please use something more state of the art across the entire application"
+
+- **Trigger** — every refused entry: a commitment defined with no name or no weekday, a rhythm
+  number the calendar will not take, an amount that will not add, a range that is not a range.
+- **Touches** — the app shell, and probably only the app shell. The two patterns already built
+  disagree with each other. A day screen draws its refusal **on the row it happened on, in `.red`**
+  (`src/DayByDay/DayByDay/ContentView.swift:499`). A commitments screen draws every one of its nine
+  refusals through a single `refusalText` helper that returns a bare `Text` in the default colour,
+  appended as the last row of the form section (`src/DayByDay/DayByDay/CommitmentsView.swift:58`,
+  drawn at `:604`) — which is the white row at the bottom, exactly as described. Below the seam
+  there is nothing missing: `commitment` § *A commitments screen holds the change it refused and
+  why it was refused, one at a time* already holds both the change and the cause, and says in as
+  many words that the screen "SHALL hold no words a person reads".
+- **Principle** — tested against *an iPhone, in your hand*: **passes**. A refusal at the foot of a
+  scrolling form is one you never see on a phone — the sheet that refuses a name has a name field,
+  a rhythm picker, a kind picker and a date picker above the place the message lands. The field you
+  got wrong is the only place a refusal can be read at a glance.
+- **Open** — "state of the art" is a look, not a rule, and the choice is the owner's: red text
+  under the offending field, a red field border, an inline alert, a transient banner. It also
+  decides whether the day screen's row notice — already red, but a row rather than a field —
+  changes or is the pattern everything else copies.
+- **Open** — is there anything here to specify at all? If the answer is only *which control the
+  words hang off and what colour they are*, ADR-1019 makes it a chore on the shell rather than a
+  Story, and nothing about it reaches a capability spec.
+
 
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-12 — every schedule rule has a scenario that proves it (B-051) → Story #221
+  `cover-schedule-rules`, reopening `FEAT: schedule` (#6), under the umbrella chore #225. First of
+  four and the only one unblocked, because it carries the amendment to ADR-1047 that the other
+  three inherit: a **covering Story** adds scenarios and the tests for them, changes no behaviour,
+  names the seam its tests attach at, and accepts a test that is green the moment it is written.
+  ADR-1047 had two lanes and neither fitted — an editorial Story changes no tests, a pruning Story
+  says in as many words that no test is added. The list is re-derived at the Story's own grill
+  rather than taken from `condense-schedule-spec`'s.
+
+- 2026-09-12 — every record rule has a scenario that proves it (B-045) → Story #222
+  `cover-record-rules`, reopening `FEAT: record` (#53), blocked by #221. The entry's own question is
+  answered: **one Story each, and no Feature at all.** A Feature anchors on one capability spec and
+  these span four, so this repeats the shape #199 used for the eight condensing and pruning
+  Stories — an umbrella chore, four Stories, each reopening the Feature that passed G1 long ago.
+  Several of its seven rules are absences a WHEN/THEN cannot assert; those stay in the spec and get
+  a bullet of their own under `docs/open-questions.md` § *Known gaps*, written by this Story.
+
+- 2026-09-12 — every day-screen rule has a scenario that proves it (B-044) → Story #223
+  `cover-day-screen-rules`, reopening `FEAT: day-screen` (#27), blocked by #221. Its other question —
+  one Story or one per requirement — is answered one Story: eight rules over eight requirements is
+  the second-lightest of the four. Its two untestable-by-construction rules are kept and recorded
+  the same way record's absences are.
+
+- 2026-09-12 — every commitment rule has a scenario that proves it (B-046), and a test that cannot
+  fail is not a test (B-048) → Story #224 `cover-commitment-rules`, reopening `FEAT: commitment`
+  (#26), blocked by #221. Taken as **one Story against the recommendation to split it**: twenty-one
+  rules over fourteen requirements, three of them 397, 222 and 220 lines, all carried in full by the
+  delta. It is the largest of the four and the one whose list was wrong four times, so the list is
+  re-derived from the spec at its grill; a fifth error was found at this pass, that folder's own
+  `design.md` saying twenty-two testable while listing twenty-one. B-048's three mutation-blind
+  tests ride with it and are **the one place mutation is required** — green on arrival is the rule
+  everywhere else, and rewriting a test that cannot fail is worth nothing without proof it now can.
+  B-048's own question, whether it merges with B-047, is answered no: the three named tests came
+  here and the check stayed there.
+
+- 2026-09-12 — no test outlives the scenario it was written for (B-047) → **a chore**, item 5 of the
+  umbrella #225, to land after all four Stories. The reverse coverage check binds CI and its
+  allowlist of 117 deliberate orphans is unsettled, while nothing in the four needs it: every
+  scenario they add arrives with a matching test, so they never stress the reverse direction. The
+  two ambiguous `CommitmentsScreenTests.swift` tests it must classify are also cleaner to judge once
+  #224 has re-derived that capability's list.
+
+- 2026-09-12 — act on a commitment with one swipe, and keep the mode for reordering (B-042) →
+  **shipped**, `FEAT: commitment` (#26), Story #192 `rework-commitment-row-actions`, merged
+  2026-09-10. All four parts landed: swipe actions on both lists, *Edit* renamed to *Reorder*, the
+  Category swipe withdrawn along with `CommitmentsScreen.put(_:under:)` behind it, and icons rather
+  than words. **The entry was never moved when the Story merged.** Its change folder cites B-042 by
+  id four times, so the promotion was real and only the bookkeeping was missed; the seventh pass
+  found it still in *Wants* and moved it. B-041, which argues from this row, was already amended on
+  2026-09-10 to say the one-tap Category action it rested on is gone.
 
 - 2026-09-09 — reach the commitment form when I want it, not always under the list (B-037), and
   build a rhythm without being told what it will say (B-036) → both **shipped**, inside
@@ -421,7 +529,7 @@ months later.
   no message. A row for a day that has not arrived is drawn — it still says what the day will ask —
   but it is not a target, which is what `day-screen`'s own prose already argued for. Since #141
   every kind's entry refuses a future day, so this is one rule over every row rather than four. It
-  amends a shipped requirement, *A day screen tells nothing on a row where there was no tick to
+  amends a shipped requirement, *A day screen tells nothing on a row where there was no change to
   refuse*, whose third silent case stops being reachable.
 - 2026-09-08 — get to a day weeks back without stepping through every day between → the same
   `FEAT: day-screen` (#27), a Story of its own and the only one here needing new kit surface. A date
@@ -817,3 +925,48 @@ found nothing.
     - **Singleton**: B-005, whose drop the fifth pass told this one to propose. Proposed at the
       cluster stop and **not taken** — the reply named a cluster and not the drop — so it stays a
       want and the seventh pass should propose it again.
+
+- 2026-09-12 — pass over 19 wants, the seventh.
+  - **Sweep** — one silence, confirmed and captured before clustering: **B-051**, the fourth and
+    last of the untested-rule lists. `condense-schedule-spec` (#208) left twelve `schedule` rules
+    knowingly untested exactly as the other three condensing Stories did, and B-046 predicted the
+    fourth list in as many words, but no pass had captured it — so the cluster would have been
+    judged on three lists and a straggler. Day-one week: every line has a spec and the shell seeds
+    it; the one partly served is still *yuno 5× a week*, which is B-025. Lifecycle verbs: every verb
+    on all four capabilities is claimed, shipped, or declined on record; `schedule`'s missing fifth
+    shape, a thing due on exactly one date, is B-049. Checked and **not** a gap: a number row and a
+    note row draw nothing of the value entered — both grills chose that deliberately, so it is
+    decided rather than silent. `docs/open-questions.md` held no want in disguise; its row-identity
+    gap is still a Story and still unowned, as the fifth pass said.
+  - **Housekeeping** — **B-042 was found still in *Wants* having shipped whole on 2026-09-10** as
+    Story #192, cited by id four times in that Story's own change folder. Moved to *Decided* by this
+    pass. That is the second bookkeeping miss of its kind and the first where the Story itself named
+    the entry, so nothing but the move was missing.
+  - **Taken forward** — cluster A, no rule rests on prose alone: B-044, B-045, B-046, B-051, with
+    B-047 and B-048. Grilled in three rounds, twelve questions, three facts dispatched and none
+    asked of the owner. **No Feature was minted and there was no G1**: a Feature anchors on one
+    capability spec and this spans four, so the pass repeated #199's shape — umbrella chore #225,
+    four Stories, each reopening the Feature that passed G1 long ago, accepted at G2. Settled: the
+    covering Story is a third lane and amends ADR-1047 in place (#221 carries it); tests are
+    **accepted green on arrival**, against the recommendation, with B-048's three the single
+    exception where mutation is required; rules nothing can prove stay in their specs and each Story
+    writes its own bullet under § *Known gaps*, one per capability, so no two branches edit the same
+    lines; every list is re-derived at its own grill, because the archived ones were built for
+    condensing and commitment's was wrong four times before a fifth error turned up at this pass.
+    Order: #221 schedule, then #222 record, #223 day-screen, #224 commitment. `/to-tickets` was not
+    used — it reads a Feature issue and there was none, and the grill produced the breakdown it
+    exists to produce.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **B**, the commitments screen: B-050 is a shell chore under ADR-1019 and needs no pass — ask
+      for it when it grates. B-043 is a Story reopening `commitment` (#26). B-041 stays until the
+      SDK this project builds against carries `reorderable(collectionID:)`.
+    - **C**, a one-off on a day: B-049. **The only want in the file that passes *five percent of
+      seven things* cleanly**, and the first that the roster cannot express at all. Recommended at
+      the cluster stop as the second choice and not taken; it needs a new capability and either a
+      second Epic or an amendment to #1's outcome, which is a session of its own.
+    - **D**, restore: B-009. **Recommended at the cluster stop for the third pass running and not
+      taken.** Still the only want whose absence costs the record rather than comfort.
+    - **E**, standing in a quota: B-025, B-017. Blocked on *Week turnover*, which nothing yet forces.
+    - **F**, looking back: B-007, B-011. Excluded by Epic #1 by name, so a new Epic.
+    - **G**, entry affordances: B-034, and B-032, which Epic #1 also excludes by name.
+    - **H**, a reminder: B-039. Unclaimed, and the one want that asks whether this app may nag.
