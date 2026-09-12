@@ -490,12 +490,12 @@ decision it records is the owner's, twice.*
 
 *Captured 2026-09-11.*
 
-> Cover the twenty-one `commitment` rules the condensing surveys found normative but untested —
-> among them that the kept-from floor does not shift a schedule's own start date or phase, that a
-> roster store never writes its commitments grouped by category, that the earliest-day answer
-> consults no present moment, no time zone and no locale, that the record place is written before
-> the roster place, and that taking a commitment up again does not lower the earliest day — so that
-> no rule in that spec rests on prose alone.
+> Cover the twenty-two `commitment` rules found normative but untested — twenty-one from the
+> condensing surveys and one from #216's frontier — among them that the kept-from floor does not
+> shift a schedule's own start date or phase, that a roster store never writes its commitments
+> grouped by category, that the earliest-day answer consults no present moment, no time zone and no
+> locale, that the record place is written before the roster place, and that taking a commitment up
+> again does not lower the earliest day — so that no rule in that spec rests on prose alone.
 
 - **Trigger** — the next Story that modifies one of these requirements and trims a rule nobody
   tests. `condense-commitment-spec` (#204) demonstrated the danger from the other direction: the
@@ -509,14 +509,19 @@ decision it records is the owner's, twice.*
   `survey-commitment-B.md`, `survey-2026-09-10-commitment-modified.md` and
   `survey-2026-09-10-commitment-added.md`.
 - **Principle** — tested against *five percent of seven things*: **fails**, the same way B-044 and
-  B-045 do — it adds no capability a person can do, and makes twenty-one already-shipped rules
+  B-045 do — it adds no capability a person can do, and makes twenty-two already-shipped rules
   provable where they now rest on prose alone. Captured anyway, for the same reason.
 - **Open** — **the list was wrong four times before it was right**, which is the reason to read it
   before working it rather than taking it as a specification. Two entries had scenarios already,
   one was tested in the half it claimed was not, and one named a rule the spec does not state at
   all — a misattribution that originated in this Story's own frontier index and propagated into
-  `design.md` before G7 caught it. Whoever picks this up should re-derive each of the twenty-one
+  `design.md` before G7 caught it. Whoever picks this up should re-derive each of the twenty-two
   against the spec before writing a test for it.
+- **Open** — **the twenty-second is not in that archived list.** #216's frontier found that
+  *A commitments screen that cannot read its roster lists nothing and changes nothing* names five
+  verbs in its prose and only three of them have a scenario. #216 dropped no scenario of that
+  requirement, so it owed the gap no delta and recorded it here instead. Expect more of the same:
+  the surveys were built for condensing, not for coverage.
 - **Open** — one of the twenty-one is **untestable by construction**, not merely untested: no
   requirement may identify a refusal by its position among the seven kinds, which is a rule about
   how the spec is written and now half of ADR-1049. It is the same question B-044 and B-045 raise
