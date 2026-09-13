@@ -3,6 +3,11 @@
 - Status: accepted
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-13 — decision 7 added: a rule that ships with no scenario is given exactly one,
+  with the test named for it, by a **covering Story**, which accepts its tests green on arrival and
+  fixes only what a red one shows. Decision 1's owed budget review stays with the first behaviour
+  Story, now one neither editorial, pruning nor covering. By `cover-schedule-rules` (#221), the first
+  covering Story.
 - Amended: 2026-09-12 — the config's reach is corrected and a fourth enforcement place added. This
   record said `openspec/config.yaml` "reaches `/opsx:propose` and nothing else"; on 1.10.0 it also
   reaches `/opsx:update`, which fetches artifact rules while revising, and `operations.*.guidance`
@@ -104,8 +109,9 @@ review.** `proposal.md` and `tasks.md` held on all four. One `design.md` in four
 decision; without them the four files run 98 to 117. The requirements still over 150 words are
 pre-budget prose kept whole by rule, spread so widely that twice the cap still leaves seventeen
 over, so neither moves a number. The review is still owed at the G7 of the first **behaviour
-Story**, one neither editorial nor pruning; a pruning Story's G7 is not it either, because its
-`design.md` is a list of drops. Measurements: `docs/research/2026-09-09-concise-specs.md`
+Story**, one neither editorial, pruning nor covering; a pruning Story's G7 is not it either, because
+its `design.md` is a list of drops, and nor is a covering Story's, whose `design.md` is a list of
+rules. Measurements: `docs/research/2026-09-09-concise-specs.md`
 § *Outcome, 2026-09-11*.
 
 **2. A spec may be condensed with no behaviour change, and the lane for that is a Story.** Rule 2 and
@@ -192,6 +198,33 @@ and every other scenario verbatim, and every in-spec reference to the old headin
 same delta. **Recorded here rather than in a record of its own**, so that one file holds every rule
 for reducing a spec; widening *editorial Story* was refused, because every definition of that term
 says no test changes. First applied by `drop-duplicate-schedule-scenarios` (#211).
+
+**7. A rule that ships with no scenario is given one, and the lane for that is a covering Story.**
+Neither lane above fits: an editorial Story changes no test, and a pruning Story adds none. A
+**covering Story** runs the ordinary pipeline and its gates, carries every requirement it touches in
+full as `## MODIFIED Requirements` under its unchanged heading, and names the seam its new tests
+attach at. It holds to these:
+
+1. **Exactly one new scenario per uncovered rule**, never one shared by two, with the one test named
+   for it.
+2. **A rule is covered when some scenario would fail were the rule broken.** A scenario that only
+   visits the case does not count. No mutation is required.
+3. **A sentence that only defers to another requirement is covered when its target is.** It gets no
+   scenario, and `design.md` names each one skipped.
+4. **Its tests are accepted green on arrival.** A test red on arrival means the code breaks a rule
+   that already ships, and that failing run is rule 3's red: the Story fixes only the code that makes
+   that scenario pass, names the fix in `design.md` or the pull request, and G7 checks that nothing
+   else moved. The Story stays a covering Story.
+5. **A rule it covers may be reworded as little as keeps it true**, never a rule it cannot prove, with
+   each rewording shown before and after in `design.md`. G7 checks that no rule was dropped or added.
+6. **A rule nothing can prove keeps its place in the spec** — one the compiler enforces, one that
+   binds a meaning or a consumer, or one no seam accepts — and the Story records it in one bullet of
+   its own under `docs/open-questions.md` § *Known gaps*.
+
+Point 4 was settled against stopping for a Story of its own, because the spec is what ships; a
+behaviour Story's label was refused for the fix, because it would pull decision 1's budget review
+into an incidental change. Point 5 was settled against byte-identical prose. First applied by
+`cover-schedule-rules` (#221).
 
 ## Consequences
 

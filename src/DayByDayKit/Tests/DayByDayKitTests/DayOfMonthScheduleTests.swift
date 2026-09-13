@@ -132,3 +132,17 @@ func theThirtyFirstIsADayOfTheMonth() {
     #expect(schedule.isDue(on: thirtyFirstOfAugust))
     #expect(!schedule.isDue(on: firstOfAugust))
 }
+
+@Test("schedules on the twenty-eighth through the thirty-first are all due on the last day of a common February")
+func schedulesOnTheTwentyEighthThroughTheThirtyFirstAreAllDueOnTheLastDayOfACommonFebruary() {
+    let schedules = [28, 29, 30, 31].map { Schedule.dayOfMonth(DayOfMonth(day: $0)!) }
+    let lastOfFebruary = CalendarDate(year: 2027, month: 2, day: 28)!
+    let dayBefore = CalendarDate(year: 2027, month: 2, day: 27)!
+    let firstOfMarch = CalendarDate(year: 2027, month: 3, day: 1)!
+
+    for schedule in schedules {
+        #expect(schedule.isDue(on: lastOfFebruary))
+        #expect(!schedule.isDue(on: dayBefore))
+        #expect(!schedule.isDue(on: firstOfMarch))
+    }
+}
