@@ -84,6 +84,19 @@ seam. Unlike an *editorial Story*, its tests change. A scenario cannot leave a r
 heading is kept, so each requirement that loses one is REMOVED and ADDED under a new heading. What
 may be dropped is ADR-1047's to say. Runs the ordinary pipeline and its gates.
 
+**Covering Story** — a Story that gives each **uncovered rule** of a capability that already ships a
+scenario of its own, one scenario per rule, and adds the test named for it; it names the seam those
+tests attach at and carries every requirement it touches in full. A rule is **covered** when some
+scenario would fail were the rule broken — not when a scenario merely visits the case — and a
+sentence that only defers to another requirement is covered when its target is. Its tests are
+accepted green on arrival. Where one is red, the code breaks a rule that already ships, and the
+Story fixes exactly that and nothing else. It may reword a rule it covers as little as keeps the
+rule true, and each rewording is shown before and after. A rule nothing can prove — one the compiler
+enforces, or an absence no WHEN/THEN can assert — keeps its place in the spec and is recorded under
+*Known gaps*. The third lane beside the *editorial* and *pruning* Story. ADR-1047. Agreed
+2026-09-12 at the seventh grooming pass and bounded 2026-09-13 at the grill of
+`cover-schedule-rules` (#221).
+
 ## Product principles
 
 The rules a want is judged against. These are not backlog entries — they are what decides
