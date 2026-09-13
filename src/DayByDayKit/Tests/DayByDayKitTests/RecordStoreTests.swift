@@ -335,6 +335,92 @@ func aStoreHoldingWhatCouldNotBeATickIsRefused() throws {
     #expect(try Data(contentsOf: noSuchDayPlace) == noSuchDayBytes)
 }
 
+@Test(
+    "a store holding a tick against a commitment of another kind, or a note of other blank space, is refused"
+)
+func aStoreHoldingATickAgainstACommitmentOfAnotherKindOrANoteOfOtherBlankSpaceIsRefused() throws {
+    let wrongKindTickPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: wrongKindTickPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let wrongKindTickBytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "number": {} }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8)
+    try wrongKindTickBytes.write(to: wrongKindTickPlace)
+
+    func notePlace(holding text: String) throws -> (place: URL, bytes: Data) {
+        let place = freshPlace()
+        try FileManager.default.createDirectory(
+            at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let escaped =
+            text
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\t", with: "\\t")
+        let bytes = Data(
+            """
+            {
+              "version": 5,
+              "ticks": [],
+              "numbers": [],
+              "notes": [
+                {
+                  "commitment": {
+                    "name": "Journal",
+                    "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                    "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                    "kind": { "note": {} }
+                  },
+                  "date": { "year": 2026, "month": 8, "day": 31 },
+                  "text": "\(escaped)"
+                }
+              ],
+              "additions": []
+            }
+            """.utf8)
+        try bytes.write(to: place)
+        return (place, bytes)
+    }
+
+    let threeLineBreaks = try notePlace(holding: "\n\n\n")
+    let tabThenLineBreak = try notePlace(holding: "\t\n")
+    let noBreakSpace = try notePlace(holding: "\u{00A0}")
+
+    #expect(throws: RecordStoreError.notAStore(at: wrongKindTickPlace)) {
+        try RecordStore(at: wrongKindTickPlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: threeLineBreaks.place)) {
+        try RecordStore(at: threeLineBreaks.place)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: tabThenLineBreak.place)) {
+        try RecordStore(at: tabThenLineBreak.place)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: noBreakSpace.place)) {
+        try RecordStore(at: noBreakSpace.place)
+    }
+    #expect(try Data(contentsOf: wrongKindTickPlace) == wrongKindTickBytes)
+    #expect(try Data(contentsOf: threeLineBreaks.place) == threeLineBreaks.bytes)
+    #expect(try Data(contentsOf: tabThenLineBreak.place) == tabThenLineBreak.bytes)
+    #expect(try Data(contentsOf: noBreakSpace.place) == noBreakSpace.bytes)
+}
+
 @Test("a number added to a store is held by a second store opened at the same place while the first is still open")
 func aNumberAddedToAStoreIsHeldByASecondStoreOpenedAtTheSamePlaceWhileTheFirstIsStillOpen() throws {
     let place = freshPlace()
@@ -783,6 +869,46 @@ func aTickAddedOverAHistoryKeptInAnEarlierFormIsReadBackBesideTheTicksAlreadyThe
     #expect(later.history == expected)
     #expect(later.history.isKept(gym, on: monday))
     #expect(later.history.isKept(gym, on: wednesday))
+}
+
+@Test("a change that leaves a store's history as it was writes nothing at its place")
+func aChangeThatLeavesAStoresHistoryAsItWasWritesNothingAtItsPlace() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let place = directory.appendingPathComponent("store.json")
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let tick = Tick(gym, on: monday)!
+    let number = Number(70.5, for: weight, on: monday)!
+    let note = Note("Ran 8k.", for: journal, on: monday)!
+
+    let store = try RecordStore(at: place)
+    try store.add(tick)
+    try store.add(number)
+    try store.add(note)
+    let before = store.history
+
+    try FileManager.default.removeItem(at: directory)
+    try Data().write(to: directory)
+
+    try store.add(tick)
+    try store.add(number)
+    try store.add(note)
+    try store.remove(Tick(gym, on: wednesday)!)
+    try store.removeNumber(for: weight, on: wednesday)
+    try store.removeNote(for: journal, on: wednesday)
+    try store.removeLastAddition(for: protein, on: monday)
+
+    #expect(store.history == before)
 }
 
 @Test("a note added to a store is held by a second store opened at the same place while the first is still open")
@@ -1322,6 +1448,27 @@ func anAmountIsReadBackExactlyAsItWasGivenWhateverItsDigits() throws {
     #expect(later.history == expected)
 }
 
+@Test("a store keeps a day's additions at its place and never their sum")
+func aStoreKeepsADaysAdditionsAtItsPlaceAndNeverTheirSum() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+
+    let store = try RecordStore(at: place)
+    try store.add(Addition(31, for: protein, on: monday)!)
+    try store.add(Addition(89.5, for: protein, on: monday)!)
+
+    let contents = try String(contentsOf: place, encoding: .utf8)
+    #expect(!contents.contains("120.5"))
+
+    let later = try RecordStore(at: place)
+    #expect(later.history.total(for: protein, on: monday) == 120.5)
+}
+
 @Test("a store opened again holds exactly the ticks, numbers, notes and additions added and not taken back")
 func aStoreOpenedAgainHoldsExactlyTheTicksNumbersNotesAndAdditionsAddedAndNotTakenBack() throws {
     let place = freshPlace()
@@ -1392,6 +1539,54 @@ func anAdditionThatCannotBeKeptIsRefusedAndNotHeld() throws {
 
     let later = try RecordStore(at: place)
     #expect(later.history == History())
+}
+
+@Test("a take-back that cannot be kept is refused and the record stays held")
+func aTakeBackThatCannotBeKeptIsRefusedAndTheRecordStaysHeld() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let place = directory.appendingPathComponent("store.json")
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let tick = Tick(gym, on: monday)!
+    let number = Number(70.5, for: weight, on: monday)!
+    let note = Note("Ran 8k.", for: journal, on: monday)!
+    let addition = Addition(30, for: protein, on: monday)!
+
+    let store = try RecordStore(at: place)
+    try store.add(tick)
+    try store.add(number)
+    try store.add(note)
+    try store.add(addition)
+
+    try FileManager.default.removeItem(at: directory)
+    try Data().write(to: directory)
+
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try store.remove(tick)
+    }
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try store.removeNumber(for: weight, on: monday)
+    }
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try store.removeNote(for: journal, on: monday)
+    }
+    #expect(throws: RecordStoreError.cannotWrite(at: place)) {
+        try store.removeLastAddition(for: protein, on: monday)
+    }
+
+    #expect(store.history.isKept(gym, on: monday))
+    #expect(store.history.number(for: weight, on: monday) == 70.5)
+    #expect(store.history.note(for: journal, on: monday) == "Ran 8k.")
+    #expect(store.history.total(for: protein, on: monday) == 30)
 }
 
 @Test("a history kept before a day could hold an addition is read, and no day in it holds one")
@@ -1751,6 +1946,40 @@ func aStoreHoldingWhatCouldNotBeAnAdditionIsRefused() throws {
     #expect(try Data(contentsOf: emptyDayPlace) == emptyDayBytes)
 }
 
+@Test("a store holding a day whose later addition is not above zero is refused")
+func aStoreHoldingADayWhoseLaterAdditionIsNotAboveZeroIsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [],
+          "numbers": [],
+          "notes": [],
+          "additions": [
+            {
+              "commitment": {
+                "name": "Protein",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "total": { "target": 120 } }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 },
+              "amounts": [30, 0]
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RecordStoreError.notAStore(at: place)) {
+        try RecordStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
 @Test("a store holding a day whose additions sum past what can be kept exactly is read rather than refused")
 func aStoreHoldingADayWhoseAdditionsSumPastWhatCanBeKeptExactlyIsReadRatherThanRefused() throws {
     let place = freshPlace()
@@ -1886,4 +2115,88 @@ func aStoreThatCouldNotWriteACarryOverLeavesItsHistoryExactlyAsItWas() throws {
     }
     #expect(store.history.isKept(gym, on: monday))
     #expect(!store.history.isKept(gymEmoji, on: monday))
+}
+
+@Test(
+    "a number, a note and a day's additions carried over through a store are read back under the other commitment by a store opened afterwards"
+)
+func aNumberANoteAndADaysAdditionsCarriedOverThroughAStoreAreReadBackUnderTheOtherCommitmentByAStoreOpenedAfterwards()
+    throws
+{
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let bodyweight = Commitment(
+        name: "Bodyweight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let journalling = Commitment(
+        name: "Journalling", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let proteinGrams = Commitment(
+        name: "Protein grams", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    let number = Number(72.45, for: weight, on: monday)!
+    let note = Note("Ran 8k.", for: journal, on: monday)!
+    let firstAddition = Addition(30, for: protein, on: monday)!
+    let secondAddition = Addition(12.5, for: protein, on: monday)!
+
+    let store = try RecordStore(at: place)
+    try store.add(number)
+    try store.add(note)
+    try store.add(firstAddition)
+    try store.add(secondAddition)
+
+    let numberCarried = try store.carryOver(weight, to: bodyweight)
+    let noteCarried = try store.carryOver(journal, to: journalling)
+    let additionsCarried = try store.carryOver(protein, to: proteinGrams)
+
+    let later = try RecordStore(at: place)
+
+    #expect(numberCarried)
+    #expect(noteCarried)
+    #expect(additionsCarried)
+
+    var expected = History()
+    expected.add(Number(72.45, for: bodyweight, on: monday)!)
+    expected.add(Note("Ran 8k.", for: journalling, on: monday)!)
+    expected.add(Addition(30, for: proteinGrams, on: monday)!)
+    expected.add(Addition(12.5, for: proteinGrams, on: monday)!)
+    #expect(later.history == expected)
+
+    #expect(later.history.number(for: weight, on: monday) == nil)
+    #expect(later.history.note(for: journal, on: monday) == nil)
+    #expect(later.history.total(for: protein, on: monday) == 0)
+}
+
+@Test(
+    "a carry-over through a store leaves at its place what a store given those records under the other commitment holds"
+)
+func aCarryOverThroughAStoreLeavesAtItsPlaceWhatAStoreGivenThoseRecordsUnderTheOtherCommitmentHolds()
+    throws
+{
+    let firstPlace = freshPlace()
+    let secondPlace = freshPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 3)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    let first = try RecordStore(at: firstPlace)
+    try first.add(Tick(gym, on: monday)!)
+    try first.carryOver(gym, to: gymEmoji)
+
+    let second = try RecordStore(at: secondPlace)
+    try second.add(Tick(gymEmoji, on: monday)!)
+
+    #expect(try Data(contentsOf: firstPlace) == Data(contentsOf: secondPlace))
 }

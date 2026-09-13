@@ -1227,6 +1227,25 @@ func takingBackANoteLeavesAnotherCommitmentsNoteOnTheSameDayStanding() {
     #expect(history.note(for: journal, on: monday) == nil)
 }
 
+@Test("taking back a note leaves another commitment's number on the same day standing")
+func takingBackANoteLeavesAnotherCommitmentsNumberOnTheSameDayStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+
+    var history = History()
+    history.add(Note("Ran 8k.", for: journal, on: monday)!)
+    history.add(Number(70.5, for: weight, on: monday)!)
+    history.removeNote(for: journal, on: monday)
+
+    #expect(history.number(for: weight, on: monday) == 70.5)
+    #expect(history.isKept(weight, on: monday))
+    #expect(history.note(for: journal, on: monday) == nil)
+}
+
 @Test("taking back a note where the history holds none leaves it unchanged")
 func takingBackANoteWhereTheHistoryHoldsNoneLeavesItUnchanged() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -1749,6 +1768,33 @@ func takingBackTheLastAdditionLeavesAnotherCommitmentsDayStanding() {
     #expect(history.total(for: protein, on: monday) == 0)
 }
 
+@Test("taking back the last addition leaves every other kind of record on the same day standing")
+func takingBackTheLastAdditionLeavesEveryOtherKindOfRecordOnTheSameDayStanding() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    history.add(Number(70.5, for: weight, on: monday)!)
+    history.add(Note("Ran 8k.", for: journal, on: monday)!)
+    history.add(Addition(30, for: protein, on: monday)!)
+    history.add(Addition(90, for: protein, on: monday)!)
+    history.removeLastAddition(for: protein, on: monday)
+
+    #expect(history.total(for: protein, on: monday) == 30)
+    #expect(history.isKept(gym, on: monday))
+    #expect(history.number(for: weight, on: monday) == 70.5)
+    #expect(history.note(for: journal, on: monday) == "Ran 8k.")
+}
+
 @Test("taking back where the day holds no addition leaves the history unchanged")
 func takingBackWhereTheDayHoldsNoAdditionLeavesTheHistoryUnchanged() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -1889,6 +1935,28 @@ func aTotalCommitmentIsKeptOnOneDayAndNotOnAnotherFromEachDaysOwnAdditions() {
     #expect(!history.isKept(protein, on: saturday))
 }
 
+@Test(
+    "a tick does not keep a commitment alike in name and kind but on another schedule or kept from another day"
+)
+func aTickDoesNotKeepACommitmentAlikeInNameAndKindButOnAnotherScheduleOrKeptFromAnotherDay() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let laterKeptFrom = CalendarDate(year: 2026, month: 2, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let otherSchedule = Commitment(
+        name: "Gym", schedule: Schedule.weekdays([.monday]), keptFrom: keptFrom, kind: .tick)!
+    let otherKeptFrom = Commitment(
+        name: "Gym", schedule: schedule, keptFrom: laterKeptFrom, kind: .tick)!
+
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+
+    #expect(!history.isKept(otherSchedule, on: monday))
+    #expect(!history.isKept(otherKeptFrom, on: monday))
+    #expect(history.isKept(gym, on: monday))
+}
+
 @Test("a total commitment with additions on a date still takes no number on it")
 func aTotalCommitmentWithAdditionsOnADateStillTakesNoNumberOnIt() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -1919,6 +1987,22 @@ func aTotalCommitmentWithAdditionsOnADateStillTakesNoNoteOnIt() {
 
     #expect(Note("Ran 8k.", for: protein, on: monday) == nil)
     #expect(history.total(for: protein, on: monday) == 120)
+}
+
+@Test("a text of one zero-width space is a note")
+func aTextOfOneZeroWidthSpaceIsANote() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let zeroWidthSpace = "\u{200B}"
+
+    let note = Note(zeroWidthSpace, for: commitment, on: monday)
+
+    #expect(note != nil)
+    var history = History()
+    history.add(note!)
+    #expect(history.note(for: commitment, on: monday) == zeroWidthSpace)
 }
 
 @Test("every record of a commitment is carried over to another, on the dates each was made for")
@@ -2084,5 +2168,35 @@ func carryingOverToACommitmentTheHistoryAlreadyHoldsARecordOfIsRefused() {
     let carried = history.carryOver(gym, to: run)
 
     #expect(!carried)
+    #expect(history == historyBefore)
+}
+
+@Test("carrying over is refused whole where only some of the records could be the other commitment's")
+func carryingOverIsRefusedWholeWhereOnlySomeOfTheRecordsCouldBeTheOtherCommitments() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let juneFirst = CalendarDate(year: 2026, month: 6, day: 1)!
+    let augustFourth = CalendarDate(year: 2026, month: 8, day: 4)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: juneFirst)!
+    let gymLater = Commitment(name: "Gym", schedule: schedule, keptFrom: augustFourth)!
+
+    let augustDates = (3...31).map { CalendarDate(year: 2026, month: 8, day: $0)! }
+    let septemberDates = (1...30).map { CalendarDate(year: 2026, month: 9, day: $0)! }
+    let dates = augustDates + septemberDates
+    #expect(dates.count == 59)
+
+    var history = History()
+    for date in dates {
+        history.add(Tick(gym, on: date)!)
+    }
+    let historyBefore = history
+
+    let carried = history.carryOver(gym, to: gymLater)
+
+    #expect(!carried)
+    for date in dates {
+        #expect(!history.isKept(gymLater, on: date))
+    }
     #expect(history == historyBefore)
 }

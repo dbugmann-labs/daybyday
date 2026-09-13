@@ -98,6 +98,9 @@ public final class RecordStore {
     public func add(_ tick: Tick) throws {
         var nextTicks = ticks
         nextTicks.insert(tick)
+        guard nextTicks != ticks else {
+            return
+        }
         try write(ticks: nextTicks, numbers: numbers, notes: notes, additions: additions)
 
         ticks = nextTicks
@@ -107,6 +110,9 @@ public final class RecordStore {
     public func remove(_ tick: Tick) throws {
         var nextTicks = ticks
         nextTicks.remove(tick)
+        guard nextTicks != ticks else {
+            return
+        }
         try write(ticks: nextTicks, numbers: numbers, notes: notes, additions: additions)
 
         ticks = nextTicks
@@ -117,6 +123,9 @@ public final class RecordStore {
     public func add(_ number: Number) throws {
         var nextNumbers = numbers
         nextNumbers[RecordedDay(commitment: number.commitment, date: number.date)] = number.number
+        guard nextNumbers != numbers else {
+            return
+        }
         try write(ticks: ticks, numbers: nextNumbers, notes: notes, additions: additions)
 
         numbers = nextNumbers
@@ -126,6 +135,9 @@ public final class RecordStore {
     public func removeNumber(for commitment: Commitment, on date: CalendarDate) throws {
         var nextNumbers = numbers
         nextNumbers[RecordedDay(commitment: commitment, date: date)] = nil
+        guard nextNumbers != numbers else {
+            return
+        }
         try write(ticks: ticks, numbers: nextNumbers, notes: notes, additions: additions)
 
         numbers = nextNumbers
@@ -136,6 +148,9 @@ public final class RecordStore {
     public func add(_ note: Note) throws {
         var nextNotes = notes
         nextNotes[RecordedDay(commitment: note.commitment, date: note.date)] = note.text
+        guard nextNotes != notes else {
+            return
+        }
         try write(ticks: ticks, numbers: numbers, notes: nextNotes, additions: additions)
 
         notes = nextNotes
@@ -145,6 +160,9 @@ public final class RecordStore {
     public func removeNote(for commitment: Commitment, on date: CalendarDate) throws {
         var nextNotes = notes
         nextNotes[RecordedDay(commitment: commitment, date: date)] = nil
+        guard nextNotes != notes else {
+            return
+        }
         try write(ticks: ticks, numbers: numbers, notes: nextNotes, additions: additions)
 
         notes = nextNotes
@@ -168,6 +186,9 @@ public final class RecordStore {
         if var amounts = nextAdditions[day], !amounts.isEmpty {
             amounts.removeLast()
             nextAdditions[day] = amounts.isEmpty ? nil : amounts
+        }
+        guard nextAdditions != additions else {
+            return
         }
         try write(ticks: ticks, numbers: numbers, notes: notes, additions: nextAdditions)
 
