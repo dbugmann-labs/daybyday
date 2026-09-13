@@ -97,6 +97,13 @@ enforces, or an absence no WHEN/THEN can assert — keeps its place in the spec 
 2026-09-12 at the seventh grooming pass and bounded 2026-09-13 at the grill of
 `cover-schedule-rules` (#221).
 
+**Amended 2026-09-13**, at the grill of `cover-commitment-rules` (#224). A covering Story also
+strengthens, in place and under its title, a shipped test that asserts less than its scenario, since
+a rule whose only test cannot fail is not covered. Where a test was shown to survive a mutant, its
+rewrite is proven by that mutation reddening it. Where no test can observe a rule from outside, the
+Story may add one internal, test-only seam rather than record the rule as a gap. And it may correct a
+scenario title already recorded false, which moves the requirement holding it by REMOVED plus ADDED.
+
 ## Product principles
 
 The rules a want is judged against. These are not backlog entries — they are what decides
