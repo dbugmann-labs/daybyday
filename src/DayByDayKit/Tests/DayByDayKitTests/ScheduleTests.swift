@@ -161,6 +161,21 @@ func theFirstDayOfAYearIsPlacedOnItsGregorianWeekday() {
     #expect(!schedule.isDue(on: newYearsEve))
 }
 
+@Test("the first and last dates the system forms are placed on their Gregorian weekdays")
+func theFirstAndLastDatesTheSystemFormsArePlacedOnTheirGregorianWeekdays() {
+    let firstDate = CalendarDate(year: 1583, month: 1, day: 1)!
+    let lastDate = CalendarDate(year: 9999, month: 12, day: 31)!
+    let saturdaySchedule = Schedule.weekdays([.saturday])
+    let julianTuesdaySchedule = Schedule.weekdays([.tuesday])
+    let fridaySchedule = Schedule.weekdays([.friday])
+    let julianMondaySchedule = Schedule.weekdays([.monday])
+
+    #expect(saturdaySchedule.isDue(on: firstDate))
+    #expect(!julianTuesdaySchedule.isDue(on: firstDate))
+    #expect(fridaySchedule.isDue(on: lastDate))
+    #expect(!julianMondaySchedule.isDue(on: lastDate))
+}
+
 @Test("a day beyond the end of its month is not a calendar date")
 func aDayBeyondTheEndOfItsMonthIsNotACalendarDate() {
     let date = CalendarDate(year: 2026, month: 2, day: 30)

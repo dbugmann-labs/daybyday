@@ -182,6 +182,21 @@ func anEveryNDaysScheduleIsDueOnNoneOfTheSevenDatesBeforeItsStartDate() {
     }
 }
 
+@Test("a weekday-set and a day-of-month schedule are due on the dates they match at both ends of the supported years")
+func aWeekdaySetAndADayOfMonthScheduleAreDueOnTheDatesTheyMatchAtBothEndsOfTheSupportedYears() {
+    let weekdaySchedule = Schedule.weekdays([.monday])
+    let firstMonday = CalendarDate(year: 1583, month: 1, day: 3)!
+    let lastMonday = CalendarDate(year: 9999, month: 12, day: 27)!
+    let dayOfMonthSchedule = Schedule.dayOfMonth(DayOfMonth(day: 1)!)
+    let firstOfTheFirstYear = CalendarDate(year: 1583, month: 1, day: 1)!
+    let firstOfTheLastYear = CalendarDate(year: 9999, month: 12, day: 1)!
+
+    #expect(weekdaySchedule.isDue(on: firstMonday))
+    #expect(weekdaySchedule.isDue(on: lastMonday))
+    #expect(dayOfMonthSchedule.isDue(on: firstOfTheFirstYear))
+    #expect(dayOfMonthSchedule.isDue(on: firstOfTheLastYear))
+}
+
 @Test("an interval of no days is not an interval")
 func anIntervalOfNoDaysIsNotAnInterval() {
     let interval = DayInterval(days: 0)
@@ -203,4 +218,15 @@ func anIntervalOfOneDayIsAnInterval() {
     let interval = DayInterval(days: 1)
 
     #expect(interval != nil)
+}
+
+@Test("an every-N-days schedule is still due near the last date the system forms")
+func anEveryNDaysScheduleIsStillDueNearTheLastDateTheSystemForms() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let schedule = Schedule.everyNDays(DayInterval(days: 3)!, from: start)
+    let nearLastDate = CalendarDate(year: 9999, month: 12, day: 30)!
+    let lastDate = CalendarDate(year: 9999, month: 12, day: 31)!
+
+    #expect(schedule.isDue(on: nearLastDate))
+    #expect(!schedule.isDue(on: lastDate))
 }

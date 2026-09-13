@@ -464,6 +464,23 @@ Things that are built, or deliberately not built, in a state someone will trip o
   than a wrong decision, per ADR-1020's rule to amend a record in place when a trigger it named itself
   fires. Surfaced at #205's G4, 2026-09-10, and left alone there as outside that Story's scope.
 
+- **Four groups of `schedule` rules cannot be proven by a test, and stay in the spec anyway.**
+  `cover-schedule-rules` (#221) gave every other uncovered rule a scenario and left these four
+  groups alone, per ADR-1047 decision 7.6:
+  - time, time zone, locale and week start: the exclusion clause in each of the five due
+    requirements, and rhythm in words "not taken from the device's language, region, locale" — no
+    seam accepts them;
+  - compiler-enforced: the five "no schedule SHALL be built on / asked about" an out-of-range
+    value, "MUST NOT form a date with a component missing", a calendar date's numbers "not
+    writable" and "only by forming a new one", and words "the same whatever day asked on / about"
+    and "in every month";
+  - meaning or consumer: quota "due MUST NOT mean still outstanding", "week complete MUST be
+    decided from tick records", "seven SHALL mean one completion each day", words "whether or not
+    any commitment carries it";
+  - an interval at `Int.max` not lost to overflow: shown only at 4,000,000.
+
+  Recorded 2026-09-13, at #221's grill.
+
 ## Settled
 
 - 2026-09-11 — **specs and change folders are made concise through per-artifact and per-requirement

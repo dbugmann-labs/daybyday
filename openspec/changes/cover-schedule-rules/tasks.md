@@ -12,28 +12,28 @@ scenario, run it. Green on arrival is accepted. Red is the red: make the least c
 
 ## 2. The carried requirements
 
-- [ ] 2.1 `git diff --no-index` of each of the four MODIFIED blocks against the current spec shows only its one appended scenario
+- [x] 2.1 `git diff --no-index` of each of the four MODIFIED blocks against the current spec shows only its one appended scenario
 
 ## 3. The four scenarios — one test each
 
-- [ ] 3.1 schedules on the twenty-eighth through the thirty-first are all due on the last day of a common February — in `DayOfMonthScheduleTests.swift`; catches a clamp skipping the 28th or 30th
-- [ ] 3.2 an every-N-days schedule is still due near the last date the system forms — in `EveryNDaysScheduleTests.swift`; catches a final occurrence
-- [ ] 3.3 the first and last dates the system forms are placed on their Gregorian weekdays — in `ScheduleTests.swift`; catches a Julian reading at either end
-- [ ] 3.4 a weekday-set and a day-of-month schedule are due on the dates they match at both ends of the supported years — in `EveryNDaysScheduleTests.swift`, beside its requirement's tests; catches an implicit start anchor
+- [x] 3.1 schedules on the twenty-eighth through the thirty-first are all due on the last day of a common February — in `DayOfMonthScheduleTests.swift`; catches a clamp skipping the 28th or 30th
+- [x] 3.2 an every-N-days schedule is still due near the last date the system forms — in `EveryNDaysScheduleTests.swift`; catches a final occurrence
+- [x] 3.3 the first and last dates the system forms are placed on their Gregorian weekdays — in `ScheduleTests.swift`; catches a Julian reading at either end
+- [x] 3.4 a weekday-set and a day-of-month schedule are due on the dates they match at both ends of the supported years — in `EveryNDaysScheduleTests.swift`, beside its requirement's tests; catches an implicit start anchor
 
 ## 4. The record
 
-- [ ] 4.1 `docs/open-questions.md` § *Known gaps* gains one new bullet for `schedule` holding every rule in `design.md` § *The unprovable rules*, none dropped and none added, and the payload bullet is untouched
+- [x] 4.1 `docs/open-questions.md` § *Known gaps* gains one new bullet for `schedule` holding every rule in `design.md` § *The unprovable rules*, none dropped and none added, and the payload bullet is untouched
 
 ## 5. The gates
 
-- [ ] 5.1 `openspec validate cover-schedule-rules --strict` exits 0, and `pnpm run check:scenarios` exits 0.
-- [ ] 5.2 `git diff --stat origin/main -- src/` lists only the three test files named in § 3, or also
+- [x] 5.1 `openspec validate cover-schedule-rules --strict` exits 0, and `pnpm run check:scenarios` exits 0.
+- [x] 5.2 `git diff --stat origin/main -- src/` lists only the three test files named in § 3, or also
       the one source file a red arrival fixed, and that fix is named in the PR body.
-- [ ] 5.3 `pnpm run check:budgets` warns about nothing in this folder, and `pnpm run verify` passes.
-- [ ] 5.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is four more than a run
+- [x] 5.3 `pnpm run check:budgets` warns about nothing in this folder, and `pnpm run verify` passes.
+- [x] 5.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is four more than a run
       on `main` reports, both read off runs and never derived.
-- [ ] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
+- [x] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
       on the evidence that 2.1–5.4 are ticked and that the instruction below is written here for the
       janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of
       the sync it prints, then reads the spec diff it produced: in `openspec/specs/schedule/spec.md`
