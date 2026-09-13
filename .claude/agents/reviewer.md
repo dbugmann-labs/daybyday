@@ -63,6 +63,17 @@ it.
   cross-reference follows a renamed heading. Anything in `src/` or `tests/` that is not a deletion
   needs a `tasks.md` box permitting it, and a helper only a deleted test used is a finding.
   `check:scenarios` checks scenario → test only, so a test left behind is yours to catch.
+- **On a covering Story** (ADR-1047 decision 7: a MODIFIED delta whose carried requirements each
+  gain one scenario per uncovered rule, the test named for each, green on arrival) the fidelity list
+  is `design.md`'s list of covered rules. For each, read the new test's assertions against the rule,
+  not against its title: it must fail were that rule broken, and must not be the scenario for a
+  second rule. Check by script that every carried requirement is byte-identical to the current spec
+  apart from its added scenario and any rewording `design.md` shows before and after; a rewording
+  not shown there, or one that drops or adds a rule, is a finding. Anything in `src/` outside the
+  tests may move only for a test `design.md` or the pull request names as red on arrival, and only
+  as far as that scenario needs. Every rule `design.md` lists as unprovable must appear in the
+  Story's own bullet under `docs/open-questions.md` § *Known gaps*, none dropped and none added, and
+  must still be stated in the spec.
 
 **The budgets are part of the standards axis.** ADR-1047 gives every artifact a budget —
 `proposal.md` 60 lines, `design.md` 150, `tasks.md` one line per scenario plus 80, requirement
