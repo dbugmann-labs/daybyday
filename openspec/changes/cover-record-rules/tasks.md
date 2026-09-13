@@ -37,7 +37,8 @@ alone (`design.md` § *The one red, and its fix*).
 - [ ] 5.1 `openspec validate cover-record-rules --strict` exits 0, and `pnpm run check:scenarios` exits 0.
 - [ ] 5.2 `git diff --stat origin/main -- src/` lists only `RecordStore.swift`, `RecordStoreTests.swift`
       and `RecordTests.swift`.
-- [ ] 5.3 `pnpm run check:budgets` warns about nothing in this folder, and `pnpm run verify` passes.
+- [ ] 5.3 `pnpm run check:budgets` warns about the five carried requirements `design.md` § *No rule is
+      reworded* names and nothing else in this folder, and `pnpm run verify` passes.
 - [ ] 5.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is twelve more than a run
       on `main` reports, both read off runs and never derived.
 - [ ] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
