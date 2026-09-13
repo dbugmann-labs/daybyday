@@ -63,6 +63,16 @@ and across the turn of a year. The answer MUST NOT vary with the host's time zon
 - **THEN** the commitment is due on that date
 - **AND** the same schedule asked about Thursday 31 December 2026 answers that it is not due
 
+#### Scenario: the first and last dates the system forms are placed on their Gregorian weekdays
+
+- **WHEN** a schedule listing only Saturday is asked about Saturday 1 January 1583
+- **THEN** the commitment is due on that date
+- **AND** a schedule listing only Tuesday, the weekday the Julian calendar gives that date, asked
+  about the same date answers that it is not due
+- **AND** a schedule listing only Friday asked about Friday 31 December 9999 answers that it is due
+- **AND** a schedule listing only Monday, the weekday the Julian calendar gives that date, asked
+  about the same date answers that it is not due
+
 ### Requirement: A calendar date names a day that exists
 
 A calendar date SHALL be a year, a month of that year and a day of that month. The system SHALL form
@@ -190,6 +200,14 @@ and the system MUST NOT treat that as a collision to be resolved.
 - **THEN** the commitment is due on that date
 - **AND** the same schedule asked about 30 August 2026 answers that it is not due
 
+#### Scenario: schedules on the twenty-eighth through the thirty-first are all due on the last day of a common February
+
+- **WHEN** schedules on the 28th, the 29th, the 30th and the 31st of the month are each asked about
+  28 February 2027
+- **THEN** all four commitments are due on that date
+- **AND** each of the four asked about 27 February 2027 answers that it is not due
+- **AND** each of the four asked about 1 March 2027 answers that it is not due
+
 ### Requirement: A day of the month is a number from the first to the thirty-first
 
 The system SHALL form a day of the month only from a number from 1 through 31 inclusive, and MUST
@@ -282,6 +300,12 @@ answered as *An interval is a whole number of days, at least one* says.
 - **AND** the same schedule asked about 31 December 9999, the last date the system forms, answers
   that it is not due
 
+#### Scenario: an every-N-days schedule is still due near the last date the system forms
+
+- **WHEN** a schedule of every 3 days starting on 31 August 2026 is asked about 30 December 9999
+- **THEN** the commitment is due on that date
+- **AND** the same schedule asked about 31 December 9999 answers that it is not due
+
 ### Requirement: An every-N-days schedule is not due before its start date
 
 A commitment whose schedule is an interval of days SHALL NOT be due on any calendar date earlier
@@ -302,6 +326,14 @@ SHALL remain due on every date they match in either direction.
 - **WHEN** a schedule of every 3 days starting on 31 August 2026 is asked about each date from
   24 through 30 August 2026
 - **THEN** the commitment is due on none of those seven dates
+
+#### Scenario: a weekday-set and a day-of-month schedule are due on the dates they match at both ends of the supported years
+
+- **WHEN** a schedule listing only Monday is asked about Monday 3 January 1583 and about Monday
+  27 December 9999
+- **THEN** the commitment is due on both dates
+- **AND** a schedule on the 1st of the month asked about 1 January 1583 and about 1 December 9999
+  answers that it is due on both
 
 ### Requirement: An interval is a whole number of days, at least one
 
