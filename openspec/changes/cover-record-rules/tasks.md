@@ -12,7 +12,7 @@ alone (`design.md` § *The one red, and its fix*).
 ## 2. The carried requirements
 
 - [x] 2.1 `git diff --no-index` of each of the ten MODIFIED blocks against the current spec shows only its appended scenarios
-- [ ] 2.2 `git diff --no-index` of the one `day-screen` MODIFIED block against the current spec shows only the two removed "committing nothing at all on that row" AND lines, two lines each
+- [x] 2.2 `git diff --no-index` of the one `day-screen` MODIFIED block against the current spec shows only the two removed "committing nothing at all on that row" AND lines, two lines each
 
 ## 3. The twelve scenarios — one test each
 
@@ -32,18 +32,18 @@ alone (`design.md` § *The one red, and its fix*).
 ## 4. The one fix
 
 - [x] 4.1 3.8 was run red first; `RecordStore.swift`'s diff is only a return before writing in each change method whose next state equals the current one, 3.8 is green, and the PR body names the fix
-- [ ] 4.2 In `DayScreenTests.swift`, *a number refused by the place is told on the row and names no cause* and *a note refused by the place is told on the row and names no cause* each lose only their blank-commit block (the second screen, committing `""`) and nothing else, and both pass
+- [x] 4.2 In `DayScreenTests.swift`, *a number refused by the place is told on the row and names no cause* and *a note refused by the place is told on the row and names no cause* each lose only their blank-commit block (the second screen, committing `""`) and nothing else, and both pass
 
 ## 5. The gates
 
-- [ ] 5.1 `openspec validate cover-record-rules --strict` exits 0, and `pnpm run check:scenarios` exits 0.
-- [ ] 5.2 `git diff --stat origin/main -- src/` lists only `RecordStore.swift`, `RecordStoreTests.swift`,
+- [x] 5.1 `openspec validate cover-record-rules --strict` exits 0, and `pnpm run check:scenarios` exits 0.
+- [x] 5.2 `git diff --stat origin/main -- src/` lists only `RecordStore.swift`, `RecordStoreTests.swift`,
       `RecordTests.swift` and `DayScreenTests.swift`.
-- [ ] 5.3 `pnpm run check:budgets` warns about the six carried requirements `design.md` § *No rule is
+- [x] 5.3 `pnpm run check:budgets` warns about the six carried requirements `design.md` § *No rule is
       reworded* names and nothing else in this folder, and `pnpm run verify` passes.
-- [ ] 5.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is twelve more than a run
+- [x] 5.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is twelve more than a run
       on `main` reports, both read off runs and never derived.
-- [ ] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
+- [x] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
       on the evidence that 2.1–5.4 are ticked and that the instruction below is written here for the
       janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of
       the sync it prints, then reads the spec diff it produced: in `openspec/specs/record/spec.md`

@@ -3251,16 +3251,6 @@ func aNumberRefusedByThePlaceIsToldOnTheRowAndNamesNoCause() throws {
     }
     #expect(enteringScreen.notice?.row == enteringScreen.dayView.rows[0])
     #expect(enteringScreen.notice?.cause == nil)
-
-    let (takeBackPlace, takeBackRosterPlace) = try blockerPlaces()
-    let takeBackScreen = DayScreen(
-        startingFrom: [weight], asOf: monday, keepingRecordAt: takeBackPlace,
-        keepingRosterAt: takeBackRosterPlace)
-    #expect(throws: RecordStoreError.cannotWrite(at: takeBackPlace)) {
-        try takeBackScreen.enter("", on: takeBackScreen.dayView.rows[0])
-    }
-    #expect(takeBackScreen.notice?.row == takeBackScreen.dayView.rows[0])
-    #expect(takeBackScreen.notice?.cause == nil)
 }
 
 @MainActor
@@ -3914,16 +3904,6 @@ func aNoteRefusedByThePlaceIsToldOnTheRowAndNamesNoCause() throws {
     }
     #expect(enteringScreen.notice?.row == enteringScreen.dayView.rows[0])
     #expect(enteringScreen.notice?.cause == nil)
-
-    let (takeBackPlace, takeBackRosterPlace) = try blockerPlaces()
-    let takeBackScreen = DayScreen(
-        startingFrom: [journal], asOf: monday, keepingRecordAt: takeBackPlace,
-        keepingRosterAt: takeBackRosterPlace)
-    #expect(throws: RecordStoreError.cannotWrite(at: takeBackPlace)) {
-        try takeBackScreen.enter("", on: takeBackScreen.dayView.rows[0])
-    }
-    #expect(takeBackScreen.notice?.row == takeBackScreen.dayView.rows[0])
-    #expect(takeBackScreen.notice?.cause == nil)
 
     let (longPlace, longRosterPlace) = try blockerPlaces()
     let longScreen = DayScreen(
