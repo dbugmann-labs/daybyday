@@ -13,14 +13,14 @@ day-view tests in `DayViewTests.swift`; day-screen tests in `DayScreenTests.swif
 
 ## 2. The seam
 
-- [ ] 2.1 Every member in `design.md` § *The seam* exists with that signature, and 3.1 is red before they do anything but compile
+- [x] 2.1 Every member in `design.md` § *The seam* exists with that signature, and 3.1 is red before they do anything but compile
 
 ## 3. `one-off` — one test each
 
-- [ ] 3.1 a one-off renamed keeps its date, whether it is done and its place among one-offs owed on its date — catches remove-then-add moving it last
-- [ ] 3.2 renaming a one-off onto a one-off already held on its date is refused and changes nothing — catches the one-off itself not counted as held
-- [ ] 3.3 renaming a one-off to a name that says nothing, or renaming one not held, is refused — catches a blank name trimmed into a valid one
-- [ ] 3.4 a rename is kept at a one-off store before the store reports it, and one that cannot be kept is refused — catches the held value changed before the write
+- [x] 3.1 a one-off renamed keeps its date, whether it is done and its place among one-offs owed on its date — catches remove-then-add moving it last
+- [x] 3.2 renaming a one-off onto a one-off already held on its date is refused and changes nothing — catches the one-off itself not counted as held
+- [x] 3.3 renaming a one-off to a name that says nothing, or renaming one not held, is refused — catches a blank name trimmed into a valid one
+- [x] 3.4 a rename is kept at a one-off store before the store reports it, and one that cannot be kept is refused — catches the held value changed before the write
 
 ## 4. `day-screen`: the day view — one test each
 

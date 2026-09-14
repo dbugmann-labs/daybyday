@@ -377,3 +377,125 @@ func removingAOneOffThatIsNotHeldIsRefused() {
     #expect(!removed)
     #expect(unchanged == oneOffs)
 }
+
+@Test(
+    "a one-off renamed keeps its date, whether it is done and its place among one-offs owed on its date"
+)
+func aOneOffRenamedKeepsItsDateWhetherItIsDoneAndItsPlaceAmongOneOffsOwedOnItsDate() {
+    let september21 = CalendarDate(year: 2026, month: 9, day: 21)!
+    let september25 = CalendarDate(year: 2026, month: 9, day: 25)!
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+    let october5 = CalendarDate(year: 2026, month: 10, day: 5)!
+    let callMum = OneOff(name: "Call mum", date: september25)!
+    let bookDentist = OneOff(name: "Book dentist", date: september25)!
+
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.add(bookDentist)
+    let renamed = oneOffs.rename(callMum, to: "Ring mum")
+
+    #expect(renamed)
+    #expect(
+        oneOffs.standing(on: september25, asOf: september21).map(\.name)
+            == ["Ring mum", "Book dentist"])
+    #expect(oneOffs.standingDay(for: callMum, asOf: september21) == nil)
+
+    let payFine = OneOff(name: "Pay fine", date: CalendarDate(year: 2026, month: 9, day: 20)!)!
+    var second = OneOffs()
+    _ = second.add(payFine)
+    _ = second.tick(payFine, on: september28)
+    let payFineRenamed = second.rename(payFine, to: "Pay the fine")
+
+    #expect(payFineRenamed)
+    let payTheFine = OneOff(
+        name: "Pay the fine", date: CalendarDate(year: 2026, month: 9, day: 20)!)!
+    #expect(second.standingDay(for: payTheFine, asOf: october5) == september28)
+}
+
+@Test("renaming a one-off onto a one-off already held on its date is refused and changes nothing")
+func renamingAOneOffOntoAOneOffAlreadyHeldOnItsDateIsRefusedAndChangesNothing() {
+    let september25 = CalendarDate(year: 2026, month: 9, day: 25)!
+    let september26 = CalendarDate(year: 2026, month: 9, day: 26)!
+    let callMum = OneOff(name: "Call mum", date: september25)!
+    let ringMum25 = OneOff(name: "Ring mum", date: september25)!
+    let ringMum26 = OneOff(name: "Ring mum", date: september26)!
+
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.add(ringMum25)
+    _ = oneOffs.add(ringMum26)
+    let before = oneOffs
+    let renamed = oneOffs.rename(callMum, to: "Ring mum")
+
+    #expect(!renamed)
+    #expect(oneOffs == before)
+
+    let renamedToSelf = oneOffs.rename(callMum, to: "Call mum")
+    #expect(!renamedToSelf)
+    #expect(oneOffs == before)
+
+    let renamedOtherDate = oneOffs.rename(ringMum26, to: "Call mum")
+    #expect(renamedOtherDate)
+}
+
+@Test("renaming a one-off to a name that says nothing, or renaming one not held, is refused")
+func renamingAOneOffToANameThatSaysNothingOrRenamingOneNotHeldIsRefused() {
+    let september25 = CalendarDate(year: 2026, month: 9, day: 25)!
+    let callMum = OneOff(name: "Call mum", date: september25)!
+    let callDad = OneOff(name: "Call dad", date: september25)!
+
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    let before = oneOffs
+    let renamedBlank = oneOffs.rename(callMum, to: "   ")
+
+    #expect(!renamedBlank)
+    #expect(oneOffs == before)
+
+    let renamedEmpty = oneOffs.rename(callMum, to: "")
+    #expect(!renamedEmpty)
+    #expect(oneOffs == before)
+
+    let renamedNotHeld = oneOffs.rename(callDad, to: "Ring dad")
+    #expect(!renamedNotHeld)
+    #expect(oneOffs == before)
+}
+
+@Test(
+    "a rename is kept at a one-off store before the store reports it kept, and one that cannot be kept is refused"
+)
+func aRenameIsKeptAtAOneOffStoreBeforeTheStoreReportsItKeptAndOneThatCannotBeKeptIsRefused()
+    throws
+{
+    let september25 = CalendarDate(year: 2026, month: 9, day: 25)!
+    let callMum = OneOff(name: "Call mum", date: september25)!
+
+    let place = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        .appendingPathComponent("one-offs.json")
+    let first = try OneOffStore(at: place)
+    try first.add(callMum)
+    try first.rename(callMum, to: "Ring mum")
+
+    let second = try OneOffStore(at: place)
+    #expect(second.oneOffs.standingDay(for: OneOff(name: "Ring mum", date: september25)!, asOf: september25) != nil)
+    #expect(second.oneOffs.standingDay(for: callMum, asOf: september25) == nil)
+
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blockedPlace = directory.appendingPathComponent("one-offs.json")
+    let store = try OneOffStore(at: blockedPlace)
+    try store.add(callMum)
+
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+
+    #expect(throws: OneOffStoreError.cannotWrite(at: blockedPlace)) {
+        try store.rename(callMum, to: "Ring mum")
+    }
+
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    let reopened = try OneOffStore(at: blockedPlace)
+    #expect(reopened.oneOffs.standingDay(for: callMum, asOf: september25) != nil)
+    #expect(reopened.oneOffs.standingDay(for: OneOff(name: "Ring mum", date: september25)!, asOf: september25) == nil)
+}

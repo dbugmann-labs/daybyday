@@ -64,6 +64,27 @@ public struct OneOffs: Hashable, Sendable {
         return true
     }
 
+    /// Renames `oneOff`, held or not, to `name` in place — one write, so a refused rename holds
+    /// nothing changed and a kept one keeps the entry's place among one-offs owed on the same
+    /// date. Refused, changing nothing, when this does not hold `oneOff`, when `name` says
+    /// nothing, or when a one-off named `name` on `oneOff`'s date is already held, `oneOff`
+    /// itself included. `design.md` § *A rename is one act in `one-off`, and keeps the one-off's
+    /// place*.
+    public mutating func rename(_ oneOff: OneOff, to name: String) -> Bool {
+        guard let index = entries.firstIndex(where: { $0.oneOff == oneOff }) else {
+            return false
+        }
+        guard let renamed = OneOff(name: name, date: oneOff.date) else {
+            return false
+        }
+        guard !entries.contains(where: { $0.oneOff == renamed }) else {
+            return false
+        }
+
+        entries[index] = Entry(oneOff: renamed, doneOn: entries[index].doneOn)
+        return true
+    }
+
     public mutating func remove(_ oneOff: OneOff) -> Bool {
         guard let index = entries.firstIndex(where: { $0.oneOff == oneOff }) else {
             return false

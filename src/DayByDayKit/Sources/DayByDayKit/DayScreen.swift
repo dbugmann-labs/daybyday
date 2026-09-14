@@ -299,6 +299,43 @@ public final class DayScreen {
     /// changing.
     public private(set) var notice: Notice?
 
+    /// What is told under the one-off entry, or under a one-off row's name field — never the
+    /// screen's one `notice`, which a one-off add or rename never sets. `design.md` § *A refusal
+    /// under a name field is its own value, and there is one at a time*.
+    public struct NameRefusal: Hashable, Sendable {
+        public let row: DayView.OneOffRow?
+        public let text: String
+        public let cause: String?
+    }
+
+    /// The refusal told under the one-off entry (`row == nil`) or under a row's name field, or
+    /// `nil` when there is nothing to tell. `design.md` § *The seam*.
+    public private(set) var nameRefusal: NameRefusal?
+
+    /// Adds a one-off named `text`, blank space at both ends disregarded, dated the day this
+    /// screen is showing. Throws when the add could not be kept at the one-off place. `design.md`
+    /// § *A refusal under a name field is its own value, and there is one at a time*.
+    public func addOneOff(named text: String) throws {
+    }
+
+    /// Renames the one-off `row` holds to `text`, blank space at both ends disregarded. Throws
+    /// when the rename could not be kept at the one-off place. `design.md` § *A rename is one act
+    /// in `one-off`, and keeps the one-off's place*.
+    public func rename(_ row: DayView.OneOffRow, to text: String) throws {
+    }
+
+    /// Removes the one-off `row` holds outright. Throws when the removal could not be kept at the
+    /// one-off place.
+    public func remove(_ row: DayView.OneOffRow) throws {
+    }
+
+    /// The person has started editing a one-off name field — the entry or a row's. Ends whatever
+    /// `nameRefusal` was telling. `design.md` § *What a day screen tells under a one-off name
+    /// field lasts until its text is edited, the day it is showing changes, or the app is shown
+    /// again*.
+    public func oneOffNameEdited() {
+    }
+
     /// Makes the tick `row` offers, or takes it back where `row` says its commitment is kept, and
     /// keeps the change before `dayView` says so. Does nothing when `row` is not one this screen's
     /// day view holds, or when this screen is not keeping a record. Throws when the change could
