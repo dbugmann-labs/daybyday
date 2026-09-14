@@ -303,38 +303,6 @@ decision it records is the owner's, twice.*
 - **Open** — a narrowed range with records already outside it. Refuse the change, as #148 refuses
   a day already recorded on that would be left not due, or accept it and let the old days stand?
 
-### B-049 — put a one-off thing on a day and tick it off there
-
-*Captured 2026-09-12.*
-
-> "I want to be able to add daily TODO's, that can just be ticked off on that exact day.. Those
-> are not commitments, just something that is due on a date."
-
-> "It should be possible to add them on any day, and also to tick them on any day"
-
-- **Trigger** — something lands that is owed once, on a date, and never again: a form to send back
-  by Friday, a call to make on the 20th. Nothing in the app can hold it today.
-- **Touches** — `commitment` and `day-screen`, possibly `schedule`. It is deliberately *not* a
-  commitment as `CONTEXT.md` defines one — a name, a schedule, a kept-from day and a kind — and
-  every schedule shape the `schedule` capability holds recurs without end: weekday set, day of the
-  month, every N days, weekly quota. Whether a one-off is a fifth schedule shape due on exactly one
-  date, or a thing of its own standing beside the roster, is the clustering question and is not
-  answered here.
-- **Principle** — tested against *five percent of seven things*: **passes**, and cleanly. It makes
-  a new kind of thing possible rather than deepening one that exists, and it is the first want that
-  asks for something the roster cannot express at all. *Nothing congratulates you* is untouched: a
-  ticked one-off goes quiet like every other row.
-- **Open** — the two sentences disagree. "Ticked off on that exact day" and "tick them on any day"
-  cannot both be the rule: is a one-off tickable only from its own date, the way every kind of
-  record already refuses a date its commitment is not due on, or from whatever day screen you
-  happen to be on?
-- **Open** — where is one added? *Entered where you stand* points at the day screen you are
-  looking at, which would make this the first thing in the app brought into existence anywhere but
-  the commitments screen. The commitments screen is the cheaper answer and the worse one.
-- **Open** — what becomes of a one-off never ticked. It stays on its date and is gone from view
-  the next morning, or it follows you forward until it is done. The second is what most people
-  mean by a to-do and is a rule no existing row has.
-
 ### B-050 — see why something was refused, in red, where it went wrong
 
 *Captured 2026-09-12.*
@@ -409,6 +377,15 @@ day and recorded first in `docs/open-questions.md` § Known gaps, which moved he
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-14 — put a one-off thing on a day and tick it off there (B-049) → `FEAT: one-off` (#239)
+  under `EPIC: One-offs` (#238), a new Epic by the owner's decision against the recommendation to
+  amend #1. Grilled at the eighth pass in its own session, sixteen questions over four rounds. A
+  one-off is a name and a date, not a commitment and not a fifth schedule shape; it stands on one day
+  at a time and follows you forward until done (the owner's call against the recommendation); it is
+  made, ticked, removed and renamed on the day screen, never re-dated; its store is its own; its rows
+  are one headed group, last. Term **One-off** in `CONTEXT.md`, with **Commitment** and **Day view**
+  amended. Left behind by id: B-039, B-009.
 
 - 2026-09-14 — know where I stand on a weekly quota, inside its week (B-025) → Story #235
   `add-quota-standing`, reopening `FEAT: record` (#53), and Story #236 `say-standing-in-quota-row`,
@@ -1008,4 +985,33 @@ found nothing.
   - **§7 against the other two clusters** — A deltas `commitment`, which neither Story here touches.
     C was undecided when this session closed and may touch `day-screen`; if its G2 lands a day-screen
     Story first, #236 waits behind it and #235 does not.
-  - **Not re-judged** — the other eleven wants; this session held one cluster by design.
+  - **Not re-judged** — the other ten wants; this session held one cluster by design.
+
+- 2026-09-14 — cluster C of the eighth pass, a one-off on a day, groomed in its own session and
+  worktree (`chore/groom-one-off`) as the eighth pass's line says it would be.
+  - **Sweep** — `origin/main` was still at fd816e1 when it ran: nothing had changed, and the sweep
+    was one line. Cluster D's promotion (#237) landed mid-grill and was re-read at the rebase: B-025
+    left *Wants* for #235 and #236, *Week turnover* moved to *Settled*, and neither opened a silence.
+  - **Promoted** — B-049 → `FEAT: one-off` (#239), the first Feature under a new Epic,
+    `EPIC: One-offs` (#238). New Epic rather than an amended #1 was the owner's decision at the
+    grill, against the recommendation: the Epic is titled *Daily commitments* and a one-off is
+    defined as not one.
+  - **Settled at the grill**, sixteen questions over four rounds, one fact agent, no fact sent to
+    the owner: owed *on* its date, not by it; it follows you forward when missed, the owner's call
+    against the recommendation; made on the day screen, on any day it can show; called *one-off*;
+    a tick only; removed outright when mistaken; stands on exactly one day at a time, so its tick
+    records the day it was done; a late row says the date it was owed; a thing of its own in a new
+    capability, not a fifth schedule shape — the glossary defines a commitment against it, the
+    roster never lets a commitment go, and due-ness is date-only; its own store beside the roster and
+    the record; its rows in one group headed *One-offs*, last; a name and a date, no category; a
+    rename is in, a re-date is not. Terms: **One-off** landed, **Commitment** and **Day view**
+    amended.
+  - **Proposed for G2** — the value, the day it stands on and its store first, touching no screen;
+    then the day screen draws and ticks the group; then adding and removing from the day screen,
+    which meets the row-identity gap in `docs/open-questions.md`; then renaming. One ADR owed at
+    Story 1's Stage 4 for *stands on one day at a time*; ADR-1051 was the highest number on every
+    branch and worktree, and none was claimed here.
+  - **§7 against the other two clusters** — D's G2 landed first: every Story here after the first
+    deltas `day-screen`, so it serialises behind #236 `say-standing-in-quota-row`, and Story 1 waits
+    on nothing. A deltas `commitment`, which nothing here touches.
+  - **Not re-judged** — the other ten wants; this session held one cluster by design.

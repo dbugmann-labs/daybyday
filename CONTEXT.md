@@ -157,6 +157,10 @@ is of the plain kind, a tick, so nothing already recorded is re-keyed and nothin
 back differently. Where the kind lives was the one question this grill and the commitment's
 lifecycle (B-029, a category) had in common, and it is answered here for both.
 
+**Amended 2026-09-14**, at the Feature grill of B-049: the *task* a commitment was defined against
+has a name, **one-off**, and one thing said of it above is no longer true of the thing built — it
+is not gone once done. It stands on the day it was ticked, for good.
+
 **Commitment name** — the words a person gave a commitment, and the only part of one that is
 not a rule. It has to say something: a name that is empty, or made only of blank space, names
 nothing and is refused, the same refusal that stops 30 February being a calendar date. Anything
@@ -766,6 +770,11 @@ thing about a date — a group with nothing due is not drawn. That leaves *"a da
 of its own"* true without an exception, which is what ADR-1038 records and what let the requirement
 saying so stay out of #147's delta entirely.
 
+**Amended 2026-09-14**, at the Feature grill that minted `one-off`: a day view also draws the
+**one-offs** standing on its date, as one more group after every group of commitments, headed
+*One-offs*, and draws no such group where none stands there. Rows still come only from what it was
+handed — the one-offs are handed to it too — and it still orders nothing of its own.
+
 **Row** — one commitment's line in a day view: its name, the **rhythm in words** it runs on, whether
 it is kept, and the place a tick is made. Ticking belongs to the row and therefore to `day-screen`:
 `record` says what a tick is and what a history answers and knows nothing of a row, of a date being
@@ -1292,6 +1301,25 @@ included — it is seven weekday names that are fixed here now rather than ninet
 The **date** is no longer the app's to say at all: the day picker beside the title renders it, in
 whatever words the device uses, which is the half of ADR-1022 this Story reverses and the reason
 nothing the app owns can state which date is on screen. ADR-1022, amended the same day.
+
+**One-off** — something owed once, on a date, and never again: a form to send back by Friday, a
+call to make on the 20th. It is a **name** and a **calendar date** and nothing else — no rhythm, no
+day it is kept from, no kind and no category — and it takes a tick. Deliberately not a
+**commitment**, which has been defined against it since 2026-08-28: a commitment recurs and the
+roster never lets one go, whereas a one-off is done once, and one added by mistake is removed
+outright, as though the day had never held it. It **stands on exactly one day at a time**: its
+date, until that day has passed with the one-off undone; then **today**, wherever today has got to,
+until it is ticked; then the day it was ticked, for good. Its tick therefore records the day it was
+done, and its date says what it was owed on — so its row says that date where it is not the day
+shown, in the place a commitment's row says its rhythm in words, and that is a fact rather than a
+reproach. A **day view** draws the one-offs standing on its date as one more group, after every
+group of commitments, headed *One-offs* — the one heading in a day that is the system's word and
+not the person's — and draws no such group where none stands there. A one-off is made on the day
+screen, on any day that screen can show, and can be renamed; its date is never changed, because
+removing one and adding it to another day is two taps. Its **store** is its own, beside the roster
+and the record, so `record` goes on holding only what a commitment's days take. Agreed 2026-09-14
+at the Feature grill of B-049, which grooms cluster C of the eighth pass; the capability is
+`one-off`, and it is the first under an Epic other than #1.
 
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
