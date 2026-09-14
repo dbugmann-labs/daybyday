@@ -160,9 +160,13 @@ public final class CommitmentsScreen {
         /// A change asked for, refused, and held against the commitment it was asked to change
         /// rather than the one it would have produced — `design.md` § *The two new refusals*.
         case changing(Commitment, Refusal)
+        /// A restart asked for and refused, held against the commitment it was asked about — the
+        /// eighth kind of refused change. `openspec/changes/add-interval-restart/design.md` §
+        /// *The seam*.
+        case restarting(Commitment, Refusal)
     }
 
-    /// Why a change was refused. `nil` from any of the seven below means it was kept at the
+    /// Why a change was refused. `nil` from any of the thirteen below means it was kept at the
     /// place before that call returned.
     public enum Refusal: Equatable, Sendable {
         /// A name that is empty or made only of blank space.
@@ -195,6 +199,13 @@ public final class CommitmentsScreen {
         case rangeIsNotARange
         /// A target that is not a number, not above zero, or blank.
         case targetIsNotATarget
+        /// A restart asked from a date later than the day this screen was handed.
+        case restartDayIsAfterToday
+        /// A restart asked from a date earlier than the day the commitment is kept from.
+        case restartDayIsBeforeKeptFrom
+        /// A restart asked from a date the commitment is already due on — restarting there would
+        /// change nothing.
+        case alreadyDueOnRestartDay
     }
 
     /// What a commitment on either of this screen's lists is made of — the value a sheet fills
@@ -212,6 +223,10 @@ public final class CommitmentsScreen {
         /// carries. Shown, and not one of the four a change is asked with: a kind is set when a
         /// commitment is defined and never changes. `design.md` § *The seam*.
         public let kind: Commitment.Kind
+        /// Whether this commitment can be restarted: `true` where its roster is keeping it and
+        /// its schedule is an interval of days, `false` otherwise.
+        /// `openspec/changes/add-interval-restart/design.md` § *The seam*.
+        public let canRestart: Bool
     }
 
     /// Forms a commitment from `name`, the schedule `rhythm` names when kept from `keptFrom`,
@@ -344,7 +359,17 @@ public final class CommitmentsScreen {
         return Change(
             name: commitment.name, rhythm: Rhythm(commitment.schedule), keptFrom: commitment.keptFrom,
             category: entry.category, canChangeRhythmAndKeptFrom: entry.keptUntil == nil,
-            kind: commitment.kind)
+            kind: commitment.kind,
+            canRestart: entry.keptUntil == nil && Self.isIntervalSchedule(commitment.schedule))
+    }
+
+    /// Whether `schedule` is an interval of days — the one rhythm a restart applies to.
+    /// `openspec/changes/add-interval-restart/design.md` § *The seam*.
+    private static func isIntervalSchedule(_ schedule: Schedule) -> Bool {
+        if case .everyNDays = schedule {
+            return true
+        }
+        return false
     }
 
     /// `category`, or nothing where `category` holds nothing but blank space — the same
@@ -584,6 +609,116 @@ public final class CommitmentsScreen {
                 commitment, with: finalNewCommitment, keptUntil: supersedeKeptUntil, under: category)
         } catch {
             refusedChange = .changing(commitment, .notKept)
+            return .notKept
+        }
+
+        refusedChange = nil
+        refreshLists(from: rosterStore)
+        return nil
+    }
+
+    /// Why carrying the records of `commitment` made on or after `day` over to `restarted` would
+    /// be refused, reading `history` rather than writing it — `nil` where it may proceed. Mirrors
+    /// `refusalCarryingRecords(from:to:in:)`, but judges only the dates on or after `day`: the
+    /// same not-due-first order, then records already kept.
+    /// `openspec/changes/add-interval-restart/design.md` § *The order refusals are judged in*.
+    private static func refusalCarryingRecordsOnOrAfter(
+        from commitment: Commitment, to restarted: Commitment, onOrAfter day: CalendarDate,
+        in history: History
+    ) -> Refusal? {
+        let datesOnOrAfter = history.datesRecorded(for: commitment).filter { day.days(until: $0) >= 0 }
+        guard datesOnOrAfter.allSatisfy({ restarted.isDue(on: $0) }) else {
+            return .wouldLeaveARecordedDayNotDue
+        }
+        guard !history.holdsRecords(of: restarted) else {
+            return .recordsAlreadyExist
+        }
+        return nil
+    }
+
+    /// Restarts `commitment`'s count from `day`: supersedes it as of the day before `day` with a
+    /// commitment alike in name, interval and kind, whose schedule starts on `day` and which is
+    /// kept from `day`, under the category `commitment` is under. Every record of `commitment`
+    /// made on or after `day` is carried onto the restarted commitment at the record place,
+    /// written before the roster place; every record made before `day` stays under `commitment`.
+    /// See `openspec/specs/commitment/spec.md` §§ *A commitments screen restarts an interval
+    /// commitment it keeps, from a day it is given*, *A commitments screen refuses a restart it
+    /// cannot make* and *A commitments screen says whether a commitment can be restarted, and
+    /// offers the day it was handed to restart from*, and this change's `design.md`.
+    ///
+    /// Does nothing and says nothing when `commitment` cannot be restarted: not on `kept`, or not
+    /// on an interval schedule. Otherwise refuses, in order: a day later than `dayToKeepFrom`; a
+    /// day earlier than `commitment`'s own `keptFrom`; a day `commitment` is already due on; a
+    /// restart whose result the roster already holds, in any state; a day already recorded on
+    /// that the restart would leave not due; records already kept under the restarted
+    /// commitment; and a place that could not be written.
+    @discardableResult public func restart(_ commitment: Commitment, from day: CalendarDate) -> Refusal? {
+        // `kept.contains(commitment)` already guarantees `rosterStore` is not `nil` and holds an
+        // `entry` for `commitment`: `rosterStore` is assigned only in `init` and `shown(asOf:)`,
+        // each immediately followed by `refreshLists(from:)` on that same store, which is the one
+        // place `kept` is ever set — straight off `rosterStore.roster.groups` — so the two never
+        // drift apart. Binding both here, beside the interval schedule check, costs no refusal an
+        // unreachable guard further down would ever have produced.
+        guard kept.contains(commitment), case .everyNDays(let interval, from: _) = commitment.schedule,
+            let rosterStore,
+            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
+        else {
+            return nil
+        }
+
+        guard day.days(until: dayToKeepFrom) >= 0 else {
+            refusedChange = .restarting(commitment, .restartDayIsAfterToday)
+            return .restartDayIsAfterToday
+        }
+
+        guard commitment.keptFrom.days(until: day) >= 0 else {
+            refusedChange = .restarting(commitment, .restartDayIsBeforeKeptFrom)
+            return .restartDayIsBeforeKeptFrom
+        }
+
+        guard !commitment.isDue(on: day) else {
+            refusedChange = .restarting(commitment, .alreadyDueOnRestartDay)
+            return .alreadyDueOnRestartDay
+        }
+
+        let restartedSchedule = Schedule.everyNDays(interval, from: day)
+        let restarted = Commitment(
+            name: commitment.name, schedule: restartedSchedule, keptFrom: day, kind: commitment.kind)!
+
+        guard !rosterStore.roster.entries.contains(where: { $0.commitment == restarted }) else {
+            refusedChange = .restarting(commitment, .alreadyKept)
+            return .alreadyKept
+        }
+
+        guard let recordStore else {
+            refusedChange = .restarting(commitment, .notKept)
+            return .notKept
+        }
+
+        if let refusal = Self.refusalCarryingRecordsOnOrAfter(
+            from: commitment, to: restarted, onOrAfter: day, in: recordStore.history)
+        {
+            refusedChange = .restarting(commitment, refusal)
+            return refusal
+        }
+
+        do {
+            guard try recordStore.carryOver(commitment, to: restarted, onOrAfter: day) else {
+                refusedChange = .restarting(commitment, .wouldLeaveARecordedDayNotDue)
+                return .wouldLeaveARecordedDayNotDue
+            }
+        } catch {
+            refusedChange = .restarting(commitment, .notKept)
+            return .notKept
+        }
+
+        let supersedeKeptUntil = Self.dayBefore(day)
+        do {
+            _ = try rosterStore.supersede(
+                commitment, with: restarted, keptUntil: supersedeKeptUntil, under: entry.category)
+        } catch {
+            _ = try? recordStore.carryOver(restarted, to: commitment, onOrAfter: day)
+            refusedChange = .restarting(commitment, .notKept)
             return .notKept
         }
 

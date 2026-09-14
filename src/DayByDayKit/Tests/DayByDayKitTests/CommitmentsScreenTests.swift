@@ -7421,3 +7421,443 @@ func aChangeThatWouldLeaveARecordedDayNotDueAndMeetsRecordsAlreadyKeptIsRefusedA
     #expect(try Data(contentsOf: places.roster) == rosterBytes)
     #expect(try Data(contentsOf: places.record) == recordBytes)
 }
+
+@MainActor
+@Test(
+    "an interval commitment restarted from today is kept until yesterday and runs on from today under its name, interval and category"
+)
+func anIntervalCommitmentRestartedFromTodayIsKeptUntilYesterdayAndRunsOnFromTodayUnderItsNameIntervalAndCategory()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august10th = CalendarDate(year: 2026, month: 8, day: 10)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+    let restartedNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: monday), keptFrom: monday)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails, under: "Care")
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(nails, on: august10th)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let recordBytesAfterOpen = try Data(contentsOf: places.record)
+
+    let refusal = screen.restart(nails, from: monday)
+
+    #expect(refusal == nil)
+    #expect(screen.keptGroups == [Roster.Group(category: "Care", commitments: [restartedNails])])
+    #expect(screen.kept.map(\.rhythmInWords) == ["Every 4 days"])
+
+    let rosterStoreAfterwards = try RosterStore(at: places.roster)
+    #expect(rosterStoreAfterwards.roster.commitments(on: august30th) == [restartedNails, nails])
+    #expect(rosterStoreAfterwards.roster.commitments(on: monday) == [restartedNails])
+
+    #expect(try Data(contentsOf: places.record) == recordBytesAfterOpen)
+}
+
+@MainActor
+@Test(
+    "restarting an interval commitment carries every record on or after the day it restarts from onto the restarted commitment"
+)
+func restartingAnIntervalCommitmentCarriesEveryRecordOnOrAfterTheDayItRestartsFromOntoTheRestartedCommitment()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let august1st = CalendarDate(year: 2026, month: 8, day: 1)!
+    let august2nd = CalendarDate(year: 2026, month: 8, day: 2)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august10th = CalendarDate(year: 2026, month: 8, day: 10)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august1st)!
+    let restartedNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august2nd),
+        keptFrom: august2nd)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(nails, on: august6th)!)
+    try recordStore.add(Tick(nails, on: august10th)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.restart(nails, from: august2nd)
+
+    #expect(refusal == nil)
+
+    let recordStoreAfterwards = try RecordStore(at: places.record)
+    #expect(recordStoreAfterwards.history.isKept(restartedNails, on: august6th))
+    #expect(recordStoreAfterwards.history.isKept(restartedNails, on: august10th))
+    #expect(!recordStoreAfterwards.history.isKept(nails, on: august6th))
+    #expect(!recordStoreAfterwards.history.isKept(nails, on: august10th))
+}
+
+@MainActor
+@Test(
+    "an interval commitment restarted from the day it is kept from is kept on no date before the restart"
+)
+func anIntervalCommitmentRestartedFromTheDayItIsKeptFromIsKeptOnNoDateBeforeTheRestart() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august8th = CalendarDate(year: 2026, month: 8, day: 8)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+    let restartedNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august4th),
+        keptFrom: august4th)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.restart(nails, from: august4th)
+
+    #expect(refusal == nil)
+
+    let rosterStoreAfterwards = try RosterStore(at: places.roster)
+    let restartedCommitment = try #require(rosterStoreAfterwards.roster.commitments(on: august4th).first)
+    #expect(restartedCommitment.isDue(on: august4th))
+    #expect(restartedCommitment.isDue(on: august8th))
+    #expect(!restartedCommitment.isDue(on: august6th))
+    #expect(rosterStoreAfterwards.roster.commitments(on: august4th) == [restartedNails])
+}
+
+@MainActor
+@Test(
+    "an interval commitment restarted through a commitments screen draws one row on a day screen on either side of the restart"
+)
+func anIntervalCommitmentRestartedThroughACommitmentsScreenDrawsOneRowOnADayScreenOnEitherSideOfTheRestart()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let september3rd = CalendarDate(year: 2026, month: 9, day: 3)!
+    let september4th = CalendarDate(year: 2026, month: 9, day: 4)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.restart(nails, from: monday)
+
+    #expect(refusal == nil)
+
+    let sundayScreen = DayScreen(
+        startingFrom: [], asOf: august30th, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster)
+    #expect(sundayScreen.dayView.rows.map(\.name) == ["Nails"])
+
+    let mondayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster)
+    #expect(mondayScreen.dayView.rows.map(\.name) == ["Nails"])
+
+    let fridayScreen = DayScreen(
+        startingFrom: [], asOf: september4th, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster)
+    #expect(fridayScreen.dayView.rows.map(\.name) == ["Nails"])
+
+    let thursdayScreen = DayScreen(
+        startingFrom: [], asOf: september3rd, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster)
+    #expect(thursdayScreen.dayView.rows.isEmpty)
+}
+
+@MainActor
+@Test(
+    "a restart from a day after today, a day before the day kept from, or a day the rhythm is already due on is refused, each told apart"
+)
+func aRestartFromADayAfterTodayADayBeforeTheDayKeptFromOrADayTheRhythmIsAlreadyDueOnIsRefusedEachToldApart()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let september1st = CalendarDate(year: 2026, month: 9, day: 1)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+    let rosterBytes = try Data(contentsOf: places.roster)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let afterTodayRefusal = screen.restart(nails, from: september1st)
+    let beforeKeptFromRefusal = screen.restart(nails, from: august3rd)
+    let alreadyDueRefusal = screen.restart(nails, from: august30th)
+
+    #expect(afterTodayRefusal == .restartDayIsAfterToday)
+    #expect(beforeKeptFromRefusal == .restartDayIsBeforeKeptFrom)
+    #expect(alreadyDueRefusal == .alreadyDueOnRestartDay)
+    #expect(screen.kept.map(\.name) == ["Nails"])
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+    #expect(!FileManager.default.fileExists(atPath: places.record.path))
+}
+
+@MainActor
+@Test("a restart that would leave a day recorded on after it not due is refused")
+func aRestartThatWouldLeaveADayRecordedOnAfterItNotDueIsRefused() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august29th = CalendarDate(year: 2026, month: 8, day: 29)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(nails, on: august30th)!)
+    let rosterBytes = try Data(contentsOf: places.roster)
+    let recordBytes = try Data(contentsOf: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.restart(nails, from: august29th)
+
+    #expect(refusal == .wouldLeaveARecordedDayNotDue)
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test("a restart onto a commitment whose records are already kept is refused for that cause")
+func aRestartOntoACommitmentWhoseRecordsAreAlreadyKeptIsRefusedForThatCause() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+    let strayRestartedNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: monday), keptFrom: monday)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(strayRestartedNails, on: monday)!)
+    let rosterBytes = try Data(contentsOf: places.roster)
+    let recordBytes = try Data(contentsOf: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.restart(nails, from: monday)
+
+    #expect(refusal == .recordsAlreadyExist)
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test("a restart whose result the roster already holds is refused as a commitment already kept")
+func aRestartWhoseResultTheRosterAlreadyHoldsIsRefusedAsACommitmentAlreadyKept() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+    let secondNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: monday), keptFrom: monday)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+    try rosterStore.add(secondNails)
+    try rosterStore.remove(secondNails, keptUntil: august30th)
+    let rosterBytes = try Data(contentsOf: places.roster)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.restart(nails, from: monday)
+
+    #expect(refusal == .alreadyKept)
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+}
+
+@MainActor
+@Test(
+    "a restart refused at the roster place after its records were carried over leaves the record place as it was"
+)
+func aRestartRefusedAtTheRosterPlaceAfterItsRecordsWereCarriedOverLeavesTheRecordPlaceAsItWas() throws {
+    let rosterDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = rosterDirectory.appendingPathComponent("roster.json")
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let august1st = CalendarDate(year: 2026, month: 8, day: 1)!
+    let august2nd = CalendarDate(year: 2026, month: 8, day: 2)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august10th = CalendarDate(year: 2026, month: 8, day: 10)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august1st)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(nails)
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(nails, on: august6th)!)
+    try recordStore.add(Tick(nails, on: august10th)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace)
+
+    let recordBytesBeforeRestart = try Data(contentsOf: recordPlace)
+
+    try FileManager.default.removeItem(at: rosterDirectory)
+    try Data().write(to: rosterDirectory)
+
+    let refusal = screen.restart(nails, from: august2nd)
+
+    #expect(refusal == .notKept)
+    #expect(try Data(contentsOf: recordPlace) == recordBytesBeforeRestart)
+    #expect(screen.kept.map(\.name) == ["Nails"])
+    #expect(screen.refusedChange == .restarting(nails, .notKept))
+}
+
+@MainActor
+@Test(
+    "a restart a commitments screen could not carry over at the record place leaves the roster place as it was"
+)
+func aRestartACommitmentsScreenCouldNotCarryOverAtTheRecordPlaceLeavesTheRosterPlaceAsItWas() throws {
+    let rosterDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = rosterDirectory.appendingPathComponent("roster.json")
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let august1st = CalendarDate(year: 2026, month: 8, day: 1)!
+    let august2nd = CalendarDate(year: 2026, month: 8, day: 2)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august1st)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(nails)
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(nails, on: august6th)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace)
+
+    let rosterBytesBeforeRestart = try Data(contentsOf: rosterPlace)
+
+    try FileManager.default.removeItem(at: recordDirectory)
+    try Data().write(to: recordDirectory)
+
+    let refusal = screen.restart(nails, from: august2nd)
+
+    #expect(refusal == .notKept)
+    #expect(try Data(contentsOf: rosterPlace) == rosterBytesBeforeRestart)
+}
+
+@MainActor
+@Test("a commitments screen says only a kept interval commitment can be restarted")
+func aCommitmentsScreenSaysOnlyAKeptIntervalCommitmentCanBeRestarted() throws {
+    let rosterPlace = freshRosterPlace()
+    let january1st = CalendarDate(year: 2026, month: 1, day: 1)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: january1st),
+        keptFrom: january1st)!
+    let lenses = Commitment(
+        name: "Lenses", schedule: .everyNDays(DayInterval(days: 4)!, from: january1st),
+        keptFrom: january1st)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: january1st)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(nails)
+    try rosterStore.add(lenses)
+    try rosterStore.add(gym)
+    try rosterStore.retire(lenses, keptUntil: august30th)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.whatItIsMadeOf(nails)?.canRestart == true)
+    #expect(screen.whatItIsMadeOf(lenses)?.canRestart == false)
+    #expect(screen.whatItIsMadeOf(gym)?.canRestart == false)
+    #expect(screen.dayToKeepFrom == monday)
+}
+
+@MainActor
+@Test("a restart asked of a commitment that cannot be restarted does nothing and says nothing")
+func aRestartAskedOfACommitmentThatCannotBeRestartedDoesNothingAndSaysNothing() throws {
+    let places = freshRosterAndRecordPlaces()
+    let january1st = CalendarDate(year: 2026, month: 1, day: 1)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let lenses = Commitment(
+        name: "Lenses", schedule: .everyNDays(DayInterval(days: 4)!, from: january1st),
+        keptFrom: january1st)!
+    let pool = Commitment(
+        name: "Pool", schedule: .everyNDays(DayInterval(days: 4)!, from: january1st),
+        keptFrom: january1st)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: january1st)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(lenses)
+    try rosterStore.add(pool)
+    try rosterStore.add(gym)
+    try rosterStore.retire(lenses, keptUntil: august30th)
+    try rosterStore.remove(pool, keptUntil: august30th)
+    let rosterBytes = try Data(contentsOf: places.roster)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let lensesRefusal = screen.restart(lenses, from: monday)
+    let poolRefusal = screen.restart(pool, from: monday)
+    let gymRefusal = screen.restart(gym, from: monday)
+
+    #expect(lensesRefusal == nil)
+    #expect(poolRefusal == nil)
+    #expect(gymRefusal == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+    #expect(!FileManager.default.fileExists(atPath: places.record.path))
+}

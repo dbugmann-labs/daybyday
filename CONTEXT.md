@@ -298,6 +298,15 @@ a move of the **kept-from** day: that corrects the whole of a history, while thi
 again partway through one. Agreed 2026-09-14 at the eighth grooming pass's Feature grill, from the
 owner's own case: a workaround through the kept-from day refused for a cause it did not have.
 
+**Amended 2026-09-14**, while writing the delta of `add-interval-restart` (#248). The commitment a
+restart forms is kept from the picked day as well as starting its count there, exactly as the one a
+rhythm change forms is kept from the day it was made. That is what makes a later restart unable to
+reach behind an earlier one, and a kept-from correction unable to undo a restart by rebuilding the
+grid from an older day. The day offered is **today**, and the picked day may be no later than today
+and no earlier than the day the commitment is kept from. A day the commitment is already due on is
+refused, because restarting there changes nothing. Records made on or after the picked day are
+carried onto the restarted commitment, and those made before it stay where they are.
+
 **Category** — the word a person put a commitment under: *supplements*, *sport*, whatever they
 type. It is the owner's own word and never one the app names — no fixed menu holds the day-one
 week, and the same argument that makes a **commitment name** the owner's rather than the system's
@@ -1235,7 +1244,9 @@ screen's row. Two refusals come with it, *a range that is not a range* and *a ta
 target*, each collapsing three ways to fail for ADR-1021's reason; neither is a new **kind** of
 refused change, so the seven below stand. ADR-1046.
 
-**The kinds of refused change are seven, and they are counted in one place and numbered nowhere.**
+**The kinds of refused change are eight, and they are counted in one place and numbered nowhere.**
+The eighth is a **restart**, added 2026-09-14 while writing the delta of `add-interval-restart`
+(#248), and it names the commitment tapped, as a change does.
 Withdrawing the category kind renumbers every kind after it, so the ordinals above are withdrawn with
 it: a **group move** is a refused change that names a **category** rather than a commitment — the
 only one that does — and a **change** is a refused change that names the commitment tapped rather
