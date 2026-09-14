@@ -13,9 +13,21 @@
  * the Home screen deletes the container and the whole record with it, silently and with no undo.
  * Never tell someone to delete and reinstall as a fix.
  *
- * **A free personal team expires the build after seven days**, whether or not anything shipped.
- * The app stops launching and this script is the fix; it also resets the seven days. The record
- * survives that, because it lives in the container rather than in the build.
+ * **A free personal team's profile expires seven days from issuance**, whether or not anything
+ * shipped, and the app then stops launching. **The expiry is a date, not a countdown this script
+ * restarts:** a run before it reuses the cached profile untouched, so installing every other day
+ * buys nothing. Measured 2026-09-07 to 2026-09-14 — a dozen builds carried one profile, and it
+ * died on its own schedule. The first run *after* expiry mints a new one and starts the next seven.
+ *
+ * **That renewal needs an Apple Account signed in to Xcode**, which is the failure nobody
+ * recognises: with none, the build stops at `error: No Accounts: Add a new account in Accounts
+ * settings.` followed by `No profiles for 'com.dbugmann.daybyday' were found`, and the expired
+ * profile is deleted from the cache on the way past. Xcode → Settings → Accounts, then run this
+ * again; it asks for nothing further. Observed 2026-09-14.
+ *
+ * The record survives all of it, because it lives in the container rather than in the build:
+ * `record.json` and `roster.json` came through that expiry and reinstall with their timestamps
+ * from before it.
  *
  * Not a check and not run by CI: it needs a paired phone and a signing identity, neither of which
  * exists on a runner. `docs/running-the-app.md` carries the same commands written out longhand,
@@ -278,5 +290,6 @@ try {
 
 console.log('')
 console.log(`✓ ${BUNDLE_ID} is on the phone, and every tick it already held is still there.`)
-console.log('  Run this again after any merge — nothing reaches the phone until you do — and')
-console.log('  again within seven days, when a free team\'s signature expires and it stops opening.')
+console.log('  Run this again after any merge — nothing reaches the phone until you do. The free')
+console.log('  team\'s signature expires seven days from when it was issued, which running this')
+console.log('  again does not postpone; the run after it expires is what buys the next seven days.')

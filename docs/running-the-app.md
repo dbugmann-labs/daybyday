@@ -98,6 +98,21 @@ should print one valid identity, and prints `0 valid identities found` on a mach
 sign. Doing only step 1 leaves `find-identity` at zero, which reads as the sign-in having failed
 and has not.
 
+**Step 1 is not once, whatever this heading says.** The account has to still be signed in every
+time a profile is minted, which on a free team is once a week. On 2026-09-14 it was gone — why is
+unknown — and the build stopped at:
+
+```
+error: No Accounts: Add a new account in Accounts settings.
+error: No profiles for 'com.dbugmann.daybyday' were found
+```
+
+That pair reads as a signing problem and is an account problem. Sign in again at **Xcode →
+Settings → Accounts** and re-run `pnpm run phone`, which then issues the profile with no further
+prompting. Step 2 is not needed a second time and the original certificate stays valid — check with
+`security find-identity -v -p codesigning` before concluding anything is wrong with it. Do not open
+the project to fix this: that is the `project.pbxproj` rewrite below, and it is not the problem.
+
 **Step 2 rewrites `project.pbxproj`** — `objectVersion` 77 down to 70 and several sections
 reordered. That is Xcode normalising a hand-written file to the form it round-trips. **Do not
 commit it**: it drops the `DayByDayUITests` target that ADR-1029's smoke layer needs. `git checkout
@@ -137,10 +152,18 @@ xcrun devicectl device info lockState --device <identifier>
 xcrun devicectl device info details --device <identifier> | grep -E 'developerMode|ddiServices'
 ```
 
-**A free Apple ID expires the build after seven days.** The app stops launching and needs the
-install run again; the record survives, because it lives in the app's container rather than in the
-build. Nothing warns you first. A paid Apple Developer account removes the weekly step and is not
-needed to run the trial.
+**A free Apple ID expires the build seven days from when the profile was issued.** The app stops
+launching — the phone says *"DayByDay is no longer available"* — and needs the install run again;
+the record survives, because it lives in the app's container rather than in the build. Nothing
+warns you first, and the deadline is a clock time rather than seven days of use, so read it instead
+of guessing:
+
+```bash
+security cms -D -i "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision \
+  | plutil -extract ExpirationDate raw -o - -
+```
+
+A paid Apple Developer account removes the weekly step and is not needed to run the trial.
 
 ## Putting a new version on it
 
@@ -163,8 +186,10 @@ TestFlight — TestFlight needs a paid membership. **Merging a PR changes nothin
 a week of use starts feeling stale, check that you reinstalled before concluding anything about the
 work.
 
-**Run it again within seven days even if nothing shipped.** A free personal team's signature
-expires and the app stops opening; this is the fix, and it resets the clock.
+**Run it again once the signature expires, even if nothing shipped** — and know that running it
+*before* then does not postpone anything. Xcode reuses the cached profile while it is still valid,
+so the expiry date stays exactly where it was; installing every other day buys no extra time. The
+run *after* the expiry is the fix, and it is the one that issues the next seven days.
 
 **It installs over the top, and that is what keeps your ticks.** The record lives at
 `<Application Support>/DayByDay/record.json`, inside a container iOS keys to the bundle identifier,
@@ -208,17 +233,36 @@ certificate, and launch again.
 **A launch straight after an install also just fails sometimes**, on a phone that trusted the
 certificate long ago, and succeeds seconds later. `pnpm run phone` retries once before it says
 anything, because reporting the first failure sends you to Settings to fix something that is not
-broken.
+broken. **The first install under a newly issued profile is where you will meet it**: on
+2026-09-14 both of the script's attempts were refused — *"Unable to launch com.dbugmann.daybyday
+because it has an invalid code signature, inadequate entitlements or its profile has not been
+explicitly trusted by the user"* — and a third attempt seconds later launched it. Nothing was
+tapped on the phone in between, so read that wording as "try again" before reading it as a trust
+gate.
 
-**What has and has not been run.** All of the above was run for real on 2026-09-07, against a
-paired iPhone 15 Pro on iOS 26.6.1: `pnpm run phone` built, signed, installed and launched, and the
-app is on the phone. The three causes above were each hit and cleared in that session, and the JSON
-field names quoted here were read off real payloads rather than guessed.
+**What has been run.** All of the above was run for real on 2026-09-07, against a paired iPhone 15
+Pro on iOS 26.6.1: `pnpm run phone` built, signed, installed and launched, and the app is on the
+phone. The three causes above were each hit and cleared in that session, and the JSON field names
+quoted here were read off real payloads rather than guessed.
 
-**Two things still have not happened**, and neither can be made to happen on demand: the **seven-day
-signature expiry**, and a **reinstall over an app holding real ticks** — the promise that a
-reinstall keeps the record is argued from where the container lives, not yet observed. Correct this
-paragraph the first time either one is.
+**The two things this file used to call unobserved both happened on 2026-09-14**, on that same
+phone, and they are what the corrections above are written from. The **seven-day expiry** arrived
+at 11:18, to the minute the profile named, and the app stopped opening. The **reinstall over an app
+holding real ticks** then kept the record: afterwards this listed
+`Library/Application Support/DayByDay/record.json` at 11 KB and `roster.json` at 8 KB, both still
+stamped from before the reinstall.
+
+```bash
+xcrun devicectl device info files --device <identifier> \
+  --domain-type appDataContainer --domain-identifier com.dbugmann.daybyday --username mobile
+```
+
+That is also how to check the record survived something without opening the app.
+
+**One thing is still unobserved**: whether Xcode renews the profile unprompted on a machine whose
+account never went missing. The 2026-09-14 renewal followed a fresh sign-in, so a renewal that
+needed no human and one that merely followed one cannot yet be told apart. Correct this paragraph
+the first time a weekly expiry passes with the account already in place.
 
 ## Looking without looking
 
