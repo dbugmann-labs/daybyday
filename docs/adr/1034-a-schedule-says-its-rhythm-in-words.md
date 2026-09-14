@@ -4,6 +4,11 @@
   shows a rule to a person
 - Date: 2026-09-06
 - Deciders: Diego Bugmann
+- Amended: 2026-09-14 — the `Comparable` rejection in § *Alternatives considered* no longer rests on
+  where a week begins being undecided: `CONTEXT.md` § *Weekly quota* now says Monday for everyone and
+  ADR-1050 decides it. The rejection stands on the half that does not move — a week order in the rule
+  engine is reachable by every rule shape — which ADR-1050 keeps out by putting the week in the
+  history. The decision itself is untouched.
 - Amended: 2026-09-11 — why an every-N-days schedule never says its start date, why seven times a
   week is not "Every day", and why the empty weekday set has words, recorded here. All three were
   argued in `schedule`'s requirement prose and nowhere else, and `condense-schedule-spec` (#208)
@@ -148,6 +153,8 @@ and the whole stop-keeping flow are written against that, and `add-kind-to-commi
 none of that and is what #142 extends.
 
 **`Weekday: CaseIterable, Comparable`, so that a set sorts itself.** Rejected because it puts a week
-order into the rule engine, where no rule shape consults one. `CONTEXT.md` § *Weekly quota* records
-that where a week begins is deliberately still undecided; a `Comparable` conformance starting at
-Monday is that decision taken by accident, in the one place it must not be taken.
+order into the rule engine, where no rule shape consults one and every rule shape could reach it.
+Where a week begins was undecided when this was written; ADR-1050 has since decided it — Monday, for
+everyone, as `CONTEXT.md` § *Weekly quota* now records — and kept the order out of the rule engine
+all the same, by putting the week in the **history**, which is the one place that counts the days of
+one. The rejection stands on reachability, not on the question being open.
