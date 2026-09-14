@@ -40,7 +40,6 @@ public struct OneOff: Hashable, Sendable {
     public let date: CalendarDate
     public init?(name: String, date: CalendarDate)
 }
-
 public struct OneOffs: Hashable, Sendable {
     public init()
     public mutating func add(_ oneOff: OneOff) -> Bool
@@ -50,7 +49,6 @@ public struct OneOffs: Hashable, Sendable {
     public mutating func remove(_ oneOff: OneOff) -> Bool
     public func standingDay(for oneOff: OneOff, asOf today: CalendarDate) -> CalendarDate?
 }
-
 public final class OneOffStore {
     public init(at place: URL) throws
     public private(set) var oneOffs: OneOffs
@@ -60,59 +58,44 @@ public final class OneOffStore {
     @discardableResult public func takeBack(_ oneOff: OneOff) throws -> Bool
     @discardableResult public func remove(_ oneOff: OneOff) throws -> Bool
 }
-
-public enum OneOffStoreError: Error, Equatable, Sendable {
-    case notAStore(at: URL)
-    case laterForm(at: URL, version: Int)
-    case cannotWrite(at: URL)
-}
+public enum OneOffStoreError: Error, Equatable, Sendable
 ```
-
-`OneOffDocument` is `internal`, as `RosterDocument` is. Twenty scenarios are driven at `OneOff`
-and `OneOffs`, the nine store scenarios at `OneOffStore` with a fresh URL under `temporaryDirectory`
-per test. A store move refuses without writing exactly where `OneOffs` does, as `RosterStore.add`.
 
 ### Done is held against the one-off, never on it
 
 A one-off is the same one-off ticked or not (`grill.md` § *Settled* 1), so the day it was done is a
-field of the entry `OneOffs` holds, not a third part of the value: on `OneOff` it would mean either
-equality ignoring a stored field — a bug factory — or two values for one thing. ADR-1038 argued this
-about a category and reached the same answer.
+field of the entry `OneOffs` holds, not a third part of the value: on `OneOff` it would mean equality
+ignoring a stored field, or two values for one thing. ADR-1038 reached the same answer for a category.
 
 ### The standing day is the later of the date and today, or the day it was ticked
 
 Not done: `max(date, today)`, the whole of *follows today until it is done* in one expression — no
-special case for a today that is its date, and no clock, the today being the caller's argument.
-Done: the stored day, which never moves again. Not held: `nil`, which gives removal an observation
-and stops a caller being told a day for a one-off nobody holds. ADR-1052 records the rule itself: it
-was the owner's call at the Feature grill, against the recommendation, and it decides what a person
-sees on the day they missed something. `1052` is free — `1051` is the highest on `main`, and
-`add-quota-standing` (#235) claims `1050`.
+special case for a today that is its date, and no clock, the today being the caller's argument. Done:
+the stored day, which never moves again. Not held: `nil`, which gives removal an observation and stops
+a caller being told a day for a one-off nobody holds. ADR-1052 records the rule itself: it was the
+owner's call at the Feature grill, against the recommendation, over what a person sees on a day missed.
 
 ### A day done is never before the day owed
 
-Ticking on a day before the one-off's date is refused, and so is adding already done on such a day.
-A record of doing something before it was owed cannot be true, and it would put the standing day
-*before* the date, which no reader expects. It mirrors `Tick`, which cannot be formed for a
-commitment on a date it is not due on, and agrees with #243's settled row, which offers a tick only
-where the day has arrived. A day after the date is taken: that is the late one-off the rule exists
-for. **This is a judgement, not a settled answer** — the grill did not reach it — and the cheapest
-thing here to overrule: one clause of the tick requirement and two scenarios.
+Ticking on a day before the one-off's date is refused, and so is adding already done on such a day. A
+record of doing something before it was owed cannot be true, and it would put the standing day
+*before* the date. It mirrors `Tick`, which cannot be formed for a commitment on a date it is not due
+on. A day after the date is taken: that is the late one-off the rule exists for. **This is a
+judgement, not a settled answer** — the grill did not reach it — and the cheapest thing here to
+overrule: one clause of the tick requirement and two scenarios.
 
 ### The form on disk, version 1
 
 ```json
-{ "version": 1, "oneOffs": [ { "name": "Call mum",
-  "date": { "year": 2026, "month": 9, "day": 25 },
+{ "version": 1, "oneOffs": [ { "name": "Call mum", "date": { "year": 2026, "month": 9, "day": 25 },
   "doneOn": { "year": 2026, "month": 9, "day": 28 } } ] }
 ```
 
-Hand-written in the capability's own words, decoded through `OneOff.init?` and the same held-by
-rules, so everything the spec refuses is refused again off the disk. `doneOn` is absent where a
-one-off is not done: it is optional **by meaning**, so there is no `doneOnIntroducedInVersion`
-constant and its presence is never judged against the version — ADR-1031's constants begin at the
-first field a later form adds. Entries keep the order they are held in; nothing sorts them, because
-that order is what #243 will draw from.
+Hand-written in the capability's own words, decoded through `OneOff.init?` and the same held-by rules,
+so everything the spec refuses is refused again off the disk. `doneOn` is absent where a one-off is not
+done: it is optional **by meaning**, so it gets no `doneOnIntroducedInVersion` constant and is never
+judged against the version — ADR-1031's constants begin at the first field a later form adds. Entries
+keep the order they are held in, because that order is what #243 will draw from.
 
 ### Migration
 
@@ -121,9 +104,9 @@ encoding is touched, so nothing already kept reads back differently.
 
 ### Names: `OneOffs`, and `standingDay` rather than `standing`
 
-`Roster` and `History` are words the product says; one-offs have no collective noun in `CONTEXT.md`,
-so `OneOffs` is a type name and no term is invented. `standingDay(for:asOf:)` keeps its distance from
-the `History.standing(for:through:)` #235 adds for a count of kept days, and says it answers a day.
+`Roster` and `History` are words the product says; one-offs have no collective noun in `CONTEXT.md`, so
+`OneOffs` is a type name and no term is invented. `standingDay(for:asOf:)` says it answers a day, and
+keeps its distance from the `History.standing(for:through:)` #235 adds for a count of kept days.
 
 ## Risks / Trade-offs
 

@@ -557,6 +557,18 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
   Recorded 2026-09-14, at #224's design.
 
+- **`check:scenarios` matches scenario titles in one flat set across every capability**, so a
+  scenario whose title collides with a shipped one elsewhere is reported covered by the other
+  capability's test. `scripts/lib/coverage.ts` unions every Swift and TypeScript test title into a
+  single `Set<string>` and asks only whether the delta's title is in it, with nothing tying a title to
+  the capability it belongs to — so a change can pass the coverage gate with no test of its own, and
+  a later rename of the other capability's test breaks a gate the two Stories never shared.
+  `add-one-off` (#242) shipped such a collision — *a change that cannot be kept is refused and not
+  held*, byte-identical to a scenario in `openspec/specs/commitment/spec.md` — caught by a reviewer
+  reading the titles rather than by the check; the delta's scenario was renamed, which fixes that one
+  Story and not the hole. The fix is the script's: scope the match by capability, or by the file the
+  test lives in. Unowned. Surfaced at #242's review, 2026-09-14.
+
 ## Settled
 
 - 2026-09-14 — **a week begins on Monday for everyone, and an unmet weekly quota leaves nothing

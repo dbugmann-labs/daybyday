@@ -245,7 +245,7 @@ themselves refuse SHALL leave the place untouched. Stores at different places SH
 - **THEN** the second store holds that one-off
 - **AND** it stands on 25 September 2026 as of 5 October 2026
 
-#### Scenario: a change that cannot be kept is refused and not held
+#### Scenario: a one-off change that cannot be kept is refused and not held
 
 - **WHEN** a one-off store is opened at a place where nothing can be written — a path beneath an
   existing ordinary file — and a one-off named "Call mum" on 25 September 2026 is added to it
