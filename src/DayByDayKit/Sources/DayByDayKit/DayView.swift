@@ -54,11 +54,23 @@ public struct DayView: Hashable, Sendable {
         /// on this row's date. Not given back by anything but `totalEntry(asOf:)`.
         let total: Decimal
 
+        /// This row's commitment's standing through this row's date, where its schedule is a
+        /// weekly quota — `nil` on every other schedule. A fourth thing a weekly-quota row is,
+        /// alongside its commitment, its date and what that day holds; see `design.md` § *A row
+        /// stores its standing, and stores none off a weekly quota*.
+        let standing: Int?
+
         public var name: String { commitment.name }
 
-        /// The rhythm this row's commitment runs on, in words. See
+        /// The rhythm this row's commitment runs on, in words — given this row's standing on a
+        /// weekly quota, and plainly otherwise. See
         /// `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
-        public var rhythmInWords: String { commitment.rhythmInWords }
+        public var rhythmInWords: String {
+            guard let standing else {
+                return commitment.rhythmInWords
+            }
+            return commitment.schedule.inWords(given: standing)
+        }
 
         /// The tick this row makes, or `nil` when the row's date is later than `today`.
         public func tick(asOf today: CalendarDate) -> Tick? {
@@ -216,12 +228,20 @@ public struct DayView: Hashable, Sendable {
         self.groups = groups.compactMap { group in
             let rows = group.commitments
                 .filter { $0.isDue(on: date) }
-                .map {
-                    Row(
-                        commitment: $0, date: date, isKept: history.isKept($0, on: date),
-                        number: history.number(for: $0, on: date),
-                        note: history.note(for: $0, on: date),
-                        total: history.total(for: $0, on: date))
+                .map { commitment -> Row in
+                    let standing: Int?
+                    if case .weeklyQuota = commitment.schedule {
+                        standing = history.standing(for: commitment, through: date)
+                    } else {
+                        standing = nil
+                    }
+                    return Row(
+                        commitment: commitment, date: date,
+                        isKept: history.isKept(commitment, on: date),
+                        number: history.number(for: commitment, on: date),
+                        note: history.note(for: commitment, on: date),
+                        total: history.total(for: commitment, on: date),
+                        standing: standing)
                 }
             guard !rows.isEmpty else {
                 return nil

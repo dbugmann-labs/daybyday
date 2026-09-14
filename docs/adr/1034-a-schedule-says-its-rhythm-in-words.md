@@ -4,6 +4,11 @@
   shows a rule to a person
 - Date: 2026-09-06
 - Deciders: Diego Bugmann
+- Amended: 2026-09-14 — `say-standing-in-quota-row` (#236): a schedule can also be said *given a
+  count*, which a weekly quota says before its words — "1/3x a week" — and every other shape
+  ignores; and a day-screen row on a weekly quota says its words given its standing, which makes
+  that standing a thing the row *is*. Two sentences in § *Decision* are changed in place to say so.
+  The decision stands: the English is still composed in the package, and nothing becomes readable.
 - Amended: 2026-09-14 — the `Comparable` rejection in § *Alternatives considered* no longer rests on
   where a week begins being undecided: `CONTEXT.md` § *Weekly quota* now says Monday for everyone and
   ADR-1050 decides it. The rejection stands on the half that does not move — a week order in the rule
@@ -63,7 +68,9 @@ Three consequences are part of the decision rather than incidental to it:
   English, with no `Locale` and no formatter, exactly as ADR-1022 fixed a day title.
 - **The words say the shape and its number and nothing else.** An every-N-days schedule does not
   say its start date; a day-of-month schedule does not say that a short month is due on its last
-  day. Both are true of the schedule and neither is part of the rhythm a person chose.
+  day. Both are true of the schedule and neither is part of the rhythm a person chose. The one
+  addition is a count the caller hands over: a weekly quota said given one says it before its words,
+  as given and judging none, and every other shape ignores it — the schedule still consults no date.
 - **A payload accessor is not a smaller version of this.** It is a different decision, and it moves
   the composing into the app shell, which `CONTEXT.md` § *App shell* forbids by name.
 
@@ -73,9 +80,11 @@ has not arrived offers nothing at all and still says them. The rhythm a thing ru
 reading the day, at the one screen a person visits daily, rather than a disambiguation added when
 two names happen to repeat. The rejected alternative was exactly that: say the rhythm only where
 two rows would otherwise read alike, which makes what a row says depend on the other rows beside
-it, and makes a day view's answer about one commitment depend on the rest of them. The rhythm is
-still not a fourth thing a row is — the words are read off the commitment the row already holds, so
-two rows alike in commitment, date and record agree on the rhythm they say.
+it, and makes a day view's answer about one commitment depend on the rest of them. On a row
+whose commitment is not on a weekly quota, the rhythm is still not a further thing a row is — the
+words are read off the commitment the row already holds, so two such rows alike in commitment, date
+and record agree on the rhythm they say. A weekly quota's row says its words given its **standing**,
+and holds that standing, so two quota rows saying different counts are different rows.
 
 **What the words leave out, and the two places they could have said something else, are each
 decided for a reason.** An every-N-days schedule does not say its start date because, on every

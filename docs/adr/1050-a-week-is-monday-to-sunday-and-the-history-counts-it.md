@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-14
 - Deciders: Diego Bugmann
+- Amended: 2026-09-14 — `say-standing-in-quota-row` (#236) put the pairing of count and quota into
+  words in `schedule`, said given a count, rather than in the day screen, which reads those words
+  onto a quota's row. Two sentences below are changed in place; the decision is untouched.
 
 ## Context
 
@@ -37,7 +40,8 @@ the count of kept days and is never capped at the number a quota asks for. It is
 and counts that date's week through it, inclusive, by date and never by when a record was entered.
 
 The answer is the count alone — one integer. Pairing it with the quota into words a person reads is
-the day screen's, in `say-standing-in-quota-row` (#236).
+`schedule`'s, which says a weekly quota given a count, and a day-screen row on a weekly quota is
+where those words are read — `say-standing-in-quota-row` (#236).
 
 This ADR takes effect when the Story that carries it merges. The repo owner's G4 signature on that
 change folder is its acceptance; if G4 declines, this file goes with the branch.
@@ -56,8 +60,9 @@ change folder is its acceptance; if G4 declines, this file goes with the branch.
 - **There is still no such record as a miss**, and nothing anywhere counts weeks. A run of met weeks
   is exactly the streak *Nothing congratulates you* was written against, and this decision is what
   keeps the count inside one week where it cannot become one.
-- **`schedule` is untouched and ADR-1034 holds.** The week is `record`'s to know; no rule shape
-  consults it, and `Weekday` gains no order. ADR-1015's deferral is discharged rather than reversed.
+- **`schedule` knows no week and ADR-1034 holds.** The week is `record`'s to know; no rule shape
+  consults it, and `Weekday` gains no order. `schedule` says a count it is handed and never
+  counts. ADR-1015's deferral is discharged rather than reversed.
 - **Reversing the week start is expensive**, which is why this is a record rather than a line in a
   design document: every past week would be re-read, and every standing a person has ever seen would
   change without a single record having moved.

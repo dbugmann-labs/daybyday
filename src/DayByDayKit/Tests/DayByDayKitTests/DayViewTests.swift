@@ -597,6 +597,206 @@ func twoRowsForTheSameCommitmentOnDifferentDatesAreDifferentRows() {
     #expect(onMonday.rows[0] != onWednesday.rows[0])
 }
 
+@Test("two weekly-quota rows alike in commitment, date and day but differing in standing are different rows")
+func twoWeeklyQuotaRowsAlikeInCommitmentDateAndDayButDifferingInStandingAreDifferentRows() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let unticked = History()
+    var ticked = History()
+    ticked.add(Tick(reading, on: monday)!)
+
+    let firstView = DayView(of: [reading], on: wednesday, in: unticked)
+    let secondView = DayView(of: [reading], on: wednesday, in: ticked)
+
+    #expect(firstView.rows[0].name == "Reading")
+    #expect(!firstView.rows[0].isKept)
+    #expect(secondView.rows[0].name == "Reading")
+    #expect(!secondView.rows[0].isKept)
+    #expect(firstView.rows[0].rhythmInWords == "0/3x a week")
+    #expect(secondView.rows[0].rhythmInWords == "1/3x a week")
+    #expect(firstView.rows[0] != secondView.rows[0])
+}
+
+@Test("two weekly-quota rows whose histories differ only outside the row's week through its date are the same row")
+func twoWeeklyQuotaRowsWhoseHistoriesDifferOnlyOutsideTheRowsWeekThroughItsDateAreTheSameRow() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let sundayBefore = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let thursdayAfter = CalendarDate(year: 2026, month: 9, day: 3)!
+    var firstHistory = History()
+    firstHistory.add(Tick(reading, on: monday)!)
+    var secondHistory = History()
+    secondHistory.add(Tick(reading, on: monday)!)
+    secondHistory.add(Tick(reading, on: sundayBefore)!)
+    secondHistory.add(Tick(reading, on: thursdayAfter)!)
+
+    let firstView = DayView(of: [reading], on: wednesday, in: firstHistory)
+    let secondView = DayView(of: [reading], on: wednesday, in: secondHistory)
+
+    #expect(firstView.rows[0].rhythmInWords == "1/3x a week")
+    #expect(secondView.rows[0].rhythmInWords == "1/3x a week")
+    #expect(firstView.rows[0] == secondView.rows[0])
+}
+
+@Test("two rows on a schedule that is not a weekly quota whose histories differ on another day of the week are the same row")
+func twoRowsOnAScheduleThatIsNotAWeeklyQuotaWhoseHistoriesDifferOnAnotherDayOfTheWeekAreTheSameRow() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let unticked = History()
+    var ticked = History()
+    ticked.add(Tick(gym, on: monday)!)
+
+    let firstView = DayView(of: [gym], on: wednesday, in: unticked)
+    let secondView = DayView(of: [gym], on: wednesday, in: ticked)
+
+    #expect(firstView.rows[0].rhythmInWords == "Mon, Wed, Sat")
+    #expect(!firstView.rows[0].isKept)
+    #expect(secondView.rows[0].rhythmInWords == "Mon, Wed, Sat")
+    #expect(!secondView.rows[0].isKept)
+    #expect(firstView.rows[0] == secondView.rows[0])
+}
+
+@Test("a weekly-quota row says its standing counted through its own date and from its own week's Monday")
+func aWeeklyQuotaRowSaysItsStandingCountedThroughItsOwnDateAndFromItsOwnWeeksMonday() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let sundayBefore = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let friday = CalendarDate(year: 2026, month: 9, day: 4)!
+    let sundayAfter = CalendarDate(year: 2026, month: 9, day: 6)!
+    var history = History()
+    history.add(Tick(reading, on: sundayBefore)!)
+    history.add(Tick(reading, on: monday)!)
+    history.add(Tick(reading, on: wednesday)!)
+    history.add(Tick(reading, on: friday)!)
+
+    let onSundayBefore = DayView(of: [reading], on: sundayBefore, in: history)
+    let onMonday = DayView(of: [reading], on: monday, in: history)
+    let onTuesday = DayView(of: [reading], on: tuesday, in: history)
+    let onWednesday = DayView(of: [reading], on: wednesday, in: history)
+    let onSundayAfter = DayView(of: [reading], on: sundayAfter, in: history)
+
+    #expect(onSundayBefore.rows[0].rhythmInWords == "1/3x a week")
+    #expect(onMonday.rows[0].rhythmInWords == "1/3x a week")
+    #expect(onTuesday.rows[0].rhythmInWords == "1/3x a week")
+    #expect(onWednesday.rows[0].rhythmInWords == "2/3x a week")
+    #expect(onSundayAfter.rows[0].rhythmInWords == "3/3x a week")
+}
+
+@Test("a weekly-quota row past its quota says the true count and still offers a tick")
+func aWeeklyQuotaRowPastItsQuotaSaysTheTrueCountAndStillOffersATick() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    var history = History()
+    history.add(Tick(reading, on: monday)!)
+    history.add(Tick(reading, on: tuesday)!)
+    history.add(Tick(reading, on: wednesday)!)
+    history.add(Tick(reading, on: thursday)!)
+
+    let onThursday = DayView(of: [reading], on: thursday, in: history)
+    let onSaturday = DayView(of: [reading], on: saturday, in: history)
+
+    #expect(onThursday.rows[0].rhythmInWords == "4/3x a week")
+    #expect(onThursday.rows[0].isKept)
+    #expect(onThursday.rows[0].tick(asOf: saturday) != nil)
+    #expect(onSaturday.rows[0].rhythmInWords == "4/3x a week")
+    #expect(!onSaturday.rows[0].isKept)
+    #expect(onSaturday.rows[0].tick(asOf: saturday) != nil)
+}
+
+@Test("a weekly-quota row for a day that has not arrived says its standing through its own date")
+func aWeeklyQuotaRowForADayThatHasNotArrivedSaysItsStandingThroughItsOwnDate() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let friday = CalendarDate(year: 2026, month: 9, day: 4)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    var history = History()
+    history.add(Tick(reading, on: monday)!)
+    history.add(Tick(reading, on: thursday)!)
+
+    let dayView = DayView(of: [reading], on: friday, in: history)
+
+    #expect(dayView.rows[0].tick(asOf: wednesday) == nil)
+    #expect(dayView.rows[0].rhythmInWords == "2/3x a week")
+}
+
+@Test("a weekly-quota row whose commitment is not a tick says its standing by the days kept")
+func aWeeklyQuotaRowWhoseCommitmentIsNotATickSaysItsStandingByTheDaysKept() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom,
+        kind: .number(range: nil))!
+    let journal = Commitment(
+        name: "Journal", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom,
+        kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    var weightHistory = History()
+    weightHistory.add(Number(70.5, for: weight, on: monday)!)
+    var journalHistory = History()
+    journalHistory.add(Note("Ran 8k.", for: journal, on: monday)!)
+    var proteinHistory = History()
+    proteinHistory.add(Addition(120, for: protein, on: monday)!)
+    proteinHistory.add(Addition(30, for: protein, on: tuesday)!)
+
+    let weightView = DayView(of: [weight], on: wednesday, in: weightHistory)
+    let journalView = DayView(of: [journal], on: wednesday, in: journalHistory)
+    let proteinView = DayView(of: [protein], on: wednesday, in: proteinHistory)
+
+    #expect(weightView.rows[0].rhythmInWords == "1/3x a week")
+    #expect(journalView.rows[0].rhythmInWords == "1/3x a week")
+    #expect(proteinView.rows[0].rhythmInWords == "1/3x a week")
+}
+
+@Test("a row on a schedule that is not a weekly quota says its plain words whatever its week holds")
+func aRowOnAScheduleThatIsNotAWeeklyQuotaSaysItsPlainWordsWhateverItsWeekHolds() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let vitamins = Commitment(
+        name: "Vitamins",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    history.add(Tick(gym, on: wednesday)!)
+    history.add(Tick(vitamins, on: monday)!)
+    history.add(Tick(vitamins, on: wednesday)!)
+
+    let dayView = DayView(of: [gym, vitamins], on: wednesday, in: history)
+
+    #expect(dayView.rows[0].rhythmInWords == "Mon, Wed, Sat")
+    #expect(dayView.rows[1].rhythmInWords == "Every day")
+}
+
 @Test("moving to the day after gives the day view of the next date")
 func movingToTheDayAfterGivesTheDayViewOfTheNextDate() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -969,7 +1169,7 @@ func aRowSaysTheRhythmItsCommitmentRunsOnInWords() {
     let dayView = DayView(of: [gym, finances, contactLenses, reading], on: monday, in: history)
 
     #expect(dayView.rows.map(\.rhythmInWords) == [
-        "Mon, Wed, Sat", "The 31st", "Every 14 days", "3x a week",
+        "Mon, Wed, Sat", "The 31st", "Every 14 days", "0/3x a week",
     ])
 }
 
