@@ -96,7 +96,11 @@ screen not keeping one of them SHALL move like any other and go on saying so.
   place where nothing has been kept, of a commitment named "Journaling" on a schedule listing all
   seven weekdays, kept from 1 January 2026, and it is moved to the day before and then to the day
   after
-- **THEN** after each move it says it is not keeping a roster
+- **THEN** after the move to the day before, its day view is the same day view as one formed directly
+  of no commitments at all on Sunday 30 August 2026 from a history that has taken no tick
+- **AND** after the move to the day after, its day view is the same day view as one formed directly of
+  no commitments at all on Monday 31 August 2026 from that same history
+- **AND** after each move it says it is not keeping a roster
 - **AND** after each move it says the roster was written by a later version of DayByDay
 - **AND** after each move its day view holds no rows
 

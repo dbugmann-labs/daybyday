@@ -50,7 +50,7 @@ move the same lines.
 
 | Rule (spec lines) | New scenario catches |
 |---|---|
-| a screen not keeping its roster moves and says so (211) | a move that resets the roster's state or its reason |
+| a screen not keeping its roster moves and says so (211) | a screen that does not move, or a move that resets the roster's state or its reason |
 | a move forms from the record with every change kept since (208–210) | a move, return or pick formed from the record as first read |
 | going back to today reads the roster no more (291–293) | a return to today that reads the roster again |
 | today's view is formed on the roster's answer for that today (290–291, 547–548) | a return formed on the answer for the day left |

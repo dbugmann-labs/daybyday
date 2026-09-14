@@ -16,7 +16,7 @@ least change in `src/DayByDayKit/Sources/` that turns that one test green, and n
 
 ## 3. The scenarios — one test each
 
-- [x] 3.1 a day screen that is not keeping a roster moves and goes on saying why — catches a move resetting the roster's state or reason
+- [ ] 3.1 a day screen that is not keeping a roster moves and goes on saying why — catches a screen that does not move, or a move resetting the roster's state or reason
 - [x] 3.2 a tick kept on a day screen is still shown after it moves away and back, goes back to today or has that day picked — catches a record read once and cached
 - [x] 3.3 going back to today does not read the roster again — catches a return to today reading the roster
 - [x] 3.4 a day screen sent back to today draws the commitments its roster had not stopped keeping on that today — catches a return formed on the day left
@@ -51,7 +51,7 @@ least change in `src/DayByDayKit/Sources/` that turns that one test green, and n
       `design.md` names, and `pnpm run verify` passes.
 - [x] 5.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is the added scenarios more
       than a run on `main` reports, both read off runs and never derived.
-- [x] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
+- [ ] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
       on the evidence that 2.1–5.4 are ticked and that the instruction below is written here for the
       janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of
       the sync it prints, then reads the spec diff it produced: in `openspec/specs/day-screen/spec.md`
