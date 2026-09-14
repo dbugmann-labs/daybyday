@@ -1428,6 +1428,9 @@ Removal asks for no confirmation, and a rename committed blank **is** a removal.
 date and, where the one-off is done, the day it was done; one that would make a one-off already held,
 alike in name and date, is refused and its cause named, as an add is. The screen trims blank space
 around a typed name before it is added or renamed; the one-off still keeps exactly what it is given.
+A rename also keeps the one-off's **place** among those owed on its date, since it is one act and not
+a removal and an add. The sentence above that no *One-offs* group is drawn where none stands is
+withdrawn, as it is under **Day view**.
 
 **One-off entry** — the line a **day view**'s One-offs group always ends with, where a person types a
 new one-off's name in place, as in Apple Reminders; the toolbar's `+` brings it into focus. It is
@@ -1442,7 +1445,10 @@ a one-off of that name already on that day — and saying only *not saved* where
 is not the screen's one **notice**, so the two can be told at once; it ends when the text is edited,
 when the day changes and when the app is shown again, taking the text with it. A rename in a row's
 field is told and ended the same way. It is not offered where one-offs cannot be read. Agreed
-2026-09-14 at the grill of `make-one-off-on-day-screen` (#244).
+2026-09-14 at the grill of `make-one-off-on-day-screen` (#244). Only one field is ever told under at
+a time — only one has focus, and leaving it commits it — so a refusal in one replaces what was told
+under another; one told under a row also ends once that row is no longer drawn. Added while its
+delta was written.
 
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a
