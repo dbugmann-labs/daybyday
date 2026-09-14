@@ -68,7 +68,7 @@ func aChangeIsKeptBeforeTheStoreReportsItKept() throws {
     #expect(second.oneOffs.standingDay(for: callMum, asOf: october5) == september25)
 }
 
-@Test("a change that cannot be kept is refused and not held")
+@Test("a one-off change that cannot be kept is refused and not held")
 func aOneOffChangeThatCannotBeKeptIsRefusedAndNotHeld() throws {
     let directory = FileManager.default.temporaryDirectory
         .appendingPathComponent(UUID().uuidString, isDirectory: true)

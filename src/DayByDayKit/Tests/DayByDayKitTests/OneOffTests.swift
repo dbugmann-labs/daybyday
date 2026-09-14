@@ -115,7 +115,8 @@ func addingAOneOffAlreadyHeldIsRefusedAndChangesNothing() {
     #expect(oneOffs == onceAdded)
 
     var done = onceAdded
-    _ = done.tick(callMum, on: CalendarDate(year: 2026, month: 9, day: 25)!)
+    let tickedDone = done.tick(callMum, on: CalendarDate(year: 2026, month: 9, day: 25)!)
+    #expect(tickedDone)
     var doneCopy = done
     let addedWhileDone = doneCopy.add(callMum)
 
@@ -285,7 +286,8 @@ func aOneOffThatIsDoneIsRemovedOutrightTickAndAll() {
 
     var oneOffs = OneOffs()
     _ = oneOffs.add(callMum)
-    _ = oneOffs.tick(callMum, on: september25)
+    let ticked = oneOffs.tick(callMum, on: september25)
+    #expect(ticked)
     _ = oneOffs.add(callDad)
     _ = oneOffs.tick(callDad, on: september26)
     let removed = oneOffs.remove(callMum)
