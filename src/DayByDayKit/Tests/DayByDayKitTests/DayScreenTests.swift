@@ -3217,27 +3217,49 @@ func enteringANumberWritesNothingToTheRostersPlace() throws {
 }
 
 @MainActor
-@Test("committing an empty entry on a day holding no number reaches the place and is refused where the place refuses it")
-func committingAnEmptyEntryOnADayHoldingNoNumberReachesThePlaceAndIsRefusedWhereThePlaceRefusesIt()
+@Test("committing an empty entry at a place that cannot be written is refused only on a row whose day holds a number")
+func committingAnEmptyEntryAtAPlaceThatCannotBeWrittenIsRefusedOnlyOnARowWhoseDayHoldsANumber()
     throws
 {
-    let (place, rosterPlace) = try blockerPlaces()
+    let (place, rosterPlace) = freshPlaces()
+    let directory = place.deletingLastPathComponent()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let weightRange = Commitment.Range(lowest: 40, highest: 150)!
     let weight = Commitment(
         name: "Weight", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
-        kind: .number(range: range))!
+        kind: .number(range: weightRange))!
+    let moodRange = Commitment.Range(lowest: 1, highest: 10)!
+    let mood = Commitment(
+        name: "Mood", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: moodRange))!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
+    let seedStore = try RecordStore(at: place)
+    try seedStore.add(Number(70.5, for: weight, on: monday)!)
+    let seedRoster = try RosterStore(at: rosterPlace)
+    try seedRoster.add(weight)
+    try seedRoster.add(mood)
+
+    try makeReadOnly(directory)
+    defer { try? makeWritable(directory) }
+
     let screen = DayScreen(
-        startingFrom: [weight], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let weightRow = screen.dayView.rows.first { $0.name == "Weight" }!
+    let moodRow = screen.dayView.rows.first { $0.name == "Mood" }!
+
+    try screen.enter("", on: moodRow)
+    #expect(screen.notice == nil)
 
     #expect(throws: RecordStoreError.cannotWrite(at: place)) {
-        try screen.enter("", on: screen.dayView.rows[0])
+        try screen.enter("", on: weightRow)
     }
 
-    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(screen.notice?.row == weightRow)
     #expect(screen.notice?.cause == nil)
+    #expect(
+        screen.dayView.rows.first { $0.name == "Weight" }!.numberEntry(asOf: monday)?.number
+            == 70.5)
 }
 
 @MainActor

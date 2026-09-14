@@ -36,7 +36,7 @@ least change in `src/DayByDayKit/Sources/` that turns that one test green, and n
 - [x] 3.18 a day screen shown again carries over no reason it gave for not keeping its record or its roster — catches a later-version reason carried over
 - [x] 3.19 a commit on a day screen holding a record from a later version is told nothing whatever was committed — catches a value checked before the record's state
 - [x] 3.20 a day screen returned to where its roster cannot be read says so and draws no rows — catches a return keeping the old state or rows
-- [ ] 3.21 committing an empty entry at a place that cannot be written is refused only on a row whose day holds a number — catches a take-back written where the day holds none, or skipped where it holds one; the test under the replaced title goes
+- [x] 3.21 committing an empty entry at a place that cannot be written is refused only on a row whose day holds a number — catches a take-back written where the day holds none, or skipped where it holds one; the test under the replaced title goes
 
 ## 4. The record
 
