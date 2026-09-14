@@ -105,6 +105,29 @@ rule of that kind SHALL be applied to what comes off the place.
 - **AND** it answers that the commitment was kept on that date, its day's sum being far past 120
 - **AND** the content at that place is byte-for-byte what it was before
 
+#### Scenario: a store holding a tick against a commitment of another kind, or a note of other blank space, is refused
+
+- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one tick
+  is of a commitment named "Weight" of the number kind with no range, on a schedule listing Monday,
+  Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026 — a record against a
+  commitment of another kind
+- **THEN** opening is refused with an error
+- **AND** a store at a place holding one note of three line breaks, for a commitment named "Journal"
+  of the note kind on that same schedule and kept from that same day, on that same date, is refused
+  the same way
+- **AND** so is one holding a note of a tab followed by a line break, and one holding a note of one
+  no-break space
+- **AND** the content at each place is byte-for-byte what it was before
+
+#### Scenario: a store holding a day whose later addition is not above zero is refused
+
+- **WHEN** a store is opened at a place holding a store in the form this app writes, whose one day
+  holds an addition of 30 and then an addition of 0, for a commitment named "Protein" of the total
+  kind with a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, on Monday 31 August 2026
+- **THEN** opening is refused with an error
+- **AND** the content at that place is byte-for-byte what it was before
+
 ### Requirement: A number is of a number commitment on a calendar date it is due on
 
 A number SHALL be exactly a commitment, a calendar date and one decimal number and nothing else: no
@@ -334,6 +357,16 @@ not due on that date.
   added to a history and then taken back
 - **THEN** the history is the same as a history that has taken no record at all
 
+#### Scenario: taking back a note leaves another commitment's number on the same day standing
+
+- **WHEN** a note holding "Ran 8k." for a commitment named "Journal" of the note kind and a number of
+  70.5 for a commitment named "Weight" of the number kind with no range, both on a schedule listing
+  Monday, Wednesday and Saturday and both kept from 1 January 2026, are added to a history on Monday
+  31 August 2026, and "Journal"'s note on that date is taken back
+- **THEN** the history answers that "Weight" has 70.5 on Monday 31 August 2026, and that it was kept
+  on it
+- **AND** that "Journal" has no note on it
+
 ### Requirement: The last addition a day holds can be taken back
 
 A history SHALL let the last addition of a commitment on a calendar date be taken back, named by
@@ -413,6 +446,18 @@ total, or it is not due on that date.
 - **THEN** the history is the same as a history that has taken no record at all
 - **AND** taking it back a fourth time leaves it the same again
 
+#### Scenario: taking back the last addition leaves every other kind of record on the same day standing
+
+- **WHEN** a tick for a commitment named "Gym" of the tick kind, a number of 70.5 for a commitment
+  named "Weight" of the number kind with no range, a note holding "Ran 8k." for a commitment named
+  "Journal" of the note kind, and additions of 30 and then 90 for a commitment named "Protein" of the
+  total kind with a target of 120, all four on a schedule listing Monday, Wednesday and Saturday and
+  all kept from 1 January 2026, are added to a history on Monday 31 August 2026, and "Protein"'s last
+  addition on that date is taken back
+- **THEN** the history answers 30 for "Protein" on that date
+- **AND** that "Gym" was kept on it, that "Weight" has 70.5 on it and that "Journal" has "Ran 8k." on
+  it
+
 ### Requirement: A history carries every record of one commitment over to another
 
 A history SHALL carry over every record it holds of one commitment to another: each SHALL afterwards
@@ -490,6 +535,16 @@ date except by asking the second commitment whether it is due.
 - **THEN** the history reports that it carried nothing over
 - **AND** it is the same history as one that was never asked
 
+#### Scenario: carrying over is refused whole where only some of the records could be the other commitment's
+
+- **WHEN** a history holding a tick for a commitment named "Gym" on a schedule listing all seven
+  weekdays, kept from 1 June 2026, on every date from Monday 3 August through Wednesday 30 September
+  2026 is asked to carry that commitment's records over to a commitment named "Gym" alike in every
+  other way but kept from 4 August 2026
+- **THEN** the history reports that it carried nothing over
+- **AND** it answers that the commitment kept from 4 August 2026 was kept on none of those dates
+- **AND** it is the same history as one that was never asked
+
 ### Requirement: A store carries every record of one commitment over to another, at its place
 
 A store SHALL carry every record of one commitment over to another, and SHALL keep that at its place
@@ -537,6 +592,27 @@ that shape, and adds no key, no field and no version to what a record is.
   "Gym 🏋️" alike in every other way
 - **THEN** the store says the change could not be kept
 - **AND** its history answers that "Gym" was kept on Monday 3 August 2026 and that "Gym 🏋️" was not
+
+#### Scenario: a number, a note and a day's additions carried over through a store are read back under the other commitment by a store opened afterwards
+
+- **WHEN** a number of 72.45 for a commitment named "Weight" of the number kind with no range, a note
+  holding "Ran 8k." for one named "Journal" of the note kind, and additions of 30 and then 12.5 for
+  one named "Protein" of the total kind with a target of 120 — all three on a schedule listing all
+  seven weekdays, kept from 1 January 2026, all on Monday 3 August 2026 — are added to a store; that
+  store carries each over to a commitment alike in every way but named "Bodyweight", "Journalling"
+  and "Protein grams"; and a store is opened afterwards at the same place
+- **THEN** the later store's history is the same as a history that number, that note and those two
+  additions in that order were added to, under "Bodyweight", "Journalling" and "Protein grams"
+- **AND** it answers that "Weight" has no number, that "Journal" has no note and that "Protein" has
+  added zero on that date
+
+#### Scenario: a carry-over through a store leaves at its place what a store given those records under the other commitment holds
+
+- **WHEN** a tick for a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, on Monday 3 August 2026 is added to a store at one place, and that store carries
+  "Gym"'s records over to a commitment named "Gym 🏋️" alike in every other way; and a tick for
+  "Gym 🏋️" on that same date is added to a store at a second place
+- **THEN** the content at the first place is byte-for-byte the content at the second
 
 ### Requirement: A store reads every form it has written
 
@@ -596,6 +672,22 @@ place, which SHALL stay byte-for-byte what it was: a store SHALL write only when
   additions, is read without error, because that form is expected to carry neither
 - **AND** the error says the content is not a store rather than that it is from a later form
 - **AND** the content at each place is byte-for-byte what it was before
+
+#### Scenario: a change that leaves a store's history as it was writes nothing at its place
+
+- **WHEN** a tick for a commitment named "Gym" of the tick kind, a number of 70.5 for a commitment
+  named "Weight" of the number kind with no range and a note holding "Ran 8k." for a commitment named
+  "Journal" of the note kind, all three on a schedule listing Monday, Wednesday and Saturday and all
+  kept from 1 January 2026, on Monday 31 August 2026, are added to a store; what is at that place is
+  then made impossible to write; and that same tick is added to the store again
+- **THEN** adding it is not refused
+- **AND** adding that same number again, and that same note again, is not refused either
+- **AND** taking back a tick for "Gym" on Wednesday 2 September 2026, the number of "Weight" and the
+  note of "Journal" on that date, and the last addition of a commitment named "Protein" of the total
+  kind with a target of 120 on Monday 31 August 2026 — none of which the store holds — is not refused
+  either
+- **AND** the store's history is the same as it was before what is at that place was made impossible
+  to write
 
 ### Requirement: Each earlier form is read as the record it always was
 
@@ -823,6 +915,15 @@ persist the day's sum.
 - **THEN** the later store's history answers each commitment with exactly the amount it was given,
   neither rounded nor shortened
 - **AND** its history is the same as a history those same additions were added to
+
+#### Scenario: a store keeps a day's additions at its place and never their sum
+
+- **WHEN** additions of 31 and then 89.5 for a commitment named "Protein" of the total kind with a
+  target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on
+  Monday 31 August 2026 are added to a store
+- **THEN** the content at that place holds 120.5, the day's sum, nowhere
+- **AND** a store opened afterwards at the same place answers that the commitment has added 120.5 on
+  that date
 
 ### Requirement: A tick is of a commitment on a calendar date it is due on, and nothing else
 
@@ -1083,6 +1184,16 @@ records of different commitments and days arrived in.
 - **AND** that it was not kept on Saturday 5 September 2026, a date it is due on and has added
   nothing on
 
+#### Scenario: a tick does not keep a commitment alike in name and kind but on another schedule or kept from another day
+
+- **WHEN** a tick for a commitment named "Gym" of the tick kind, on a schedule listing Monday,
+  Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026 is added to a history
+- **THEN** the history answers that a commitment named "Gym" of the tick kind on a schedule listing
+  Monday alone, kept from 1 January 2026, was not kept on that date
+- **AND** that one named "Gym" of the tick kind on a schedule listing Monday, Wednesday and Saturday,
+  kept from 1 February 2026, was not kept on it
+- **AND** that the commitment the tick is of was kept on it
+
 ### Requirement: A tick a history holds can be taken back
 
 A history SHALL let a tick it holds be taken back. Taking back a tick SHALL leave the history as
@@ -1288,6 +1399,14 @@ or end included. Two notes SHALL be the same exactly when their commitment, date
   commitment on that same date
 - **THEN** no note is recorded
 - **AND** the history still answers that the commitment has added 120 on that date
+
+#### Scenario: a text of one zero-width space is a note
+
+- **WHEN** a text of one zero-width space is offered for a commitment named "Journal" of the note
+  kind, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, on Monday
+  31 August 2026
+- **THEN** a note is recorded
+- **AND** the note holds that one zero-width space exactly
 
 ### Requirement: A history answers what note a commitment has on a calendar date from the notes it holds
 
@@ -1718,3 +1837,17 @@ SHALL be independent.
 - **THEN** adding the addition is refused with an error
 - **AND** the store's history is still the same as a history that has taken no record
 - **AND** a store opened afterwards at the same place holds an empty history
+
+#### Scenario: a take-back that cannot be kept is refused and the record stays held
+
+- **WHEN** a tick for a commitment named "Gym" of the tick kind, a number of 70.5 for a commitment
+  named "Weight" of the number kind with no range, a note holding "Ran 8k." for a commitment named
+  "Journal" of the note kind, and an addition of 30 for a commitment named "Protein" of the total kind
+  with a target of 120, all four on a schedule listing Monday, Wednesday and Saturday and all kept
+  from 1 January 2026, are added to a store on Monday 31 August 2026; what is at that place is then
+  made impossible to write; and the tick is taken back
+- **THEN** taking it back is refused with an error
+- **AND** taking back "Weight"'s number, "Journal"'s note and "Protein"'s last addition on that date
+  are each refused with an error too
+- **AND** the store's history still answers that "Gym" was kept on that date, that "Weight" has 70.5
+  on it, that "Journal" has "Ran 8k." on it and that "Protein" has added 30 on it
