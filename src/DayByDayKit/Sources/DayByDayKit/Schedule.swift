@@ -26,7 +26,7 @@ public enum Schedule: Hashable, Sendable {
         switch self {
         case .weeklyQuota(let weeklyQuota):
             return ScheduleWords.weeklyQuota(weeklyQuota.timesPerWeek, given: count)
-        default:
+        case .weekdays, .dayOfMonth, .everyNDays:
             return inWords
         }
     }

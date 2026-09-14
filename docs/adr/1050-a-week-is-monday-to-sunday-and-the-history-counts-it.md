@@ -61,7 +61,8 @@ change folder is its acceptance; if G4 declines, this file goes with the branch.
   is exactly the streak *Nothing congratulates you* was written against, and this decision is what
   keeps the count inside one week where it cannot become one.
 - **`schedule` knows no week and ADR-1034 holds.** The week is `record`'s to know; no rule shape
-  consults it, and `Weekday` gains no order. `schedule` says a count it is handed and never counts. ADR-1015's deferral is discharged rather than reversed.
+  consults it, and `Weekday` gains no order. `schedule` says a count it is handed and never
+  counts. ADR-1015's deferral is discharged rather than reversed.
 - **Reversing the week start is expensive**, which is why this is a record rather than a line in a
   design document: every past week would be re-read, and every standing a person has ever seen would
   change without a single record having moved.
