@@ -404,6 +404,46 @@ func twoCommitmentsDifferingOnlyInTheKindTheirDaysTakeAreDifferentCommitments() 
     #expect(tick != note)
 }
 
+@Test("a commitment on a weekly-quota schedule is due on every date on and after the day it is kept from")
+func aCommitmentOnAWeeklyQuotaScheduleIsDueOnEveryDateOnAndAfterTheDayItIsKeptFrom() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 2026, month: 8, day: 31)!
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let dates = [
+        keptFrom,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ]
+
+    for date in dates {
+        #expect(commitment.isDue(on: date))
+    }
+}
+
+@Test("a commitment on a weekly-quota schedule is not due on a date before the day it is kept from")
+func aCommitmentOnAWeeklyQuotaScheduleIsNotDueOnADateBeforeTheDayItIsKeptFrom() {
+    let keptFrom = CalendarDate(year: 2026, month: 8, day: 31)!
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let dayBefore = CalendarDate(year: 2026, month: 8, day: 30)!
+
+    #expect(!commitment.isDue(on: dayBefore))
+}
+
+@Test("a commitment reads back the rhythm it runs on in words beside its name and its kind")
+func aCommitmentReadsBackTheRhythmItRunsOnInWordsBesideItsNameAndItsKind() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+
+    let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+
+    #expect(commitment.name == "Gym")
+    #expect(commitment.kind == .note)
+    #expect(commitment.rhythmInWords == "3x a week")
+}
+
 @Test("two number commitments differing only in their range are different commitments")
 func twoNumberCommitmentsDifferingOnlyInTheirRangeAreDifferentCommitments() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])

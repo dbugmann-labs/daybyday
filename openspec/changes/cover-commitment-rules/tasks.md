@@ -38,9 +38,9 @@ that test green, named in the PR body. A byte check in a store-refusal or record
 
 `CommitmentTests.swift`:
 
-- [ ] 3.18 a commitment on a weekly-quota schedule is due on every date on and after the day it is kept from — catches the quota shape not delegated
-- [ ] 3.19 a commitment on a weekly-quota schedule is not due on a date before the day it is kept from — catches the floor skipped for quotas
-- [ ] 3.20 a commitment reads back the rhythm it runs on in words beside its name and its kind — catches the rhythm not read back
+- [x] 3.18 a commitment on a weekly-quota schedule is due on every date on and after the day it is kept from — catches the quota shape not delegated
+- [x] 3.19 a commitment on a weekly-quota schedule is not due on a date before the day it is kept from — catches the floor skipped for quotas
+- [x] 3.20 a commitment reads back the rhythm it runs on in words beside its name and its kind — catches the rhythm not read back
 
 `RosterStoreTests.swift`:
 
