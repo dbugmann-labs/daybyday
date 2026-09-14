@@ -4983,7 +4983,8 @@ func aNameAndARhythmChangedInOneSavePutTheNewNameOnTheSupersededCommitment() thr
     #expect(laterRosterStore.roster.commitments(on: sunday) == [newGym, supersededGym])
 
     #expect(screen.kept.count == 1)
-    #expect(screen.kept.first == newGym)
+    #expect(screen.kept.first?.name == "Gym 🏋️")
+    #expect(screen.kept.first?.rhythmInWords == "Tue, Thu")
 
     let laterRecordStore = try RecordStore(at: places.record)
     #expect(laterRecordStore.history.isKept(supersededGym, on: august3rd))
