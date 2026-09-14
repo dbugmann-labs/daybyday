@@ -2,7 +2,8 @@
 
 `proposal.md` § *Why* says what this is for, and `grill.md`'s settled answers are what the delta is
 written on. `openspec/specs/record/spec.md` holds 19 requirements; the delta carries 10 of them
-whole, every existing scenario verbatim, and 12 new scenarios appended at their ends.
+whole, every existing scenario verbatim, and 12 new scenarios appended at their ends. The delta also
+carries one `day-screen` requirement whole, less two AND lines (grill answer 12).
 
 `RecordStore`'s change methods each compute the next state and write it unconditionally; only
 `carryOver` returns before writing where the history would not move. Its writes are byte-stable, so
@@ -15,11 +16,12 @@ green on arrival and one red.
 ## Goals / Non-Goals
 
 **Goals:** every uncovered rule the grill's rules re-derive gets exactly one scenario and its test;
-the one red is fixed and nothing else in `src/` moves; the unprovable rules and the NaN finding are
-recorded in `docs/open-questions.md` in this commit (grill answers 6, 8, 11).
+the one red is fixed, and nothing else in `src/` moves but the two `day-screen` tests the fix
+falsifies; the unprovable rules and the NaN finding are recorded in `docs/open-questions.md` in this
+commit (grill answers 6, 8, 11).
 
-**Non-Goals:** no rule reworded, no scenario dropped or edited, no other capability, no ADR amended
-(grill answer 8), no mutation run, and no decision about a day whose sum is NaN (grill answer 5).
+**Non-Goals:** no rule reworded, no scenario dropped, no scenario edited but the two grill answer 12
+names, no ADR amended (grill answer 8), no mutation run, and no decision about a day whose sum is NaN (grill answer 5).
 
 ## Decisions
 
@@ -41,6 +43,7 @@ RecordStore.carryOver(_ commitment: Commitment, to changed: Commitment) throws -
 History.carryOver(_ commitment: Commitment, to changed: Commitment) -> Bool
 History.isKept(_ commitment: Commitment, on date: CalendarDate) -> Bool
 Note.init?(_ text: String, for commitment: Commitment, on date: CalendarDate)
+DayScreen.enter(_ text: String, on row: DayView.Row) throws
 ```
 
 ### One scenario per uncovered sentence, each built against a wrong implementation
@@ -69,6 +72,19 @@ place* is expected red. The least fix is a return before writing in each `Record
 whose next state equals the current one, as `carryOver` already does; nothing else moves, and the
 PR body names it. Rejected: rewording the rule, and a Story of its own — both refused at the grill.
 
+### Where the fix contradicts `day-screen`, `record` wins
+
+Grill answer 12, settled after G4. With the fix in place, exactly two tests fail on `swift test`:
+*a number refused by the place is told on the row and names no cause* and *a note refused by the
+place is told on the row and names no cause*. Each fails only in its blank-commit block, because a
+take-back of nothing no longer writes and so is no longer refused. The delta drops only the AND line
+that block tests from each scenario, and nothing else. The requirement's prose stays as it is: a
+blank commit where nothing is held is no longer a change the place refused, so "SHALL name none"
+still reads true. The grill calls these "two requirements", but both scenarios sit under one, *A day
+screen tells on the row that was tapped that its change could not be kept*, and that one is carried
+whole. No scenario is added saying that such a commit now tells nothing, because the answer allows no
+addition. 3.8's take-back AND line covers the change at the `record` seam.
+
 ### Covered elsewhere, pointers skipped, partials left
 
 Grill answers 2 and 10 and ADR-1047 decision 7.3.
@@ -93,9 +109,10 @@ The sum scenario shows the writer adds no sum and cannot show that nothing reads
 
 ### No rule is reworded
 
-Every MODIFIED block is byte-identical to the current spec but for its appended scenarios. Five
-carried blocks are over the 150-word prose budget (282, 167, 167, 304, 171), as
-`condense-record-spec` disclosed; a covering Story rewords no rule to meet it.
+Every `record` MODIFIED block is byte-identical to the current spec but for its appended scenarios,
+and the `day-screen` block but for its two dropped lines. Six carried blocks are over the 150-word
+prose budget: five in `record` (282, 167, 167, 304, 171), as `condense-record-spec` disclosed, and the
+`day-screen` one (256). A covering Story rewords no rule to meet it.
 
 ## Risks / Trade-offs
 
@@ -112,4 +129,5 @@ carried blocks are over the 150-word prose budget (282, 167, 167, 304, 171), as
 
 None. `grill.md` § *Left open* is "None.", and writing the delta turned up no preference the grill
 had not answered: which sentences are uncovered is re-derived above against grill answer 1, which is
-a fact about the spec and the code rather than the owner's question.
+a fact about the spec and the code rather than the owner's question. Settled after G4: where the
+no-op fix contradicts `day-screen`, `record` wins (grill answer 12; see the decision above).
