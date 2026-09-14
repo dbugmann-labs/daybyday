@@ -3403,8 +3403,9 @@ nothing.
 - **THEN** nothing is refused
 - **AND** what it keeps is one entry, named "Gym", saying "Tue, Thu"
 - **AND** a roster store opened afterwards at that place answers about Sunday 30 August 2026 with the
-  commitment on Monday, Wednesday and Saturday kept from 1 January 2026, and about Monday
-  31 August 2026 with the one on Tuesday and Thursday kept from that day
+  commitment on Tuesday and Thursday kept from Monday 31 August 2026 and then the one on Monday,
+  Wednesday and Saturday kept from 1 January 2026, and about Monday 31 August 2026 with the one on
+  Tuesday and Thursday kept from that day
 - **AND** what it has stopped is nothing
 
 #### Scenario: a rhythm changed through a commitments screen leaves every record already made standing
@@ -3567,7 +3568,8 @@ nothing.
   from 1 June 2026, under no category
 - **THEN** nothing is refused
 - **AND** a roster store opened afterwards at that place answers about Sunday 30 August 2026 with
-  "Gym 🏋️" on Monday, Wednesday and Saturday, kept from 1 June 2026
+  "Gym 🏋️" on Tuesday and Thursday, kept from 31 August 2026, and then "Gym 🏋️" on Monday,
+  Wednesday and Saturday, kept from 1 June 2026
 - **AND** what the screen keeps is one entry, named "Gym 🏋️", saying "Tue, Thu"
 
 #### Scenario: a change that carries nothing over writes nothing at the record place
