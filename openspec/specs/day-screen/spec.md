@@ -284,6 +284,31 @@ screen not keeping one of them SHALL move like any other and go on saying so.
   30 August 2026 from a history that has taken no tick
 - **AND** it says it is not keeping a record
 
+#### Scenario: a day screen that is not keeping a roster moves and goes on saying why
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a roster place holding a roster
+  written in a form one later than the form this app writes, holding no commitments, at a record
+  place where nothing has been kept, of a commitment named "Journaling" on a schedule listing all
+  seven weekdays, kept from 1 January 2026, and it is moved to the day before and then to the day
+  after
+- **THEN** after the move to the day before, its day view is the same day view as one formed directly
+  of no commitments at all on Sunday 30 August 2026 from a history that has taken no tick
+- **AND** after the move to the day after, its day view is the same day view as one formed directly of
+  no commitments at all on Monday 31 August 2026 from that same history
+- **AND** after each move it says it is not keeping a roster
+- **AND** after each move it says the roster was written by a later version of DayByDay
+- **AND** after each move its day view holds no rows
+
+#### Scenario: a tick kept on a day screen is still shown after it moves away and back, goes back to today or has that day picked
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026; its one row is ticked; and it is moved to the day before and then to the day after
+- **THEN** its day view says the commitment is kept on Monday 31 August 2026
+- **AND** moved to the day before and then sent back to today, its day view says the same
+- **AND** moved to the day before and then with Monday 31 August 2026 picked on its day picker, its
+  day view says the same
+
 ### Requirement: A day screen goes straight back to the today it was handed
 
 A day screen SHALL go back, in one step and from whatever day it is showing, to the today it was
@@ -338,6 +363,33 @@ no other. A day screen already showing its today SHALL be left showing it.
   is then kept at that place by something else; and it is sent back to today
 - **THEN** its day view says the commitment is not kept on Monday 31 August 2026
 - **AND** it says it is keeping a record, exactly as it did before
+
+#### Scenario: going back to today does not read the roster again
+
+- **WHEN** a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a day screen of no commitments at all is opened at
+  that roster place as of Monday 31 August 2026, at a record place where nothing has been kept; it
+  is moved to the day before; a commitment named "Gym" on that same schedule, kept from that same
+  day, is then taken on at that roster place by something else; and it is sent back to today
+- **THEN** its day view holds one row, named "Journaling"
+- **AND** it says it is keeping a roster, exactly as it did before
+- **AND** a day screen of no commitments at all opened as of that same day at a roster place of its
+  own holding a roster written in a form one later than the form this app writes, holding no
+  commitments, and at a record place of its own where nothing has been kept, moved to the day
+  before, with what is at that roster place then removed so that nothing has been kept there, and
+  sent back to today, says it is not keeping a roster, says the roster was written by a later
+  version of DayByDay, and holds no rows
+
+#### Scenario: a day screen sent back to today draws the commitments its roster had not stopped keeping on that today
+
+- **WHEN** a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place and stopped as of Sunday 30 August 2026; a day
+  screen of no commitments at all is opened at that roster place as of Monday 31 August 2026, at a
+  record place where nothing has been kept; it is moved to the day before; and it is sent back to
+  today
+- **THEN** its day view holds no rows, Monday 31 August 2026 being after the day the commitment was
+  kept until
+- **AND** before it was sent back, its day view held one row, named "Journaling"
 
 ### Requirement: A move with nowhere to go leaves a day screen exactly as it was
 
@@ -540,6 +592,29 @@ one.
 - **AND** it still says the record was written by a later version of DayByDay
 - **AND** the content at that place is byte-for-byte what it was before the screen was opened
 
+#### Scenario: a tick made on a day screen that cannot read its record is not kept once the record can be read
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a run of bytes
+  that is not what a record is written as, of a commitment named "Gym" on a schedule listing Monday,
+  Wednesday and Saturday and one named "Run" on a schedule listing all seven days, in that order,
+  both kept from 1 January 2026; the row for "Gym" is ticked; what is at that place is then removed,
+  so that nothing has been kept there; the app is shown again as of Monday 31 August 2026; and the
+  row for "Run" is then ticked
+- **THEN** it says it is keeping a record
+- **AND** its day view says "Gym" is not kept on that date and "Run" is kept on that date
+- **AND** a day screen of those two commitments opened afterwards at that place as of that same day
+  says the same
+
+#### Scenario: a day screen whose record place cannot be opened for another reason answers as one that cannot read its record
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a record place that is a directory
+  holding nothing rather than a file, of a commitment named "Gym" on a schedule listing Monday,
+  Wednesday and Saturday, kept from 1 January 2026, and its one row is ticked
+- **THEN** it says it is not keeping a record
+- **AND** it does not say the record was written by a later version of DayByDay
+- **AND** its day view holds one row, for "Gym", saying the commitment is not kept
+- **AND** that place is still a directory holding nothing
+
 ### Requirement: A day screen draws the commitments its roster had not stopped keeping on the day it is showing
 
 A day screen SHALL form every day view from the commitments the roster at its roster place had not
@@ -635,6 +710,17 @@ produces no group, as *A day view is a value and nothing else* states.
   named "Creatine" and then "Gym"
 - **AND** afterwards its day view holds two groups, "Supplements" holding a row named "Creatine" and
   then a group with no category holding a row named "Gym"
+
+#### Scenario: a day screen draws a removed commitment under a category exactly as it draws a stopped one
+
+- **WHEN** at each of two roster places a commitment named "Creatine" on a schedule listing all
+  seven weekdays, kept from 1 January 2026, is taken on and put under the category "Supplements",
+  and is then stopped as of Sunday 30 August 2026 at the first and removed as of that same day at
+  the second; and a day screen of no commitments at all is opened at each roster place as of Monday
+  31 August 2026, each at a record place of its own where nothing has been kept, and moved to the
+  day before
+- **THEN** the two day screens' day views are the same day view
+- **AND** each holds one group, under "Supplements", holding one row named "Creatine"
 
 ### Requirement: A day screen takes on the commitments it was handed when its roster holds nothing at all
 
@@ -819,6 +905,15 @@ same.
   commitment is kept
 - **AND** it says it is not keeping a record
 - **AND** it says it is keeping a roster
+
+#### Scenario: a day screen whose roster place cannot be opened for another reason does not say the roster is from a later version
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a roster place that is a directory
+  holding nothing rather than a file, at a record place where nothing has been kept, of a
+  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
+  2026
+- **THEN** it says it is not keeping a roster
+- **AND** it does not say the roster was written by a later version of DayByDay
 
 ### Requirement: A row offers the number entry its commitment takes, and offers none for a day that has not arrived
 
@@ -1093,6 +1188,40 @@ exactly. Such a value SHALL keep nothing, take nothing back, and leave the day e
 - **AND** the day screen tells, on that row, that it is not a number
 - **AND** the day view says the commitment is kept on that date
 - **AND** a day screen opened afterwards at the same place as of the same day says the same
+
+#### Scenario: a number whose zeros lie outside its significant digits is entered exactly
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, and a whole number written as a one
+  followed by fifty zeros is committed on its one row
+- **THEN** the entry the row the day screen then holds offers says that number, digit for digit
+- **AND** committing a number whose only digit that is not a zero is a one at the fifty-first place
+  after the point leaves it saying that number, digit for digit
+- **AND** committing a whole number written as thirty-eight nines followed by ten zeros leaves it
+  saying that number, digit for digit
+
+#### Scenario: a number too large to hold keeps nothing and takes nothing back
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026; "70.5" is committed on its one row; and
+  a whole number written as a one followed by two hundred zeros is then committed on the row it
+  then holds
+- **THEN** the entry the row the day screen then holds offers says the number 70.5
+- **AND** the day screen tells, on that row, that it is not a number
+- **AND** the day view says the commitment is kept on that date
+
+#### Scenario: a number with spaces among its digits keeps nothing and takes nothing back
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with no range, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026; "70.5" is committed on its one row; and
+  each of "7 0", "1 000" and "70. 5" is then committed in turn on the row it then holds
+- **THEN** the entry the row the day screen then holds offers says the number 70.5 after every one
+  of them
+- **AND** the day screen tells, on that row, that it is not a number
+- **AND** the day view says the commitment is kept on that date
 
 ### Requirement: A row offers the note entry its commitment takes, and offers none for a day that has not arrived
 
@@ -1943,6 +2072,18 @@ which *A move with nowhere to go leaves a day screen exactly as it was* states.
 - **AND** the day view it says of the day after is the same day view as one formed directly of that
   commitment on Monday 3 January 1583 from that same history
 
+#### Scenario: a day screen showing the first supported date says no day view before it whatever its places, its rows and its today
+
+- **WHEN** a day screen is opened as of Sunday 2 January 1583, at a roster place holding a run of
+  bytes that is not what a roster is written as and a record place holding a run of bytes that is
+  not what a record is written as, of a commitment named "Journaling" on a schedule listing all
+  seven weekdays, kept from 1 January 1583, and it is moved to the day before
+- **THEN** its day view holds no rows, and it says no day view of the day before
+- **AND** the day view it says of the day after is the same day view as one formed directly of no
+  commitments at all on Sunday 2 January 1583 from a history that has taken no tick
+- **AND** moved to the day after, it says a day view of the day before and a day view of the day
+  after
+
 ### Requirement: A day screen makes every change on the day it is showing and none on a day either side of it
 
 Every change a day screen makes SHALL be made on the day it is showing: a tick made or taken back, a
@@ -1997,6 +2138,25 @@ what the screen is telling SHALL be left as it was.
   says of the day before is ticked
 - **THEN** it is telling nothing on any row
 - **AND** ticking that row is not refused with an error
+
+#### Scenario: every change asked of a row a day screen says of the day before changes nothing and leaves what it is telling
+
+- **WHEN** a record holding, on Sunday 30 August 2026, a tick for a commitment named "Gym" of the
+  tick kind, a number of 70.5 for one named "Weight" of the number kind with a range of 40 to 150, a
+  note of "Ran 8k." for one named "Journal" of the note kind and an addition of 30 for one named
+  "Protein" of the total kind with a target of 120, all four on a schedule listing all seven
+  weekdays and kept from 1 January 2026, is kept at a place; a day screen of those four
+  commitments, in that order, is opened at that place as of Monday 31 August 2026; "300" is
+  committed on its own row named "Weight"; and on the rows of the day view it then says of the day
+  before, the row named "Gym" is ticked, nothing at all and then "1.2.3" are committed on the row
+  named "Weight", "Rested." and then nothing at all on the row named "Journal", and "30" and then
+  "0" on the row named "Protein"
+- **THEN** the day view it says of the day before is the same day view as the one it said before
+  those changes were asked for
+- **AND** its day view is the same day view as the one it held before those changes were asked for
+- **AND** the content at its record place is byte-for-byte what it was immediately after the screen
+  was opened
+- **AND** it still tells, on its own row named "Weight", that the number must be between 40 and 150
 
 ### Requirement: A row is its commitment, its date and what that day holds
 
@@ -2231,6 +2391,16 @@ commitments due on some day, to those still kept, or to those its day view holds
 - **AND** a second day screen opened the same way as of Friday 31 December 9999 opens on Friday
   31 December 9999 and reaches back to 1 January 1583
 
+#### Scenario: a day screen's day picker reaches back to the day a commitment is kept from though nothing is due on that day
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a roster place and a record place
+  where nothing has been kept, of a commitment named "Finances" on a schedule on the 25th of the
+  month, kept from 1 January 2026, and one named "Journaling" on a schedule listing all seven
+  weekdays, kept from 1 March 2026
+- **THEN** its day picker reaches back to 1 January 2026, and neither to 25 January 2026 nor to
+  1 March 2026
+- **AND** its day view holds one row, named "Journaling"
+
 ### Requirement: A day screen's reach bounds its day picker and is read again whenever its roster is
 
 The reach SHALL bound the day picker and never the screen: *A day screen moves the day it is showing
@@ -2260,6 +2430,16 @@ SHALL be about the roster the screen holds and the day being shown, and nothing 
   listing all seven weekdays, kept from 1 January 2026
 - **THEN** it says it is not keeping a record
 - **AND** its day picker opens on Monday 31 August 2026 and reaches back to 1 January 2026
+
+#### Scenario: a day screen shown again reads the reach of its day picker off the roster it then reads
+
+- **WHEN** a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2020, is taken on at a roster place; a day screen of no commitments at all is opened at
+  that roster place as of Monday 31 August 2026, at a record place where nothing has been kept; a
+  commitment named "Gym" on that same schedule, kept from 1 January 2010, is then taken on at that
+  roster place by something else; and the app is shown again as of Monday 31 August 2026
+- **THEN** its day picker reaches back to 1 January 2010
+- **AND** before the app was shown again, its day picker reached back to 1 January 2020
 
 ### Requirement: A day screen says the day view of the day either side of the one it is showing, formed as a move there would form it
 
@@ -2447,6 +2627,16 @@ like any other, and what it says about either place SHALL be untouched by being 
   taken on at that roster place by something else; and the screen is returned to
 - **THEN** the day view it says of the day before holds two rows, named "Journaling" and then "Gym"
 - **AND** the day view it says of the day after holds two rows, named "Journaling" and then "Gym"
+
+#### Scenario: saying the day either side of a day screen keeps nothing at either place
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a record place and a roster place
+  where nothing has been kept, of a commitment named "Journaling" on a schedule listing all seven
+  weekdays, kept from 1 January 2026; the roster place is read; and the day views it says of the
+  day before and of the day after are both read
+- **THEN** nothing has been kept at its record place
+- **AND** the content at its roster place is byte-for-byte what it was before those day views were
+  read
 
 ### Requirement: A day view holds the commitments due on a date, each with whether it is kept
 
@@ -2873,6 +3063,15 @@ the screen says about its roster.
 - **AND** a day screen opened afterwards at that place as of Tuesday 1 September 2026 says the
   commitment is not kept on that date
 
+#### Scenario: a tick made on a day screen does not change what it says about its roster
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a roster place and a record place
+  where nothing has been kept, of a commitment named "Journaling" on a schedule listing all seven
+  weekdays, kept from 1 January 2026; its roster place is then made to hold a run of bytes that is
+  not what a roster is written as; and its one row is ticked
+- **THEN** it says it is keeping a roster, exactly as it did before the tick
+- **AND** its day view holds one row, named "Journaling", saying the commitment is kept on that date
+
 ### Requirement: A day screen re-reads its day and its places when the app is shown again
 
 A day screen SHALL be told when the app has been shown — opened from nothing, or brought back in
@@ -3029,6 +3228,19 @@ carries across.
   2026
 - **THEN** its day view says the commitment is kept on Sunday 30 August 2026
 - **AND** its day picker still opens on Sunday 30 August 2026, the screen not having moved
+
+#### Scenario: a day screen shown again carries over no reason it gave for not keeping its record or its roster
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a record place holding a record
+  and a roster place holding a roster, each written in a form one later than the form this app
+  writes and holding nothing, of a commitment named "Gym" on a schedule listing Monday, Wednesday
+  and Saturday, kept from 1 January 2026; what is at each place is then replaced by a run of bytes
+  that is not what a record or a roster is written as; and the app is shown again as of Monday
+  31 August 2026
+- **THEN** it says it is not keeping a record, and does not say the record was written by a later
+  version of DayByDay
+- **AND** it says it is not keeping a roster, and does not say the roster was written by a later
+  version of DayByDay
 
 ### Requirement: A day screen tells on the row that was tapped that its change could not be kept
 
@@ -3483,6 +3695,19 @@ likewise be told nothing and SHALL NOT end what is already told.
 - **THEN** the day screen still tells, on the first row, that the change could not be kept
 - **AND** it tells nothing on the second row
 
+#### Scenario: a commit on a day screen holding a record from a later version is told nothing whatever was committed
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a record written
+  in a form one later than the form this app writes, holding nothing, of a commitment named "Weight"
+  of the number kind with a range of 40 to 150, one named "Journal" of the note kind and one named
+  "Protein" of the total kind with a target of 120, all three on a schedule listing Monday,
+  Wednesday and Saturday and kept from 1 January 2026; and "300" and then "1.2.3" are committed on
+  the row named "Weight", "Ran 8k." and then nothing at all on the row named "Journal", and "0" on
+  the row named "Protein"
+- **THEN** no commit is refused with an error
+- **AND** the day screen tells nothing on any row
+- **AND** it says the record was written by a later version of DayByDay
+
 ### Requirement: A day screen reads its roster again whenever it is returned to
 
 A day screen returned to SHALL read its roster place again and SHALL form its day view from the
@@ -3578,6 +3803,17 @@ handed; where that place cannot be read, it SHALL say so and draw no rows.
 - **THEN** its day view holds one row, named "Gym 🏋️"
 - **AND** that row says its commitment was kept
 
+#### Scenario: a day screen returned to where its roster cannot be read says so and draws no rows
+
+- **WHEN** a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a day screen of no commitments at all is opened at
+  that roster place as of Monday 31 August 2026, at a record place where nothing has been kept;
+  that roster place is then made to hold a run of bytes that is not what a roster is written as;
+  and the day screen is returned to
+- **THEN** it says it is not keeping a roster
+- **AND** its day view holds no rows
+- **AND** before it was returned to, its day view held one row, named "Journaling"
+
 ### Requirement: A day screen enters the number a row's entry takes, and keeps the change before the day view says so
 
 A day screen SHALL enter, on one of its rows, the number a person commits in that row's number
@@ -3593,7 +3829,7 @@ as it was. The change SHALL be kept at the screen's record place before its day 
 the day view SHALL then be formed again from the record as it stands rather than altered; a change
 that could not be kept SHALL be refused, reported to the caller, and SHALL leave the day view
 exactly as it was. A number entered on a day that already holds one SHALL replace it. Taking one
-back SHALL reach the place whether or not the day holds a number, and SHALL be refused only by the
+back SHALL reach the place only where the day holds a number, and SHALL be refused only by the
 place.
 Entering a number or taking one back MUST NOT write to the roster's place or change what the screen
 says about its roster.
@@ -3711,6 +3947,19 @@ says about its roster.
 - **THEN** the content at the roster place is byte-for-byte what it was after the screen was
   opened
 - **AND** the day screen says it is keeping its roster
+
+#### Scenario: committing an empty entry at a place that cannot be written is refused only on a row whose day holds a number
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place that can be read from but
+  not written to and that holds a record in which a commitment named "Weight" of the number kind
+  with a range of 40 to 150 holds the number 70.5 on that date, of that commitment and a commitment
+  named "Mood" of the number kind with a range of 1 to 10, in that order, both on a schedule listing
+  Monday, Wednesday and Saturday and both kept from 1 January 2026; nothing at all is committed on
+  the row named "Mood"; and nothing at all is then committed on the row named "Weight"
+- **THEN** committing on the row named "Mood" is not refused and the day screen tells nothing
+- **AND** committing on the row named "Weight" is refused with an error
+- **AND** the day screen then tells, on the row named "Weight", that the change could not be kept
+- **AND** its day view still says "Weight" holds the number 70.5 on that date
 
 ### Requirement: A note entry says the whole note the day already holds, and says nothing else
 
