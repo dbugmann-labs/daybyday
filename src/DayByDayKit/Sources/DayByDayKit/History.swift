@@ -144,14 +144,34 @@ public struct History: Hashable, Sendable {
     /// made for. See `openspec/specs/record/spec.md` § *A history carries every record of one
     /// commitment over to another*.
     public mutating func carryOver(_ commitment: Commitment, to changed: Commitment) -> Bool {
+        carryOver(commitment, to: changed, matching: { _ in true })
+    }
+
+    /// Carries the records held of `commitment` made on or after `day` over to `changed`, on the
+    /// same date each was made for; every record made before `day` stays under `commitment`.
+    /// Package-internal: a restart needs this before it carries part of a history over, to tell
+    /// this cause apart from carrying it whole. `openspec/changes/add-interval-restart/design.md`
+    /// § *Carrying part of a history is package-internal*.
+    mutating func carryOver(_ commitment: Commitment, to changed: Commitment, onOrAfter day: CalendarDate)
+        -> Bool
+    {
+        carryOver(commitment, to: changed, matching: { day.days(until: $0) >= 0 })
+    }
+
+    /// The act both `carryOver` overloads perform, differing only in which dated records
+    /// `matches` lets through: every one, for the whole-history overload, or only those on or
+    /// after a day, for the restart's dated one.
+    private mutating func carryOver(
+        _ commitment: Commitment, to changed: Commitment, matching matches: (CalendarDate) -> Bool
+    ) -> Bool {
         guard commitment != changed else {
             return true
         }
 
-        let matchingTicks = ticks.filter { $0.commitment == commitment }
-        let matchingNumbers = numbers.filter { $0.key.commitment == commitment }
-        let matchingNotes = notes.filter { $0.key.commitment == commitment }
-        let matchingAdditions = additions.filter { $0.key.commitment == commitment }
+        let matchingTicks = ticks.filter { $0.commitment == commitment && matches($0.date) }
+        let matchingNumbers = numbers.filter { $0.key.commitment == commitment && matches($0.key.date) }
+        let matchingNotes = notes.filter { $0.key.commitment == commitment && matches($0.key.date) }
+        let matchingAdditions = additions.filter { $0.key.commitment == commitment && matches($0.key.date) }
 
         guard
             !(matchingTicks.isEmpty && matchingNumbers.isEmpty && matchingNotes.isEmpty

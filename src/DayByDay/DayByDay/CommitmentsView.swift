@@ -77,6 +77,12 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
         Text("That's not a range.")
     case .targetIsNotATarget:
         Text("That's not a target.")
+    case .restartDayIsAfterToday:
+        Text("Choose a day that isn't after today.")
+    case .restartDayIsBeforeKeptFrom:
+        Text("Choose a day that isn't before it's kept from.")
+    case .alreadyDueOnRestartDay:
+        Text("It's already due that day.")
     }
 }
 
@@ -420,6 +426,14 @@ private struct CommitmentSheet: View {
     let screen: CommitmentsScreen
     let changing: Commitment?
     let canChangeRhythmAndKeptFrom: Bool
+    /// Whether the sheet draws a *Restart* section — `true` only where `changing` is a
+    /// commitment `screen.whatItIsMadeOf` says can be restarted.
+    /// `openspec/changes/add-interval-restart/design.md` § *The shell rides this Story*.
+    let canRestart: Bool
+    /// The day `changing` is kept from, the *Restart* date picker's lower bound. Read once, at
+    /// init, from `screen.whatItIsMadeOf` — not the "Kept from" field above, which is a person's
+    /// typed correction to the rhythm form and not the commitment's own unchanging day.
+    private let restartLowerBound: Date
 
     @State private var name: String
     @State private var category: String
@@ -434,6 +448,8 @@ private struct CommitmentSheet: View {
     @State private var highest: String
     @State private var target: String
     @State private var refusal: CommitmentsScreen.Refusal?
+    @State private var restartDate: Date
+    @State private var restartRefusal: CommitmentsScreen.Refusal?
     @Environment(\.dismiss) private var dismiss
 
     /// `commitment` is `nil` to define a new commitment, and the one to change otherwise. Every
@@ -446,10 +462,14 @@ private struct CommitmentSheet: View {
 
         let madeOf = commitment.flatMap { screen.whatItIsMadeOf($0) }
         canChangeRhythmAndKeptFrom = madeOf?.canChangeRhythmAndKeptFrom ?? true
+        canRestart = madeOf?.canRestart ?? false
+        restartLowerBound = date(from: madeOf?.keptFrom ?? screen.dayToKeepFrom)
 
         _name = State(initialValue: madeOf?.name ?? "")
         _category = State(initialValue: madeOf?.category ?? "")
         _keptFromDate = State(initialValue: date(from: madeOf?.keptFrom ?? screen.dayToKeepFrom))
+        _restartDate = State(initialValue: date(from: screen.dayToKeepFrom))
+        _restartRefusal = State(initialValue: nil)
 
         switch madeOf?.rhythm {
         case .weekdays(let weekdays):
@@ -607,6 +627,21 @@ private struct CommitmentSheet: View {
                         refusalText(refusal)
                     }
                 }
+
+                if canRestart, let commitment = changing {
+                    Section("Restart") {
+                        DatePicker(
+                            "Restart from", selection: $restartDate,
+                            in: restartLowerBound...date(from: screen.dayToKeepFrom),
+                            displayedComponents: [.date])
+                        Button("Restart") {
+                            restart(commitment)
+                        }
+                        if let restartRefusal {
+                            refusalText(restartRefusal)
+                        }
+                    }
+                }
             }
             .navigationTitle(changing == nil ? "Define a commitment" : "Change \(changing!.name)")
             .toolbar {
@@ -667,6 +702,25 @@ private struct CommitmentSheet: View {
         }
 
         if refusal == nil {
+            dismiss()
+        }
+    }
+
+    /// Hands `restartDate`, converted the same way `save()` converts `keptFromDate`, to
+    /// `screen.restart(commitment:from:)`. Dismisses on a restart kept; stays open with the day
+    /// picked exactly as it was and says why on a refusal.
+    /// `openspec/changes/add-interval-restart/design.md` § *The shell rides this Story*.
+    private func restart(_ commitment: Commitment) {
+        let components = Calendar.current.dateComponents(
+            [.year, .month, .day], from: restartDate)
+        guard
+            let day = CalendarDate(
+                year: components.year!, month: components.month!, day: components.day!)
+        else { return }
+
+        restartRefusal = screen.restart(commitment, from: day)
+
+        if restartRefusal == nil {
             dismiss()
         }
     }
