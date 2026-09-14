@@ -148,35 +148,6 @@ shape it lacks, not the quota.
   inherits is a decision, not a want. It cannot be taken before B-007, because what may appear on
   the day screen depends on what the detail page is a page *per*.
 
-### B-017 — meet a quota over a longer span than a week
-*Captured 2026-09-02.*
-
-> "maybe I also want daily / biweekly / monthly quotas?"
-
-- **Trigger** — the same trigger as the weekly quota, said of a longer stretch: gym twelve times
-  this month, any days.
-- **Touches** — `schedule` (#6). It is the weekly quota shape with its span made a parameter, and
-  it needs no change to what a record is — which is what separates it from B-018.
-- **Principle** — tested against *five percent of seven things*: fails, and is captured anyway.
-  A quota over a different span deepens a rhythm that Story #11 already makes expressible; nothing
-  on the day-one week asks for it, where reading 3× a week asks for the weekly one.
-- **Re-opens a drop.** *Decided*, 2026-08-28: an unanchored "once a month" rule and a rule bounded
-  to a stretch of weeks were dropped as *"invented while answering a question about rules; nothing
-  in the day-one list claims either. Re-capture it if something real does."* This is that
-  re-capture, and the monthly half is the same want the drop refused — refused then for want of
-  anyone asking, not on its merits.
-- **Open** — a fixed menu of spans, or any number of weeks? A quota of 12 a month and a quota of
-  3 every 2 weeks are the same rule under different parameters, and the shape of the parameter is
-  what decides whether this is one Story or three.
-- **Open** — does "monthly" mean a calendar month or four weeks? February and a 31-day month hold
-  different numbers of chances, which is the same collision `day-of-month` met and answered by
-  clamping.
-- **Open** — the week boundary that Story #11 could not answer (`docs/open-questions.md`
-  § *Week turnover*) becomes worse here, not better: a span longer than a week has to say where it
-  starts before a quota over it means anything.
-- **Re-judged 2026-09-06** — stands, with yuno 5× a week where reading 3× a week was: the new week
-  asks for the weekly quota exactly as the old one did, and for no longer span.
-
 ### B-025 — know where I stand on a weekly quota, inside its week
 *Captured 2026-09-03, from the sweep. The wording is the sweep's.*
 
@@ -482,6 +453,14 @@ day and recorded first in `docs/open-questions.md` § Known gaps, which moved he
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-14 — **dropped**: meet a quota over a longer span than a week (B-017). Declined at every
+  pass from 2026-09-02 to 2026-09-12, each time because nothing on the day-one week asks for a span
+  longer than a week, and it failed *five percent of seven things* when it was captured. Dropped
+  by the owner at the eighth pass's cluster stop. Re-capture it if a real commitment asks for a
+  fortnightly or monthly quota. Its three open questions are where to start: a menu of spans or
+  any number of weeks, a calendar month or four weeks, and where a longer span begins. It was
+  never decided on its merits, only on nobody asking.
 
 - 2026-09-12 — every schedule rule has a scenario that proves it (B-051) → Story #221
   `cover-schedule-rules`, reopening `FEAT: schedule` (#6), under the umbrella chore #225. First of
@@ -1007,3 +986,38 @@ found nothing.
     - **F**, looking back: B-007, B-011. Excluded by Epic #1 by name, so a new Epic.
     - **G**, entry affordances: B-034, and B-032, which Epic #1 also excludes by name.
     - **H**, a reminder: B-039. Unclaimed, and the one want that asks whether this app may nag.
+
+- 2026-09-14 — pass over 13 wants, the eighth.
+  - **Sweep** — one silence, confirmed and captured before clustering: **B-052**, the refusal the
+    owner hit on the phone that day. It had been recorded in `docs/open-questions.md` § *Known gaps*,
+    whose own conclusion was a Story reopening #26, which nothing in that file can ever start, so it
+    moved here. Since pass 7 only the four covering Stories (#228, #230, #231, #232) and #219 have
+    merged: no behaviour changed, and the tracker holds no open issue. Day-one week: every line has
+    a spec, and *yuno 5× a week* is still only partly served, which is B-025. Lifecycle verbs: all
+    claimed, shipped or declined. Renaming a category everywhere was declined in
+    `add-commitment-category`'s `design.md` Non-goals, so it is not a gap. `docs/open-questions.md`
+    held no other want in disguise: row identity is still an unowned Story, and the NaN total is a
+    product question.
+  - **Dropped** — B-017, at the cluster stop, by the owner.
+  - **Taken forward** — **three clusters at once, by the owner's decision, each groomed in its own
+    session and worktree**:
+    - **A**, commitment changes: B-052 and B-043, grilled in the session that ran this sweep, as
+      Stories reopening `FEAT: commitment` (#26).
+    - **D**, standing in a quota: B-025, now alone. Its grill has to settle *Week turnover*
+      (`docs/open-questions.md`), which this want is what forces.
+    - **C**, a one-off on a day: B-049. It needs a new capability, and either a new Epic or an
+      amendment to Epic #1's outcome.
+
+    Each session appends its own dated line recording what its cluster became. **They will meet
+    at Stage 4, not before** (`docs/process.md` §7): A deltas `commitment`; D most likely
+    `schedule` and `day-screen`; C is undecided and could touch all three. Whichever G2 comes
+    second decides what it serialises behind. ADR numbers are claimed against all three open
+    branches, not against `main`.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **B**, restore: B-009. The second choice at the cluster stop, recommended for the fourth pass
+      running.
+    - **E**, looking back: B-007, B-011. Needs a new Epic.
+    - **F**, entry affordances: B-034, B-032. B-001 has shipped, so B-032 is no longer blocked;
+      Epic #1 still rules it out by name.
+    - **G**, a reminder: B-039.
+    - **Singletons**: B-050, a shell chore to ask for when it grates; B-041, waiting for the SDK.
