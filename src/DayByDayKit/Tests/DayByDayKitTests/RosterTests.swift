@@ -3219,7 +3219,9 @@ func takingACommitmentUpAgainLeavesTheEarliestDayAnythingARosterHoldsIsKeptFromA
 
 @Test("a roster answers the earliest day whatever kind the commitment kept from it takes")
 func aRosterAnswersTheEarliestDayWhateverKindTheCommitmentKeptFromItTakes() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
     let earliest = CalendarDate(year: 2026, month: 1, day: 1)!
     let later = CalendarDate(year: 2026, month: 3, day: 1)!
     let tick = Commitment(name: "Gym", schedule: schedule, keptFrom: later)!

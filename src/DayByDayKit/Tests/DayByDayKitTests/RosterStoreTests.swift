@@ -1673,7 +1673,9 @@ func aNameOfTenThousandCharactersIsACommitmentAndIsReadBackOutOfARosterStoreWhol
     let commitment = Commitment(name: longName, schedule: schedule, keptFrom: keptFrom)!
 
     let store = try RosterStore(at: place)
-    try store.add(commitment)
+    let added = try store.add(commitment)
+
+    #expect(added)
 
     let later = try RosterStore(at: place)
 
@@ -1703,17 +1705,17 @@ func aRosterStoreGivenAThousandCommitmentsHoldsEveryOneOfThemInTheOrderTheyWereG
     #expect(later.roster.commitments == commitments)
 }
 
-@Test("a stop that cannot be kept is refused and the roster a store reports does not move")
-func aStopThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
+/// A place holding "Gym" under "Sport", "Journaling" under "Evening" and "Run" — kept under no
+/// category, then stopped as of `stoppedOn` — whose directory has since been replaced by a plain
+/// file, so any further write to it fails with `RosterStoreError.cannotWrite`. The five tests
+/// below ask a different verb of the `store` returned, already holding this roster in memory,
+/// and check only that the refusal is reported and that roster is unmoved by it.
+private func storeThatCanWriteNoFurther(
+    gym: Commitment, journaling: Commitment, run: Commitment, stoppedOn: CalendarDate
+) throws -> (store: RosterStore, place: URL) {
     let directory = FileManager.default.temporaryDirectory
         .appendingPathComponent(UUID().uuidString, isDirectory: true)
     let place = directory.appendingPathComponent("roster.json")
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
-    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-    let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
 
     let store = try RosterStore(at: place)
     try store.add(gym, under: "Sport")
@@ -1723,6 +1725,21 @@ func aStopThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws
 
     try FileManager.default.removeItem(at: directory)
     try Data().write(to: directory)
+
+    return (store, place)
+}
+
+@Test("a stop that cannot be kept is refused and the roster a store reports does not move")
+func aStopThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
+
+    let (store, place) = try storeThatCanWriteNoFurther(
+        gym: gym, journaling: journaling, run: run, stoppedOn: stoppedOn)
 
     #expect(throws: RosterStoreError.cannotWrite(at: place)) {
         try store.retire(gym, keptUntil: stoppedOn)
@@ -1738,9 +1755,6 @@ func aStopThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws
 
 @Test("a group move that cannot be kept is refused and the roster a store reports does not move")
 func aGroupMoveThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    let place = directory.appendingPathComponent("roster.json")
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
@@ -1748,14 +1762,8 @@ func aGroupMoveThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() t
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
 
-    let store = try RosterStore(at: place)
-    try store.add(gym, under: "Sport")
-    try store.add(journaling, under: "Evening")
-    try store.add(run)
-    try store.retire(run, keptUntil: stoppedOn)
-
-    try FileManager.default.removeItem(at: directory)
-    try Data().write(to: directory)
+    let (store, place) = try storeThatCanWriteNoFurther(
+        gym: gym, journaling: journaling, run: run, stoppedOn: stoppedOn)
 
     #expect(throws: RosterStoreError.cannotWrite(at: place)) {
         try store.move(group: "Sport", toOffset: 2)
@@ -1775,9 +1783,6 @@ func aGroupMoveThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() t
 func aChangeOfOneCommitmentForAnotherThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove()
     throws
 {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    let place = directory.appendingPathComponent("roster.json")
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
@@ -1786,14 +1791,8 @@ func aChangeOfOneCommitmentForAnotherThatCannotBeKeptIsRefusedAndTheRosterAStore
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
 
-    let store = try RosterStore(at: place)
-    try store.add(gym, under: "Sport")
-    try store.add(journaling, under: "Evening")
-    try store.add(run)
-    try store.retire(run, keptUntil: stoppedOn)
-
-    try FileManager.default.removeItem(at: directory)
-    try Data().write(to: directory)
+    let (store, place) = try storeThatCanWriteNoFurther(
+        gym: gym, journaling: journaling, run: run, stoppedOn: stoppedOn)
 
     #expect(throws: RosterStoreError.cannotWrite(at: place)) {
         try store.change(gym, to: gymEmoji, under: nil)
@@ -1809,9 +1808,6 @@ func aChangeOfOneCommitmentForAnotherThatCannotBeKeptIsRefusedAndTheRosterAStore
 
 @Test("a supersession that cannot be kept is refused and the roster a store reports does not move")
 func aSupersessionThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    let place = directory.appendingPathComponent("roster.json")
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
@@ -1823,14 +1819,8 @@ func aSupersessionThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove(
     let newGym = Commitment(name: "Gym", schedule: newSchedule, keptFrom: newKeptFrom)!
     let supersedeAsOf = CalendarDate(year: 2026, month: 8, day: 31)!
 
-    let store = try RosterStore(at: place)
-    try store.add(gym, under: "Sport")
-    try store.add(journaling, under: "Evening")
-    try store.add(run)
-    try store.retire(run, keptUntil: stoppedOn)
-
-    try FileManager.default.removeItem(at: directory)
-    try Data().write(to: directory)
+    let (store, place) = try storeThatCanWriteNoFurther(
+        gym: gym, journaling: journaling, run: run, stoppedOn: stoppedOn)
 
     #expect(throws: RosterStoreError.cannotWrite(at: place)) {
         try store.supersede(gym, with: newGym, keptUntil: supersedeAsOf, under: nil)
@@ -1846,9 +1836,6 @@ func aSupersessionThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove(
 
 @Test("a take-up-again that cannot be kept is refused and the roster a store reports does not move")
 func aTakeUpAgainThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    let place = directory.appendingPathComponent("roster.json")
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
@@ -1856,14 +1843,8 @@ func aTakeUpAgainThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove()
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
 
-    let store = try RosterStore(at: place)
-    try store.add(gym, under: "Sport")
-    try store.add(journaling, under: "Evening")
-    try store.add(run)
-    try store.retire(run, keptUntil: stoppedOn)
-
-    try FileManager.default.removeItem(at: directory)
-    try Data().write(to: directory)
+    let (store, place) = try storeThatCanWriteNoFurther(
+        gym: gym, journaling: journaling, run: run, stoppedOn: stoppedOn)
 
     #expect(throws: RosterStoreError.cannotWrite(at: place)) {
         try store.add(run)
@@ -2185,8 +2166,10 @@ func categoriesDifferingOnlyInCaseAreReadBackOutOfARosterStoreAsTwoCategories() 
     let magnesium = Commitment(name: "Magnesium", schedule: schedule, keptFrom: keptFrom)!
 
     let store = try RosterStore(at: place)
-    try store.add(creatine, under: "Supplements")
-    try store.add(magnesium, under: "supplements")
+    try store.add(creatine)
+    try store.add(magnesium)
+    _ = try store.put(creatine, under: "Supplements")
+    _ = try store.put(magnesium, under: "supplements")
 
     let later = try RosterStore(at: place)
 
@@ -2412,7 +2395,7 @@ func aRosterStoreHoldingACommitmentWhoseRangeHasItsLowestAboveItsHighestIsRefuse
                 "name": "Gym",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
-                "kind": { "number": { "lowest": 150, "highest": 40 } }
+                "kind": { "number": { "lowest": 10, "highest": 1 } }
               },
               "removed": false,
               "category": null
@@ -2553,8 +2536,10 @@ func aCategoryWrittenInAScriptOtherThanLatinIsHeldAndReadBackOutOfARosterStoreEx
     let cyrillicCategory = "Спорт"
 
     let store = try RosterStore(at: place)
-    try store.add(creatine, under: japaneseCategory)
-    try store.add(gym, under: cyrillicCategory)
+    try store.add(creatine)
+    try store.add(gym)
+    _ = try store.put(creatine, under: japaneseCategory)
+    _ = try store.put(gym, under: cyrillicCategory)
 
     let later = try RosterStore(at: place)
 
