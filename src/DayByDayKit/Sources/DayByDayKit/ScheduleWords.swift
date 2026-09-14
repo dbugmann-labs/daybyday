@@ -1,6 +1,6 @@
 /// The package's own fixed English for a schedule's rhythm in words — the same shape
 /// `DayTitle.swift` holds for a day title. Nothing here is public: `Schedule.inWords` and
-/// `Rhythm.inWords` are the only callers, and neither exposes this table.
+/// `Schedule.inWords(given:)` are the only callers, and neither exposes this table.
 /// See `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
 enum ScheduleWords {
     /// Monday through Sunday, paired with the three-letter name said for each — the one

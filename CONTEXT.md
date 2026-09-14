@@ -1099,7 +1099,8 @@ rebuild a rhythm and match a kept-from day exactly would in practice be making a
 commitment. Both lists are in the order the roster took its commitments on, and an entry is a name
 and the **rhythm in words**: saying a rhythm in words is a rule about how a **schedule** is said and
 belongs to that capability, whichever screen reads it — and since 2026-09-06 this screen does, in
-both lists and in the form's live preview.
+both lists, and until 2026-09-09 in the form's live preview too, which `add-commitment-editing`
+(#148, merged as #188) took out (B-036).
 
 It is the second thing in the product that is not a value, and the first that **refuses something
 the engine accepts**: a weekday set with no days in it is a legal schedule, due on nothing, and a
@@ -1433,17 +1434,21 @@ report a refusal the value makes rather than a shell swallowing it in silence. *
 2026-09-06**, at `add-rhythm-in-words` (#144): a rhythm does say itself in words, for the form's
 preview — the words of the schedule it names, and nothing at all where its number names no schedule
 — so "not read back" was only ever true of its payload, which is still unreadable from outside the
-package (ADR-1034).
+package (ADR-1034). **Amended 2026-09-09**, at `add-commitment-editing` (#148, merged as #188),
+and it takes that back: the form's preview went (B-036) and `Rhythm.inWords` with it, so a rhythm
+once more says nothing in words. What a person reads is said by the **schedule** it named, once a
+roster holds one.
 
 **Rhythm in words** — the sentence a **schedule** is said in, so that a person can read what rhythm
 a commitment runs on wherever its name is: "Mon, Wed, Sat", "Every 14 days", "The 25th",
 "3x a week". It is the package's own English and no locale's, as the **day title** is, and it says
 the shape and its number and nothing else — no start date, since on every commitment a commitments
-screen makes that is the day it is **kept from**, and no clamp for a short month. Three surfaces
+screen makes that is the day it is **kept from**, and no clamp for a short month. Two surfaces
 read it: an entry on the **commitments screen**, which is a name and its rhythm in words and
-nothing else, in both lists; a **row** on a day screen, on every row, always; and the form's live
-preview of the **rhythm** being built, which says what the schedule would say and says nothing
-for a number the calendar will not take. "Every day" is what all seven weekdays and an interval of
+nothing else, in both lists; and a **row** on a day screen, on every row, always. A third — the
+form's live preview of the **rhythm** being built, which said nothing for a number the calendar
+will not take — went on 2026-09-09 at `add-commitment-editing` (#148, merged as #188; B-036), and
+no rhythm is said in words before a roster holds its schedule. "Every day" is what all seven weekdays and an interval of
 one both say, because they are the same rhythm; a quota of seven is still "7x a week", because a
 quota is any days; and a weekday set with no days says "No day", because it is a legal schedule a
 roster can hold. On a day-screen **row**, and there alone, a weekly quota's words carry the

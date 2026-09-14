@@ -4,6 +4,11 @@
   shows a rule to a person
 - Date: 2026-09-06
 - Deciders: Diego Bugmann
+- Amended: 2026-09-14 — records that the form's rhythm preview and `Rhythm.inWords` went at
+  `add-commitment-editing` (#148, merged as #188; B-036), which this file went on describing as
+  live. The sentence in § *Decision*, the three-readers consequence and the `nil` consequence are
+  changed in place; § *Context* keeps the three surfaces it was written against, dated. The decision
+  stands: a schedule still says its rhythm, and an entry and a row still read it.
 - Amended: 2026-09-14 — `say-standing-in-quota-row` (#236): a schedule can also be said *given a
   count*, which a weekly quota says before its words — "1/3x a week" — and every other shape
   ignores; and a day-screen row on a weekly quota says its words given its standing, which makes
@@ -45,7 +50,8 @@ The facts, measured on this branch on 2026-09-06:
 - Nothing in the package or the app turns a schedule into words today.
 
 Three surfaces want the same sentence at once: an entry in each of the commitments screen's two
-lists, a row on the day screen, and the form's live preview of the rhythm being built.
+lists, a row on the day screen, and the form's live preview of the rhythm being built. (The third
+went at `add-commitment-editing`, #188, on 2026-09-09 — B-036.)
 
 ADR-1022 answered the neighbouring question for a **day**, and left this one open on purpose: "the
 reasoning here — a sentence a test can be wrong about lives behind the seam, in fixed words —
@@ -57,9 +63,9 @@ is why this is a second record rather than a citation.
 
 **A schedule says the rhythm it runs on in words, and nothing about its payload becomes readable.**
 `Schedule.inWords` composes the sentence inside `DayByDayKit`; `Commitment.rhythmInWords` and
-`DayView.Row.rhythmInWords` pass it on; `Rhythm.inWords` says the same words for a rhythm still
-being built, and says nothing at all for a number no schedule can be built on. Every payload named
-above stays internal.
+`DayView.Row.rhythmInWords` pass it on. A rhythm still being built is said in no words at all:
+`Rhythm.inWords`, which said them for the form's preview, went with that preview at #188. Every
+payload named above stays internal.
 
 Three consequences are part of the decision rather than incidental to it:
 
@@ -115,20 +121,22 @@ empty.
   payload will be something that must *compute* with one outside the package — an export, a second
   app, a rule edited in place — rather than something that must *show* one, and it will be a
   narrower widening for a stated reason.
-- **One sentence, three readers, no drift.** An entry, a row and the preview cannot disagree about
-  what a rhythm says, because they are asking the same function. Had the payload been published,
-  each surface would have composed its own sentence and the third one would have differed from the
-  first two in a way only a person's eye would catch.
+- **One sentence, every reader, no drift.** An entry and a row cannot disagree about what a rhythm
+  says, because they are asking the same function — as the form's preview could not either, while
+  it existed. Had the payload been published, each surface would have composed its own sentence and
+  one would have differed from another in a way only a person's eye would catch.
 - **Every rhythm anyone will ever read is written out by hand.** Seven three-letter weekday names,
   three ordinal suffixes with the eleventh, twelfth and thirteenth taking the wrong-looking one,
   and four sentence forms. #144's delta answers that with four roll-call scenarios rather than with
   a review habit, which is the shape ADR-1022 used for nineteen names.
 - **Localising is a spec change, not a refactor** — the same price ADR-1022 named, now on more
   strings. The trigger is unchanged: a second person using this app in another language.
-- **A rhythm that is not yet a schedule says nothing rather than something.** `Rhythm.inWords` is
-  optional, and `nil` is the answer for the 32nd, every 0 days and 8 times a week. The alternative
-  — previewing a refusal — would have put a second wording of an existing refusal on the screen,
-  which is what `CONTEXT.md` § *Refused change* exists to keep to one.
+- **A rhythm that is not yet a schedule is said in no words.** While the form's preview existed,
+  `Rhythm.inWords` was optional and `nil` was its answer for the 32nd, every 0 days and 8 times a
+  week, because previewing a refusal would have put a second wording of an existing refusal on the
+  screen, which is what `CONTEXT.md` § *Refused change* exists to keep to one. Both went at #188
+  (B-036), so nothing says a rhythm before a roster holds its schedule; that reasoning binds whatever
+  says one next.
 - **It does not extend to every sentence in the app by itself**, for the same reason ADR-1022 did
   not extend to this one. What it does settle, and what ADR-1022 could not, is the wider class: a
   **rule** this product owns is said in this product's words, in the package that owns the rule.
