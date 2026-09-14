@@ -2580,9 +2580,12 @@ SHALL be stored for a group.
   kept from 1 March 2026, both on a schedule listing all seven weekdays; stops keeping "Gym" as of
   31 January 2026; and removes "Run" as of that same day
 - **THEN** asked about 1 February 2026 it reads back no groups at all
-- **AND** a roster given only a commitment named "Journaling" on that same schedule, kept from 1
-  March 2026, asked about 1 January 2026 reads back one group, with no category, holding
-  "Journaling"
+
+#### Scenario: a roster answers in groups about a date before the day a commitment it holds is kept from
+
+- **WHEN** a roster given only a commitment named "Journaling" on a schedule listing all seven
+  weekdays, kept from 1 March 2026, is asked about 1 January 2026
+- **THEN** it reads back one group, with no category, holding "Journaling"
 
 ### Requirement: A roster moves a group among the groups it is keeping
 
@@ -3720,8 +3723,16 @@ refused change, and neither of the screen's lists SHALL move.
 - **THEN** it is refused as a place that could not be written, told the same way as a roster place
   that could not be written
 - **AND** what it keeps is one entry, named "Gym"
-- **AND** the content at that roster place is byte-for-byte what it was immediately after the screen
-  was opened
+
+#### Scenario: a change a commitments screen could not carry over at the record place leaves the roster place as it was
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
+  2026, is taken on at a roster place; a tick for it on Monday 3 August 2026 is kept at a record
+  place; a commitments screen is opened at that roster place and that record place as of Monday 31
+  August 2026; what is at that record place is then made impossible to write; and "Gym" is changed
+  through it to the name "Gym 🏋️", under no category
+- **THEN** the content at that roster place is byte-for-byte what it was immediately after the
+  screen was opened
 
 #### Scenario: a change refused at the roster place after its records were carried over leaves the record place as it was
 
@@ -4015,6 +4026,15 @@ in no groups at all.
   "Magnesium" and then a group with no category holding "Creatine" and then "Gym"
 - **AND** afterwards what it keeps is one group, with no category, holding "Creatine", then "Gym",
   then "Magnesium", in the order the roster has held them throughout
+
+#### Scenario: a commitments screen does not list a commitment its roster has stopped keeping as of a day after the one the screen was handed
+
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place; "Gym" is stopped there as
+  of Tuesday 1 September 2026; and a commitments screen is opened at that roster place as of Monday
+  31 August 2026
+- **THEN** what it keeps is one entry, named "Journaling"
+- **AND** what it has stopped is one entry, named "Gym"
 
 ### Requirement: A commitments screen takes a commitment it has stopped up again in one tap
 

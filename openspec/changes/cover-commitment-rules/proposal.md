@@ -12,7 +12,7 @@ fourth covering Story, and the first that strengthens tests as well as adding th
 - Weak tests are strengthened in place under their titles, with a THEN reworded only where it did not
   name what would fail.
 - The three tests shown unable to fail are rewritten and proven by a named mutation reddening each.
-- Four rule sentences are reworded as little as keeps them true, each with its scenario.
+- Three rule sentences and one heading are reworded as little as keeps them true, each with its scenario.
 - One scenario title recorded false is corrected, moving its requirement by REMOVED plus ADDED.
 - Rules nothing can prove stay in the spec and are recorded as one *Known gaps* entry.
 - ADR-1047 decision 7 is widened to this lane, and decision 5 loses the title corrected here.

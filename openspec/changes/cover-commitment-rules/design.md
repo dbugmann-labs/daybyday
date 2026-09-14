@@ -1,7 +1,7 @@
 ## Context
 
 `proposal.md` § *Why* says what this is for; `grill.md`'s settled answers are the brief.
-`openspec/specs/commitment/spec.md` holds 43 requirements and 398 scenarios. The delta carries 31
+`openspec/specs/commitment/spec.md` holds 42 requirements and 398 scenarios. The delta carries 31
 of them whole — 30 MODIFIED, one REMOVED and ADDED — with 93 new scenarios and eight reworded ones.
 
 Five facts in source decide the approach. `RosterStore.write` is byte-stable, so rewriting an
@@ -36,14 +36,15 @@ var writeCount: Int { get }
 
 ### One scenario per rule, never shared
 
-Ninety-three scenarios, 48 on the roster side and 45 on the screen. Each `tasks.md` clause names the
+Ninety-six scenarios, 49 on the roster side and 47 on the screen. Each `tasks.md` clause names the
 wrong implementation it catches. Each verb, refusal kind and branch with its own guard in source is
 its own rule and gets its own scenario, and so is each item a requirement's prose enumerates. ANDs
 vary only the fixture of one rule. Every finding in grill answer 8 comes out the same. Judged
 against the fidelity list and not added: *MUST NOT sort … by a day* is covered by *commitments on
 every schedule shape are read back as the same commitments*, which a stable sort on the kept-from
-day fails; *SHALL ask its roster no date* is covered by the AND in *a commitments screen does not list
-a commitment its roster has stopped keeping*. The large-roster sample stays at a thousand, since each
+day fails. *SHALL ask its roster no date* is not covered by *a commitments screen does not list a
+commitment its roster has stopped keeping*, whose stop falls before the screen's day, so it gets its
+own scenario with a stop after that day. The large-roster sample stays at a thousand, since each
 `add` rewrites the whole file.
 
 ### Three reds expected on arrival, each fixed here
@@ -110,7 +111,7 @@ defines…* says".
 - No seam accepts them: the present moment, time zone, locale and clock in every requirement; a
   category kept as a reference to a list; a roster store "SHALL NOT be what reaches" a record place.
   *The record place SHALL be written before the roster place* is not here: *a change a commitments
-  screen could not carry over at the record place…* fails were the roster written first.
+  screen could not carry over at the record place leaves the roster place as it was* proves it.
 - The compiler enforces them: a commitment's four parts and nothing else, its kind fixed, no unit on
   a target, both range ends required; a roster's lack of identifier, position and added day; a move's
   two things, no third ask and no second way back; the screen's five fields, a change's four and no
