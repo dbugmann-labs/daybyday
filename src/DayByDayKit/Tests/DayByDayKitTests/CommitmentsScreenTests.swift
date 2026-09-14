@@ -4980,7 +4980,7 @@ func aNameAndARhythmChangedInOneSavePutTheNewNameOnTheSupersededCommitment() thr
         name: "Gym 🏋️", schedule: .weekdays([.tuesday, .thursday]), keptFrom: monday)!
 
     let laterRosterStore = try RosterStore(at: places.roster)
-    #expect(laterRosterStore.roster.commitments(on: sunday).contains(supersededGym))
+    #expect(laterRosterStore.roster.commitments(on: sunday) == [newGym, supersededGym])
 
     #expect(screen.kept.count == 1)
     #expect(screen.kept.first == newGym)
@@ -6184,7 +6184,8 @@ func aCommitmentDefinedUnderACategoryDifferingOnlyInCaseFromOneInUseIsAGroupOfIt
     let creatine = Commitment(name: "Creatine", schedule: dailySchedule, keptFrom: keptFrom)!
 
     let rosterStore = try RosterStore(at: rosterPlace)
-    try rosterStore.add(creatine, under: "Supplements")
+    try rosterStore.add(creatine)
+    _ = try rosterStore.put(creatine, under: "Supplements")
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
     let refusal = screen.define(name: "Magnesium", on: daily, keptFrom: monday, under: "supplements")
@@ -6995,9 +6996,12 @@ func aGroupWhoseFirstCommitmentIsMovedIntoAnotherGroupIsDrawnWhereItsNextCommitm
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let rosterStore = try RosterStore(at: rosterPlace)
-    try rosterStore.add(creatine, under: "Supplements")
-    try rosterStore.add(gym, under: "Sport")
-    try rosterStore.add(magnesium, under: "Supplements")
+    try rosterStore.add(creatine)
+    _ = try rosterStore.put(creatine, under: "Supplements")
+    try rosterStore.add(gym)
+    _ = try rosterStore.put(gym, under: "Sport")
+    try rosterStore.add(magnesium)
+    _ = try rosterStore.put(magnesium, under: "Supplements")
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
     #expect(
@@ -7061,7 +7065,8 @@ func aMoveACommitmentsScreenCouldNotKeepLeavesTheCommitmentUnderTheCategoryItWas
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let rosterStore = try RosterStore(at: rosterPlace)
-    try rosterStore.add(creatine, under: "Supplements")
+    try rosterStore.add(creatine)
+    _ = try rosterStore.put(creatine, under: "Supplements")
     try rosterStore.add(gym)
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)

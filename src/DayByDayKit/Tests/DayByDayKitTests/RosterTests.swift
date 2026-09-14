@@ -3144,9 +3144,12 @@ func aGroupMovedToTheEndIsPutAfterTheLastCommitmentUnderTheLastGroupOneTheRoster
     let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
 
     var roster = Roster()
-    _ = roster.add(creatine, under: "Supplements")
-    _ = roster.add(gym, under: "Sport")
-    _ = roster.add(journaling, under: "Sport")
+    _ = roster.add(creatine)
+    _ = roster.put(creatine, under: "Supplements")
+    _ = roster.add(gym)
+    _ = roster.put(gym, under: "Sport")
+    _ = roster.add(journaling)
+    _ = roster.put(journaling, under: "Sport")
     _ = roster.retire(journaling, keptUntil: stoppedOn)
 
     let moved = roster.move(group: "Supplements", toOffset: 2)
@@ -3169,9 +3172,12 @@ func anOffsetForAGroupCountsNoCategoryOnlyACommitmentTheRosterHasStoppedKeepingI
     let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
 
     var roster = Roster()
-    _ = roster.add(creatine, under: "Supplements")
-    _ = roster.add(gym, under: "Sport")
-    _ = roster.add(finances, under: "Money")
+    _ = roster.add(creatine)
+    _ = roster.put(creatine, under: "Supplements")
+    _ = roster.add(gym)
+    _ = roster.put(gym, under: "Sport")
+    _ = roster.add(finances)
+    _ = roster.put(finances, under: "Money")
     _ = roster.retire(gym, keptUntil: stoppedOn)
 
     let moved = roster.move(group: "Supplements", toOffset: 2)
