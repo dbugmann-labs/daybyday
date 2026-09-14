@@ -52,6 +52,9 @@ struct RosterDocument: Codable {
             guard let commitment = entry.commitment.commitment() else {
                 return nil
             }
+            guard !roster.entries.contains(where: { $0.commitment == commitment }) else {
+                return nil
+            }
             guard roster.add(commitment) else {
                 return nil
             }

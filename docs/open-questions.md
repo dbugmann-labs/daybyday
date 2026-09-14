@@ -539,6 +539,28 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
   Recorded 2026-09-14, from #223's grill and `design.md`.
 
+- **Four groups of `commitment` rules cannot be proven by a test, and stay in the spec anyway.**
+  `cover-commitment-rules` (#224) gave every other uncovered rule a scenario and left these four
+  groups alone, per ADR-1047 decision 7:
+  - no seam accepts them: the present moment, time zone, locale and clock in every requirement; a
+    category kept as a reference to a list; a roster store "SHALL NOT be what reaches" a record
+    place (*the record place SHALL be written before the roster place* is not here — *a change a
+    commitments screen could not carry over at the record place leaves the roster place as it was*
+    proves it instead);
+  - compiler-enforced: a commitment's four parts and nothing else, its kind fixed, no unit on a
+    target, both range ends required; a roster's lack of identifier, position and added day; a
+    move's two things, no third ask and no second way back; the screen's five fields, a change's
+    four and no kind; no interval start date; range and target text taken unjudged; no date to
+    pick; no words a person reads; take-up asking nothing;
+  - meaning or consumer: inclusive range ends; one refusal where a range is formed; delegation to
+    shapes added later; ticks and records standing, nothing carried by a roster; no link to a
+    replacement; nothing stored for a group; no second category collection; `schedule` and the
+    value rules unchanged; the seven refusals numbered nowhere else;
+  - only a UI test proves them: the change form's controls, a row saying only name and rhythm, and
+    the app calling `shown(asOf:)`.
+
+  Recorded 2026-09-14, at #224's design.
+
 ## Settled
 
 - 2026-09-11 — **specs and change folders are made concise through per-artifact and per-requirement

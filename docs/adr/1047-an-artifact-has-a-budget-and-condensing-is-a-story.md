@@ -3,6 +3,12 @@
 - Status: accepted
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-13 — decision 7 widened by points 7–10. A covering Story also strengthens in
+  place a shipped test that asserts less than its scenario, and proves a rewrite by mutation where
+  the test was shown to survive one. It may widen an internal member for tests where no test can
+  observe a rule from outside, and may correct a scenario title already recorded false, moving its
+  requirement by REMOVED plus ADDED. Decision 5's list reads one title rather than two. By
+  `cover-commitment-rules` (#224).
 - Amended: 2026-09-13 — decision 7 added: a rule that ships with no scenario is given exactly one,
   with the test named for it, by a **covering Story**, which accepts its tests green on arrival and
   fixes only what a red one shows. Decision 1's owed budget review stays with the first behaviour
@@ -148,12 +154,9 @@ found" sections, no red/green diaries, no re-issued seam. Leaving every still-tr
 it was, so a second G4 could be read as a diff, is what turned two reopenings into folders of 1,600
 and 2,000 lines; the G4 diff is the PR's diff, and the PR already has one.
 
-**5. Two scenario titles are false and are kept on purpose** — one in
-`openspec/specs/commitment/spec.md` and one in `openspec/specs/day-screen/spec.md`. The prose that
-says so today is rationale the condensing Story deletes, so the fact lives here:
+**5. One scenario title is false and is kept on purpose**, in `openspec/specs/day-screen/spec.md`.
+The prose that says so today is rationale the condensing Story deletes, so the fact lives here:
 
-- *a commitment stopped through a commitments screen is kept until the day the screen was handed* —
-  the test asserts the commitment is kept until **the day before** the one the screen was handed.
 - *a day screen returned to does not read its record again* — a screen that **is** keeping a record
   does read it again, which `add-commitment-editing` (#148) settled when a rename gave the record
   place a second writer. The test asserts the narrower thing that is still true: a screen that could
@@ -161,11 +164,14 @@ says so today is rationale the condensing Story deletes, so the fact lives here:
   `#expect(screen.recordState == .unreadable)` still holds, with its one row still drawn — a screen
   not keeping a record does not start keeping one by being returned to.
 
-Both are kept because an editorial Story drops no scenario: the archiver refuses a dropped scenario
+It is kept because an editorial Story drops no scenario: the archiver refuses a dropped scenario
 under a kept heading, and the only way to drop one is removing its requirement and adding it back
 under a new heading, which moves the whole block to the bottom of the spec at archive time. Dropping
 one is a pruning Story's, and only under decision 6's four conditions — which is how the title this
-list carried first left it, dropped by `drop-duplicate-commitment-scenarios` (#216).
+list carried first left it, dropped by `drop-duplicate-commitment-scenarios` (#216). Correcting one
+is a covering Story's, under decision 7's point 10. That is how the second title left the list:
+`cover-commitment-rules` (#224) corrected it to *a commitment stopped through a commitments screen is
+kept until the day before the one the screen was handed*.
 
 **6. A scenario another already asserts may be dropped, and the lane for that is a pruning Story.**
 A **pruning Story** runs the ordinary pipeline and its gates and changes no behaviour, as an
@@ -202,13 +208,13 @@ says no test changes. First applied by `drop-duplicate-schedule-scenarios` (#211
 **7. A rule that ships with no scenario is given one, and the lane for that is a covering Story.**
 Neither lane above fits: an editorial Story changes no test, and a pruning Story adds none. A
 **covering Story** runs the ordinary pipeline and its gates, carries every requirement it touches in
-full as `## MODIFIED Requirements` under its unchanged heading, and names the seam its new tests
-attach at. It holds to these:
+full as `## MODIFIED Requirements` under its unchanged heading save where point 10 moves one, and
+names the seam its new tests attach at. It holds to these:
 
 1. **Exactly one new scenario per uncovered rule**, never one shared by two, with the one test named
    for it.
 2. **A rule is covered when some scenario would fail were the rule broken.** A scenario that only
-   visits the case does not count. No mutation is required.
+   visits the case does not count. No mutation is required, save under point 8.
 3. **A sentence that only defers to another requirement is covered when its target is.** It gets no
    scenario, and `design.md` names each one skipped.
 4. **Its tests are accepted green on arrival.** A test red on arrival means the code breaks a rule
@@ -220,11 +226,26 @@ attach at. It holds to these:
 6. **A rule nothing can prove keeps its place in the spec** — one the compiler enforces, one that
    binds a meaning or a consumer, or one no seam accepts — and the Story records it in one bullet of
    its own under `docs/open-questions.md` § *Known gaps*.
+7. **A shipped test that asserts less than its scenario is strengthened in place**, under its
+   unchanged title, because a rule whose only test cannot fail is not covered. Its body is
+   rewritten. Its scenario's text changes only where it does not already name what would fail.
+8. **A test shown to survive a mutant is proven by that mutant.** Its rewrite must redden under the
+   mutation, run in a tree built from `git archive`. The diff and the red run go in the pull request,
+   and the reviewer re-runs the mutation at G7.
+9. **Where no test can observe a rule from outside, the Story may widen an internal member for
+   tests**, and only after a test-only observable has failed. It is reached through `@testable`, with
+   no public API and no behaviour change. `design.md` names each member, and G7 checks those members
+   and any red's fix are the only other `src/` changes.
+10. **A scenario title already recorded false may be corrected.** OpenSpec 1.10.0 refuses a scenario
+    rename inside MODIFIED, so the requirement holding it is REMOVED and ADDED under a heading
+    reworded as little as keeps it distinct. It carries its prose and every other scenario verbatim,
+    and decision 5's list follows.
 
 Point 4 was settled against stopping for a Story of its own, because the spec is what ships; a
 behaviour Story's label was refused for the fix, because it would pull decision 1's budget review
 into an incidental change. Point 5 was settled against byte-identical prose. First applied by
-`cover-schedule-rules` (#221).
+`cover-schedule-rules` (#221). Points 7–10 were added by `cover-commitment-rules` (#224). Point 9 was
+settled against allowing no seam at all, and point 10 against keeping a known-false title.
 
 ## Consequences
 

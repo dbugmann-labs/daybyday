@@ -11,7 +11,10 @@ public final class CommitmentsScreen {
     /// opening the real Application Support directory.
     public static var rosterPlace: URL { DayScreen.rosterPlace }
 
-    private let place: URL
+    /// Internal rather than `private`, so a test reaching through `@testable import` can confirm a
+    /// screen opened with no place given actually keeps this — the one it was handed, not merely
+    /// a second expression that is definitionally the same thing. `design.md` § *The seam*.
+    let place: URL
     private let recordPlace: URL
     private var rosterStore: RosterStore?
     private var recordStore: RecordStore?
@@ -437,6 +440,9 @@ public final class CommitmentsScreen {
             do {
                 _ = try rosterStore.change(commitment, to: changedCommitment, under: category)
             } catch {
+                if changedCommitment != commitment {
+                    _ = try? recordStore?.carryOver(changedCommitment, to: commitment)
+                }
                 refusedChange = .changing(commitment, .notKept)
                 return .notKept
             }
@@ -487,7 +493,12 @@ public final class CommitmentsScreen {
 
             do {
                 _ = try recordStore.carryOver(commitment, to: carryTarget)
+            } catch {
+                refusedChange = .changing(commitment, .notKept)
+                return .notKept
+            }
 
+            do {
                 // The rename and the supersession are one act on the roster, not two: both are
                 // applied to a single in-memory `Roster` value and kept in one write, so a place
                 // that goes unwritable partway through can never leave the rename kept and the
@@ -499,6 +510,7 @@ public final class CommitmentsScreen {
                     under: category)
                 _ = try rosterStore.replace(with: nextRoster)
             } catch {
+                _ = try? recordStore.carryOver(carryTarget, to: commitment)
                 refusedChange = .changing(commitment, .notKept)
                 return .notKept
             }
