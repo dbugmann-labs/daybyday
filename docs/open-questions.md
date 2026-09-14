@@ -15,6 +15,16 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   third vanish, or is it recorded as a miss? Nothing in the day-one list decides it and the
   answer changes what a week *is*. Forced by the first Story that renders a quota's state.
 
+- **What a total's day answers when its additions overflow to NaN.** Two additions of
+  `Decimal.greatestFiniteMagnitude`, each above zero and so each an addition, sum to NaN, and the
+  history answers that day not kept at the `record` seam — against `record`'s rule that a total is
+  kept exactly where its additions sum to its target or more. `day-screen` refuses an addition that
+  would take a day's sum past thirty-eight significant digits, so no entry made on a phone reaches
+  it; a store's file could still hold such a day, because each addition read back is re-formed on
+  its own. Whether that day is kept, not kept, or refused where it is read is undecided, and it is a
+  product decision rather than a least fix. Measured 2026-09-13 at the grill of
+  `cover-record-rules` (#222), which left it alone.
+
 ## Open technical decisions
 
 - **When an ADR number is claimed.** Today it is taken at Stage 4, when the file is written,
@@ -480,6 +490,25 @@ Things that are built, or deliberately not built, in a state someone will trip o
   - an interval at `Int.max` not lost to overflow: shown only at 4,000,000.
 
   Recorded 2026-09-13, at #221's grill.
+
+- **Five groups of `record` rules cannot be proven by a test, and stay in the spec anyway.**
+  `cover-record-rules` (#222) gave every other uncovered rule a scenario and left these alone, per
+  ADR-1047 decision 7.6:
+  - absences, the category `CONTEXT.md` § *Covering Story* names: a history giving out a day's sum
+    and never the additions themselves; no taking back an addition by its amount, and no clearing a
+    day's additions in one act;
+  - compiler-enforced: a tick, a number, a note and an addition each being its parts "and nothing
+    else" — no unit, time of day, time zone, note beside it, count, order or position;
+  - no seam accepts them: a tick "MUST NOT consult the present moment, the time zone or the
+    locale", a store "MUST NOT … pass a date through an instant, a time zone or a locale", and a
+    carry-over "SHALL judge no date except by asking the second commitment whether it is due";
+  - binds a consumer: "a screen withholding days not yet arrived SHALL do so itself", and what a
+    day's additions may sum to "SHALL be judged in the `day-screen` capability";
+  - the comparison "the sum against the target, in that order and never the target against the
+    sum": for any sum that is a number the two orders answer alike, and under NaN, the one case
+    where they could part, both answer not kept (the open product question above).
+
+  Recorded 2026-09-13, at #222's grill.
 
 ## Settled
 

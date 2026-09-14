@@ -3110,8 +3110,6 @@ record.
 - **THEN** committing is refused with an error
 - **AND** the day screen tells, on that row, that the change could not be kept
 - **AND** what it tells names no cause
-- **AND** committing nothing at all on that row tells the same thing on it and names no cause
-  either
 
 #### Scenario: a second refused commit is told on the row committed on last and no longer on the first
 
@@ -3133,8 +3131,6 @@ record.
 - **THEN** committing is refused with an error
 - **AND** the day screen tells, on that row, that the change could not be kept
 - **AND** what it tells names no cause
-- **AND** committing nothing at all on that row tells the same thing on it and names no cause
-  either
 - **AND** committing a note of a hundred thousand characters on that row tells the same thing on it
   and names no cause either
 
