@@ -31,11 +31,42 @@ public final class CommitmentsScreen {
         self.recordPlace = recordPlace
         self.dayToKeepFrom = today
 
+        let opened = Self.readPlaces(place: place, recordPlace: recordPlace)
+        self.rosterStore = opened.rosterStore
+        self.rosterState = opened.rosterState
+        self.recordStore = opened.recordStore
+        self.recordsBelongToNoCommitment = opened.recordsBelongToNoCommitment
+        refreshLists(from: opened.rosterStore)
+    }
+
+    /// What reading the places produces: a save in progress undone first — `openspec/specs
+    /// /commitment/spec.md` § *Reading the places undoes a torn save as it was* — then the roster
+    /// and the record opened, and any orphaned record carried back to its one possible source
+    /// before this screen says whether any remain. Shared by `init` and `shown(asOf:)`, the two
+    /// places this screen reads both of its places afresh. Where the save in progress cannot be
+    /// undone, this answers as a roster that cannot be read and a record that is not kept,
+    /// without opening either place for real — `design.md` § *A torn save that cannot be undone
+    /// reuses two existing states*.
+    private static func readPlaces(
+        place: URL, recordPlace: URL
+    ) -> (
+        rosterStore: RosterStore?, rosterState: RosterState, recordStore: RecordStore?,
+        recordsBelongToNoCommitment: Bool
+    ) {
+        guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place) else {
+            return (nil, .notKept, nil, false)
+        }
+
         let opened = Self.open(at: place)
-        self.rosterStore = opened.store
-        self.rosterState = opened.state
-        self.recordStore = Self.openRecord(at: recordPlace)
-        refreshLists(from: opened.store)
+        let recordStore = Self.openRecord(at: recordPlace)
+
+        guard let rosterStore = opened.store, let recordStore else {
+            return (opened.store, opened.state, recordStore, false)
+        }
+
+        let recordsBelongToNoCommitment = SaveInProgress.carryBackOrphanedRecords(
+            in: recordStore, against: rosterStore.roster)
+        return (rosterStore, opened.state, recordStore, recordsBelongToNoCommitment)
     }
 
     /// Opens the roster at `place`. A place written by a later version of DayByDay is told apart
@@ -101,6 +132,13 @@ public final class CommitmentsScreen {
 
     /// Anything but `.kept` means both lists are empty and nothing is taken on.
     public private(set) var rosterState: RosterState = .notKept
+
+    /// Whether the record place holds any record of a commitment the roster holds in no state,
+    /// once carrying it back to its one possible source is done —
+    /// `openspec/specs/commitment/spec.md` § *A commitments screen says whether any record
+    /// belongs to no commitment*. `false` where this screen cannot read either place, or holds a
+    /// torn save it cannot undo.
+    public private(set) var recordsBelongToNoCommitment: Bool = false
 
     /// The day to offer as the day a commitment is kept from: the day this screen was handed.
     public private(set) var dayToKeepFrom: CalendarDate
@@ -400,6 +438,29 @@ public final class CommitmentsScreen {
         return nil
     }
 
+    /// Keeps a save in progress beside `recordPlace`, naming `source`'s records as carried to
+    /// `carried`, where `hasRecords` says there is anything of `source` to carry — a change or
+    /// restart that carries none keeps none, `design.md` § *The save in progress lives beside
+    /// the record place, not at a place of its own*. `nil` on success, with or without one kept;
+    /// `.notKept` — a place that could not be written, writing nothing — otherwise. Takes
+    /// `hasRecords` already judged rather than a `History` to ask itself, because a restart's own
+    /// answer is dated — onOrAfter the day it restarts from — while a change's is not.
+    private static func keepSaveInProgressIfCarrying(
+        from source: Commitment, to carried: Commitment, whenAnyRecorded hasRecords: Bool,
+        at recordPlace: URL
+    ) -> Refusal? {
+        guard hasRecords else {
+            return nil
+        }
+        do {
+            try SaveInProgress(carriedFrom: source, to: carried).keep(
+                at: SaveInProgress.place(besideRecordAt: recordPlace))
+        } catch {
+            return .notKept
+        }
+        return nil
+    }
+
     /// Changes `commitment`, on either of this screen's lists, for the commitment `name`,
     /// `rhythm` and `keptFrom` name, under `category`. Works out from those which of two acts —
     /// carrying every record over to the changed commitment, or superseding — the change needs,
@@ -485,6 +546,14 @@ public final class CommitmentsScreen {
                     return refusal
                 }
 
+                if let refusal = Self.keepSaveInProgressIfCarrying(
+                    from: commitment, to: changedCommitment,
+                    whenAnyRecorded: recordStore.history.holdsRecords(of: commitment), at: recordPlace)
+                {
+                    refusedChange = .changing(commitment, refusal)
+                    return refusal
+                }
+
                 do {
                     // The two checks above already answer both causes `carryOver` itself
                     // refuses for; a `false` here means a record type has gained a formation
@@ -507,10 +576,18 @@ public final class CommitmentsScreen {
                 _ = try rosterStore.change(commitment, to: changedCommitment, under: category)
             } catch {
                 if changedCommitment != commitment {
-                    _ = try? recordStore?.carryOver(changedCommitment, to: commitment)
+                    _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
                 }
                 refusedChange = .changing(commitment, .notKept)
                 return .notKept
+            }
+
+            if changedCommitment != commitment {
+                // Told the save finished by the roster it just wrote, not by the file: this is
+                // the same call the next read of the places would make, run here so the file
+                // never outlives a save that landed. `design.md` § *A save finished is told by
+                // the roster, not by the file*.
+                _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
             }
 
             refusedChange = nil
@@ -563,6 +640,14 @@ public final class CommitmentsScreen {
                 return refusal
             }
 
+            if let refusal = Self.keepSaveInProgressIfCarrying(
+                from: commitment, to: carryTarget,
+                whenAnyRecorded: recordStore.history.holdsRecords(of: commitment), at: recordPlace)
+            {
+                refusedChange = .changing(commitment, refusal)
+                return refusal
+            }
+
             do {
                 // Same fallback as the same-rhythm path above: the two checks already answer
                 // both causes `carryOver` refuses for, so a `false` here can only be a formation
@@ -588,10 +673,16 @@ public final class CommitmentsScreen {
                     under: category)
                 _ = try rosterStore.replace(with: nextRoster)
             } catch {
-                _ = try? recordStore.carryOver(carryTarget, to: commitment)
+                _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
                 refusedChange = .changing(commitment, .notKept)
                 return .notKept
             }
+
+            // Told the save finished by the roster it just wrote, not by the file — the same
+            // call the next read of the places would make, run here so the file never outlives a
+            // save that landed. `design.md` § *A save finished is told by the roster, not by the
+            // file*.
+            _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
 
             refusedChange = nil
             refreshLists(from: rosterStore)
@@ -702,6 +793,16 @@ public final class CommitmentsScreen {
             return refusal
         }
 
+        let carriesRecords = recordStore.history.datesRecorded(for: commitment).contains {
+            day.days(until: $0) >= 0
+        }
+        if let refusal = Self.keepSaveInProgressIfCarrying(
+            from: commitment, to: restarted, whenAnyRecorded: carriesRecords, at: recordPlace)
+        {
+            refusedChange = .restarting(commitment, refusal)
+            return refusal
+        }
+
         do {
             guard try recordStore.carryOver(commitment, to: restarted, onOrAfter: day) else {
                 refusedChange = .restarting(commitment, .wouldLeaveARecordedDayNotDue)
@@ -717,10 +818,14 @@ public final class CommitmentsScreen {
             _ = try rosterStore.supersede(
                 commitment, with: restarted, keptUntil: supersedeKeptUntil, under: entry.category)
         } catch {
-            _ = try? recordStore.carryOver(restarted, to: commitment, onOrAfter: day)
+            _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
             refusedChange = .restarting(commitment, .notKept)
             return .notKept
         }
+
+        // Told the save finished by the roster it just wrote, not by the file — `design.md` §
+        // *A save finished is told by the roster, not by the file*.
+        _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
 
         refusedChange = nil
         refreshLists(from: rosterStore)
@@ -982,10 +1087,11 @@ public final class CommitmentsScreen {
         awaitingRemoval = nil
         nameTypedBack = ""
 
-        let opened = Self.open(at: place)
-        rosterStore = opened.store
-        rosterState = opened.state
-        recordStore = Self.openRecord(at: recordPlace)
-        refreshLists(from: opened.store)
+        let opened = Self.readPlaces(place: place, recordPlace: recordPlace)
+        rosterStore = opened.rosterStore
+        rosterState = opened.rosterState
+        recordStore = opened.recordStore
+        recordsBelongToNoCommitment = opened.recordsBelongToNoCommitment
+        refreshLists(from: opened.rosterStore)
     }
 }

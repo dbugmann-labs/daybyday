@@ -317,6 +317,13 @@ struct CommitmentsView: View {
             case .writtenByALaterVersion:
                 Text("The roster was written by a newer version of DayByDay and must not be deleted.")
             }
+
+            // Decides nothing — `screen.recordsBelongToNoCommitment` already carried back every
+            // record it could and is the one place this is judged, per ADR-1019. `design.md` §
+            // *The shell rides this Story*.
+            if screen.recordsBelongToNoCommitment {
+                Text("Some records belong to no commitment.")
+            }
         }
         // Apple documents `.default` and `.compact` but publishes no point value for either.
         // Measured directly on device (iPhone 17 simulator, iOS 26.5, this SDK): the platform

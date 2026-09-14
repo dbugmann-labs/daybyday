@@ -82,13 +82,12 @@ public final class DayScreen {
         self.rosterPlace = rosterPlace
         self.oneOffPlace = oneOffPlace
 
-        let opened = Self.open(at: recordPlace)
-        self.recordStore = opened.store
-        self.recordState = opened.state
-
-        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: dayOne)
-        self.rosterState = openedRoster.state
-        self.roster = openedRoster.roster
+        let read = Self.readRecordAndRoster(
+            recordAt: recordPlace, rosterAt: rosterPlace, takingOnIfEmpty: dayOne)
+        self.recordStore = read.recordStore
+        self.recordState = read.recordState
+        self.rosterState = read.rosterState
+        self.roster = read.roster
 
         let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
         self.oneOffStore = openedOneOffs.store
@@ -98,9 +97,37 @@ public final class DayScreen {
         // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
         // back. The parameter holds the same value `shownDay` was just set to, two lines up.
         self.dayView = DayView(
-            of: openedRoster.roster.groups(on: today),
+            of: read.roster.groups(on: today),
             oneOffs: openedOneOffs.store?.oneOffs ?? OneOffs(), asOf: today, on: today,
-            in: opened.store?.history ?? History())
+            in: read.recordStore?.history ?? History())
+    }
+
+    /// What reading the record and roster places produces: a save in progress undone first —
+    /// `openspec/specs/commitment/spec.md` § *Reading the places undoes a torn save as it was* —
+    /// then the roster opened, taking on `dayOne` where it holds nothing, the record opened, and
+    /// any orphaned record carried back to its one possible source. Shared by `init` and
+    /// `shown(asOf:)`, which always read both; `returnedTo()` reads its record place only where
+    /// it is already keeping one, so it calls `SaveInProgress` directly rather than through this.
+    /// Where the save in progress cannot be undone, the record answers as one that could not be
+    /// read without opening it for real — `design.md` § *A torn save that cannot be undone reuses
+    /// two existing states* — and the roster is read as usual.
+    private static func readRecordAndRoster(
+        recordAt recordPlace: URL, rosterAt rosterPlace: URL, takingOnIfEmpty dayOne: [Commitment]
+    ) -> (
+        recordStore: RecordStore?, recordState: RecordState, roster: Roster, rosterState: RosterState
+    ) {
+        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: dayOne)
+
+        guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) else {
+            return (nil, .unreadable, openedRoster.roster, openedRoster.state)
+        }
+
+        let opened = Self.open(at: recordPlace)
+        if let recordStore = opened.store, openedRoster.state == .kept {
+            SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
+        }
+
+        return (opened.store, opened.state, openedRoster.roster, openedRoster.state)
     }
 
     /// Opens the record at `place`, telling apart the one refusal a person can act on
@@ -552,22 +579,21 @@ public final class DayScreen {
         }
         self.today = today
 
-        let opened = Self.open(at: recordPlace)
-        self.recordStore = opened.store
-        self.recordState = opened.state
-
-        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
-        self.rosterState = openedRoster.state
-        self.roster = openedRoster.roster
+        let read = Self.readRecordAndRoster(
+            recordAt: recordPlace, rosterAt: rosterPlace, takingOnIfEmpty: commitments)
+        self.recordStore = read.recordStore
+        self.recordState = read.recordState
+        self.rosterState = read.rosterState
+        self.roster = read.roster
 
         let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
         self.oneOffStore = openedOneOffs.store
         self.oneOffState = openedOneOffs.state
 
         self.dayView = DayView(
-            of: openedRoster.roster.groups(on: shownDay),
+            of: read.roster.groups(on: shownDay),
             oneOffs: openedOneOffs.store?.oneOffs ?? OneOffs(), asOf: self.today, on: shownDay,
-            in: opened.store?.history ?? History())
+            in: read.recordStore?.history ?? History())
     }
 
     /// The person has come back to this screen from somewhere else in the app: the roster is read
@@ -585,9 +611,22 @@ public final class DayScreen {
         self.roster = openedRoster.roster
 
         if recordState == .kept {
-            let opened = Self.open(at: recordPlace)
-            self.recordStore = opened.store
-            self.recordState = opened.state
+            // The save in progress is read here, before the record itself — `design.md` §
+            // *Reading the places undoes a torn save as it was* — and only on this path: a
+            // screen not keeping a record does not start reading its places for one by being
+            // returned to, exactly as it does not start keeping one.
+            if SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) {
+                let opened = Self.open(at: recordPlace)
+                self.recordStore = opened.store
+                self.recordState = opened.state
+
+                if let recordStore = opened.store, openedRoster.state == .kept {
+                    SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
+                }
+            } else {
+                self.recordStore = nil
+                self.recordState = .unreadable
+            }
         }
 
         self.dayView = DayView(

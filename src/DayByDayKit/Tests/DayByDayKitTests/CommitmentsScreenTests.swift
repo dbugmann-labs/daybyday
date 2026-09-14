@@ -7322,9 +7322,15 @@ func renamingACommitmentWithNoRecordsOntoACommitmentWhoseRecordsAreAlreadyKeptIs
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    // A second possible source for the stray "Gym 🏋️" tick below, alike to it in every way but
+    // name — with only "Gym" as a candidate, reading the places would carry the tick back before
+    // the rename is ever asked for, and this scenario would no longer have anything to refuse.
+    // `tasks.md` § 4.1.
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(gym)
+    try rosterStore.add(run)
     let recordStore = try RecordStore(at: places.record)
     try recordStore.add(Tick(gymEmoji, on: august3rd)!)
     let rosterBytes = try Data(contentsOf: places.roster)
@@ -7339,7 +7345,7 @@ func renamingACommitmentWithNoRecordsOntoACommitmentWhoseRecordsAreAlreadyKeptIs
         ]), keptFrom: keptFrom, under: nil)
 
     #expect(refusal == .recordsAlreadyExist)
-    #expect(screen.kept.map(\.name) == ["Gym"])
+    #expect(screen.kept.map(\.name) == ["Gym", "Run"])
     #expect(try Data(contentsOf: places.roster) == rosterBytes)
     #expect(try Data(contentsOf: places.record) == recordBytes)
 }
@@ -7355,7 +7361,6 @@ func aNameAndARhythmChangedInOneSaveOntoACommitmentWhoseRecordsAreAlreadyKeptAre
     let originalSchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
-    let august5th = CalendarDate(year: 2026, month: 8, day: 5)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let gym = Commitment(name: "Gym", schedule: originalSchedule, keptFrom: keptFrom)!
     let gymEmoji = Commitment(name: "Gym 🏋️", schedule: originalSchedule, keptFrom: keptFrom)!
@@ -7364,7 +7369,10 @@ func aNameAndARhythmChangedInOneSaveOntoACommitmentWhoseRecordsAreAlreadyKeptAre
     try rosterStore.add(gym)
     let recordStore = try RecordStore(at: places.record)
     try recordStore.add(Tick(gym, on: august3rd)!)
-    try recordStore.add(Tick(gymEmoji, on: august5th)!)
+    // The stray "Gym 🏋️" tick shares "Gym"'s own day: with a day of its own, carrying it back to
+    // its one possible source ("Gym", same rhythm) would succeed when the places are read, and
+    // this scenario would no longer have records already kept to refuse against. `tasks.md` § 4.2.
+    try recordStore.add(Tick(gymEmoji, on: august3rd)!)
     let rosterBytes = try Data(contentsOf: places.roster)
     let recordBytes = try Data(contentsOf: places.record)
 
@@ -7405,6 +7413,11 @@ func aChangeThatWouldLeaveARecordedDayNotDueAndMeetsRecordsAlreadyKeptIsRefusedA
     try rosterStore.add(gym)
     let recordStore = try RecordStore(at: places.record)
     try recordStore.add(Tick(gym, on: august3rd)!)
+    // "Gym" also holds a tick on the stray tick's own day: with a day of its own, carrying the
+    // stray back to its one possible source ("Gym", kept-from aside) would succeed when the
+    // places are read, and this scenario would no longer have records already kept to meet.
+    // `tasks.md` § 4.3.
+    try recordStore.add(Tick(gym, on: august5th)!)
     try recordStore.add(Tick(gymKeptFromAugust4th, on: august5th)!)
     let rosterBytes = try Data(contentsOf: places.roster)
     let recordBytes = try Data(contentsOf: places.record)
@@ -7860,4 +7873,429 @@ func aRestartAskedOfACommitmentThatCannotBeRestartedDoesNothingAndSaysNothing() 
     #expect(screen.refusedChange == nil)
     #expect(try Data(contentsOf: places.roster) == rosterBytes)
     #expect(!FileManager.default.fileExists(atPath: places.record.path))
+}
+
+@MainActor
+@Test("a change that carries records leaves no save in progress once it is kept")
+func aChangeThatCarriesRecordsLeavesNoSaveInProgressOnceItIsKept() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        gym, toName: "Gym 🏋️", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == nil)
+    #expect(
+        !FileManager.default.fileExists(
+            atPath: SaveInProgress.place(besideRecordAt: places.record).path))
+}
+
+@MainActor
+@Test(
+    "a change that carries no record is kept where nothing beside the record place can be written"
+)
+func aChangeThatCarriesNoRecordIsKeptWhereNothingBesideTheRecordPlaceCanBeWritten() throws {
+    let rosterDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = rosterDirectory.appendingPathComponent("roster.json")
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(run)
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace)
+
+    try FileManager.default.removeItem(at: recordDirectory)
+    try Data().write(to: recordDirectory)
+
+    let gymRefusal = screen.change(
+        gym, toName: "Gym", on: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom, under: nil)
+    let runRefusal = screen.change(
+        run, toName: "Running", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, under: nil)
+
+    #expect(gymRefusal == nil)
+    #expect(runRefusal == nil)
+    #expect(screen.kept.map(\.name) == ["Gym", "Running"])
+    #expect(screen.kept.map(\.rhythmInWords) == ["Tue, Thu", "Every day"])
+}
+
+@MainActor
+@Test(
+    "a change refused at the roster place after carrying its records leaves no save in progress and a roster still kept"
+)
+func aChangeRefusedAtTheRosterPlaceAfterCarryingItsRecordsLeavesNoSaveInProgressAndARosterStillKept()
+    throws
+{
+    let rosterDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = rosterDirectory.appendingPathComponent("roster.json")
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace)
+
+    try FileManager.default.removeItem(at: rosterDirectory)
+    try Data().write(to: rosterDirectory)
+
+    let refusal = screen.change(
+        gym, toName: "Gym 🏋️", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == .notKept)
+    #expect(
+        !FileManager.default.fileExists(
+            atPath: SaveInProgress.place(besideRecordAt: recordPlace).path))
+    #expect(screen.rosterState == .kept)
+    #expect(screen.kept.map(\.name) == ["Gym"])
+}
+
+@MainActor
+@Test("a rename torn between its two places is undone when a commitments screen is opened")
+func aRenameTornBetweenItsTwoPlacesIsUndoneWhenACommitmentsScreenIsOpened() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gymEmoji, on: august3rd)!)
+    try SaveInProgress(carriedFrom: gym, to: gymEmoji).keep(
+        at: SaveInProgress.place(besideRecordAt: places.record))
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(screen.kept.map(\.name) == ["Gym"])
+
+    let laterRecordStore = try RecordStore(at: places.record)
+    #expect(laterRecordStore.history.isKept(gym, on: august3rd))
+    #expect(!laterRecordStore.history.isKept(gymEmoji, on: august3rd))
+    #expect(
+        !FileManager.default.fileExists(
+            atPath: SaveInProgress.place(besideRecordAt: places.record).path))
+    #expect(!screen.recordsBelongToNoCommitment)
+}
+
+@MainActor
+@Test("a save in progress for a save its roster took is taken away and nothing else is written")
+func aSaveInProgressForASaveItsRosterTookIsTakenAwayAndNothingElseIsWritten() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gymEmoji)
+    try rosterStore.remove(gymEmoji, keptUntil: august30th)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gymEmoji, on: august3rd)!)
+    try SaveInProgress(carriedFrom: gym, to: gymEmoji).keep(
+        at: SaveInProgress.place(besideRecordAt: places.record))
+
+    let rosterBytes = try Data(contentsOf: places.roster)
+    let recordBytes = try Data(contentsOf: places.record)
+
+    _ = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(
+        !FileManager.default.fileExists(
+            atPath: SaveInProgress.place(besideRecordAt: places.record).path))
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test("a commitments screen opened on a save in progress it cannot read lists nothing and defines nothing")
+func aCommitmentsScreenOpenedOnASaveInProgressItCannotReadListsNothingAndDefinesNothing() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    let saveInProgressPlace = SaveInProgress.place(besideRecordAt: places.record)
+    try FileManager.default.createDirectory(
+        at: saveInProgressPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a save in progress".utf8).write(to: saveInProgressPlace)
+
+    let rosterBytes = try Data(contentsOf: places.roster)
+    let saveInProgressBytes = try Data(contentsOf: saveInProgressPlace)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.define(
+        name: "Run", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == .notKept)
+    #expect(screen.rosterState == .notKept)
+    #expect(screen.kept.isEmpty)
+    #expect(screen.stopped.isEmpty)
+    #expect(!screen.recordsBelongToNoCommitment)
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+    #expect(try Data(contentsOf: saveInProgressPlace) == saveInProgressBytes)
+}
+
+@MainActor
+@Test("an orphaned record with one possible source is carried back to it when a commitments screen is opened")
+func anOrphanedRecordWithOnePossibleSourceIsCarriedBackToItWhenACommitmentsScreenIsOpened() throws {
+    let places = freshRosterAndRecordPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gymSchedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: gymSchedule, keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: gymSchedule, keptFrom: keptFrom)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    try rosterStore.add(run)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gymEmoji, on: august3rd)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let laterRecordStore = try RecordStore(at: places.record)
+    #expect(laterRecordStore.history.isKept(gym, on: august3rd))
+    #expect(!laterRecordStore.history.isKept(gymEmoji, on: august3rd))
+    #expect(!screen.recordsBelongToNoCommitment)
+}
+
+@MainActor
+@Test("an orphaned record with two possible sources stays where it is and is said")
+func anOrphanedRecordWithTwoPossibleSourcesStaysWhereItIsAndIsSaid() throws {
+    let places = freshRosterAndRecordPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: schedule, keptFrom: keptFrom)!
+    let creatin = Commitment(name: "Creatin", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(creatine)
+    try rosterStore.add(magnesium)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(creatin, on: august3rd)!)
+    let recordBytes = try Data(contentsOf: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(screen.recordsBelongToNoCommitment)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test("an orphaned record that would land on a day its source already holds moves none of its records")
+func anOrphanedRecordThatWouldLandOnADayItsSourceAlreadyHoldsMovesNoneOfItsRecords() throws {
+    let places = freshRosterAndRecordPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+    try recordStore.add(Tick(gymEmoji, on: august3rd)!)
+    try recordStore.add(Tick(gymEmoji, on: august4th)!)
+    let recordBytes = try Data(contentsOf: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(screen.recordsBelongToNoCommitment)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test("two orphaned commitments with the same one possible source both stay where they are")
+func twoOrphanedCommitmentsWithTheSameOnePossibleSourceBothStayWhereTheyAre() throws {
+    let places = freshRosterAndRecordPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let gym2 = Commitment(name: "Gym 2", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gymEmoji, on: august3rd)!)
+    try recordStore.add(Tick(gym2, on: august4th)!)
+    let recordBytes = try Data(contentsOf: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(screen.recordsBelongToNoCommitment)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test("a commitments screen stops saying records belong to no commitment once their commitment is taken on")
+func aCommitmentsScreenStopsSayingRecordsBelongToNoCommitmentOnceTheirCommitmentIsTakenOn() throws {
+    let places = freshRosterAndRecordPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let gymEmoji = Commitment(
+        name: "Gym 🏋️", schedule: .weekdays([.tuesday, .thursday]), keptFrom: august4th)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gymEmoji, on: august4th)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(screen.recordsBelongToNoCommitment)
+
+    let otherRosterStore = try RosterStore(at: places.roster)
+    try otherRosterStore.add(gymEmoji)
+
+    screen.shown(asOf: monday)
+
+    #expect(!screen.recordsBelongToNoCommitment)
+}
+
+@MainActor
+@Test("a commitments screen that cannot read its record does not say records belong to no commitment")
+func aCommitmentsScreenThatCannotReadItsRecordDoesNotSayRecordsBelongToNoCommitment() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    try FileManager.default.createDirectory(
+        at: places.record.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: places.record)
+    let recordBytes = try Data(contentsOf: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(!screen.recordsBelongToNoCommitment)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test("an orphaned record with no possible source stays where it is and is said")
+func anOrphanedRecordWithNoPossibleSourceStaysWhereItIsAndIsSaid() throws {
+    let places = freshRosterAndRecordPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let gymEmoji = Commitment(
+        name: "Gym 🏋️", schedule: .weekdays([.tuesday, .thursday]), keptFrom: august4th)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gymEmoji, on: august4th)!)
+    let recordBytes = try Data(contentsOf: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(screen.recordsBelongToNoCommitment)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
 }

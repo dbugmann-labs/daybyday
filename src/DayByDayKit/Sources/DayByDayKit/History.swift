@@ -160,29 +160,67 @@ public struct History: Hashable, Sendable {
 
     /// The act both `carryOver` overloads perform, differing only in which dated records
     /// `matches` lets through: every one, for the whole-history overload, or only those on or
-    /// after a day, for the restart's dated one.
+    /// after a day, for the restart's dated one. Refuses wherever `changed` holds any record at
+    /// all — the wider of the two refusals `move(_:to:matching:)` is shared behind, `design.md`
+    /// § *Carrying back refuses only on a shared day*.
     private mutating func carryOver(
         _ commitment: Commitment, to changed: Commitment, matching matches: (CalendarDate) -> Bool
     ) -> Bool {
         guard commitment != changed else {
             return true
         }
+        guard hasRecords(of: commitment, matching: matches) else {
+            return true
+        }
+        guard !holdsRecords(of: changed) else {
+            return false
+        }
+        return move(commitment, to: changed, matching: matches)
+    }
 
+    /// Carries every record held of `orphan` back to `source`, on the same date each was made
+    /// for. Refuses only where a record would not form under `source` or would land on a day
+    /// `source` already holds a record on — narrower than `carryOver`, which refuses wherever
+    /// `source` holds any record at all, `design.md` § *Carrying back refuses only on a shared
+    /// day*. Package-internal: `SaveInProgress` is the only caller, to undo a torn save and to
+    /// carry an orphaned record back to its one possible source.
+    mutating func carryBack(_ orphan: Commitment, to source: Commitment) -> Bool {
+        guard orphan != source else {
+            return true
+        }
+        guard hasRecords(of: orphan, matching: { _ in true }) else {
+            return true
+        }
+        guard datesRecorded(for: source).isDisjoint(with: datesRecorded(for: orphan)) else {
+            return false
+        }
+        return move(orphan, to: source, matching: { _ in true })
+    }
+
+    /// Whether this history holds any record of `commitment` on a date `matches` lets through —
+    /// the emptiness check `carryOver` and `carryBack` both start from, before either asks what
+    /// its own refusal is.
+    private func hasRecords(of commitment: Commitment, matching matches: (CalendarDate) -> Bool)
+        -> Bool
+    {
+        ticks.contains { $0.commitment == commitment && matches($0.date) }
+            || numbers.keys.contains { $0.commitment == commitment && matches($0.date) }
+            || notes.keys.contains { $0.commitment == commitment && matches($0.date) }
+            || additions.keys.contains { $0.commitment == commitment && matches($0.date) }
+    }
+
+    /// Moves every record held of `commitment` matching `matches` over to `changed`, on the same
+    /// date each was made for. The caller must already have confirmed the move is allowed —
+    /// `hasRecords(of:matching:)` found something to move and whichever refusal applies did not
+    /// fire — so this only performs it, answering `false` without moving anything where a record
+    /// cannot re-form under `changed`.
+    private mutating func move(
+        _ commitment: Commitment, to changed: Commitment, matching matches: (CalendarDate) -> Bool
+    ) -> Bool {
         let matchingTicks = ticks.filter { $0.commitment == commitment && matches($0.date) }
         let matchingNumbers = numbers.filter { $0.key.commitment == commitment && matches($0.key.date) }
         let matchingNotes = notes.filter { $0.key.commitment == commitment && matches($0.key.date) }
         let matchingAdditions = additions.filter { $0.key.commitment == commitment && matches($0.key.date) }
-
-        guard
-            !(matchingTicks.isEmpty && matchingNumbers.isEmpty && matchingNotes.isEmpty
-                && matchingAdditions.isEmpty)
-        else {
-            return true
-        }
-
-        guard !holdsRecords(of: changed) else {
-            return false
-        }
 
         var newTicks: Set<Tick> = []
         for tick in matchingTicks {
@@ -247,5 +285,18 @@ public struct History: Hashable, Sendable {
         }
 
         return true
+    }
+
+    /// Every commitment this history holds any record of — a tick, a number, a note or an
+    /// addition — each once. Package-internal: `SaveInProgress.carryBackOrphanedRecords(in:
+    /// against:)` needs this to find which commitments a roster no longer holds in any state
+    /// still have records at the record place.
+    func commitmentsWithRecords() -> Set<Commitment> {
+        var commitments: Set<Commitment> = []
+        commitments.formUnion(ticks.map(\.commitment))
+        commitments.formUnion(numbers.keys.map(\.commitment))
+        commitments.formUnion(notes.keys.map(\.commitment))
+        commitments.formUnion(additions.keys.map(\.commitment))
+        return commitments
     }
 }
