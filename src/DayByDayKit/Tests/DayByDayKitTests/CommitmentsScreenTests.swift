@@ -6297,20 +6297,44 @@ func aNameAnEarlierDayKeptFromAndARhythmChangedInOneSavePutTheCorrectedDayOnTheS
 @MainActor
 @Test("a change that carries nothing over writes nothing at the record place")
 func aChangeThatCarriesNothingOverWritesNothingAtTheRecordPlace() throws {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // record place is seeded with the current form, laid out with different key order and
+    // spacing than a store's own encoding ever produces — so a spurious carry-over that wrote
+    // this same tick back, even byte-identical, would still change the place's bytes.
     let places = freshRosterAndRecordPlaces()
     let daily: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
-    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(creatine)
 
-    let recordStore = try RecordStore(at: places.record)
-    try recordStore.add(Tick(creatine, on: august3rd)!)
+    try FileManager.default.createDirectory(
+        at: places.record.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let recordBytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Creatine",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": {
+                  "weekdays": [
+                    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+                  ]
+                }
+              },
+              "date": { "year": 2026, "month": 8, "day": 3 }
+            }
+          ]
+        }
+        """.utf8)
+    try recordBytes.write(to: places.record)
 
     let screen = CommitmentsScreen(
         asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
