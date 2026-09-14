@@ -370,6 +370,28 @@ day and recorded first in `docs/open-questions.md` § Known gaps, which moved he
   refused is a product question for the grill, and it is not settled by fixing the words.
 - **Open** — even the correct refusal never says which recorded day blocks the move. That is
   B-050's, not this entry's.
+- **What the owner was actually trying to do** — *folded in 2026-09-14, at the eighth pass's
+  grill, by the owner's decision to fold it here rather than capture it separately:*
+
+  > "The reason for the attempted change was on a every-n-days commitment, and it was set to be
+  > done every 3 days. Now, I missed it on day 3, and all I wanted was to basically extend the rhytm
+  > so that it has a 4 day gap for this one time. After that, it should have the 3 day gap again.
+  > This happens to me sometimes, and I would like to keep it as the same commitment, with just
+  > sometimes not fully keeping the rhytm it should. […] Changing the "kept-from" date was just me
+  > trying to achieve what I just described"
+
+  So moving the kept-from day was a workaround, and the want underneath it is to **keep an
+  every-N-days commitment late, with the rhythm running on from the day it was actually kept**.
+  That runs into a decision the owner made on 2026-08-31, in `add-every-n-days-schedule`'s
+  `design.md`: an interval counts from a fixed start date and not from the last tick, because
+  due-ness must stay a function of the date, and a past day's answer must not change after the
+  fact.
+- **Found at the same grill** — the records under a kept-from day the roster does not hold can be
+  made by a **torn save**: `CommitmentsScreen` writes `record.json` (`:433`) and then the roster
+  (`:441`), and a process killed between the two leaves the ticks under a value no roster entry
+  holds. Reproduced at the seam in a scratch copy. Settled: that is a Story on #26. The
+  refusal gets a cause of its own, and the owner's phone file is repaired once, by hand, rather
+  than by the app.
 
 
 ## Decided
