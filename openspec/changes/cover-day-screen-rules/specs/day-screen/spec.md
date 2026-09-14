@@ -274,12 +274,14 @@ one.
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a run of bytes
   that is not what a record is written as, of a commitment named "Gym" on a schedule listing Monday,
-  Wednesday and Saturday, kept from 1 January 2026; its one row is ticked; what is at that place is
-  then removed, so that nothing has been kept there; and the app is shown again as of Monday
-  31 August 2026
+  Wednesday and Saturday and one named "Run" on a schedule listing all seven days, in that order,
+  both kept from 1 January 2026; the row for "Gym" is ticked; what is at that place is then removed,
+  so that nothing has been kept there; the app is shown again as of Monday 31 August 2026; and the
+  row for "Run" is then ticked
 - **THEN** it says it is keeping a record
-- **AND** its day view says the commitment is not kept on that date
-- **AND** a day screen opened afterwards at that place as of that same day says the same
+- **AND** its day view says "Gym" is not kept on that date and "Run" is kept on that date
+- **AND** a day screen of those two commitments opened afterwards at that place as of that same day
+  says the same
 
 #### Scenario: a day screen whose record place cannot be opened for another reason answers as one that cannot read its record
 

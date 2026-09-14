@@ -54,7 +54,7 @@ move the same lines.
 | a move forms from the record with every change kept since (208–210) | a move, return or pick formed from the record as first read |
 | going back to today reads neither store again and leaves what it says of either alone (291–293); the record half is covered at 333 and 4109 | a return to today that reads the roster again, or resets what it says of a roster it is not keeping |
 | today's view is formed on the roster's answer for that today (290–291, 547–548) | a return formed on the answer for the day left |
-| a refused tick is not held to be kept later (474) | a tick queued and written once the record reads |
+| a refused tick is not held to be kept later (474) | a tick queued and written once the record reads, or with the next change that is kept |
 | every refusal to open is answered one way (476) | a file-system read error answered other than as unreadable |
 | a removed commitment is drawn as a stopped one, group included (551–552) | a removed commitment lifted out of its category |
 | no later version is named for another refusal (763–765) | a roster read error named a later version |
