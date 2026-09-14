@@ -737,8 +737,9 @@ capability has given a day view to decide. It is also an **answer, not a window*
 history as that history stood when the view was made, so a tick made afterwards is seen by the next
 day view rather than by this one. A commitment on a **weekly quota** is due every day (ADR-1015), so
 it has a row every day of its week, unticked on the days it was not done; whether the week's quota
-has been met is not something a day view can see, and hiding a met one is a later Story's. Settled
-2026-09-02 at the grill of `add-day-view` (#70).
+has been met is not something a day view works out for itself — its row asks the history for the
+commitment's **standing** and says it — and a met one is never hidden (agreed 2026-09-14, at the
+eighth grooming pass). Settled 2026-09-02 at the grill of `add-day-view` (#70).
 
 It **is what it holds** — the rows and the date, and nothing of what it was handed: two day views a
 reader could not tell apart are the same day view, even where one was offered a commitment that was
@@ -1338,8 +1339,27 @@ record of a commitment, so a week holds at most seven, and a quota of seven mean
 day — which a weekday set of all seven and an interval of one day also mean, and three rules having
 the same effect is not a contradiction. Whether a week's quota has been met is not something the
 schedule knows, because it is a fact about ticks rather than about a date; a quota of seven and a
-quota of one are the same answer to `isDue(on:)`. Where a week begins is deliberately still
-undecided: no rule shape consults it yet, so nothing in the engine can settle it.
+quota of one are the same answer to `isDue(on:)`. Where a week begins is Monday, for everyone —
+decided 2026-09-14 at the eighth grooming pass, for **standing**; no rule shape consults it, and the
+**history** is what does.
+
+**Week** — the seven days from a Monday through the following Sunday, the same on every phone
+whatever its calendar setting, so a restored history reads the same wherever it lands. It is the
+span a **weekly quota** is counted over, and nothing else consults it. Nothing happens when a week
+turns: an unmet quota leaves no record behind and is carried into nothing, the next week starts at
+zero, and the week that turned stays readable by looking back at its days. Agreed 2026-09-14 at the
+eighth grooming pass, for B-025.
+
+**Standing** — how many days of its **week** a commitment on a weekly quota has been kept, counted
+through a date: "1/3x a week" is a standing of one against a quota of three. It is a fact about
+kept days, answered by the **history** and never by the schedule, and it is asked *of a date*:
+Wednesday's standing counts the week's days through Wednesday, whenever their records were entered,
+and does not move when Thursday is ticked. It is the count and never a cap: a fourth kept day
+against a quota of three is a standing of four. A **row** on a weekly quota says its standing inside
+its **rhythm in words**, on the day screen only — the commitments screen goes on saying "3x a week" —
+and a met quota's row stays, says so, and still offers a tick. Agreed 2026-09-14 at the eighth
+grooming pass, for B-025: the owner chose the kept count over what the week still asks, told which
+side of *nothing congratulates you* it sits on.
 
 **Rhythm** — a person's word for the schedule a commitment runs on, and the shape a **commitments
 screen** offers them to build one from: one of the four schedule shapes carrying nothing the
@@ -1372,7 +1392,9 @@ preview of the **rhythm** being built, which says what the schedule would say an
 for a number the calendar will not take. "Every day" is what all seven weekdays and an interval of
 one both say, because they are the same rhythm; a quota of seven is still "7x a week", because a
 quota is any days; and a weekday set with no days says "No day", because it is a legal schedule a
-roster can hold. Agreed 2026-09-06 at the grill of `add-rhythm-in-words` (#144).
+roster can hold. On a day-screen **row**, and there alone, a weekly quota's words carry the
+commitment's **standing** — "1/3x a week" — since 2026-09-14. Agreed 2026-09-06 at the grill of
+`add-rhythm-in-words` (#144).
 
 **Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
 storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by
