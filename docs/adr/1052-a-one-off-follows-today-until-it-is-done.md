@@ -5,6 +5,12 @@
   and approved at its G4
 - Date: 2026-09-14
 - Deciders: Diego Bugmann
+- Amended: 2026-09-14 — `draw-one-offs-on-day-screen` (#243): a one-off's row does not say its date.
+  It says how late it is, in days — "3 days late" — and only while the one-off is undone, which puts
+  the count on the today alone; a one-off ticked late says nothing there on the day it was ticked.
+  The owner chose the count against a recommended "Owed Fri 25 Sep". The second bullet of
+  § *Consequences* is changed in place to say so. The decision stands: nothing about which day a
+  one-off stands on moves.
 
 ## Context
 
@@ -46,8 +52,9 @@ day that has gone, is invisible the moment the day turns, and it still has to be
   shows the one-offs ticked there and no others. The row a person sees on that date after ticking it
   is the record of having done it.
 - **A one-off's tick records the day it was done, not the day it was owed.** The date is still what
-  it was owed on, which is why a row says its date where that is not the day being shown — a fact
-  rather than a reproach (`CONTEXT.md` § *One-off*).
+  it was owed on, which is why an undone row on the today says how many days late it is — a count
+  of a debt still open that vanishes the moment it is paid, and a fact rather than a reproach
+  (`CONTEXT.md` § *One-off*).
 - **A one-off is never made done on a day before its date**, however it is made done: a record of
   having done a thing before it was owed cannot be true, and it would put the day it stands on
   before its own date. This corollary was taken by `add-one-off` at Stage 4 rather than at the
