@@ -3429,7 +3429,8 @@ nothing.
   rhythm of Tuesday and Thursday, under no category
 - **THEN** nothing is refused
 - **AND** a roster store opened afterwards at that place answers about Sunday 30 August 2026 with
-  "Gym 🏋️" on Monday, Wednesday and Saturday, kept from 1 January 2026
+  "Gym 🏋️" on Tuesday and Thursday, kept from 31 August 2026, and then "Gym 🏋️" on Monday,
+  Wednesday and Saturday, kept from 1 January 2026
 - **AND** what the screen keeps is one entry, named "Gym 🏋️", saying "Tue, Thu"
 - **AND** a store opened afterwards at that record place answers that "Gym 🏋️" on Monday, Wednesday
   and Saturday was kept on Monday 3 August 2026

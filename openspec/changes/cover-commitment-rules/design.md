@@ -2,7 +2,7 @@
 
 `proposal.md` § *Why* says what this is for; `grill.md`'s settled answers are the brief.
 `openspec/specs/commitment/spec.md` holds 42 requirements and 398 scenarios. The delta carries 31
-of them whole — 30 MODIFIED, one REMOVED and ADDED — with 96 new scenarios and eight reworded ones.
+of them whole — 30 MODIFIED, one REMOVED and ADDED — with 96 new scenarios and nine reworded ones.
 
 Five facts in source decide the approach. `RosterStore.write` is byte-stable, so rewriting an
 unchanged roster is byte-identical and no byte check sees it. `RosterDocument.formRoster` replays
@@ -93,7 +93,7 @@ that carries nothing over writes nothing at the record place*.
   handed" → "kept until the day before the one the screen was handed". The body was already true.
 - Scenario text, grill answer 3: the no-op change gains a record place; six THENs gain one AND (the
   stopped rename, the rhythm change, the empty screen, the store stop on the last date, the pair); the
-  take-up-again test's fixture order is swapped.
+  one-save change's Sunday answer is given whole; the take-up-again fixture order is swapped.
 
 Twenty-four carried requirements are pre-budget prose over 150 words, kept whole under ADR-1047
 decision 2; the three reworded here were already over and grow by eight words at most.
