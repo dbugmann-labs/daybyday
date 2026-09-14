@@ -76,53 +76,53 @@ that test green, named in the PR body. A byte check in a store-refusal or record
 
 `CommitmentsScreenTests.swift`:
 
-- [ ] 3.50 a target typed on the tick or the note kind is ignored rather than refused — catches a target read for a kind with no room
-- [ ] 3.51 a range whose two ends each hold a zero-width space alone is refused as not a number rather than taken as blank — catches blank decided by a trim that drops it
-- [ ] 3.52 a range end holding no digit is refused as not a number — catches no digits read as zero
-- [ ] 3.53 a range end holding more than one separator is refused as not a number — catches a second separator ignored
-- [ ] 3.54 a commitment defined again after being stopped takes the category the form carried — catches the old category kept
-- [ ] 3.55 a commitments screen refuses a commitment whose name is empty — catches only blank space refused
-- [ ] 3.56 a commitments screen accepts a name of ten thousand characters — catches a length cap at the screen
-- [ ] 3.57 a stop confirmed with nothing awaiting confirmation changes nothing — catches a write with nothing awaiting
-- [ ] 3.58 moving a commitment leaves a removal awaiting confirmation and what has been typed back exactly as they were — catches a move clearing the removal slot
-- [ ] 3.59 a commitments screen shown again lists what has been stopped at its place since it was opened — catches only the kept list re-read
-- [ ] 3.60 a commitments screen that cannot read its roster does nothing when it is asked to take a commitment up again — catches a take-up refused or written there
-- [ ] 3.61 a commitments screen whose roster holds what could not be a roster says it is not keeping one — catches a second read failure told differently
-- [ ] 3.62 what a commitments screen holds about a refused change ends when a change of rhythm is kept — catches the supersede branch not clearing
-- [ ] 3.63 what a commitments screen holds about a refused change ends when a name and a rhythm changed in one save are kept — catches the one-save branch not clearing
-- [ ] 3.64 what a commitments screen holds about a refused change ends when a change kept at both places is kept — catches a two-place change not clearing
-- [ ] 3.65 a commitments screen opened has nothing awaiting removal and nothing typed back — catches a slot seeded at opening
-- [ ] 3.66 a commitments screen says what a commitment it has stopped is made of — catches the four things read from kept commitments only
-- [ ] 3.67 a commitment defined under a category differing only in case from one in use is a group of its own — catches case matched on define
-- [ ] 3.68 a commitments screen does not drop a commitment into a group whose category differs only in case — catches case matched on a drop
-- [ ] 3.69 a commitment of the total kind whose rhythm is changed through a commitments screen keeps its kind and its target — catches a supersession forming the plain kind
-- [ ] 3.70 the day a commitment is kept from moved earlier through a commitments screen carries every record over, each day still due — catches a widening refused or records left behind
-- [ ] 3.71 a stopped commitment put under a category through a commitments screen's change stays stopped under it — catches the category ignored on a stopped commitment
-- [ ] 3.72 a name, an earlier day kept from and a rhythm changed in one save put the corrected day on the superseded commitment — catches the old day kept on the superseded one
-- [ ] 3.73 a change that carries nothing over writes nothing at the record place — catches a carry-over run for a category-only change
-- [ ] 3.74 a change of rhythm through a commitments screen puts the new commitment under the category it was given — catches the old category carried
-- [ ] 3.75 a name and a rhythm changed in one save through a commitments screen put the new commitment under the category given — catches the old category carried
-- [ ] 3.76 a change a commitments screen could not carry over at the record place is refused as a place that could not be written — catches that failure told apart
-- [ ] 3.77 a change a commitments screen could not carry over at the record place leaves the roster place as it was — catches the roster place written first
-- [ ] 3.78 a change refused at the roster place after its records were carried over leaves the record place as it was — red on arrival: records stay moved
-- [ ] 3.79 a name and a rhythm changed in one save and refused at the roster place leave the record place as it was — red on arrival: records stay moved
-- [ ] 3.80 a change of rhythm whose result the roster already holds is refused as a commitment already kept — catches the supersede branch's duplicate check
-- [ ] 3.81 a name and a rhythm changed in one save whose result the roster already holds are refused as a commitment already kept — catches the one-save branch's duplicate check
-- [ ] 3.82 a name, a later day kept from and a rhythm changed in one save past a day recorded on is refused — catches a one-save carry-over not simulated
-- [ ] 3.83 a change of rhythm a commitments screen could not keep leaves both its lists as they were — catches lists refreshed on the supersede failure
-- [ ] 3.84 a take-up-again a commitments screen could not keep leaves both its lists as they were — catches lists refreshed on failure
-- [ ] 3.85 what a commitments screen holds about a refused change stands when a stop is asked about a commitment it does not keep — catches that call clearing it
-- [ ] 3.86 what a commitments screen holds about a refused change stands when a removal is asked about a commitment on neither of its lists — catches that call clearing it
-- [ ] 3.87 what a commitments screen holds about a refused change stands when a removal is confirmed with nothing awaiting removal — catches that call clearing it
-- [ ] 3.88 what a commitments screen holds about a refused change stands when a move is asked about a commitment it does not keep — catches that call clearing it
-- [ ] 3.89 what a commitments screen holds about a refused change stands when a commitment is dropped in a group it draws none of — catches that call clearing it
-- [ ] 3.90 what a commitments screen holds about a refused change stands when a commitment is dropped at an offset its group does not have — catches that call clearing it
-- [ ] 3.91 what a commitments screen holds about a refused change stands when a group it draws none of is moved — catches that call clearing it
-- [ ] 3.92 what a commitments screen holds about a refused change stands when a group is moved to an offset its groups do not have — catches that call clearing it
-- [ ] 3.93 what a commitments screen holds about a refused change stands when a change is asked about a commitment on neither of its lists — catches that call clearing it
-- [ ] 3.94 a group whose first commitment is moved into another group is drawn where its next commitment sits — catches a heading kept at the old place
-- [ ] 3.95 a commitments screen does not list a commitment its roster has stopped keeping as of a day after the one the screen was handed — catches the list read on the screen's day
-- [ ] 3.96 a move a commitments screen could not keep leaves the commitment under the category it was already under — catches the category applied before the write
+- [x] 3.50 a target typed on the tick or the note kind is ignored rather than refused — catches a target read for a kind with no room
+- [x] 3.51 a range whose two ends each hold a zero-width space alone is refused as not a number rather than taken as blank — catches blank decided by a trim that drops it
+- [x] 3.52 a range end holding no digit is refused as not a number — catches no digits read as zero
+- [x] 3.53 a range end holding more than one separator is refused as not a number — catches a second separator ignored
+- [x] 3.54 a commitment defined again after being stopped takes the category the form carried — catches the old category kept
+- [x] 3.55 a commitments screen refuses a commitment whose name is empty — catches only blank space refused
+- [x] 3.56 a commitments screen accepts a name of ten thousand characters — catches a length cap at the screen
+- [x] 3.57 a stop confirmed with nothing awaiting confirmation changes nothing — catches a write with nothing awaiting
+- [x] 3.58 moving a commitment leaves a removal awaiting confirmation and what has been typed back exactly as they were — catches a move clearing the removal slot
+- [x] 3.59 a commitments screen shown again lists what has been stopped at its place since it was opened — catches only the kept list re-read
+- [x] 3.60 a commitments screen that cannot read its roster does nothing when it is asked to take a commitment up again — catches a take-up refused or written there
+- [x] 3.61 a commitments screen whose roster holds what could not be a roster says it is not keeping one — catches a second read failure told differently
+- [x] 3.62 what a commitments screen holds about a refused change ends when a change of rhythm is kept — catches the supersede branch not clearing
+- [x] 3.63 what a commitments screen holds about a refused change ends when a name and a rhythm changed in one save are kept — catches the one-save branch not clearing
+- [x] 3.64 what a commitments screen holds about a refused change ends when a change kept at both places is kept — catches a two-place change not clearing
+- [x] 3.65 a commitments screen opened has nothing awaiting removal and nothing typed back — catches a slot seeded at opening
+- [x] 3.66 a commitments screen says what a commitment it has stopped is made of — catches the four things read from kept commitments only
+- [x] 3.67 a commitment defined under a category differing only in case from one in use is a group of its own — catches case matched on define
+- [x] 3.68 a commitments screen does not drop a commitment into a group whose category differs only in case — catches case matched on a drop
+- [x] 3.69 a commitment of the total kind whose rhythm is changed through a commitments screen keeps its kind and its target — catches a supersession forming the plain kind
+- [x] 3.70 the day a commitment is kept from moved earlier through a commitments screen carries every record over, each day still due — catches a widening refused or records left behind
+- [x] 3.71 a stopped commitment put under a category through a commitments screen's change stays stopped under it — catches the category ignored on a stopped commitment
+- [x] 3.72 a name, an earlier day kept from and a rhythm changed in one save put the corrected day on the superseded commitment — catches the old day kept on the superseded one
+- [x] 3.73 a change that carries nothing over writes nothing at the record place — catches a carry-over run for a category-only change
+- [x] 3.74 a change of rhythm through a commitments screen puts the new commitment under the category it was given — catches the old category carried
+- [x] 3.75 a name and a rhythm changed in one save through a commitments screen put the new commitment under the category given — catches the old category carried
+- [x] 3.76 a change a commitments screen could not carry over at the record place is refused as a place that could not be written — catches that failure told apart
+- [x] 3.77 a change a commitments screen could not carry over at the record place leaves the roster place as it was — catches the roster place written first
+- [x] 3.78 a change refused at the roster place after its records were carried over leaves the record place as it was — red on arrival: records stay moved
+- [x] 3.79 a name and a rhythm changed in one save and refused at the roster place leave the record place as it was — red on arrival: records stay moved
+- [x] 3.80 a change of rhythm whose result the roster already holds is refused as a commitment already kept — catches the supersede branch's duplicate check
+- [x] 3.81 a name and a rhythm changed in one save whose result the roster already holds are refused as a commitment already kept — catches the one-save branch's duplicate check
+- [x] 3.82 a name, a later day kept from and a rhythm changed in one save past a day recorded on is refused — catches a one-save carry-over not simulated
+- [x] 3.83 a change of rhythm a commitments screen could not keep leaves both its lists as they were — catches lists refreshed on the supersede failure
+- [x] 3.84 a take-up-again a commitments screen could not keep leaves both its lists as they were — catches lists refreshed on failure
+- [x] 3.85 what a commitments screen holds about a refused change stands when a stop is asked about a commitment it does not keep — catches that call clearing it
+- [x] 3.86 what a commitments screen holds about a refused change stands when a removal is asked about a commitment on neither of its lists — catches that call clearing it
+- [x] 3.87 what a commitments screen holds about a refused change stands when a removal is confirmed with nothing awaiting removal — catches that call clearing it
+- [x] 3.88 what a commitments screen holds about a refused change stands when a move is asked about a commitment it does not keep — catches that call clearing it
+- [x] 3.89 what a commitments screen holds about a refused change stands when a commitment is dropped in a group it draws none of — catches that call clearing it
+- [x] 3.90 what a commitments screen holds about a refused change stands when a commitment is dropped at an offset its group does not have — catches that call clearing it
+- [x] 3.91 what a commitments screen holds about a refused change stands when a group it draws none of is moved — catches that call clearing it
+- [x] 3.92 what a commitments screen holds about a refused change stands when a group is moved to an offset its groups do not have — catches that call clearing it
+- [x] 3.93 what a commitments screen holds about a refused change stands when a change is asked about a commitment on neither of its lists — catches that call clearing it
+- [x] 3.94 a group whose first commitment is moved into another group is drawn where its next commitment sits — catches a heading kept at the old place
+- [x] 3.95 a commitments screen does not list a commitment its roster has stopped keeping as of a day after the one the screen was handed — catches the list read on the screen's day
+- [x] 3.96 a move a commitments screen could not keep leaves the commitment under the category it was already under — catches the category applied before the write
 
 ## 4. Strengthened in place, no mutation
 

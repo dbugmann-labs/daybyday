@@ -437,6 +437,9 @@ public final class CommitmentsScreen {
             do {
                 _ = try rosterStore.change(commitment, to: changedCommitment, under: category)
             } catch {
+                if changedCommitment != commitment {
+                    _ = try? recordStore?.carryOver(changedCommitment, to: commitment)
+                }
                 refusedChange = .changing(commitment, .notKept)
                 return .notKept
             }
@@ -487,7 +490,12 @@ public final class CommitmentsScreen {
 
             do {
                 _ = try recordStore.carryOver(commitment, to: carryTarget)
+            } catch {
+                refusedChange = .changing(commitment, .notKept)
+                return .notKept
+            }
 
+            do {
                 // The rename and the supersession are one act on the roster, not two: both are
                 // applied to a single in-memory `Roster` value and kept in one write, so a place
                 // that goes unwritable partway through can never leave the rename kept and the
@@ -499,6 +507,7 @@ public final class CommitmentsScreen {
                     under: category)
                 _ = try rosterStore.replace(with: nextRoster)
             } catch {
+                _ = try? recordStore.carryOver(carryTarget, to: commitment)
                 refusedChange = .changing(commitment, .notKept)
                 return .notKept
             }
