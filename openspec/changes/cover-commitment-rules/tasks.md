@@ -18,23 +18,23 @@ that test green, named in the PR body. A byte check in a store-refusal or record
 
 `RosterTests.swift`:
 
-- [ ] 3.1 two total commitments alike in every way but the target their kind carries are both held — catches a target left out of sameness
-- [ ] 3.2 a roster takes on a commitment on a schedule due on no day — catches a roster judging a schedule
-- [ ] 3.3 a roster takes on a commitment offered under a category of nothing but blank space, under none — catches a blank category refused on add
-- [ ] 3.4 a superseded commitment is still under the category it was under — catches a supersession dropping the old category
-- [ ] 3.5 a roster that had stopped keeping or removed everything it holds before a date reads back no groups on that date — catches an empty group for a date after every stop
-- [ ] 3.6 a roster answers in groups about a date before the day a commitment it holds is kept from — catches the kept-from day applied
-- [ ] 3.7 a group moved to the end is put after the last commitment under the last group, one the roster has stopped keeping included — catches the end anchor counted over kept commitments only
-- [ ] 3.8 an offset for a group counts no category only a commitment the roster has stopped keeping is under — catches stopped-only categories counted
-- [ ] 3.9 taking a commitment up again leaves the earliest day anything a roster holds is kept from as it was — catches a take-up moving the answer
-- [ ] 3.10 a roster answers the earliest day whatever kind the commitment kept from it takes — catches a kind filter
-- [ ] 3.11 a roster answers the earliest day whatever category the commitment kept from it is under — catches a category filter
-- [ ] 3.12 changing a commitment for itself under a different category puts it under that category and changes nothing else — catches a self-change ignoring its category
-- [ ] 3.13 a commitment superseded as of the first supported date and one as of the last are both accepted — catches a date bound on superseding
-- [ ] 3.14 a roster supersedes a commitment with one on a schedule due on no day — catches a supersession judging either schedule
-- [ ] 3.15 superseding a commitment with one the roster has stopped keeping is refused — catches the duplicate check over kept commitments only
-- [ ] 3.16 superseding a commitment with one the roster has removed is refused — catches the duplicate check skipping removed ones
-- [ ] 3.17 a commitment kept until the first supported date is accepted — catches a stop refusing the first date
+- [x] 3.1 two total commitments alike in every way but the target their kind carries are both held — catches a target left out of sameness
+- [x] 3.2 a roster takes on a commitment on a schedule due on no day — catches a roster judging a schedule
+- [x] 3.3 a roster takes on a commitment offered under a category of nothing but blank space, under none — catches a blank category refused on add
+- [x] 3.4 a superseded commitment is still under the category it was under — catches a supersession dropping the old category
+- [x] 3.5 a roster that had stopped keeping or removed everything it holds before a date reads back no groups on that date — catches an empty group for a date after every stop
+- [x] 3.6 a roster answers in groups about a date before the day a commitment it holds is kept from — catches the kept-from day applied
+- [x] 3.7 a group moved to the end is put after the last commitment under the last group, one the roster has stopped keeping included — catches the end anchor counted over kept commitments only
+- [x] 3.8 an offset for a group counts no category only a commitment the roster has stopped keeping is under — catches stopped-only categories counted
+- [x] 3.9 taking a commitment up again leaves the earliest day anything a roster holds is kept from as it was — catches a take-up moving the answer
+- [x] 3.10 a roster answers the earliest day whatever kind the commitment kept from it takes — catches a kind filter
+- [x] 3.11 a roster answers the earliest day whatever category the commitment kept from it is under — catches a category filter
+- [x] 3.12 changing a commitment for itself under a different category puts it under that category and changes nothing else — catches a self-change ignoring its category
+- [x] 3.13 a commitment superseded as of the first supported date and one as of the last are both accepted — catches a date bound on superseding
+- [x] 3.14 a roster supersedes a commitment with one on a schedule due on no day — catches a supersession judging either schedule
+- [x] 3.15 superseding a commitment with one the roster has stopped keeping is refused — catches the duplicate check over kept commitments only
+- [x] 3.16 superseding a commitment with one the roster has removed is refused — catches the duplicate check skipping removed ones
+- [x] 3.17 a commitment kept until the first supported date is accepted — catches a stop refusing the first date
 
 `CommitmentTests.swift`:
 
