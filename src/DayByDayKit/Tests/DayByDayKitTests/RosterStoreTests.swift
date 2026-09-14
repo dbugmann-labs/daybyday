@@ -1017,11 +1017,11 @@ func aMoveARosterStoreRefusesIsReportedAndNothingAtItsPlaceChanges() throws {
 
 @Test("a move that leaves a roster as it was keeps nothing at its place")
 func aMoveThatLeavesARosterAsItWasKeepsNothingAtItsPlace() throws {
-    // Route 1, `design.md` § *Three reds expected on arrival* — no, § *The four no-op tests*:
-    // the place is seeded with the roster in an earlier form, one the store itself would never
-    // write. A write that rewrote byte-identical content would be invisible to a check against
-    // bytes the store wrote itself, because `RosterStore.write` is byte-stable; seeded here in a
-    // form only a write would ever replace, any write at all is visible.
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation* (the four
+    // no-op tests): the place is seeded with the roster in an earlier form, one the store itself
+    // would never write. A write that rewrote byte-identical content would be invisible to a
+    // check against bytes the store wrote itself, because `RosterStore.write` is byte-stable;
+    // seeded here in a form only a write would ever replace, any write at all is visible.
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -1331,7 +1331,8 @@ func aCategoryChangeARosterStoreRefusesIsReportedAndNothingAtItsPlaceChanges() t
 
 @Test("a category change that leaves a roster as it was keeps nothing at its place")
 func aCategoryChangeThatLeavesARosterAsItWasKeepsNothingAtItsPlace() throws {
-    // Route 1, `design.md` § *The four no-op tests*: the current form, laid out with different
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation* (the four
+    // no-op tests): the current form, laid out with different
     // key order and spacing than `RosterStore.write`'s own `.sortedKeys` encoding ever produces
     // — so any write at all, even of byte-identical content, is visible as bytes changing shape.
     let place = freshPlace()
@@ -1489,7 +1490,8 @@ func aGroupMoveARosterStoreRefusesKeepsNothingAtItsPlace() throws {
 
 @Test("a group move that leaves a group where it is keeps nothing at a roster store's place")
 func aGroupMoveThatLeavesAGroupWhereItIsKeepsNothingAtARosterStoresPlace() throws {
-    // Route 1, `design.md` § *The four no-op tests*: the current form, laid out with different
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation* (the four
+    // no-op tests): the current form, laid out with different
     // key order and spacing than `RosterStore.write`'s own `.sortedKeys` encoding ever produces.
     let place = freshPlace()
     try FileManager.default.createDirectory(
@@ -1624,7 +1626,8 @@ func aChangeAndASupersessionARosterRefusesKeepNothingAtARosterStoresPlace() thro
 
 @Test("a change of a commitment for itself keeps nothing at a roster store's place")
 func aChangeOfACommitmentForItselfKeepsNothingAtARosterStoresPlace() throws {
-    // Route 1, `design.md` § *The four no-op tests*: the current form, laid out with different
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation* (the four
+    // no-op tests): the current form, laid out with different
     // key order and spacing than `RosterStore.write`'s own `.sortedKeys` encoding ever produces.
     let place = freshPlace()
     try FileManager.default.createDirectory(
@@ -1683,17 +1686,20 @@ func aRosterStoreGivenAThousandCommitmentsHoldsEveryOneOfThemInTheOrderTheyWereG
     let place = freshPlace()
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let names = (0..<1_000).map { String(format: "Commitment %03d", 999 - $0) }
+    let names = (1...1_000).map { "Commitment \($0)" }
     let commitments = names.map { Commitment(name: $0, schedule: schedule, keptFrom: keptFrom)! }
 
     let store = try RosterStore(at: place)
     for commitment in commitments {
-        try store.add(commitment)
+        let added = try store.add(commitment)
+        #expect(added)
     }
 
     let later = try RosterStore(at: place)
 
     #expect(later.roster.commitments.count == 1_000)
+    #expect(later.roster.commitments.first?.name == "Commitment 1")
+    #expect(later.roster.commitments.last?.name == "Commitment 1000")
     #expect(later.roster.commitments == commitments)
 }
 
@@ -1840,19 +1846,20 @@ func aStopARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlace
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
 
     let store = try RosterStore(at: place)
     try store.add(gym)
-    try store.remove(gym, keptUntil: januaryThirtyFirst)
+    try store.add(run)
+    try store.remove(run, keptUntil: januaryThirtyFirst)
 
-    let stopped = try store.retire(gym, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!)
+    let bytesBeforeAsk = try Data(contentsOf: place)
 
-    var expected = Roster()
-    _ = expected.add(gym)
-    _ = expected.remove(gym, keptUntil: januaryThirtyFirst)
+    let stopped = try store.retire(run, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!)
+
     #expect(!stopped)
-    #expect(store.roster == expected)
+    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test("a move a roster store refuses for a stopped commitment is reported and nothing at its place changes")
@@ -1867,16 +1874,14 @@ func aMoveARosterStoreRefusesForAStoppedCommitmentIsReportedAndNothingAtItsPlace
     let store = try RosterStore(at: place)
     try store.add(gym)
     try store.add(run)
-    try store.retire(gym, keptUntil: januaryThirtyFirst)
+    try store.retire(run, keptUntil: januaryThirtyFirst)
 
-    let moved = try store.move(gym, toOffset: 0, under: nil)
+    let bytesBeforeAsk = try Data(contentsOf: place)
 
-    var expected = Roster()
-    _ = expected.add(gym)
-    _ = expected.add(run)
-    _ = expected.retire(gym, keptUntil: januaryThirtyFirst)
+    let moved = try store.move(run, toOffset: 0, under: nil)
+
     #expect(!moved)
-    #expect(store.roster == expected)
+    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test("a move a roster store refuses for a removed commitment is reported and nothing at its place changes")
@@ -1891,16 +1896,14 @@ func aMoveARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlace
     let store = try RosterStore(at: place)
     try store.add(gym)
     try store.add(run)
-    try store.remove(gym, keptUntil: januaryThirtyFirst)
+    try store.remove(run, keptUntil: januaryThirtyFirst)
 
-    let moved = try store.move(gym, toOffset: 0, under: nil)
+    let bytesBeforeAsk = try Data(contentsOf: place)
 
-    var expected = Roster()
-    _ = expected.add(gym)
-    _ = expected.add(run)
-    _ = expected.remove(gym, keptUntil: januaryThirtyFirst)
+    let moved = try store.move(run, toOffset: 0, under: nil)
+
     #expect(!moved)
-    #expect(store.roster == expected)
+    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test(
@@ -1911,16 +1914,20 @@ func aMoveARosterStoreRefusesForAnOffsetItDoesNotHaveIsReportedAndNothingAtItsPl
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
 
     let store = try RosterStore(at: place)
     try store.add(gym)
+    try store.add(run)
 
-    let moved = try store.move(gym, toOffset: 5, under: nil)
+    let bytesBeforeAsk = try Data(contentsOf: place)
 
-    var expected = Roster()
-    _ = expected.add(gym)
-    #expect(!moved)
-    #expect(store.roster == expected)
+    let movedToThree = try store.move(gym, toOffset: 3, under: nil)
+    let movedToNegativeOne = try store.move(gym, toOffset: -1, under: nil)
+
+    #expect(!movedToThree)
+    #expect(!movedToNegativeOne)
+    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test(
@@ -1934,16 +1941,18 @@ func aCategoryChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndN
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
 
     let store = try RosterStore(at: place)
     try store.add(gym)
+    try store.add(run)
 
-    let put = try store.put(run, under: "Sport")
+    let bytesBeforeAsk = try Data(contentsOf: place)
 
-    var expected = Roster()
-    _ = expected.add(gym)
+    let put = try store.put(journaling, under: "Sport")
+
     #expect(!put)
-    #expect(store.roster == expected)
+    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test(
@@ -1956,19 +1965,20 @@ func aCategoryChangeARosterStoreRefusesForARemovedCommitmentIsReportedAndNothing
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
 
     let store = try RosterStore(at: place)
     try store.add(gym)
-    try store.remove(gym, keptUntil: januaryThirtyFirst)
+    try store.add(run)
+    try store.remove(run, keptUntil: januaryThirtyFirst)
 
-    let put = try store.put(gym, under: "Sport")
+    let bytesBeforeAsk = try Data(contentsOf: place)
 
-    var expected = Roster()
-    _ = expected.add(gym)
-    _ = expected.remove(gym, keptUntil: januaryThirtyFirst)
+    let put = try store.put(run, under: "Sport")
+
     #expect(!put)
-    #expect(store.roster == expected)
+    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test("a change a roster store refuses for a commitment it does not hold is reported and nothing at its place changes")
@@ -1980,17 +1990,19 @@ func aChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndNothingAt
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-    let runRenamed = Commitment(name: "Run club", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom)!
 
     let store = try RosterStore(at: place)
     try store.add(gym)
+    try store.add(run)
 
-    let changed = try store.change(run, to: runRenamed, under: nil)
+    let bytesBeforeAsk = try Data(contentsOf: place)
 
-    var expected = Roster()
-    _ = expected.add(gym)
+    let changed = try store.change(journaling, to: journal, under: nil)
+
     #expect(!changed)
-    #expect(store.roster == expected)
+    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test(
@@ -2003,21 +2015,22 @@ func aSupersessionARosterStoreRefusesForAStoppedCommitmentIsReportedAndNothingAt
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let strength = Commitment(name: "Strength", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let running = Commitment(name: "Running", schedule: schedule, keptFrom: keptFrom)!
     let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
 
     let store = try RosterStore(at: place)
     try store.add(gym)
-    try store.retire(gym, keptUntil: januaryThirtyFirst)
+    try store.add(run)
+    try store.retire(run, keptUntil: januaryThirtyFirst)
+
+    let bytesBeforeAsk = try Data(contentsOf: place)
 
     let superseded = try store.supersede(
-        gym, with: strength, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!, under: nil)
+        run, with: running, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
 
-    var expected = Roster()
-    _ = expected.add(gym)
-    _ = expected.retire(gym, keptUntil: januaryThirtyFirst)
     #expect(!superseded)
-    #expect(store.roster == expected)
+    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test(
@@ -2030,21 +2043,22 @@ func aSupersessionARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAt
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let strength = Commitment(name: "Strength", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let running = Commitment(name: "Running", schedule: schedule, keptFrom: keptFrom)!
     let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
 
     let store = try RosterStore(at: place)
     try store.add(gym)
-    try store.remove(gym, keptUntil: januaryThirtyFirst)
+    try store.add(run)
+    try store.remove(run, keptUntil: januaryThirtyFirst)
+
+    let bytesBeforeAsk = try Data(contentsOf: place)
 
     let superseded = try store.supersede(
-        gym, with: strength, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!, under: nil)
+        run, with: running, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
 
-    var expected = Roster()
-    _ = expected.add(gym)
-    _ = expected.remove(gym, keptUntil: januaryThirtyFirst)
     #expect(!superseded)
-    #expect(store.roster == expected)
+    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test(
@@ -2058,19 +2072,20 @@ func aSupersessionARosterStoreRefusesForACommitmentItAlreadyHoldsIsReportedAndNo
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
 
     let store = try RosterStore(at: place)
     try store.add(gym)
     try store.add(run)
+    try store.remove(run, keptUntil: januaryThirtyFirst)
+
+    let bytesBeforeAsk = try Data(contentsOf: place)
 
     let superseded = try store.supersede(
-        gym, with: run, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!, under: nil)
+        gym, with: run, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
 
-    var expected = Roster()
-    _ = expected.add(gym)
-    _ = expected.add(run)
     #expect(!superseded)
-    #expect(store.roster == expected)
+    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test("categories differing only in case are read back out of a roster store as two categories")
@@ -2104,20 +2119,26 @@ func aRosterStoreAndARecordStoreKeptBesideItChangeNothingAtEachOthersPlace() thr
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let january5th = CalendarDate(year: 2026, month: 1, day: 5)!
+    let january7th = CalendarDate(year: 2026, month: 1, day: 7)!
+    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(gym, on: january5th)!)
+
+    let recordBytesBeforeRosterWrites = try Data(contentsOf: recordPlace)
 
     let rosterStore = try RosterStore(at: rosterPlace)
-    let recordStore = try RecordStore(at: recordPlace)
-
     try rosterStore.add(gym)
+    try rosterStore.retire(gym, keptUntil: januaryThirtyFirst)
 
-    #expect(!FileManager.default.fileExists(atPath: recordPlace.path))
+    #expect(try Data(contentsOf: recordPlace) == recordBytesBeforeRosterWrites)
 
-    let rosterBytesAfterRosterWrite = try Data(contentsOf: rosterPlace)
+    let rosterBytesAfterStop = try Data(contentsOf: rosterPlace)
 
-    try recordStore.add(Tick(gym, on: august3rd)!)
+    try recordStore.add(Tick(gym, on: january7th)!)
 
-    #expect(try Data(contentsOf: rosterPlace) == rosterBytesAfterRosterWrite)
+    #expect(try Data(contentsOf: rosterPlace) == rosterBytesAfterStop)
 }
 
 @Test("a change kept over a roster in an earlier form keeps every day a commitment was kept until")
@@ -2132,7 +2153,7 @@ func aChangeKeptOverARosterInAnEarlierFormKeepsEveryDayACommitmentWasKeptUntil()
           "commitments": [
             {
               "commitment": {
-                "name": "Water plants",
+                "name": "Gym",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
               },
@@ -2140,7 +2161,7 @@ func aChangeKeptOverARosterInAnEarlierFormKeepsEveryDayACommitmentWasKeptUntil()
             },
             {
               "commitment": {
-                "name": "Gym",
+                "name": "Journaling",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
               }
@@ -2154,17 +2175,17 @@ func aChangeKeptOverARosterInAnEarlierFormKeepsEveryDayACommitmentWasKeptUntil()
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
 
-    try store.change(gym, to: gymEmoji, under: nil)
+    try store.add(run)
 
     let later = try RosterStore(at: place)
-    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
     let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
     let februaryFirst = CalendarDate(year: 2026, month: 2, day: 1)!
 
-    #expect(later.roster.commitments(on: januaryThirtyFirst).contains(waterPlants))
-    #expect(!later.roster.commitments(on: februaryFirst).contains(waterPlants))
+    #expect(later.roster.commitments(on: januaryThirtyFirst) == [gym, journaling, run])
+    #expect(later.roster.commitments(on: februaryFirst) == [journaling, run])
 }
 
 @Test("a roster store declaring a later form whose body this app cannot read is refused as a later form")
@@ -2413,31 +2434,46 @@ func aRosterStoreHoldingAnEveryNDaysScheduleWhoseStartDateNamesNoDayIsRefused() 
 @Test("a category of a thousand characters is held and read back out of a roster store whole")
 func aCategoryOfAThousandCharactersIsHeldAndReadBackOutOfARosterStoreWhole() throws {
     let place = freshPlace()
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let longCategory = String(repeating: "c", count: 1_000)
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let longCategory = String(repeating: "S", count: 1_000)
 
     let store = try RosterStore(at: place)
-    try store.add(gym, under: longCategory)
+    try store.add(creatine)
+    let put = try store.put(creatine, under: longCategory)
+
+    #expect(put)
 
     let later = try RosterStore(at: place)
 
-    #expect(later.roster.groups == [Roster.Group(category: longCategory, commitments: [gym])])
+    #expect(later.roster.groups == [Roster.Group(category: longCategory, commitments: [creatine])])
 }
 
 @Test("a category written in a script other than Latin is held and read back out of a roster store exactly")
 func aCategoryWrittenInAScriptOtherThanLatinIsHeldAndReadBackOutOfARosterStoreExactly() throws {
     let place = freshPlace()
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let category = "健康"
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let japaneseCategory = "サプリ"
+    let cyrillicCategory = "Спорт"
 
     let store = try RosterStore(at: place)
-    try store.add(gym, under: category)
+    try store.add(creatine, under: japaneseCategory)
+    try store.add(gym, under: cyrillicCategory)
 
     let later = try RosterStore(at: place)
 
-    #expect(later.roster.groups == [Roster.Group(category: category, commitments: [gym])])
+    #expect(
+        later.roster.groups
+            == [
+                Roster.Group(category: japaneseCategory, commitments: [creatine]),
+                Roster.Group(category: cyrillicCategory, commitments: [gym]),
+            ])
 }
