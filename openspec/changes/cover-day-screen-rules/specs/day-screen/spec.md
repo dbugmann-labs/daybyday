@@ -178,6 +178,12 @@ no other. A day screen already showing its today SHALL be left showing it.
   day, is then taken on at that roster place by something else; and it is sent back to today
 - **THEN** its day view holds one row, named "Journaling"
 - **AND** it says it is keeping a roster, exactly as it did before
+- **AND** a day screen of no commitments at all opened as of that same day at a roster place of its
+  own holding a roster written in a form one later than the form this app writes, holding no
+  commitments, and at a record place of its own where nothing has been kept, moved to the day
+  before, with what is at that roster place then removed so that nothing has been kept there, and
+  sent back to today, says it is not keeping a roster, says the roster was written by a later
+  version of DayByDay, and holds no rows
 
 #### Scenario: a day screen sent back to today draws the commitments its roster had not stopped keeping on that today
 

@@ -45,14 +45,14 @@ var dayPickerReach: Reach { get }; var recordState: RecordState { get }; var ros
 ### One scenario per rule, each built to fail against a named wrong implementation
 
 Grill answers 2, 6 and 10. One line per covered rule (grill answer 4), which is why this decision runs
-to 28 lines against 12, as § *The seam* runs to 17 at one line per member: splitting either would only
+to 34 lines against 12, as § *The seam* runs to 17 at one line per member: splitting either would only
 move the same lines.
 
 | Rule (spec lines) | New scenario catches |
 |---|---|
 | a screen not keeping its roster moves and says so (211) | a screen that does not move, or a move that resets the roster's state or its reason |
 | a move forms from the record with every change kept since (208–210) | a move, return or pick formed from the record as first read |
-| going back to today reads the roster no more (291–293) | a return to today that reads the roster again |
+| going back to today reads neither store again and leaves what it says of either alone (291–293); the record half is covered at 333 and 4109 | a return to today that reads the roster again, or resets what it says of a roster it is not keeping |
 | today's view is formed on the roster's answer for that today (290–291, 547–548) | a return formed on the answer for the day left |
 | a refused tick is not held to be kept later (474) | a tick queued and written once the record reads |
 | every refusal to open is answered one way (476) | a file-system read error answered other than as unreadable |
@@ -71,6 +71,12 @@ move the same lines.
 | a screen not keeping a record tells nothing, whatever was committed (3379–3381) | a value checked before the record's state |
 | a return where the roster cannot be read says so and draws no rows (3498–3499) | a return that keeps the old state or the old rows |
 | a take-back reaches the place on a day holding no number (3599–3601) | a take-back skipped where the day holds none |
+
+The roster half of 291–293 is proven by extending *going back to today does not read the roster
+again* rather than by adding a scenario. Both halves are one rule, so a second scenario would break
+one scenario per rule. Its title stays true, because a later-version roster whose place is emptied
+after the move tells apart a return that leaves the state alone from one that reads the roster again
+or resets the state to kept.
 
 ### Re-verified: covered already, reclassified, or pointers
 
