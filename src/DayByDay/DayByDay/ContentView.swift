@@ -89,6 +89,21 @@ struct ContentView: View {
     @State private var enteringNoteText = ""
     @State private var enteringTotalRow: DayView.Row?
     @State private var enteringTotalText = ""
+    // Which one-off name field, if any, has focus — the entry or a row's rename field. Only one
+    // field is ever focused at a time (`design.md` § *A refusal under a name field is its own
+    // value, and there is one at a time*), so a single `@FocusState` value stands for all of
+    // them, driving both the TextField that has it and the toolbar `+`/checkmark that read it.
+    private enum OneOffFocus: Hashable {
+        case entry
+        case row(DayView.OneOffRow)
+    }
+    @FocusState private var oneOffFocus: OneOffFocus?
+    // The entry's own typed text, and the text typed into whichever row is being renamed — each
+    // emptied on every commit attempt, successful or refused, so the field shows `nameRefusal`'s
+    // own `text` while a refusal stands (`design.md` § *The shell*) and reads back from these
+    // once it does not.
+    @State private var oneOffEntryText = ""
+    @State private var oneOffRowText = ""
     // The paged day content's own width, measured off `GeometryReader` and used both to size the
     // full slide a carry or a chevron tap settles to and as the threshold a drag must cross to
     // carry. `dragTranslation` is the live offset applied to the three-list `HStack`: the drag's
@@ -131,6 +146,31 @@ struct ContentView: View {
                     Button("Commitments") {
                         commitmentsScreen = CommitmentsScreen(asOf: today())
                         showingCommitments = true
+                    }
+                }
+                // The `+`: shown exactly where `oneOffGroup != nil` says adding is offered
+                // (`design.md` § *The empty group is the offer*), and focuses the entry.
+                if screen.dayView.oneOffGroup != nil {
+                    ToolbarItem {
+                        Button {
+                            oneOffFocus = .entry
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                    }
+                }
+                // The green checkmark: shown while any one-off field is focused, and commits and
+                // drops focus exactly as Return does, minus the fresh entry Return leaves focused.
+                // `design.md` § *The shell*.
+                if oneOffFocus != nil {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button {
+                            commitFocusedOneOffField()
+                            oneOffFocus = nil
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(Color.green)
+                        }
                     }
                 }
             }
@@ -230,6 +270,9 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { _, phase in
+            if phase != .active {
+                commitFocusedOneOffField()
+            }
             if phase == .active {
                 screen.shown(asOf: today())
                 commitmentsScreen?.shown(asOf: today())
@@ -240,6 +283,42 @@ struct ContentView: View {
                 screen.returnedTo()
                 commitmentsScreen = nil
             }
+        }
+        // Losing focus commits (`design.md` § *The shell*): whichever one-off field just gave up
+        // focus — by a tap elsewhere, the checkmark, or one of the explicit moves below, each of
+        // which has already committed its own field before this fires — is committed here too,
+        // harmlessly a second time where it already has been, since a field already emptied by
+        // its own commit commits nothing on a second pass.
+        .onChange(of: oneOffFocus) { oldValue, newValue in
+            guard let oldValue, oldValue != newValue else {
+                return
+            }
+            switch oldValue {
+            case .entry:
+                try? screen.addOneOff(named: oneOffEntryText)
+                oneOffEntryText = ""
+            case .row(let row):
+                try? screen.rename(row, to: oneOffRowText)
+                oneOffRowText = ""
+            }
+        }
+    }
+
+    /// Commits whatever one-off field currently has focus — the entry, or a row's rename field —
+    /// and leaves `oneOffFocus` exactly as it is; a caller that means to drop focus too sets it
+    /// itself, as the checkmark does. Called before every one of the moves `design.md` § *The
+    /// shell* names: the chevrons, swipe, `Today`, the day picker and `scenePhase` leaving
+    /// `.active`, in each case before the day actually moves.
+    private func commitFocusedOneOffField() {
+        switch oneOffFocus {
+        case .entry:
+            try? screen.addOneOff(named: oneOffEntryText)
+            oneOffEntryText = ""
+        case .row(let row):
+            try? screen.rename(row, to: oneOffRowText)
+            oneOffRowText = ""
+        case nil:
+            break
         }
     }
 
@@ -281,6 +360,7 @@ struct ContentView: View {
                                     year: components.year!, month: components.month!,
                                     day: components.day!)
                             else { return }
+                            commitFocusedOneOffField()
                             screen.showDay(picked)
                         }
                     ),
@@ -298,6 +378,7 @@ struct ContentView: View {
             }
             if screen.offersGoingBackToToday {
                 Button {
+                    commitFocusedOneOffField()
                     screen.showToday()
                 } label: {
                     Text("Today")
@@ -374,12 +455,12 @@ struct ContentView: View {
         GeometryReader { proxy in
             let width = proxy.size.width
             HStack(spacing: 0) {
-                dayList(for: screen.previousDayView)
+                dayList(for: screen.previousDayView, isShown: false)
                     .frame(width: width)
-                dayList(for: screen.dayView)
+                dayList(for: screen.dayView, isShown: true)
                     .frame(width: width)
                     .accessibilityIdentifier("CurrentDayList")
-                dayList(for: screen.nextDayView)
+                dayList(for: screen.nextDayView, isShown: false)
                     .frame(width: width)
             }
             .offset(x: -width + dragTranslation)
@@ -408,9 +489,13 @@ struct ContentView: View {
     /// same `ForEach(Array(group.rows.enumerated()), id: \.offset)` keying this screen has always
     /// used, now driven by whichever of the three day views this list was handed. `nil` — only
     /// possible at either end of the calendar — draws an empty list; the drag never reveals it,
-    /// because it resists at that end (`daySwipeGesture`).
+    /// because it resists at that end (`daySwipeGesture`). `isShown` is `true` only for
+    /// `screen.dayView`'s own list, and decides nothing but which line ends the One-offs group:
+    /// the live one-off entry there, a disabled line on either neighbour (`design.md` § *The
+    /// shell*) — acting on a one-off row from a neighbouring day is inert the same way a
+    /// commitment row's tap already is, so the rows themselves need no `isShown` distinction.
     @ViewBuilder
-    private func dayList(for dayView: DayView?) -> some View {
+    private func dayList(for dayView: DayView?, isShown: Bool) -> some View {
         List {
             if let dayView {
                 // A `Section` per group, the category as its header and none where there is no
@@ -452,13 +537,18 @@ struct ContentView: View {
                 }
                 // The One-offs group, after every group of commitments — `openspec/specs/
                 // day-screen/spec.md`'s *A day view draws the one-offs standing on its date as
-                // one group headed One-offs*. `dayView.oneOffGroup` is `nil` where none stand,
-                // so this draws nothing rather than an empty section on an ordinary day.
+                // one group headed One-offs*. `dayView.oneOffGroup` is `nil` only where this
+                // screen is not keeping one-offs at all; it is still drawn, holding no rows but
+                // the entry, on a day none stand on (`design.md` § *The empty group is the
+                // offer*). One-off rows are keyed by value, not by offset — a tick or a rename
+                // re-keys a row by its new value on purpose (grill answer 19), unlike a
+                // commitment row's tap, which the offset above still keys through.
                 if let oneOffGroup = dayView.oneOffGroup {
                     Section {
-                        ForEach(Array(oneOffGroup.rows.enumerated()), id: \.offset) { _, row in
+                        ForEach(oneOffGroup.rows, id: \.self) { row in
                             oneOffRowView(row)
                         }
+                        oneOffEntryView(isShown: isShown)
                     } header: {
                         Text(oneOffGroup.heading)
                             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
@@ -571,23 +661,40 @@ struct ContentView: View {
     /// standing in for the tap `rowView(_:)` makes. The spec requirement "A one-off row says how
     /// late it is while undone, and offers its tick where its day has arrived": the tap is
     /// offered exactly where `offersTick(asOf:)` says so, done or not, so a done row still offers
-    /// taking its tick back.
+    /// taking its tick back. A long press opens a `contextMenu` with *Rename* and a destructive
+    /// *Remove*, on every row alike (grill answer 13); *Rename* focuses this row's own name field
+    /// in place, and while that field has focus this draws it instead of the row's plain text.
     @ViewBuilder
     private func oneOffRowView(_ row: DayView.OneOffRow) -> some View {
+        let isRenaming = oneOffFocus == .row(row)
         let nameColor: Color = row.isDone ? .secondary : .primary
         let markSystemName: String? = row.isDone ? "checkmark" : nil
         let markColor: Color = Color.green
-        let nameText = Text(row.name)
-            .foregroundStyle(nameColor)
-            .strikethrough(row.isDone)
-        let nameLine: Text =
-            row.lateInWords.map { commitmentLine(nameText, rhythmInWords: $0).foregroundStyle(Color.primary) }
-            ?? nameText
         let label = HStack {
             VStack(alignment: .leading) {
-                nameLine
+                if isRenaming {
+                    TextField(row.name, text: oneOffRowTextBinding(for: row))
+                        .focused($oneOffFocus, equals: .row(row))
+                        .onSubmit {
+                            try? screen.rename(row, to: oneOffRowText)
+                            oneOffRowText = ""
+                            oneOffFocus = nil
+                        }
+                } else {
+                    let nameText = Text(row.name)
+                        .foregroundStyle(nameColor)
+                        .strikethrough(row.isDone)
+                    row.lateInWords.map {
+                        commitmentLine(nameText, rhythmInWords: $0).foregroundStyle(Color.primary)
+                    } ?? nameText
+                }
                 if row == screen.notice?.oneOffRow {
                     Text(screen.notice?.cause ?? "Not saved. Try again.")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+                if screen.nameRefusal?.row == row {
+                    Text(screen.nameRefusal?.cause ?? "Not saved. Try again.")
                         .font(.caption)
                         .foregroundStyle(.red)
                 }
@@ -600,16 +707,96 @@ struct ContentView: View {
                     .foregroundStyle(markColor)
             }
         }
-        if row.offersTick(asOf: today()) {
-            Button {
-                try? screen.tick(row)
-            } label: {
+        Group {
+            if isRenaming {
                 label
+            } else if row.offersTick(asOf: today()) {
+                Button {
+                    try? screen.tick(row)
+                } label: {
+                    label
+                }
+            } else {
+                label
+                    .opacity(0.5)
+            }
+        }
+        .contextMenu {
+            if !isRenaming {
+                Button("Rename") {
+                    oneOffRowText = row.name
+                    oneOffFocus = .row(row)
+                }
+                Button("Remove", role: .destructive) {
+                    try? screen.remove(row)
+                }
+            }
+        }
+    }
+
+    /// The one-off entry: a `TextField` as the last line of the shown day's One-offs group,
+    /// focused by the toolbar `+` and by nothing else; a disabled, non-interactive line in the
+    /// same place on either neighbour, since typing there would commit to the wrong day.
+    /// `design.md` § *The shell*.
+    @ViewBuilder
+    private func oneOffEntryView(isShown: Bool) -> some View {
+        if isShown {
+            VStack(alignment: .leading) {
+                TextField("New one-off", text: oneOffEntryTextBinding)
+                    .focused($oneOffFocus, equals: .entry)
+                    .onSubmit {
+                        try? screen.addOneOff(named: oneOffEntryText)
+                        oneOffEntryText = ""
+                        oneOffFocus = .entry
+                    }
+                if screen.nameRefusal?.row == nil, let nameRefusal = screen.nameRefusal {
+                    Text(nameRefusal.cause ?? "Not saved. Try again.")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
         } else {
-            label
+            Text("New one-off")
+                .foregroundStyle(.secondary)
                 .opacity(0.5)
         }
+    }
+
+    /// The entry's text: `nameRefusal`'s own `text` while a refusal stands under the entry, so
+    /// what was typed is what keeps showing; `oneOffEntryText` otherwise, which every commit
+    /// attempt from the entry empties, refused or not. `design.md` § *A refusal under a name
+    /// field is its own value, and there is one at a time*. Typing anywhere in this field ends
+    /// whatever `nameRefusal` was telling, wherever it was telling it.
+    private var oneOffEntryTextBinding: Binding<String> {
+        Binding(
+            get: {
+                if let nameRefusal = screen.nameRefusal, nameRefusal.row == nil {
+                    return nameRefusal.text
+                }
+                return oneOffEntryText
+            },
+            set: { newValue in
+                screen.oneOffNameEdited()
+                oneOffEntryText = newValue
+            }
+        )
+    }
+
+    /// `row`'s own name field's text, the same rule `oneOffEntryTextBinding` reads by:
+    /// `nameRefusal`'s `text` while it stands under this row, `oneOffRowText` otherwise.
+    private func oneOffRowTextBinding(for row: DayView.OneOffRow) -> Binding<String> {
+        Binding(
+            get: {
+                if let nameRefusal = screen.nameRefusal, nameRefusal.row == row {
+                    return nameRefusal.text
+                }
+                return oneOffRowText
+            },
+            set: { newValue in
+                screen.oneOffNameEdited()
+                oneOffRowText = newValue
+            }
+        )
     }
 
     /// ADR-1042, carried forward by `design.md` § *What the shell draws*: a horizontal drag on
@@ -656,8 +843,10 @@ struct ContentView: View {
                 let width = value.translation.width
                 let carries = abs(width) > pageWidth / 3
                 if width < 0, screen.nextDayView != nil, carries {
+                    commitFocusedOneOffField()
                     settle(to: -pageWidth) { screen.showNextDay() }
                 } else if width > 0, screen.previousDayView != nil, carries {
+                    commitFocusedOneOffField()
                     settle(to: pageWidth) { screen.showPreviousDay() }
                 } else {
                     settle(to: 0, then: nil)
@@ -671,6 +860,7 @@ struct ContentView: View {
     /// has nowhere to go, so the day is moved directly with no slide to play — `showPreviousDay()`
     /// and `showNextDay()` are themselves already a no-op there.
     private func playSettle(towards neighbour: Neighbour) {
+        commitFocusedOneOffField()
         switch neighbour {
         case .previous:
             guard screen.previousDayView != nil else {

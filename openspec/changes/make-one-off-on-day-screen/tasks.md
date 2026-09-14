@@ -59,9 +59,9 @@ day-view tests in `DayViewTests.swift`; day-screen tests in `DayScreenTests.swif
 
 ## 6. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
-- [ ] 6.1 `ContentView.swift` draws the one-off entry, the toolbar `+`, the green checkmark and the long-press *Rename* / *Remove* menu as `design.md` § *The shell* says, shows `nameRefusal` under its field with its `text`, and keys one-off rows by value
-- [ ] 6.2 Every day change and `scenePhase` leaving `.active` commits a focused one-off field before it calls the move, read in the diff line by line
-- [ ] 6.3 `pnpm run verify` passes and the app target builds; the UI test bundle is not run (ADR-1029)
+- [x] 6.1 `ContentView.swift` draws the one-off entry, the toolbar `+`, the green checkmark and the long-press *Rename* / *Remove* menu as `design.md` § *The shell* says, shows `nameRefusal` under its field with its `text`, and keys one-off rows by value
+- [x] 6.2 Every day change and `scenePhase` leaving `.active` commits a focused one-off field before it calls the move, read in the diff line by line
+- [x] 6.3 `pnpm run verify` passes and the app target builds; the UI test bundle is not run (ADR-1029)
 
 ## 7. The records
 
