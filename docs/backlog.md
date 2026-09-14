@@ -439,6 +439,43 @@ decision it records is the owner's, twice.*
   words hang off and what colour they are*, ADR-1019 makes it a chore on the shell rather than a
   Story, and nothing about it reaches a capability spec.
 
+### B-052 — be told the true reason a change to a commitment is refused
+
+*Captured 2026-09-14, from the eighth grooming sweep. Reported by the owner on the phone the same
+day and recorded first in `docs/open-questions.md` § Known gaps, which moved here in this pass.*
+
+> "Gym"-shaped, 3 times a week, kept from 10 Sep 2026, and moving the day it is kept from to 14 Sep
+> — or to 8, 9, 11, 12 or 13 — is refused with *"Choose a day that leaves every recorded day due."*,
+> while 7 and 4 are accepted. "This is not what I would expect."
+
+- **Trigger** — changing the day a commitment is kept from, on the change sheet, and getting a
+  refusal that names a cause the change does not have.
+- **Touches** — `commitment` (#26), with `record` behind it. Reproduced at the `CommitmentsScreen`
+  seam on a scratch copy of `d153abe`. There are **two causes behind one sentence.** Moving the day
+  later, past a day that has a tick on it (11–14, with a tick on 10 Sep), is refused **as
+  specified** by § *A commitments screen refuses a change it cannot make*. Moving it earlier is
+  never a not-due case: a weekly quota is due every date (`schedule/spec.md:366`), and moving
+  earlier "only widens the window". 8 and 9 were refused only where the record **already held**
+  ticks for the identical commitment kept from 8 or 9 Sep. `History.carryOver` returns `false` when
+  the target holds anything (`History.swift:117-124`, `record/spec.md:461`), and
+  `CommitmentsScreen.swift:426-429`, along with the rhythm path at `:488-491`, maps every `false`
+  to `.wouldLeaveARecordedDayNotDue`. The refusal is right, and no spec has words for it, so the
+  fix is a delta: a refusal of its own, told apart from the other seven.
+- **Principle** — tested against *five percent of seven things*: **it loses on the letter.** It
+  makes nothing new possible. It is captured anyway, because the thing it corrects is a refusal
+  that misleads, on the one screen that defines everything else.
+- **Open** — **unconfirmed: how those records got there.** No path found writes ticks under a
+  kept-from day while leaving no roster entry for it. Carry-over moves rather than copies, and a
+  superseded or removed entry still on the roster is refused earlier as already kept. The phone's
+  `record.json` is the check: look for ticks under that commitment kept from 2026-09-08 or
+  2026-09-09. If there are none, the reproduction is not the owner's case and something else
+  refuses the change.
+- **Open** — "not what I would expect" may cover the refusal that *is* specified, as well as the
+  one that is not: moving a quota's kept-from day later than a recorded tick. Whether that stays
+  refused is a product question for the grill, and it is not settled by fixing the words.
+- **Open** — even the correct refusal never says which recorded day blocks the move. That is
+  B-050's, not this entry's.
+
 
 ## Decided
 
