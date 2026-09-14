@@ -3476,8 +3476,9 @@ nothing.
 - **THEN** nothing is refused
 - **AND** what it has stopped is one entry, named "Gym 🏋️"
 - **AND** what it keeps is one entry, named "Journaling"
-- **AND** a roster store opened afterwards at that place answers with "Gym 🏋️" when asked what it had
-  not stopped keeping on Sunday 30 August 2026, and with nothing on Monday 31 August 2026
+- **AND** a roster store opened afterwards at that place answers with "Gym 🏋️" and then "Journaling"
+  when asked what it had not stopped keeping on Sunday 30 August 2026, and with "Journaling" alone on
+  Monday 31 August 2026
 
 #### Scenario: a commitment of the number kind changed through a commitments screen keeps the kind its days take
 
