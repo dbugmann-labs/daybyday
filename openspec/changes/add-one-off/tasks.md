@@ -19,7 +19,7 @@ the next. Never transcribe the twenty-nine up front. The value tests go in
       `OneOff`; `OneOff` has exactly the two stored properties the seam lists
 - [x] 2.3 Dates are compared with `days(until:)` and the name is judged with `Blank.saysNothing(_:)`;
       no second whitespace test and no `Comparable` conformance is added (ADR-1039)
-- [ ] 2.4 `OneOffDocument` is `internal`, decodes through `OneOff.init?` and the held-by rules, and
+- [x] 2.4 `OneOffDocument` is `internal`, decodes through `OneOff.init?` and the held-by rules, and
       writes `doneOn` only where a one-off is done — no `IntroducedInVersion` constant at version 1
 
 ## 3. The twenty scenarios of the value — one test each
@@ -47,15 +47,15 @@ the next. Never transcribe the twenty-nine up front. The value tests go in
 
 ## 4. The nine scenarios of the store — one test each
 
-- [ ] 4.1 a store opened where nothing has been kept holds no one-offs — catches an error where a place is simply empty
-- [ ] 4.2 a store opened again holds exactly the one-offs left there, done or not as they were left — catches a tick, a take-back or a removal that never reaches the disk
-- [ ] 4.3 a change is kept before the store reports it kept — catches a write deferred to a save
-- [ ] 4.4 a change that cannot be kept is refused and not held — catches a store that holds what the disk refused
-- [ ] 4.5 a change the one-offs refuse leaves the place untouched — catches a rewrite on a refused addition
-- [ ] 4.6 one-off stores at different places are independent — catches a shared or static place
-- [ ] 4.7 content that is not a one-off store is refused and left as it was — catches opening empty over what is there
-- [ ] 4.8 a one-off store written in a later form than this app knows is refused — catches a version read after the body
-- [ ] 4.9 a one-off store holding what could not be a one-off is refused — catches a decoder that skips the bad entry, and one that misses two alike
+- [x] 4.1 a store opened where nothing has been kept holds no one-offs — catches an error where a place is simply empty
+- [x] 4.2 a store opened again holds exactly the one-offs left there, done or not as they were left — catches a tick, a take-back or a removal that never reaches the disk
+- [x] 4.3 a change is kept before the store reports it kept — catches a write deferred to a save
+- [x] 4.4 a change that cannot be kept is refused and not held — catches a store that holds what the disk refused
+- [x] 4.5 a change the one-offs refuse leaves the place untouched — catches a rewrite on a refused addition
+- [x] 4.6 one-off stores at different places are independent — catches a shared or static place
+- [x] 4.7 content that is not a one-off store is refused and left as it was — catches opening empty over what is there
+- [x] 4.8 a one-off store written in a later form than this app knows is refused — catches a version read after the body
+- [x] 4.9 a one-off store holding what could not be a one-off is refused — catches a decoder that skips the bad entry, and one that misses two alike
 
 ## 5. The records
 
