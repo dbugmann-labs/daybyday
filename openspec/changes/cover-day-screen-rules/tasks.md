@@ -51,7 +51,7 @@ least change in `src/DayByDayKit/Sources/` that turns that one test green, and n
       `design.md` names, and `pnpm run verify` passes.
 - [x] 5.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is the added scenarios more
       than a run on `main` reports, both read off runs and never derived.
-- [ ] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
+- [x] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
       on the evidence that 2.1–5.4 are ticked and that the instruction below is written here for the
       janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of
       the sync it prints, then reads the spec diff it produced: in `openspec/specs/day-screen/spec.md`
