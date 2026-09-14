@@ -1842,67 +1842,160 @@ func aTakeUpAgainThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove()
 
 @Test("a stop a roster store refuses for a removed commitment is reported and nothing at its place changes")
 func aStopARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlaceChanges() throws {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // place is seeded with the current form, laid out with different key order and spacing than
+    // `RosterStore.write`'s own `.sortedKeys` encoding ever produces — so a refusal that wrote
+    // `nextRoster` back unconditionally, even byte-identical content, would still change the
+    // place's bytes, and the check below would see it.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": true,
+              "category": null,
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(run)
-    try store.remove(run, keptUntil: januaryThirtyFirst)
-
     let bytesBeforeAsk = try Data(contentsOf: place)
 
     let stopped = try store.retire(run, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!)
 
     #expect(!stopped)
+    #expect(store.roster.commitments == [gym])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test("a move a roster store refuses for a stopped commitment is reported and nothing at its place changes")
 func aMoveARosterStoreRefusesForAStoppedCommitmentIsReportedAndNothingAtItsPlaceChanges() throws {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // place is seeded with the current form, laid out with different key order and spacing than
+    // `RosterStore.write`'s own `.sortedKeys` encoding ever produces — so a refusal that wrote
+    // `nextRoster` back unconditionally, even byte-identical content, would still change the
+    // place's bytes, and the check below would see it.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null,
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(run)
-    try store.retire(run, keptUntil: januaryThirtyFirst)
-
     let bytesBeforeAsk = try Data(contentsOf: place)
 
     let moved = try store.move(run, toOffset: 0, under: nil)
 
     #expect(!moved)
+    #expect(store.roster.commitments == [gym])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
 @Test("a move a roster store refuses for a removed commitment is reported and nothing at its place changes")
 func aMoveARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlaceChanges() throws {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // place is seeded with the current form, laid out with different key order and spacing than
+    // `RosterStore.write`'s own `.sortedKeys` encoding ever produces — so a refusal that wrote
+    // `nextRoster` back unconditionally, even byte-identical content, would still change the
+    // place's bytes, and the check below would see it.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": true,
+              "category": null,
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(run)
-    try store.remove(run, keptUntil: januaryThirtyFirst)
-
     let bytesBeforeAsk = try Data(contentsOf: place)
 
     let moved = try store.move(run, toOffset: 0, under: nil)
 
     #expect(!moved)
+    #expect(store.roster.commitments == [gym])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
@@ -1910,16 +2003,47 @@ func aMoveARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlace
     "a move a roster store refuses for an offset it does not have is reported and nothing at its place changes"
 )
 func aMoveARosterStoreRefusesForAnOffsetItDoesNotHaveIsReportedAndNothingAtItsPlaceChanges() throws {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // place is seeded with the current form, laid out with different key order and spacing than
+    // `RosterStore.write`'s own `.sortedKeys` encoding ever produces — so a refusal that wrote
+    // `nextRoster` back unconditionally, even byte-identical content, would still change the
+    // place's bytes, and the check below would see it.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(run)
-
     let bytesBeforeAsk = try Data(contentsOf: place)
 
     let movedToThree = try store.move(gym, toOffset: 3, under: nil)
@@ -1927,6 +2051,7 @@ func aMoveARosterStoreRefusesForAnOffsetItDoesNotHaveIsReportedAndNothingAtItsPl
 
     #expect(!movedToThree)
     #expect(!movedToNegativeOne)
+    #expect(store.roster.commitments == [gym, run])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
@@ -1936,22 +2061,54 @@ func aMoveARosterStoreRefusesForAnOffsetItDoesNotHaveIsReportedAndNothingAtItsPl
 func aCategoryChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndNothingAtItsPlaceChanges()
     throws
 {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // place is seeded with the current form, laid out with different key order and spacing than
+    // `RosterStore.write`'s own `.sortedKeys` encoding ever produces — so a refusal that wrote
+    // `nextRoster` back unconditionally, even byte-identical content, would still change the
+    // place's bytes, and the check below would see it.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(run)
-
     let bytesBeforeAsk = try Data(contentsOf: place)
 
     let put = try store.put(journaling, under: "Sport")
 
     #expect(!put)
+    #expect(store.roster.commitments == [gym, run])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
@@ -1961,23 +2118,54 @@ func aCategoryChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndN
 func aCategoryChangeARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlaceChanges()
     throws
 {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // place is seeded with the current form, laid out with different key order and spacing than
+    // `RosterStore.write`'s own `.sortedKeys` encoding ever produces — so a refusal that wrote
+    // `nextRoster` back unconditionally, even byte-identical content, would still change the
+    // place's bytes, and the check below would see it.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": true,
+              "category": null,
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(run)
-    try store.remove(run, keptUntil: januaryThirtyFirst)
-
     let bytesBeforeAsk = try Data(contentsOf: place)
 
     let put = try store.put(run, under: "Sport")
 
     #expect(!put)
+    #expect(store.roster.commitments == [gym])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
@@ -1985,23 +2173,55 @@ func aCategoryChangeARosterStoreRefusesForARemovedCommitmentIsReportedAndNothing
 func aChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndNothingAtItsPlaceChanges()
     throws
 {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // place is seeded with the current form, laid out with different key order and spacing than
+    // `RosterStore.write`'s own `.sortedKeys` encoding ever produces — so a refusal that wrote
+    // `nextRoster` back unconditionally, even byte-identical content, would still change the
+    // place's bytes, and the check below would see it.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
     let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(run)
-
     let bytesBeforeAsk = try Data(contentsOf: place)
 
     let changed = try store.change(journaling, to: journal, under: nil)
 
     #expect(!changed)
+    #expect(store.roster.commitments == [gym, run])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
@@ -2011,25 +2231,56 @@ func aChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndNothingAt
 func aSupersessionARosterStoreRefusesForAStoppedCommitmentIsReportedAndNothingAtItsPlaceChanges()
     throws
 {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // place is seeded with the current form, laid out with different key order and spacing than
+    // `RosterStore.write`'s own `.sortedKeys` encoding ever produces — so a refusal that wrote
+    // `nextRoster` back unconditionally, even byte-identical content, would still change the
+    // place's bytes, and the check below would see it.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let running = Commitment(name: "Running", schedule: schedule, keptFrom: keptFrom)!
-    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null,
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(run)
-    try store.retire(run, keptUntil: januaryThirtyFirst)
-
     let bytesBeforeAsk = try Data(contentsOf: place)
 
     let superseded = try store.supersede(
         run, with: running, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
 
     #expect(!superseded)
+    #expect(store.roster.commitments == [gym])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
@@ -2039,25 +2290,56 @@ func aSupersessionARosterStoreRefusesForAStoppedCommitmentIsReportedAndNothingAt
 func aSupersessionARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlaceChanges()
     throws
 {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // place is seeded with the current form, laid out with different key order and spacing than
+    // `RosterStore.write`'s own `.sortedKeys` encoding ever produces — so a refusal that wrote
+    // `nextRoster` back unconditionally, even byte-identical content, would still change the
+    // place's bytes, and the check below would see it.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let running = Commitment(name: "Running", schedule: schedule, keptFrom: keptFrom)!
-    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": true,
+              "category": null,
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(run)
-    try store.remove(run, keptUntil: januaryThirtyFirst)
-
     let bytesBeforeAsk = try Data(contentsOf: place)
 
     let superseded = try store.supersede(
         run, with: running, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
 
     #expect(!superseded)
+    #expect(store.roster.commitments == [gym])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
@@ -2067,24 +2349,55 @@ func aSupersessionARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAt
 func aSupersessionARosterStoreRefusesForACommitmentItAlreadyHoldsIsReportedAndNothingAtItsPlaceChanges()
     throws
 {
+    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
+    // place is seeded with the current form, laid out with different key order and spacing than
+    // `RosterStore.write`'s own `.sortedKeys` encoding ever produces — so a refusal that wrote
+    // `nextRoster` back unconditionally, even byte-identical content, would still change the
+    // place's bytes, and the check below would see it.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": true,
+              "category": null,
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(run)
-    try store.remove(run, keptUntil: januaryThirtyFirst)
-
     let bytesBeforeAsk = try Data(contentsOf: place)
 
     let superseded = try store.supersede(
         gym, with: run, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
 
     #expect(!superseded)
+    #expect(store.roster.commitments == [gym])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
