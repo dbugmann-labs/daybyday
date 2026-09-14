@@ -2,7 +2,7 @@
 
 `proposal.md` § *Why* says what this is for; `grill.md`'s settled answers are the brief.
 `openspec/specs/commitment/spec.md` holds 42 requirements and 398 scenarios. The delta carries 31
-of them whole — 30 MODIFIED, one REMOVED and ADDED — with 93 new scenarios and eight reworded ones.
+of them whole — 30 MODIFIED, one REMOVED and ADDED — with 96 new scenarios and eight reworded ones.
 
 Five facts in source decide the approach. `RosterStore.write` is byte-stable, so rewriting an
 unchanged roster is byte-identical and no byte check sees it. `RosterDocument.formRoster` replays
