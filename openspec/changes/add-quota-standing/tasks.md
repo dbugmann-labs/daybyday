@@ -50,12 +50,12 @@ amended*). These boxes confirm rather than write, and each is tickable while rea
 ## 5. The gates
 
 - [x] 5.1 `openspec validate add-quota-standing --strict` exits 0 and `pnpm run check:scenarios` exits 0
-- [ ] 5.2 `git diff --stat origin/main` lists only this change folder, `History.swift`,
+- [x] 5.2 `git diff --stat origin/main` lists only this change folder, `History.swift`,
       `RecordTests.swift`, the two ADRs and `docs/adr/README.md`
-- [ ] 5.3 `pnpm run check:budgets` warns about nothing in this folder, and `pnpm run verify` passes
-- [ ] 5.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is eleven more than a
+- [x] 5.3 `pnpm run check:budgets` warns about nothing in this folder, and `pnpm run verify` passes
+- [x] 5.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is eleven more than a
       run on `main` reports — both read off runs, never derived by arithmetic
-- [ ] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
+- [x] 5.5 **The archive handover — `implementer` ticks this in its last commit before the archive**,
       on the evidence that 2.1–5.4 are ticked and that the instruction below is written here for the
       janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of
       the sync it prints, then reads the spec diff it produced: `openspec/specs/record/spec.md`
