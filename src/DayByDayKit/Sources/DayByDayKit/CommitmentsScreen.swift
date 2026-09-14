@@ -654,10 +654,11 @@ public final class CommitmentsScreen {
     /// commitment; and a place that could not be written.
     @discardableResult public func restart(_ commitment: Commitment, from day: CalendarDate) -> Refusal? {
         // `kept.contains(commitment)` already guarantees `rosterStore` is not `nil` and holds an
-        // `entry` for `commitment` — `kept` is read straight off `rosterStore.roster.groups` by
-        // `refreshLists(from:)`, the one place either is ever set — so binding both here, beside
-        // the interval schedule check, costs no refusal an unreachable guard further down would
-        // ever have produced.
+        // `entry` for `commitment`: `rosterStore` is assigned only in `init` and `shown(asOf:)`,
+        // each immediately followed by `refreshLists(from:)` on that same store, which is the one
+        // place `kept` is ever set — straight off `rosterStore.roster.groups` — so the two never
+        // drift apart. Binding both here, beside the interval schedule check, costs no refusal an
+        // unreachable guard further down would ever have produced.
         guard kept.contains(commitment), case .everyNDays(let interval, from: _) = commitment.schedule,
             let rosterStore,
             let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
