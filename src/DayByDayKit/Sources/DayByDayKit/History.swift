@@ -117,6 +117,29 @@ public struct History: Hashable, Sendable {
         additions[day] = amounts.isEmpty ? nil : amounts
     }
 
+    /// Whether this history holds any record of `commitment` — a tick, a number, a note or an
+    /// addition. Package-internal: a screen that would carry records onto `commitment` needs
+    /// this before it does, to tell that cause apart from a day left not due. `design.md` §
+    /// *The seam*.
+    func holdsRecords(of commitment: Commitment) -> Bool {
+        ticks.contains { $0.commitment == commitment }
+            || numbers.keys.contains { $0.commitment == commitment }
+            || notes.keys.contains { $0.commitment == commitment }
+            || additions.keys.contains { $0.commitment == commitment }
+    }
+
+    /// The dates this history holds any record of `commitment` on — a tick, a number, a note or
+    /// an addition, each contributing the dates it is held for. Package-internal, the same seam
+    /// as `holdsRecords(of:)`.
+    func datesRecorded(for commitment: Commitment) -> Set<CalendarDate> {
+        var dates: Set<CalendarDate> = []
+        dates.formUnion(ticks.filter { $0.commitment == commitment }.map(\.date))
+        dates.formUnion(numbers.keys.filter { $0.commitment == commitment }.map(\.date))
+        dates.formUnion(notes.keys.filter { $0.commitment == commitment }.map(\.date))
+        dates.formUnion(additions.keys.filter { $0.commitment == commitment }.map(\.date))
+        return dates
+    }
+
     /// Carries every record held of `commitment` over to `changed`, on the same date each was
     /// made for. See `openspec/specs/record/spec.md` § *A history carries every record of one
     /// commitment over to another*.
@@ -137,12 +160,7 @@ public struct History: Hashable, Sendable {
             return true
         }
 
-        let holdsAny =
-            ticks.contains { $0.commitment == changed }
-            || numbers.keys.contains { $0.commitment == changed }
-            || notes.keys.contains { $0.commitment == changed }
-            || additions.keys.contains { $0.commitment == changed }
-        guard !holdsAny else {
+        guard !holdsRecords(of: changed) else {
             return false
         }
 
