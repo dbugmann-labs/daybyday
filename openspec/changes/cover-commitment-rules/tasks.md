@@ -148,8 +148,8 @@ that test green, named in the PR body. A byte check in a store-refusal or record
 
 ## 6. The record
 
-- [ ] 6.1 The test for the corrected title is renamed to it, and `grep -rn "kept until the day the screen was handed" src/` finds nothing
-- [ ] 6.2 `docs/open-questions.md` § *Known gaps* gains one new bullet for `commitment` holding every rule in `design.md` § *The unprovable rules*, none dropped and none added
+- [x] 6.1 The test for the corrected title is renamed to it, and `grep -rn "kept until the day the screen was handed" src/` finds nothing
+- [x] 6.2 `docs/open-questions.md` § *Known gaps* gains one new bullet for `commitment` holding every rule in `design.md` § *The unprovable rules*, none dropped and none added
 
 ## 7. The gates
 

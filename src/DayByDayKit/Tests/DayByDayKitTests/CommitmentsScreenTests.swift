@@ -1150,8 +1150,10 @@ func aCommitmentsScreenAskedToStopASecondCommitmentAwaitsConfirmationOfThatOneOn
 }
 
 @MainActor
-@Test("a commitment stopped through a commitments screen is kept until the day the screen was handed")
-func aCommitmentStoppedThroughACommitmentsScreenIsKeptUntilTheDayTheScreenWasHanded() throws {
+@Test("a commitment stopped through a commitments screen is kept until the day before the one the screen was handed")
+func aCommitmentStoppedThroughACommitmentsScreenIsKeptUntilTheDayBeforeTheOneTheScreenWasHanded()
+    throws
+{
     let rosterPlace = freshRosterPlace()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let daily: Schedule = .weekdays([
