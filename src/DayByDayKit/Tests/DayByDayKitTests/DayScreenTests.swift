@@ -1173,6 +1173,23 @@ func goingBackToTodayDoesNotReadTheRosterAgain() throws {
 
     #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
     #expect(screen.rosterState == .kept)
+
+    let (laterFormPlace, laterFormRosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: laterFormRosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: laterFormRosterPlace)
+
+    let laterFormScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: laterFormPlace,
+        keepingRosterAt: laterFormRosterPlace)
+    laterFormScreen.showPreviousDay()
+
+    try FileManager.default.removeItem(at: laterFormRosterPlace)
+
+    laterFormScreen.showToday()
+
+    #expect(laterFormScreen.rosterState == .writtenByALaterVersion)
+    #expect(laterFormScreen.dayView.rows.isEmpty)
 }
 
 @MainActor
