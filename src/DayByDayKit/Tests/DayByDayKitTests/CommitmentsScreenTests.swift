@@ -1265,27 +1265,31 @@ func aStopACommitmentsScreenCouldNotKeepLeavesBothItsListsAsTheyWere() throws {
 @MainActor
 @Test("a commitment taken up again through a commitments screen moves from what it has stopped to what it keeps")
 func aCommitmentTakenUpAgainThroughACommitmentsScreenMovesFromWhatItHasStoppedToWhatItKeeps() throws {
+    // The fixture takes "Journaling" on first and "Gym" second, so "Gym"'s own place among the
+    // kept ones is index 1, not index 0 — a mutant that took it up again by removing the entry
+    // and inserting it at index 0 would read back the same order as a version added first ever
+    // does, and this scenario would never redden. `design.md` § *Proven by mutation*.
     let rosterPlace = freshRosterPlace()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let daily: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
-    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
     let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
     let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
 
     let rosterStore = try RosterStore(at: rosterPlace)
-    try rosterStore.add(gym)
     try rosterStore.add(journaling)
+    try rosterStore.add(gym)
     try rosterStore.retire(gym, keptUntil: sunday)
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
 
     screen.keepAgain(gym)
 
-    #expect(screen.kept.map(\.name) == ["Gym", "Journaling"])
+    #expect(screen.kept.map(\.name) == ["Journaling", "Gym"])
     #expect(screen.stopped.isEmpty)
 
     let laterStore = try RosterStore(at: rosterPlace)

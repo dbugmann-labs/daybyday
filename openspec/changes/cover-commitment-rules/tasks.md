@@ -138,13 +138,13 @@ that test green, named in the PR body. A byte check in a store-refusal or record
 
 ## 5. Proven by mutation — each reddens in a `git archive` tree, with the diff and red run in the PR body
 
-- [ ] 5.1 a move that leaves a roster as it was keeps nothing at its place — reddens with the four no-op guards removed
-- [ ] 5.2 a category change that leaves a roster as it was keeps nothing at its place — reddens with the four no-op guards removed
-- [ ] 5.3 a group move that leaves a group where it is keeps nothing at a roster store's place — reddens with the four no-op guards removed
-- [ ] 5.4 a change of a commitment for itself keeps nothing at a roster store's place — reddens with the four no-op guards removed; the PR body says route 1 or 2
-- [ ] 5.5 stopping a commitment leaves every earlier date answering as it did — reddens with `retire` a no-op answering `true`
-- [ ] 5.6 removing a commitment leaves every earlier date answering as it did — reddens with `remove` a no-op answering `true`
-- [ ] 5.7 a commitment taken up again through a commitments screen moves from what it has stopped to what it keeps — rewritten on the reworded fixture ("Journaling" first), it reddens with `Roster.addTakingUpAgain` removing the entry and inserting it at index 0
+- [x] 5.1 a move that leaves a roster as it was keeps nothing at its place — reddens with the four no-op guards removed
+- [x] 5.2 a category change that leaves a roster as it was keeps nothing at its place — reddens with the four no-op guards removed
+- [x] 5.3 a group move that leaves a group where it is keeps nothing at a roster store's place — reddens with the four no-op guards removed
+- [x] 5.4 a change of a commitment for itself keeps nothing at a roster store's place — reddens with the four no-op guards removed; the PR body says route 1 or 2
+- [x] 5.5 stopping a commitment leaves every earlier date answering as it did — reddens with `retire` a no-op answering `true`
+- [x] 5.6 removing a commitment leaves every earlier date answering as it did — reddens with `remove` a no-op answering `true`
+- [x] 5.7 a commitment taken up again through a commitments screen moves from what it has stopped to what it keeps — rewritten on the reworded fixture ("Journaling" first), it reddens with `Roster.addTakingUpAgain` removing the entry and inserting it at index 0
 
 ## 6. The record
 

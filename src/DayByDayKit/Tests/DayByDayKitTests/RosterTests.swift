@@ -504,6 +504,7 @@ func stoppingACommitmentLeavesEveryEarlierDateAnsweringAsItDid() {
 
     #expect(before == after)
     #expect(after.allSatisfy { $0 == [gym] })
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!).isEmpty)
 }
 
 @Test("a commitment kept from a later date is in the answer for a date before it")
@@ -892,6 +893,7 @@ func removingACommitmentLeavesEveryEarlierDateAnsweringAsItDid() {
 
     #expect(before == after)
     #expect(after.allSatisfy { $0 == [gym] })
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!).isEmpty)
 }
 
 @Test("moving a commitment to the front puts it before every commitment the roster is keeping")
