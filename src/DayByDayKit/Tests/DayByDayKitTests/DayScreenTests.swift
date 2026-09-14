@@ -976,16 +976,19 @@ func aDayScreenThatIsNotKeepingARosterMovesAndGoesOnSayingWhy() throws {
             .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
         ]), keptFrom: keptFrom)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
 
     let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
 
     screen.showPreviousDay()
 
+    #expect(screen.dayView == DayView(of: [Commitment](), on: sunday, in: History()))
     #expect(screen.rosterState == .writtenByALaterVersion)
     #expect(screen.dayView.rows.isEmpty)
 
     screen.showNextDay()
 
+    #expect(screen.dayView == DayView(of: [Commitment](), on: monday, in: History()))
     #expect(screen.rosterState == .writtenByALaterVersion)
     #expect(screen.dayView.rows.isEmpty)
 }
