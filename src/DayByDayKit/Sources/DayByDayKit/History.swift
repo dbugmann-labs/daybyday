@@ -76,6 +76,29 @@ public struct History: Hashable, Sendable {
         return (additions[day] ?? []).reduce(0, +)
     }
 
+    /// How many days of `date`'s Monday-to-Sunday week `commitment` was kept, through `date`
+    /// inclusive and no later day. See `openspec/specs/record/spec.md` § *A history answers a
+    /// commitment's standing in the week of a calendar date* and this change's `design.md` for
+    /// why the week is worked out here rather than on `CalendarDate` or `Weekday`.
+    public func standing(for commitment: Commitment, through date: CalendarDate) -> Int {
+        Self.daysOfWeek(through: date).count { isKept(commitment, on: $0) }
+    }
+
+    /// The days from `date` back to the Monday of its week, inclusive — walked one day at a
+    /// time so that every step stays at the ±1 `adding(days:)` documents as safe, stopping
+    /// where a week is truncated by the supported calendar rather than stepping past it.
+    private static func daysOfWeek(through date: CalendarDate) -> [CalendarDate] {
+        var days = [date]
+        var current = date
+
+        while current.weekday != .monday, let previous = current.adding(days: -1) {
+            days.append(previous)
+            current = previous
+        }
+
+        return days
+    }
+
     /// Appends to the day `addition` is for. A day holds many, in the order they were made, and
     /// a second addition alike in every way to the first is held beside it.
     public mutating func add(_ addition: Addition) {

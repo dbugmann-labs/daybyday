@@ -12,24 +12,24 @@ next. Never transcribe the eleven up front. The test's name is the scenario titl
 
 ## 2. The seam
 
-- [ ] 2.1 `History.standing(for:through:)` exists with the signature in `design.md` § *The seam*,
+- [x] 2.1 `History.standing(for:through:)` exists with the signature in `design.md` § *The seam*,
       and 3.1 is red before it does anything but compile
-- [ ] 2.2 The week is worked out by a private function in `History.swift` stepping one day at a
+- [x] 2.2 The week is worked out by a private function in `History.swift` stepping one day at a
       time; `CalendarDate` and `Weekday` gain no member, and `git diff --stat` proves it
 
 ## 3. The eleven scenarios — one test each
 
-- [ ] 3.1 a history that has taken no record answers a standing of zero for a commitment in any week — catches an answer of nothing rather than zero
-- [ ] 3.2 a standing counts the week's days through the date and never a day after it — catches a count of the whole week
-- [ ] 3.3 a Sunday's standing counts back to the Monday of its week rather than forward from it — catches a Sunday-first week, the most likely wrong implementation
-- [ ] 3.4 a record in the week before and one in the week after do not count toward a standing — catches a seven-day window ending at the date instead of a week
-- [ ] 3.5 a standing is counted by date and never by when a record was entered — catches a running tally kept as records arrive
-- [ ] 3.6 a standing past what a quota asks for is the count of kept days and is never capped — catches a count capped at the quota
-- [ ] 3.7 a commitment on a schedule that is not a weekly quota is answered a standing just the same — catches a refusal or a zero for another schedule shape
-- [ ] 3.8 a number, a note and a total at its target each count their day, and a total short of it does not — catches a count of ticks rather than of kept days
-- [ ] 3.9 another commitment's records do not count toward a standing — catches a count taken over the whole history
-- [ ] 3.10 a week reaching back before the first supported date counts the days of it that exist — catches a crash or a wrong answer where the week's Monday is 1582
-- [ ] 3.11 a standing on the last supported date counts its week's days through it — catches an implementation that forms the week's Sunday first
+- [x] 3.1 a history that has taken no record answers a standing of zero for a commitment in any week — catches an answer of nothing rather than zero
+- [x] 3.2 a standing counts the week's days through the date and never a day after it — catches a count of the whole week
+- [x] 3.3 a Sunday's standing counts back to the Monday of its week rather than forward from it — catches a Sunday-first week, the most likely wrong implementation
+- [x] 3.4 a record in the week before and one in the week after do not count toward a standing — catches a seven-day window ending at the date instead of a week
+- [x] 3.5 a standing is counted by date and never by when a record was entered — catches a running tally kept as records arrive
+- [x] 3.6 a standing past what a quota asks for is the count of kept days and is never capped — catches a count capped at the quota
+- [x] 3.7 a commitment on a schedule that is not a weekly quota is answered a standing just the same — catches a refusal or a zero for another schedule shape
+- [x] 3.8 a number, a note and a total at its target each count their day, and a total short of it does not — catches a count of ticks rather than of kept days
+- [x] 3.9 another commitment's records do not count toward a standing — catches a count taken over the whole history
+- [x] 3.10 a week reaching back before the first supported date counts the days of it that exist — catches a crash or a wrong answer where the week's Monday is 1582
+- [x] 3.11 a standing on the last supported date counts its week's days through it — catches an implementation that forms the week's Sunday first
 
 ## 4. The records
 
@@ -37,19 +37,19 @@ next. Never transcribe the eleven up front. The test's name is the scenario titl
 proposal commit, not by the implementation** (`design.md` § *ADR-1050 is written and ADR-1015 is
 amended*). These boxes confirm rather than write, and each is tickable while reading what is there.
 
-- [ ] 4.1 Confirm ADR-1050 still describes what shipped — Monday to Sunday on every phone, nothing
+- [x] 4.1 Confirm ADR-1050 still describes what shipped — Monday to Sunday on every phone, nothing
       on a week's turn, the history counting and the day screen saying. A rule the implementation
       needed that the record does not carry is a **stop and a G4 question**, never an edit slipped in
-- [ ] 4.2 Confirm `CONTEXT.md` § *Week* and § *Standing* still describe what shipped; a sentence that
+- [x] 4.2 Confirm `CONTEXT.md` § *Week* and § *Standing* still describe what shipped; a sentence that
       turns out wrong is the same stop, because those terms were landed by the Feature grill
-- [ ] 4.3 Confirm no further ADR was written by this branch: `git diff --stat origin/main... --
+- [x] 4.3 Confirm no further ADR was written by this branch: `git diff --stat origin/main... --
       docs/adr/` reports only `1050-…`, `1015-a-weekly-quota-is-due-every-day.md` and `README.md`
-- [ ] 4.4 Confirm `openspec/specs/` was not hand-edited on this branch (rule 2):
+- [x] 4.4 Confirm `openspec/specs/` was not hand-edited on this branch (rule 2):
       `git diff --stat origin/main... -- openspec/specs/` reports nothing
 
 ## 5. The gates
 
-- [ ] 5.1 `openspec validate add-quota-standing --strict` exits 0 and `pnpm run check:scenarios` exits 0
+- [x] 5.1 `openspec validate add-quota-standing --strict` exits 0 and `pnpm run check:scenarios` exits 0
 - [ ] 5.2 `git diff --stat origin/main` lists only this change folder, `History.swift`,
       `RecordTests.swift`, the two ADRs and `docs/adr/README.md`
 - [ ] 5.3 `pnpm run check:budgets` warns about nothing in this folder, and `pnpm run verify` passes

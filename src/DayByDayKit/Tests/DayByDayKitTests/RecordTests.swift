@@ -2200,3 +2200,211 @@ func carryingOverIsRefusedWholeWhereOnlySomeOfTheRecordsCouldBeTheOtherCommitmen
     }
     #expect(history == historyBefore)
 }
+
+@Test("a history that has taken no record answers a standing of zero for a commitment in any week")
+func aHistoryThatHasTakenNoRecordAnswersAStandingOfZeroForACommitmentInAnyWeek() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let sunday = CalendarDate(year: 2026, month: 9, day: 6)!
+    let history = History()
+
+    #expect(history.standing(for: reading, through: wednesday) == 0)
+    #expect(history.standing(for: reading, through: monday) == 0)
+    #expect(history.standing(for: reading, through: sunday) == 0)
+}
+
+@Test("a standing counts the week's days through the date and never a day after it")
+func aStandingCountsTheWeeksDaysThroughTheDateAndNeverADayAfterIt() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+    let friday = CalendarDate(year: 2026, month: 9, day: 4)!
+    var history = History()
+    history.add(Tick(reading, on: monday)!)
+    history.add(Tick(reading, on: wednesday)!)
+    history.add(Tick(reading, on: friday)!)
+
+    #expect(history.standing(for: reading, through: wednesday) == 2)
+    #expect(history.standing(for: reading, through: thursday) == 2)
+    #expect(history.standing(for: reading, through: friday) == 3)
+    #expect(history.standing(for: reading, through: monday) == 1)
+}
+
+@Test("a Sunday's standing counts back to the Monday of its week rather than forward from it")
+func aSundaysStandingCountsBackToTheMondayOfItsWeekRatherThanForwardFromIt() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let sunday = CalendarDate(year: 2026, month: 9, day: 6)!
+    let mondayAfter = CalendarDate(year: 2026, month: 9, day: 7)!
+    var history = History()
+    history.add(Tick(reading, on: monday)!)
+    history.add(Tick(reading, on: sunday)!)
+
+    #expect(history.standing(for: reading, through: sunday) == 2)
+    #expect(history.standing(for: reading, through: mondayAfter) == 0)
+}
+
+@Test("a record in the week before and one in the week after do not count toward a standing")
+func aRecordInTheWeekBeforeAndOneInTheWeekAfterDoNotCountTowardAStanding() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+    let sundayBefore = CalendarDate(year: 2026, month: 8, day: 30)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let mondayAfter = CalendarDate(year: 2026, month: 9, day: 7)!
+    let sunday = CalendarDate(year: 2026, month: 9, day: 6)!
+    var history = History()
+    history.add(Tick(reading, on: sundayBefore)!)
+    history.add(Tick(reading, on: wednesday)!)
+    history.add(Tick(reading, on: mondayAfter)!)
+
+    #expect(history.standing(for: reading, through: sunday) == 1)
+    #expect(history.standing(for: reading, through: sundayBefore) == 1)
+    #expect(history.standing(for: reading, through: mondayAfter) == 1)
+}
+
+@Test("a standing is counted by date and never by when a record was entered")
+func aStandingIsCountedByDateAndNeverByWhenARecordWasEntered() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    var history = History()
+    history.add(Tick(reading, on: wednesday)!)
+    history.add(Tick(reading, on: thursday)!)
+    history.add(Tick(reading, on: tuesday)!)
+
+    #expect(history.standing(for: reading, through: wednesday) == 2)
+    #expect(history.standing(for: reading, through: thursday) == 3)
+}
+
+@Test("a standing past what a quota asks for is the count of kept days and is never capped")
+func aStandingPastWhatAQuotaAsksForIsTheCountOfKeptDaysAndIsNeverCapped() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+    let sunday = CalendarDate(year: 2026, month: 9, day: 6)!
+    var history = History()
+    history.add(Tick(reading, on: monday)!)
+    history.add(Tick(reading, on: tuesday)!)
+    history.add(Tick(reading, on: wednesday)!)
+    history.add(Tick(reading, on: thursday)!)
+
+    #expect(history.standing(for: reading, through: thursday) == 4)
+    #expect(history.standing(for: reading, through: sunday) == 4)
+}
+
+@Test("a commitment on a schedule that is not a weekly quota is answered a standing just the same")
+func aCommitmentOnAScheduleThatIsNotAWeeklyQuotaIsAnsweredAStandingJustTheSame() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gymSchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let gym = Commitment(name: "Gym", schedule: gymSchedule, keptFrom: keptFrom)!
+    let lensesSchedule = Schedule.everyNDays(DayInterval(days: 3)!, from: keptFrom)
+    let lenses = Commitment(name: "Lenses", schedule: lensesSchedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let friday = CalendarDate(year: 2026, month: 9, day: 4)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    var history = History()
+    history.add(Tick(gym, on: monday)!)
+    history.add(Tick(gym, on: wednesday)!)
+    history.add(Tick(lenses, on: tuesday)!)
+    history.add(Tick(lenses, on: friday)!)
+
+    #expect(history.standing(for: gym, through: saturday) == 2)
+    #expect(history.standing(for: lenses, through: saturday) == 2)
+}
+
+@Test("a number, a note and a total at its target each count their day, and a total short of it does not")
+func aNumberANoteAndATotalAtItsTargetEachCountTheirDayAndATotalShortOfItDoesNot() {
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let target = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: target))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+    var history = History()
+    history.add(Number(70.5, for: weight, on: monday)!)
+    history.add(Note("Felt good", for: journal, on: tuesday)!)
+    history.add(Addition(120, for: protein, on: wednesday)!)
+    history.add(Addition(30, for: protein, on: thursday)!)
+
+    #expect(history.standing(for: weight, through: thursday) == 1)
+    #expect(history.standing(for: journal, through: thursday) == 1)
+    #expect(history.standing(for: protein, through: thursday) == 1)
+}
+
+@Test("another commitment's records do not count toward a standing")
+func anotherCommitmentsRecordsDoNotCountTowardAStanding() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+    let meditation = Commitment(name: "Meditation", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    var history = History()
+    history.add(Tick(reading, on: monday)!)
+    history.add(Tick(meditation, on: tuesday)!)
+    history.add(Tick(meditation, on: wednesday)!)
+
+    #expect(history.standing(for: reading, through: wednesday) == 1)
+    #expect(history.standing(for: meditation, through: wednesday) == 2)
+}
+
+@Test("a week reaching back before the first supported date counts the days of it that exist")
+func aWeekReachingBackBeforeTheFirstSupportedDateCountsTheDaysOfItThatExist() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+    let saturday = CalendarDate(year: 1583, month: 1, day: 1)!
+    let sunday = CalendarDate(year: 1583, month: 1, day: 2)!
+    let mondayAfter = CalendarDate(year: 1583, month: 1, day: 3)!
+    var history = History()
+    history.add(Tick(reading, on: saturday)!)
+    history.add(Tick(reading, on: sunday)!)
+
+    #expect(history.standing(for: reading, through: saturday) == 1)
+    #expect(history.standing(for: reading, through: sunday) == 2)
+    #expect(history.standing(for: reading, through: mondayAfter) == 0)
+}
+
+@Test("a standing on the last supported date counts its week's days through it")
+func aStandingOnTheLastSupportedDateCountsItsWeeksDaysThroughIt() {
+    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(name: "Reading", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 9999, month: 12, day: 27)!
+    let wednesday = CalendarDate(year: 9999, month: 12, day: 29)!
+    let friday = CalendarDate(year: 9999, month: 12, day: 31)!
+    var history = History()
+    history.add(Tick(reading, on: monday)!)
+    history.add(Tick(reading, on: wednesday)!)
+    history.add(Tick(reading, on: friday)!)
+
+    #expect(history.standing(for: reading, through: friday) == 3)
+    #expect(history.standing(for: reading, through: wednesday) == 2)
+}
