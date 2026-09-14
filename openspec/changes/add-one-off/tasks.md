@@ -63,19 +63,19 @@ the next. Never transcribe the twenty-nine up front. The value tests go in
 implementation.** These boxes confirm rather than write, and each is tickable while reading what is
 there.
 
-- [ ] 5.1 Confirm ADR-1052 still describes what shipped — the later of the date and today while
+- [x] 5.1 Confirm ADR-1052 still describes what shipped — the later of the date and today while
       undone, the day it was ticked once done, and never a day before the date. A rule the
       implementation needed that the record does not carry is a **stop and a G4 question**
-- [ ] 5.2 Confirm `CONTEXT.md` § *One-off* still describes what shipped; a sentence that turns out
+- [x] 5.2 Confirm `CONTEXT.md` § *One-off* still describes what shipped; a sentence that turns out
       wrong is the same stop, because that term was landed by the Feature grill
-- [ ] 5.3 Confirm no further ADR was written by this branch: `git diff --stat origin/main... --
+- [x] 5.3 Confirm no further ADR was written by this branch: `git diff --stat origin/main... --
       docs/adr/` reports only `1052-…` and `README.md`
-- [ ] 5.4 Confirm `openspec/specs/` was not hand-edited on this branch (rule 2):
+- [x] 5.4 Confirm `openspec/specs/` was not hand-edited on this branch (rule 2):
       `git diff --stat origin/main... -- openspec/specs/` reports nothing
 
 ## 6. The gates
 
-- [ ] 6.1 `openspec validate add-one-off --strict` exits 0 and `pnpm run check:scenarios` exits 0
+- [x] 6.1 `openspec validate add-one-off --strict` exits 0 and `pnpm run check:scenarios` exits 0
 - [ ] 6.2 `git diff --stat origin/main` lists only this change folder, the four new
       `Sources/DayByDayKit/` files, the two new test files, ADR-1052 and `docs/adr/README.md`
 - [ ] 6.3 `pnpm run check:budgets` warns about nothing in this folder, and `pnpm run verify` passes
