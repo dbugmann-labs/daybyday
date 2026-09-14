@@ -510,6 +510,35 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
   Recorded 2026-09-13, at #222's grill.
 
+- **Seven groups of `day-screen` rules cannot be proven by a test, and stay in the spec anyway.**
+  `cover-day-screen-rules` (#223) gave every other uncovered rule a scenario and left these alone,
+  per ADR-1047 decision 7.6. Line numbers are `openspec/specs/day-screen/spec.md` as of `6078297`:
+  - bind a meaning or a caller: the way back to today "about the control and not the position" and
+    not standing in for whether the screen shows its today (4032–4034); a caller "MUST NOT stand a
+    move down", and a screen "SHALL NOT say whether it can move" (350–352); the absence at an end
+    "SHALL NOT be read as an answer about moving" (1915–1916); and 443–446, 727, 730–731, 1387–1388,
+    1390–1391, 1720–1721, 4126–4127;
+  - compiler-enforced: a total entry "SHALL say no hint" and nothing to prefill from (1340–1341);
+    nothing answered about whether the day picker is offered, and the reach never giving out the
+    today "under any name" (2239–2240); showing a picked day "handed one thing" (1797–1798) and a
+    move "handed nothing" (202); the signatures that take no day (22, 296, 2268, 2797–2798, 3589,
+    3762, 4034); the internal fields a row does not say (917–918, 1341, 3722, 3725); and 348, 1538,
+    1717–1718, 2101–2109, 2580–2581;
+  - no seam accepts them: closing a number or note entry uncommitted ends nothing (3192–3193), the
+    screen is never called; a non-total row's sum of zero (2011–2012), `Row.total` being internal;
+    words in "this package's own English and no locale's" (1339, 3046, 4125); and 474–475 "anywhere
+    else", 547–548 "when a tick is made", 642, 1540, 2010–2011, 2462–2464, 2804, 3184, 3597,
+    3898–3899;
+  - time zone, clock and locale clauses: 21, 397–398, 834, 915, 973, 1108, 2461;
+  - meaning, with the same answer either way: a total row's take-back not widening *offers
+    anything* (1717), since it is offered only where a total entry is; and 916, 975–976, 1181–1182,
+    1336, 2157, 2884, 3723;
+  - universal over every input, where each scenario pins only its own: 1454, 3041;
+  - unreachable at the seam: two rows that are the same row both told of (3049), since a roster
+    refuses a duplicate on every path, file replay and day one included.
+
+  Recorded 2026-09-14, from #223's grill and `design.md`.
+
 ## Settled
 
 - 2026-09-11 — **specs and change folders are made concise through per-artifact and per-requirement
