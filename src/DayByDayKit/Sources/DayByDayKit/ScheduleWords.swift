@@ -55,4 +55,11 @@ enum ScheduleWords {
     static func weeklyQuota(_ timesPerWeek: Int) -> String {
         "\(timesPerWeek)x a week"
     }
+
+    /// A weekly quota said given a count — the count in digits, a slash with no space on
+    /// either side, and then its plain words. `count` is said exactly as given: never capped
+    /// to the quota, never clamped to a week.
+    static func weeklyQuota(_ timesPerWeek: Int, given count: Int) -> String {
+        "\(count)/\(weeklyQuota(timesPerWeek))"
+    }
 }

@@ -77,6 +77,52 @@ func aNumberIsSaidInDigitsWithNoGroupingSeparator() {
     #expect(schedule.inWords == "Every 1000 days")
 }
 
+@Test("a weekly quota said given a count says the count before its words")
+func aWeeklyQuotaSaidGivenACountSaysTheCountBeforeItsWords() {
+    let threeAWeek = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let sevenAWeek = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 7)!)
+    let onceAWeek = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 1)!)
+
+    #expect(threeAWeek.inWords(given: 1) == "1/3x a week")
+    #expect(sevenAWeek.inWords(given: 0) == "0/7x a week")
+    #expect(onceAWeek.inWords(given: 1) == "1/1x a week")
+}
+
+@Test("a weekly quota said given a count above its quota says that count and caps nothing")
+func aWeeklyQuotaSaidGivenACountAboveItsQuotaSaysThatCountAndCapsNothing() {
+    let threeAWeek = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+
+    #expect(threeAWeek.inWords(given: 4) == "4/3x a week")
+}
+
+@Test("a weekly quota said given a count no week can hold says the count as given")
+func aWeeklyQuotaSaidGivenACountNoWeekCanHoldSaysTheCountAsGiven() {
+    let threeAWeek = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+
+    #expect(threeAWeek.inWords(given: 9) == "9/3x a week")
+    #expect(threeAWeek.inWords(given: -1) == "-1/3x a week")
+}
+
+@Test("a schedule that is not a weekly quota said given a count says its plain words")
+func aScheduleThatIsNotAWeeklyQuotaSaidGivenACountSaysItsPlainWords() {
+    let start = CalendarDate(year: 2026, month: 8, day: 31)!
+    let weekdaySchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let dayOfMonthSchedule = Schedule.dayOfMonth(DayOfMonth(day: 25)!)
+    let intervalSchedule = Schedule.everyNDays(DayInterval(days: 14)!, from: start)
+    let everyWeekdaySchedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let everyOneDaySchedule = Schedule.everyNDays(DayInterval(days: 1)!, from: start)
+    let noWeekdaySchedule = Schedule.weekdays([])
+
+    #expect(weekdaySchedule.inWords(given: 2) == "Mon, Wed, Sat")
+    #expect(dayOfMonthSchedule.inWords(given: 2) == "The 25th")
+    #expect(intervalSchedule.inWords(given: 2) == "Every 14 days")
+    #expect(everyWeekdaySchedule.inWords(given: 0) == "Every day")
+    #expect(everyOneDaySchedule.inWords(given: 0) == "Every day")
+    #expect(noWeekdaySchedule.inWords(given: 1) == "No day")
+}
+
 @Test("a date on a listed weekday is due")
 func aDateOnAListedWeekdayIsDue() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])

@@ -19,6 +19,18 @@ public enum Schedule: Hashable, Sendable {
         }
     }
 
+    /// The rhythm this schedule runs on, in words, given a count — a weekly quota said given one
+    /// says it before its words, as given and judging none; every other shape says its plain
+    /// words. See `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
+    public func inWords(given count: Int) -> String {
+        switch self {
+        case .weeklyQuota(let weeklyQuota):
+            return ScheduleWords.weeklyQuota(weeklyQuota.timesPerWeek, given: count)
+        default:
+            return inWords
+        }
+    }
+
     public func isDue(on date: CalendarDate) -> Bool {
         switch self {
         case .weekdays(let weekdays):
