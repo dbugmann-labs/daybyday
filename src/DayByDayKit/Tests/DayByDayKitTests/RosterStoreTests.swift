@@ -1017,21 +1017,48 @@ func aMoveARosterStoreRefusesIsReportedAndNothingAtItsPlaceChanges() throws {
 
 @Test("a move that leaves a roster as it was keeps nothing at its place")
 func aMoveThatLeavesARosterAsItWasKeepsNothingAtItsPlace() throws {
+    // Route 1, `design.md` § *Three reds expected on arrival* — no, § *The four no-op tests*:
+    // the place is seeded with the roster in an earlier form, one the store itself would never
+    // write. A write that rewrote byte-identical content would be invisible to a check against
+    // bytes the store wrote itself, because `RosterStore.write` is byte-stable; seeded here in a
+    // form only a write would ever replace, any write at all is visible.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let bytes = Data(
+        """
+        {
+          "version": 1,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Water plants",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              }
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(waterPlants)
-    try store.add(gym)
-    let bytesBeforeMove = try Data(contentsOf: place)
 
     let moved = try store.move(gym, toOffset: 2, under: nil)
 
     #expect(moved)
-    #expect(try Data(contentsOf: place) == bytesBeforeMove)
+    #expect(try Data(contentsOf: place) == bytes)
     #expect(store.roster.commitments == [waterPlants, gym])
 }
 
@@ -1304,23 +1331,54 @@ func aCategoryChangeARosterStoreRefusesIsReportedAndNothingAtItsPlaceChanges() t
 
 @Test("a category change that leaves a roster as it was keeps nothing at its place")
 func aCategoryChangeThatLeavesARosterAsItWasKeepsNothingAtItsPlace() throws {
+    // Route 1, `design.md` § *The four no-op tests*: the current form, laid out with different
+    // key order and spacing than `RosterStore.write`'s own `.sortedKeys` encoding ever produces
+    // — so any write at all, even of byte-identical content, is visible as bytes changing shape.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": "Sport"
+            },
+            {
+              "commitment": {
+                "name": "Journaling",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym)
-    try store.add(journaling)
-    try store.put(gym, under: "Sport")
-
-    let bytesBeforeSecondAsk = try Data(contentsOf: place)
 
     let put = try store.put(gym, under: "Sport")
 
     #expect(put)
-    #expect(try Data(contentsOf: place) == bytesBeforeSecondAsk)
+    #expect(try Data(contentsOf: place) == bytes)
+    #expect(store.roster.groups == [
+        Roster.Group(category: "Sport", commitments: [gym]),
+        Roster.Group(category: nil, commitments: [journaling]),
+    ])
 }
 
 @Test("a category change that cannot be kept is refused and the roster a store reports does not move")
@@ -1431,27 +1489,58 @@ func aGroupMoveARosterStoreRefusesKeepsNothingAtItsPlace() throws {
 
 @Test("a group move that leaves a group where it is keeps nothing at a roster store's place")
 func aGroupMoveThatLeavesAGroupWhereItIsKeepsNothingAtARosterStoresPlace() throws {
+    // Route 1, `design.md` § *The four no-op tests*: the current form, laid out with different
+    // key order and spacing than `RosterStore.write`'s own `.sortedKeys` encoding ever produces.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Creatine",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": "Supplements"
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(creatine)
-    try store.add(gym)
-    try store.put(creatine, under: "Supplements")
-    let bytesBeforeMove = try Data(contentsOf: place)
 
     let movedAtItsOwnOffset = try store.move(group: "Supplements", toOffset: 0)
 
     #expect(movedAtItsOwnOffset)
-    #expect(try Data(contentsOf: place) == bytesBeforeMove)
+    #expect(try Data(contentsOf: place) == bytes)
 
     let movedAtOffsetJustAfter = try store.move(group: "Supplements", toOffset: 1)
 
     #expect(movedAtOffsetJustAfter)
-    #expect(try Data(contentsOf: place) == bytesBeforeMove)
+    #expect(try Data(contentsOf: place) == bytes)
+    #expect(store.roster.groups == [
+        Roster.Group(category: "Supplements", commitments: [creatine]),
+        Roster.Group(category: nil, commitments: [gym]),
+    ])
 }
 
 @Test("a commitment changed through a roster store is read back changed by a store opened afterwards")
@@ -1535,21 +1624,41 @@ func aChangeAndASupersessionARosterRefusesKeepNothingAtARosterStoresPlace() thro
 
 @Test("a change of a commitment for itself keeps nothing at a roster store's place")
 func aChangeOfACommitmentForItselfKeepsNothingAtARosterStoresPlace() throws {
+    // Route 1, `design.md` § *The four no-op tests*: the current form, laid out with different
+    // key order and spacing than `RosterStore.write`'s own `.sortedKeys` encoding ever produces.
     let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": "Sport"
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    try store.add(gym, under: "Sport")
-    let bytesBefore = try Data(contentsOf: place)
     let rosterBefore = store.roster
 
     let changed = try store.change(gym, to: gym, under: "Sport")
 
     #expect(changed)
     #expect(store.roster == rosterBefore)
-    #expect(try Data(contentsOf: place) == bytesBefore)
+    #expect(try Data(contentsOf: place) == bytes)
 }
 
 @Test("a name of ten thousand characters is a commitment and is read back out of a roster store whole")
