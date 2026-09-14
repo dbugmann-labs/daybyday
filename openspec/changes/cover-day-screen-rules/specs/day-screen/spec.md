@@ -1525,7 +1525,7 @@ as it was. The change SHALL be kept at the screen's record place before its day 
 the day view SHALL then be formed again from the record as it stands rather than altered; a change
 that could not be kept SHALL be refused, reported to the caller, and SHALL leave the day view
 exactly as it was. A number entered on a day that already holds one SHALL replace it. Taking one
-back SHALL reach the place whether or not the day holds a number, and SHALL be refused only by the
+back SHALL reach the place only where the day holds a number, and SHALL be refused only by the
 place.
 Entering a number or taking one back MUST NOT write to the roster's place or change what the screen
 says about its roster.
@@ -1644,12 +1644,15 @@ says about its roster.
   opened
 - **AND** the day screen says it is keeping its roster
 
-#### Scenario: committing an empty entry on a day holding no number reaches the place and is refused where the place refuses it
+#### Scenario: committing an empty entry at a place that cannot be written is refused only on a row whose day holds a number
 
-- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing can be
-  written — a path beneath an existing ordinary file — of a commitment named "Weight" of the number
-  kind with a range of 40 to 150, on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, and nothing at all is committed on its one row, whose day holds no number
-- **THEN** committing is refused with an error
-- **AND** the day screen tells, on that row, that the change could not be kept
-- **AND** what it tells names no cause
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place that can be read from but
+  not written to and that holds a record in which a commitment named "Weight" of the number kind
+  with a range of 40 to 150 holds the number 70.5 on that date, of that commitment and a commitment
+  named "Mood" of the number kind with a range of 1 to 10, in that order, both on a schedule listing
+  Monday, Wednesday and Saturday and both kept from 1 January 2026; nothing at all is committed on
+  the row named "Mood"; and nothing at all is then committed on the row named "Weight"
+- **THEN** committing on the row named "Mood" is not refused and the day screen tells nothing
+- **AND** committing on the row named "Weight" is refused with an error
+- **AND** the day screen then tells, on the row named "Weight", that the change could not be kept
+- **AND** its day view still says "Weight" holds the number 70.5 on that date

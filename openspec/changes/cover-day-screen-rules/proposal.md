@@ -11,8 +11,9 @@ rule a scenario of its own, under ADR-1047 decision 7, and records the rules not
   day picker's reach, what a tick, a return and a showing again leave said, and a take-back refused
   by the place.
 - Each added scenario arrives with the one test named for it.
-- Every requirement carrying one is MODIFIED, every sentence and existing scenario verbatim.
-- No rule is reworded, no scenario is dropped, and no heading changes.
+- Every requirement carrying one is MODIFIED, every sentence and existing scenario verbatim but one.
+- One rule is reworded, because `cover-record-rules` made it false on `main`: a take-back reaches
+  the place only where the day holds a number. No scenario is dropped, and no heading changes.
 - Rules the grill listed that an existing scenario already covers get no scenario; `design.md` names
   the scenario that covers each.
 - The rules nothing can prove stay in the spec and are recorded as one *Known gaps* entry.

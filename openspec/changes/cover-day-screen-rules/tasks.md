@@ -12,7 +12,7 @@ least change in `src/DayByDayKit/Sources/` that turns that one test green, and n
 
 ## 2. The carried requirements
 
-- [x] 2.1 A script shows each of the sixteen MODIFIED blocks byte-identical to the current spec but for its appended scenarios
+- [x] 2.1 A script shows each of the sixteen MODIFIED blocks byte-identical to the current spec but for its appended scenarios and, in *A day screen enters the number…*, the one sentence `design.md` § *Reworded after `cover-record-rules`* names
 
 ## 3. The scenarios — one test each
 
@@ -36,7 +36,7 @@ least change in `src/DayByDayKit/Sources/` that turns that one test green, and n
 - [x] 3.18 a day screen shown again carries over no reason it gave for not keeping its record or its roster — catches a later-version reason carried over
 - [x] 3.19 a commit on a day screen holding a record from a later version is told nothing whatever was committed — catches a value checked before the record's state
 - [x] 3.20 a day screen returned to where its roster cannot be read says so and draws no rows — catches a return keeping the old state or rows
-- [x] 3.21 committing an empty entry on a day holding no number reaches the place and is refused where the place refuses it — catches a take-back skipped on an empty day
+- [ ] 3.21 committing an empty entry at a place that cannot be written is refused only on a row whose day holds a number — catches a take-back written where the day holds none, or skipped where it holds one; the test under the replaced title goes
 
 ## 4. The record
 
@@ -55,8 +55,9 @@ least change in `src/DayByDayKit/Sources/` that turns that one test green, and n
       on the evidence that 2.1–5.4 are ticked and that the instruction below is written here for the
       janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of
       the sync it prints, then reads the spec diff it produced: in `openspec/specs/day-screen/spec.md`
-      only scenarios are added, each at the end of one of the sixteen carried requirements, and
-      nothing else moves; `pnpm run checks` runs after the archive commit exists. **Any other drift is
+      only scenarios are added, each at the end of one of the sixteen carried requirements, the one
+      sentence `design.md` § *Reworded after `cover-record-rules`* names is reworded, and nothing else
+      moves; `pnpm run checks` runs after the archive commit exists. **Any other drift is
       a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and
       `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here
       cannot be reached afterwards.

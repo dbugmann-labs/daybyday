@@ -2,14 +2,14 @@
 
 `proposal.md` § *Why* says what this is for; `grill.md`'s settled answers are what the delta is
 written on. `openspec/specs/day-screen/spec.md` holds 51 requirements; the delta carries 16 of them
-whole, every sentence and existing scenario verbatim, with 21 new scenarios. Spec line numbers below
-are as of `6078297`.
+whole, every sentence and existing scenario verbatim but the one sentence § *Reworded after
+`cover-record-rules`* names, with 21 new scenarios. Spec line numbers below are as of `6078297`.
 
 Every new scenario drives `DayScreen` through members that already ship. Read in source, all 21 are
 expected green on arrival, on these measured facts: a record or roster place that is a directory makes
 `Data(contentsOf:)` throw "Is a directory", which `DayScreen` answers as `.unreadable` and `.notKept`;
-`RecordStore.removeNumber` writes whether or not the day holds a number, so a place that cannot be
-written refuses it; `Decimal(string:)` gives `nil` for a one followed by two hundred zeros and holds a
+`RecordStore.removeNumber` writes only where the day holds a number (a return before writing since
+`3d7688f`), so a place that cannot be written refuses only that; `Decimal(string:)` gives `nil` for a one followed by two hundred zeros and holds a
 one followed by fifty zeros, a one at the fifty-first decimal place, and thirty-eight nines followed by
 ten zeros exactly; `Roster.remove` keeps the category a commitment is under.
 
@@ -18,7 +18,7 @@ ten zeros exactly; `Roster.remove` keeps the category a commitment is under.
 **Goals:** each testable uncovered `day-screen` rule gets exactly one scenario that would fail were the
 rule broken, plus the test named for it; the rules nothing can prove are recorded under *Known gaps*.
 
-**Non-Goals:** no rule reworded, no scenario dropped or edited, no heading changed, no other
+**Non-Goals:** no rule reworded but the one `main` made false, no scenario dropped or edited, no heading changed, no other
 capability, no condensing of a carried requirement already over budget (grill answer 5). No mutation
 run. No change to `src/` unless a new test is red on arrival.
 
@@ -70,7 +70,7 @@ move the same lines.
 | a showing again carries no reason over (2887–2889) | a later-version reason kept once the place reads as garbage |
 | a screen not keeping a record tells nothing, whatever was committed (3379–3381) | a value checked before the record's state |
 | a return where the roster cannot be read says so and draws no rows (3498–3499) | a return that keeps the old state or the old rows |
-| a take-back reaches the place on a day holding no number (3599–3601) | a take-back skipped where the day holds none |
+| a take-back reaches the place only where the day holds a number (3599–3601, reworded) | a take-back written, and so refused, where the day holds none; or skipped where it holds one |
 
 The roster half of 291–293 is proven by extending *going back to today does not read the roster
 again* rather than by adding a scenario. Both halves are one rule, so a second scenario would break
@@ -86,7 +86,25 @@ as grill answer 7 names. **Reclassified unprovable:** 1717, a total row's take-b
 *offers anything* — a take-back is offered only where a total entry is, so no widening changes the
 answer (meaning, same answer). **Pointer sentences skipped** (ADR-1047 decision 7.3): 553, 1953–1954,
 2236–2237, 3377–3378 "apart from the four causes named above", 3496–3497, and 3766–3767, whose target
-is 3599–3601. No rule is reworded; every carried block is byte-identical but for its added scenarios.
+is 3599–3601. One rule is reworded, below; every carried block is otherwise byte-identical but for its
+added scenarios.
+
+### Reworded after `cover-record-rules`, because `main` made the sentence false
+
+The human's answer to a rule-5 stop, 2026-09-14, overriding grill answer 6's wording of C5. `3d7688f`
+(#230) made every `RecordStore` change return without writing where the history would not change, so
+a take-back on a day holding no number no longer reaches the place, and is never refused. ADR-1047
+decision 7.5: the least rewording that is true against the code on `main`, within the carried
+requirement *A day screen enters the number…*, and nothing else in that block moves.
+
+- *Before:* "Taking one back SHALL reach the place whether or not the day holds a number, and SHALL be
+  refused only by the place."
+- *After:* "Taking one back SHALL reach the place only where the day holds a number, and SHALL be
+  refused only by the place."
+
+The note twin at 3766–3767, "Entering a note and taking one back SHALL answer as entering a number and
+taking one back do, behaviour for behaviour", still reads true: it points at this sentence, and
+`RecordStore.removeNote` returns before writing on the same terms. It stays a pointer with no scenario.
 
 ### The unprovable rules and the *Known gaps* entry
 
@@ -100,7 +118,7 @@ testable: no seam reaches any of them.
 Grill answer 5. Seven carried requirements were already over 150 words and are carried as shipped:
 *…moves the day it is showing…* (213), *…cannot read its record…* (205), *…draws the commitments its
 roster had not stopped keeping…* (169), *…reads what an entry is committed with…* (288), *…makes and
-takes back the tick…* (205), *…re-reads its day and its places…* (249), *…enters the number…* (258).
+takes back the tick…* (205), *…re-reads its day and its places…* (249), *…enters the number…* (257 since the reword below).
 
 ### A red test is fixed here, and only that
 
@@ -121,4 +139,5 @@ covering Story.
 ## Open Questions
 
 None. `grill.md` § *Left open* is "None.", and writing the delta raised no residual round: every rule
-re-verified to covered, testable or unprovable on facts read in source and the spec.
+re-verified to covered, testable or unprovable on facts read in source and the spec. The one question
+`main` raised later, reword or not, is settled: reworded, as above.
