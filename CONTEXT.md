@@ -282,6 +282,20 @@ new commitment's first, not the old one's last — the same choice #145 made for
 same price: a record made that morning under the old rhythm is not drawn that day, though it stands.
 Agreed 2026-09-09 at the grill of `add-commitment-editing` (#148).
 
+**Restarting** — beginning an every-N-days commitment's count again from a day the person picks,
+because it was kept late: nails due on day 3 and done on day 4 run three days on from day 4. It
+belongs only to every N days. A weekday set, a day of the month and a weekly quota are anchored to
+the calendar, and a late day does not move them. Restarting leaves the **start date** fixed and
+the rhythm unchanged. The grid that ran until the picked day stays exactly as it was: every day
+recorded before the restart answers against it. A new grid runs from that day on. It is refused on
+the same ground as any change: a day recorded on or after the picked day that would no longer be
+due. To a person it is one commitment across the restart, with one entry and one row and no seam
+drawn. That is a claim about the screens and not about identity. How the two grids read as one run,
+when anything looks back, is B-007's to decide. It is reached from the change sheet, and it is not
+a move of the **kept-from** day: that corrects the whole of a history, while this starts the count
+again partway through one. Agreed 2026-09-14 at the eighth grooming pass's Feature grill, from the
+owner's own case: a workaround through the kept-from day refused for a cause it did not have.
+
 **Category** — the word a person put a commitment under: *supplements*, *sport*, whatever they
 type. It is the owner's own word and never one the app names — no fixed menu holds the day-one
 week, and the same argument that makes a **commitment name** the owner's rather than the system's
