@@ -13,37 +13,37 @@ the next. Never transcribe the twenty-nine up front. The value tests go in
 
 ## 2. The seam
 
-- [ ] 2.1 `OneOff`, `OneOffs`, `OneOffStore` and `OneOffStoreError` exist with the signatures in
+- [x] 2.1 `OneOff`, `OneOffs`, `OneOffStore` and `OneOffStoreError` exist with the signatures in
       `design.md` § *The seam*, and 3.1 is red before any of them does more than compile
-- [ ] 2.2 The day a one-off was done is a field of the entry `OneOffs` holds, never a part of
+- [x] 2.2 The day a one-off was done is a field of the entry `OneOffs` holds, never a part of
       `OneOff`; `OneOff` has exactly the two stored properties the seam lists
-- [ ] 2.3 Dates are compared with `days(until:)` and the name is judged with `Blank.saysNothing(_:)`;
+- [x] 2.3 Dates are compared with `days(until:)` and the name is judged with `Blank.saysNothing(_:)`;
       no second whitespace test and no `Comparable` conformance is added (ADR-1039)
 - [ ] 2.4 `OneOffDocument` is `internal`, decodes through `OneOff.init?` and the held-by rules, and
       writes `doneOn` only where a one-off is done — no `IntroducedInVersion` constant at version 1
 
 ## 3. The twenty scenarios of the value — one test each
 
-- [ ] 3.1 two one-offs alike in name and date are the same one-off — catches an identifier, or equality over a done day
-- [ ] 3.2 a one-off's name is kept exactly as it was given — catches a trim on the way in
-- [ ] 3.3 a name that says nothing is refused and makes no one-off — catches a length check instead of the blank test
-- [ ] 3.4 a one-off that is not done stands on its date until that date has passed — catches a standing day that is always today
-- [ ] 3.5 a one-off that is not done and whose date has passed stands on today — catches a standing day that is always the one-off's date, the likeliest wrong answer
-- [ ] 3.6 a one-off that is done stands on the day it was ticked, whatever today is — catches a done one-off that goes on following today
-- [ ] 3.7 a one-off ticked after its date stands on the day it was ticked and not on its date — catches a standing day taken from the date once done
-- [ ] 3.8 a one-off that is not held stands on no day — catches an answer of a day for a one-off nobody holds
-- [ ] 3.9 adding a one-off already held is refused and changes nothing — catches a silent second copy
-- [ ] 3.10 a one-off differing in name or in date is held beside the one already there — catches a refusal that keys on the name alone
-- [ ] 3.11 a one-off added already done stands on the day it was done — catches an add-done that holds it undone
-- [ ] 3.12 a one-off ticked on a day is done and stands there — catches a tick that records no day
-- [ ] 3.13 making a one-off done on a day before its date is refused — catches a tick accepted on any day, through either entry point
-- [ ] 3.14 ticking a one-off that is already done is refused and leaves the day it holds — catches a second tick moving the day it was done
-- [ ] 3.15 ticking a one-off that is not held is refused — catches a tick that adds what it cannot find
-- [ ] 3.16 a tick taken back leaves the one-off held and standing by its date again — catches a take-back that removes the one-off
-- [ ] 3.17 taking back the tick of a one-off that is not done is refused — catches a take-back that reports success on nothing
-- [ ] 3.18 a one-off removed is held no longer and stands on no day — catches a removal that only unticks
-- [ ] 3.19 a one-off that is done is removed outright, tick and all — catches a removal that refuses a done one-off, and one that takes others with it
-- [ ] 3.20 removing a one-off that is not held is refused — catches a removal that reports success on nothing
+- [x] 3.1 two one-offs alike in name and date are the same one-off — catches an identifier, or equality over a done day
+- [x] 3.2 a one-off's name is kept exactly as it was given — catches a trim on the way in
+- [x] 3.3 a name that says nothing is refused and makes no one-off — catches a length check instead of the blank test
+- [x] 3.4 a one-off that is not done stands on its date until that date has passed — catches a standing day that is always today
+- [x] 3.5 a one-off that is not done and whose date has passed stands on today — catches a standing day that is always the one-off's date, the likeliest wrong answer
+- [x] 3.6 a one-off that is done stands on the day it was ticked, whatever today is — catches a done one-off that goes on following today
+- [x] 3.7 a one-off ticked after its date stands on the day it was ticked and not on its date — catches a standing day taken from the date once done
+- [x] 3.8 a one-off that is not held stands on no day — catches an answer of a day for a one-off nobody holds
+- [x] 3.9 adding a one-off already held is refused and changes nothing — catches a silent second copy
+- [x] 3.10 a one-off differing in name or in date is held beside the one already there — catches a refusal that keys on the name alone
+- [x] 3.11 a one-off added already done stands on the day it was done — catches an add-done that holds it undone
+- [x] 3.12 a one-off ticked on a day is done and stands there — catches a tick that records no day
+- [x] 3.13 making a one-off done on a day before its date is refused — catches a tick accepted on any day, through either entry point
+- [x] 3.14 ticking a one-off that is already done is refused and leaves the day it holds — catches a second tick moving the day it was done
+- [x] 3.15 ticking a one-off that is not held is refused — catches a tick that adds what it cannot find
+- [x] 3.16 a tick taken back leaves the one-off held and standing by its date again — catches a take-back that removes the one-off
+- [x] 3.17 taking back the tick of a one-off that is not done is refused — catches a take-back that reports success on nothing
+- [x] 3.18 a one-off removed is held no longer and stands on no day — catches a removal that only unticks
+- [x] 3.19 a one-off that is done is removed outright, tick and all — catches a removal that refuses a done one-off, and one that takes others with it
+- [x] 3.20 removing a one-off that is not held is refused — catches a removal that reports success on nothing
 
 ## 4. The nine scenarios of the store — one test each
 
