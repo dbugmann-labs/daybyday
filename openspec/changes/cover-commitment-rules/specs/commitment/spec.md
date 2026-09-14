@@ -3728,9 +3728,10 @@ refused change, and neither of the screen's lists SHALL move.
 
 - **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
   2026, is taken on at a roster place; a tick for it on Monday 3 August 2026 is kept at a record
-  place; a commitments screen is opened at that roster place and that record place as of Monday 31
-  August 2026; what is at that record place is then made impossible to write; and "Gym" is changed
-  through it to the name "Gym 🏋️", under no category
+  place in a directory of its own; a commitments screen is opened at that roster place and that
+  record place as of Monday 31 August 2026; the record place's directory is then made impossible to
+  write, while the roster place's directory stays writable; and "Gym" is changed through it to the
+  name "Gym 🏋️", under no category
 - **THEN** the content at that roster place is byte-for-byte what it was immediately after the
   screen was opened
 
