@@ -56,6 +56,10 @@ own scenario with a stop after that day. The large-roster sample stays at a thou
   record place as it was*. Fix (question 1, settled): when the roster write fails, `change` carries
   the records back in both branches.
 
+### Migration
+
+None — no build wrote a repeated entry: since its first persisted version (`a117347`) `Roster.add` takes a stopped commitment up again.
+
 ### Strengthened in place, and the three proven by mutation
 
 Grill answers 1–3. Titles stay; bodies are rewritten. A scenario's text changes only where it did not
