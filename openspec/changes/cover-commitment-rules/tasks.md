@@ -44,35 +44,35 @@ that test green, named in the PR body. A byte check in a store-refusal or record
 
 `RosterStoreTests.swift`:
 
-- [ ] 3.21 a name of ten thousand characters is a commitment and is read back out of a roster store whole — catches a length cap
-- [ ] 3.22 a roster store given a thousand commitments holds every one of them, in the order they were given — catches a count cap or a sort by name
-- [ ] 3.23 a stop that cannot be kept is refused and the roster a store reports does not move — catches the roster held before the write
-- [ ] 3.24 a group move that cannot be kept is refused and the roster a store reports does not move — catches the roster held before the write
-- [ ] 3.25 a change of one commitment for another that cannot be kept is refused and the roster a store reports does not move — catches the roster held before the write
-- [ ] 3.26 a supersession that cannot be kept is refused and the roster a store reports does not move — catches the roster held before the write
-- [ ] 3.27 a take-up-again that cannot be kept is refused and the roster a store reports does not move — catches the roster held before the write
-- [ ] 3.28 a stop a roster store refuses for a removed commitment is reported and nothing at its place changes — catches a refusal thrown or written
-- [ ] 3.29 a move a roster store refuses for a stopped commitment is reported and nothing at its place changes — catches a refusal thrown or written
-- [ ] 3.30 a move a roster store refuses for a removed commitment is reported and nothing at its place changes — catches a refusal thrown or written
-- [ ] 3.31 a move a roster store refuses for an offset it does not have is reported and nothing at its place changes — catches a refusal thrown or written
-- [ ] 3.32 a category change a roster store refuses for a commitment it does not hold is reported and nothing at its place changes — catches a refusal thrown or written
-- [ ] 3.33 a category change a roster store refuses for a removed commitment is reported and nothing at its place changes — catches a refusal thrown or written
-- [ ] 3.34 a change a roster store refuses for a commitment it does not hold is reported and nothing at its place changes — catches a refusal thrown or written
-- [ ] 3.35 a supersession a roster store refuses for a stopped commitment is reported and nothing at its place changes — catches a refusal thrown or written
-- [ ] 3.36 a supersession a roster store refuses for a removed commitment is reported and nothing at its place changes — catches a refusal thrown or written
-- [ ] 3.37 a supersession a roster store refuses for a commitment it already holds is reported and nothing at its place changes — catches a refusal thrown or written
-- [ ] 3.38 categories differing only in case are read back out of a roster store as two categories — catches case folding
-- [ ] 3.39 a roster store and a record store kept beside it change nothing at each other's place — catches one store writing the other's place
-- [ ] 3.40 a change kept over a roster in an earlier form keeps every day a commitment was kept until — catches kept-until days lost on the upgrade write
-- [ ] 3.41 a roster store declaring a later form whose body this app cannot read is refused as a later form — catches the body read before the form
-- [ ] 3.42 a roster store holding a commitment again after holding it stopped or removed is refused — red on arrival: `formRoster` takes the second copy up again
-- [ ] 3.43 a roster store holding a day kept until that names no day is refused — catches an unformed kept-until day read as kept
-- [ ] 3.44 a roster store holding a commitment whose range has its lowest above its highest is refused — catches an unchecked stored range
-- [ ] 3.45 a roster store holding a commitment whose target is not above zero is refused — catches an unchecked stored target
-- [ ] 3.46 a roster store holding a commitment on a day of the month outside the thirty-one is refused — catches an unchecked stored day of the month
-- [ ] 3.47 a roster store holding an every-N-days schedule whose start date names no day is refused — catches an unchecked stored start date
-- [ ] 3.48 a category of a thousand characters is held and read back out of a roster store whole — catches a length cap
-- [ ] 3.49 a category written in a script other than Latin is held and read back out of a roster store exactly — catches a script restriction
+- [x] 3.21 a name of ten thousand characters is a commitment and is read back out of a roster store whole — catches a length cap
+- [x] 3.22 a roster store given a thousand commitments holds every one of them, in the order they were given — catches a count cap or a sort by name
+- [x] 3.23 a stop that cannot be kept is refused and the roster a store reports does not move — catches the roster held before the write
+- [x] 3.24 a group move that cannot be kept is refused and the roster a store reports does not move — catches the roster held before the write
+- [x] 3.25 a change of one commitment for another that cannot be kept is refused and the roster a store reports does not move — catches the roster held before the write
+- [x] 3.26 a supersession that cannot be kept is refused and the roster a store reports does not move — catches the roster held before the write
+- [x] 3.27 a take-up-again that cannot be kept is refused and the roster a store reports does not move — catches the roster held before the write
+- [x] 3.28 a stop a roster store refuses for a removed commitment is reported and nothing at its place changes — catches a refusal thrown or written
+- [x] 3.29 a move a roster store refuses for a stopped commitment is reported and nothing at its place changes — catches a refusal thrown or written
+- [x] 3.30 a move a roster store refuses for a removed commitment is reported and nothing at its place changes — catches a refusal thrown or written
+- [x] 3.31 a move a roster store refuses for an offset it does not have is reported and nothing at its place changes — catches a refusal thrown or written
+- [x] 3.32 a category change a roster store refuses for a commitment it does not hold is reported and nothing at its place changes — catches a refusal thrown or written
+- [x] 3.33 a category change a roster store refuses for a removed commitment is reported and nothing at its place changes — catches a refusal thrown or written
+- [x] 3.34 a change a roster store refuses for a commitment it does not hold is reported and nothing at its place changes — catches a refusal thrown or written
+- [x] 3.35 a supersession a roster store refuses for a stopped commitment is reported and nothing at its place changes — catches a refusal thrown or written
+- [x] 3.36 a supersession a roster store refuses for a removed commitment is reported and nothing at its place changes — catches a refusal thrown or written
+- [x] 3.37 a supersession a roster store refuses for a commitment it already holds is reported and nothing at its place changes — catches a refusal thrown or written
+- [x] 3.38 categories differing only in case are read back out of a roster store as two categories — catches case folding
+- [x] 3.39 a roster store and a record store kept beside it change nothing at each other's place — catches one store writing the other's place
+- [x] 3.40 a change kept over a roster in an earlier form keeps every day a commitment was kept until — catches kept-until days lost on the upgrade write
+- [x] 3.41 a roster store declaring a later form whose body this app cannot read is refused as a later form — catches the body read before the form
+- [x] 3.42 a roster store holding a commitment again after holding it stopped or removed is refused — red on arrival: `formRoster` takes the second copy up again
+- [x] 3.43 a roster store holding a day kept until that names no day is refused — catches an unformed kept-until day read as kept
+- [x] 3.44 a roster store holding a commitment whose range has its lowest above its highest is refused — catches an unchecked stored range
+- [x] 3.45 a roster store holding a commitment whose target is not above zero is refused — catches an unchecked stored target
+- [x] 3.46 a roster store holding a commitment on a day of the month outside the thirty-one is refused — catches an unchecked stored day of the month
+- [x] 3.47 a roster store holding an every-N-days schedule whose start date names no day is refused — catches an unchecked stored start date
+- [x] 3.48 a category of a thousand characters is held and read back out of a roster store whole — catches a length cap
+- [x] 3.49 a category written in a script other than Latin is held and read back out of a roster store exactly — catches a script restriction
 
 `CommitmentsScreenTests.swift`:
 

@@ -1539,3 +1539,784 @@ func aChangeOfACommitmentForItselfKeepsNothingAtARosterStoresPlace() throws {
     #expect(store.roster == rosterBefore)
     #expect(try Data(contentsOf: place) == bytesBefore)
 }
+
+@Test("a name of ten thousand characters is a commitment and is read back out of a roster store whole")
+func aNameOfTenThousandCharactersIsACommitmentAndIsReadBackOutOfARosterStoreWhole() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let longName = String(repeating: "a", count: 10_000)
+    let commitment = Commitment(name: longName, schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(commitment)
+
+    let later = try RosterStore(at: place)
+
+    #expect(later.roster.commitments.map(\.name) == [longName])
+    #expect(later.roster.commitments.first?.name.count == 10_000)
+}
+
+@Test("a roster store given a thousand commitments holds every one of them, in the order they were given")
+func aRosterStoreGivenAThousandCommitmentsHoldsEveryOneOfThemInTheOrderTheyWereGiven() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let names = (0..<1_000).map { String(format: "Commitment %03d", 999 - $0) }
+    let commitments = names.map { Commitment(name: $0, schedule: schedule, keptFrom: keptFrom)! }
+
+    let store = try RosterStore(at: place)
+    for commitment in commitments {
+        try store.add(commitment)
+    }
+
+    let later = try RosterStore(at: place)
+
+    #expect(later.roster.commitments.count == 1_000)
+    #expect(later.roster.commitments == commitments)
+}
+
+@Test("a stop that cannot be kept is refused and the roster a store reports does not move")
+func aStopThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let place = directory.appendingPathComponent("roster.json")
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+
+    try FileManager.default.removeItem(at: directory)
+    try Data().write(to: directory)
+
+    #expect(throws: RosterStoreError.cannotWrite(at: place)) {
+        try store.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    }
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    #expect(store.roster == expected)
+}
+
+@Test("a group move that cannot be kept is refused and the roster a store reports does not move")
+func aGroupMoveThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let place = directory.appendingPathComponent("roster.json")
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.add(creatine)
+    try store.put(gym, under: "Sport")
+    try store.put(creatine, under: "Supplements")
+
+    try FileManager.default.removeItem(at: directory)
+    try Data().write(to: directory)
+
+    #expect(throws: RosterStoreError.cannotWrite(at: place)) {
+        try store.move(group: "Supplements", toOffset: 0)
+    }
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.add(creatine)
+    _ = expected.put(gym, under: "Sport")
+    _ = expected.put(creatine, under: "Supplements")
+    #expect(store.roster == expected)
+}
+
+@Test(
+    "a change of one commitment for another that cannot be kept is refused and the roster a store reports does not move"
+)
+func aChangeOfOneCommitmentForAnotherThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove()
+    throws
+{
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let place = directory.appendingPathComponent("roster.json")
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+
+    try FileManager.default.removeItem(at: directory)
+    try Data().write(to: directory)
+
+    #expect(throws: RosterStoreError.cannotWrite(at: place)) {
+        try store.change(gym, to: gymEmoji, under: nil)
+    }
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    #expect(store.roster == expected)
+}
+
+@Test("a supersession that cannot be kept is refused and the roster a store reports does not move")
+func aSupersessionThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let place = directory.appendingPathComponent("roster.json")
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let strength = Commitment(name: "Strength", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+
+    try FileManager.default.removeItem(at: directory)
+    try Data().write(to: directory)
+
+    #expect(throws: RosterStoreError.cannotWrite(at: place)) {
+        try store.supersede(
+            gym, with: strength, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!,
+            under: nil)
+    }
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    #expect(store.roster == expected)
+}
+
+@Test("a take-up-again that cannot be kept is refused and the roster a store reports does not move")
+func aTakeUpAgainThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let place = directory.appendingPathComponent("roster.json")
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    try FileManager.default.removeItem(at: directory)
+    try Data().write(to: directory)
+
+    #expect(throws: RosterStoreError.cannotWrite(at: place)) {
+        try store.add(gym)
+    }
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    #expect(store.roster == expected)
+}
+
+@Test("a stop a roster store refuses for a removed commitment is reported and nothing at its place changes")
+func aStopARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlaceChanges() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.remove(gym, keptUntil: januaryThirtyFirst)
+
+    let stopped = try store.retire(gym, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!)
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.remove(gym, keptUntil: januaryThirtyFirst)
+    #expect(!stopped)
+    #expect(store.roster == expected)
+}
+
+@Test("a move a roster store refuses for a stopped commitment is reported and nothing at its place changes")
+func aMoveARosterStoreRefusesForAStoppedCommitmentIsReportedAndNothingAtItsPlaceChanges() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.add(run)
+    try store.retire(gym, keptUntil: januaryThirtyFirst)
+
+    let moved = try store.move(gym, toOffset: 0, under: nil)
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.add(run)
+    _ = expected.retire(gym, keptUntil: januaryThirtyFirst)
+    #expect(!moved)
+    #expect(store.roster == expected)
+}
+
+@Test("a move a roster store refuses for a removed commitment is reported and nothing at its place changes")
+func aMoveARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlaceChanges() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.add(run)
+    try store.remove(gym, keptUntil: januaryThirtyFirst)
+
+    let moved = try store.move(gym, toOffset: 0, under: nil)
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.add(run)
+    _ = expected.remove(gym, keptUntil: januaryThirtyFirst)
+    #expect(!moved)
+    #expect(store.roster == expected)
+}
+
+@Test(
+    "a move a roster store refuses for an offset it does not have is reported and nothing at its place changes"
+)
+func aMoveARosterStoreRefusesForAnOffsetItDoesNotHaveIsReportedAndNothingAtItsPlaceChanges() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+
+    let moved = try store.move(gym, toOffset: 5, under: nil)
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    #expect(!moved)
+    #expect(store.roster == expected)
+}
+
+@Test(
+    "a category change a roster store refuses for a commitment it does not hold is reported and nothing at its place changes"
+)
+func aCategoryChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndNothingAtItsPlaceChanges()
+    throws
+{
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+
+    let put = try store.put(run, under: "Sport")
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    #expect(!put)
+    #expect(store.roster == expected)
+}
+
+@Test(
+    "a category change a roster store refuses for a removed commitment is reported and nothing at its place changes"
+)
+func aCategoryChangeARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlaceChanges()
+    throws
+{
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.remove(gym, keptUntil: januaryThirtyFirst)
+
+    let put = try store.put(gym, under: "Sport")
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.remove(gym, keptUntil: januaryThirtyFirst)
+    #expect(!put)
+    #expect(store.roster == expected)
+}
+
+@Test("a change a roster store refuses for a commitment it does not hold is reported and nothing at its place changes")
+func aChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndNothingAtItsPlaceChanges()
+    throws
+{
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let runRenamed = Commitment(name: "Run club", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+
+    let changed = try store.change(run, to: runRenamed, under: nil)
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    #expect(!changed)
+    #expect(store.roster == expected)
+}
+
+@Test(
+    "a supersession a roster store refuses for a stopped commitment is reported and nothing at its place changes"
+)
+func aSupersessionARosterStoreRefusesForAStoppedCommitmentIsReportedAndNothingAtItsPlaceChanges()
+    throws
+{
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let strength = Commitment(name: "Strength", schedule: schedule, keptFrom: keptFrom)!
+    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.retire(gym, keptUntil: januaryThirtyFirst)
+
+    let superseded = try store.supersede(
+        gym, with: strength, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!, under: nil)
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.retire(gym, keptUntil: januaryThirtyFirst)
+    #expect(!superseded)
+    #expect(store.roster == expected)
+}
+
+@Test(
+    "a supersession a roster store refuses for a removed commitment is reported and nothing at its place changes"
+)
+func aSupersessionARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlaceChanges()
+    throws
+{
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let strength = Commitment(name: "Strength", schedule: schedule, keptFrom: keptFrom)!
+    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.remove(gym, keptUntil: januaryThirtyFirst)
+
+    let superseded = try store.supersede(
+        gym, with: strength, keptUntil: CalendarDate(year: 2026, month: 2, day: 28)!, under: nil)
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.remove(gym, keptUntil: januaryThirtyFirst)
+    #expect(!superseded)
+    #expect(store.roster == expected)
+}
+
+@Test(
+    "a supersession a roster store refuses for a commitment it already holds is reported and nothing at its place changes"
+)
+func aSupersessionARosterStoreRefusesForACommitmentItAlreadyHoldsIsReportedAndNothingAtItsPlaceChanges()
+    throws
+{
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.add(run)
+
+    let superseded = try store.supersede(
+        gym, with: run, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!, under: nil)
+
+    var expected = Roster()
+    _ = expected.add(gym)
+    _ = expected.add(run)
+    #expect(!superseded)
+    #expect(store.roster == expected)
+}
+
+@Test("categories differing only in case are read back out of a roster store as two categories")
+func categoriesDifferingOnlyInCaseAreReadBackOutOfARosterStoreAsTwoCategories() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
+    let magnesium = Commitment(name: "Magnesium", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(creatine, under: "sport")
+    try store.add(magnesium, under: "Sport")
+
+    let later = try RosterStore(at: place)
+
+    #expect(
+        later.roster.groups
+            == [
+                Roster.Group(category: "sport", commitments: [creatine]),
+                Roster.Group(category: "Sport", commitments: [magnesium]),
+            ])
+}
+
+@Test("a roster store and a record store kept beside it change nothing at each other's place")
+func aRosterStoreAndARecordStoreKeptBesideItChangeNothingAtEachOthersPlace() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = directory.appendingPathComponent("roster.json")
+    let recordPlace = directory.appendingPathComponent("record.json")
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    let recordStore = try RecordStore(at: recordPlace)
+
+    try rosterStore.add(gym)
+
+    #expect(!FileManager.default.fileExists(atPath: recordPlace.path))
+
+    let rosterBytesAfterRosterWrite = try Data(contentsOf: rosterPlace)
+
+    try recordStore.add(Tick(gym, on: august3rd)!)
+
+    #expect(try Data(contentsOf: rosterPlace) == rosterBytesAfterRosterWrite)
+}
+
+@Test("a change kept over a roster in an earlier form keeps every day a commitment was kept until")
+func aChangeKeptOverARosterInAnEarlierFormKeepsEveryDayACommitmentWasKeptUntil() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 1,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Water plants",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 }
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              }
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    try store.change(gym, to: gymEmoji, under: nil)
+
+    let later = try RosterStore(at: place)
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let januaryThirtyFirst = CalendarDate(year: 2026, month: 1, day: 31)!
+    let februaryFirst = CalendarDate(year: 2026, month: 2, day: 1)!
+
+    #expect(later.roster.commitments(on: januaryThirtyFirst).contains(waterPlants))
+    #expect(!later.roster.commitments(on: februaryFirst).contains(waterPlants))
+}
+
+@Test("a roster store declaring a later form whose body this app cannot read is refused as a later form")
+func aRosterStoreDeclaringALaterFormWhoseBodyThisAppCannotReadIsRefusedAsALaterForm() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(#"{"version": 5, "commitments": "not an array"}"#.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 5)) {
+        try RosterStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a roster store holding a commitment again after holding it stopped or removed is refused")
+func aRosterStoreHoldingACommitmentAgainAfterHoldingItStoppedOrRemovedIsRefused() throws {
+    let stoppedPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: stoppedPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let stoppedBytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try stoppedBytes.write(to: stoppedPlace)
+
+    let removedPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: removedPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let removedBytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try removedBytes.write(to: removedPlace)
+
+    #expect(throws: RosterStoreError.notAStore(at: stoppedPlace)) {
+        try RosterStore(at: stoppedPlace)
+    }
+    #expect(throws: RosterStoreError.notAStore(at: removedPlace)) {
+        try RosterStore(at: removedPlace)
+    }
+    #expect(try Data(contentsOf: stoppedPlace) == stoppedBytes)
+    #expect(try Data(contentsOf: removedPlace) == removedBytes)
+}
+
+@Test("a roster store holding a day kept until that names no day is refused")
+func aRosterStoreHoldingADayKeptUntilThatNamesNoDayIsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 2, "day": 30 },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RosterStoreError.notAStore(at: place)) {
+        try RosterStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a roster store holding a commitment whose range has its lowest above its highest is refused")
+func aRosterStoreHoldingACommitmentWhoseRangeHasItsLowestAboveItsHighestIsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Weight",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "number": { "lowest": 150, "highest": 40 } }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RosterStoreError.notAStore(at: place)) {
+        try RosterStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a roster store holding a commitment whose target is not above zero is refused")
+func aRosterStoreHoldingACommitmentWhoseTargetIsNotAboveZeroIsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Protein",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "kind": { "total": { "target": 0 } }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RosterStoreError.notAStore(at: place)) {
+        try RosterStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a roster store holding a commitment on a day of the month outside the thirty-one is refused")
+func aRosterStoreHoldingACommitmentOnADayOfTheMonthOutsideTheThirtyOneIsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Finances",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "dayOfMonth": 32 }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RosterStoreError.notAStore(at: place)) {
+        try RosterStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a roster store holding an every-N-days schedule whose start date names no day is refused")
+func aRosterStoreHoldingAnEveryNDaysScheduleWhoseStartDateNamesNoDayIsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Contact lenses",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "everyNDays": 14, "from": { "year": 2026, "month": 2, "day": 30 } }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RosterStoreError.notAStore(at: place)) {
+        try RosterStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test("a category of a thousand characters is held and read back out of a roster store whole")
+func aCategoryOfAThousandCharactersIsHeldAndReadBackOutOfARosterStoreWhole() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let longCategory = String(repeating: "c", count: 1_000)
+
+    let store = try RosterStore(at: place)
+    try store.add(gym, under: longCategory)
+
+    let later = try RosterStore(at: place)
+
+    #expect(later.roster.groups == [Roster.Group(category: longCategory, commitments: [gym])])
+}
+
+@Test("a category written in a script other than Latin is held and read back out of a roster store exactly")
+func aCategoryWrittenInAScriptOtherThanLatinIsHeldAndReadBackOutOfARosterStoreExactly() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let category = "健康"
+
+    let store = try RosterStore(at: place)
+    try store.add(gym, under: category)
+
+    let later = try RosterStore(at: place)
+
+    #expect(later.roster.groups == [Roster.Group(category: category, commitments: [gym])])
+}
