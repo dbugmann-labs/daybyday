@@ -245,7 +245,7 @@ func aRosterKeptFromTheFirstSupportedDateAndStoppedOnTheLastIsReadBackUnchanged(
     let store = try RosterStore(at: place)
     try store.add(gym)
     try store.add(run)
-    try store.retire(gym, keptUntil: lastSupported)
+    let stopped = try store.retire(gym, keptUntil: lastSupported)
 
     let later = try RosterStore(at: place)
 
@@ -253,6 +253,7 @@ func aRosterKeptFromTheFirstSupportedDateAndStoppedOnTheLastIsReadBackUnchanged(
     _ = expected.add(gym)
     _ = expected.add(run)
     _ = expected.retire(gym, keptUntil: lastSupported)
+    #expect(stopped)
     #expect(later.roster == expected)
     #expect(later.roster.commitments(on: lastSupported) == [gym, run])
 }
@@ -918,14 +919,15 @@ func aRosterStoreDeclaringTheFormThisAppWritesAndSayingNothingAboutRemovalIsRefu
     let bytes = Data(
         """
         {
-          "version": 3,
+          "version": 4,
           "commitments": [
             {
               "commitment": {
                 "name": "Gym",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
-              }
+              },
+              "category": "Sport"
             }
           ]
         }
@@ -1457,18 +1459,28 @@ func aCommitmentChangedThroughARosterStoreIsReadBackChangedByAStoreOpenedAfterwa
     let place = freshPlace()
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
 
     let first = try RosterStore(at: place)
-    try first.add(gym)
+    try first.add(waterPlants)
+    try first.add(gym, under: "Sport")
+    try first.add(journaling)
 
-    let changed = try first.change(gym, to: gymEmoji, under: nil)
+    let changed = try first.change(gym, to: gymEmoji, under: "Sport")
 
     let later = try RosterStore(at: place)
 
     #expect(changed)
-    #expect(later.roster.commitments == [gymEmoji])
+    #expect(later.roster.commitments == [waterPlants, gymEmoji, journaling])
+    #expect(
+        later.roster.groups
+            == [
+                Roster.Group(category: "Sport", commitments: [gymEmoji]),
+                Roster.Group(category: nil, commitments: [waterPlants, journaling]),
+            ])
 }
 
 @Test("a commitment superseded through a roster store is read back superseded by a store opened afterwards")

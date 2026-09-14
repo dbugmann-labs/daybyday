@@ -1,6 +1,7 @@
 import Foundation
 import Testing
-import DayByDayKit
+
+@testable import DayByDayKit
 
 /// A fresh roster place under one fresh temporary directory — a UUID names the directory, and
 /// the file sits one level under it, so the directory itself does not exist until something
@@ -161,6 +162,7 @@ func aCommitmentsScreenOpenedOnARosterThatHoldsNothingListsNothingAndTakesNothin
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
 
     #expect(screen.kept.isEmpty)
+    #expect(screen.keptGroups.isEmpty)
     #expect(screen.stopped.isEmpty)
     #expect(screen.rosterState == .kept)
     #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
@@ -1472,6 +1474,11 @@ func aCommitmentsScreenAcceptsTheNumberAtEachEndOfWhatARhythmAllows() {
 @Test("a commitments screen keeps its roster at the place a day screen keeps its")
 func aCommitmentsScreenKeepsItsRosterAtThePlaceADayScreenKeepsIts() {
     #expect(CommitmentsScreen.rosterPlace == DayScreen.rosterPlace)
+
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let screen = CommitmentsScreen(asOf: monday)
+
+    #expect(screen.place == DayScreen.rosterPlace)
 }
 
 @MainActor
@@ -4876,6 +4883,7 @@ func aCommitmentWhoseRhythmIsChangedThroughACommitmentsScreenIsKeptUntilYesterda
     #expect(refusal == nil)
     #expect(screen.kept.count == 1)
     #expect(screen.kept.first?.name == "Gym")
+    #expect(screen.stopped.isEmpty)
 
     let laterRosterStore = try RosterStore(at: places.roster)
     let oldGym = Commitment(name: "Gym", schedule: originalSchedule, keptFrom: keptFrom)!
@@ -5181,11 +5189,15 @@ func aChangeThatNamesWhatIsAlreadyThereChangesNothingAndRefusesNothing() throws 
     ])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(gym, under: "Sport")
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gym, on: august3rd)!)
     let rosterBytes = try Data(contentsOf: places.roster)
+    let recordBytes = try Data(contentsOf: places.record)
 
     let screen = CommitmentsScreen(
         asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
@@ -5198,6 +5210,7 @@ func aChangeThatNamesWhatIsAlreadyThereChangesNothingAndRefusesNothing() throws 
     #expect(refusal == nil)
     #expect(screen.keptGroups == [Roster.Group(category: "Sport", commitments: [gym])])
     #expect(try Data(contentsOf: places.roster) == rosterBytes)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
 }
 
 @MainActor
@@ -5229,6 +5242,11 @@ func aStoppedCommitmentRenamedThroughACommitmentsScreenStaysStoppedOnTheDayItWas
     #expect(refusal == nil)
     #expect(screen.stopped.map(\.name) == ["Gym 🏋️"])
     #expect(screen.kept.map(\.name) == ["Journaling"])
+
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let laterRosterStore = try RosterStore(at: places.roster)
+    #expect(laterRosterStore.roster.commitments(on: sunday).contains(gymEmoji))
+    #expect(!laterRosterStore.roster.commitments(on: monday).contains(gymEmoji))
 }
 
 @MainActor

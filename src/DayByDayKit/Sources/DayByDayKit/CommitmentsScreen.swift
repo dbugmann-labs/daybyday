@@ -11,7 +11,10 @@ public final class CommitmentsScreen {
     /// opening the real Application Support directory.
     public static var rosterPlace: URL { DayScreen.rosterPlace }
 
-    private let place: URL
+    /// Internal rather than `private`, so a test reaching through `@testable import` can confirm a
+    /// screen opened with no place given actually keeps this — the one it was handed, not merely
+    /// a second expression that is definitionally the same thing. `design.md` § *The seam*.
+    let place: URL
     private let recordPlace: URL
     private var rosterStore: RosterStore?
     private var recordStore: RecordStore?

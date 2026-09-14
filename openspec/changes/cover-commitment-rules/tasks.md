@@ -12,7 +12,7 @@ that test green, named in the PR body. A byte check in a store-refusal or record
 
 ## 2. The carried requirements
 
-- [ ] 2.1 `git diff --no-index` of each carried block against the current spec shows only its appended scenarios and the rewordings `design.md` lists
+- [x] 2.1 `git diff --no-index` of each carried block against the current spec shows only its appended scenarios and the rewordings `design.md` lists
 
 ## 3. The ninety-six scenarios — one test each
 
@@ -126,15 +126,15 @@ that test green, named in the PR body. A byte check in a store-refusal or record
 
 ## 4. Strengthened in place, no mutation
 
-- [ ] 4.1 a stopped commitment renamed through a commitments screen stays stopped, on the day it was kept until — asserts the kept-until day through a later store
-- [ ] 4.2 a change that names what is already there changes nothing and refuses nothing — keeps a tick at a record place and asserts both places
-- [ ] 4.3 a commitments screen opened on a roster that holds nothing lists nothing and takes nothing on — asserts no groups
-- [ ] 4.4 a commitment whose rhythm is changed through a commitments screen is kept until yesterday and the new one is taken on today — asserts nothing stopped
-- [ ] 4.5 a commitments screen keeps its roster at the place a day screen keeps its — asserts, through the internal `place`, that a screen opened with no place keeps its roster there
-- [ ] 4.6 a roster store declaring the form this app writes and saying nothing about removal is refused — fixture at the form this app writes, with a category said
-- [ ] 4.7 a commitment changed through a roster store is read back changed by a store opened afterwards — builds the scenario's three commitments and "Sport"; asserts order and group
-- [ ] 4.8 a roster kept from the first supported date and stopped on the last is read back unchanged — asserts what the stop reported
-- [ ] 4.9 Any other test whose scenario names a read its body does not make is strengthened the same way, each named in the PR body
+- [x] 4.1 a stopped commitment renamed through a commitments screen stays stopped, on the day it was kept until — asserts the kept-until day through a later store
+- [x] 4.2 a change that names what is already there changes nothing and refuses nothing — keeps a tick at a record place and asserts both places
+- [x] 4.3 a commitments screen opened on a roster that holds nothing lists nothing and takes nothing on — asserts no groups
+- [x] 4.4 a commitment whose rhythm is changed through a commitments screen is kept until yesterday and the new one is taken on today — asserts nothing stopped
+- [x] 4.5 a commitments screen keeps its roster at the place a day screen keeps its — asserts, through the internal `place`, that a screen opened with no place keeps its roster there
+- [x] 4.6 a roster store declaring the form this app writes and saying nothing about removal is refused — fixture at the form this app writes, with a category said
+- [x] 4.7 a commitment changed through a roster store is read back changed by a store opened afterwards — builds the scenario's three commitments and "Sport"; asserts order and group
+- [x] 4.8 a roster kept from the first supported date and stopped on the last is read back unchanged — asserts what the stop reported
+- [x] 4.9 Any other test whose scenario names a read its body does not make is strengthened the same way, each named in the PR body
 
 ## 5. Proven by mutation — each reddens in a `git archive` tree, with the diff and red run in the PR body
 
