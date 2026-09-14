@@ -848,6 +848,15 @@ What a row **is** grows by the day's sum, for the third time and for the reason 
 number and by the note. It still never *draws* the sum itself: that reaches a person through the
 **total entry**, the way the number and the note reach one through theirs.
 
+**Amended 2026-09-14**, at the grill of `say-standing-in-quota-row` (#236). A row on a **weekly
+quota** says its **standing** inside its rhythm in words — "0/3x a week" on a week with nothing kept
+yet, "4/3x a week" past the quota — on every day of the week, a day that has not arrived included,
+and whatever its commitment's kind. What a row **is** grows by that standing, on a weekly quota's row
+and only there: two rows alike in commitment, date and what the day holds, saying different
+standings, are different rows, and a row on any other schedule holds no standing at all, so no two
+rows differ by something no reader can see. The count is the whole of how a met quota says so; a row
+carries no separate met state, since nothing here congratulates anyone.
+
 **Today** — the day a screen is being looked at on, and the only thing in the system that does not
 come from the calendar. It is always handed in and never asked for: nothing in the rule engine reads
 a clock, a time zone or a locale (ADR-1004), so *today* arrives as an argument at the moment a
@@ -1437,7 +1446,10 @@ one both say, because they are the same rhythm; a quota of seven is still "7x a 
 quota is any days; and a weekday set with no days says "No day", because it is a legal schedule a
 roster can hold. On a day-screen **row**, and there alone, a weekly quota's words carry the
 commitment's **standing** — "1/3x a week" — since 2026-09-14. Agreed 2026-09-06 at the grill of
-`add-rhythm-in-words` (#144).
+`add-rhythm-in-words` (#144). **Amended 2026-09-14**, at the grill of `say-standing-in-quota-row`
+(#236): the words with a standing are still the schedule's own English and composed nowhere else. A
+schedule can be said *given a count*: a weekly quota says the count before its words, as the number
+it was given and judging none, and every other shape says its plain words and ignores the count.
 
 **Rule engine** — the pure logic that answers whether a commitment is due, with no UI and no
 storage under it. It lives in the `DayByDayKit` Swift package and is driven from the terminal by
