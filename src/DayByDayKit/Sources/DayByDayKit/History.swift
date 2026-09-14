@@ -160,12 +160,7 @@ public struct History: Hashable, Sendable {
             return true
         }
 
-        let holdsAny =
-            ticks.contains { $0.commitment == changed }
-            || numbers.keys.contains { $0.commitment == changed }
-            || notes.keys.contains { $0.commitment == changed }
-            || additions.keys.contains { $0.commitment == changed }
-        guard !holdsAny else {
+        guard !holdsRecords(of: changed) else {
             return false
         }
 

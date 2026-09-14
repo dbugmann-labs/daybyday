@@ -461,7 +461,17 @@ public final class CommitmentsScreen {
                 }
 
                 do {
-                    _ = try recordStore.carryOver(commitment, to: changedCommitment)
+                    // The two checks above already answer both causes `carryOver` itself
+                    // refuses for; a `false` here means a record type has gained a formation
+                    // rule beyond `isDue` that they do not yet cover. Treated the same as the
+                    // requirement already does for a day a record could not have been made on:
+                    // `openspec/specs/commitment/spec.md` § *A commitments screen refuses a
+                    // change it cannot make* — "no record SHALL be carried over to a day it
+                    // could not have been made on".
+                    guard try recordStore.carryOver(commitment, to: changedCommitment) else {
+                        refusedChange = .changing(commitment, .wouldLeaveARecordedDayNotDue)
+                        return .wouldLeaveARecordedDayNotDue
+                    }
                 } catch {
                     refusedChange = .changing(commitment, .notKept)
                     return .notKept
@@ -529,7 +539,13 @@ public final class CommitmentsScreen {
             }
 
             do {
-                _ = try recordStore.carryOver(commitment, to: carryTarget)
+                // Same fallback as the same-rhythm path above: the two checks already answer
+                // both causes `carryOver` refuses for, so a `false` here can only be a formation
+                // rule beyond `isDue` that they do not yet cover.
+                guard try recordStore.carryOver(commitment, to: carryTarget) else {
+                    refusedChange = .changing(commitment, .wouldLeaveARecordedDayNotDue)
+                    return .wouldLeaveARecordedDayNotDue
+                }
             } catch {
                 refusedChange = .changing(commitment, .notKept)
                 return .notKept
