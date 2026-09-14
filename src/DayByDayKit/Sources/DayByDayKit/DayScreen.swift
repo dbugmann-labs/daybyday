@@ -253,10 +253,10 @@ public final class DayScreen {
             self.cause = cause
         }
 
-        init(oneOffRow: DayView.OneOffRow, cause: String? = nil) {
+        init(oneOffRow: DayView.OneOffRow) {
             self.row = nil
             self.oneOffRow = oneOffRow
-            self.cause = cause
+            self.cause = nil
         }
     }
 
@@ -461,11 +461,12 @@ public final class DayScreen {
             on: day, in: recordStore?.history ?? History())
     }
 
-    /// The day view of `shownDay`, drawn from `roster` and `recordStore`'s history exactly as
-    /// they stand now — asks neither again. Shared by every caller that re-forms `dayView` after
-    /// changing what it is drawn from or which day it is drawn for: the writes `tick` and
-    /// `enter(_:on:)` keep before re-forming it, and the moves `showPreviousDay`, `showNextDay`
-    /// and `showToday` that only step the day already held.
+    /// The day view of `shownDay`, drawn from `roster`, `recordStore`'s history and
+    /// `oneOffStore`'s one-offs exactly as they stand now — asks none of the three again. Shared
+    /// by every caller that re-forms `dayView` after changing what it is drawn from or which day
+    /// it is drawn for: the writes `tick` and `enter(_:on:)` keep before re-forming it, and the
+    /// moves `showPreviousDay`, `showNextDay` and `showToday` that only step the day already
+    /// held.
     private func dayViewOfShownDay() -> DayView {
         dayView(on: shownDay)
     }
@@ -575,7 +576,8 @@ public final class DayScreen {
     /// rhythm change made elsewhere reaches every row this screen draws. A screen not keeping a
     /// record does not start keeping one by being returned to: `design.md` § *A day screen
     /// returned to now reads its record place again where it is keeping one*. The one-offs are
-    /// not read again — `design.md` § *The seam*, "at no other moment" than being opened and the
+    /// not read again — the spec requirement "A day screen draws the one-offs at its one-off
+    /// place as of the today it was handed" says "at no other moment" than being opened and the
     /// app being shown again.
     public func returnedTo() {
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)

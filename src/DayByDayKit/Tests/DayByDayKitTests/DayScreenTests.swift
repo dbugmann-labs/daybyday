@@ -2306,10 +2306,17 @@ func tickingAOneOffRowThatTheDayViewDoesNotHoldOrThatOffersNoTickChangesNothing(
         keepingRosterAt: secondRosterPlace, keepingOneOffsAt: oneOffPlace)
 
     try firstScreen.tick(secondScreen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Call mum" })!)
-    try firstScreen.tick(firstScreen.nextDayView!.oneOffGroup!.rows.first(where: { $0.name == "Pay fine" })!)
 
+    firstScreen.showNextDay()
+    try firstScreen.tick(firstScreen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Pay fine" })!)
+
+    #expect(firstScreen.dayView.oneOffGroup?.rows.map(\.name) == ["Pay fine"])
+    #expect(firstScreen.dayView.oneOffGroup?.rows.first?.isDone == false)
+
+    firstScreen.showToday()
     #expect(firstScreen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
     #expect(firstScreen.dayView.oneOffGroup?.rows.first?.isDone == false)
+
     #expect(try Data(contentsOf: oneOffPlace) == bytesBefore)
 }
 

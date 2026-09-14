@@ -568,10 +568,10 @@ struct ContentView: View {
 
     /// One one-off row's content and the tap that acts on it — the same shape `rowView(_:)` draws
     /// for a commitment row, with `lateInWords` standing in the rhythm's place and `tick`
-    /// standing in for the tap `rowView(_:)` makes. `design.md` § *A one-off row says how late it
-    /// is while undone, and offers its tick where its day has arrived*: the tap is offered exactly
-    /// where `offersTick(asOf:)` says so, done or not, so a done row still offers taking its tick
-    /// back.
+    /// standing in for the tap `rowView(_:)` makes. The spec requirement "A one-off row says how
+    /// late it is while undone, and offers its tick where its day has arrived": the tap is
+    /// offered exactly where `offersTick(asOf:)` says so, done or not, so a done row still offers
+    /// taking its tick back.
     @ViewBuilder
     private func oneOffRowView(_ row: DayView.OneOffRow) -> some View {
         let nameColor: Color = row.isDone ? .secondary : .primary
