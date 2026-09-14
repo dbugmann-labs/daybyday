@@ -297,6 +297,73 @@ func aOneOffThatIsDoneIsRemovedOutrightTickAndAll() {
     #expect(oneOffs.standingDay(for: callDad, asOf: october5) == september26)
 }
 
+@Test("one-offs standing on a day are answered earliest owed first")
+func oneOffsStandingOnADayAreAnsweredEarliestOwedFirst() {
+    let sendForm = OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 27)!)!
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let payFine = OneOff(name: "Pay fine", date: CalendarDate(year: 2026, month: 9, day: 20)!)!
+
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(sendForm)
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.add(payFine)
+
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+    let september27 = CalendarDate(year: 2026, month: 9, day: 27)!
+
+    #expect(
+        oneOffs.standing(on: september28, asOf: september28).map(\.name)
+            == ["Pay fine", "Call mum", "Send form"])
+    #expect(oneOffs.standing(on: september27, asOf: september28).isEmpty)
+}
+
+@Test("one-offs owed on one date keep the order they were added in")
+func oneOffsOwedOnOneDateKeepTheOrderTheyWereAddedIn() throws {
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let bookDentist = OneOff(
+        name: "Book dentist", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let september25 = CalendarDate(year: 2026, month: 9, day: 25)!
+    let september21 = CalendarDate(year: 2026, month: 9, day: 21)!
+
+    let place = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        .appendingPathComponent("one-offs.json")
+    let store = try OneOffStore(at: place)
+    try store.add(callMum)
+    try store.add(bookDentist)
+
+    #expect(
+        store.oneOffs.standing(on: september25, asOf: september21).map(\.name)
+            == ["Call mum", "Book dentist"])
+
+    let reopened = try OneOffStore(at: place)
+    #expect(
+        reopened.oneOffs.standing(on: september25, asOf: september21).map(\.name)
+            == ["Call mum", "Book dentist"])
+}
+
+@Test("done and undone one-offs standing on one day are ordered by the date owed alone")
+func doneAndUndoneOneOffsStandingOnOneDayAreOrderedByTheDateOwedAlone() {
+    let sendForm = OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 28)!)!
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let payFine = OneOff(name: "Pay fine", date: CalendarDate(year: 2026, month: 9, day: 20)!)!
+
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(sendForm)
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.add(payFine)
+
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+    _ = oneOffs.tick(callMum, on: september28)
+
+    let october5 = CalendarDate(year: 2026, month: 10, day: 5)!
+
+    #expect(
+        oneOffs.standing(on: september28, asOf: september28).map(\.name)
+            == ["Pay fine", "Call mum", "Send form"])
+    #expect(oneOffs.standing(on: september28, asOf: october5).map(\.name) == ["Call mum"])
+}
+
 @Test("removing a one-off that is not held is refused")
 func removingAOneOffThatIsNotHeldIsRefused() {
     let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!

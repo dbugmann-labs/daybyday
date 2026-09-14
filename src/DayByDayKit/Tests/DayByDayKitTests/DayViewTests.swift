@@ -19,6 +19,265 @@ func aDayViewHoldsARowForEachCommitmentDueOnTheDate() {
     #expect(dayView.rows.map(\.name) == ["Gym", "Run"])
 }
 
+@Test("a day view holds a One-offs group of the one-offs standing on its date")
+func aDayViewHoldsAOneOffsGroupOfTheOneOffsStandingOnItsDate() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let sendForm = OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 30)!)!
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.add(sendForm)
+
+    let dayView = DayView(
+        of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: oneOffs,
+        asOf: monday, on: monday, in: History())
+
+    #expect(dayView.groups.count == 1)
+    #expect(dayView.groups[0].category == nil)
+    #expect(dayView.groups[0].rows.map(\.name) == ["Journaling"])
+    #expect(dayView.oneOffGroup?.heading == "One-offs")
+    #expect(dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+    #expect(dayView.rows.map(\.name) == ["Journaling"])
+}
+
+@Test("a day view of a past day draws no undone one-off owed on that day")
+func aDayViewOfAPastDayDrawsNoUndoneOneOffOwedOnThatDay() {
+    let friday = CalendarDate(year: 2026, month: 9, day: 25)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let callMum = OneOff(name: "Call mum", date: friday)!
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    let history = History()
+
+    let dayView = DayView(
+        of: [Roster.Group](), oneOffs: oneOffs, asOf: monday, on: friday, in: history)
+
+    #expect(dayView.oneOffGroup == nil)
+
+    let expected = DayView(of: [Roster.Group](), on: friday, in: history)
+    #expect(dayView == expected)
+}
+
+@Test("a day view's one-off rows are in the order one-offs answer them")
+func aDayViewsOneOffRowsAreInTheOrderOneOffsAnswerThem() {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let sendForm = OneOff(name: "Send form", date: monday)!
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let bookDentist = OneOff(
+        name: "Book dentist", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(sendForm)
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.add(bookDentist)
+
+    let dayView = DayView(
+        of: [Roster.Group](), oneOffs: oneOffs, asOf: monday, on: monday, in: History())
+
+    #expect(dayView.oneOffGroup?.rows.map(\.name) == ["Call mum", "Book dentist", "Send form"])
+    #expect(dayView.groups.isEmpty)
+    #expect(dayView.rows.isEmpty)
+}
+
+@Test("an undone one-off row on a day after its date says how many days late it is")
+func anUndoneOneOffRowOnADayAfterItsDateSaysHowManyDaysLateItIs() {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let callDad = OneOff(name: "Call dad", date: CalendarDate(year: 2026, month: 9, day: 27)!)!
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.add(callDad)
+
+    let dayView = DayView(
+        of: [Roster.Group](), oneOffs: oneOffs, asOf: monday, on: monday, in: History())
+
+    let rows = dayView.oneOffGroup!.rows
+    #expect(rows.first(where: { $0.name == "Call mum" })?.lateInWords == "3 days late")
+    #expect(rows.first(where: { $0.name == "Call mum" })?.isDone == false)
+    #expect(rows.first(where: { $0.name == "Call dad" })?.lateInWords == "1 day late")
+}
+
+@Test("a one-off row late by more than a year still says days")
+func aOneOffRowLateByMoreThanAYearStillSaysDays() {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let renewPassport = OneOff(
+        name: "Renew passport", date: CalendarDate(year: 2025, month: 8, day: 24)!)!
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(renewPassport)
+
+    let dayView = DayView(
+        of: [Roster.Group](), oneOffs: oneOffs, asOf: monday, on: monday, in: History())
+
+    #expect(dayView.oneOffGroup?.rows.first?.lateInWords == "400 days late")
+}
+
+@Test("a one-off row on its own date says nothing in the rhythm's place")
+func aOneOffRowOnItsOwnDateSaysNothingInTheRhythmsPlace() {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let sendForm = OneOff(name: "Send form", date: monday)!
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(sendForm)
+
+    let dayView = DayView(
+        of: [Roster.Group](), oneOffs: oneOffs, asOf: monday, on: monday, in: History())
+
+    #expect(dayView.oneOffGroup?.rows.first?.lateInWords == nil)
+
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 30)!
+    let payFine = OneOff(name: "Pay fine", date: wednesday)!
+    var otherOneOffs = OneOffs()
+    _ = otherOneOffs.add(payFine)
+
+    let otherDayView = DayView(
+        of: [Roster.Group](), oneOffs: otherOneOffs, asOf: wednesday, on: wednesday,
+        in: History())
+
+    #expect(otherDayView.oneOffGroup?.rows.first?.lateInWords == nil)
+}
+
+@Test("a one-off ticked late says nothing in the rhythm's place on the day it was ticked")
+func aOneOffTickedLateSaysNothingInTheRhythmsPlaceOnTheDayItWasTicked() {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let laterOctober5 = CalendarDate(year: 2026, month: 10, day: 5)!
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.tick(callMum, on: monday)
+
+    let dayView = DayView(
+        of: [Roster.Group](), oneOffs: oneOffs, asOf: laterOctober5, on: monday, in: History())
+
+    #expect(dayView.oneOffGroup?.rows.first?.isDone == true)
+    #expect(dayView.oneOffGroup?.rows.first?.lateInWords == nil)
+
+    let sameDayView = DayView(
+        of: [Roster.Group](), oneOffs: oneOffs, asOf: monday, on: monday, in: History())
+
+    #expect(sameDayView.oneOffGroup?.rows.first?.isDone == true)
+    #expect(sameDayView.oneOffGroup?.rows.first?.lateInWords == nil)
+}
+
+@Test("a one-off row offers its tick where its day has arrived, done or not")
+func aOneOffRowOffersItsTickWhereItsDayHasArrivedDoneOrNot() {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let callDad = OneOff(name: "Call dad", date: monday)!
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.add(callDad)
+    _ = oneOffs.tick(callDad, on: monday)
+
+    let dayView = DayView(
+        of: [Roster.Group](), oneOffs: oneOffs, asOf: monday, on: monday, in: History())
+
+    for row in dayView.oneOffGroup!.rows {
+        #expect(row.offersTick(asOf: monday))
+    }
+
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 30)!
+    let payFine = OneOff(name: "Pay fine", date: wednesday)!
+    var payFineOneOffs = OneOffs()
+    _ = payFineOneOffs.add(payFine)
+    let payFineDayView = DayView(
+        of: [Roster.Group](), oneOffs: payFineOneOffs, asOf: monday, on: wednesday,
+        in: History())
+    let payFineRow = payFineDayView.oneOffGroup!.rows.first!
+
+    #expect(!payFineRow.offersTick(asOf: monday))
+    #expect(payFineRow.offersTick(asOf: wednesday))
+
+    let october5 = CalendarDate(year: 2026, month: 10, day: 5)!
+    let laterDayView = DayView(
+        of: [Roster.Group](), oneOffs: oneOffs, asOf: october5, on: monday, in: History())
+    let callDadRow = laterDayView.oneOffGroup!.rows.first(where: { $0.name == "Call dad" })!
+
+    #expect(callDadRow.offersTick(asOf: october5))
+}
+
+@Test("two one-off rows alike in one-off, date and whether done are the same row")
+func twoOneOffRowsAlikeInOneOffDateAndWhetherDoneAreTheSameRow() {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+
+    var first = OneOffs()
+    _ = first.add(callMum)
+    let firstDayView = DayView(
+        of: [Roster.Group](), oneOffs: first, asOf: monday, on: monday, in: History())
+
+    var second = OneOffs()
+    _ = second.add(callMum)
+    let secondDayView = DayView(
+        of: [Roster.Group](), oneOffs: second, asOf: monday, on: monday, in: History())
+
+    #expect(firstDayView.oneOffGroup?.rows.first == secondDayView.oneOffGroup?.rows.first)
+
+    var third = OneOffs()
+    _ = third.add(callMum)
+    _ = third.tick(callMum, on: monday)
+    let thirdDayView = DayView(
+        of: [Roster.Group](), oneOffs: third, asOf: monday, on: monday, in: History())
+
+    #expect(thirdDayView.oneOffGroup?.rows.first != firstDayView.oneOffGroup?.rows.first)
+    #expect(thirdDayView.oneOffGroup?.rows.first != secondDayView.oneOffGroup?.rows.first)
+}
+
+@Test("two one-off rows of one one-off on different dates are different rows")
+func twoOneOffRowsOfOneOneOffOnDifferentDatesAreDifferentRows() {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 29)!
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+
+    var mondayOneOffs = OneOffs()
+    _ = mondayOneOffs.add(callMum)
+    let mondayDayView = DayView(
+        of: [Roster.Group](), oneOffs: mondayOneOffs, asOf: monday, on: monday, in: History())
+
+    var tuesdayOneOffs = OneOffs()
+    _ = tuesdayOneOffs.add(callMum)
+    let tuesdayDayView = DayView(
+        of: [Roster.Group](), oneOffs: tuesdayOneOffs, asOf: tuesday, on: tuesday, in: History())
+
+    #expect(mondayDayView.oneOffGroup?.rows.first?.lateInWords == "3 days late")
+    #expect(tuesdayDayView.oneOffGroup?.rows.first?.lateInWords == "4 days late")
+    #expect(mondayDayView.oneOffGroup?.rows.first != tuesdayDayView.oneOffGroup?.rows.first)
+}
+
+@Test("two day views differing only in a one-off standing on another day are the same day view")
+func twoDayViewsDifferingOnlyInAOneOffStandingOnAnotherDayAreTheSameDayView() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let groups = [Roster.Group(category: nil, commitments: [journaling])]
+
+    let first = DayView(of: groups, on: monday, in: History())
+
+    var sendFormOneOffs = OneOffs()
+    _ = sendFormOneOffs.add(
+        OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 30)!)!)
+    let second = DayView(
+        of: groups, oneOffs: sendFormOneOffs, asOf: monday, on: monday, in: History())
+
+    #expect(first == second)
+
+    var callMumOneOffs = OneOffs()
+    _ = callMumOneOffs.add(
+        OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!)
+    let third = DayView(
+        of: groups, oneOffs: callMumOneOffs, asOf: monday, on: monday, in: History())
+
+    #expect(third != first)
+    #expect(third != second)
+}
+
 @Test("a commitment not due on the date has no row")
 func aCommitmentNotDueOnTheDateHasNoRow() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!

@@ -204,6 +204,45 @@ public struct DayView: Hashable, Sendable {
         }
     }
 
+    /// A one-off standing on a day view's date: its one-off, that date and whether it is done.
+    /// `design.md` § *Lateness is derived from what the row is, never stored*.
+    public struct OneOffRow: Hashable, Sendable {
+        let oneOff: OneOff
+        let date: CalendarDate
+        public let isDone: Bool
+
+        public var name: String { oneOff.name }
+
+        /// How late this row's one-off is, said in days — "1 day late", "400 days late" — or
+        /// `nil` while it is done or not yet late. `design.md` § *The seam*.
+        public var lateInWords: String? {
+            guard !isDone else {
+                return nil
+            }
+
+            let daysLate = oneOff.date.days(until: date)
+            guard daysLate > 0 else {
+                return nil
+            }
+
+            return daysLate == 1 ? "1 day late" : "\(daysLate) days late"
+        }
+
+        /// Whether this row offers its tick as of `today`: `true` exactly when `today` is no
+        /// earlier than this row's date, whether or not the one-off is done. `design.md` § *The
+        /// seam*.
+        public func offersTick(asOf today: CalendarDate) -> Bool {
+            today.days(until: date) <= 0
+        }
+    }
+
+    /// The one-offs standing on a day view's date, headed "One-offs". `design.md` § *A One-offs
+    /// group of its own, not a fifth `Group`*.
+    public struct OneOffGroup: Hashable, Sendable {
+        public let heading: String
+        public let rows: [OneOffRow]
+    }
+
     let date: CalendarDate
 
     /// This day view's rows, in **groups** — one for each group it was handed that holds at
@@ -211,6 +250,10 @@ public struct DayView: Hashable, Sendable {
     /// works out no group of its own: it sorts none, combines none under the same category, and
     /// decides no place for the commitments under no category. `design.md` § *The seam*.
     public let groups: [Group]
+
+    /// The one-offs standing on this day view's date, or `nil` where none stand. `design.md`
+    /// § *A One-offs group of its own, not a fifth `Group`*.
+    public let oneOffGroup: OneOffGroup?
 
     /// Every row this day view holds, read across `groups` in the order the groups are drawn —
     /// the same rows `groups` holds and each exactly once.
@@ -225,7 +268,38 @@ public struct DayView: Hashable, Sendable {
     /// group left holding none. `design.md` § *The seam*.
     public init(of groups: [Roster.Group], on date: CalendarDate, in history: History) {
         self.date = date
-        self.groups = groups.compactMap { group in
+        self.groups = Self.makeGroups(from: groups, on: date, in: history)
+        self.oneOffGroup = nil
+    }
+
+    /// Forms a day view exactly as `init(of:on:in:)` does, and additionally of the one-offs
+    /// standing on `date` as of `today`, held in a `OneOffGroup` headed "One-offs" — or no such
+    /// group where none stand. `design.md` § *The seam*.
+    public init(
+        of groups: [Roster.Group], oneOffs: OneOffs, asOf today: CalendarDate,
+        on date: CalendarDate, in history: History
+    ) {
+        self.date = date
+        self.groups = Self.makeGroups(from: groups, on: date, in: history)
+
+        let standing = oneOffs.standing(on: date, asOf: today)
+        self.oneOffGroup =
+            standing.isEmpty
+            ? nil
+            : OneOffGroup(
+                heading: "One-offs",
+                rows: standing.map { oneOff in
+                    OneOffRow(oneOff: oneOff, date: date, isDone: oneOffs.isDone(oneOff))
+                })
+    }
+
+    /// The groups `init(of:on:in:)` and `init(of:oneOffs:asOf:on:in:)` both hold: one for each
+    /// group handed in that keeps at least one row due on `date`, dropping every commitment not
+    /// due and, with it, a group left holding none.
+    private static func makeGroups(
+        from groups: [Roster.Group], on date: CalendarDate, in history: History
+    ) -> [Group] {
+        groups.compactMap { group in
             let rows = group.commitments
                 .filter { $0.isDue(on: date) }
                 .map { commitment -> Row in

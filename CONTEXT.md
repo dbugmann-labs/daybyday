@@ -1293,6 +1293,15 @@ choice lands on the day screen because it lands nowhere else — a **roster stor
 whatever place it is given and cannot refuse a bad one from where it sits, and the **app shell**
 decides nothing. Agreed 2026-09-04 at the grill of `add-roster-store` (#103).
 
+**One-off place** — the one place a day screen keeps its **one-offs** at, chosen exactly as the
+**record place** and the **roster place** are, and a file of its own beside both, so that a one-off
+file that will not open never takes the record or the roster down with it. A day screen that cannot
+read it draws its commitments as ever, draws no *One-offs* group, says it is keeping no one-offs and
+leaves what is there untouched, naming a file written by a later version as the record does
+(ADR-1021). A one-off change shares the day screen's one **notice**: a refused one replaces a notice
+on any row, and one that lands ends it. It does not move a **reach**, which stays the roster's.
+Agreed 2026-09-14 at the grill of `draw-one-offs-on-day-screen` (#243).
+
 **Shown** — the moment the app comes in front of a person: opened from nothing, or brought back from
 behind whatever was in front of it. It is the only moment a day screen is handed a **today**, and so
 the only moment the day it holds can change — nothing else moves a day screen onto another day, and
@@ -1357,6 +1366,20 @@ removing one and adding it to another day is two taps. Its **store** is its own,
 and the record, so `record` goes on holding only what a commitment's days take. Agreed 2026-09-14
 at the Feature grill of B-049, which grooms cluster C of the eighth pass; the capability is
 `one-off`, and it is the first under an Epic other than #1.
+
+**Amended 2026-09-14**, at the grill of `draw-one-offs-on-day-screen` (#243). What a row says in the
+rhythm's place is **how late it is, in days** — "3 days late", "1 day late", "400 days late", never
+weeks or a date — and it says it only while the one-off is **undone**. An undone one-off stands on
+its date or on today, so the count is only ever said on the today and is that today less its date.
+A one-off ticked late says nothing there on the day it was ticked: its row goes quiet like every
+ticked row, and the sentence above saying a row shows the date wherever it is not the day shown is
+withdrawn. The owner chose the count against a recommended "Owed Fri 25 Sep", told it sits near the
+counting *Nothing congratulates you* refuses; it stays a fact because it counts a debt still open and
+vanishes the moment it is paid. The group's rows are ordered **by the date owed, earliest first**,
+and two owed on one date keep the order they were added in — a rule about dates and never names. Its
+tick is the one-off's own and records the **today**, so a one-off done on a day the app was not
+opened is ticked as done on the day it was ticked. Taking a tick back is offered wherever a ticked
+row is drawn, a past day included, and the row then leaves that day for today.
 
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a

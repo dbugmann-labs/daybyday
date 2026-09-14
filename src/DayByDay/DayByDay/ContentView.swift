@@ -323,6 +323,15 @@ struct ContentView: View {
             case .writtenByALaterVersion:
                 Text("The roster was written by a newer version of DayByDay and must not be deleted.")
             }
+
+            switch screen.oneOffState {
+            case .kept:
+                EmptyView()
+            case .unreadable:
+                Text("The one-offs could not be read.")
+            case .writtenByALaterVersion:
+                Text("The one-offs were written by a newer version of DayByDay and must not be deleted.")
+            }
         }
         .padding(.horizontal)
         .padding(.top, 24)
@@ -441,6 +450,20 @@ struct ContentView: View {
                         }
                     }
                 }
+                // The One-offs group, after every group of commitments — `openspec/specs/
+                // day-screen/spec.md`'s *A day view draws the one-offs standing on its date as
+                // one group headed One-offs*. `dayView.oneOffGroup` is `nil` where none stand,
+                // so this draws nothing rather than an empty section on an ordinary day.
+                if let oneOffGroup = dayView.oneOffGroup {
+                    Section {
+                        ForEach(Array(oneOffGroup.rows.enumerated()), id: \.offset) { _, row in
+                            oneOffRowView(row)
+                        }
+                    } header: {
+                        Text(oneOffGroup.heading)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
+                    }
+                }
             }
         }
         // Same measured value as `CommitmentsView`'s kept list — see the comment there for how
@@ -538,6 +561,52 @@ struct ContentView: View {
             // Decisions 3 and 5, ADR-1045: a row that offers nothing recedes as one thing —
             // the name, the rhythm and any mark fade together rather than by three different
             // amounts.
+            label
+                .opacity(0.5)
+        }
+    }
+
+    /// One one-off row's content and the tap that acts on it — the same shape `rowView(_:)` draws
+    /// for a commitment row, with `lateInWords` standing in the rhythm's place and `tick`
+    /// standing in for the tap `rowView(_:)` makes. The spec requirement "A one-off row says how
+    /// late it is while undone, and offers its tick where its day has arrived": the tap is
+    /// offered exactly where `offersTick(asOf:)` says so, done or not, so a done row still offers
+    /// taking its tick back.
+    @ViewBuilder
+    private func oneOffRowView(_ row: DayView.OneOffRow) -> some View {
+        let nameColor: Color = row.isDone ? .secondary : .primary
+        let markSystemName: String? = row.isDone ? "checkmark" : nil
+        let markColor: Color = Color.green
+        let nameText = Text(row.name)
+            .foregroundStyle(nameColor)
+            .strikethrough(row.isDone)
+        let nameLine: Text =
+            row.lateInWords.map { commitmentLine(nameText, rhythmInWords: $0).foregroundStyle(Color.primary) }
+            ?? nameText
+        let label = HStack {
+            VStack(alignment: .leading) {
+                nameLine
+                if row == screen.notice?.oneOffRow {
+                    Text(screen.notice?.cause ?? "Not saved. Try again.")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            }
+            if markSystemName != nil {
+                Spacer()
+            }
+            if let markSystemName {
+                Image(systemName: markSystemName)
+                    .foregroundStyle(markColor)
+            }
+        }
+        if row.offersTick(asOf: today()) {
+            Button {
+                try? screen.tick(row)
+            } label: {
+                label
+            }
+        } else {
             label
                 .opacity(0.5)
         }

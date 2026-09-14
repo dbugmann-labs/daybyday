@@ -18,13 +18,26 @@ public final class DayScreen {
         case writtenByALaterVersion
     }
 
+    /// What a day screen is doing with the one-offs at its place. `design.md` § *The seam*.
+    public enum OneOffState: Equatable, Sendable {
+        /// The one-offs were read, and a change made on this screen is kept.
+        case kept
+        /// The one-offs could not be read, for a reason a person cannot act on differently.
+        case unreadable
+        /// The one-offs were written by a later version of DayByDay. They are whole; the app is
+        /// what is behind, and what is at the place must not be replaced.
+        case writtenByALaterVersion
+    }
+
     private let commitments: [Commitment]
     private let recordPlace: URL
     private let rosterPlace: URL
+    private let oneOffPlace: URL
     private var today: CalendarDate
     private var shownDay: CalendarDate
     private var recordStore: RecordStore?
     private var roster: Roster
+    private var oneOffStore: OneOffStore?
 
     /// The place a day screen keeps its record when it is not told another: one file, in a
     /// directory of this app's own, under the platform's application-support directory.
@@ -36,6 +49,12 @@ public final class DayScreen {
     /// directory as `recordPlace`, but not the same file.
     public static var rosterPlace: URL {
         applicationSupportPlace(fileName: "roster.json")
+    }
+
+    /// The place a day screen keeps its one-offs when it is not told another: one file, in the
+    /// same directory as `recordPlace` and `rosterPlace`, but not either of those files.
+    public static var oneOffPlace: URL {
+        applicationSupportPlace(fileName: "one-offs.json")
     }
 
     /// The place named `fileName`, inside a directory of this app's own under the platform's
@@ -53,13 +72,15 @@ public final class DayScreen {
         startingFrom dayOne: [Commitment],
         asOf today: CalendarDate,
         keepingRecordAt recordPlace: URL = DayScreen.recordPlace,
-        keepingRosterAt rosterPlace: URL = DayScreen.rosterPlace
+        keepingRosterAt rosterPlace: URL = DayScreen.rosterPlace,
+        keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace
     ) {
         self.commitments = dayOne
         self.today = today
         self.shownDay = today
         self.recordPlace = recordPlace
         self.rosterPlace = rosterPlace
+        self.oneOffPlace = oneOffPlace
 
         let opened = Self.open(at: recordPlace)
         self.recordStore = opened.store
@@ -69,11 +90,16 @@ public final class DayScreen {
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
 
+        let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
+        self.oneOffStore = openedOneOffs.store
+        self.oneOffState = openedOneOffs.state
+
         // `today` here is the parameter above, not `self.today`: `self` is not yet fully
         // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
         // back. The parameter holds the same value `shownDay` was just set to, two lines up.
         self.dayView = DayView(
-            of: openedRoster.roster.groups(on: today), on: today,
+            of: openedRoster.roster.groups(on: today),
+            oneOffs: openedOneOffs.store?.oneOffs ?? OneOffs(), asOf: today, on: today,
             in: opened.store?.history ?? History())
     }
 
@@ -87,6 +113,20 @@ public final class DayScreen {
             let store = try RecordStore(at: place)
             return (store, .kept)
         } catch RecordStoreError.laterForm {
+            return (nil, .writtenByALaterVersion)
+        } catch {
+            return (nil, .unreadable)
+        }
+    }
+
+    /// Opens the one-offs at `place`, telling apart the one refusal a person can act on
+    /// differently — `OneOffStoreError.laterForm` says the one-offs were written by a later
+    /// version of DayByDay — exactly as `open(at:)` answers the record's own refusals.
+    private static func openOneOffs(at place: URL) -> (store: OneOffStore?, state: OneOffState) {
+        do {
+            let store = try OneOffStore(at: place)
+            return (store, .kept)
+        } catch OneOffStoreError.laterForm {
             return (nil, .writtenByALaterVersion)
         } catch {
             return (nil, .unreadable)
@@ -195,16 +235,28 @@ public final class DayScreen {
     /// Anything but `.kept` means this screen draws no rows and takes nothing on.
     public private(set) var rosterState: RosterState
 
+    /// Anything but `.kept` means this screen holds no One-offs group on any day.
+    public private(set) var oneOffState: OneOffState
+
     /// What a person is told on a row, and nothing else: which row, and the cause where there is
     /// one a person can act on. `cause` is `nil` for a refusal by the place, which names nothing,
-    /// and for a refused tick, which carries no cause at all.
+    /// and for a refused tick, which carries no cause at all. Exactly one of `row` and
+    /// `oneOffRow` is set. `design.md` § *One notice carrying a row of either kind*.
     public struct Notice: Hashable, Sendable {
-        public let row: DayView.Row
+        public let row: DayView.Row?
+        public let oneOffRow: DayView.OneOffRow?
         public let cause: String?
 
         init(row: DayView.Row, cause: String? = nil) {
             self.row = row
+            self.oneOffRow = nil
             self.cause = cause
+        }
+
+        init(oneOffRow: DayView.OneOffRow) {
+            self.row = nil
+            self.oneOffRow = oneOffRow
+            self.cause = nil
         }
     }
 
@@ -238,6 +290,36 @@ public final class DayScreen {
             }
         } catch {
             notice = Notice(row: row)
+            throw error
+        }
+        notice = nil
+
+        dayView = dayViewOfShownDay()
+    }
+
+    /// Makes the tick `row` offers, or takes it back where `row` says its one-off is done, and
+    /// keeps the change at the one-off place before `dayView` says so. Does nothing when `row` is
+    /// not one this screen's day view holds, or when `row` offers no tick as of today. Throws
+    /// when the change could not be kept, leaving `dayView` as it was. `design.md` § *The seam*.
+    public func tick(_ row: DayView.OneOffRow) throws {
+        guard dayView.oneOffGroup?.rows.contains(row) ?? false else {
+            return
+        }
+        guard let oneOffStore else {
+            return
+        }
+        guard row.offersTick(asOf: today) else {
+            return
+        }
+
+        do {
+            if row.isDone {
+                try oneOffStore.takeBack(row.oneOff)
+            } else {
+                try oneOffStore.tick(row.oneOff, on: today)
+            }
+        } catch {
+            notice = Notice(oneOffRow: row)
             throw error
         }
         notice = nil
@@ -370,17 +452,21 @@ public final class DayScreen {
         dayView = dayViewOfShownDay()
     }
 
-    /// The day view of `day`, drawn from `roster` and `recordStore`'s history exactly as they
-    /// stand now — asks neither again.
+    /// The day view of `day`, drawn from `roster`, `recordStore`'s history and `oneOffStore`'s
+    /// one-offs exactly as they stand now — asks none of the three again, and asks the one-offs
+    /// which stand as of `today`, never as of `day`.
     private func dayView(on day: CalendarDate) -> DayView {
-        DayView(of: roster.groups(on: day), on: day, in: recordStore?.history ?? History())
+        DayView(
+            of: roster.groups(on: day), oneOffs: oneOffStore?.oneOffs ?? OneOffs(), asOf: today,
+            on: day, in: recordStore?.history ?? History())
     }
 
-    /// The day view of `shownDay`, drawn from `roster` and `recordStore`'s history exactly as
-    /// they stand now — asks neither again. Shared by every caller that re-forms `dayView` after
-    /// changing what it is drawn from or which day it is drawn for: the writes `tick` and
-    /// `enter(_:on:)` keep before re-forming it, and the moves `showPreviousDay`, `showNextDay`
-    /// and `showToday` that only step the day already held.
+    /// The day view of `shownDay`, drawn from `roster`, `recordStore`'s history and
+    /// `oneOffStore`'s one-offs exactly as they stand now — asks none of the three again. Shared
+    /// by every caller that re-forms `dayView` after changing what it is drawn from or which day
+    /// it is drawn for: the writes `tick` and `enter(_:on:)` keep before re-forming it, and the
+    /// moves `showPreviousDay`, `showNextDay` and `showToday` that only step the day already
+    /// held.
     private func dayViewOfShownDay() -> DayView {
         dayView(on: shownDay)
     }
@@ -474,8 +560,13 @@ public final class DayScreen {
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
 
+        let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
+        self.oneOffStore = openedOneOffs.store
+        self.oneOffState = openedOneOffs.state
+
         self.dayView = DayView(
-            of: openedRoster.roster.groups(on: shownDay), on: shownDay,
+            of: openedRoster.roster.groups(on: shownDay),
+            oneOffs: openedOneOffs.store?.oneOffs ?? OneOffs(), asOf: self.today, on: shownDay,
             in: opened.store?.history ?? History())
     }
 
@@ -484,7 +575,10 @@ public final class DayScreen {
     /// day. Where this screen is keeping a record, that is read again too — a rename or a
     /// rhythm change made elsewhere reaches every row this screen draws. A screen not keeping a
     /// record does not start keeping one by being returned to: `design.md` § *A day screen
-    /// returned to now reads its record place again where it is keeping one*.
+    /// returned to now reads its record place again where it is keeping one*. The one-offs are
+    /// not read again — the spec requirement "A day screen draws the one-offs at its one-off
+    /// place as of the today it was handed" says "at no other moment" than being opened and the
+    /// app being shown again.
     public func returnedTo() {
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
         self.rosterState = openedRoster.state
@@ -497,8 +591,8 @@ public final class DayScreen {
         }
 
         self.dayView = DayView(
-            of: openedRoster.roster.groups(on: shownDay), on: shownDay,
-            in: recordStore?.history ?? History())
+            of: openedRoster.roster.groups(on: shownDay), oneOffs: oneOffStore?.oneOffs ?? OneOffs(),
+            asOf: today, on: shownDay, in: recordStore?.history ?? History())
     }
 }
 
