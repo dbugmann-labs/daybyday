@@ -83,11 +83,11 @@ every shipped test comparing `notice?.row` compile unchanged, since optional cha
 ### Five requirements MODIFIED, each by a sentence
 
 *Holds the day view* counts five things to open from; *a day view is a value* counts its One-offs
-group; *re-reads when shown* reads three places; *lasts only until* ends on a change at either
-place; *tells nothing* counts a tap reaching neither place as no change. Each would otherwise
-contradict an ADDED requirement. Titles are kept, so no scenario moves. Four were over the prose
-budget on `main` already, and *tells nothing* stood at it and gains six words; none is split here,
-since condensing is an editorial Story's lane.
+group; *re-reads when shown* reads three places; *lasts only until* ends on a change of any kind at
+either place; *tells nothing* counts a tap reaching no place, rather than not the record's, as no
+change. Each would otherwise contradict an ADDED requirement. Titles are kept, so no scenario moves.
+Four were over the prose budget on `main` already and each grows by its sentence; *tells nothing*
+stood at it and stays within it. None is split here, since condensing is an editorial Story's lane.
 
 ### The shipped tests pass a one-off place of their own
 

@@ -307,10 +307,13 @@ to the record's place or the roster's.
   added at a one-off place; two day screens of no commitments at all are opened at that one-off
   place, the first as of Monday 28 September 2026 and the second as of Tuesday 29 September 2026,
   each at a record place and a roster place of its own where nothing has been kept; the second
-  screen's row named "Call mum" is ticked on the first screen; and the row named "Pay fine" in the
-  day view the first screen says of the day after is ticked on the first screen
+  screen's row named "Call mum" is ticked on the first screen; and the first screen is then moved
+  to the day after and its own row named "Pay fine", which offers no tick as of 28 September 2026,
+  is ticked
 - **THEN** neither ticking is refused with an error
-- **AND** the first screen's One-offs group still holds one row, named "Call mum", saying it is not
+- **AND** the first screen's One-offs group still holds one row, named "Pay fine", saying it is not
+  done
+- **AND** sent back to today, its One-offs group holds one row, named "Call mum", saying it is not
   done
 - **AND** the content at that one-off place is byte-for-byte what it was before either was ticked
 
@@ -669,8 +672,9 @@ carries across.
 
 A day screen SHALL go on telling it, on the same row, until one of exactly three things happens, and
 SHALL then tell nothing on any row. Nothing else SHALL end it, time passing included. The app being
-shown again SHALL end it, whether or not the record can then be read. A change reaching the record's place or
-the one-off place SHALL end it, on whichever row it was made, a one-off row included. The day being shown changing
+shown again SHALL end it, whether or not the record can then be read. A change reaching the record's
+place or the one-off place SHALL end it, on whichever row it was made, whatever the change. The day
+being shown changing
 SHALL end it — the day changing and never the gesture made — so a move with nowhere to go, and today
 sent back to today, SHALL leave it standing.
 
@@ -891,12 +895,12 @@ end nothing either.
 
 ### Requirement: A day screen tells nothing on a row where there was no change to refuse
 
-A tap or a commit that reaches no place a day screen keeps is not a refused change: apart from the four
-causes named above, a day screen SHALL tell nothing on its row and SHALL NOT end what it is already
-telling on another row. It SHALL tell nothing for a tap or commit on a day screen not keeping a
-record, whatever the reason its store would not open and whatever was committed, a refused value
-included; for one on a row for a day that has not arrived; for one on a row the screen's day view does not hold, a one-off row included; and for a commit on a row that offers no entry at all, or a take-back asked of a row
-offering none, whatever makes it offer none. A commit in a total entry that says nothing SHALL
+A tap or a commit that reaches no place is not a refused change: apart from the four causes named
+above, a day screen SHALL tell nothing on its row and SHALL NOT end what it is already telling on
+another row. It SHALL tell nothing for a tap or commit on a day screen not keeping a record, whatever
+the reason its store would not open and whatever was committed, a refused value included; for one on
+a row for a day that has not arrived; for one on a row the screen's day view does not hold; and for a
+commit on a row that offers no entry at all, or a take-back asked of a row offering none, whatever makes it offer none. A commit in a total entry that says nothing SHALL
 likewise be told nothing and SHALL NOT end what is already told.
 
 #### Scenario: a tap on a day screen that is not keeping a record is told nothing on the row

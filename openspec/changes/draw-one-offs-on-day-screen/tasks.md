@@ -53,7 +53,7 @@ make it pass, then the next. `one-off` tests go in `OneOffTests.swift`; day-view
 - [x] 5.14 ticking a late one-off row keeps it done on the today and it says nothing late — catches a tick on the date owed
 - [x] 5.15 a one-off tick taken back on a past day leaves that day and stands on today again — catches a day view not formed again
 - [x] 5.16 a one-off tick that cannot be kept is refused and leaves the day view as it was — catches the held value changed before the write
-- [x] 5.17 ticking a one-off row that the day view does not hold or that offers no tick changes nothing — catches a missing `contains` guard
+- [ ] 5.17 ticking a one-off row that the day view does not hold or that offers no tick changes nothing — catches a missing `contains` guard or a missing `offersTick` guard
 - [x] 5.18 a refused one-off tick is told on its row and ends what was told on a commitment row — catches two notices at once
 - [x] 5.19 a refused commitment tick ends what was told on a one-off row — catches `oneOffRow` left set
 - [x] 5.20 what a day screen tells on a row ends when a one-off tick is kept — catches only record writes clearing the notice
@@ -75,6 +75,6 @@ make it pass, then the next. `one-off` tests go in `OneOffTests.swift`; day-view
 
 - [x] 8.1 `openspec validate draw-one-offs-on-day-screen --strict` exits 0 and `pnpm run check:scenarios` exits 0
 - [x] 8.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, the ADR, the three kit sources, the three test files and `ContentView.swift`
-- [x] 8.3 `pnpm run check:budgets` warns about nothing new in this folder, and `pnpm run verify` passes
+- [ ] 8.3 `pnpm run check:budgets` warns about this folder only for the four MODIFIED requirements already over budget on `main` — *holds the day view*, *a day view is a value*, *re-reads when shown* and *lasts only until* — and `pnpm run verify` passes
 - [x] 8.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is thirty-seven more than a run on `main` reports — both read off runs, never derived by arithmetic
 - [x] 8.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–8.4 are ticked and that the instruction below is written here for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/one-off/spec.md` gains one requirement with three scenarios; `openspec/specs/day-screen/spec.md` gains eight requirements, changes sentences in five others and gains six scenarios under those five; nothing else in any spec moves. `pnpm run checks` runs after the archive commit exists. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
