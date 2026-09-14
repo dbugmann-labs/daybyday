@@ -445,14 +445,14 @@ func aCommitmentOnAWeeklyQuotaScheduleIsNotDueOnADateBeforeTheDayItIsKeptFrom() 
 
 @Test("a commitment reads back the rhythm it runs on in words beside its name and its kind")
 func aCommitmentReadsBackTheRhythmItRunsOnInWordsBesideItsNameAndItsKind() {
-    let schedule = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday])
+    let keptFrom = CalendarDate(year: 2026, month: 2, day: 1)!
 
     let commitment = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .note)!
 
     #expect(commitment.name == "Gym")
     #expect(commitment.kind == .note)
-    #expect(commitment.rhythmInWords == "3x a week")
+    #expect(commitment.rhythmInWords == "Mon")
 }
 
 @Test("two number commitments differing only in their range are different commitments")
