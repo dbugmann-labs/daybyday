@@ -185,6 +185,11 @@ public final class CommitmentsScreen {
         /// number of intervals in either direction. `design.md` § *An interval rhythm's grid
         /// moves with the day it is kept from*.
         case wouldLeaveARecordedDayNotDue
+        /// A change that would carry records onto a commitment the record place already holds
+        /// records of, told apart from `wouldLeaveARecordedDayNotDue` — which is given instead
+        /// where a change meets both causes. `design.md` § *The not-due cause is judged first,
+        /// then the records already kept*.
+        case recordsAlreadyExist
         /// A range whose lowest is above its highest, whose end is not a number, or with one
         /// end typed and the other blank.
         case rangeIsNotARange
@@ -350,6 +355,26 @@ public final class CommitmentsScreen {
         category.flatMap { Blank.saysNothing($0) ? nil : $0 }
     }
 
+    /// Why carrying every record of `commitment` over to `target` would be refused, reading
+    /// `history` rather than writing it — `nil` where it may proceed. The not-due cause is
+    /// judged first: every date `commitment` holds a record on must be due on `target`, or the
+    /// change is refused as leaving a recorded day not due. Only then is `target` asked whether
+    /// the record place already holds any record of it, whether or not `commitment` holds any
+    /// itself — a rename must not adopt records that belong to no commitment on the roster.
+    /// `design.md` § *The not-due cause is judged first, then the records already kept* and §
+    /// *Refused whether or not the source holds records*.
+    private static func refusalCarryingRecords(
+        from commitment: Commitment, to target: Commitment, in history: History
+    ) -> Refusal? {
+        guard history.datesRecorded(for: commitment).allSatisfy({ target.isDue(on: $0) }) else {
+            return .wouldLeaveARecordedDayNotDue
+        }
+        guard !history.holdsRecords(of: target) else {
+            return .recordsAlreadyExist
+        }
+        return nil
+    }
+
     /// Changes `commitment`, on either of this screen's lists, for the commitment `name`,
     /// `rhythm` and `keptFrom` name, under `category`. Works out from those which of two acts —
     /// carrying every record over to the changed commitment, or superseding — the change needs,
@@ -400,8 +425,13 @@ public final class CommitmentsScreen {
             // A different name, a different day kept from, or both, on the rhythm the
             // commitment already runs on — every record of it is carried over to the changed
             // one, and the roster then changes the commitment for it, in the place it holds it.
+            // An unchanged day kept from keeps the schedule the commitment already has, even
+            // where that schedule's own start date differs from it; only a different day
+            // rebuilds the schedule from that day. `design.md` § *An unchanged day kept from
+            // keeps the schedule it has*.
+            let changedSchedule = keptFrom == commitment.keptFrom ? commitment.schedule : newSchedule
             let changedCommitment = Commitment(
-                name: name, schedule: newSchedule, keptFrom: keptFrom, kind: commitment.kind)!
+                name: name, schedule: changedSchedule, keptFrom: keptFrom, kind: commitment.kind)!
 
             if changedCommitment == commitment, normalizedCategory == entry.category {
                 // The four things name the commitment that is already there, and the category
@@ -423,10 +453,11 @@ public final class CommitmentsScreen {
                     return .notKept
                 }
 
-                var simulated = recordStore.history
-                guard simulated.carryOver(commitment, to: changedCommitment) else {
-                    refusedChange = .changing(commitment, .wouldLeaveARecordedDayNotDue)
-                    return .wouldLeaveARecordedDayNotDue
+                if let refusal = Self.refusalCarryingRecords(
+                    from: commitment, to: changedCommitment, in: recordStore.history)
+                {
+                    refusedChange = .changing(commitment, refusal)
+                    return refusal
                 }
 
                 do {
@@ -464,8 +495,13 @@ public final class CommitmentsScreen {
             // Both, in one save: the carry-over first — the superseded commitment carries the
             // new name and the corrected day it was kept from — then the supersession, which
             // starts today. `design.md` § *Both in one save*.
+            // The commitment carried to before a supersession follows the same rule as the
+            // same-rhythm path: an unchanged day kept from keeps the schedule `commitment`
+            // already has, on the rhythm it already runs on. `design.md` § *An unchanged day
+            // kept from keeps the schedule it has*.
             let oldRhythm = Rhythm(commitment.schedule)
-            let carryTargetSchedule = oldRhythm.schedule(keptFrom: keptFrom)!
+            let carryTargetSchedule =
+                keptFrom == commitment.keptFrom ? commitment.schedule : oldRhythm.schedule(keptFrom: keptFrom)!
             let carryTarget = Commitment(
                 name: name, schedule: carryTargetSchedule, keptFrom: keptFrom, kind: commitment.kind)!
 
@@ -485,10 +521,11 @@ public final class CommitmentsScreen {
                 return .notKept
             }
 
-            var simulated = recordStore.history
-            guard simulated.carryOver(commitment, to: carryTarget) else {
-                refusedChange = .changing(commitment, .wouldLeaveARecordedDayNotDue)
-                return .wouldLeaveARecordedDayNotDue
+            if let refusal = Self.refusalCarryingRecords(
+                from: commitment, to: carryTarget, in: recordStore.history)
+            {
+                refusedChange = .changing(commitment, refusal)
+                return refusal
             }
 
             do {

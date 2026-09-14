@@ -71,6 +71,8 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
         Text("Take it up again first to change its rhythm.")
     case .wouldLeaveARecordedDayNotDue:
         Text("Choose a day that leaves every recorded day due.")
+    case .recordsAlreadyExist:
+        Text("Records already exist under that.")
     case .rangeIsNotARange:
         Text("That's not a range.")
     case .targetIsNotATarget:
