@@ -1,73 +1,80 @@
 ## Context
 
 `proposal.md` § *Why* says what this is for; `grill.md`'s settled answers are the brief.
-`openspec/specs/commitment/spec.md` holds 43 requirements and 398 scenarios. The delta carries 25
-of them whole — 24 MODIFIED, one REMOVED and ADDED — with 40 new scenarios and eight reworded ones.
+`openspec/specs/commitment/spec.md` holds 43 requirements and 398 scenarios. The delta carries 31
+of them whole — 30 MODIFIED, one REMOVED and ADDED — with 93 new scenarios and eight reworded ones.
 
-Four facts in source decide the approach. `RosterStore.write` is byte-stable, so rewriting an
-unchanged roster is byte-identical and the four *keeps nothing at its place* tests cannot see it.
-`RosterDocument.formRoster` replays entries through `Roster.add`, which takes a second copy up again
-rather than refusing it. `CommitmentsScreen.change` writes the record place before the roster place
-and restores nothing when the roster write fails. `CommitmentsScreen.place` is private and defaults
-to the real application-support directory, which no test may write to.
+Five facts in source decide the approach. `RosterStore.write` is byte-stable, so rewriting an
+unchanged roster is byte-identical and no byte check sees it. `RosterDocument.formRoster` replays
+entries through `Roster.add`, which takes a second copy up again rather than refusing it.
+`CommitmentsScreen.change` writes the record place before the roster place and restores nothing when
+the roster write fails. `CommitmentsScreen.place` is private and defaults to the real
+application-support directory, which no test may write to. `RosterStore` and `CommitmentRecord` have
+one guard per verb and per refusal reason, and `CommitmentsScreen.change` has three branches.
 
 ## Goals / Non-Goals
 
-**Goals:** every uncovered rule has exactly one scenario that would fail were it broken; every test
-grill answers 2–3 name can fail; the false title is corrected; the unprovable rules are recorded;
-the lane is stated in ADR-1047.
+**Goals:** every uncovered rule has exactly one scenario of its own that would fail were it broken;
+every test grill answers 2–3 name can fail; the false title is corrected; the unprovable rules are
+recorded; the lane is stated in ADR-1047.
 
 **Non-Goals:** no rule dropped or added, no scenario dropped, no other capability, no public API.
-No `src/` change except a red arrival's fix and a test-only internal seam.
+No `src/` change except the reds' fixes and the two test-only internal members below.
 
 ## Decisions
 
 ### The seam
 
 No public member is new or changed; tests drive the shipped `Roster`, `RosterStore`, `Commitment` and
-`CommitmentsScreen` members. Two internal members may be widened for tests: the first only if route 2
-below is taken, the second only on question 2's recommended answer.
+`CommitmentsScreen` members. `place` on `CommitmentsScreen` becomes internal, read through `@testable`
+by box 4.5 (question 2, settled). `writeCount` on `RosterStore` is added only if route 2 is taken.
 
 ```swift
-var writeCount: Int { get }
 let place: URL
+var writeCount: Int { get }
 ```
 
-### One scenario per uncovered rule, counted by statement
+### One scenario per rule, never shared
 
-Forty scenarios: 21 on the roster side, 19 on the screen. Each one's `tasks.md` clause names the
-wrong implementation it catches. A rule stated over several verbs, states or branches counts once.
-Where shipped scenarios sample some of its members, one new scenario takes the rest as ANDs, as
-grill answer 13 settled for the store's refusals. Every finding in grill answer 8 comes out the same.
-Rejected: one scenario per unsampled member, which would add many tests of the same statement.
+Ninety-three scenarios, 48 on the roster side and 45 on the screen. Each `tasks.md` clause names the
+wrong implementation it catches. Each verb, refusal kind and branch with its own guard in source is
+its own rule and gets its own scenario, and so is each item a requirement's prose enumerates. ANDs
+vary only the fixture of one rule. Every finding in grill answer 8 comes out the same. Judged
+against the fidelity list and not added: *MUST NOT sort … by a day* is covered by *commitments on
+every schedule shape are read back as the same commitments*, which a stable sort on the kept-from
+day fails; *SHALL ask its roster no date* is covered by the AND in *a commitments screen does not list
+a commitment its roster has stopped keeping*. The large-roster sample stays at a thousand, since each
+`add` rewrites the whole file.
 
-### Two reds expected on arrival, each fixed here
+### Three reds expected on arrival, each fixed here
 
 - *a roster store holding a commitment again after holding it stopped or removed is refused*.
   Fix: `formRoster` refuses an entry whose commitment the roster already holds, in any state.
 - *a change refused at the roster place after its records were carried over leaves the record place
-  as it was*. Fix, on question 1's recommended answer: when the roster write fails, `change` carries
-  the records back.
+  as it was*, and *a name and a rhythm changed in one save and refused at the roster place leave the
+  record place as it was*. Fix (question 1, settled): when the roster write fails, `change` carries
+  the records back in both branches.
 
 ### Strengthened in place, and the three proven by mutation
 
-Grill answers 1–3. Titles stay; bodies are rewritten. A THEN changes only where it did not name what
-would fail, and each such change is in the diff. Mutations run in a `git archive` tree, and the PR
-body holds the diff and the red run:
+Grill answers 1–3. Titles stay; bodies are rewritten. A scenario's text changes only where it did not
+name what would fail. Mutations run in a `git archive` tree, and the PR body holds the diff and the
+red run:
 
-- **The four no-op tests** (move, category change, group move, change for itself). The mutant is all
-  four `if nextRoster != roster` guards removed, as `drop-duplicate-commitment-scenarios` item 12
-  records. Route 1: the test seeds the place with the same roster in bytes the store never writes —
-  an earlier form for the move, and the current form laid out differently for the other three.
-  Route 2, only if a route-1 test survives: `writeCount`. The PR body says which route was taken.
-- **The stop and remove *every earlier date* pair.** The mutant is `retire` or `remove` made a no-op
-  that still answers `true`. Each THEN gains an AND: nothing on 1 February 2026.
-- **The take-up-again test.** The mutant it survives is not recorded in this repository. The
-  implementer names one before rewriting the test. Finding none is a stop.
+- **The four no-op tests.** Mutant: all four `if nextRoster != roster` guards removed
+  (`drop-duplicate-commitment-scenarios` grill item 12). Route 1: the test seeds the place with the
+  same roster in bytes the store never writes — an earlier form for the move, the current form laid
+  out differently for the other three. Route 2, only if a route-1 test survives: `writeCount`.
+- **The stop and remove *every earlier date* pair.** Mutant: `retire` or `remove` a no-op answering
+  `true`. Each THEN gains an AND: nothing on 1 February 2026.
+- **The take-up-again test.** Mutant: `Roster.addTakingUpAgain` removes the entry and inserts it at
+  index 0, confirmed 2026-09-13. The test stays green because "Gym" is taken on first, so its WHEN and
+  THEN now take on "Journaling" first.
+
+Route 1 also gives a byte check its failing case in the ten store-refusal scenarios, and in *a change
+that carries nothing over writes nothing at the record place*.
 
 ### Rewordings, before and after
-
-Each is the smallest change that keeps the rule true, with its scenario on the new wording:
 
 - *A roster changes a commitment…*: "left exactly as it was and SHALL report" → "left exactly as it
   was but for the category it was offered under, and SHALL report" (grill answer 9).
@@ -77,15 +84,14 @@ Each is the smallest change that keeps the rule true, with its scenario on the n
 - *A roster reads … in groups*: "one none of whose commitments had been taken on by the date asked
   about" → "one that had stopped keeping or removed every commitment it holds before the date asked
   about" (grill answer 14).
-- *…asks you to confirm…* → *…asks for confirmation…*. The title's "kept until the day the screen was
-  handed" becomes "kept until the day before the one the screen was handed"; the body was already
-  true (grill answer 5).
-- Scenario text, grill answer 3: the no-op change gains a record place, and six THENs each gain one
-  AND. Those are the stopped rename (the kept-until day), the rhythm change (nothing stopped), the
-  empty screen (no groups), the store stop on the last date (its report) and the pair above.
+- *…asks you to confirm…* → *…asks for confirmation…*; the title's "kept until the day the screen was
+  handed" → "kept until the day before the one the screen was handed". The body was already true.
+- Scenario text, grill answer 3: the no-op change gains a record place; six THENs gain one AND (the
+  stopped rename, the rhythm change, the empty screen, the store stop on the last date, the pair); the
+  take-up-again test's fixture order is swapped.
 
-Twenty carried requirements are pre-budget prose over 150 words, kept whole under ADR-1047 decision 2;
-the three reworded here were already over and grow by eight words at most.
+Twenty-four carried requirements are pre-budget prose over 150 words, kept whole under ADR-1047
+decision 2; the three reworded here were already over and grow by eight words at most.
 
 ### The false title moves by REMOVED plus ADDED
 
@@ -94,16 +100,17 @@ Nothing cites its heading; only its test and ADR-1047 decision 5 quote the title
 
 ### Pointer sentences skipped
 
-These defer to another requirement and are covered when it is: the kind "compared as *A roster
-refuses…* says"; "as the refusals *A roster refuses…* states"; "as *A roster refuses…* says" (twice);
-"as the roster requirements state them"; "by the rule that already governs a commitment neither
-list holds"; "as *A commitments screen defines…* says".
+Covered when their target is: the kind "compared as *A roster refuses…* says"; "as the refusals *A
+roster refuses…* states"; "as *A roster refuses…* says" (twice); "as the roster requirements state
+them"; "by the rule that already governs a commitment neither list holds"; "as *A commitments screen
+defines…* says".
 
 ### The unprovable rules, for the *Known gaps* entry
 
-- No seam accepts them: the present moment, time zone, locale and clock in every requirement; the
-  order of the record write and the roster write; a category kept as a reference to a list; a roster
-  store "SHALL NOT be what reaches" a record place.
+- No seam accepts them: the present moment, time zone, locale and clock in every requirement; a
+  category kept as a reference to a list; a roster store "SHALL NOT be what reaches" a record place.
+  *The record place SHALL be written before the roster place* is not here: *a change a commitments
+  screen could not carry over at the record place…* fails were the roster written first.
 - The compiler enforces them: a commitment's four parts and nothing else, its kind fixed, no unit on
   a target, both range ends required; a roster's lack of identifier, position and added day; a move's
   two things, no third ask and no second way back; the screen's five fields, a change's four and no
@@ -114,7 +121,7 @@ list holds"; "as *A commitments screen defines…* says".
   to a replacement (grill answer 11); nothing stored for a group; no second category collection;
   `schedule` and the value rules unchanged; the seven refusals numbered nowhere else.
 - Only a UI test proves them (grill answer 7): the change form's controls, a row saying only name and
-  rhythm, and the app calling `shown(asOf:)`. On question 2's other answer, the default place too.
+  rhythm, and the app calling `shown(asOf:)`.
 
 ### The lane is ADR-1047 decision 7, amended in place
 
@@ -122,28 +129,16 @@ Grill answer 6. Decision 7 gains points 7–10 and its heading exception; decisi
 
 ## Risks / Trade-offs
 
-- **A thousand writes in one test** (each `add` rewrites the file) → the file stays under 200 KB. A
-  run that is too slow is a stop, never a smaller count.
-- **The no-op tests seed a layout the WHEN does not describe** → named above; `reviewer` reads each
-  test at G7.
+- **A thousand writes in one test** → the file stays under 200 KB. A run that is too slow is a stop,
+  never a smaller count.
+- **Route 1 seeds a layout the WHEN does not describe** → named above; `reviewer` reads each test.
 - **A strengthened test red on arrival** → treated as rule 3's red and fixed, never weakened back.
+- **Carrying records back can itself fail** → the change is still refused; the reds' tests pin only
+  the path where the record place stays writable.
 - **A zero-width space typed invisibly into a test** → the test writes it as `"\u{200B}"`.
-
-## Questions for you
-
-1. **A rename refused at the roster place after its records moved.** The rule says nothing is kept at
-   either place, but today the records stay moved. Cover it here and fix it by carrying the records
-   back, or record it as a known gap?
-   - *Recommended:* cover and fix. The rule already ships, and grill answer 1 fixes a red here.
-   - *If you say gap:* the second red and its scenario leave the delta, *Refuses a change it cannot
-     make* keeps four new scenarios, and the gap joins the *Known gaps* entry.
-2. **The place a commitments screen opens with when told none.** No outside observable exists without
-   writing to the real directory. Widen the private `place` to internal as a second test-only seam, or
-   record the rule as a gap?
-   - *Recommended:* widen. It is one keyword and no behaviour change, and grill answer 3 wants the test.
-   - *If you say gap:* the seam's second line goes, box 5.5 is dropped, and the rule joins *Known
-     gaps*. No scenario text moves either way.
 
 ## Open Questions
 
-None beyond § *Questions for you*: `grill.md` § *Left open* is "None.", and the rest is settled above.
+None. `grill.md` § *Left open* is "None.", and the residual round is settled. Question 1: cover the
+refused rename and fix `change` to carry records back. Question 2: make the default place internal,
+read only by tests.

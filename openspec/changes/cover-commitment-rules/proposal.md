@@ -8,7 +8,7 @@ fourth covering Story, and the first that strengthens tests as well as adding th
 ## What Changes
 
 - One scenario is added for each uncovered rule, each arriving with the one test named for it.
-- Two of the new scenarios are expected red on arrival; each is fixed here, bounded to that scenario.
+- Three of the new scenarios are expected red on arrival; each is fixed here, bounded to that scenario.
 - Weak tests are strengthened in place under their titles, with a THEN reworded only where it did not
   name what would fail.
 - The three tests shown unable to fail are rewritten and proven by a named mutation reddening each.
