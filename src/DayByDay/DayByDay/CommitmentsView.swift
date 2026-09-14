@@ -630,10 +630,22 @@ private struct CommitmentSheet: View {
 
                 if canRestart, let commitment = changing {
                     Section("Restart") {
-                        DatePicker(
-                            "Restart from", selection: $restartDate,
-                            in: restartLowerBound...date(from: screen.dayToKeepFrom),
-                            displayedComponents: [.date])
+                        // `restartDateRange` is `nil` for a commitment kept from a day after
+                        // today — a future kept-from day the spec allows, and `canRestart` says
+                        // nothing against. A `ClosedRange` built from that pair would trap, so
+                        // the picker goes unbounded instead of hiding the section: `design.md`
+                        // § *The shell rides this Story* calls the bounds "only a convenience"
+                        // — the kit's own `restart` still refuses whatever the picker would have
+                        // ruled out.
+                        if let restartDateRange {
+                            DatePicker(
+                                "Restart from", selection: $restartDate, in: restartDateRange,
+                                displayedComponents: [.date])
+                        } else {
+                            DatePicker(
+                                "Restart from", selection: $restartDate,
+                                displayedComponents: [.date])
+                        }
                         Button("Restart") {
                             restart(commitment)
                         }
@@ -657,6 +669,18 @@ private struct CommitmentSheet: View {
                 }
             }
         }
+    }
+
+    /// The *Restart* date picker's bounds — `restartLowerBound` through `screen.dayToKeepFrom` —
+    /// or `nil` where `restartLowerBound` falls after `screen.dayToKeepFrom`: a commitment kept
+    /// from a day after today, which `canRestart` still allows. `nil` here means the picker goes
+    /// unbounded rather than forming a `ClosedRange` that would trap.
+    private var restartDateRange: ClosedRange<Date>? {
+        let upperBound = date(from: screen.dayToKeepFrom)
+        guard restartLowerBound <= upperBound else {
+            return nil
+        }
+        return restartLowerBound...upperBound
     }
 
     /// The `Rhythm` the form is currently offering, from whichever fields `rhythmKind` selects.

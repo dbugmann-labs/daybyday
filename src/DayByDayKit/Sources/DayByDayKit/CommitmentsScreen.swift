@@ -166,7 +166,7 @@ public final class CommitmentsScreen {
         case restarting(Commitment, Refusal)
     }
 
-    /// Why a change was refused. `nil` from any of the ten below means it was kept at the
+    /// Why a change was refused. `nil` from any of the thirteen below means it was kept at the
     /// place before that call returned.
     public enum Refusal: Equatable, Sendable {
         /// A name that is empty or made only of blank space.
@@ -653,7 +653,15 @@ public final class CommitmentsScreen {
     /// that the restart would leave not due; records already kept under the restarted
     /// commitment; and a place that could not be written.
     @discardableResult public func restart(_ commitment: Commitment, from day: CalendarDate) -> Refusal? {
-        guard kept.contains(commitment), Self.isIntervalSchedule(commitment.schedule) else {
+        // `kept.contains(commitment)` already guarantees `rosterStore` is not `nil` and holds an
+        // `entry` for `commitment` — `kept` is read straight off `rosterStore.roster.groups` by
+        // `refreshLists(from:)`, the one place either is ever set — so binding both here, beside
+        // the interval schedule check, costs no refusal an unreachable guard further down would
+        // ever have produced.
+        guard kept.contains(commitment), case .everyNDays(let interval, from: _) = commitment.schedule,
+            let rosterStore,
+            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
+        else {
             return nil
         }
 
@@ -672,17 +680,6 @@ public final class CommitmentsScreen {
             return .alreadyDueOnRestartDay
         }
 
-        guard let rosterStore,
-            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
-        else {
-            refusedChange = .restarting(commitment, .notKept)
-            return .notKept
-        }
-
-        guard case .everyNDays(let interval, from: _) = commitment.schedule else {
-            refusedChange = .restarting(commitment, .notKept)
-            return .notKept
-        }
         let restartedSchedule = Schedule.everyNDays(interval, from: day)
         let restarted = Commitment(
             name: commitment.name, schedule: restartedSchedule, keptFrom: day, kind: commitment.kind)!

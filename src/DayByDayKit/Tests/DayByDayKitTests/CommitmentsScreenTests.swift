@@ -7529,11 +7529,12 @@ func anIntervalCommitmentRestartedFromTheDayItIsKeptFromIsKeptOnNoDateBeforeTheR
     let refusal = screen.restart(nails, from: august4th)
 
     #expect(refusal == nil)
-    #expect(restartedNails.isDue(on: august4th))
-    #expect(restartedNails.isDue(on: august8th))
-    #expect(!restartedNails.isDue(on: august6th))
 
     let rosterStoreAfterwards = try RosterStore(at: places.roster)
+    let restartedCommitment = try #require(rosterStoreAfterwards.roster.commitments(on: august4th).first)
+    #expect(restartedCommitment.isDue(on: august4th))
+    #expect(restartedCommitment.isDue(on: august8th))
+    #expect(!restartedCommitment.isDue(on: august6th))
     #expect(rosterStoreAfterwards.roster.commitments(on: august4th) == [restartedNails])
 }
 
