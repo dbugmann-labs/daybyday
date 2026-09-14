@@ -334,71 +334,26 @@ decision it records is the owner's, twice.*
   words hang off and what colour they are*, ADR-1019 makes it a chore on the shell rather than a
   Story, and nothing about it reaches a capability spec.
 
-### B-052 — be told the true reason a change to a commitment is refused
-
-*Captured 2026-09-14, from the eighth grooming sweep. Reported by the owner on the phone the same
-day and recorded first in `docs/open-questions.md` § Known gaps, which moved here in this pass.*
-
-> "Gym"-shaped, 3 times a week, kept from 10 Sep 2026, and moving the day it is kept from to 14 Sep
-> — or to 8, 9, 11, 12 or 13 — is refused with *"Choose a day that leaves every recorded day due."*,
-> while 7 and 4 are accepted. "This is not what I would expect."
-
-- **Trigger** — changing the day a commitment is kept from, on the change sheet, and getting a
-  refusal that names a cause the change does not have.
-- **Touches** — `commitment` (#26), with `record` behind it. Reproduced at the `CommitmentsScreen`
-  seam on a scratch copy of `d153abe`. There are **two causes behind one sentence.** Moving the day
-  later, past a day that has a tick on it (11–14, with a tick on 10 Sep), is refused **as
-  specified** by § *A commitments screen refuses a change it cannot make*. Moving it earlier is
-  never a not-due case: a weekly quota is due every date (`schedule/spec.md:366`), and moving
-  earlier "only widens the window". 8 and 9 were refused only where the record **already held**
-  ticks for the identical commitment kept from 8 or 9 Sep. `History.carryOver` returns `false` when
-  the target holds anything (`History.swift:117-124`, `record/spec.md:461`), and
-  `CommitmentsScreen.swift:426-429`, along with the rhythm path at `:488-491`, maps every `false`
-  to `.wouldLeaveARecordedDayNotDue`. The refusal is right, and no spec has words for it, so the
-  fix is a delta: a refusal of its own, told apart from the other seven.
-- **Principle** — tested against *five percent of seven things*: **it loses on the letter.** It
-  makes nothing new possible. It is captured anyway, because the thing it corrects is a refusal
-  that misleads, on the one screen that defines everything else.
-- **Open** — **unconfirmed: how those records got there.** No path found writes ticks under a
-  kept-from day while leaving no roster entry for it. Carry-over moves rather than copies, and a
-  superseded or removed entry still on the roster is refused earlier as already kept. The phone's
-  `record.json` is the check: look for ticks under that commitment kept from 2026-09-08 or
-  2026-09-09. If there are none, the reproduction is not the owner's case and something else
-  refuses the change.
-- **Open** — "not what I would expect" may cover the refusal that *is* specified, as well as the
-  one that is not: moving a quota's kept-from day later than a recorded tick. Whether that stays
-  refused is a product question for the grill, and it is not settled by fixing the words.
-- **Open** — even the correct refusal never says which recorded day blocks the move. That is
-  B-050's, not this entry's.
-- **What the owner was actually trying to do** — *folded in 2026-09-14, at the eighth pass's
-  grill, by the owner's decision to fold it here rather than capture it separately:*
-
-  > "The reason for the attempted change was on a every-n-days commitment, and it was set to be
-  > done every 3 days. Now, I missed it on day 3, and all I wanted was to basically extend the rhytm
-  > so that it has a 4 day gap for this one time. After that, it should have the 3 day gap again.
-  > This happens to me sometimes, and I would like to keep it as the same commitment, with just
-  > sometimes not fully keeping the rhytm it should. […] Changing the "kept-from" date was just me
-  > trying to achieve what I just described"
-
-  So moving the kept-from day was a workaround, and the want underneath it is to **keep an
-  every-N-days commitment late, with the rhythm running on from the day it was actually kept**.
-  That runs into a decision the owner made on 2026-08-31, in `add-every-n-days-schedule`'s
-  `design.md`: an interval counts from a fixed start date and not from the last tick, because
-  due-ness must stay a function of the date, and a past day's answer must not change after the
-  fact.
-- **Found at the same grill** — the records under a kept-from day the roster does not hold can be
-  made by a **torn save**: `CommitmentsScreen` writes `record.json` (`:433`) and then the roster
-  (`:441`), and a process killed between the two leaves the ticks under a value no roster entry
-  holds. Reproduced at the seam in a scratch copy. Settled: that is a Story on #26. The
-  refusal gets a cause of its own, and the owner's phone file is repaired once, by hand, rather
-  than by the app.
-
 
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-14 — be told the true reason a change to a commitment is refused, and keep an every-N-days
+  commitment late with its rhythm running on from that day (B-052) → `FEAT: commitment` (#26),
+  reopened under `EPIC: Daily commitments` (#1) at the eighth pass's G1. The entry's heading was the
+  workaround and not the want: the owner moved the kept-from day to get one four-day gap on a
+  three-day rhythm. Three Stories proposed for G2. First, a change that leaves the rhythm alone
+  leaves an interval's grid where it was, and a carry-over onto records that already exist is
+  refused for that cause. Second, **restarting** an every-N-days commitment from a picked day, on
+  the change sheet: a supersede that reads as one commitment on every screen, keeping the
+  2026-08-31 fixed-start-date decision. Third, a change saved whole across the record and roster
+  places, because a kill between the two writes orphans ticks. The two open questions the entry
+  carried are answered: the specified refusal of a later kept-from day stays, and naming the
+  blocking day stays B-050's. The owner's phone `record.json` is repaired by hand, outside the
+  Stories.
 
 - 2026-09-14 — put a one-off thing on a day and tick it off there (B-049) → `FEAT: one-off` (#239)
   under `EPIC: One-offs` (#238), a new Epic by the owner's decision against the recommendation to
@@ -970,7 +925,20 @@ found nothing.
   - **Taken forward** — **three clusters at once, by the owner's decision, each groomed in its own
     session and worktree**:
     - **A**, commitment changes: B-052 and B-043, grilled in the session that ran this sweep, as
-      Stories reopening `FEAT: commitment` (#26).
+      Stories reopening `FEAT: commitment` (#26). **Outcome:** 10 questions over 3 rounds, with 3
+      facts dispatched. The owner said at round 1 that the kept-from move was a workaround: what they
+      wanted was an every-N-days commitment kept late, with its rhythm running on from the day it
+      was done. That was folded into B-052. **B-043 went back to *Wants*.** Two defects were found
+      and confirmed on scratch copies. A **torn save**: records are written before the roster, and
+      a kill between the two leaves ticks under a value no entry holds. An **interval's lost grid**:
+      any change rebuilds an every-N-days schedule from the kept-from day, so the seeded Nails and
+      Lenses refuse even a rename once ticked. Settled: a restart from a picked day, default today,
+      on the change sheet, for every N days only. It is a supersede under the hood, with one entry
+      and one row on screen. The 2026-08-31 fixed-start-date decision stands. Neither a late row
+      nor counting from the last kept day was taken. The owner's phone file gets a distinct refusal
+      and is repaired by hand. One term landed in `CONTEXT.md`, **Restarting**. G1 approved
+      2026-09-14, reopening #26. Stories proposed for G2, in order: the refusal and grid fix, then
+      restart, then the whole save. C's and D's Stories share no capability with these.
     - **D**, standing in a quota: B-025, now alone. Its grill has to settle *Week turnover*
       (`docs/open-questions.md`), which this want is what forces.
     - **C**, a one-off on a day: B-049. It needs a new capability, and either a new Epic or an
