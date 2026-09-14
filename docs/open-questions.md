@@ -561,6 +561,37 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
   Recorded 2026-09-14, at #224's design.
 
+- **A change to a commitment the record already holds is refused as leaving a recorded day not
+  due.** Reported by the owner on the phone, 2026-09-14: "Gym"-shaped, 3 times a week, kept from
+  10 Sep 2026, and moving the day it is kept from to 14 Sep — or to 8, 9, 11, 12 or 13 — is refused
+  with *"Choose a day that leaves every recorded day due."*, while 7 and 4 are accepted. "This is not
+  what I would expect."
+
+  **Two causes, one sentence.** Reproduced at the `CommitmentsScreen` seam on a scratch copy of
+  `d153abe`, nothing committed. Moving later, past a day with a tick on it (11–14 with a tick on
+  10 Sep), is refused **as specified**: `commitment` § *A commitments screen refuses a change it
+  cannot make*. Moving earlier is not a not-due case at all — a weekly quota is due every date and
+  ignores the kept-from day (`Schedule.swift`, `schedule/spec.md:366`), and § *A commitments screen
+  works out which act a change … needs* says moving earlier "only widens the window". 8 and 9 were
+  refused only when the record **already held** ticks for the identical commitment kept from 8 or
+  9 Sep: `History.carryOver` returns `false` when the target holds anything (`History.swift:117-124`,
+  `record/spec.md:461`), and `CommitmentsScreen.swift:426-429` — and the rhythm path at `:488-491` —
+  maps every `false` to `.wouldLeaveARecordedDayNotDue`, which `CommitmentsView.swift:72-73` draws.
+
+  **The refusal is right and the spec has no words for it.** `record` requires refusing a carry-over
+  onto a commitment it already holds records for; `commitment`'s refusal list names *a commitment
+  the roster already holds* and *a day already recorded on that the change would leave not due*, and
+  neither is this. So the fix is a delta — a refusal of its own, told apart from the other seven —
+  which makes it a Story reopening `FEAT: commitment` (#26), not a chore.
+
+  **Unconfirmed: how those records got there.** No path found writes ticks under a kept-from day
+  and leaves no roster entry for it — carry-over moves rather than copies, and a superseded or
+  removed entry still on the roster is refused earlier as already kept. The phone's `record.json`
+  is the check: ticks under that commitment kept from 2026-09-08 or 2026-09-09. If there are none,
+  the reproduction above is not the owner's case and something else refuses it. Also open, and
+  B-050's rather than this entry's: even the correct refusal never says which recorded day blocks
+  the move. Recorded 2026-09-14, from `/atlas idea`.
+
 ## Settled
 
 - 2026-09-11 — **specs and change folders are made concise through per-artifact and per-requirement
