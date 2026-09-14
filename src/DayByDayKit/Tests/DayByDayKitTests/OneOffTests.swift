@@ -462,7 +462,7 @@ func renamingAOneOffToANameThatSaysNothingOrRenamingOneNotHeldIsRefused() {
 }
 
 @Test(
-    "a rename is kept at a one-off store before the store reports it kept, and one that cannot be kept is refused"
+    "a rename is kept at a one-off store before the store reports it, and one that cannot be kept is refused"
 )
 func aRenameIsKeptAtAOneOffStoreBeforeTheStoreReportsItKeptAndOneThatCannotBeKeptIsRefused()
     throws

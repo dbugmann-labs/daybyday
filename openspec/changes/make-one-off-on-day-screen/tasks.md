@@ -65,8 +65,8 @@ day-view tests in `DayViewTests.swift`; day-screen tests in `DayScreenTests.swif
 
 ## 7. The records
 
-- [ ] 7.1 Confirm `CONTEXT.md` § *Day view*, § *One-off* and § *One-off entry* still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
-- [ ] 7.2 Confirm `git diff --stat origin/main... -- openspec/specs/ docs/adr/` reports nothing (rule 2; no ADR is written)
+- [x] 7.1 Confirm `CONTEXT.md` § *Day view*, § *One-off* and § *One-off entry* still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
+- [x] 7.2 Confirm `git diff --stat origin/main... -- openspec/specs/ docs/adr/` reports nothing (rule 2; no ADR is written)
 
 ## 8. The gates
 
