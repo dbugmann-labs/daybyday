@@ -2160,10 +2160,10 @@ what the screen is telling SHALL be left as it was.
 
 ### Requirement: A row is its commitment, its date and what that day holds
 
-A row SHALL be three things and no others: its commitment, its day view's date, and what that day
-view's history says of that commitment on that date — whether it is kept and, where its kind is a
-number, a note or a total, the number, the note or the sum that day holds. Two rows SHALL be the
-same row when all three agree, and SHALL be different when any one differs.
+A row SHALL be its commitment, its day view's date, whether that day is kept and, for a number, a
+note or a total, what that day holds, and, only where its commitment is on a weekly quota, its
+standing on that date. Two rows SHALL be the same row when all of these agree, and SHALL be
+different when any one differs.
 
 Two rows of one commitment on one date SHALL therefore be different rows where their days hold
 different numbers or different notes, and SHALL be the same row where their days' additions differ
@@ -2256,20 +2256,46 @@ rather than nothing at all.
 - **THEN** the two rows are the same row
 - **AND** the entry each offers says "60 of 120"
 
+#### Scenario: two weekly-quota rows alike in commitment, date and day but differing in standing are different rows
+
+- **WHEN** two day views are formed on Wednesday 2 September 2026, each of a commitment named
+  "Reading" on a weekly quota of 3 times a week, kept from 1 January 2026, the first from a history
+  that has taken no tick and the second from a history holding a tick for that commitment on Monday
+  31 August 2026
+- **THEN** each holds one row named "Reading", saying the commitment is not kept
+- **AND** the first says "0/3x a week" and the second says "1/3x a week"
+- **AND** the two rows are different rows
+
+#### Scenario: two weekly-quota rows whose histories differ only outside the row's week through its date are the same row
+
+- **WHEN** two day views are formed on Wednesday 2 September 2026, each of a commitment named
+  "Reading" on a weekly quota of 3 times a week, kept from 1 January 2026, each from a history
+  holding a tick for that commitment on Monday 31 August 2026, the second history also holding ticks
+  for it on Sunday 30 August and Thursday 3 September 2026
+- **THEN** both rows say "1/3x a week"
+- **AND** the two rows are the same row
+
+#### Scenario: two rows on a schedule that is not a weekly quota whose histories differ on another day of the week are the same row
+
+- **WHEN** two day views are formed on Wednesday 2 September 2026, each of a commitment named "Gym"
+  on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, the first from a
+  history that has taken no tick and the second from a history holding a tick for that commitment on
+  Monday 31 August 2026
+- **THEN** both rows say "Mon, Wed, Sat", saying the commitment is not kept
+- **AND** the two rows are the same row
+
 ### Requirement: A row gives back what a screen draws and what a tap makes
 
 A row SHALL be reachable only through the day view holding it, and SHALL give back four things: its
-commitment's name, the rhythm that commitment runs on in words, whether that commitment is kept, and
-what it offers — a tick, a number entry, a note entry or a total entry, according to its
-commitment's kind. It MUST NOT give back the commitment, its schedule, the day it is kept from, the
-date, the number, the note or the sum; those last three SHALL be given out only inside the entry a
-row offers.
+commitment's name, its rhythm in words, whether it is kept, and what it offers — a tick or the entry
+its commitment's kind takes. It MUST NOT give back the commitment, its schedule, the day it is kept from, the
+date, the number, the note, the sum or its standing; the number, the note and the sum SHALL be given
+out only inside the entry a row offers.
 
-The rhythm's words SHALL be the ones the `schedule` capability says for the schedule the row's
-commitment carries, and this capability SHALL compose none of them. Every row SHALL say its rhythm,
-always, whether or not its commitment is kept on that date and whatever the row offers or does not.
-The rhythm SHALL be read off the commitment the row already holds, so two rows alike in the three
-things a row is say the same rhythm.
+The words SHALL be `schedule`'s for the commitment's schedule, said given the row's standing on a
+weekly quota and plainly otherwise, and composed by no other capability. The standing SHALL be
+`record`'s answer through the row's date, whatever the kind and whether or not that date has
+arrived. Every row SHALL say its rhythm, always, kept or not and whatever it offers.
 
 #### Scenario: a row says the rhythm its commitment runs on in words
 
@@ -2279,7 +2305,7 @@ things a row is say the same rhythm.
   every 14 days starting on 31 August 2026, and one named "Reading" on a schedule of 3 times a
   week, all kept from 1 January 2026
 - **THEN** the day view holds four rows, saying "Mon, Wed, Sat", "The 31st", "Every 14 days" and
-  "3x a week" in that order
+  "0/3x a week" in that order
 
 #### Scenario: a row says its rhythm whether or not its commitment is kept
 
@@ -2305,6 +2331,52 @@ things a row is say the same rhythm.
   named "Vitamins" on a schedule listing all seven weekdays, both kept from 1 January 2026
 - **THEN** the day view holds two rows, both named "Vitamins"
 - **AND** the first says "Mon, Wed" and the second says "Every day"
+
+#### Scenario: a weekly-quota row says its standing counted through its own date and from its own week's Monday
+
+- **WHEN** day views are formed of a commitment named "Reading" on a weekly quota of 3 times a week,
+  kept from 1 January 2026, from a history holding ticks for that commitment on Sunday 30 August,
+  Monday 31 August, Wednesday 2 September and Friday 4 September 2026
+- **THEN** the row on Sunday 30 August 2026 says "1/3x a week"
+- **AND** the rows on Monday 31 August and Tuesday 1 September 2026 say "1/3x a week"
+- **AND** the row on Wednesday 2 September 2026 says "2/3x a week" and the row on Sunday 6 September
+  2026 says "3/3x a week"
+
+#### Scenario: a weekly-quota row past its quota says the true count and still offers a tick
+
+- **WHEN** day views are formed of a commitment named "Reading" on a weekly quota of 3 times a week,
+  kept from 1 January 2026, from a history holding ticks for that commitment on each day from Monday
+  31 August through Thursday 3 September 2026, and each row is asked as of Saturday 5 September 2026
+- **THEN** the row on Thursday 3 September 2026 says "4/3x a week", says it is kept and offers a tick
+- **AND** the row on Saturday 5 September 2026 says "4/3x a week", says it is not kept and offers a
+  tick
+
+#### Scenario: a weekly-quota row for a day that has not arrived says its standing through its own date
+
+- **WHEN** a day view is formed on Friday 4 September 2026 of a commitment named "Reading" on a
+  weekly quota of 3 times a week, kept from 1 January 2026, from a history holding ticks for that
+  commitment on Monday 31 August and Thursday 3 September 2026, and its row is asked as of Wednesday
+  2 September 2026
+- **THEN** the row offers no tick
+- **AND** the row says "2/3x a week"
+
+#### Scenario: a weekly-quota row whose commitment is not a tick says its standing by the days kept
+
+- **WHEN** day views are formed on Wednesday 2 September 2026, each on a weekly quota of 3 times a
+  week and kept from 1 January 2026, of a commitment named "Weight" of the number kind from a
+  history holding a number of 70.5 for it on Monday 31 August 2026, one named "Journal" of the note
+  kind from a history holding a note of "Ran 8k." for it on that Monday, and one named "Protein" of
+  the total kind with a target of 120 from a history holding an addition of 120 for it on that Monday
+  and one of 30 on Tuesday 1 September 2026
+- **THEN** each of the three rows says "1/3x a week"
+
+#### Scenario: a row on a schedule that is not a weekly quota says its plain words whatever its week holds
+
+- **WHEN** a day view is formed on Wednesday 2 September 2026 of a commitment named "Gym" on a
+  schedule listing Monday, Wednesday and Saturday and one named "Vitamins" on a schedule listing all
+  seven weekdays, both kept from 1 January 2026, from a history holding ticks for both on Monday
+  31 August and Wednesday 2 September 2026
+- **THEN** the first row says "Mon, Wed, Sat" and the second says "Every day"
 
 ### Requirement: A day screen says the day its day picker opens on and the earliest day it reaches
 
