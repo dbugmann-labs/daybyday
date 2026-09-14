@@ -1378,9 +1378,10 @@ turns: an unmet quota leaves no record behind and is carried into nothing, the n
 zero, and the week that turned stays readable by looking back at its days. Agreed 2026-09-14 at the
 eighth grooming pass, for B-025.
 
-**Standing** — how many days of its **week** a commitment on a weekly quota has been kept, counted
-through a date: "1/3x a week" is a standing of one against a quota of three. It is a fact about
-kept days, answered by the **history** and never by the schedule, and it is asked *of a date*:
+**Standing** — how many days of its **week** a commitment has been kept, counted through a date.
+The **history** answers it for every commitment whatever its schedule, and consults none; it is a
+**weekly quota**'s **row** that shows it, where "1/3x a week" is a standing of one against a quota
+of three. It is a fact about kept days rather than about a rule, and it is asked *of a date*:
 Wednesday's standing counts the week's days through Wednesday, whenever their records were entered,
 and does not move when Thursday is ticked. It is the count and never a cap: a fourth kept day
 against a quota of three is a standing of four. A **row** on a weekly quota says its standing inside

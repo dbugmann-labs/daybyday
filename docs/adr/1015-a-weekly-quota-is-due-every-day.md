@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-02
 - Deciders: Diego Bugmann
+- Amended: 2026-09-14 — the three questions § *Consequences* deferred to the first Story that counts
+  ticks within a week are answered by ADR-1050, and the two bullets that held them say so; the
+  decision itself is untouched.
 - Amended: 2026-09-11 — a quota that could never be met is recorded here as the same failure as a
   commitment that never comes due, and the all-seven-days cost as stated in this record, the spec
   stating only the rule it follows from. `schedule`'s requirement prose carried both, and
@@ -71,13 +74,14 @@ than being superseded.
 - **`schedule` is finished as a capability at four shapes**, and every commitment on the owner's
   day-one list can be expressed by one of them.
 - **A future "has this week been met?" belongs somewhere else** — a capability that can see ticks —
-  and arriving there is an addition rather than a reversal of this decision. Nothing here forecloses
-  it, and no signature has to change for it to exist.
-- **Where a week begins is still undecided, and this decision is why.** Because a quota is due on
-  every date, no week boundary is ever consulted, so the question cannot be settled by any test in
-  this capability. It stays in `docs/open-questions.md`, inside *Week turnover*, for the first Story
-  that counts ticks within a week. This corrects three earlier design documents that assigned the
-  question to the quota Story.
+  and arriving there is an addition rather than a reversal of this decision. It arrived in `record`,
+  as a commitment's **standing**, and no signature here changed for it: ADR-1050.
+- **Where a week begins is answered elsewhere, and this decision is why.** Because a quota is due on
+  every date, no week boundary is ever consulted, so the question could not be settled by any test in
+  this capability. It waited in `docs/open-questions.md`, inside *Week turnover*, for the first Story
+  that counts ticks within a week; `add-quota-standing` (#235) is that Story, and ADR-1050 answers it
+  — Monday through the following Sunday, on every phone. This corrects three earlier design documents
+  that assigned the question to the quota Story.
 - **Reversing this is expensive**, which is why it is an ADR rather than a line in a design document
   that gets archived: the alternatives all touch either the signature every rule shape shares or the
   vocabulary the product is defined in.
