@@ -148,50 +148,6 @@ shape it lacks, not the quota.
   inherits is a decision, not a want. It cannot be taken before B-007, because what may appear on
   the day screen depends on what the detail page is a page *per*.
 
-### B-025 — know where I stand on a weekly quota, inside its week
-*Captured 2026-09-03, from the sweep. The wording is the sweep's.*
-
-> "Know where you stand on a weekly quota inside its week — reading, two done, one to go."
-
-- **Trigger** — mid-week, looking at the reading row and deciding whether tonight is one of the
-  three.
-- **Touches** — `schedule` (#6) and `day-screen` (#27). ADR-1015 makes a quota commitment due
-  every day of its week, so its row appears all seven days saying exactly the same thing; the day
-  view cannot see the week and says so by design (`CONTEXT.md` § *Day view*).
-- **Principle** — tested against *nothing congratulates you*: **strains harder than any want yet
-  captured, and is captured anyway.** "Two of three" is a count, and a count over a run of days is
-  a streak with the arithmetic hidden. It survives only if what is shown is what the rhythm still
-  *asks* — one more night this week — and never what has been achieved. If that distinction cannot
-  be held in the design, this is a drop, and the next pass should say so rather than build it.
-- **Open** — blocked on *Week turnover* (`docs/open-questions.md` § *Open product questions*):
-  where a week begins and what an unmet third night becomes on Sunday night. Nothing about
-  standing in a week means anything until that is answered, and this want is the thing that
-  forces it.
-- **Open** — what a met quota's row does: disappear, go quiet, or stay unchanged. `CONTEXT.md`
-  § *Day view* records that hiding a met one is "a later Story's" and leaves it there.
-- **Re-judged 2026-09-06** — stands, and sharper: yuno 5× a week leaves two spare days where reading
-  left four, so *is tonight one of them* is asked on more days, and a row that says the same thing
-  all seven is wrong on more of them.
-- **Said again 2026-09-07, in the owner's own words.** The wording above is the sweep's; this is
-  the first time the want has been stated by the person who has it, and it names a form:
-
-  > "For the commitments that have the "n times a week" shape, it currently says something like "3x
-  > a week" next to the commitment. However, I would like to know how many times it was already
-  > kept this week (something like 1/3x a week)"
-
-- **Touches, from that wording** — the string it wants changed is `schedule`'s, not a screen's.
-  *A schedule says the rhythm it runs on in words* and *A weekly-quota schedule is said as its number
-  of times a week* are what produce "3x a week", and neither has ever been given a history. "1/3x a
-  week" is that string with a count of kept days put inside it, so either those words stop being the
-  schedule's alone or the count is drawn beside them and the words are left as they are. They are
-  said in two places since #144 — the commitments screen entry (`CommitmentsView`) and the day
-  screen row (`ContentView`) — and "next to the commitment" does not say which is meant, or whether
-  both are.
-- **Open, from that wording** — it asks for "how many times it was already kept", which is the
-  achieved side of the line the *Principle* above draws, and "one to go" is the asked side. The want
-  is now on record in the form that principle warns about. Whichever pass takes it has to put that
-  choice to the owner rather than quietly pick the safe half.
-
 ### B-032 — start a weight entry from the last weight I gave
 *Captured 2026-09-06.*
 
@@ -453,6 +409,19 @@ day and recorded first in `docs/open-questions.md` § Known gaps, which moved he
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-14 — know where I stand on a weekly quota, inside its week (B-025) → Story #235
+  `add-quota-standing`, reopening `FEAT: record` (#53), and Story #236 `say-standing-in-quota-row`,
+  reopening `FEAT: day-screen` (#27), blocked by #235. Grilled at the eighth pass in its own session,
+  ten questions over two rounds, and no new Feature: the history answers the count and the row says
+  it. The choice the entry's *Principle* line demanded went to the owner, who chose the kept count —
+  "1/3x a week", inside the rhythm words, on the day-screen row only — over what the week still asks,
+  against the recommendation and told which side of *nothing congratulates you* it sits on. Its first
+  *Open* is answered: a **week** is Monday through Sunday for everyone, and an unmet quota leaves
+  nothing behind when it turns (`docs/open-questions.md` § *Settled*). Its second too: a met quota's
+  row stays, says 3/3 and still offers a tick, and a fourth tick says 4/3. Standing is counted
+  through the row's own date. `CONTEXT.md` gained **week** and **standing**; the ADR is owed by #235
+  at Stage 4, where ADR-1015 left it.
 
 - 2026-09-14 — **dropped**: meet a quota over a longer span than a week (B-017). Declined at every
   pass from 2026-09-02 to 2026-09-12, each time because nothing on the day-one week asks for a span
@@ -1021,3 +990,22 @@ found nothing.
       Epic #1 still rules it out by name.
     - **G**, a reminder: B-039.
     - **Singletons**: B-050, a shell chore to ask for when it grates; B-041, waiting for the SDK.
+
+- 2026-09-14 — cluster D of the eighth pass, standing in a quota, groomed in its own session and
+  worktree (`chore/groom-quota`) as the line above says it would be.
+  - **Sweep** — `origin/main` was still at fd816e1, the commit the eighth pass swept at: nothing had
+    changed, and the sweep was one line.
+  - **Promoted** — B-025 → Stories #235 `add-quota-standing` (`record`) and #236
+    `say-standing-in-quota-row` (`day-screen`, blocked by #235), reopening #53 and #27 and with them
+    Epic #1. No new Feature. `/to-tickets` was skipped: the breakdown spans two Features and is two
+    sentences, and the owner accepted it at G2 as presented.
+  - **Settled at the grill**, ten questions over two rounds: the kept count and not what the week
+    still asks, the owner's call against the recommendation; Monday for everyone; nothing recorded at
+    week turnover; the day-screen row only; counted as of the row's own date; a met row stays and
+    offers a tick; the true count past the quota; the count inside the rhythm words; the term
+    *standing*; the history counts and the day view says. *Week turnover* moved to
+    `docs/open-questions.md` § *Settled*.
+  - **§7 against the other two clusters** — A deltas `commitment`, which neither Story here touches.
+    C was undecided when this session closed and may touch `day-screen`; if its G2 lands a day-screen
+    Story first, #236 waits behind it and #235 does not.
+  - **Not re-judged** — the other eleven wants; this session held one cluster by design.

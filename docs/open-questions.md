@@ -11,10 +11,6 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 ## Open product questions
 
-- **Week turnover.** A quota of three reading nights, met twice by Sunday: does the unfinished
-  third vanish, or is it recorded as a miss? Nothing in the day-one list decides it and the
-  answer changes what a week *is*. Forced by the first Story that renders a quota's state.
-
 - **What a total's day answers when its additions overflow to NaN.** Two additions of
   `Decimal.greatestFiniteMagnitude`, each above zero and so each an addition, sum to NaN, and the
   history answers that day not kept at the `record` seam — against `record`'s rule that a total is
@@ -562,6 +558,15 @@ Things that are built, or deliberately not built, in a state someone will trip o
   Recorded 2026-09-14, at #224's design.
 
 ## Settled
+
+- 2026-09-14 — **a week begins on Monday for everyone, and an unmet weekly quota leaves nothing
+  behind when the week turns.** Decided at the eighth grooming pass's grill of B-025, the want
+  *Week turnover* had named as the one that would force it: the unfinished third night is neither
+  recorded as a miss nor carried over; the week turns, the next starts from zero, and the week that
+  turned stays readable by looking back at its days. What a quota's row shows is its **standing**, the
+  count of kept days through the row's own date, answered by the history (`CONTEXT.md` § *Week*,
+  § *Standing*). Goes to #235 `add-quota-standing` and #236 `say-standing-in-quota-row`; the ADR is
+  owed by #235 at Stage 4, where ADR-1015 left the question.
 
 - 2026-09-11 — **specs and change folders are made concise through per-artifact and per-requirement
   budgets, advisory only, and a dedicated editorial-Story lane.** `docs/research/2026-09-09-concise-specs.md`
