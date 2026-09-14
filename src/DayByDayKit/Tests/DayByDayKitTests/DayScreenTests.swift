@@ -2530,6 +2530,745 @@ func aTickOnAOneOffRowADayScreensDayViewDoesNotHoldDoesNotEndWhatIsAlreadyTold()
 }
 
 @MainActor
+@Test("a one-off committed in the one-off entry on today is added not done on today")
+func aOneOffCommittedInTheOneOffEntryOnTodayIsAddedNotDoneOnToday() throws {
+    let oneOffPlace = freshOneOffPlace()
+    let (place, rosterPlace) = freshPlaces()
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    try screen.addOneOff(named: "Call mum")
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+    #expect(screen.dayView.oneOffGroup?.rows.first?.isDone == false)
+    #expect(screen.dayView.oneOffGroup?.rows.first?.lateInWords == nil)
+
+    let october5 = CalendarDate(year: 2026, month: 10, day: 5)!
+    let reopened = try OneOffStore(at: oneOffPlace)
+    #expect(reopened.oneOffs.standing(on: october5, asOf: october5).map(\.name) == ["Call mum"])
+
+    #expect(!FileManager.default.fileExists(atPath: place.path))
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
+@MainActor
+@Test("a one-off committed on a later day is added not done on that day and offers no tick")
+func aOneOffCommittedOnALaterDayIsAddedNotDoneOnThatDayAndOffersNoTick() throws {
+    let oneOffPlace = freshOneOffPlace()
+    let (place, rosterPlace) = freshPlaces()
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    screen.showNextDay()
+
+    try screen.addOneOff(named: "Send form")
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Send form"])
+    #expect(screen.dayView.oneOffGroup?.rows.first?.isDone == false)
+    #expect(screen.dayView.oneOffGroup?.rows.first?.offersTick(asOf: monday) == false)
+
+    screen.showToday()
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
+
+    let reopened = try OneOffStore(at: oneOffPlace)
+    let sendForm = OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 29)!)!
+    #expect(reopened.oneOffs.isDone(sendForm) == false)
+}
+
+@MainActor
+@Test("a one-off committed on a past day is added already done on that day and stays on it")
+func aOneOffCommittedOnAPastDayIsAddedAlreadyDoneOnThatDayAndStaysOnIt() throws {
+    let oneOffPlace = freshOneOffPlace()
+    let (place, rosterPlace) = freshPlaces()
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    screen.showPreviousDay()
+
+    try screen.addOneOff(named: "Call mum")
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+    #expect(screen.dayView.oneOffGroup?.rows.first?.isDone == true)
+
+    screen.showToday()
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
+
+    let october5 = CalendarDate(year: 2026, month: 10, day: 5)!
+    let reopened = try OneOffStore(at: oneOffPlace)
+    let sunday = CalendarDate(year: 2026, month: 9, day: 27)!
+    #expect(
+        reopened.oneOffs.standing(on: sunday, asOf: october5).map(\.name) == ["Call mum"])
+}
+
+@MainActor
+@Test("blank space around a name committed in the one-off entry is not part of the one-off added")
+func blankSpaceAroundANameCommittedInTheOneOffEntryIsNotPartOfTheOneOffAdded() throws {
+    let oneOffPlace = freshOneOffPlace()
+    let (place, rosterPlace) = freshPlaces()
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    try screen.addOneOff(named: "  Call mum ")
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+
+    let reopened = try OneOffStore(at: oneOffPlace)
+    #expect(reopened.oneOffs.standing(on: monday, asOf: monday).map(\.name) == ["Call mum"])
+}
+
+@MainActor
+@Test("a commit saying nothing in the one-off entry adds nothing and tells nothing")
+func aCommitSayingNothingInTheOneOffEntryAddsNothingAndTellsNothing() throws {
+    let oneOffPlace = freshOneOffPlace()
+    let (place, rosterPlace) = try blockerPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+
+    #expect(throws: (any Error).self) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    try screen.addOneOff(named: "")
+    try screen.addOneOff(named: "   ")
+
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
+    #expect(screen.nameRefusal == nil)
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(!FileManager.default.fileExists(atPath: oneOffPlace.path))
+}
+
+@MainActor
+@Test("a day screen not keeping one-offs adds nothing whatever is committed in its one-off entry")
+func aDayScreenNotKeepingOneOffsAddsNothingWhateverIsCommittedInItsOneOffEntry() throws {
+    let oneOffPlace = freshOneOffPlace()
+    try FileManager.default.createDirectory(
+        at: oneOffPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data("not one-offs".utf8)
+    try bytes.write(to: oneOffPlace)
+
+    let (place, rosterPlace) = freshPlaces()
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    #expect(throws: Never.self) {
+        try screen.addOneOff(named: "Call mum")
+    }
+
+    #expect(screen.dayView.oneOffGroup == nil)
+    #expect(screen.nameRefusal == nil)
+    #expect(try Data(contentsOf: oneOffPlace) == bytes)
+
+    let laterFormPlace = freshOneOffPlace()
+    try FileManager.default.createDirectory(
+        at: laterFormPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let laterFormBytes = Data(#"{"version": 2, "oneOffs": []}"#.utf8)
+    try laterFormBytes.write(to: laterFormPlace)
+
+    let (secondPlace, secondRosterPlace) = freshPlaces()
+    let secondScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: secondPlace,
+        keepingRosterAt: secondRosterPlace, keepingOneOffsAt: laterFormPlace)
+
+    #expect(throws: Never.self) {
+        try secondScreen.addOneOff(named: "Call mum")
+    }
+    #expect(secondScreen.oneOffState == .writtenByALaterVersion)
+    #expect(try Data(contentsOf: laterFormPlace) == laterFormBytes)
+}
+
+@MainActor
+@Test("a one-off added ends what a day screen tells on a row")
+func aOneOffAddedEndsWhatADayScreenTellsOnARow() throws {
+    let oneOffPlace = freshOneOffPlace()
+    let (place, rosterPlace) = try blockerPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+
+    #expect(throws: (any Error).self) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    try screen.addOneOff(named: "Call mum")
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+    #expect(screen.notice == nil)
+}
+
+@MainActor
+@Test("an add of a name already held on the day shown is refused and told under the one-off entry")
+func anAddOfANameAlreadyHeldOnTheDayShownIsRefusedAndToldUnderTheOneOffEntry() throws {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: monday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let bytesBefore = try Data(contentsOf: oneOffPlace)
+
+    #expect(throws: Never.self) {
+        try screen.addOneOff(named: "Call mum ")
+    }
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+    #expect(screen.nameRefusal?.row == nil)
+    #expect(screen.nameRefusal?.cause == "Already on this day")
+    #expect(screen.nameRefusal?.text == "Call mum ")
+    #expect(try Data(contentsOf: oneOffPlace) == bytesBefore)
+
+    let doneOneOffPlace = freshOneOffPlace()
+    let doneStore = try OneOffStore(at: doneOneOffPlace)
+    try doneStore.add(OneOff(name: "Call mum", date: monday)!, doneOn: monday)
+
+    let (secondPlace, secondRosterPlace) = freshPlaces()
+    let secondScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: secondPlace,
+        keepingRosterAt: secondRosterPlace, keepingOneOffsAt: doneOneOffPlace)
+
+    #expect(throws: Never.self) {
+        try secondScreen.addOneOff(named: "Call mum ")
+    }
+    #expect(secondScreen.nameRefusal?.cause == "Already on this day")
+    #expect(secondScreen.nameRefusal?.text == "Call mum ")
+}
+
+@MainActor
+@Test("an add is refused on a past day where a one-off of that name owed there now stands on today")
+func anAddIsRefusedOnAPastDayWhereAOneOffOfThatNameOwedThereNowStandsOnToday() throws {
+    let friday = CalendarDate(year: 2026, month: 9, day: 25)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: friday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+    screen.showDay(friday)
+
+    try screen.addOneOff(named: "Call mum")
+
+    #expect(screen.nameRefusal?.cause == "Already on this day")
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
+
+    screen.showToday()
+    try screen.addOneOff(named: "Call mum")
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum", "Call mum"])
+    #expect(screen.dayView.oneOffGroup?.rows[0].lateInWords == "3 days late")
+    #expect(screen.dayView.oneOffGroup?.rows[1].lateInWords == nil)
+}
+
+@MainActor
+@Test(
+    "an add that cannot be kept is refused with an error and told under the one-off entry beside what is told on a row"
+)
+func anAddThatCannotBeKeptIsRefusedWithAnErrorAndToldUnderTheOneOffEntryBesideWhatIsToldOnARow()
+    throws
+{
+    let oneOffPlace = freshOneOffPlace()
+    let (place, rosterPlace) = try blockerPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+
+    #expect(throws: (any Error).self) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    let oneOffDirectory = oneOffPlace.deletingLastPathComponent()
+    try FileManager.default.createDirectory(
+        at: oneOffDirectory, withIntermediateDirectories: true)
+    try makeReadOnly(oneOffDirectory)
+    defer { try? makeWritable(oneOffDirectory) }
+
+    #expect(throws: (any Error).self) {
+        try screen.addOneOff(named: "Call mum")
+    }
+
+    #expect(screen.nameRefusal?.row == nil)
+    #expect(screen.nameRefusal?.cause == nil)
+    #expect(screen.nameRefusal?.text == "Call mum")
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
+}
+
+@MainActor
+@Test("a rename onto a one-off already held is refused and told under its row, which keeps its name")
+func aRenameOntoAOneOffAlreadyHeldIsRefusedAndToldUnderItsRowWhichKeepsItsName() throws {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: monday)!)
+    try oneOffStore.add(OneOff(name: "Ring mum", date: monday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let bytesBefore = try Data(contentsOf: oneOffPlace)
+    let callMumRow = screen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Call mum" })!
+
+    #expect(throws: Never.self) {
+        try screen.rename(callMumRow, to: "Ring mum")
+    }
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum", "Ring mum"])
+    #expect(screen.nameRefusal?.row == callMumRow)
+    #expect(screen.nameRefusal?.cause == "Already on this day")
+    #expect(screen.nameRefusal?.text == "Ring mum")
+    #expect(try Data(contentsOf: oneOffPlace) == bytesBefore)
+}
+
+@MainActor
+@Test("a rename that cannot be kept is refused with an error and told under its row")
+func aRenameThatCannotBeKeptIsRefusedWithAnErrorAndToldUnderItsRow() throws {
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(
+        OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!)
+    let oneOffDirectory = oneOffPlace.deletingLastPathComponent()
+    try makeReadOnly(oneOffDirectory)
+    defer { try? makeWritable(oneOffDirectory) }
+
+    let (place, rosterPlace) = freshPlaces()
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let row = screen.dayView.oneOffGroup!.rows[0]
+
+    #expect(throws: (any Error).self) {
+        try screen.rename(row, to: "Ring mum")
+    }
+
+    #expect(screen.nameRefusal?.row == row)
+    #expect(screen.nameRefusal?.cause == nil)
+    #expect(screen.nameRefusal?.text == "Ring mum")
+    #expect(screen.notice == nil)
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+
+    #expect(throws: (any Error).self) {
+        try screen.rename(row, to: "   ")
+    }
+
+    #expect(screen.nameRefusal?.row == row)
+    #expect(screen.nameRefusal?.cause == nil)
+    #expect(screen.nameRefusal?.text == "   ")
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+}
+
+@MainActor
+@Test(
+    "what is told under the one-off entry stands when a change is kept on a row or from another field and when returned to"
+)
+func whatIsToldUnderTheOneOffEntryStandsWhenAChangeIsKeptOnARowOrFromAnotherFieldAndWhenReturnedTo()
+    throws
+{
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(
+        OneOff(name: "Pay fine", date: CalendarDate(year: 2026, month: 9, day: 25)!)!)
+    try oneOffStore.add(OneOff(name: "Call mum", date: monday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+
+    try screen.addOneOff(named: "Call mum")
+    #expect(screen.nameRefusal?.row == nil)
+    #expect(screen.nameRefusal?.cause == "Already on this day")
+
+    try screen.tick(screen.dayView.rows[0])
+
+    let payFineRow = screen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Pay fine" })!
+    try screen.rename(payFineRow, to: "Pay the fine")
+
+    screen.returnedTo()
+
+    #expect(screen.nameRefusal?.row == nil)
+    #expect(screen.nameRefusal?.cause == "Already on this day")
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Pay the fine", "Call mum"])
+}
+
+@MainActor
+@Test("what is told under a one-off name field ends when its text is edited or a commit from it is kept")
+func whatIsToldUnderAOneOffNameFieldEndsWhenItsTextIsEditedOrACommitFromItIsKept() throws {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: monday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    try screen.addOneOff(named: "Call mum")
+    #expect(screen.nameRefusal != nil)
+
+    screen.oneOffNameEdited()
+
+    #expect(screen.nameRefusal == nil)
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+
+    try screen.addOneOff(named: "Call mum")
+    #expect(screen.nameRefusal != nil)
+
+    try screen.addOneOff(named: "Call dad")
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum", "Call dad"])
+    #expect(screen.nameRefusal == nil)
+}
+
+@MainActor
+@Test(
+    "what is told under a one-off name field ends when the day being shown changes and stands when today is sent back to today"
+)
+func whatIsToldUnderAOneOffNameFieldEndsWhenTheDayBeingShownChangesAndStandsWhenTodayIsSentBackToToday()
+    throws
+{
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: monday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    try screen.addOneOff(named: "Call mum")
+    screen.showToday()
+
+    #expect(screen.nameRefusal?.cause == "Already on this day")
+
+    screen.showNextDay()
+    #expect(screen.nameRefusal == nil)
+
+    let (secondPlace, secondRosterPlace) = freshPlaces()
+    let secondOneOffPlace = freshOneOffPlace()
+    let secondOneOffStore = try OneOffStore(at: secondOneOffPlace)
+    try secondOneOffStore.add(OneOff(name: "Call mum", date: monday)!)
+    let secondScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: secondPlace,
+        keepingRosterAt: secondRosterPlace, keepingOneOffsAt: secondOneOffPlace)
+
+    try secondScreen.addOneOff(named: "Call mum")
+    secondScreen.showDay(CalendarDate(year: 2026, month: 9, day: 30)!)
+
+    #expect(secondScreen.nameRefusal == nil)
+}
+
+@MainActor
+@Test("what is told under a one-off name field ends when the app is shown again")
+func whatIsToldUnderAOneOffNameFieldEndsWhenTheAppIsShownAgain() throws {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: monday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    try screen.addOneOff(named: "Call mum")
+    #expect(screen.nameRefusal != nil)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.nameRefusal == nil)
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+}
+
+@MainActor
+@Test(
+    "a refusal under one one-off name field replaces what is told under another, and ends when its row is no longer held"
+)
+func aRefusalUnderOneOneOffNameFieldReplacesWhatIsToldUnderAnotherAndEndsWhenItsRowIsNoLongerHeld()
+    throws
+{
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: monday)!)
+    try oneOffStore.add(OneOff(name: "Ring mum", date: monday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    try screen.addOneOff(named: "Call mum")
+    #expect(screen.nameRefusal?.row == nil)
+
+    let callMumRow = screen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Call mum" })!
+    try screen.rename(callMumRow, to: "Ring mum")
+
+    #expect(screen.nameRefusal?.row == callMumRow)
+    #expect(screen.nameRefusal?.cause == "Already on this day")
+
+    try screen.tick(callMumRow)
+
+    #expect(screen.nameRefusal == nil)
+}
+
+@MainActor
+@Test("a one-off renamed from its row on a past day keeps its date and stays done there")
+func aOneOffRenamedFromItsRowOnAPastDayKeepsItsDateAndStaysDoneThere() throws {
+    let friday = CalendarDate(year: 2026, month: 9, day: 25)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 30)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: friday)!)
+    try oneOffStore.tick(OneOff(name: "Call mum", date: friday)!, on: friday)
+    try oneOffStore.add(OneOff(name: "Send form", date: wednesday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+    screen.showDay(friday)
+
+    try screen.rename(screen.dayView.oneOffGroup!.rows[0], to: "Ring mum")
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Ring mum"])
+    #expect(screen.dayView.oneOffGroup?.rows.first?.isDone == true)
+
+    let october5 = CalendarDate(year: 2026, month: 10, day: 5)!
+    let reopened = try OneOffStore(at: oneOffPlace)
+    #expect(
+        reopened.oneOffs.standing(on: friday, asOf: october5).map(\.name) == ["Ring mum"])
+    #expect(reopened.oneOffs.standingDay(for: OneOff(name: "Call mum", date: friday)!, asOf: october5) == nil)
+
+    screen.showDay(wednesday)
+    try screen.rename(screen.dayView.oneOffGroup!.rows[0], to: "Send the form")
+
+    #expect(screen.dayView.oneOffGroup?.rows.first?.offersTick(asOf: monday) == false)
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Send the form"])
+}
+
+@MainActor
+@Test("a rename committed with its row's own name changes nothing and writes nothing")
+func aRenameCommittedWithItsRowsOwnNameChangesNothingAndWritesNothing() throws {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: monday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let bytesBefore = try Data(contentsOf: oneOffPlace)
+    let row = screen.dayView.oneOffGroup!.rows[0]
+
+    #expect(throws: Never.self) {
+        try screen.rename(row, to: "Call mum ")
+    }
+
+    #expect(screen.nameRefusal == nil)
+    #expect(try Data(contentsOf: oneOffPlace) == bytesBefore)
+}
+
+@MainActor
+@Test("a rename committed saying nothing removes the one-off")
+func aRenameCommittedSayingNothingRemovesTheOneOff() throws {
+    let friday = CalendarDate(year: 2026, month: 9, day: 25)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: friday)!)
+    try oneOffStore.add(OneOff(name: "Call dad", date: monday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let callMumRow = screen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Call mum" })!
+
+    try screen.rename(callMumRow, to: "   ")
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call dad"])
+    #expect(screen.nameRefusal == nil)
+
+    let reopened = try OneOffStore(at: oneOffPlace)
+    #expect(reopened.oneOffs == {
+        var expected = OneOffs()
+        _ = expected.add(OneOff(name: "Call dad", date: monday)!)
+        return expected
+    }())
+}
+
+@MainActor
+@Test(
+    "a one-off removed from its row is held no longer, done or not and whether or not it offers its tick"
+)
+func aOneOffRemovedFromItsRowIsHeldNoLongerDoneOrNotAndWhetherOrNotItOffersItsTick() throws {
+    let friday = CalendarDate(year: 2026, month: 9, day: 25)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 30)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: friday)!)
+    try oneOffStore.add(OneOff(name: "Call dad", date: monday)!)
+    try oneOffStore.tick(OneOff(name: "Call dad", date: monday)!, on: monday)
+    try oneOffStore.add(OneOff(name: "Pay fine", date: wednesday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    let callMumRow = screen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Call mum" })!
+    try screen.remove(callMumRow)
+    let callDadRow = screen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Call dad" })!
+    try screen.remove(callDadRow)
+
+    screen.showNextDay()
+    screen.showNextDay()
+
+    let payFineRow = screen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Pay fine" })!
+    #expect(payFineRow.offersTick(asOf: monday) == false)
+    try screen.remove(payFineRow)
+
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
+
+    screen.showToday()
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
+
+    let reopened = try OneOffStore(at: oneOffPlace)
+    #expect(reopened.oneOffs == OneOffs())
+}
+
+@MainActor
+@Test("renaming or removing a one-off row a day screen's day view does not hold changes nothing")
+func renamingOrRemovingAOneOffRowADayScreensDayViewDoesNotHoldChangesNothing() throws {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 29)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(
+        OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!)
+    try oneOffStore.add(OneOff(name: "Pay fine", date: tuesday)!)
+    let bytesBefore = try Data(contentsOf: oneOffPlace)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let nextRow = screen.nextDayView!.oneOffGroup!.rows[0]
+
+    #expect(throws: Never.self) {
+        try screen.rename(nextRow, to: "Pay the fine")
+    }
+    #expect(throws: Never.self) {
+        try screen.remove(nextRow)
+    }
+
+    #expect(screen.nextDayView?.oneOffGroup?.rows.map(\.name) == ["Pay fine"])
+    #expect(screen.notice == nil)
+    #expect(screen.nameRefusal == nil)
+    #expect(try Data(contentsOf: oneOffPlace) == bytesBefore)
+}
+
+@MainActor
+@Test("a one-off removal that cannot be kept is refused with an error and told on its row")
+func aOneOffRemovalThatCannotBeKeptIsRefusedWithAnErrorAndToldOnItsRow() throws {
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(
+        OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!)
+    let oneOffDirectory = oneOffPlace.deletingLastPathComponent()
+    try makeReadOnly(oneOffDirectory)
+    defer { try? makeWritable(oneOffDirectory) }
+
+    let (place, rosterPlace) = freshPlaces()
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let row = screen.dayView.oneOffGroup!.rows[0]
+
+    #expect(throws: (any Error).self) {
+        try screen.remove(row)
+    }
+
+    #expect(screen.notice?.oneOffRow == row)
+    #expect(screen.notice?.cause == nil)
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
+    #expect(screen.nameRefusal == nil)
+}
+
+@MainActor
 @Test("a day screen opened where the roster cannot be read holds no rows and says it is not keeping one")
 func aDayScreenOpenedWhereTheRosterCannotBeReadHoldsNoRowsAndSaysItIsNotKeepingOne() throws {
     let (place, rosterPlace) = freshPlaces()

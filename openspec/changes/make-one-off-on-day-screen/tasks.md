@@ -33,29 +33,29 @@ day-view tests in `DayViewTests.swift`; day-screen tests in `DayScreenTests.swif
 - [x] 5.2 *edited* a day screen opened where no one-offs have been kept writes nothing at its one-off place — catches an empty group written as a file
 - [x] 5.3 *edited* a day screen reads its one-off place again when shown and not when returned to — catches a read in `returnedTo`
 - [x] 5.4 *edited* a one-off tick taken back on a past day leaves that day and stands on today again — catches a day view not formed again
-- [ ] 5.5 a one-off committed in the one-off entry on today is added not done on today — catches an add done on today
-- [ ] 5.6 a one-off committed on a later day is added not done on that day and offers no tick — catches the add dated today
-- [ ] 5.7 a one-off committed on a past day is added already done on that day and stays on it — catches an undone add leaving for today
-- [ ] 5.8 blank space around a name committed in the one-off entry is not part of the one-off added — catches `Blank.trimmed` not called
-- [ ] 5.9 a commit saying nothing in the one-off entry adds nothing and tells nothing — catches a blank commit clearing the notice
-- [ ] 5.10 a day screen not keeping one-offs adds nothing whatever is committed in its one-off entry — catches an add opening a fresh store
-- [ ] 5.11 a one-off added ends what a day screen tells on a row — catches `notice` left set after an add
-- [ ] 5.12 an add of a name already held on the day shown is refused and told under the one-off entry — catches the refusal set as `notice`
-- [ ] 5.13 an add is refused on a past day where a one-off of that name owed there now stands on today — catches the duplicate checked against drawn rows
-- [ ] 5.14 an add that cannot be kept is refused with an error and told under the one-off entry beside what is told on a row — catches the refusal replacing `notice`
-- [ ] 5.15 a rename onto a one-off already held is refused and told under its row, which keeps its name — catches `row` left `nil`
-- [ ] 5.16 a rename that cannot be kept is refused with an error and told under its row — catches a blank rename's failure told as `notice`
-- [ ] 5.17 what is told under the one-off entry stands when a change is kept on a row or from another field and when returned to — catches every kept write clearing it
-- [ ] 5.18 what is told under a one-off name field ends when its text is edited or a commit from it is kept — catches a kept add leaving it set
-- [ ] 5.19 what is told under a one-off name field ends when the day being shown changes and stands when today is sent back to today — catches `showToday` clearing it unconditionally
-- [ ] 5.20 what is told under a one-off name field ends when the app is shown again — catches `shown(asOf:)` not clearing it
-- [ ] 5.21 a refusal under one one-off name field replaces what is told under another, and ends when its row is no longer held — catches a stale row kept after a tick
-- [ ] 5.22 a one-off renamed from its row on a past day keeps its date and stays done there — catches a rename dated the shown day or undone
-- [ ] 5.23 a rename committed with its row's own name changes nothing and writes nothing — catches the self-rename told as a duplicate
-- [ ] 5.24 a rename committed saying nothing removes the one-off — catches a blank rename refused
-- [ ] 5.25 a one-off removed from its row is held no longer, done or not and whether or not it offers its tick — catches an `offersTick` guard copied from `tick`
-- [ ] 5.26 renaming or removing a one-off row a day screen's day view does not hold changes nothing — catches a missing `contains` guard
-- [ ] 5.27 a one-off removal that cannot be kept is refused with an error and told on its row — catches the failure told under the entry
+- [x] 5.5 a one-off committed in the one-off entry on today is added not done on today — catches an add done on today
+- [x] 5.6 a one-off committed on a later day is added not done on that day and offers no tick — catches the add dated today
+- [x] 5.7 a one-off committed on a past day is added already done on that day and stays on it — catches an undone add leaving for today
+- [x] 5.8 blank space around a name committed in the one-off entry is not part of the one-off added — catches `Blank.trimmed` not called
+- [x] 5.9 a commit saying nothing in the one-off entry adds nothing and tells nothing — catches a blank commit clearing the notice
+- [x] 5.10 a day screen not keeping one-offs adds nothing whatever is committed in its one-off entry — catches an add opening a fresh store
+- [x] 5.11 a one-off added ends what a day screen tells on a row — catches `notice` left set after an add
+- [x] 5.12 an add of a name already held on the day shown is refused and told under the one-off entry — catches the refusal set as `notice`
+- [x] 5.13 an add is refused on a past day where a one-off of that name owed there now stands on today — catches the duplicate checked against drawn rows
+- [x] 5.14 an add that cannot be kept is refused with an error and told under the one-off entry beside what is told on a row — catches the refusal replacing `notice`
+- [x] 5.15 a rename onto a one-off already held is refused and told under its row, which keeps its name — catches `row` left `nil`
+- [x] 5.16 a rename that cannot be kept is refused with an error and told under its row — catches a blank rename's failure told as `notice`
+- [x] 5.17 what is told under the one-off entry stands when a change is kept on a row or from another field and when returned to — catches every kept write clearing it
+- [x] 5.18 what is told under a one-off name field ends when its text is edited or a commit from it is kept — catches a kept add leaving it set
+- [x] 5.19 what is told under a one-off name field ends when the day being shown changes and stands when today is sent back to today — catches `showToday` clearing it unconditionally
+- [x] 5.20 what is told under a one-off name field ends when the app is shown again — catches `shown(asOf:)` not clearing it
+- [x] 5.21 a refusal under one one-off name field replaces what is told under another, and ends when its row is no longer held — catches a stale row kept after a tick
+- [x] 5.22 a one-off renamed from its row on a past day keeps its date and stays done there — catches a rename dated the shown day or undone
+- [x] 5.23 a rename committed with its row's own name changes nothing and writes nothing — catches the self-rename told as a duplicate
+- [x] 5.24 a rename committed saying nothing removes the one-off — catches a blank rename refused
+- [x] 5.25 a one-off removed from its row is held no longer, done or not and whether or not it offers its tick — catches an `offersTick` guard copied from `tick`
+- [x] 5.26 renaming or removing a one-off row a day screen's day view does not hold changes nothing — catches a missing `contains` guard
+- [x] 5.27 a one-off removal that cannot be kept is refused with an error and told on its row — catches the failure told under the entry
 
 ## 6. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 

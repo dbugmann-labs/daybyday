@@ -327,20 +327,124 @@ public final class DayScreen {
     public private(set) var nameRefusal: NameRefusal?
 
     /// Adds a one-off named `text`, blank space at both ends disregarded, dated the day this
-    /// screen is showing. Throws when the add could not be kept at the one-off place. `design.md`
-    /// § *A refusal under a name field is its own value, and there is one at a time*.
+    /// screen is showing — already done on that day where it is earlier than the today this
+    /// screen was last handed, not done on that today or a later day. Does nothing when this
+    /// screen is not keeping one-offs, or when `text` says nothing. Refused without an error,
+    /// telling "Already on this day" under the one-off entry and keeping nothing, where a one-off
+    /// with that name is already held on the day being shown. Throws when the add could not be
+    /// kept at the one-off place, telling the failure under the one-off entry naming no cause.
+    /// `design.md` § *A refusal under a name field is its own value, and there is one at a time*.
     public func addOneOff(named text: String) throws {
+        guard let oneOffStore else {
+            return
+        }
+        guard !Blank.saysNothing(text) else {
+            return
+        }
+        guard let oneOff = OneOff(name: Blank.trimmed(text), date: shownDay) else {
+            return
+        }
+
+        do {
+            let kept: Bool
+            if shownDay.days(until: today) > 0 {
+                kept = try oneOffStore.add(oneOff, doneOn: shownDay)
+            } else {
+                kept = try oneOffStore.add(oneOff)
+            }
+            guard kept else {
+                nameRefusal = NameRefusal(row: nil, text: text, cause: "Already on this day")
+                return
+            }
+        } catch {
+            nameRefusal = NameRefusal(row: nil, text: text, cause: nil)
+            throw error
+        }
+
+        notice = nil
+        endNameRefusal(forRow: nil)
+        dayView = dayViewOfShownDay()
+        endNameRefusalIfItsRowIsGone()
     }
 
-    /// Renames the one-off `row` holds to `text`, blank space at both ends disregarded. Throws
-    /// when the rename could not be kept at the one-off place. `design.md` § *A rename is one act
-    /// in `one-off`, and keeps the one-off's place*.
+    /// Renames the one-off `row` holds to `text`, blank space at both ends disregarded, keeping
+    /// its date, whether it is done and the day it was done. Does nothing when `row` is not one
+    /// this screen's day view holds, or when this screen is not keeping one-offs. A rename
+    /// committed saying nothing removes the one-off outright; one whose text, so disregarded, is
+    /// `row`'s own name changes nothing and writes nothing. Refused without an error, telling
+    /// "Already on this day" under `row`'s name field and keeping nothing, where a one-off with
+    /// that name is already held on `row`'s date. Throws when the change could not be kept at the
+    /// one-off place, telling the failure under `row`'s name field naming no cause. `design.md`
+    /// § *A rename is one act in `one-off`, and keeps the one-off's place*.
     public func rename(_ row: DayView.OneOffRow, to text: String) throws {
+        guard dayView.oneOffGroup?.rows.contains(row) ?? false else {
+            return
+        }
+        guard let oneOffStore else {
+            return
+        }
+
+        if Blank.saysNothing(text) {
+            do {
+                guard try oneOffStore.remove(row.oneOff) else {
+                    return
+                }
+            } catch {
+                nameRefusal = NameRefusal(row: row, text: text, cause: nil)
+                throw error
+            }
+
+            endNameRefusal(forRow: row)
+            dayView = dayViewOfShownDay()
+            endNameRefusalIfItsRowIsGone()
+            return
+        }
+
+        let trimmed = Blank.trimmed(text)
+        guard trimmed != row.name else {
+            endNameRefusal(forRow: row)
+            return
+        }
+
+        do {
+            guard try oneOffStore.rename(row.oneOff, to: trimmed) else {
+                nameRefusal = NameRefusal(row: row, text: text, cause: "Already on this day")
+                return
+            }
+        } catch {
+            nameRefusal = NameRefusal(row: row, text: text, cause: nil)
+            throw error
+        }
+
+        endNameRefusal(forRow: row)
+        dayView = dayViewOfShownDay()
+        endNameRefusalIfItsRowIsGone()
     }
 
-    /// Removes the one-off `row` holds outright. Throws when the removal could not be kept at the
-    /// one-off place.
+    /// Removes the one-off `row` holds outright. Does nothing when `row` is not one this screen's
+    /// day view holds, or when this screen is not keeping one-offs. Throws when the removal could
+    /// not be kept at the one-off place, telling the failure on `row` — the same rule a refused
+    /// tick tells by. `design.md` § *The words, and where a removal is told*.
     public func remove(_ row: DayView.OneOffRow) throws {
+        guard dayView.oneOffGroup?.rows.contains(row) ?? false else {
+            return
+        }
+        guard let oneOffStore else {
+            return
+        }
+
+        do {
+            guard try oneOffStore.remove(row.oneOff) else {
+                return
+            }
+        } catch {
+            notice = Notice(oneOffRow: row)
+            throw error
+        }
+        notice = nil
+
+        dayView = dayViewOfShownDay()
+        endNameRefusalIfItsRowIsGone()
     }
 
     /// The person has started editing a one-off name field — the entry or a row's. Ends whatever
@@ -348,6 +452,30 @@ public final class DayScreen {
     /// field lasts until its text is edited, the day it is showing changes, or the app is shown
     /// again*.
     public func oneOffNameEdited() {
+        nameRefusal = nil
+    }
+
+    /// Clears `nameRefusal` when it currently stands under `row`'s own field — the entry when
+    /// `row` is `nil` — and leaves it as it is otherwise, since a change kept on a row or from
+    /// another field must not end what a different field is telling. `design.md` § *A refusal
+    /// under a name field is its own value, and there is one at a time*.
+    private func endNameRefusal(forRow row: DayView.OneOffRow?) {
+        if nameRefusal?.row == row {
+            nameRefusal = nil
+        }
+    }
+
+    /// Clears `nameRefusal` when the row it names is no longer one `dayView`'s One-offs group
+    /// holds — a tick re-keys a row by value, so a refusal told under a row that was just ticked
+    /// must end with it. Does nothing when `nameRefusal` is telling under the one-off entry, which
+    /// names no row.
+    private func endNameRefusalIfItsRowIsGone() {
+        guard let row = nameRefusal?.row else {
+            return
+        }
+        if dayView.oneOffGroup?.rows.contains(row) != true {
+            nameRefusal = nil
+        }
     }
 
     /// Makes the tick `row` offers, or takes it back where `row` says its commitment is kept, and
@@ -408,6 +536,7 @@ public final class DayScreen {
         notice = nil
 
         dayView = dayViewOfShownDay()
+        endNameRefusalIfItsRowIsGone()
     }
 
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
@@ -583,6 +712,7 @@ public final class DayScreen {
             return
         }
         notice = nil
+        nameRefusal = nil
         shownDay = previousDate
         dayView = dayViewOfShownDay()
     }
@@ -595,6 +725,7 @@ public final class DayScreen {
             return
         }
         notice = nil
+        nameRefusal = nil
         shownDay = nextDate
         dayView = dayViewOfShownDay()
     }
@@ -604,6 +735,7 @@ public final class DayScreen {
     public func showToday() {
         if shownDay != today {
             notice = nil
+            nameRefusal = nil
         }
         shownDay = today
         dayView = dayViewOfShownDay()
@@ -619,6 +751,7 @@ public final class DayScreen {
         }
         if shownDay != day {
             notice = nil
+            nameRefusal = nil
         }
         shownDay = day
         dayView = dayViewOfShownDay()
@@ -629,6 +762,7 @@ public final class DayScreen {
     /// showing that day. The comparison is against the today the screen held before this call.
     public func shown(asOf today: CalendarDate) {
         notice = nil
+        nameRefusal = nil
 
         if shownDay == self.today {
             shownDay = today
