@@ -272,9 +272,10 @@ public struct DayView: Hashable, Sendable {
         self.oneOffGroup = nil
     }
 
-    /// Forms a day view exactly as `init(of:on:in:)` does, and additionally of the one-offs
-    /// standing on `date` as of `today`, held in a `OneOffGroup` headed "One-offs" — or no such
-    /// group where none stand. `design.md` § *The seam*.
+    /// Forms a day view exactly as `init(of:on:in:)` does, and additionally holds a `OneOffGroup`
+    /// headed "One-offs" of the one-offs standing on `date` as of `today` — holding no rows where
+    /// none stand, rather than no group at all, since this initializer was handed one-offs.
+    /// `design.md` § *The empty group is the offer*.
     public init(
         of groups: [Roster.Group], oneOffs: OneOffs, asOf today: CalendarDate,
         on date: CalendarDate, in history: History
@@ -283,14 +284,11 @@ public struct DayView: Hashable, Sendable {
         self.groups = Self.makeGroups(from: groups, on: date, in: history)
 
         let standing = oneOffs.standing(on: date, asOf: today)
-        self.oneOffGroup =
-            standing.isEmpty
-            ? nil
-            : OneOffGroup(
-                heading: "One-offs",
-                rows: standing.map { oneOff in
-                    OneOffRow(oneOff: oneOff, date: date, isDone: oneOffs.isDone(oneOff))
-                })
+        self.oneOffGroup = OneOffGroup(
+            heading: "One-offs",
+            rows: standing.map { oneOff in
+                OneOffRow(oneOff: oneOff, date: date, isDone: oneOffs.isDone(oneOff))
+            })
     }
 
     /// The groups `init(of:on:in:)` and `init(of:oneOffs:asOf:on:in:)` both hold: one for each

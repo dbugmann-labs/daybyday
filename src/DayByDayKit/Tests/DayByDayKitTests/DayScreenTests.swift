@@ -116,10 +116,10 @@ func aDayScreenHoldsTheDayItWasHandedRatherThanTheDayItReallyIs() {
 
     #expect(
         onFirstSupported.dayView
-            == DayView(of: [gym], on: firstSupported, in: History()))
+            == DayView(of: [Roster.Group(category: nil, commitments: [gym])], oneOffs: OneOffs(), asOf: firstSupported, on: firstSupported, in: History()))
     #expect(
         onLastSupported.dayView
-            == DayView(of: [gym], on: lastSupported, in: History()))
+            == DayView(of: [Roster.Group(category: nil, commitments: [gym])], oneOffs: OneOffs(), asOf: lastSupported, on: lastSupported, in: History()))
 }
 
 @MainActor
@@ -149,7 +149,7 @@ func aDayScreenHoldsTheSameDayViewAsOneFormedDirectlyFromTheSameCommitmentsDayAn
 
     var expectedHistory = History()
     expectedHistory.add(gymTick)
-    let expected = DayView(of: [gym, journaling], on: monday, in: expectedHistory)
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [gym, journaling])], oneOffs: OneOffs(), asOf: monday, on: monday, in: expectedHistory)
 
     #expect(screen.dayView == expected)
 }
@@ -788,7 +788,7 @@ func aDayScreenDoesNotChangeDayWhenATickIsMadeOnIt() throws {
 
     var expectedHistory = History()
     expectedHistory.add(Tick(gym, on: monday)!)
-    let expected = DayView(of: [gym, run], on: monday, in: expectedHistory)
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [gym, run])], oneOffs: OneOffs(), asOf: monday, on: monday, in: expectedHistory)
 
     #expect(screen.dayView == expected)
 }
@@ -811,7 +811,7 @@ func aDayScreenMovedToTheDayBeforeShowsThePreviousDay() {
     let screen = DayScreen(startingFrom: [gym, journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
     screen.showPreviousDay()
 
-    let expected = DayView(of: [gym, journaling], on: sunday, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [gym, journaling])], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History())
     #expect(screen.dayView == expected)
     #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
 }
@@ -834,7 +834,7 @@ func aDayScreenMovedToTheDayAfterShowsTheNextDay() {
     let screen = DayScreen(startingFrom: [gym, journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
     screen.showNextDay()
 
-    let expected = DayView(of: [gym, journaling], on: tuesday, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [gym, journaling])], oneOffs: OneOffs(), asOf: tuesday, on: tuesday, in: History())
     #expect(screen.dayView == expected)
     #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
 }
@@ -882,7 +882,7 @@ func aDayScreenMovesOntoADayThatHasNotArrivedAndShowsIt() {
         screen.showNextDay()
     }
 
-    let expected = DayView(of: [journaling], on: friday, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: friday, on: friday, in: History())
     #expect(screen.dayView == expected)
     #expect(screen.dayPickerReach.opensOn == friday)
 }
@@ -981,7 +981,7 @@ func aDayScreenThatIsNotKeepingARecordMovesAndGoesOnSayingItIsKeepingNone() thro
     let screen = DayScreen(startingFrom: [journaling], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
     screen.showPreviousDay()
 
-    let expected = DayView(of: [journaling], on: sunday, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History())
     #expect(screen.dayView == expected)
     #expect(screen.recordState == .unreadable)
 }
@@ -1007,13 +1007,13 @@ func aDayScreenThatIsNotKeepingARosterMovesAndGoesOnSayingWhy() throws {
 
     screen.showPreviousDay()
 
-    #expect(screen.dayView == DayView(of: [Commitment](), on: sunday, in: History()))
+    #expect(screen.dayView == DayView(of: [Roster.Group(category: nil, commitments: [Commitment]())], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History()))
     #expect(screen.rosterState == .writtenByALaterVersion)
     #expect(screen.dayView.rows.isEmpty)
 
     screen.showNextDay()
 
-    #expect(screen.dayView == DayView(of: [Commitment](), on: monday, in: History()))
+    #expect(screen.dayView == DayView(of: [Roster.Group(category: nil, commitments: [Commitment]())], oneOffs: OneOffs(), asOf: monday, on: monday, in: History()))
     #expect(screen.rosterState == .writtenByALaterVersion)
     #expect(screen.dayView.rows.isEmpty)
 }
@@ -1261,7 +1261,7 @@ func aDayScreenShowingTheFirstSupportedDateIsUnchangedWhenItIsMovedToTheDayBefor
     screen.showPreviousDay()
     screen.showPreviousDay()
 
-    let expected = DayView(of: [journaling], on: saturday, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: saturday, on: saturday, in: History())
     #expect(screen.dayView == expected)
     #expect(screen.dayPickerReach.opensOn == saturday)
     #expect(screen.recordState == .kept)
@@ -1284,7 +1284,7 @@ func aDayScreenShowingTheLastSupportedDateIsUnchangedWhenItIsMovedToTheDayAfter(
     screen.showNextDay()
     screen.showNextDay()
 
-    let expected = DayView(of: [journaling], on: friday, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: friday, on: friday, in: History())
     #expect(screen.dayView == expected)
     #expect(screen.dayPickerReach.opensOn == friday)
     #expect(screen.recordState == .kept)
@@ -1412,7 +1412,7 @@ func aDayScreenMovedOffTodayKeepsTheDayItIsShowingWhenTheAppIsShownAgain() {
     screen.showPreviousDay()
     screen.shown(asOf: wednesday)
 
-    let expected = DayView(of: [gym, journaling], on: sunday, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [gym, journaling])], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History())
     #expect(screen.dayView == expected)
     #expect(screen.dayPickerReach.opensOn == sunday)
     #expect(screen.offersGoingBackToToday)
@@ -1438,7 +1438,7 @@ func aDayScreenMovedAwayAndBackOntoTodayMovesOntoTheNewDayWhenTheAppIsShownAgain
     screen.showNextDay()
     screen.shown(asOf: wednesday)
 
-    let expected = DayView(of: [gym, journaling], on: wednesday, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [gym, journaling])], oneOffs: OneOffs(), asOf: wednesday, on: wednesday, in: History())
     #expect(screen.dayView == expected)
     #expect(screen.dayPickerReach.opensOn == wednesday)
     #expect(!screen.offersGoingBackToToday)
@@ -1951,7 +1951,7 @@ func aDayScreenMovedOffTodayDrawsNoUndoneLateOneOffAndDrawsOneOwedAheadOnItsDate
         keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
     screen.showPreviousDay()
 
-    #expect(screen.dayView.oneOffGroup == nil)
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
     #expect(screen.nextDayView?.oneOffGroup?.rows.map(\.name) == ["Call mum"])
 
     let wednesday = CalendarDate(year: 2026, month: 9, day: 30)!
@@ -1979,7 +1979,7 @@ func aDayScreenOpenedWhereNoOneOffsHaveBeenKeptWritesNothingAtItsOneOffPlace() {
         startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
         keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
 
-    #expect(screen.dayView.oneOffGroup == nil)
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
     #expect(screen.oneOffState == .kept)
     #expect(!FileManager.default.fileExists(atPath: oneOffPlace.path))
 }
@@ -2006,7 +2006,7 @@ func aDayScreenReadsItsOneOffPlaceAgainWhenShownAndNotWhenReturnedTo() throws {
         OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!)
 
     screen.returnedTo()
-    #expect(screen.dayView.oneOffGroup == nil)
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
 
     screen.shown(asOf: monday)
     #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum"])
@@ -2243,7 +2243,7 @@ func aOneOffTickTakenBackOnAPastDayLeavesThatDayAndStandsOnTodayAgain() throws {
 
     try screen.tick(screen.dayView.oneOffGroup!.rows[0])
 
-    #expect(screen.dayView.oneOffGroup == nil)
+    #expect(screen.dayView.oneOffGroup?.rows.isEmpty == true)
 
     screen.showToday()
 
@@ -6800,7 +6800,7 @@ func aDayScreenShowsADayPickedBetweenTheEarliestDayItsPickerReachesAndTheDayItWa
 
     screen.showDay(picked)
 
-    let expected = DayView(of: [gym, journaling], on: picked, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [gym, journaling])], oneOffs: OneOffs(), asOf: picked, on: picked, in: History())
     #expect(screen.dayView == expected)
     #expect(screen.dayPickerReach.opensOn == picked)
 }
@@ -7125,7 +7125,7 @@ func aDayScreenSaysTheDayViewOfTheDayBeforeTheOneItIsShowing() {
         startingFrom: [gym, journaling], asOf: monday, keepingRecordAt: place,
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
 
-    let expected = DayView(of: [gym, journaling], on: sunday, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [gym, journaling])], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History())
     #expect(screen.previousDayView == expected)
     #expect(screen.previousDayView?.rows.map(\.name) == ["Journaling"])
 }
@@ -7149,7 +7149,7 @@ func aDayScreenSaysTheDayViewOfTheDayAfterTheOneItIsShowing() {
         startingFrom: [gym, journaling], asOf: monday, keepingRecordAt: place,
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
 
-    let expected = DayView(of: [gym, journaling], on: tuesday, in: History())
+    let expected = DayView(of: [Roster.Group(category: nil, commitments: [gym, journaling])], oneOffs: OneOffs(), asOf: tuesday, on: tuesday, in: History())
     #expect(screen.nextDayView == expected)
     #expect(screen.nextDayView?.rows.map(\.name) == ["Journaling"])
 }
@@ -7172,8 +7172,8 @@ func aDayScreenSaysTheDayOneCalendarDayEitherSideAndNoDayFurther() {
         startingFrom: [journaling], asOf: sunday, keepingRecordAt: place,
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
 
-    #expect(screen.previousDayView == DayView(of: [journaling], on: saturday, in: History()))
-    #expect(screen.nextDayView == DayView(of: [journaling], on: monday, in: History()))
+    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: saturday, on: saturday, in: History()))
+    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: monday, on: monday, in: History()))
 }
 
 @MainActor
@@ -7219,8 +7219,8 @@ func aDayScreenMovedToAnotherDaySaysTheDayEitherSideOfThatDay() {
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
     screen.showNextDay()
 
-    #expect(screen.previousDayView == DayView(of: [journaling], on: monday, in: History()))
-    #expect(screen.nextDayView == DayView(of: [journaling], on: wednesday, in: History()))
+    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: monday, on: monday, in: History()))
+    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: wednesday, on: wednesday, in: History()))
 }
 
 @MainActor
@@ -7245,8 +7245,8 @@ func aDayScreenSentBackToTodaySaysTheDayEitherSideOfThatToday() {
     screen.showPreviousDay()
     screen.showToday()
 
-    #expect(screen.previousDayView == DayView(of: [journaling], on: sunday, in: History()))
-    #expect(screen.nextDayView == DayView(of: [journaling], on: tuesday, in: History()))
+    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History()))
+    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: tuesday, on: tuesday, in: History()))
 }
 
 @MainActor
@@ -7269,8 +7269,8 @@ func aDayScreenShowingADayPickedOnItsDayPickerSaysTheDayEitherSideOfThatDay() {
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
     screen.showDay(friday)
 
-    #expect(screen.previousDayView == DayView(of: [journaling], on: thursday, in: History()))
-    #expect(screen.nextDayView == DayView(of: [journaling], on: saturday, in: History()))
+    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: thursday, on: thursday, in: History()))
+    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: saturday, on: saturday, in: History()))
 }
 
 @MainActor
@@ -7293,8 +7293,8 @@ func aDayScreenShownAgainOnANewDaySaysTheDayEitherSideOfThatDay() {
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
     screen.shown(asOf: wednesday)
 
-    #expect(screen.previousDayView == DayView(of: [journaling], on: tuesday, in: History()))
-    #expect(screen.nextDayView == DayView(of: [journaling], on: thursday, in: History()))
+    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: tuesday, on: tuesday, in: History()))
+    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: thursday, on: thursday, in: History()))
 }
 
 @MainActor
@@ -7430,8 +7430,8 @@ func aTickMadeOnTheDayADayScreenIsShowingLeavesTheDayEitherSideOfItAsItWas() thr
     try screen.tick(screen.dayView.rows[0])
 
     #expect(screen.dayView.rows[0].isKept)
-    #expect(screen.previousDayView == DayView(of: [journaling], on: sunday, in: History()))
-    #expect(screen.nextDayView == DayView(of: [journaling], on: tuesday, in: History()))
+    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History()))
+    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: tuesday, on: tuesday, in: History()))
 }
 
 @MainActor
@@ -7456,8 +7456,8 @@ func aDayScreenThatCannotReadItsRecordSaysTheDayEitherSideOfItWithNothingKept() 
         startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
 
-    #expect(screen.previousDayView == DayView(of: [journaling], on: sunday, in: History()))
-    #expect(screen.nextDayView == DayView(of: [journaling], on: tuesday, in: History()))
+    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History()))
+    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: tuesday, on: tuesday, in: History()))
     #expect(screen.recordState == .unreadable)
 }
 
@@ -7560,7 +7560,7 @@ func aDayScreenShowingTheFirstSupportedDateSaysNoDayViewBeforeItAndSaysTheDayAft
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
 
     #expect(screen.previousDayView == nil)
-    #expect(screen.nextDayView == DayView(of: [journaling], on: dayAfter, in: History()))
+    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: dayAfter, on: dayAfter, in: History()))
 }
 
 @MainActor
@@ -7581,7 +7581,7 @@ func aDayScreenShowingTheLastSupportedDateSaysNoDayViewAfterItAndSaysTheDayBefor
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
 
     #expect(screen.nextDayView == nil)
-    #expect(screen.previousDayView == DayView(of: [journaling], on: dayBefore, in: History()))
+    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: dayBefore, on: dayBefore, in: History()))
 }
 
 @MainActor
@@ -7601,8 +7601,8 @@ func aDayScreenMovedOffAnEndOfTheCalendarSaysADayViewEitherSideOfIt() {
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
     screen.showNextDay()
 
-    #expect(screen.previousDayView == DayView(of: [journaling], on: firstSupported, in: History()))
-    #expect(screen.nextDayView == DayView(of: [journaling], on: thirdOfJanuary, in: History()))
+    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: firstSupported, on: firstSupported, in: History()))
+    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: thirdOfJanuary, on: thirdOfJanuary, in: History()))
 }
 
 @MainActor
@@ -7633,7 +7633,7 @@ func aDayScreenShowingTheFirstSupportedDateSaysNoDayViewBeforeItWhateverItsPlace
 
     #expect(screen.dayView.rows.isEmpty)
     #expect(screen.previousDayView == nil)
-    #expect(screen.nextDayView == DayView(of: [Commitment](), on: secondOfJanuary, in: History()))
+    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [Commitment]())], oneOffs: OneOffs(), asOf: secondOfJanuary, on: secondOfJanuary, in: History()))
 
     screen.showNextDay()
 
@@ -7663,7 +7663,7 @@ func tickingARowADayScreenSaysOfTheDayBeforeChangesNothing() throws {
     try screen.tick(screen.previousDayView!.rows[0])
 
     #expect(!(screen.previousDayView?.rows.first?.isKept ?? true))
-    #expect(screen.previousDayView == DayView(of: [journaling], on: sunday, in: History()))
+    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History()))
     #expect(screen.dayView == dayViewWhenOpened)
     #expect((try? Data(contentsOf: place)) == bytesWhenOpened)
 }

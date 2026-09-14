@@ -96,10 +96,9 @@ public final class DayScreen {
         // `today` here is the parameter above, not `self.today`: `self` is not yet fully
         // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
         // back. The parameter holds the same value `shownDay` was just set to, two lines up.
-        self.dayView = DayView(
-            of: read.roster.groups(on: today),
-            oneOffs: openedOneOffs.store?.oneOffs ?? OneOffs(), asOf: today, on: today,
-            in: read.recordStore?.history ?? History())
+        self.dayView = Self.formDayView(
+            of: read.roster.groups(on: today), oneOffs: openedOneOffs.store, asOf: today,
+            on: today, in: read.recordStore?.history ?? History())
     }
 
     /// What reading the record and roster places produces: a save in progress undone first —
@@ -163,6 +162,21 @@ public final class DayScreen {
         } catch {
             return (nil, .unreadable)
         }
+    }
+
+    /// Forms a day view of `groups` on `date`, from `history`, and of the one-offs `oneOffStore`
+    /// holds as of `today` — or of no one-offs at all where `oneOffStore` is `nil`, so a screen
+    /// not keeping one-offs draws no One-offs group rather than an empty one. `design.md` § *The
+    /// empty group is the offer*.
+    private static func formDayView(
+        of groups: [Roster.Group], oneOffs oneOffStore: OneOffStore?, asOf today: CalendarDate,
+        on date: CalendarDate, in history: History
+    ) -> DayView {
+        guard let oneOffStore else {
+            return DayView(of: groups, on: date, in: history)
+        }
+        return DayView(
+            of: groups, oneOffs: oneOffStore.oneOffs, asOf: today, on: date, in: history)
     }
 
     /// Opens the roster at `place`. A place written by a later version of DayByDay is told apart
@@ -525,9 +539,9 @@ public final class DayScreen {
     /// one-offs exactly as they stand now — asks none of the three again, and asks the one-offs
     /// which stand as of `today`, never as of `day`.
     private func dayView(on day: CalendarDate) -> DayView {
-        DayView(
-            of: roster.groups(on: day), oneOffs: oneOffStore?.oneOffs ?? OneOffs(), asOf: today,
-            on: day, in: recordStore?.history ?? History())
+        Self.formDayView(
+            of: roster.groups(on: day), oneOffs: oneOffStore, asOf: today, on: day,
+            in: recordStore?.history ?? History())
     }
 
     /// The day view of `shownDay`, drawn from `roster`, `recordStore`'s history and
@@ -632,10 +646,9 @@ public final class DayScreen {
         self.oneOffStore = openedOneOffs.store
         self.oneOffState = openedOneOffs.state
 
-        self.dayView = DayView(
-            of: read.roster.groups(on: shownDay),
-            oneOffs: openedOneOffs.store?.oneOffs ?? OneOffs(), asOf: self.today, on: shownDay,
-            in: read.recordStore?.history ?? History())
+        self.dayView = Self.formDayView(
+            of: read.roster.groups(on: shownDay), oneOffs: openedOneOffs.store,
+            asOf: self.today, on: shownDay, in: read.recordStore?.history ?? History())
     }
 
     /// The person has come back to this screen from somewhere else in the app: the roster is read
@@ -683,9 +696,9 @@ public final class DayScreen {
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
 
-        self.dayView = DayView(
-            of: openedRoster.roster.groups(on: shownDay), oneOffs: oneOffStore?.oneOffs ?? OneOffs(),
-            asOf: today, on: shownDay, in: recordStore?.history ?? History())
+        self.dayView = Self.formDayView(
+            of: openedRoster.roster.groups(on: shownDay), oneOffs: oneOffStore, asOf: today,
+            on: shownDay, in: recordStore?.history ?? History())
     }
 }
 

@@ -24,15 +24,15 @@ day-view tests in `DayViewTests.swift`; day-screen tests in `DayScreenTests.swif
 
 ## 4. `day-screen`: the day view — one test each
 
-- [ ] 4.1 *edited* two day views differing only in a one-off standing on another day are the same day view — catches no one-offs and none standing drawn alike
-- [ ] 4.2 *edited* a day view of a past day draws no undone one-off owed on that day — catches the group still dropped where no row stands
+- [x] 4.1 *edited* two day views differing only in a one-off standing on another day are the same day view — catches no one-offs and none standing drawn alike
+- [x] 4.2 *edited* a day view of a past day draws no undone one-off owed on that day — catches the group still dropped where no row stands
 
 ## 5. `day-screen`: the screen — one test each
 
-- [ ] 5.1 *edited* a day screen moved off today draws no undone late one-off and draws one owed ahead on its date — catches an unreadable place's `nil` used for every day
-- [ ] 5.2 *edited* a day screen opened where no one-offs have been kept writes nothing at its one-off place — catches an empty group written as a file
-- [ ] 5.3 *edited* a day screen reads its one-off place again when shown and not when returned to — catches a read in `returnedTo`
-- [ ] 5.4 *edited* a one-off tick taken back on a past day leaves that day and stands on today again — catches a day view not formed again
+- [x] 5.1 *edited* a day screen moved off today draws no undone late one-off and draws one owed ahead on its date — catches an unreadable place's `nil` used for every day
+- [x] 5.2 *edited* a day screen opened where no one-offs have been kept writes nothing at its one-off place — catches an empty group written as a file
+- [x] 5.3 *edited* a day screen reads its one-off place again when shown and not when returned to — catches a read in `returnedTo`
+- [x] 5.4 *edited* a one-off tick taken back on a past day leaves that day and stands on today again — catches a day view not formed again
 - [ ] 5.5 a one-off committed in the one-off entry on today is added not done on today — catches an add done on today
 - [ ] 5.6 a one-off committed on a later day is added not done on that day and offers no tick — catches the add dated today
 - [ ] 5.7 a one-off committed on a past day is added already done on that day and stays on it — catches an undone add leaving for today
