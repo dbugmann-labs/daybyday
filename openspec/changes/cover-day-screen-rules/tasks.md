@@ -20,7 +20,7 @@ least change in `src/DayByDayKit/Sources/` that turns that one test green, and n
 - [x] 3.2 a tick kept on a day screen is still shown after it moves away and back, goes back to today or has that day picked — catches a record read once and cached
 - [x] 3.3 going back to today does not read the roster again — catches a return to today reading the roster, or resetting what it says of a roster it is not keeping
 - [x] 3.4 a day screen sent back to today draws the commitments its roster had not stopped keeping on that today — catches a return formed on the day left
-- [ ] 3.5 a tick made on a day screen that cannot read its record is not kept once the record can be read — catches a queued tick written once the record reads or with the next kept tick
+- [x] 3.5 a tick made on a day screen that cannot read its record is not kept once the record can be read — catches a queued tick written once the record reads or with the next kept tick
 - [x] 3.6 a day screen whose record place cannot be opened for another reason answers as one that cannot read its record — catches a read error answered apart
 - [x] 3.7 a day screen draws a removed commitment under a category exactly as it draws a stopped one — catches a removed commitment lifted out of its group
 - [x] 3.8 a day screen whose roster place cannot be opened for another reason does not say the roster is from a later version — catches a read error named a later version

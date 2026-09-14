@@ -444,20 +444,33 @@ func aTickMadeOnADayScreenThatCannotReadItsRecordIsNotKeptOnceTheRecordCanBeRead
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
         name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let run = Commitment(
+        name: "Run",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
-    let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
-    try screen.tick(screen.dayView.rows[0])
+    let screen = DayScreen(
+        startingFrom: [gym, run], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    let gymRow = screen.dayView.rows.first { $0.name == "Gym" }!
+    try screen.tick(gymRow)
 
     try FileManager.default.removeItem(at: place)
 
     screen.shown(asOf: monday)
 
-    #expect(screen.recordState == .kept)
-    #expect(!screen.dayView.rows[0].isKept)
+    let runRow = screen.dayView.rows.first { $0.name == "Run" }!
+    try screen.tick(runRow)
 
-    let later = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
-    #expect(!later.dayView.rows[0].isKept)
+    #expect(screen.recordState == .kept)
+    #expect(!screen.dayView.rows.first { $0.name == "Gym" }!.isKept)
+    #expect(screen.dayView.rows.first { $0.name == "Run" }!.isKept)
+
+    let later = DayScreen(
+        startingFrom: [gym, run], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace)
+    #expect(!later.dayView.rows.first { $0.name == "Gym" }!.isKept)
+    #expect(later.dayView.rows.first { $0.name == "Run" }!.isKept)
 }
 
 @MainActor
