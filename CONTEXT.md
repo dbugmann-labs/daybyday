@@ -534,6 +534,34 @@ the same ask be made twice safely. Deliberately not what a **rhythm** change doe
 nothing over at all and **supersedes** instead. Agreed 2026-09-09 while writing the delta of
 `add-commitment-editing` (#148).
 
+**Torn save** — a change that reached one of the two places it writes and not the other: records
+carried over at the record place while the roster place still holds the commitment they were
+carried from. It is what an app stopped between the two writes leaves, and what a second write that
+fails leaves when putting the first back fails too. A torn save is **made whole as it was**: the
+change did not happen, whichever way it was torn, because a change is kept before it is said and a
+torn one was never said. Undoing one that a stop left behind happens the next time the places are
+opened, and says nothing. Until it is undone nothing is drawn from those places or written over
+them, and a day screen is **without its record**. Agreed 2026-09-14 at the grill of
+`save-change-whole` (#249).
+
+**Orphaned record** — a record of a commitment the roster holds in no state at all, kept, stopped or
+removed. A torn save is one way to make one and not the only one, and nothing at the record place
+says which, so every orphaned record is treated alike. Where exactly one commitment the roster holds
+could be the one it was carried from, it is carried back to that one — all of that commitment's
+orphaned records or none of them, as every carrying over is — and nothing is said. Where none could,
+where more than one could, or where carrying back would put two records on one day, nothing moves
+and the **commitments screen** says that records belong to no commitment for as long as any do,
+because choosing between two histories is a judgement nothing here is entitled to make. Agreed
+2026-09-14 at the grill of `save-change-whole` (#249).
+
+**Save in progress** — what a change that carries records keeps beside the **record place** before
+it writes anything: which commitment the records are carried from, and which they are carried to.
+It is taken away once the roster place is written, so one still standing when the places are next
+read is the only evidence of a **torn save**, and names exactly the carrying back that makes it
+whole. Where the roster holds the commitment it names the records carried to, the save was not torn
+and the save in progress is simply taken away. Deliberately not called a note, which is a record.
+Agreed 2026-09-14 while writing the delta of `save-change-whole` (#249).
+
 **Untick** — to take a tick back, leaving the history as though that tick had never been: the
 commitment is not kept on that day, every other tick stands, and nothing remembers that the tick was
 ever there — an untick is not a record of its own. Taking back a tick that was never there is
@@ -688,6 +716,11 @@ the current form. Each form is read **as the shape that form has** rather than l
 says which form it is before anything else is read, so a file carrying what its form has no place
 for, or missing what its form always writes, is content this app never wrote and is refused like any
 other. ADR-1031.
+
+**Amended 2026-09-14**, at the grill of `save-change-whole` (#249). A change is no longer the only
+moment anything is written at a place: undoing a **torn save** and carrying back an **orphaned
+record** write when the places are opened. Both put a history back to what it was and invent
+nothing, so what a store persists is still exactly a value it was given.
 
 **Record store** — the store that keeps a **history**: every record added and not since taken back,
 keyed to the calendar date and never to the moment of entry. Agreed 2026-09-02 at the grill of

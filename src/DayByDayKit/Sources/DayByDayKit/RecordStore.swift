@@ -222,6 +222,18 @@ public final class RecordStore {
         }
     }
 
+    /// Carries every record of `orphan` back to `source`, kept at `place` before this returns —
+    /// refuses only where a record would land on a day `source` already holds a record on,
+    /// `design.md` § *Carrying back refuses only on a shared day*. Package-internal:
+    /// `SaveInProgress` is the only caller, to undo a torn save and to carry an orphaned record
+    /// back to its one possible source.
+    @discardableResult
+    func carryBack(_ orphan: Commitment, to source: Commitment) throws -> Bool {
+        try carryOver(orphan, to: source, matching: { _ in true }) { nextHistory in
+            nextHistory.carryBack(orphan, to: source)
+        }
+    }
+
     /// The act both `carryOver` overloads perform: ask `historyCarryOver` to carry `history`
     /// itself over first — the one place either overload's own refusal rules are judged — then,
     /// only where that changed anything, move the matching entries in this store's own mirrored
