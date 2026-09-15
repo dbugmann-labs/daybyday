@@ -9242,3 +9242,43 @@ func whatACommitmentsScreenTellsAtTheFootOfItsSheetStandsWhenAFieldIsEdited() th
     #expect(
         screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: nil, refusal: .alreadyKept))
 }
+
+@MainActor
+@Test("what a commitments screen tells on its sheet ends when the sheet is closed")
+func whatACommitmentsScreenTellsOnItsSheetEndsWhenTheSheetIsClosed() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "   ", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    screen.sheetClosed()
+
+    #expect(screen.sheetRefusal == nil)
+
+    let otherRosterPlace = freshRosterPlace()
+    let otherRosterStore = try RosterStore(at: otherRosterPlace)
+    try otherRosterStore.add(gym)
+    let otherScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: otherRosterPlace)
+
+    let otherRefusal = otherScreen.define(
+        name: "Gym", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil)
+    #expect(otherRefusal == .alreadyKept)
+
+    otherScreen.sheetClosed()
+
+    #expect(otherScreen.sheetRefusal == nil)
+}
