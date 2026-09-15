@@ -40,7 +40,7 @@ public final class CommitmentsScreen {
         self.oneOffPlace = oneOffPlace
         self.dayToKeepFrom = today
 
-        let opened = Self.readPlaces(place: place, recordPlace: recordPlace)
+        let opened = Self.readPlaces(place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace)
         self.rosterStore = opened.rosterStore
         self.rosterState = opened.rosterState
         self.recordStore = opened.recordStore
@@ -48,21 +48,27 @@ public final class CommitmentsScreen {
         refreshLists(from: opened.rosterStore)
     }
 
-    /// What reading the places produces: a save in progress undone first — `openspec/specs
-    /// /commitment/spec.md` § *Reading the places undoes a torn save as it was* — then the roster
-    /// and the record opened, and any orphaned record carried back to its one possible source
-    /// before this screen says whether any remain. Shared by `init` and `shown(asOf:)`, the two
-    /// places this screen reads both of its places afresh. Where the save in progress cannot be
-    /// undone, this answers as a roster that cannot be read and a record that is not kept,
-    /// without opening either place for real — `design.md` § *A torn save that cannot be undone
-    /// reuses two existing states*.
+    /// What reading the places produces: a restore in progress undone first, then a save in
+    /// progress — `openspec/changes/restore-from-a-copy/design.md` § *Whole or nothing, across a
+    /// stop* (ADR-1056) and `openspec/specs/commitment/spec.md` § *Reading the places undoes a
+    /// torn save as it was* — then the roster and the record opened, and any orphaned record
+    /// carried back to its one possible source before this screen says whether any remain.
+    /// Shared by `init`, `shown(asOf:)` and `confirmRestoring`, which all read both places
+    /// afresh. Where the restore in progress or the save in progress cannot be undone, this
+    /// answers as a roster that cannot be read and a record that is not kept, without opening
+    /// either place for real — `design.md` § *A torn save that cannot be undone reuses two
+    /// existing states*.
     private static func readPlaces(
-        place: URL, recordPlace: URL
+        place: URL, recordPlace: URL, oneOffPlace: URL
     ) -> (
         rosterStore: RosterStore?, rosterState: RosterState, recordStore: RecordStore?,
         recordsBelongToNoCommitment: Bool
     ) {
-        guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place) else {
+        guard
+            RestoreInProgress.undoTornRestore(
+                recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace),
+            SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
+        else {
             return (nil, .notKept, nil, false)
         }
 
@@ -119,6 +125,20 @@ public final class CommitmentsScreen {
         stopped = store.map { Self.stopped(in: $0.roster) } ?? []
     }
 
+    /// Ends both `refusedChange` and `copyRestored`, which last alike: until the app is shown
+    /// again or a change reaches a place — `openspec/specs/commitment/spec.md` § *What a
+    /// commitments screen holds about a refused change lasts until the app is shown again or a
+    /// change is kept* and `openspec/specs/restore/spec.md` § *A restore confirmed makes the
+    /// three places what the copy holds, and nothing of what was there* — "hold the moment of
+    /// the copy it restored until the app is shown again or a change is kept." Every call site
+    /// that used to clear `refusedChange` alone calls this instead; every one already sits
+    /// exactly where a change reached a place or the app was shown, guarded against a no-op the
+    /// same way `refusedChange` always was.
+    private func endedByAChangeOrByBeingShown() {
+        refusedChange = nil
+        copyRestored = nil
+    }
+
     /// What this screen keeps, in **groups**: a group is a category, or no category at all,
     /// together with the entries under it, in the order the roster holds them. The groups, their
     /// order and what is in each are the roster's answer, read off it and drawn — this screen
@@ -151,6 +171,46 @@ public final class CommitmentsScreen {
 
     /// The day to offer as the day a commitment is kept from: the day this screen was handed.
     public private(set) var dayToKeepFrom: CalendarDate
+
+    /// How many commitments a roster keeps and has stopped, and how many one-offs a one-off place
+    /// holds — `nil` for a count a place that cannot be read would otherwise give.
+    /// `openspec/changes/restore-from-a-copy/design.md` § *The seam*.
+    public struct Counts: Hashable, Sendable {
+        public let kept: Int?
+        public let stopped: Int?
+        public let oneOffs: Int?
+    }
+
+    /// A restore asked for and not yet confirmed, cancelled or replaced by another ask: the
+    /// moment the copy was made, what it and the phone each keep, have stopped and hold as
+    /// one-offs, and which of the phone's three places, if any, could not be read.
+    /// `openspec/changes/restore-from-a-copy/design.md` § *The seam*.
+    public struct AwaitingRestore: Hashable, Sendable {
+        public let moment: Moment
+        public let copy: Counts
+        public let phone: Counts
+        public let unreadable: [Copy.Store]
+    }
+
+    /// A restore asked for and not yet confirmed, cancelled or replaced by another ask. `nil`
+    /// once it has been.
+    public private(set) var awaitingRestore: AwaitingRestore?
+
+    /// The copy `awaitingRestore` was read from, held so `confirmRestoring` writes exactly what
+    /// `askToRestore` read rather than reading the file a second time — `design.md` § *What is
+    /// said first, read once*.
+    private var pendingRestore: Copy?
+
+    /// The moment of the copy this screen last restored, until the app is shown again or a
+    /// change reaches a place. `nil` where this screen has restored no copy since it was opened,
+    /// or once one of those two things has happened.
+    public private(set) var copyRestored: Moment?
+
+    /// Whether this screen has restored a copy since it was opened — never cleared, unlike
+    /// `copyRestored`, so a day screen returned to after a kept change still reads all three
+    /// places afresh. `design.md` § *The day screen is told by the commitments screen it returns
+    /// from*. Internal rather than `private`, so `DayScreen.returnedTo(from:)` can read it.
+    private(set) var hasRestoredACopy = false
 
     /// Which of the four kinds a form is offering. Deliberately not `Commitment.Kind`, which
     /// carries the range or the target as a formed value: this is the picker, and what a person
@@ -216,6 +276,10 @@ public final class CommitmentsScreen {
         /// `openspec/changes/make-a-copy/design.md` § *The refusal is the screen's existing one,
         /// with one new cause*.
         case makingACopy(Copy.Store?, Refusal)
+        /// A restore asked for or confirmed and refused — the tenth kind of refused change. Names
+        /// neither a commitment nor a store: a refused restore is refused whole.
+        /// `openspec/changes/restore-from-a-copy/design.md` § *The seam*.
+        case restoring(Refusal)
 
         /// The `Refusal` every case above carries — always the last value alongside whatever the
         /// case names about what was refused. Internal rather than `public`: `refuse(_:on:)` is
@@ -232,6 +296,7 @@ public final class CommitmentsScreen {
             case .changing(_, let refusal): return refusal
             case .restarting(_, let refusal): return refusal
             case .makingACopy(_, let refusal): return refusal
+            case .restoring(let refusal): return refusal
             }
         }
     }
@@ -283,6 +348,15 @@ public final class CommitmentsScreen {
         /// same whichever store it was. `openspec/changes/make-a-copy/design.md` § *The refusal
         /// is the screen's existing one, with one new cause*.
         case storeCouldNotBeRead
+        /// A file that could not be read at all, or whose content does not read as a copy's own
+        /// form and a moment. `openspec/changes/restore-from-a-copy/design.md` § *Reading a
+        /// copy: the envelope decides, and a later version outranks damage*.
+        case notACopy
+        /// A file that reads as a copy's form and moment, but holds a store that is missing, or
+        /// that does not read as the shape its form has.
+        case damagedCopy
+        /// A file whose own form, or the form of a store it holds, is later than this app reads.
+        case copyFromALaterVersion
     }
 
     /// A field of the sheet a commitments screen draws — a define, a change or a restart form —
@@ -429,7 +503,7 @@ public final class CommitmentsScreen {
             return .notKept
         }
 
-        refusedChange = nil
+        endedByAChangeOrByBeingShown()
         sheetRefusal = nil
         refreshLists(from: rosterStore)
         return nil
@@ -749,13 +823,13 @@ public final class CommitmentsScreen {
                 // `self.rosterStore` this just cleared, not a fresh read, so drawing the lists
                 // from it here would redraw exactly what the screen can no longer answer for.
                 guard undoTornSaveMadeDuringThisChange() else {
-                    refusedChange = nil
+                    endedByAChangeOrByBeingShown()
                     sheetRefusal = nil
                     return nil
                 }
             }
 
-            refusedChange = nil
+            endedByAChangeOrByBeingShown()
             sheetRefusal = nil
             refreshLists(from: rosterStore)
             return nil
@@ -859,12 +933,12 @@ public final class CommitmentsScreen {
             // cleared, not a fresh read, so drawing the lists from it here would redraw exactly
             // what the screen can no longer answer for.
             guard undoTornSaveMadeDuringThisChange() else {
-                refusedChange = nil
+                endedByAChangeOrByBeingShown()
                 sheetRefusal = nil
                 return nil
             }
 
-            refusedChange = nil
+            endedByAChangeOrByBeingShown()
             sheetRefusal = nil
             refreshLists(from: rosterStore)
             return nil
@@ -884,7 +958,7 @@ public final class CommitmentsScreen {
             return .notKept
         }
 
-        refusedChange = nil
+        endedByAChangeOrByBeingShown()
         sheetRefusal = nil
         refreshLists(from: rosterStore)
         return nil
@@ -1011,12 +1085,12 @@ public final class CommitmentsScreen {
         // the `self.rosterStore` this just cleared, not a fresh read, so drawing the lists from it
         // here would redraw exactly what the screen can no longer answer for.
         guard undoTornSaveMadeDuringThisChange() else {
-            refusedChange = nil
+            endedByAChangeOrByBeingShown()
             sheetRefusal = nil
             return nil
         }
 
-        refusedChange = nil
+        endedByAChangeOrByBeingShown()
         sheetRefusal = nil
         refreshLists(from: rosterStore)
         return nil
@@ -1063,7 +1137,7 @@ public final class CommitmentsScreen {
             return .notKept
         }
 
-        refusedChange = nil
+        endedByAChangeOrByBeingShown()
         refreshLists(from: rosterStore)
         return nil
     }
@@ -1123,7 +1197,7 @@ public final class CommitmentsScreen {
             return .notKept
         }
 
-        refusedChange = nil
+        endedByAChangeOrByBeingShown()
         refreshLists(from: rosterStore)
         return nil
     }
@@ -1146,7 +1220,7 @@ public final class CommitmentsScreen {
             return .notKept
         }
 
-        refusedChange = nil
+        endedByAChangeOrByBeingShown()
         refreshLists(from: rosterStore)
         return nil
     }
@@ -1226,7 +1300,7 @@ public final class CommitmentsScreen {
         // standing refused-change notice. `design.md` § *A store writes what a change made* is
         // why the comparison is against the roster itself rather than the boolean `move` answers.
         if rosterStore.roster != rosterBeforeMove {
-            refusedChange = nil
+            endedByAChangeOrByBeingShown()
         }
         refreshLists(from: rosterStore)
         return nil
@@ -1263,7 +1337,7 @@ public final class CommitmentsScreen {
         // Settled answer 13, read the same way `move` and `put` read it: a call that reaches the
         // place with no change to make does not end a standing refused-change notice.
         if rosterStore.roster != rosterBeforeMove {
-            refusedChange = nil
+            endedByAChangeOrByBeingShown()
         }
         refreshLists(from: rosterStore)
         return nil
@@ -1278,39 +1352,49 @@ public final class CommitmentsScreen {
         FileManager.default.temporaryDirectory
     }
 
-    /// What reading the three stores for a copy comes back as — a plain enum rather than
-    /// `Swift.Result`, which `Copy.Store` need not conform to `Error` merely to be handed back
-    /// alongside a success, on the same footing as `Reading<Value>` above.
-    private enum StoresForCopy {
-        case opened(record: RecordStore, roster: RosterStore, oneOffs: OneOffStore)
-        case unreadable(Copy.Store)
+    /// What reading the three stores comes back as: each opened independently, `nil` in its own
+    /// field exactly where that store could not be read, without stopping at the first — shared
+    /// by `makeACopy`, which cares only about the first, checked in a fixed order, and
+    /// `askToRestore`, which names every one. `openspec/changes/restore-from-a-copy/design.md`
+    /// § *What is said first, read once* — "The phone is read as `readStoresForCopy` reads it,
+    /// every store read so each unreadable one is named."
+    private struct StoresRead {
+        let record: RecordStore?
+        let roster: RosterStore?
+        let oneOffs: OneOffStore?
+
+        /// Which of the three could not be read, in the fixed order record, roster, one-offs.
+        var unreadable: [Copy.Store] {
+            var result: [Copy.Store] = []
+            if record == nil { result.append(.record) }
+            if roster == nil { result.append(.roster) }
+            if oneOffs == nil { result.append(.oneOffs) }
+            return result
+        }
     }
 
     /// Opens the record, the roster and the one-off store at `recordPlace`, `rosterPlace` and
-    /// `oneOffPlace`, undoing a save in progress first — the same `undoTornSave` path
-    /// `readPlaces` takes, so a torn save is undone and an earlier-form store yields a
-    /// current-form copy. Unlike `readPlaces`, this never carries an orphaned record back: a copy
-    /// SHALL leave the three places exactly as it found them, apart from a save in progress
-    /// undone — `openspec/specs/restore/spec.md` § *A copy is what the three places hold, read
-    /// when it is asked for*. `.failure` names the first of the three, checked in that order,
-    /// that could not be read; a save in progress that could not itself be undone is told as the
-    /// record, the place it stands beside.
+    /// `oneOffPlace`, undoing a restore in progress and then a save in progress first — the same
+    /// path `readPlaces` takes, so a torn restore and a torn save are both undone before either
+    /// place is read, and an earlier-form store yields a current-form copy. Unlike `readPlaces`,
+    /// this never carries an orphaned record back: a copy SHALL leave the three places exactly as
+    /// it found them, apart from a restore in progress or a save in progress undone —
+    /// `openspec/specs/restore/spec.md` § *A copy is what the three places hold, read when it is
+    /// asked for*. Where a restore in progress or a save in progress stands and cannot itself be
+    /// undone, all three answer unreadable, told as the record — the place both stand beside.
     private static func readStoresForCopy(
         recordPlace: URL, rosterPlace: URL, oneOffPlace: URL
-    ) -> StoresForCopy {
-        guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) else {
-            return .unreadable(.record)
+    ) -> StoresRead {
+        guard
+            RestoreInProgress.undoTornRestore(
+                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace),
+            SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace)
+        else {
+            return StoresRead(record: nil, roster: nil, oneOffs: nil)
         }
-        guard let recordStore = try? RecordStore(at: recordPlace) else {
-            return .unreadable(.record)
-        }
-        guard let rosterStore = try? RosterStore(at: rosterPlace) else {
-            return .unreadable(.roster)
-        }
-        guard let oneOffStore = try? OneOffStore(at: oneOffPlace) else {
-            return .unreadable(.oneOffs)
-        }
-        return .opened(record: recordStore, roster: rosterStore, oneOffs: oneOffStore)
+        return StoresRead(
+            record: try? RecordStore(at: recordPlace), roster: try? RosterStore(at: rosterPlace),
+            oneOffs: try? OneOffStore(at: oneOffPlace))
     }
 
     /// The file name a copy asked for at `moment` is written under: the app's name, the day as
@@ -1357,24 +1441,123 @@ public final class CommitmentsScreen {
     public func makeACopy(
         asOf moment: Moment, writingInto directory: URL = CommitmentsScreen.copyDirectory
     ) -> Result<URL, Refusal> {
-        switch Self.readStoresForCopy(
+        let read = Self.readStoresForCopy(
             recordPlace: recordPlace, rosterPlace: place, oneOffPlace: oneOffPlace)
-        {
-        case .unreadable(let store):
-            refusedChange = .makingACopy(store, .storeCouldNotBeRead)
+
+        guard let record = read.record, let roster = read.roster, let oneOffs = read.oneOffs else {
+            refusedChange = .makingACopy(read.unreadable.first, .storeCouldNotBeRead)
             return .failure(.storeCouldNotBeRead)
-        case .opened(let record, let roster, let oneOffs):
-            let copy = Copy(
-                moment: moment, history: record.history, roster: roster.roster,
-                oneOffs: oneOffs.oneOffs)
-            do {
-                let url = try Self.writeCopy(copy, into: directory)
-                return .success(url)
-            } catch {
-                refusedChange = .makingACopy(nil, .notKept)
-                return .failure(.notKept)
-            }
         }
+
+        let copy = Copy(
+            moment: moment, history: record.history, roster: roster.roster,
+            oneOffs: oneOffs.oneOffs)
+        do {
+            let url = try Self.writeCopy(copy, into: directory)
+            return .success(url)
+        } catch {
+            refusedChange = .makingACopy(nil, .notKept)
+            return .failure(.notKept)
+        }
+    }
+
+    /// Counts what `roster` keeps and has stopped, and how many one-offs `oneOffs` holds —
+    /// `design.md` § *What is said first, read once*: "Kept and stopped apart... *one-offs*
+    /// counts all." A removed commitment is counted as neither kept nor stopped, matching
+    /// `stopped(in:)` and `Roster.commitments` above.
+    private static func counts(roster: Roster, oneOffs: OneOffs) -> Counts {
+        Counts(
+            kept: roster.commitments.count, stopped: Self.stopped(in: roster).count,
+            oneOffs: oneOffs.entries.count)
+    }
+
+    /// Reads `file` whole and, where it reads as a copy, holds a restore awaiting confirmation
+    /// that says the copy's moment and what the copy and the phone each keep, have stopped and
+    /// hold as one-offs — writing nothing anywhere. A file that cannot be read this way is
+    /// refused, held against restoring a copy and naming no store, and leaves no restore
+    /// awaiting confirmation; it does **not** touch `refusedChange` on success, and does not
+    /// touch `copyRestored` either way — neither asking nor being refused reaches a place.
+    /// `openspec/specs/restore/spec.md` §§ *A copy is read whole...* and *A commitments screen
+    /// says what a restore takes away and brings before anything is restored*.
+    @discardableResult
+    public func askToRestore(from file: URL) -> Refusal? {
+        guard let data = try? Data(contentsOf: file) else {
+            awaitingRestore = nil
+            pendingRestore = nil
+            refusedChange = .restoring(.notACopy)
+            return .notACopy
+        }
+
+        switch CopyDocument.read(data) {
+        case .failure(let refusal):
+            awaitingRestore = nil
+            pendingRestore = nil
+            refusedChange = .restoring(refusal)
+            return refusal
+        case .success(let copy):
+            let phoneRead = Self.readStoresForCopy(
+                recordPlace: recordPlace, rosterPlace: place, oneOffPlace: oneOffPlace)
+            let phoneCounts = Counts(
+                kept: phoneRead.roster.map { $0.roster.commitments.count },
+                stopped: phoneRead.roster.map { Self.stopped(in: $0.roster).count },
+                oneOffs: phoneRead.oneOffs.map { $0.oneOffs.entries.count })
+
+            pendingRestore = copy
+            awaitingRestore = AwaitingRestore(
+                moment: copy.moment, copy: Self.counts(roster: copy.roster, oneOffs: copy.oneOffs),
+                phone: phoneCounts, unreadable: phoneRead.unreadable)
+            return nil
+        }
+    }
+
+    /// Leaves nothing awaiting a restore and changes nothing else — the picked file and the
+    /// three places are left exactly as they were, and whatever `refusedChange` held stands.
+    public func cancelRestoring() {
+        awaitingRestore = nil
+        pendingRestore = nil
+    }
+
+    /// Writes the copy `askToRestore` read at the record, the roster and the one-off places,
+    /// each in the form that store writes now, whole or nothing — `openspec/changes
+    /// /restore-from-a-copy/design.md` § *Whole or nothing, across a stop* (ADR-1056). Answers
+    /// `nil` and does nothing when nothing is awaiting confirmation. On success, reads the three
+    /// places back exactly as they are read when the app is shown, holds no restore, commitment
+    /// or removal awaiting confirmation and no name typed back, holds the copy's moment until the
+    /// app is shown again or a change is kept, and marks that this screen has restored a copy.
+    /// On failure, the three places are exactly as they were, and this screen's lists, its
+    /// `refusedChange` and its `copyRestored` are all left untouched here and then explicitly
+    /// cleared of the restore that was attempted.
+    @discardableResult
+    public func confirmRestoring() -> Refusal? {
+        guard let copy = pendingRestore else {
+            return nil
+        }
+        awaitingRestore = nil
+        pendingRestore = nil
+
+        do {
+            try RestoreInProgress.restore(
+                copy, recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace)
+        } catch {
+            refusedChange = .restoring(.notKept)
+            return .notKept
+        }
+
+        let opened = Self.readPlaces(place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace)
+        rosterStore = opened.rosterStore
+        rosterState = opened.rosterState
+        recordStore = opened.recordStore
+        recordsBelongToNoCommitment = opened.recordsBelongToNoCommitment
+        refreshLists(from: opened.rosterStore)
+
+        refusedChange = nil
+        awaitingConfirmation = nil
+        awaitingRemoval = nil
+        nameTypedBack = ""
+        copyRestored = copy.moment
+        hasRestoredACopy = true
+
+        return nil
     }
 
     /// The look-back at `commitment` — one commitment seen on its own, over everything since the
@@ -1399,12 +1582,12 @@ public final class CommitmentsScreen {
     /// read again.
     public func shown(asOf today: CalendarDate) {
         dayToKeepFrom = today
-        refusedChange = nil
+        endedByAChangeOrByBeingShown()
         sheetRefusal = nil
         awaitingRemoval = nil
         nameTypedBack = ""
 
-        let opened = Self.readPlaces(place: place, recordPlace: recordPlace)
+        let opened = Self.readPlaces(place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace)
         rosterStore = opened.rosterStore
         rosterState = opened.rosterState
         recordStore = opened.recordStore

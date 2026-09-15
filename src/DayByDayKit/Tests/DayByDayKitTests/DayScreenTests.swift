@@ -8936,3 +8936,348 @@ func aTornSaveIsUndoneWhenADayScreenIsShownAgain() throws {
     #expect(
         !FileManager.default.fileExists(atPath: SaveInProgress.place(besideRecordAt: place).path))
 }
+
+@MainActor
+@Test("a day screen returned to after a restore draws the copy's commitments, records and one-offs")
+func aDayScreenReturnedToAfterARestoreDrawsTheCopysCommitmentsRecordsAndOneOffs() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Book dentist", date: monday)!)
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let copyResult = commitmentsScreen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+
+    try dayScreen.tick(dayScreen.dayView.rows[0])
+    #expect(
+        commitmentsScreen.define(
+            name: "Journaling",
+            on: .weekdays([
+                .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+            ]), keptFrom: keptFrom, under: nil) == nil)
+    try dayScreen.remove(dayScreen.dayView.oneOffGroup!.rows[0])
+
+    #expect(commitmentsScreen.askToRestore(from: copyURL) == nil)
+    #expect(commitmentsScreen.confirmRestoring() == nil)
+
+    dayScreen.returnedTo(from: commitmentsScreen)
+
+    #expect(dayScreen.dayView.rows.map(\.name) == ["Gym"])
+    #expect(dayScreen.dayView.rows[0].isKept == false)
+    #expect(dayScreen.dayView.oneOffGroup?.rows.map(\.name) == ["Book dentist"])
+}
+
+@MainActor
+@Test("a day screen that was keeping no record keeps the copy's record once returned to after a restore")
+func aDayScreenThatWasKeepingNoRecordKeepsTheCopysRecordOnceReturnedToAfterARestore() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    try FileManager.default.createDirectory(
+        at: recordPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: recordPlace)
+    try FileManager.default.createDirectory(
+        at: oneOffPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a one-off holder is written as".utf8).write(to: oneOffPlace)
+
+    let dayScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+
+    // Build the copy elsewhere: Gym, and a tick for it on Monday.
+    let copyPlaces = (
+        roster: freshPlaces().roster, record: freshPlaces().record, oneOffs: freshOneOffPlace()
+    )
+    let copyRosterStore = try RosterStore(at: copyPlaces.roster)
+    try copyRosterStore.add(gym)
+    let copyRecordStore = try RecordStore(at: copyPlaces.record)
+    try copyRecordStore.add(Tick(gym, on: monday)!)
+    let copyScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: copyPlaces.roster, keepingRecordAt: copyPlaces.record,
+        keepingOneOffsAt: copyPlaces.oneOffs)
+    let copyResult = copyScreen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace)
+    #expect(commitmentsScreen.askToRestore(from: copyURL) == nil)
+    #expect(commitmentsScreen.confirmRestoring() == nil)
+
+    dayScreen.returnedTo(from: commitmentsScreen)
+
+    #expect(dayScreen.recordState == .kept)
+    #expect(dayScreen.oneOffState == .kept)
+    #expect(dayScreen.dayView.rows.map(\.name) == ["Gym"])
+    #expect(dayScreen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test("a day screen returned to after a restore tells nothing it was telling")
+func aDayScreenReturnedToAfterARestoreTellsNothingItWasTelling() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let mood = Commitment(
+        name: "Mood",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(mood)
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Book dentist", date: monday)!)
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    try dayScreen.enter("11", on: dayScreen.dayView.rows[0])
+    #expect(dayScreen.notice != nil)
+    try dayScreen.addOneOff(named: "Book dentist")
+    #expect(dayScreen.nameRefusal != nil)
+
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let copyResult = commitmentsScreen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+    #expect(commitmentsScreen.askToRestore(from: copyURL) == nil)
+    #expect(commitmentsScreen.confirmRestoring() == nil)
+
+    dayScreen.returnedTo(from: commitmentsScreen)
+
+    #expect(dayScreen.notice == nil)
+    #expect(dayScreen.nameRefusal == nil)
+}
+
+@MainActor
+@Test(
+    "a day screen returned to after a restore keeps the today it was handed and the day it was showing"
+)
+func aDayScreenReturnedToAfterARestoreKeepsTheTodayItWasHandedAndTheDayItWasShowing() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    dayScreen.showPreviousDay()
+
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let copyResult = commitmentsScreen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+    #expect(commitmentsScreen.askToRestore(from: copyURL) == nil)
+    #expect(commitmentsScreen.confirmRestoring() == nil)
+
+    dayScreen.returnedTo(from: commitmentsScreen)
+
+    #expect(dayScreen.dayPickerReach.opensOn == CalendarDate(year: 2026, month: 8, day: 30)!)
+    #expect(dayScreen.offersGoingBackToToday)
+    #expect(dayScreen.dayView.rows.map(\.name) == ["Gym"])
+}
+
+@MainActor
+@Test(
+    "a day screen returned to from a commitments screen that restored no copy does not read its record again"
+)
+func aDayScreenReturnedToFromACommitmentsScreenThatRestoredNoCopyDoesNotReadItsRecordAgain() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    try FileManager.default.createDirectory(
+        at: recordPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: recordPlace)
+
+    let dayScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+    #expect(dayScreen.recordState == .unreadable)
+
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace)
+    try FileManager.default.removeItem(at: recordPlace)
+    let copyResult = commitmentsScreen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true))
+    guard case .success = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+
+    dayScreen.returnedTo(from: commitmentsScreen)
+
+    #expect(dayScreen.recordState == .unreadable)
+}
+
+@MainActor
+@Test(
+    "a day screen returned to from a commitments screen that restored a copy and then kept a change opens all three places"
+)
+func aDayScreenReturnedToFromACommitmentsScreenThatRestoredACopyAndThenKeptAChangeOpensAllThreePlaces()
+    throws
+{
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    try FileManager.default.createDirectory(
+        at: recordPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: recordPlace)
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    let copyPlaces = (
+        roster: freshPlaces().roster, record: freshPlaces().record, oneOffs: freshOneOffPlace()
+    )
+    let copyRosterStore = try RosterStore(at: copyPlaces.roster)
+    try copyRosterStore.add(gym)
+    let copyRecordStore = try RecordStore(at: copyPlaces.record)
+    try copyRecordStore.add(Tick(gym, on: monday)!)
+    let copyScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: copyPlaces.roster, keepingRecordAt: copyPlaces.record,
+        keepingOneOffsAt: copyPlaces.oneOffs)
+    let copyResult = copyScreen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace)
+    #expect(commitmentsScreen.askToRestore(from: copyURL) == nil)
+    #expect(commitmentsScreen.confirmRestoring() == nil)
+    #expect(
+        commitmentsScreen.define(
+            name: "Journaling", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil) == nil)
+
+    dayScreen.returnedTo(from: commitmentsScreen)
+
+    #expect(dayScreen.recordState == .kept)
+    #expect(dayScreen.dayView.rows.map(\.name) == ["Gym", "Journaling"])
+    #expect(dayScreen.dayView.rows[0].isKept)
+}
+
+@MainActor
+@Test(
+    "a day screen returned to after a copy of nothing was restored takes on the commitments it was handed"
+)
+func aDayScreenReturnedToAfterACopyOfNothingWasRestoredTakesOnTheCommitmentsItWasHanded() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+
+    let dayScreen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+
+    let emptyCopyPlaces = (
+        roster: freshPlaces().roster, record: freshPlaces().record, oneOffs: freshOneOffPlace()
+    )
+    let emptyCopyScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: emptyCopyPlaces.roster,
+        keepingRecordAt: emptyCopyPlaces.record, keepingOneOffsAt: emptyCopyPlaces.oneOffs)
+    let copyResult = emptyCopyScreen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace)
+    #expect(commitmentsScreen.askToRestore(from: copyURL) == nil)
+    #expect(commitmentsScreen.confirmRestoring() == nil)
+
+    dayScreen.returnedTo(from: commitmentsScreen)
+
+    #expect(try RosterStore(at: rosterPlace).roster.entries.map(\.commitment.name) == ["Journaling"])
+    #expect(dayScreen.dayView.rows.map(\.name) == ["Journaling"])
+}

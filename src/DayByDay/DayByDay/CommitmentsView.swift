@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 import DayByDayKit
 
 /// Which rhythm shape the form is currently offering. A UI-only selector: the rule each shape
@@ -97,6 +98,12 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             // itself rather than off this case. Names no store, so it stays honest whichever one
             // this case ever names.
             Text("That could not be read.")
+        case .notACopy:
+            Text("That's not a copy.")
+        case .damagedCopy:
+            Text("That copy is damaged.")
+        case .copyFromALaterVersion:
+            Text("That copy is from a newer version of DayByDay.")
         }
     }
     .font(.caption)
@@ -121,6 +128,46 @@ private func copySectionRefusalText(_ store: Copy.Store?, _ refusal: Commitments
     case nil:
         refusalText(refusal)
     }
+}
+
+/// The words a person reads for one side of a restore's counts — a copy's own, or the phone's —
+/// naming what each of `unreadable`'s stores says in place of the count it would otherwise give:
+/// the roster's kept and stopped counts together, the one-offs' count on its own, and the record
+/// named on its own though it gives no count at all. `design.md` § *The shell*: "a line of counts
+/// for each side (a store that cannot be read is said in place of its counts)."
+@ViewBuilder
+private func restoreCountsText(
+    _ counts: CommitmentsScreen.Counts, unreadable: [Copy.Store]
+) -> some View {
+    VStack(alignment: .leading, spacing: 2) {
+        if unreadable.contains(.record) {
+            Text("Your record could not be read.")
+        }
+        if unreadable.contains(.roster) {
+            Text("Your roster could not be read.")
+        } else {
+            Text("Keeps \(counts.kept ?? 0), has stopped \(counts.stopped ?? 0)")
+        }
+        if unreadable.contains(.oneOffs) {
+            Text("Your one-offs could not be read.")
+        } else {
+            Text("\(counts.oneOffs ?? 0) one-off(s)")
+        }
+    }
+    .font(.caption)
+}
+
+/// The words a person reads for the moment a copy was made — the day, in words, and the hour and
+/// the minute, `HH:mm`. `design.md` § *The shell*.
+private func momentText(_ moment: Moment) -> String {
+    var components = DateComponents()
+    components.year = moment.day.year
+    components.month = moment.day.month
+    components.day = moment.day.day
+    components.hour = moment.hour
+    components.minute = moment.minute
+    let date = Calendar.current.date(from: components)!
+    return date.formatted(date: .abbreviated, time: .shortened)
 }
 
 /// Turns the instant now into the `Moment` a copy is asked for at — the conversion ADR-1004
@@ -193,6 +240,10 @@ struct CommitmentsView: View {
     /// needs its item before the tap, so the URL is put here on success rather than offered
     /// ahead of one.
     @State private var copyShare: CopyShare?
+    /// Whether the system file picker for restoring a copy is presented. `design.md` § *The
+    /// shell*: `.fileImporter` for the exported type, with `askToRestore` bracketed in
+    /// security-scoped access around the URL it hands back.
+    @State private var isPickingRestoreFile = false
     @Environment(\.editMode) private var editMode
 
     var body: some View {
@@ -437,6 +488,19 @@ struct CommitmentsView: View {
                 if case .makingACopy(let store, let copyRefusal) = screen.refusedChange {
                     copySectionRefusalText(store, copyRefusal)
                 }
+
+                Button("Restore from a copy") {
+                    isPickingRestoreFile = true
+                }
+
+                if case .restoring(let restoreRefusal) = screen.refusedChange {
+                    refusalText(restoreRefusal)
+                }
+
+                if let copyRestored = screen.copyRestored {
+                    Text("Restored the copy from \(momentText(copyRestored))")
+                        .font(.caption)
+                }
             }
         }
         // Apple documents `.default` and `.compact` but publishes no point value for either.
@@ -536,6 +600,59 @@ struct CommitmentsView: View {
         }
         .sheet(item: $copyShare) { share in
             ShareSheet(url: share.url)
+        }
+        .fileImporter(
+            isPresented: $isPickingRestoreFile,
+            allowedContentTypes: [UTType(exportedAs: "com.dbugmann.daybyday.copy")]
+        ) { result in
+            guard case .success(let url) = result else {
+                return
+            }
+            guard url.startAccessingSecurityScopedResource() else {
+                return
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+            screen.askToRestore(from: url)
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { screen.awaitingRestore != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        screen.cancelRestoring()
+                    }
+                }
+            )
+        ) {
+            if let awaitingRestore = screen.awaitingRestore {
+                NavigationStack {
+                    Form {
+                        Section("Made") {
+                            Text(momentText(awaitingRestore.moment))
+                        }
+                        Section("The copy") {
+                            restoreCountsText(awaitingRestore.copy, unreadable: [])
+                        }
+                        Section("Your phone") {
+                            restoreCountsText(
+                                awaitingRestore.phone, unreadable: awaitingRestore.unreadable)
+                        }
+                    }
+                    .navigationTitle("Restore this copy?")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                screen.cancelRestoring()
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Restore", role: .destructive) {
+                                screen.confirmRestoring()
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
