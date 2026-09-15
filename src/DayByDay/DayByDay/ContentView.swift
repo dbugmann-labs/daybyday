@@ -324,6 +324,14 @@ struct ContentView: View {
         // one place a row's own name field is known to have just gained focus, from a tap or from
         // `commitFocusedOneOffField()` reopening a refused one. Unconditional, past both guards
         // above: a fresh field's text matters whether or not anything else needed committing.
+        //
+        // The commit below reads `oneOffRowCommitText(for:)`, not raw `oneOffRowText`, for the
+        // same reason `commitFocusedOneOffField()` does — see that function's own doc comment
+        // (a phone check on b3860c8 found a refused rename deleted here too, by the identical
+        // stale-blank path: a tap elsewhere lands on nothing that moves focus, per grill answer
+        // 18, so it is not this that removed anything on the phone — it was this same call
+        // reached a second time, from the checkmark or a day change, after `oneOffRowText` had
+        // already been cleared by the first, refused attempt).
         .onChange(of: oneOffFocus) { oldValue, newValue in
             defer {
                 if case .row(let row) = newValue, newValue != oldValue {
@@ -345,7 +353,7 @@ struct ContentView: View {
             case .entry:
                 commitOneOffEntry()
             case .row(let row):
-                try? screen.rename(row, to: oneOffRowText)
+                try? screen.rename(row, to: oneOffRowCommitText(for: row))
                 oneOffRowText = ""
             }
         }
@@ -367,6 +375,15 @@ struct ContentView: View {
     /// nothing. Called before every one of the moves `design.md` § *The shell* names: the
     /// chevrons, swipe, `Today`, the day picker and `scenePhase` leaving `.active`, in each case
     /// before the day actually moves.
+    ///
+    /// **Sends `oneOffRowCommitText(for: row)`, never raw `oneOffRowText` — a phone check on
+    /// b3860c8 found what reading the raw state here actually does.** A row refused once already
+    /// has an empty `oneOffRowText` (`commitRename(of:to:)` clears it on every attempt, kept or
+    /// refused), so a *second* call here for the same still-refused row — the checkmark tapped
+    /// again, or a day change arriving while the refusal stands, `forDeparture` true — sent blank,
+    /// and a blank rename removes the one-off outright (grill answer 16) rather than leaving it
+    /// exactly as it was (grill answers 12 and 18). `oneOffRowCommitText(for:)` reads the refusal
+    /// back out instead, the same way `oneOffEntryCommitText` already did for the entry.
     private func commitFocusedOneOffField(forDeparture: Bool = false) {
         guard let focus = oneOffFocus else {
             return
@@ -375,7 +392,7 @@ struct ContentView: View {
         case .entry:
             commitOneOffEntry()
         case .row(let row):
-            let refused = commitRename(of: row, to: oneOffRowText)
+            let refused = commitRename(of: row, to: oneOffRowCommitText(for: row))
             guard !refused || forDeparture else {
                 oneOffFocus = .row(row)
                 return
@@ -790,19 +807,23 @@ struct ContentView: View {
     /// own text is `Color.clear` there rather than removed, so the field itself, and the tap
     /// target it is, never leaves the tree.
     ///
-    /// The rest of the row — the mark, the lateness words, the notices — is a second, sibling
-    /// `Button`, proven reliable by the control above: `.frame(maxWidth: .infinity)`, so it fills
-    /// the row's own remaining width and wraps onto a second line for what is below the name, and
-    /// ticks or takes back exactly where `offersTick(asOf:)` says so. Its own `HStack` carries a
-    /// `44`pt minimum height: with neither a mark nor a lateness word to draw — an ordinary
-    /// undone one-off, due today — that line would otherwise collapse to zero height, and driving
-    /// a tap at it for real showed exactly that: a button reporting `{width, 0.0}`, tappable
-    /// nowhere. `lateInWords` is its own `Text` rather than folded into the name's the way
-    /// `rowView(_:)` folds a commitment's rhythm in with `commitmentLine` — a shared `Text` has
-    /// no seam two independent `Button`s can split. Both share `opacity`, so the row still fades
-    /// together (ADR-1045 decisions 3 and 5) on a day it offers no tick, name included. A long
-    /// press still opens a `contextMenu`, now with a destructive *Remove* alone — *Rename* lived
-    /// there; the tap above replaces it rather than fixing it in place.
+    /// The rest of the row — the mark and the lateness words — is a second, sibling `Button`,
+    /// proven reliable by the control above, on the *same* line as the name rather than a second
+    /// line below it: `.frame(maxWidth: .infinity, maxHeight: .infinity)`, so it fills the row's
+    /// own remaining width and matches its own height, and ticks or takes back exactly where
+    /// `offersTick(asOf:)` says so. `lateInWords` is its own `Text` rather than folded into the
+    /// name's the way `rowView(_:)` folds a commitment's rhythm in with `commitmentLine` — a
+    /// shared `Text` has no seam two independent `Button`s can split — but sits beside the mark
+    /// exactly where `commitmentLine` would draw it, since nothing here forces the two apart:
+    /// `lateInWords` is only ever non-`nil` on an undone row (`DayView.OneOffRow`'s own guard),
+    /// and a mark only ever draws on a done one, so the two never compete for the space. The
+    /// notices are *not* inside this `Button` — see the `VStack` wrapping this whole function's
+    /// body — so nothing here forces a row with neither a mark nor a lateness word to draw tall
+    /// enough to tap by hand, which is what a `44`pt minimum on this `Button` alone once did.
+    /// Both `Button`s share `opacity`, so the row still fades together (ADR-1045 decisions 3 and
+    /// 5) on a day it offers no tick, name included. A long press still opens a `contextMenu`,
+    /// now with a destructive *Remove* alone — *Rename* lived there; the tap above replaces it
+    /// rather than fixing it in place.
     @ViewBuilder
     private func oneOffRowView(_ row: DayView.OneOffRow) -> some View {
         let isRenaming = oneOffFocus == .row(row)
@@ -811,74 +832,79 @@ struct ContentView: View {
         let markColor: Color = Color.green
         let offersTick = row.offersTick(asOf: today())
 
-        HStack(alignment: .top, spacing: 4) {
-            TextField("", text: oneOffRowTextBinding(for: row))
-                .focused($oneOffFocus, equals: .row(row))
-                .onSubmit {
-                    // `commitFocusedOneOffField()` commits this row and drops focus, or — a
-                    // rename it finds refused — leaves the row focused with the typed name and
-                    // the cause showing under it; see its own doc comment.
-                    commitFocusedOneOffField()
-                }
-                .foregroundStyle(isRenaming ? Color.primary : Color.clear)
-                .overlay(alignment: .leading) {
-                    if !isRenaming {
-                        Text(row.name)
-                            .foregroundStyle(nameColor)
-                            .strikethrough(row.isDone)
-                            .allowsHitTesting(false)
+        // The name and the rest of the row share one line; the notices sit on a second line
+        // below both, in one place rather than one copy per branch — a phone check on b3860c8
+        // found "Already on this day" drawn *beside* the name while renaming, not below it,
+        // because that branch put the refusal in a `VStack` that was a sibling of the `TextField`
+        // in the same `HStack`, not underneath it (`design.md` § *A refusal under a name field*,
+        // grill answers 11 and 18: "under" is not negotiable). One `VStack` outside the line
+        // fixes that for both branches at once, and reads `screen.notice`/`screen.nameRefusal`
+        // the same way regardless of `isRenaming`, since a row keeps telling either while it is
+        // being edited, not just while it is not.
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                TextField("", text: oneOffRowTextBinding(for: row))
+                    .focused($oneOffFocus, equals: .row(row))
+                    .onSubmit {
+                        // `commitFocusedOneOffField()` commits this row and drops focus, or — a
+                        // rename it finds refused — leaves the row focused with the typed name
+                        // and the cause showing under it; see its own doc comment.
+                        commitFocusedOneOffField()
                     }
-                }
-                .fixedSize()
+                    .foregroundStyle(isRenaming ? Color.primary : Color.clear)
+                    .overlay(alignment: .leading) {
+                        if !isRenaming {
+                            Text(row.name)
+                                .foregroundStyle(nameColor)
+                                .strikethrough(row.isDone)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .fixedSize()
 
-            if isRenaming {
-                VStack(alignment: .leading) {
-                    if row == screen.notice?.oneOffRow {
-                        Text(screen.notice?.cause ?? "Not saved. Try again.")
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    }
-                    if screen.nameRefusal?.row == row {
-                        Text(screen.nameRefusal?.cause ?? "Not saved. Try again.")
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    }
-                }
-            } else {
-                Button {
-                    if offersTick {
-                        try? screen.tick(row)
-                    }
-                } label: {
-                    VStack(alignment: .leading) {
+                // Lateness words on the same line as the name — as `rowView(_:)`'s own
+                // `commitmentLine` draws a commitment's rhythm — rather than a line of their own
+                // below it: a row with nothing else to show (an ordinary undone one-off, due
+                // today) would otherwise be a `Button` with no content at all, and forcing it
+                // tall enough to tap by hand is what made every one-off row noticeably thicker
+                // than a commitment row, empty space and all, on the phone. `.frame(maxHeight:
+                // .infinity)` is what actually keeps it tappable without that: it stretches this
+                // `Button` to match its own row's height — set by the `TextField` beside it, or
+                // by the List's own row minimum where that is taller — rather than this `Button`
+                // setting the row's height itself, the way the deleted `minHeight: 44` did.
+                if !isRenaming {
+                    Button {
+                        if offersTick {
+                            try? screen.tick(row)
+                        }
+                    } label: {
                         HStack {
+                            if let lateInWords = row.lateInWords {
+                                Text(verbatim: lateInWords)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                             Spacer(minLength: 0)
-                                .frame(minHeight: 44)
                             if let markSystemName {
                                 Image(systemName: markSystemName)
                                     .foregroundStyle(markColor)
                             }
                         }
-                        if let lateInWords = row.lateInWords {
-                            Text(verbatim: lateInWords)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        if row == screen.notice?.oneOffRow {
-                            Text(screen.notice?.cause ?? "Not saved. Try again.")
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                        }
-                        if screen.nameRefusal?.row == row {
-                            Text(screen.nameRefusal?.cause ?? "Not saved. Try again.")
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+            }
+            if row == screen.notice?.oneOffRow {
+                Text(screen.notice?.cause ?? "Not saved. Try again.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+            if screen.nameRefusal?.row == row {
+                Text(screen.nameRefusal?.cause ?? "Not saved. Try again.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
             }
         }
         .opacity(isRenaming || offersTick ? 1 : 0.5)
@@ -971,20 +997,38 @@ struct ContentView: View {
         )
     }
 
-    /// `row`'s own name field's shown text. The field is now always present (`oneOffRowView(_:)`
-    /// never swaps it out for a `Text`, for reasons its own doc comment gives), so this reads
-    /// `row.name` itself wherever this row is not the one with focus — `nameRefusal`'s own
-    /// `text` while a refusal stands under `row` and it does have focus, `oneOffRowText`
-    /// otherwise. Read by both the `get` and the `set` of `oneOffRowTextBinding(for:)` so a
-    /// stale flush is recognised by the same rule that draws the field.
-    private func oneOffRowDisplayText(for row: DayView.OneOffRow) -> String {
-        guard oneOffFocus == .row(row) else {
-            return row.name
-        }
+    /// `row`'s own committed candidate — `nameRefusal`'s own `text` while a refusal stands under
+    /// `row`, `oneOffRowText` otherwise — the same rule `oneOffEntryCommitText` reads the
+    /// entry's by. **Every commit site must read this, and never raw `oneOffRowText` directly**:
+    /// a refusal empties `oneOffRowText` the moment it is set (`commitRename(of:to:)`'s own doc
+    /// comment, "the shell empties its field on every commit"), so a *second* commit attempt on
+    /// the same still-refused row — the checkmark tapped again, or a day change arriving while
+    /// the refusal still stands — that read `oneOffRowText` raw would send blank, and a blank
+    /// rename removes the one-off outright (grill answer 16). That is exactly what reached the
+    /// phone on b3860c8: renaming onto a name already held, then leaving the day or tapping the
+    /// checkmark again, deleted the one-off it was refused for, rather than leaving it exactly as
+    /// it was (grill answers 12 and 18). Unlike `oneOffRowDisplayText(for:)`, this does not gate
+    /// on `row` being the *currently* focused row: `.onChange(of: oneOffFocus)` calls this for
+    /// `oldValue`'s row after `oneOffFocus` has already moved on to `newValue`, so reading live
+    /// focus there would silently swap in `row.name` and lose whatever was typed or refused.
+    private func oneOffRowCommitText(for row: DayView.OneOffRow) -> String {
         if let nameRefusal = screen.nameRefusal, nameRefusal.row == row {
             return nameRefusal.text
         }
         return oneOffRowText
+    }
+
+    /// `row`'s own name field's shown text. The field is now always present (`oneOffRowView(_:)`
+    /// never swaps it out for a `Text`, for reasons its own doc comment gives), so this reads
+    /// `row.name` itself wherever this row is not the one with focus, and `oneOffRowCommitText(for:)`
+    /// — the same value a commit would send — while it does. Read by both the `get` and the
+    /// `set` of `oneOffRowTextBinding(for:)` so a stale flush is recognised by the same rule
+    /// that draws the field.
+    private func oneOffRowDisplayText(for row: DayView.OneOffRow) -> String {
+        guard oneOffFocus == .row(row) else {
+            return row.name
+        }
+        return oneOffRowCommitText(for: row)
     }
 
     /// ADR-1042, carried forward by `design.md` § *What the shell draws*: a horizontal drag on
