@@ -9217,3 +9217,28 @@ func whatACommitmentsScreenTellsOnItsSheetStandsWhenAnotherFieldIsEdited() {
     #expect(
         screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: .name, refusal: .namesNothing))
 }
+
+@MainActor
+@Test("what a commitments screen tells at the foot of its sheet stands when a field is edited")
+func whatACommitmentsScreenTellsAtTheFootOfItsSheetStandsWhenAFieldIsEdited() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "Gym", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil)
+    #expect(refusal == .alreadyKept)
+
+    screen.sheetFieldEdited(.name)
+
+    #expect(
+        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: nil, refusal: .alreadyKept))
+}
