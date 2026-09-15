@@ -174,8 +174,9 @@ struct ContentView: View {
                 }
                 // The green checkmark: shown while any one-off field is focused, and commits and
                 // drops focus exactly as Return does, minus the fresh entry Return leaves focused.
-                // `design.md` § *The shell*.
-                if oneOffFocus != nil {
+                // `design.md` § *The shell*. Gated on `oneOffFocusNamesALiveField`, not a bare
+                // `oneOffFocus != nil` — see that property's own doc comment for why.
+                if oneOffFocusNamesALiveField {
                     ToolbarItem(placement: .confirmationAction) {
                         Button {
                             // `commitFocusedOneOffField()` already drops focus itself once it
@@ -400,6 +401,35 @@ struct ContentView: View {
         }
         justCommittedOneOffField = true
         oneOffFocus = nil
+    }
+
+    /// Whether `oneOffFocus` still names a field that actually exists to hold it — `.entry`
+    /// always does, wherever the toolbar `+` itself shows; `.row(row)` only while `row` is still
+    /// one of `screen.dayView.oneOffGroup`'s own rows. **The checkmark reads this, not a bare
+    /// `oneOffFocus != nil`, and that is load-bearing.** A phone check on 3a70bda found the
+    /// checkmark still showing after a one-off was removed — a blank rename committed by Return
+    /// or the checkmark, or *Remove* from the long-press menu — driven for real on the simulator
+    /// and confirmed by dumping the hierarchy at that exact point: no field anywhere in it held
+    /// focus, yet `oneOffFocus` was still non-`nil` by the checkmark's own evidence. `@FocusState`
+    /// dropping a value assigned `nil` in the very update that also tears down the view it named
+    /// — every one of the three removal paths is exactly that, unlike an ordinary rename, which
+    /// leaves the row's own field in the tree, just renamed — is the same class of `@FocusState`
+    /// unreliability `oneOffRowView(_:)`'s own doc comment already found nesting a gesture, not
+    /// removing a view, tripping into; `commitFocusedOneOffField()` above already sets
+    /// `oneOffFocus = nil` on every successful commit, removal included, so the assignment itself
+    /// is not the gap. Reading a *validated* value here, rather than chasing why the raw one goes
+    /// stale, is what actually keeps the checkmark honest: harmless everywhere else, since
+    /// `DayScreen.rename` and `.tick` already guard on the row still being one of theirs before
+    /// writing anything, so a stale `oneOffFocus` this catches was never going to reach the model.
+    private var oneOffFocusNamesALiveField: Bool {
+        switch oneOffFocus {
+        case nil:
+            return false
+        case .entry:
+            return true
+        case .row(let row):
+            return screen.dayView.oneOffGroup?.rows.contains(row) ?? false
+        }
     }
 
     /// The entry's committed candidate: `nameRefusal`'s own `text` while a refusal stands under
