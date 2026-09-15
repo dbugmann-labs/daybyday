@@ -4,6 +4,14 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-15 — the **look-back** page (B-007, grilled at the ninth grooming pass) shows a
+  tick commitment's kept days out of due days per month, "11/12", and a weekly quota's per week,
+  "2/3". The Decision's line that the principle forbids "a percentage" is kept and narrowed: what it
+  forbids is the *run* — a chain that snaps back to zero, a percentage that punishes the first gap
+  drawn where a daily visit sees it. A fraction of kept to due, per month or per week, on a page
+  visited deliberately and never shown on the day screen, is a count of days and stands on the
+  record's side of the line. The objection was put to the owner in those words and the fraction
+  was reaffirmed; it is never rendered as a percentage, and the day screen shows none of it.
 - Amended: 2026-09-10 — decision 12 is added: whether a control is offered is the screen's own
   answer, because the screen gives out neither of the two days it would be worked out from. That
   reasoning had no home and lived in `day-screen`'s requirement prose, which
