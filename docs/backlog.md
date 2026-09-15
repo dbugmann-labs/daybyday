@@ -259,6 +259,9 @@ decision it records is the owner's, twice.*
   not the place to re-decide it, and the next grooming pass is — but the margin it was decided by is
   narrower than the line above reads, and a pass that quotes "already refiles in one tap" is quoting
   something that stopped being true. `grill.md` § *Settled* 14 of #192 recorded that this was owed.
+- **Re-read 2026-09-15**, at the ninth pass, as the amendment above asked: **leave**, not drop. The
+  one-tap argument is gone, but the two Open lines below still price it at an evening per attempt
+  with no test, and the iOS 27 API may make it free. Re-decide when the SDK carries it.
 - **Open** — is it buildable at all? Two things were measured rather than guessed at #147, and any
   future attempt starts from them: **`.onMove` and `.dropDestination(for:)` cannot share a
   `ForEach`** — instrumented, `.onMove` won every long press and `.dropDestination` never fired —
@@ -326,6 +329,9 @@ decision it records is the owner's, twice.*
   scrolling form is one you never see on a phone — the sheet that refuses a name has a name field,
   a rhythm picker, a kind picker and a date picker above the place the message lands. The field you
   got wrong is the only place a refusal can be read at a glance.
+- **Trigger, amended 2026-09-15** at the ninth pass: `fix-change-refusals` (#247) now refuses a change
+  that would carry records onto records already kept, and does not name the day that blocks it.
+  Naming it was left to this want at the eighth pass's grill of B-052.
 - **Open** — "state of the art" is a look, not a rule, and the choice is the owner's: red text
   under the offending field, a red field border, an inline alert, a transient banner. It also
   decides whether the day screen's row notice — already red, but a row rather than a field —
@@ -1071,3 +1077,39 @@ found nothing.
     deltas `day-screen`, so it serialises behind #236 `say-standing-in-quota-row`, and Story 1 waits
     on nothing. A deltas `commitment`, which nothing here touches.
   - **Not re-judged** — the other ten wants; this session held one cluster by design.
+
+- 2026-09-15 — pass over 11 wants, the ninth.
+  - **Sweep** — one silence, confirmed and captured before clustering: **B-054**, keeping a
+    weekday-set commitment on a day it is not due — the weekday-set twin of what B-052 turned out to
+    be, with no workaround that does not split a history. Since pass 8 nine Stories merged (#235,
+    #236, #242–#244, #247–#249) and `EPIC: One-offs` (#238) closed whole; the tracker holds no open
+    issue. Day-one week: every line has a spec, and *yuno 5× a week* is served since #236. Lifecycle
+    verbs: `one-off` create, tick, rename and remove shipped, re-date declined at its grill; the other
+    four all claimed, shipped or declined on record. `docs/open-questions.md` held no want in
+    disguise — #257's record-copy note and row identity are technical, the NaN total a product
+    question. Read from `chore/backlog` (PR #259), which held B-053 unmerged.
+  - **Housekeeping** — B-050 gains #247's unnamed blocking day as a trigger. B-041 re-read as the
+    2026-09-10 amendment asked: leave, not drop.
+  - **Taken forward** — **three clusters at once, by the owner's decision, each groomed in its own
+    session and worktree**, as the eighth pass did:
+    - **A**, the commitment sheet: B-053, B-050, B-043, in the session that ran this sweep
+      (`chore/groom-commitment-sheet`). One view, three wants; layout and red refusals look like a
+      shell chore under ADR-1019, the all-weekdays default and a range or target change like Stories
+      reopening `FEAT: commitment` (#26). The grill decides the shape.
+    - **B**, restore: B-009 (`chore/groom-restore`). Recommended at four passes and taken at the
+      fifth. Three stores now — record, roster, one-offs — and Epic #1 excludes "export and restore"
+      by name, so it amends the Epic or opens one.
+    - **D**, looking back: B-007, B-011 (`chore/groom-look-back`). Epic #1 excludes graphs and detail
+      pages by name, so a new Epic. B-011 waits on what B-007 is a page *per*.
+
+    Each session appends its own dated line recording what its cluster became. **They meet at
+    Stage 4, not before** (`docs/process.md` §7): A deltas `commitment`; B touches the three stores
+    and so `record`, `commitment` and `one-off`, or a capability of its own; D is new and may touch
+    `day-screen` for B-011. Whichever G2 comes second decides what it serialises behind. ADR numbers
+    are claimed against all three open branches, not against `main`.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **C**, kept on a day it is not due: B-054, captured this pass. Stories against `record` (#53)
+      and `day-screen` (#27), or dropped at its grill for "gym is a quota".
+    - **E**, entry affordances: B-034, B-032. Epic #1 excludes prefill by name.
+    - **F**, a reminder: B-039. Unclaimed, and the one want that asks whether this app may nag.
+    - **Singleton**: B-041, leave until the SDK carries `reorderable(collectionID:)`.
