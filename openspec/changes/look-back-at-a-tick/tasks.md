@@ -87,13 +87,13 @@ implementation.** These boxes confirm rather than write.
 - [x] 12.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, the two new kit sources, `CommitmentsScreen.swift`, the new test file and the two shell files
 - [x] 12.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
 - [x] 12.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is thirty-two more than a run on `main` reports — both read off runs, neither derived
-- [ ] 12.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–12.4 and the walk below are ticked and that the instruction here is written for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/look-back/spec.md` is created with this delta's seven requirements and thirty-two scenarios and its `## Purpose`, carrying no `TBD`; nothing else in any spec moves. `pnpm run checks` runs after the archive commit exists, and the archive commit is pushed. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
+- [x] 12.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–12.4 and the walk below are ticked and that the instruction here is written for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/look-back/spec.md` is created with this delta's seven requirements and thirty-two scenarios and its `## Purpose`, carrying no `TBD`; nothing else in any spec moves. `pnpm run checks` runs after the archive commit exists, and the archive commit is pushed. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
-- [ ] W.1 The commitments screen with a kept tick commitment, a stopped one and a number one on it — the picture shows the entries as the door, with the swipes undisturbed
-- [ ] W.2 The kept tick commitment's look-back, opened by tapping its entry — the picture shows the head, the whole, and several months newest first with the month in progress at the top
-- [ ] W.3 The stopped tick commitment's look-back — the picture shows the day kept until in the head, and no month after it
-- [ ] W.4 The number commitment's look-back — the picture shows the head and no month and no whole under it
-- [ ] W.5 A tick commitment's look-back whose roster holds its earlier era removed — the picture shows the line where the rhythm changed between the months
-- [ ] W.6 **The handover** — the implementer posts W.1 through W.5 to the PR with `gh pr comment --attach` before hand-back, and ticks this box on that comment's URL
+- [x] W.1 The commitments screen with a kept tick commitment, a stopped one and a number one on it — the picture shows the entries as the door, with the swipes undisturbed
+- [x] W.2 The kept tick commitment's look-back, opened by tapping its entry — the picture shows the head, the whole, and several months newest first with the month in progress at the top
+- [x] W.3 The stopped tick commitment's look-back — the picture shows the day kept until in the head, and no month after it
+- [x] W.4 The number commitment's look-back — the picture shows the head and no month and no whole under it
+- [x] W.5 A tick commitment's look-back whose roster holds its earlier era removed — the picture shows the line where the rhythm changed between the months
+- [x] W.6 **The handover** — https://github.com/dbugmann-labs/daybyday/pull/280#issuecomment-5685926808
