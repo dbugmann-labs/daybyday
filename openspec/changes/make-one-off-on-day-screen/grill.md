@@ -63,12 +63,30 @@ date; #243 handed this Story row identity for adding and removing. None of that 
 20. **The term.** *One-off entry*, after number, note and total entry — not *add row*, since a row
     in this glossary is a thing's line in a day view and this line holds no one-off.
 
+## Reopened at the phone check, 2026-09-15
+
+*4 questions over 1 round, after G7's phone walk found *Rename* in the long-press menu doing nothing
+on the device. The owner asked for a different gesture rather than a fix; answers 13 and 15 are
+amended by these, and nothing else above moves.*
+
+21. **How rename is reached.** A tap on the one-off's **name** puts that row into rename, and a tap
+    anywhere else on the row is the row's tick — or its take-back on a done row — as before. *The
+    owner's call, as in Apple Reminders; told that one row becomes two tap targets and a tap meant to
+    tick will sometimes open rename, which tapping away with the name unchanged undoes.*
+22. **What counts as the name.** The drawn text of the name alone. The lateness words under it and
+    the rest of the row tick. *A short name is a small target; accepted.*
+23. **The long press.** Kept, with *Remove* alone; *Rename* leaves the menu. A blank rename still
+    removes (16).
+24. **Rows that offer no tick, and done rows.** A later day's row renames on its name and the rest of
+    it does nothing, as today; a done row renames on its name, keeping its done day (17), and the rest
+    takes the tick back. *Rename stays offered on every one-off row (13).*
+
 ## Terms landed in CONTEXT.md
 
 - **One-off entry** — new: the always-present line at the end of the One-offs group a one-off is
   typed into, and what it does with what is committed there.
-- **One-off** — amended: made through the one-off entry, reached by long press for rename and remove,
-  a blank rename removes; the group is drawn on every day where one-offs are kept.
+- **One-off** — amended: made through the one-off entry, renamed by a tap on its name (21) and removed
+  by a long press (23), a blank rename removes; the group is drawn on every day where one-offs are kept.
 - **Day view** — amended: the One-offs group is drawn on every date where one-offs are kept, not only
   where one stands.
 

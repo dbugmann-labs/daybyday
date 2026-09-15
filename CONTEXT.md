@@ -1422,8 +1422,11 @@ row is drawn, a past day included, and the row then leaves that day for today.
 **Amended 2026-09-14**, at the grill of `make-one-off-on-day-screen` (#244). A one-off is made through
 the **one-off entry**, on the day being shown and only that day: on today or a later day it is made
 undone, and on a past day it is made **already done on that day**, since one made undone there would
-stand on today at once and leave the day it was made on. It is renamed and removed from its row by a
-**long press** — never a swipe, which ADR-1042 keeps for the day — on any one-off row, done or not.
+stand on today at once and leave the day it was made on. It is renamed from its row by a **tap on its
+name** — the rest of the row stays its tick — and removed by a **long press**, never a swipe, which
+ADR-1042 keeps for the day; both on any one-off row, done or not, and a row offering no tick still
+renames. *Corrected 2026-09-15 at that Story's phone check, where it first read "renamed and removed by
+a long press".*
 Removal asks for no confirmation, and a rename committed blank **is** a removal. A rename keeps the
 date and, where the one-off is done, the day it was done; one that would make a one-off already held,
 alike in name and date, is refused and its cause named, as an add is. The screen trims blank space
