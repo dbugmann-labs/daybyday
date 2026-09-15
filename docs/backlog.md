@@ -301,7 +301,7 @@ months later.
   the way out when a store cannot be read. Apple's own migration was not trusted: nothing Apple
   publishes covers a developer-signed app's container, and a free team gets no iCloud. Terms
   **Copy**, **Copy place**, **Restore** in `CONTEXT.md`, with **Store** and *a day screen without
-  its record* amended. Left behind by id: B-039.
+  its record* amended. Stories #266, #267, #268, #270 at G2. Left behind by id: B-039.
 
 - 2026-09-15 — fill in a commitment on a sheet that fits the phone (B-053), see why something was
   refused, in red, where it went wrong (B-050), and change a number's range or a total's target
@@ -1053,13 +1053,15 @@ found nothing.
     overwritten whole, never yesterday; the day screen names the way out; slug `restore`;
     `EPIC: Restore`; nothing on a fresh install. Carried to `spec-author` unverified: whether the
     picker's lasting access to a folder survives a new phone.
-  - **Proposed for G2** — the copy by hand first, one file handed to the share sheet from the
-    commitments screen, because its form is the seam every later Story reads; then restore; then the
-    copy the app writes on its own; then the broken file out with the day screen's line. `/to-tickets`
-    is the owner's keystroke and had not run when this line was written.
+  - **Accepted at G2**, from `/to-tickets` stopped after its quiz — four Stories, all `restore`:
+    #266 `make-a-copy` first, because the copy's form is the seam every later Story reads; #267
+    `restore-from-a-copy` and #268 `copy-on-every-change` after it; #270
+    `take-out-an-unreadable-store` after #267. #267 and #268 both open on #266's close and share one
+    spec, so the second to reach Stage 4 serialises behind the first (§7), said in #268's body.
   - **§7 against the other two clusters** — A's G2 landed first: #261 and #262 are open under
     `FEAT: commitment` (#26) and both reach the commitments screen, which restore's surface shares, so
     a restore Story touching that screen serialises behind them; `restore` is a capability of its own
-    and deltas none of theirs. D was undecided when this line was written. ADR numbers: 1053 was the
+    and deltas none of theirs. D's Epic (#269, `EPIC: Looking back`) landed while the Stories here
+    were being written; its Stories were not yet on the tracker when this line was written. ADR numbers: 1053 was the
     highest on every branch and worktree, and none was claimed here.
   - **Not re-judged** — the other ten wants; this session held one cluster by design.
