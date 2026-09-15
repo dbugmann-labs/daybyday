@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UIKit
 import DayByDayKit
 
 /// Which rhythm shape the form is currently offering. A UI-only selector: the rule each shape
@@ -90,10 +91,65 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("Choose a day that isn't before it's kept from.")
         case .alreadyDueOnRestartDay:
             Text("It's already due that day.")
+        case .storeCouldNotBeRead:
+            // Never drawn on its own: a refused copy is always drawn through
+            // `copySectionRefusalText` below, which reads the store off the `RefusedChange`
+            // itself rather than off this case.
+            Text("The roster could not be read or could not be written.")
         }
     }
     .font(.caption)
     .foregroundStyle(.red)
+}
+
+/// The words a person reads for a refused copy, naming the store `store` says where one is
+/// given, and the shipped words for a place that could not be written otherwise — `design.md` §
+/// *The shell*: "Your record could not be read.", the roster's and the one-offs' likewise, and
+/// the shipped words for a place that could not be written.
+@ViewBuilder
+private func copySectionRefusalText(_ store: Copy.Store?, _ refusal: CommitmentsScreen.Refusal)
+    -> some View
+{
+    switch store {
+    case .record:
+        Text("Your record could not be read.")
+    case .roster:
+        Text("Your roster could not be read.")
+    case .oneOffs:
+        Text("Your one-offs could not be read.")
+    case nil:
+        refusalText(refusal)
+    }
+}
+
+/// Turns the instant now into the `Moment` a copy is asked for at — the conversion ADR-1004
+/// keeps out of the engine and puts at the edge, beside `ContentView.today()`'s own conversion
+/// for the same reason. `nil` only where the calendar cannot form today's own date or the clock's
+/// own hour or minute, which never happens on a real clock.
+private func momentNow() -> Moment? {
+    let components = Calendar.current.dateComponents(
+        [.year, .month, .day, .hour, .minute], from: Date())
+    guard
+        let day = CalendarDate(
+            year: components.year!, month: components.month!, day: components.day!),
+        let moment = Moment(on: day, hour: components.hour!, minute: components.minute!)
+    else {
+        return nil
+    }
+    return moment
+}
+
+/// Wraps `UIActivityViewController` around the one URL a copy answers, so `CommitmentsView` can
+/// hand it to the platform's share sheet. `design.md` § *The shell*: `ShareLink` needs its item
+/// before the tap, and the copy does not exist until then.
+private struct ShareSheet: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: [url], applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 /// Which commitment `CommitmentSheet` is open for — nothing, for a sheet that defines a new one,
@@ -124,6 +180,11 @@ struct CommitmentsView: View {
     let screen: CommitmentsScreen
 
     @State private var sheetTarget: SheetTarget?
+    /// The URL the last copy made answered — `nil` until a copy is made, and drives the share
+    /// sheet: presented exactly while this holds one. `design.md` § *The shell*: `ShareLink`
+    /// needs its item before the tap, so the URL is put here on success rather than offered
+    /// ahead of one.
+    @State private var copyURL: URL?
     @Environment(\.editMode) private var editMode
 
     var body: some View {
@@ -334,6 +395,25 @@ struct CommitmentsView: View {
             if screen.recordsBelongToNoCommitment {
                 Text("Some records belong to no commitment.")
             }
+
+            // The one section this screen offers a copy through, below *Stopped* —
+            // `design.md` § *The shell*. The tap forms a `Moment` beside `today()` and hands it
+            // to `makeACopy`; a `Moment` refused only where the clock itself cannot form one,
+            // which never happens on a real clock, so nothing is drawn for that case.
+            Section("Copy") {
+                Button("Make a copy") {
+                    guard let moment = momentNow() else {
+                        return
+                    }
+                    if case .success(let url) = screen.makeACopy(asOf: moment) {
+                        copyURL = url
+                    }
+                }
+
+                if case .makingACopy(let store, let copyRefusal) = screen.refusedChange {
+                    copySectionRefusalText(store, copyRefusal)
+                }
+            }
         }
         // Apple documents `.default` and `.compact` but publishes no point value for either.
         // Measured directly on device (iPhone 17 simulator, iOS 26.5, this SDK): the platform
@@ -429,6 +509,20 @@ struct CommitmentsView: View {
         }
         .sheet(item: $sheetTarget) { target in
             CommitmentSheet(screen: screen, changing: target.commitment)
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { copyURL != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        copyURL = nil
+                    }
+                }
+            )
+        ) {
+            if let copyURL {
+                ShareSheet(url: copyURL)
+            }
         }
     }
 }

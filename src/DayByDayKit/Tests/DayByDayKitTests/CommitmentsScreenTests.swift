@@ -24,6 +24,15 @@ private func freshRosterAndRecordPlaces() -> (roster: URL, record: URL) {
     )
 }
 
+/// A fresh path for a one-off place nothing has been kept at, under its own fresh temporary
+/// directory — mirrors `DayScreenTests`'s own `freshOneOffPlace()`, for the two `makeACopy`
+/// scenarios in § 5 that need a third place beside the roster and the record.
+private func freshOneOffPlace() -> URL {
+    FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        .appendingPathComponent("one-offs.json")
+}
+
 /// Sets the user-immutable flag on the file at `place`: it still reads, but a rename or removal
 /// of it — `chflags uchg` at the shell, `FileAttributeKey.immutable` through `FileManager` —
 /// fails with `NSCocoaErrorDomain 513`, unlike `makeReadOnly(_:)` in `DayScreenTests.swift`, which
@@ -8576,6 +8585,110 @@ func aCommitmentsScreenThatCannotReadItsRecordDoesNotSayRecordsBelongToNoCommitm
 
     #expect(!screen.recordsBelongToNoCommitment)
     #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test(
+    "a commitments screen holds a refused copy against making a copy, naming the store that could not be read"
+)
+func aCommitmentsScreenHoldsARefusedCopyAgainstMakingACopyNamingTheStoreThatCouldNotBeRead() throws {
+    let places = freshRosterAndRecordPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let moment = try #require(Moment(on: monday, hour: 14, minute: 32))
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: oneOffPlace)
+
+    try FileManager.default.createDirectory(
+        at: places.record.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: places.record)
+
+    let unreadableRecordResult = screen.makeACopy(
+        asOf: moment,
+        writingInto: FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true))
+
+    guard case .failure(let refusal) = unreadableRecordResult else {
+        Issue.record("expected a copy to be refused")
+        return
+    }
+    #expect(refusal == .storeCouldNotBeRead)
+    #expect(screen.refusedChange == .makingACopy(.record, .storeCouldNotBeRead))
+
+    // A copy asked for at a readable record place but written into a directory that cannot be
+    // written to is held against making a copy naming no store, as a place that could not be
+    // written. Removing the corrupted file leaves the record place holding nothing — readable,
+    // trivially.
+    try FileManager.default.removeItem(at: places.record)
+
+    let unwritableDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(
+        at: unwritableDirectory, withIntermediateDirectories: true)
+    try FileManager.default.setAttributes(
+        [.posixPermissions: 0o500], ofItemAtPath: unwritableDirectory.path)
+    defer {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: unwritableDirectory.path)
+    }
+
+    let unwritableResult = screen.makeACopy(asOf: moment, writingInto: unwritableDirectory)
+
+    guard case .failure(let secondRefusal) = unwritableResult else {
+        Issue.record("expected a copy to be refused")
+        return
+    }
+    #expect(secondRefusal == .notKept)
+    #expect(screen.refusedChange == .makingACopy(nil, .notKept))
+}
+
+@MainActor
+@Test("a copy made does not end what a commitments screen holds about a refused change")
+func aCopyMadeDoesNotEndWhatACommitmentsScreenHoldsAboutARefusedChange() throws {
+    let places = freshRosterAndRecordPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let moment = try #require(Moment(on: monday, hour: 14, minute: 32))
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: oneOffPlace)
+
+    let blankNameRefusal = screen.define(
+        name: "   ", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(blankNameRefusal == .namesNothing)
+    #expect(screen.refusedChange == .defining(.namesNothing))
+
+    let result = screen.makeACopy(
+        asOf: moment,
+        writingInto: FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true))
+
+    guard case .success = result else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+    #expect(screen.refusedChange == .defining(.namesNothing))
 }
 
 @MainActor

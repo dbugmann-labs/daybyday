@@ -287,6 +287,20 @@ public struct History: Hashable, Sendable {
         return true
     }
 
+    /// Every tick, number, note and addition this history holds, as the four collections
+    /// `RecordDocument.init(ticks:numbers:notes:additions:)` takes — the one way back out of the
+    /// private storage this type otherwise keeps to itself (see that initializer's own doc
+    /// comment). Package-internal: `CopyDocument` is the one caller outside `RecordStore`, to
+    /// write a copy's record in the form the record store writes now, from a `History` value
+    /// alone rather than the store that read it. `openspec/changes/make-a-copy/design.md` §
+    /// *A copy is the values, not the files*.
+    func recordDocumentParts() -> (
+        ticks: Set<Tick>, numbers: [RecordedDay: Decimal], notes: [RecordedDay: String],
+        additions: [RecordedDay: [Decimal]]
+    ) {
+        (ticks, numbers, notes, additions)
+    }
+
     /// Every commitment this history holds any record of — a tick, a number, a note or an
     /// addition — each once. Package-internal: `SaveInProgress.carryBackOrphanedRecords(in:
     /// against:)` needs this to find which commitments a roster no longer holds in any state
