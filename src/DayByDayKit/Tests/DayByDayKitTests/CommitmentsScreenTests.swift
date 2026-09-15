@@ -8715,3 +8715,719 @@ func anOrphanedRecordWithNoPossibleSourceStaysWhereItIsAndIsSaid() throws {
     #expect(screen.recordsBelongToNoCommitment)
     #expect(try Data(contentsOf: places.record) == recordBytes)
 }
+
+@MainActor
+@Test("a refusal that a name says nothing is about the name field")
+func aRefusalThatANameSaysNothingIsAboutTheNameField() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "   ", on: allWeekdays, keptFrom: monday, under: nil)
+
+    #expect(refusal == .namesNothing)
+    #expect(screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: .name, refusal: .namesNothing))
+    #expect(screen.refusedChange == .defining(.namesNothing))
+}
+
+@MainActor
+@Test("a refusal that a rhythm is due on no day is about the rhythm field")
+func aRefusalThatARhythmIsDueOnNoDayIsAboutTheRhythmField() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "Gym", on: .weekdays([]), keptFrom: monday, under: nil)
+
+    #expect(refusal == .dueOnNoDay)
+    #expect(
+        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: .rhythm, refusal: .dueOnNoDay))
+}
+
+@MainActor
+@Test("a refusal that the calendar will not take a rhythm's number is about the rhythm field")
+func aRefusalThatTheCalendarWillNotTakeARhythmsNumberIsAboutTheRhythmField() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let lensesRefusal = screen.define(
+        name: "Contact lenses", on: .everyNDays(0), keptFrom: monday, under: nil)
+    let financesRefusal = screen.define(
+        name: "Finances", on: .dayOfMonth(32), keptFrom: monday, under: nil)
+
+    #expect(lensesRefusal == .rhythmOutOfRange)
+    #expect(financesRefusal == .rhythmOutOfRange)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .rhythm, refusal: .rhythmOutOfRange))
+}
+
+@MainActor
+@Test("a refusal that a range is not a range is about the range field")
+func aRefusalThatARangeIsNotARangeIsAboutTheRangeField() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Mood", on: allWeekdays, keptFrom: monday, under: nil, kind: .number, lowest: "10",
+        highest: "1")
+
+    #expect(refusal == .rangeIsNotARange)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .range, refusal: .rangeIsNotARange))
+}
+
+@MainActor
+@Test("a refusal that a target is not a target is about the target field")
+func aRefusalThatATargetIsNotATargetIsAboutTheTargetField() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Water", on: allWeekdays, keptFrom: monday, under: nil, kind: .total, target: "0")
+
+    #expect(refusal == .targetIsNotATarget)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .target, refusal: .targetIsNotATarget))
+}
+
+@MainActor
+@Test("a refusal that a commitment is already kept is about the whole change and no field")
+func aRefusalThatACommitmentIsAlreadyKeptIsAboutTheWholeChangeAndNoField() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "Gym", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == .alreadyKept)
+    #expect(
+        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: nil, refusal: .alreadyKept))
+}
+
+@MainActor
+@Test("a refusal that a roster could not be written is about the whole change and no field")
+func aRefusalThatARosterCouldNotBeWrittenIsAboutTheWholeChangeAndNoField() throws {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let rosterPlace = blocker.appendingPathComponent("roster.json")
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "Journaling", on: allWeekdays, keptFrom: monday, under: nil)
+
+    #expect(refusal == .notKept)
+    #expect(screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: nil, refusal: .notKept))
+}
+
+@MainActor
+@Test(
+    "a refusal that records are already kept under the commitment a change would produce is about the whole change"
+)
+func aRefusalThatRecordsAreAlreadyKeptUnderTheCommitmentAChangeWouldProduceIsAboutTheWholeChange()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    try rosterStore.add(run)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gymEmoji, on: august3rd)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        gym, toName: "Gym 🏋️", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == .recordsAlreadyExist)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: nil, refusal: .recordsAlreadyExist))
+}
+
+@MainActor
+@Test("a restart refused for the day it was asked from is about the restart day field")
+func aRestartRefusedForTheDayItWasAskedFromIsAboutTheRestartDayField() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let september1st = CalendarDate(year: 2026, month: 9, day: 1)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.restart(nails, from: august3rd)
+
+    #expect(refusal == .restartDayIsBeforeKeptFrom)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .restartDay, refusal: .restartDayIsBeforeKeptFrom))
+
+    let afterTodayRefusal = screen.restart(nails, from: september1st)
+    #expect(afterTodayRefusal == .restartDayIsAfterToday)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .restartDay, refusal: .restartDayIsAfterToday))
+
+    let alreadyDueRefusal = screen.restart(nails, from: august30th)
+    #expect(alreadyDueRefusal == .alreadyDueOnRestartDay)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .restartDay, refusal: .alreadyDueOnRestartDay))
+}
+
+@MainActor
+@Test("a restart refused as a commitment already kept is about the restart day field")
+func aRestartRefusedAsACommitmentAlreadyKeptIsAboutTheRestartDayField() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+    let secondNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: monday), keptFrom: monday)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+    try rosterStore.add(secondNails)
+    try rosterStore.remove(secondNails, keptUntil: august30th)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.restart(nails, from: monday)
+
+    #expect(refusal == .alreadyKept)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .restartDay, refusal: .alreadyKept))
+}
+
+@MainActor
+@Test("a restart refused for records already kept or a day recorded on is about the restart day field")
+func aRestartRefusedForRecordsAlreadyKeptOrADayRecordedOnIsAboutTheRestartDayField() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+    let strayRestartedNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: monday), keptFrom: monday)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(strayRestartedNails, on: monday)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.restart(nails, from: monday)
+
+    #expect(refusal == .recordsAlreadyExist)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .restartDay, refusal: .recordsAlreadyExist))
+
+    let otherPlaces = freshRosterAndRecordPlaces()
+    let august29th = CalendarDate(year: 2026, month: 8, day: 29)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let otherNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+
+    let otherRosterStore = try RosterStore(at: otherPlaces.roster)
+    try otherRosterStore.add(otherNails)
+    let otherRecordStore = try RecordStore(at: otherPlaces.record)
+    try otherRecordStore.add(Tick(otherNails, on: august30th)!)
+
+    let otherScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: otherPlaces.roster, keepingRecordAt: otherPlaces.record)
+
+    let otherRefusal = otherScreen.restart(otherNails, from: august29th)
+
+    #expect(otherRefusal == .wouldLeaveARecordedDayNotDue)
+    #expect(
+        otherScreen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(
+                field: .restartDay, refusal: .wouldLeaveARecordedDayNotDue))
+}
+
+@MainActor
+@Test("a restart refused by a place that could not be written is about the whole change")
+func aRestartRefusedByAPlaceThatCouldNotBeWrittenIsAboutTheWholeChange() throws {
+    let rosterDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = rosterDirectory.appendingPathComponent("roster.json")
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let august1st = CalendarDate(year: 2026, month: 8, day: 1)!
+    let august2nd = CalendarDate(year: 2026, month: 8, day: 2)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august10th = CalendarDate(year: 2026, month: 8, day: 10)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august1st)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(nails)
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(nails, on: august6th)!)
+    try recordStore.add(Tick(nails, on: august10th)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace)
+
+    try FileManager.default.removeItem(at: rosterDirectory)
+    try Data().write(to: rosterDirectory)
+
+    let refusal = screen.restart(nails, from: august2nd)
+
+    #expect(refusal == .notKept)
+    #expect(screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: nil, refusal: .notKept))
+}
+
+@MainActor
+@Test("a day recorded on that a change would leave not due is about the day-kept-from field")
+func aDayRecordedOnThatAChangeWouldLeaveNotDueIsAboutTheDayKeptFromField() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 6, day: 1)!
+    let newKeptFrom = CalendarDate(year: 2026, month: 8, day: 4)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let august5th = CalendarDate(year: 2026, month: 8, day: 5)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+    try recordStore.add(Tick(gym, on: august5th)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        gym, toName: "Gym", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: newKeptFrom, under: nil)
+
+    #expect(refusal == .wouldLeaveARecordedDayNotDue)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(
+                field: .keptFrom, refusal: .wouldLeaveARecordedDayNotDue))
+}
+
+@MainActor
+@Test(
+    "a change a stopped commitment does not take is about the rhythm field where only the rhythm differs"
+)
+func aChangeAStoppedCommitmentDoesNotTakeIsAboutTheRhythmFieldWhereOnlyTheRhythmDiffers() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    try rosterStore.retire(gym, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        gym, toName: "Gym", on: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == .stoppedCommitmentCannotChangeRhythm)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(
+                field: .rhythm, refusal: .stoppedCommitmentCannotChangeRhythm))
+}
+
+@MainActor
+@Test(
+    "a change a stopped commitment does not take is about the day-kept-from field where only that day differs"
+)
+func aChangeAStoppedCommitmentDoesNotTakeIsAboutTheDayKeptFromFieldWhereOnlyThatDayDiffers() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let january5th = CalendarDate(year: 2026, month: 1, day: 5)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    try rosterStore.retire(gym, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        gym, toName: "Gym", on: Rhythm(schedule), keptFrom: january5th, under: nil)
+
+    #expect(refusal == .stoppedCommitmentCannotChangeRhythm)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(
+                field: .keptFrom, refusal: .stoppedCommitmentCannotChangeRhythm))
+}
+
+@MainActor
+@Test("a refusal is about the whole change where both the rhythm and the day kept from differ")
+func aRefusalIsAboutTheWholeChangeWhereBothTheRhythmAndTheDayKeptFromDiffer() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let january5th = CalendarDate(year: 2026, month: 1, day: 5)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    try rosterStore.retire(gym, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        gym, toName: "Gym", on: .weekdays([.tuesday, .thursday]), keptFrom: january5th, under: nil)
+
+    #expect(refusal == .stoppedCommitmentCannotChangeRhythm)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(
+                field: nil, refusal: .stoppedCommitmentCannotChangeRhythm))
+}
+
+@MainActor
+@Test("what a commitments screen tells on its sheet ends when the field it is about is edited")
+func whatACommitmentsScreenTellsOnItsSheetEndsWhenTheFieldItIsAboutIsEdited() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "   ", on: allWeekdays, keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    screen.sheetFieldEdited(.name)
+
+    #expect(screen.sheetRefusal == nil)
+    #expect(screen.refusedChange == .defining(.namesNothing))
+}
+
+@MainActor
+@Test("what a commitments screen tells on its sheet stands when another field is edited")
+func whatACommitmentsScreenTellsOnItsSheetStandsWhenAnotherFieldIsEdited() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "   ", on: allWeekdays, keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    screen.sheetFieldEdited(.rhythm)
+    screen.sheetFieldEdited(.keptFrom)
+    screen.sheetFieldEdited(.range)
+    screen.sheetFieldEdited(.target)
+    screen.sheetFieldEdited(.restartDay)
+
+    #expect(
+        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: .name, refusal: .namesNothing))
+}
+
+@MainActor
+@Test("what a commitments screen tells at the foot of its sheet stands when a field is edited")
+func whatACommitmentsScreenTellsAtTheFootOfItsSheetStandsWhenAFieldIsEdited() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "Gym", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil)
+    #expect(refusal == .alreadyKept)
+
+    screen.sheetFieldEdited(.name)
+
+    #expect(
+        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: nil, refusal: .alreadyKept))
+}
+
+@MainActor
+@Test("what a commitments screen tells on its sheet ends when the sheet is closed")
+func whatACommitmentsScreenTellsOnItsSheetEndsWhenTheSheetIsClosed() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(
+        name: "   ", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    screen.sheetClosed()
+
+    #expect(screen.sheetRefusal == nil)
+
+    let otherRosterPlace = freshRosterPlace()
+    let otherRosterStore = try RosterStore(at: otherRosterPlace)
+    try otherRosterStore.add(gym)
+    let otherScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: otherRosterPlace)
+
+    let otherRefusal = otherScreen.define(
+        name: "Gym", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil)
+    #expect(otherRefusal == .alreadyKept)
+
+    otherScreen.sheetClosed()
+
+    #expect(otherScreen.sheetRefusal == nil)
+}
+
+@MainActor
+@Test("a refused restart replaces what a refused save told on a commitments screen's sheet")
+func aRefusedRestartReplacesWhatARefusedSaveToldOnACommitmentsScreensSheet() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let defineRefusal = screen.define(
+        name: "   ", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(defineRefusal == .namesNothing)
+
+    let restartRefusal = screen.restart(nails, from: august3rd)
+    #expect(restartRefusal == .restartDayIsBeforeKeptFrom)
+
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .restartDay, refusal: .restartDayIsBeforeKeptFrom))
+
+    let otherPlaces = freshRosterAndRecordPlaces()
+    let otherNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+    let otherRosterStore = try RosterStore(at: otherPlaces.roster)
+    try otherRosterStore.add(otherNails)
+
+    let otherScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: otherPlaces.roster, keepingRecordAt: otherPlaces.record)
+
+    let otherRestartRefusal = otherScreen.restart(otherNails, from: august3rd)
+    #expect(otherRestartRefusal == .restartDayIsBeforeKeptFrom)
+
+    let otherDefineRefusal = otherScreen.define(
+        name: "   ", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(otherDefineRefusal == .namesNothing)
+
+    #expect(
+        otherScreen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .name, refusal: .namesNothing))
+}
+
+@MainActor
+@Test("what a commitments screen tells on its sheet ends when an ask is kept")
+func whatACommitmentsScreenTellsOnItsSheetEndsWhenAnAskIsKept() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "   ", on: allWeekdays, keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    let keptRefusal = screen.define(name: "Journaling", on: allWeekdays, keptFrom: monday, under: nil)
+
+    #expect(keptRefusal == nil)
+    #expect(screen.sheetRefusal == nil)
+}
+
+@MainActor
+@Test("what a commitments screen tells on its sheet ends when the app is shown again")
+func whatACommitmentsScreenTellsOnItsSheetEndsWhenTheAppIsShownAgain() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "   ", on: allWeekdays, keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.sheetRefusal == nil)
+}
+
+@MainActor
+@Test("what a commitments screen tells on its sheet stands when a call asks for no change at all")
+func whatACommitmentsScreenTellsOnItsSheetStandsWhenACallAsksForNoChangeAtAll() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let defineRefusal = screen.define(
+        name: "   ", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(defineRefusal == .namesNothing)
+
+    let changeRefusal = screen.change(
+        gym, toName: "Gym", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil)
+
+    #expect(changeRefusal == nil)
+    #expect(
+        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: .name, refusal: .namesNothing))
+}
+
+@MainActor
+@Test("a commitments screen offers all seven weekdays for a form's weekday chips")
+func aCommitmentsScreenOffersAllSevenWeekdaysForAFormsWeekdayChips() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allSeven: Set<Weekday> = [
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ]
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.weekdaysToOffer == allSeven)
+
+    let otherRosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: .weekdays([.monday]), keptFrom: keptFrom)!
+    let otherRosterStore = try RosterStore(at: otherRosterPlace)
+    try otherRosterStore.add(gym)
+
+    let otherScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: otherRosterPlace)
+
+    #expect(otherScreen.weekdaysToOffer == allSeven)
+    #expect(otherScreen.whatItIsMadeOf(gym)?.rhythm == .weekdays([.monday]))
+}

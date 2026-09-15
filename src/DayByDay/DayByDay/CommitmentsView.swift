@@ -560,9 +560,7 @@ private struct CommitmentSheet: View {
     @State private var lowest: String
     @State private var highest: String
     @State private var target: String
-    @State private var refusal: CommitmentsScreen.Refusal?
     @State private var restartDate: Date
-    @State private var restartRefusal: CommitmentsScreen.Refusal?
     @Environment(\.dismiss) private var dismiss
 
     /// `commitment` is `nil` to define a new commitment, and the one to change otherwise. Every
@@ -586,7 +584,6 @@ private struct CommitmentSheet: View {
                 && !screen.categoriesInUse.contains(initialCategory))
         _keptFromDate = State(initialValue: date(from: madeOf?.keptFrom ?? screen.dayToKeepFrom))
         _restartDate = State(initialValue: date(from: screen.dayToKeepFrom))
-        _restartRefusal = State(initialValue: nil)
 
         switch madeOf?.rhythm {
         case .weekdays(let weekdays):
@@ -615,7 +612,7 @@ private struct CommitmentSheet: View {
             _timesPerWeek = State(initialValue: timesPerWeek)
         case nil:
             _rhythmKind = State(initialValue: .weekdays)
-            _selectedWeekdays = State(initialValue: [])
+            _selectedWeekdays = State(initialValue: screen.weekdaysToOffer)
             _dayOfMonth = State(initialValue: 1)
             _intervalDays = State(initialValue: 1)
             _timesPerWeek = State(initialValue: 1)
@@ -657,11 +654,28 @@ private struct CommitmentSheet: View {
         }
     }
 
+    /// The refusal `screen.sheetRefusal` is telling under `field`, or `nil` where it is telling
+    /// under a different field, telling nothing at all, or `field` names the foot (`nil`) and
+    /// `sheetRefusal` is about a named field instead. `design.md` § *The seam*: the sheet draws,
+    /// the kit decides.
+    private func sheetRefusal(under field: CommitmentsScreen.SheetField?) -> CommitmentsScreen.Refusal?
+    {
+        guard let sheetRefusal = screen.sheetRefusal, sheetRefusal.field == field else {
+            return nil
+        }
+        return sheetRefusal.refusal
+    }
+
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     TextField("Name", text: $name)
+                        .onChange(of: name) { _, _ in screen.sheetFieldEdited(.name) }
+
+                    if let nameRefusal = sheetRefusal(under: .name) {
+                        refusalText(nameRefusal)
+                    }
 
                     Picker("Kind", selection: $kindChoice) {
                         ForEach(CommitmentsScreen.KindChoice.allCases, id: \.self) { kind in
@@ -680,12 +694,23 @@ private struct CommitmentSheet: View {
                     case .number:
                         HStack {
                             TextField("Lowest", text: $lowest)
+                                .onChange(of: lowest) { _, _ in screen.sheetFieldEdited(.range) }
                             TextField("Highest", text: $highest)
+                                .onChange(of: highest) { _, _ in screen.sheetFieldEdited(.range) }
                         }
                         .disabled(changing != nil)
+
+                        if let rangeRefusal = sheetRefusal(under: .range) {
+                            refusalText(rangeRefusal)
+                        }
                     case .total:
                         TextField("Target", text: $target)
+                            .onChange(of: target) { _, _ in screen.sheetFieldEdited(.target) }
                             .disabled(changing != nil)
+
+                        if let targetRefusal = sheetRefusal(under: .target) {
+                            refusalText(targetRefusal)
+                        }
                     }
 
                     Picker("Rhythm", selection: $rhythmKind) {
@@ -694,6 +719,16 @@ private struct CommitmentSheet: View {
                         }
                     }
                     .disabled(!canChangeRhythmAndKeptFrom)
+                    .onChange(of: rhythmKind) { _, newValue in
+                        screen.sheetFieldEdited(.rhythm)
+                        // A rhythm switched onto weekdays with nothing behind its chips starts
+                        // from every weekday offered — `design.md` § *The weekdays offered are
+                        // their own requirement*. Switching away and back leaves a non-empty set
+                        // exactly as it was.
+                        if newValue == .weekdays, selectedWeekdays.isEmpty {
+                            selectedWeekdays = screen.weekdaysToOffer
+                        }
+                    }
 
                     switch rhythmKind {
                     case .weekdays:
@@ -718,6 +753,7 @@ private struct CommitmentSheet: View {
                         }
                         .controlSize(.small)
                         .disabled(!canChangeRhythmAndKeptFrom)
+                        .onChange(of: selectedWeekdays) { _, _ in screen.sheetFieldEdited(.rhythm) }
                     case .dayOfMonth:
                         Picker("Day", selection: $dayOfMonth) {
                             ForEach(1...31, id: \.self) { day in
@@ -727,22 +763,34 @@ private struct CommitmentSheet: View {
                         .pickerStyle(.wheel)
                         .frame(height: 150)
                         .disabled(!canChangeRhythmAndKeptFrom)
+                        .onChange(of: dayOfMonth) { _, _ in screen.sheetFieldEdited(.rhythm) }
                     case .everyNDays:
                         LabeledContent("Every") {
                             TextField("Days", value: $intervalDays, format: .number)
                                 .keyboardType(.numberPad)
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 44)
+                                .onChange(of: intervalDays) { _, _ in screen.sheetFieldEdited(.rhythm) }
                             Text("day(s)")
                         }
                         .disabled(!canChangeRhythmAndKeptFrom)
                     case .weeklyQuota:
                         Stepper("\(timesPerWeek) time(s) a week", value: $timesPerWeek, in: 1...7)
                             .disabled(!canChangeRhythmAndKeptFrom)
+                            .onChange(of: timesPerWeek) { _, _ in screen.sheetFieldEdited(.rhythm) }
+                    }
+
+                    if let rhythmRefusal = sheetRefusal(under: .rhythm) {
+                        refusalText(rhythmRefusal)
                     }
 
                     DatePicker("Kept from", selection: $keptFromDate, displayedComponents: [.date])
                         .disabled(!canChangeRhythmAndKeptFrom)
+                        .onChange(of: keptFromDate) { _, _ in screen.sheetFieldEdited(.keptFrom) }
+
+                    if let keptFromRefusal = sheetRefusal(under: .keptFrom) {
+                        refusalText(keptFromRefusal)
+                    }
 
                     if enteringNewCategory {
                         TextField("New category", text: $category)
@@ -760,8 +808,8 @@ private struct CommitmentSheet: View {
                         }
                     }
 
-                    if let refusal {
-                        refusalText(refusal)
+                    if let footRefusal = sheetRefusal(under: nil) {
+                        refusalText(footRefusal)
                     }
                 }
 
@@ -786,10 +834,11 @@ private struct CommitmentSheet: View {
                         Button("Restart") {
                             restart(commitment)
                         }
-                        if let restartRefusal {
-                            refusalText(restartRefusal)
+                        if let restartDayRefusal = sheetRefusal(under: .restartDay) {
+                            refusalText(restartDayRefusal)
                         }
                     }
+                    .onChange(of: restartDate) { _, _ in screen.sheetFieldEdited(.restartDay) }
                 }
             }
             .navigationTitle(changing == nil ? "Define a commitment" : "Change \(changing!.name)")
@@ -805,6 +854,13 @@ private struct CommitmentSheet: View {
                     }
                 }
             }
+        }
+        // Every dismiss path — Cancel, a swipe down, and the `dismiss()` a kept save or restart
+        // calls below — ends with this sheet disappearing exactly once, so this is the one place
+        // that needs to tell the screen the sheet closed. `openspec/specs/commitment/spec.md` §
+        // *What a commitments screen tells on its sheet lasts until…*.
+        .onDisappear {
+            screen.sheetClosed()
         }
     }
 
@@ -848,6 +904,7 @@ private struct CommitmentSheet: View {
                 year: components.year!, month: components.month!, day: components.day!)
         else { return }
 
+        let refusal: CommitmentsScreen.Refusal?
         if let commitment = changing {
             // A change takes four things and never a kind — it is set when a commitment is
             // defined and never changes, so the picker and the three fields above are shown and
@@ -879,9 +936,9 @@ private struct CommitmentSheet: View {
                 year: components.year!, month: components.month!, day: components.day!)
         else { return }
 
-        restartRefusal = screen.restart(commitment, from: day)
+        let refusal = screen.restart(commitment, from: day)
 
-        if restartRefusal == nil {
+        if refusal == nil {
             dismiss()
         }
     }
