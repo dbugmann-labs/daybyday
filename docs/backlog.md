@@ -319,7 +319,8 @@ months later.
   chore** under ADR-1019 that lands first: kind under name, the range on one row, weekday chips
   Monday first, a wheel for the day of the month, a one-row interval, a menu of the categories in
   use with a *New…* item, and red for every refusal. Two Stories follow on the reshaped sheet, both
-  owing a walk. First, a new commitment starts with all seven weekdays offered — a default is a
+  owing a walk, accepted at G2 the same day: #261 `place-sheet-refusals`, then #262
+  `change-range-and-target`, blocked by it. First, a new commitment starts with all seven weekdays offered — a default is a
   requirement, as the kind's and the day's already are — and a refusal is told under the field it is
   about, at the foot of the form where it is about the whole change; ADR-1019 names a refusal as a
   line the shell may not decide and the one-off entry made "under the field" a requirement of
@@ -1032,7 +1033,10 @@ found nothing.
 - 2026-09-15 — cluster A of the ninth pass, the commitment sheet, groomed in the session that ran
   the sweep, on `chore/groom-commitment-sheet`.
   - **Promoted** — B-053, B-050, B-043 → `FEAT: commitment` (#26), reopened a third time under
-    Epic #1. Story numbers follow at G2.
+    Epic #1. G2 accepted the same day: the shell chore `chore/reshape-commitment-sheet` first, then
+    Story #261 `place-sheet-refusals`, then #262 `change-range-and-target`, blocked by #261. The
+    weekday default rides #261 rather than a Story of its own. `/to-tickets` was typed and stopped
+    after its quiz; the breakdown it produced is the grill's.
   - **Settled at the grill**, eight questions over two rounds: red text under the field, the foot
     of the form for a whole-change refusal; all seven weekdays offered for a new commitment; a
     wheel for the day of the month; a menu with a *New…* item for the category; a changed range or
