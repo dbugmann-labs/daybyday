@@ -275,109 +275,6 @@ decision it records is the owner's, twice.*
   not in the SDK this project builds against, and its `sources` are item ids. Worth re-reading
   before anyone hand-writes a gesture again.
 
-### B-043 — change a number's range or a total's target without starting the commitment over
-
-*Captured 2026-09-10, at the grill of `add-kind-to-commitments-screen` (#142).*
-
-> "Out of scope — capture as a want" — the owner's answer at round 1 of that grill, choosing it
-> over taking a range and target change into #142 and over ruling one out for good. The want is
-> the third option that answer leaves standing rather than a sentence said unprompted, and it is
-> recorded that way so a later pass does not read it as something asked for out of the blue.
-
-- **Trigger** — the day a mood turns out to want one to five rather than one to ten, or a protein
-  target moves from 120 grams to 140. Neither is a mistake being corrected; both are a person
-  changing their mind about a commitment they intend to keep.
-- **Touches** — `commitment` (#26). It is not a new kind of anything: #142 lands the range and the
-  target on the form that defines a commitment, and this is the same two fields reached from the
-  change sheet, which #148 built. The machinery it needs already exists — a range is part of what
-  a commitment *is*, so a changed range is a different commitment, which is exactly what a rhythm
-  change already handles by **superseding**. What is new is the refusal set and the sheet letting
-  a thumb into two fields #142 deliberately locks.
-- **Principle** — tested against *five percent of seven things*: **it loses**, as B-041 and B-042
-  do. Every commitment can already declare a range and a target once #142 lands; this deepens
-  that rather than making a new kind of record possible. Captured anyway, because the alternative
-  a person has today is to define a second commitment and abandon the first, which splits a
-  history the product exists to keep whole.
-- **Open** — does a changed range **supersede**, as a rhythm change does, or **carry over**, as a
-  rename does? Superseding is the structurally honest answer and it costs the person the run of
-  days under the old range as a separate commitment. Carrying over would rewrite records against
-  a bound they were never judged by — including, for a narrowed range, days holding a number the
-  new range would refuse.
-- **Open** — a narrowed range with records already outside it. Refuse the change, as #148 refuses
-  a day already recorded on that would be left not due, or accept it and let the old days stand?
-
-### B-050 — see why something was refused, in red, where it went wrong
-
-*Captured 2026-09-12.*
-
-> "Errors should (across the entire app) be red and visible where it failed.. E.g. when a name is
-> missing when creating a commitment, it just shows a new row at the bottom in white.. Not ideal at
-> all.. Please use something more state of the art across the entire application"
-
-- **Trigger** — every refused entry: a commitment defined with no name or no weekday, a rhythm
-  number the calendar will not take, an amount that will not add, a range that is not a range.
-- **Touches** — the app shell, and probably only the app shell. The two patterns already built
-  disagree with each other. A day screen draws its refusal **on the row it happened on, in `.red`**
-  (`src/DayByDay/DayByDay/ContentView.swift:499`). A commitments screen draws every one of its nine
-  refusals through a single `refusalText` helper that returns a bare `Text` in the default colour,
-  appended as the last row of the form section (`src/DayByDay/DayByDay/CommitmentsView.swift:58`,
-  drawn at `:604`) — which is the white row at the bottom, exactly as described. Below the seam
-  there is nothing missing: `commitment` § *A commitments screen holds the change it refused and
-  why it was refused, one at a time* already holds both the change and the cause, and says in as
-  many words that the screen "SHALL hold no words a person reads".
-- **Principle** — tested against *an iPhone, in your hand*: **passes**. A refusal at the foot of a
-  scrolling form is one you never see on a phone — the sheet that refuses a name has a name field,
-  a rhythm picker, a kind picker and a date picker above the place the message lands. The field you
-  got wrong is the only place a refusal can be read at a glance.
-- **Trigger, amended 2026-09-15** at the ninth pass: `fix-change-refusals` (#247) now refuses a change
-  that would carry records onto records already kept, and does not name the day that blocks it.
-  Naming it was left to this want at the eighth pass's grill of B-052.
-- **Open** — "state of the art" is a look, not a rule, and the choice is the owner's: red text
-  under the offending field, a red field border, an inline alert, a transient banner. It also
-  decides whether the day screen's row notice — already red, but a row rather than a field —
-  changes or is the pattern everything else copies.
-- **Open** — is there anything here to specify at all? If the answer is only *which control the
-  words hang off and what colour they are*, ADR-1019 makes it a chore on the shell rather than a
-  Story, and nothing about it reaches a capability spec.
-
-### B-053 — fill in a commitment on a sheet that fits the phone
-
-*Captured 2026-09-15.*
-
-> "I would like the following adjustments to the 'add' and 'edit' commitment screens:
-> ○ Kind should be below name
-> ○ Category should be a dropdown of existing ones (with the option to type a new one there)
-> ○ For kind 'number' -> lowest and highest in the same row, not 2 rows
-> ○ When choosing weekdays, default should be all enabled, and it should not be one row each, but
-> maybe something like checkboxes (it can be a short version like Mon Tue Wed etc.)
-> ○ Rhythm 'day of month' should be a slider or something rather than +-
-> "Every n days" should not take up more height of a row.."
-
-- **Trigger** — defining a commitment with the `+`, or changing one from the pencil: the one sheet
-  serves both (#148). Rarely, but every time it is a scroll past seven weekday rows.
-- **Touches** — the app shell, `src/DayByDay/DayByDay/CommitmentsView.swift`, for five of the six
-  bullets. No requirement fixes the order of the sheet's fields or the shape of any control, so kind
-  under name, the range on one row, weekdays as short toggles, a day-of-month control other than
-  the stepper and a one-row interval are probably a chore under ADR-1019. The category bullet is
-  already a requirement below the seam — `commitment` § *A commitments screen offers the categories
-  in use* offers the categories in use and accepts a typed one exactly as typed; what the sheet
-  draws is a text field and a separate *Use an existing category* menu (`:598–600`), so only the
-  control changes. The weekday default is the one bullet that may reach `commitment`: see Open.
-- **Principle** — tested against *an iPhone, in your hand*: **passes**. A form of seven weekday
-  rows, two range rows and a stepper is a form built for scrolling, and every bullet shortens what a
-  thumb has to cross. Tested against *five percent of seven things*: **fails** — it deepens a sheet
-  that already defines every rhythm and kind rather than making a new record possible. Both are
-  written down because the second is why a pass might not take it.
-- **Open** — all seven weekdays ticked for a new commitment. The spec says the tick is *the kind
-  offered for a new commitment* and says nothing of which weekdays are; the sheet starts with none
-  (`:508`). A default beside the kind's is probably a requirement, which makes this bullet a Story
-  and the rest a chore — or one Story carrying all six. Grooming decides the shape.
-- **Open** — "a slider or something" for the day of the month. A slider over 1–31 is hard to land
-  on one value with a thumb; a wheel or a grid of days are the alternatives. The owner left the
-  control open.
-- **Open** — the sheet also carries B-050's refusals. Reworking its layout and where its errors
-  land touch the same view, and a pass may want them together.
-
 ### B-054 — keep a weekday-set commitment on a day it is not due
 
 *Captured 2026-09-15, from the ninth grooming sweep. The wording is the sweep's; the owner confirmed
@@ -412,6 +309,24 @@ it as a gap rather than saying it unprompted.*
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-15 — fill in a commitment on a sheet that fits the phone (B-053), see why something was
+  refused, in red, where it went wrong (B-050), and change a number's range or a total's target
+  without starting the commitment over (B-043) → `FEAT: commitment` (#26), reopened a third time
+  under `EPIC: Daily commitments` (#1) at the ninth pass's G1. Grilled together as cluster A, the
+  commitment sheet, in the session that ran the sweep: eight questions over two rounds, one fact
+  agent, no fact sent to the owner. Five of B-053's six bullets and B-050's colour are a **shell
+  chore** under ADR-1019 that lands first: kind under name, the range on one row, weekday chips
+  Monday first, a wheel for the day of the month, a one-row interval, a menu of the categories in
+  use with a *New…* item, and red for every refusal. Two Stories follow on the reshaped sheet, both
+  owing a walk. First, a new commitment starts with all seven weekdays offered — a default is a
+  requirement, as the kind's and the day's already are — and a refusal is told under the field it is
+  about, at the foot of the form where it is about the whole change; ADR-1019 names a refusal as a
+  line the shell may not decide and the one-off entry made "under the field" a requirement of
+  `day-screen`. Second, a range or a target can be changed on the sheet and **supersedes** exactly as
+  a changed rhythm does, refused on a stopped commitment: B-043's own question is answered supersede,
+  because carrying over would refuse a narrowed range and silently un-keep past days under a raised
+  target. `CONTEXT.md` **Superseding** amended; no new term.
 
 - 2026-09-14 — be told the true reason a change to a commitment is refused, and keep an every-N-days
   commitment late with its rhythm running on from that day (B-052) → `FEAT: commitment` (#26),
@@ -1113,3 +1028,16 @@ found nothing.
     - **E**, entry affordances: B-034, B-032. Epic #1 excludes prefill by name.
     - **F**, a reminder: B-039. Unclaimed, and the one want that asks whether this app may nag.
     - **Singleton**: B-041, leave until the SDK carries `reorderable(collectionID:)`.
+
+- 2026-09-15 — cluster A of the ninth pass, the commitment sheet, groomed in the session that ran
+  the sweep, on `chore/groom-commitment-sheet`.
+  - **Promoted** — B-053, B-050, B-043 → `FEAT: commitment` (#26), reopened a third time under
+    Epic #1. Story numbers follow at G2.
+  - **Settled at the grill**, eight questions over two rounds: red text under the field, the foot
+    of the form for a whole-change refusal; all seven weekdays offered for a new commitment; a
+    wheel for the day of the month; a menu with a *New…* item for the category; a changed range or
+    target supersedes; the layout is a chore and lands first; the Stories owe the walk.
+  - **§7 against the other two clusters** — both Stories delta `commitment`; restore (B) touches
+    the three stores and may delta `commitment` for the roster store, so whichever G2 lands second
+    serialises behind the first; looking back (D) is a new Epic and shares nothing here.
+  - **Not re-judged** — the other wants; this session held one cluster by design.

@@ -274,7 +274,10 @@ is taken on in the place the old one held. It is the roster's act and never the 
 ADR-1023's reason reaching a third part — a record embeds the whole commitment by value, so a part
 a person can change would orphan everything recorded against it the moment they changed it. Nothing
 is re-keyed here: each past day answers against the value it was written against, because that value
-is still in the roster.
+is still in the roster. *Amended 2026-09-15, at the ninth grooming pass:* a changed **range** or
+**target** supersedes too, exactly as a changed rhythm does — a range is part of what a commitment
+is, and carrying records over under a narrower range would refuse them while a raised target would
+silently un-keep past days. The kind itself still never changes.
 
 The roster records **no link** between the superseded commitment and the one that replaced it.
 Nothing reads one, and a surface with no reader is not a requirement. The cost is named rather than
