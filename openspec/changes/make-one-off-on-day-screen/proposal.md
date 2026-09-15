@@ -15,7 +15,7 @@ This change makes the day screen the place a one-off is written down, on whateve
 - What is told there ends on an edit, a kept commit from that field, a day change or being shown.
 - A removal that cannot be kept is told on its row, as a refused tick is.
 - A day screen not keeping one-offs offers no entry and adds nothing.
-- The app shell draws the entry, a toolbar `+`, a green checkmark and a long-press menu.
+- The app shell draws the entry, a toolbar `+` and a green checkmark; a tap on a row's name renames, a long press offers *Remove*.
 - The shell commits a typed name before the day changes or the app leaves the screen.
 - Shipped screen scenarios comparing with a day view formed directly form it of one-offs holding none.
 

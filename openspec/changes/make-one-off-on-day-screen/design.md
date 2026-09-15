@@ -1,6 +1,6 @@
 ## Context
 
-See `proposal.md` § *Why*, and `grill.md`, whose twenty settled answers this delta is written on.
+See `proposal.md` § *Why*, and `grill.md`, whose twenty settled answers, and the four reopened at the phone check, this delta is written on.
 
 - **`OneOffs` adds, ticks, takes back and removes; it has no rename.** Entries are held in the order
   added, and `OneOffStore` mirrors each change, writing the whole document before it holds the change.
@@ -85,9 +85,11 @@ The entry is a `TextField` as the last line of the group on the shown page, and 
 each neighbour. The toolbar `+` shows where `oneOffGroup != nil` and focuses the entry. While any
 one-off field is focused, a green checkmark shows in the toolbar; it commits and drops focus. Return
 commits and refocuses a fresh entry. Losing focus commits. So do the chevrons, swipe, `Today`, the
-picker and `scenePhase` leaving `.active`, each before the day moves. A long press opens a
-`contextMenu` with *Rename* and a destructive *Remove*. One-off rows are keyed by value (grill
-answer 19).
+picker and `scenePhase` leaving `.active`, each before the day moves. A tap on a one-off row's
+drawn name alone puts that row into rename, on every one-off row; a tap anywhere else on it, the
+lateness words included, is its tick or take-back as before, and does nothing on a later day's row.
+A long press opens a `contextMenu` with a destructive *Remove* alone (grill answers 21–24). One-off
+rows are keyed by value (grill answer 19).
 
 ### Fourteen requirements MODIFIED, and a day view formed directly names its one-offs
 
@@ -121,6 +123,8 @@ None — the one-off store's form is unchanged; a rename rewrites the file in th
 - **A done toggle re-keys a row by value**, so a tick can animate as remove and insert. → Accepted
   at grill answer 19.
 - **A blank rename removes with no confirmation.** → The owner's call, answers 14 and 16.
+- **A tap meant to tick lands on the name and opens rename.** → Accepted at grill answer 21;
+  tapping away with the name unchanged changes nothing.
 - **A refused text re-committed on tap-away** replaces the refusal with the same one. → Harmless.
 
 ## Open Questions
