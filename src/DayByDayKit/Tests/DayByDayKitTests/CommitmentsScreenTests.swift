@@ -9173,3 +9173,23 @@ func aRefusalIsAboutTheWholeChangeWhereBothTheRhythmAndTheDayKeptFromDiffer() th
             == CommitmentsScreen.SheetRefusal(
                 field: nil, refusal: .stoppedCommitmentCannotChangeRhythm))
 }
+
+@MainActor
+@Test("what a commitments screen tells on its sheet ends when the field it is about is edited")
+func whatACommitmentsScreenTellsOnItsSheetEndsWhenTheFieldItIsAboutIsEdited() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "   ", on: allWeekdays, keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    screen.sheetFieldEdited(.name)
+
+    #expect(screen.sheetRefusal == nil)
+    #expect(screen.refusedChange == .defining(.namesNothing))
+}
