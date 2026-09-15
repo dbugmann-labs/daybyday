@@ -72,6 +72,13 @@ rules:
       wrong implementation it catches. Setup, shell, gates and the archive handover at most
       80 lines together.
     - >-
+      A change whose diff reaches src/DayByDay/ carries "## The walk": one box per screenshot,
+      one line each, naming the state to drive to and what the picture must show, outside the
+      80. A step a simulator cannot prove (a drag, paging feel, a long press) is one line
+      marked "phone:" instead, and the section ends with the handover box that says the
+      implementer posts the pictures to the PR with gh pr comment --attach before hand-back.
+      A change that does not reach src/DayByDay/ carries no walk section. ADR-1053.
+    - >-
       Never paste source, test bodies, build recipes, command transcripts or logs. A
       verification is one line: what ran, the count, pass or fail.
     - >-
@@ -90,10 +97,11 @@ operations:
       - >-
         Tick boxes as they complete. Add no prose, logs or code to tasks.md.
       - >-
-        Never run the DayByDayUITests bundle. It needs a cold simulator boot and then runs for
-        minutes without output, which outruns an agent session's output watchdog and kills the
-        run with work uncommitted. CI's ui-smoke job is where that bundle runs — ADR-1029,
-        docs/running-the-app.md.
+        Run the DayByDayUITests bundle only as docs/running-the-app.md "The walk" says: boot
+        the simulator with bootstatus -b first, commit before the run, and run xcodebuild in
+        the background with its output to a file, never in the foreground. A run that fails
+        returns only after Xcode has finished its failure diagnostics, which outruns a
+        foreground tool's watchdog and killed a session with work uncommitted once. ADR-1053.
       - >-
         swift test --filter takes the test function name, not the scenario title. A filter that
         matches nothing prints "0 tests passed" and exits 0, which reads as green.

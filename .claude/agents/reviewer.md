@@ -75,8 +75,20 @@ it.
   Story's own bullet under `docs/open-questions.md` § *Known gaps*, none dropped and none added, and
   must still be stated in the spec.
 
+- **On a Story with a `## The walk` section** the pictures are part of this axis. They are the
+  PNGs in `walk/` at the worktree root, one per box and named for it, and the same pictures in
+  the PR comment the handover box links; `Read` shows you each one. Read every picture against
+  its box and against the requirement the box comes from: a screen that contradicts a
+  requirement is a finding named by box, and so is a box with no picture, a picture that shows
+  a different state from the one its line names, or a walk comment missing from the PR. Then
+  confirm `git diff --stat origin/main... -- src/DayByDay/DayByDayUITests/` is empty — the
+  walk's test is thrown away, never committed (ADR-1053) — and that a Story whose diff reaches
+  `src/DayByDay/` has the section at all. What a picture *feels* like on a phone is not yours
+  to judge; the lines marked `phone:` go to the human at G7 and you say nothing about them.
+
 **The budgets are part of the standards axis.** ADR-1047 gives every artifact a budget —
-`proposal.md` 60 lines, `design.md` 150, `tasks.md` one line per scenario plus 80, requirement
+`proposal.md` 60 lines, `design.md` 150, `tasks.md` one line per scenario and per walk
+screenshot plus 80, requirement
 prose 40–150 normative words with no rationale, no bold sentences, and every tested rule a
 SHALL/MUST sentence — and the reviewer is where they are enforced, because `openspec/config.yaml`
 only tells `spec-author` and `pnpm run check:budgets` only warns. Run `pnpm run check:budgets`

@@ -9,6 +9,9 @@ coverage/
 # xcodebuild writes here when it is not given -derivedDataPath, into every
 # directory holding a target — the app's and the package's alike. ADR-1019.
 build/
+# The walk's exported screenshots, left in the worktree for the reviewer to read and posted
+# to the PR as a comment; never committed. docs/running-the-app.md § The walk, ADR-1053.
+walk/
 # Xcode's per-user state, written the moment the project is opened in the GUI. These three
 # patterns were here from ADR-1019 and matched nothing: a pattern containing a slash is anchored
 # to the directory holding .gitignore, so `*.xcodeproj/...` only ever matched an .xcodeproj at

@@ -272,6 +272,9 @@ A screenshot, which is how an agent proves the thing drew rather than merely bui
 xcrun simctl io 'iPhone 17' screenshot /tmp/day-view.png
 ```
 
+That is for an app you launched with `simctl` and left running. Inside a UI test the app is gone
+the moment the test ends, so a Story's pictures are taken from within it — § *The walk* below.
+
 ## Putting it away
 
 ```bash
@@ -292,6 +295,128 @@ missing, not the project file. `xcodebuild -showdestinations` says so in as many
 
 **`build/` appearing in `src/DayByDay/` and `src/DayByDayKit/`.** `xcodebuild` writes there when it
 is not given `-derivedDataPath`. It is gitignored (ADR-1019), so this is noise rather than damage.
+
+## The walk
+
+**How a Story is seen before it merges, since 2026-09-15.** A Story whose diff reaches
+`src/DayByDay/` carries `## The walk` in its `tasks.md`, one box per screenshot, and the
+implementer runs it at the end of Stage 6: the simulator driven through those boxes by a throwaway
+XCUITest, one picture per box exported into `walk/` at the worktree root, and the pictures posted
+to the PR as one comment. The reviewer reads them at G7 and so does the owner. ADR-1053;
+`AGENTS.md` § *Vocabulary* has the one-paragraph form.
+
+**The test is yours to write and never to commit.** One method in
+`src/DayByDay/DayByDayUITests/WalkUITests.swift`, XCTest like the smoke test beside it (ADR-1029:
+Swift Testing is switched off by name in a UI bundle). Each box becomes a few lines that wait for
+the control, drive it, and attach a screenshot named for the box:
+
+```swift
+import XCTest
+
+final class WalkUITests: XCTestCase {
+    @MainActor
+    func testWalk() {
+        let app = XCUIApplication()
+        app.launch()
+
+        let list = app.collectionViews["CurrentDayList"]
+        XCTAssertTrue(list.waitForExistence(timeout: 60), "the day screen did not draw")
+        shot("01 the day screen on today, the day-one roster")
+
+        list.swipeRight()
+        XCTAssertTrue(app.buttons["Today"].waitForExistence(timeout: 30), "no Today button")
+        shot("02 a day back, the Today button below the title")
+    }
+
+    @MainActor
+    private func shot(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+}
+```
+
+The screenshot is taken *inside* the test because the runner terminates the app the moment the
+test ends: `xcrun simctl io <device> screenshot` afterwards shows the Home screen, measured
+2026-09-15. `waitForExistence` on the control you are about to tap is the whole of what the walk
+asserts — a step that cannot be driven fails, and nothing about what is drawn is checked, because
+the seam tests already do that. Query by what the shell exposes: a row is one `staticText` whose
+label starts with the name and carries the rhythm after it (`label BEGINSWITH 'Nails'`), the
+toolbar toggle is an `otherElements` match on its label, and the failure message from a wrong
+query prints the whole accessibility tree, which is the fastest way to find the right one.
+
+**Then commit everything else and run it:**
+
+```bash
+pnpm run walk                      # runs it and exports the pictures into walk/
+pnpm run walk -- --post-only 261   # posts what walk/ holds to PR #261, after you have read them
+pnpm run walk -- --post 261        # both at once
+```
+
+Run it **in the background with its output to a file**, never in the foreground of an agent
+session. It refuses to start while anything but the walk test is uncommitted, discovers the
+simulator the way CI's `ui-smoke` does, boots it, uninstalls the app so the walk starts on the
+day-one roster, builds, runs only `WalkUITests`, exports every PNG the run attached, names each
+for its box in `walk/`, and posts them with one `--attach` per picture captioned with the box's
+line, three to a row with the line under each, every picture shown 300 pixels wide and full
+size on a click. **That takes two steps, and the reason is `gh`'s**: it rewrites a Markdown image
+reference to the asset it uploaded, and a Markdown image cannot be given a width, while an HTML
+`<img width>` can but is not rewritten. So the script posts the full-size pictures as Markdown,
+reads the asset URLs back, and edits the comment into an HTML table with cells a third of the
+column each — a Markdown table sizes its columns by the caption text, which is what made the
+first picture of a row narrower than the rest. The width is `POSTED_WIDTH` in `scripts/walk.ts`,
+chosen by the owner on 2026-09-15; `walk/` keeps the originals for the reviewer. `walk/` is gitignored. On a failure it still exports what was captured up to the step that
+could not be driven, prints the runner's own error, and exits 1 — that is a rule-5 stop, not a
+retry. The eighteen-picture walk of `main` ran in 100 seconds here on a warm simulator, 92 of
+them the test itself — a typed field, a scrolled form and a sheet each cost a few seconds.
+
+**The ten-minute silence was a sysdiagnose, and the script turns it off.** Every earlier stall
+on this bundle was a *failing* test: `xcodebuild` then collects Xcode's default failure
+diagnostics, which is a sysdiagnose, and sits silent for about ten minutes doing it — long enough
+to outrun an agent's foreground watchdog, which is how a session was once killed with work
+uncommitted and why the bundle was declared never-run for five days. `-collect-test-diagnostics
+never` is the documented flag and the script passes it. Measured 2026-09-15: a failing walk sat
+for 605 seconds without it. A passing test has always returned in seconds.
+
+**Written out longhand**, for when the script is what is broken:
+
+```bash
+device=$(xcrun simctl list devices available --json \
+  | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; ps=[d for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')]; b=[d for d in ps if d['state']=='Booted']; print((b or ps)[0]['udid'])")
+xcrun simctl bootstatus "$device" -b
+xcrun simctl uninstall "$device" com.dbugmann.daybyday
+
+xcodebuild build-for-testing -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
+  -destination "platform=iOS Simulator,id=${device}" -only-testing:DayByDayUITests \
+  -enableCodeCoverage NO COMPILER_INDEX_STORE_ENABLE=NO
+
+xcodebuild test-without-building -project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay \
+  -destination "platform=iOS Simulator,id=${device}" -only-testing:DayByDayUITests/WalkUITests \
+  -parallel-testing-enabled NO -enableCodeCoverage NO -collect-test-diagnostics never \
+  -resultBundlePath /tmp/walk.xcresult
+
+xcrun xcresulttool export attachments --path /tmp/walk.xcresult --output-path /tmp/walk --filter '*.png'
+# /tmp/walk/manifest.json maps each exported UUID file to its attachment name
+
+cp 'walk/01 the day screen on today.png' walk/post/01.png      # no spaces in a reference
+~/.local/bin/gh pr comment <pr> --body '![01 the day screen on today](./walk/post/01.png)' \
+  --attach './walk/post/01.png#01 the day screen on today'
+# the reference is rewritten to the uploaded asset's URL; read it back, then
+~/.local/bin/gh api -X PATCH repos/{owner}/{repo}/issues/comments/<id> \
+  -f body='<table><tr><td width="33%" align="center"><img src="<asset url>" width="300"><br><sub>01 the day screen on today</sub></td></tr></table>'
+```
+
+`--attach` needs `gh` 2.99.0 or later, which is `~/.local/bin/gh` here and not Homebrew's
+(`AGENTS.md` § *This machine*); it also needs push access and refuses the Actions token, which is
+why the walk is run on this machine and not by CI.
+
+**A step no simulator can prove goes to the owner's phone.** A drag between groups, paging under
+the finger, a long press: synthetic touch does not drive the first at all (B-042) and a picture
+shows nothing of the other two. Those lines are marked `phone:` in the walk list, the walk test
+skips them, and the G7 stop lists them for the owner to walk with `pnpm run phone` before
+replying. Everything else is a picture.
 
 ## What CI does with all this
 

@@ -193,7 +193,16 @@ still fails the DoR. The one Story that names none is an **editorial Story** (AD
 that carries every requirement in full — MODIFIED, or REMOVED plus ADDED where one splits — and
 changes no behaviour and no test, whose `design.md` says so instead.
 Every artifact also has a **budget** (ADR-1047, `openspec/config.yaml`), enforced by `reviewer`
-at G7 and warned about by `pnpm run check:budgets`. The rest of the vocabulary is in `CONTEXT.md`.
+at G7 and warned about by `pnpm run check:budgets`.
+**Walk** — a Story's list of screens to show, and the run that shows them (ADR-1053). Owed by
+every Story whose diff reaches `src/DayByDay/`: `spec-author` writes `## The walk` in `tasks.md`,
+one line per screenshot; `implementer` drives the simulator through it with a throwaway XCUITest
+at the end of Stage 6, posts the pictures to the PR with `gh pr comment --attach` and deletes the
+test; `reviewer` reads the pictures at G7 and the human sees them from the G7 stop. It fails only
+when a step cannot be driven and asserts nothing about what is shown — the seam tests say what,
+the walk shows it. A line marked `phone:` is a step no simulator can prove, and the human walks
+that one on the phone. `docs/running-the-app.md` § *The walk* has the commands. The rest of the
+vocabulary is in `CONTEXT.md`.
 
 ## Context discipline
 
@@ -310,6 +319,12 @@ export PATH="$PNPM_HOME/bin:$FNM_DIR:$PATH"; eval "$(fnm env)"; fnm use 24
 ```
 
 If a tool fails oddly, run `node --version` before diagnosing anything else.
+
+`gh` is `~/.local/bin/gh`, 2.100.0, installed by hand from the release zip on 2026-09-15 because
+the walk needs `gh pr comment --attach`, which arrived in 2.99.0; Homebrew's
+`/opt/homebrew/bin/gh` is 2.83.0 and cannot be upgraded from this account. `~/.local/bin` precedes
+Homebrew on `PATH` in an interactive shell; a non-interactive one has neither, so a script that
+needs `gh` says `~/.local/bin/gh` or puts that directory first. Check with `gh --version`.
 
 Dependency installs are gated by `minimumReleaseAge: 1440` in `pnpm-workspace.yaml` — pnpm
 refuses versions published in the last 24h. Do not add an exclusion; pick a matured version or

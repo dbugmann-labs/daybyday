@@ -386,7 +386,8 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `src/DayByDay/DayByDayUITests/`, inside the existing `src/DayByDay/DayByDay.xcodeproj`, and CI
   drives it as `-project src/DayByDay/DayByDay.xcodeproj -scheme DayByDay -destination "platform=iOS
   Simulator,id=<udid>" -only-testing:DayByDayUITests` (`.github/workflows/ci.yml`). Anyone reaching
-  for § 4.3 should use that instead of rebuilding anything. Nothing is owed; the entry stands so the
+  for § 4.3 should use that instead of rebuilding anything — and since 2026-09-15 the per-Story
+  form of § 4.3 is the **walk**, `pnpm run walk`, ADR-1053. Nothing is owed; the entry stands so the
   recipe is not followed off a cliff, and because § 4.3's own standard — evidence nobody can
   re-create is a claim rather than a check — is the part worth keeping.
 
