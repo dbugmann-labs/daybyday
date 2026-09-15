@@ -66,6 +66,7 @@ func aCopyHoldsTheHistoryTheRosterAndTheOneOffsTheThreePlacesHold() throws {
     #expect(copy.roster.entries.map(\.commitment.name) == ["Gym"])
     #expect(copy.history.isKept(gym, on: august30th))
     #expect(copy.oneOffs.entries.map(\.oneOff.name) == ["Book dentist"])
+    #expect(copy.oneOffs.entries.map(\.oneOff.date) == [bookDentist.date])
 
     #expect(try Data(contentsOf: places.roster) == rosterBytes)
     #expect(try Data(contentsOf: places.record) == recordBytes)

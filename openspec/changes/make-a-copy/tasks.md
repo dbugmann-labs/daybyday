@@ -60,7 +60,7 @@ make it pass, then the next. §§ 3 and 4 go in a new `CopyTests.swift`; § 5 in
 - [x] 8.1 the commitments screen scrolled to its foot on the day-one roster: the copy section below *Stopped*, its one row drawn
 - [x] 8.2 the share sheet up over the commitments screen after that row is tapped: the copy's file name readable on the sheet
 - [x] 8.3 the copy refused: the app run with the record file at its container replaced by bytes that are not a record, the row tapped, the refusal drawn in the copy section naming the record
-- [ ] 8.4 phone: save the copy to Files from the share sheet and open it there
+- [x] 8.4 phone: save the copy to Files from the share sheet and open it there
 - [x] 8.5 **The walk handover** — the implementer posts the pictures to the PR as one comment with `gh pr comment --attach`, one per box, before hand-back, and ticks this on that comment's URL; the throwaway test is deleted and `src/DayByDay/DayByDayUITests/` merges unchanged
 
 ## 9. The gates

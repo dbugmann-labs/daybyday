@@ -1159,6 +1159,14 @@ public final class CommitmentsScreen {
         FileManager.default.temporaryDirectory
     }
 
+    /// What reading the three stores for a copy comes back as — a plain enum rather than
+    /// `Swift.Result`, which `Copy.Store` need not conform to `Error` merely to be handed back
+    /// alongside a success, on the same footing as `Reading<Value>` above.
+    private enum StoresForCopy {
+        case opened(record: RecordStore, roster: RosterStore, oneOffs: OneOffStore)
+        case unreadable(Copy.Store)
+    }
+
     /// Opens the record, the roster and the one-off store at `recordPlace`, `rosterPlace` and
     /// `oneOffPlace`, undoing a save in progress first — the same `undoTornSave` path
     /// `readPlaces` takes, so a torn save is undone and an earlier-form store yields a
@@ -1168,14 +1176,6 @@ public final class CommitmentsScreen {
     /// when it is asked for*. `.failure` names the first of the three, checked in that order,
     /// that could not be read; a save in progress that could not itself be undone is told as the
     /// record, the place it stands beside.
-    /// What reading the three stores for a copy comes back as — a plain enum rather than
-    /// `Swift.Result`, which `Copy.Store` need not conform to `Error` merely to be handed back
-    /// alongside a success, on the same footing as `Reading<Value>` above.
-    private enum StoresForCopy {
-        case opened(record: RecordStore, roster: RosterStore, oneOffs: OneOffStore)
-        case unreadable(Copy.Store)
-    }
-
     private static func readStoresForCopy(
         recordPlace: URL, rosterPlace: URL, oneOffPlace: URL
     ) -> StoresForCopy {

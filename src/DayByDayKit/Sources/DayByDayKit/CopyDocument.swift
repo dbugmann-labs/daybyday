@@ -70,12 +70,6 @@ struct CopyDocument: Codable {
     }
 }
 
-/// Reads only `version`, so a later form is told apart from the body before the body is ever
-/// decoded — the same guard every other document's own envelope gives.
-struct CopyDocumentEnvelope: Decodable {
-    var version: Int
-}
-
 /// The wire shape of a `Moment`: a `DateRecord` day beside the hour and the minute, exactly as
 /// `Moment` itself holds them.
 struct MomentRecord: Codable {

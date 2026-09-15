@@ -94,8 +94,9 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
         case .storeCouldNotBeRead:
             // Never drawn on its own: a refused copy is always drawn through
             // `copySectionRefusalText` below, which reads the store off the `RefusedChange`
-            // itself rather than off this case.
-            Text("The roster could not be read or could not be written.")
+            // itself rather than off this case. Names no store, so it stays honest whichever one
+            // this case ever names.
+            Text("That could not be read.")
         }
     }
     .font(.caption)
@@ -173,6 +174,13 @@ private enum SheetTarget: Identifiable {
     }
 }
 
+/// The URL the last copy made answered, wrapped so `.sheet(item:)` can drive the share sheet
+/// directly — the same idiom `SheetTarget` above drives `CommitmentSheet` with.
+private struct CopyShare: Identifiable {
+    let url: URL
+    var id: URL { url }
+}
+
 /// The roster's own management surface: what it keeps, what it has stopped, and the sheet — B-037
 /// — that defines a new commitment on one of the four rhythms `CommitmentsScreen` offers, or
 /// changes one already on either list.
@@ -180,11 +188,11 @@ struct CommitmentsView: View {
     let screen: CommitmentsScreen
 
     @State private var sheetTarget: SheetTarget?
-    /// The URL the last copy made answered — `nil` until a copy is made, and drives the share
-    /// sheet: presented exactly while this holds one. `design.md` § *The shell*: `ShareLink`
+    /// The last copy made, wrapped in `CopyShare` — `nil` until a copy is made, and drives the
+    /// share sheet: presented exactly while this holds one. `design.md` § *The shell*: `ShareLink`
     /// needs its item before the tap, so the URL is put here on success rather than offered
     /// ahead of one.
-    @State private var copyURL: URL?
+    @State private var copyShare: CopyShare?
     @Environment(\.editMode) private var editMode
 
     var body: some View {
@@ -406,7 +414,7 @@ struct CommitmentsView: View {
                         return
                     }
                     if case .success(let url) = screen.makeACopy(asOf: moment) {
-                        copyURL = url
+                        copyShare = CopyShare(url: url)
                     }
                 }
 
@@ -510,19 +518,8 @@ struct CommitmentsView: View {
         .sheet(item: $sheetTarget) { target in
             CommitmentSheet(screen: screen, changing: target.commitment)
         }
-        .sheet(
-            isPresented: Binding(
-                get: { copyURL != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        copyURL = nil
-                    }
-                }
-            )
-        ) {
-            if let copyURL {
-                ShareSheet(url: copyURL)
-            }
+        .sheet(item: $copyShare) { share in
+            ShareSheet(url: share.url)
         }
     }
 }
