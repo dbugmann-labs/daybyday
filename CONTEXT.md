@@ -1439,8 +1439,10 @@ withdrawn, as it is under **Day view**.
 new one-off's name in place, as in Apple Reminders; the toolbar's `+` brings it into focus. It is
 deliberately not a **one-off**, which is what `one-off` holds — this is the place one is made, in the
 way a **number entry** is the place a number is made — and it holds no one-off, which is why it is an
-entry and not a row. What is typed is committed on Return, which leaves a fresh entry focused; on the
-green checkmark shown while any one-off name is being typed, which closes the keyboard; and on leaving
+entry and not a row. What is typed is committed on Return and on the
+green checkmark shown while any one-off name is being typed, either of which closes the keyboard once
+the one-off is made (corrected 2026-09-15 at the phone check; Return first left a fresh entry focused),
+while a refused one stays in the field; and on leaving
 the field any other way, a change of day and the app leaving the screen included, in which case it is
 made on the day it was typed on. Committed blank it makes nothing and says nothing. A refused add is
 told **under the entry**, which keeps the typed text, naming the cause where a person can act on it —

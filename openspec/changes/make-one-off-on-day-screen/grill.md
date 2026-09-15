@@ -80,6 +80,11 @@ amended by these, and nothing else above moves.*
 24. **Rows that offer no tick, and done rows.** A later day's row renames on its name and the rest of
     it does nothing, as today; a done row renames on its name, keeping its done day (17), and the rest
     takes the tick back. *Rename stays offered on every one-off row (13).*
+25. **What Return leaves after an add** (amends 6). An add kept on Return leaves the entry empty and
+    **not** focused, the keyboard closed — exactly as the checkmark does (7). A refused add on Return
+    stays focused with its text and cause, as 11 already says. *The owner's call at the second phone
+    walk: "Just add it, without going to the next add immediately". Keeping focus on a refusal was
+    assumed from their check 1 passing, not asked.*
 
 ## Terms landed in CONTEXT.md
 
