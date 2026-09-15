@@ -1452,6 +1452,19 @@ it. Agreed 2026-09-15 at the grill of B-009, `FEAT: restore`, under `EPIC: Resto
 than `EPIC: Daily commitments` (#1) amended, the owner's decision: #1's exclusion of restore was a
 scope statement that still reads true.
 
+**Amended 2026-09-15**, at the grill of `restore-from-a-copy` (#267). What is said first is the
+copy's **moment**, and what the phone keeps, has stopped and holds as one-offs against what the copy
+does — or, where a store here cannot be read, that what is there goes unread; one tap then puts it
+back. A restore is offered whatever the phone's stores hold, readable or not, and a copy of nothing
+empties the phone. A copy written in earlier forms is put back in the forms the app writes now. A
+restore is whole or nothing: a phone is never left holding part of a copy, and the app makes no copy
+of what goes, since saying it first is the safeguard. A restore that cannot be made leaves the phone
+as it was and is a **refused change**, for one of four reasons told apart: a file that is **not a
+copy** — it does not read as a copy's form and moment at all; a **damaged copy** — it does, and
+something inside it does not read; a copy **from a later version** of the app, its own form or any
+store's within it; or a store that could not be written. Once it is made, both screens show what the
+copy holds at once, and the commitments screen says which copy was put back.
+
 **Shown** — the moment the app comes in front of a person: opened from nothing, or brought back from
 behind whatever was in front of it. It is the only moment a day screen is handed a **today**, and so
 the only moment the day it holds can change — nothing else moves a day screen onto another day, and
