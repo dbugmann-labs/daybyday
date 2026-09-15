@@ -61,16 +61,16 @@ should need editing; one that does is a stop.
 - [x] 6.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `CommitmentsScreen.swift`, `CommitmentsScreenTests.swift` and `CommitmentsView.swift`
 - [x] 6.3 `pnpm run check:budgets` warns about this folder for nothing at all
 - [x] 6.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is twenty-five more than a run on `main` reports — both read off runs
-- [ ] 6.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–6.4 are ticked and that the instruction below is written here for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/commitment/spec.md` gains four requirements with twenty-five scenarios between them and nothing else in it moves; no other spec changes at all. `pnpm run checks` runs after the archive commit exists. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
+- [x] 6.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–6.4 are ticked and that the instruction below is written here for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/commitment/spec.md` gains four requirements with twenty-five scenarios between them and nothing else in it moves; no other spec changes at all. `pnpm run checks` runs after the archive commit exists. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
 
-- [ ] W1 The define sheet freshly opened from the commitments screen's `+`: all seven weekday chips lit
-- [ ] W2 That sheet with the name left empty and *Add* tapped: the refusal under the Name field
-- [ ] W3 That sheet with a name typed and every weekday chip tapped off, *Add* tapped: the refusal under the chips
-- [ ] W4 That sheet on the *Every N days* rhythm with 0 in the interval field, *Add* tapped: the refusal under the interval row
-- [ ] W5 That sheet on the *Number* kind with a lowest of 10 and a highest of 1, *Add* tapped: the refusal under the range row
-- [ ] W6 That sheet on the *Total* kind with a target of 0, *Add* tapped: the refusal under the Target field
-- [ ] W7 *Creatine* opened to change, its name typed over as "Magnesium" and *Save* tapped: the refusal at the foot of the form, below the category control
-- [ ] W8 *Nails* opened to change, the *Restart from* picker moved to a day its every-4-days grid is already due on and *Restart* tapped: the refusal under the restart day picker
-- [ ] W9 The eight pictures posted to the PR with `gh pr comment --attach` before hand-back, ticked on the comment's URL
+- [x] W1 The define sheet freshly opened from the commitments screen's `+`: all seven weekday chips lit
+- [x] W2 That sheet with the name left empty and *Add* tapped: the refusal under the Name field
+- [x] W3 That sheet with a name typed and every weekday chip tapped off, *Add* tapped: the refusal under the chips
+- [x] W4 That sheet on the *Every N days* rhythm with 0 in the interval field, *Add* tapped: the refusal under the interval row
+- [x] W5 That sheet on the *Number* kind with a lowest of 10 and a highest of 1, *Add* tapped: the refusal under the range row
+- [x] W6 That sheet on the *Total* kind with a target of 0, *Add* tapped: the refusal under the Target field
+- [x] W7 *Creatine* opened to change, its name typed over as "Magnesium" and *Save* tapped: the refusal at the foot of the form, below the category control
+- [x] W8 *Nails* opened to change, the *Restart from* picker moved to a day its every-4-days grid is already due on and *Restart* tapped: the refusal under the restart day picker
+- [x] W9 The eight pictures posted to the PR with `gh pr comment --attach` before hand-back, ticked on the comment's URL
