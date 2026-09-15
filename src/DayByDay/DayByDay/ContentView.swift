@@ -314,7 +314,26 @@ struct ContentView: View {
         // focus has already moved on by the time this fires, to whatever a tap elsewhere landed
         // on, and forcing it back could only fight that — not, as `commitFocusedOneOffField()`
         // can, hold a field that was never actually going to lose focus in the first place.
+        //
+        // **Gaining focus seeds `oneOffRowText`, and that half is new.** A one-off row's name
+        // field is always present (`oneOffRowView(_:)`'s own doc comment) and reached by an
+        // ordinary tap into it — no code of this file's own asks `@FocusState` to focus a field
+        // that does not exist yet, which is what left the keyboard never coming up before. That
+        // means nothing else runs *before* the field gains focus to seed what it should show, the
+        // way the deleted `startRename(of:)` once did from inside a `Button` action; this is the
+        // one place a row's own name field is known to have just gained focus, from a tap or from
+        // `commitFocusedOneOffField()` reopening a refused one. Unconditional, past both guards
+        // above: a fresh field's text matters whether or not anything else needed committing.
         .onChange(of: oneOffFocus) { oldValue, newValue in
+            defer {
+                if case .row(let row) = newValue, newValue != oldValue {
+                    if let nameRefusal = screen.nameRefusal, nameRefusal.row == row {
+                        oneOffRowText = nameRefusal.text
+                    } else {
+                        oneOffRowText = row.name
+                    }
+                }
+            }
             guard let oldValue, oldValue != newValue else {
                 return
             }
@@ -740,112 +759,131 @@ struct ContentView: View {
         }
     }
 
-    /// One one-off row's content and the tap that acts on it — the same shape `rowView(_:)` draws
-    /// for a commitment row, with `lateInWords` standing in the rhythm's place and `tick`
-    /// standing in for the tap `rowView(_:)` makes. The spec requirement "A one-off row says how
-    /// late it is while undone, and offers its tick where its day has arrived": the tap is
-    /// offered exactly where `offersTick(asOf:)` says so, done or not, so a done row still offers
-    /// taking its tick back. A long press opens a `contextMenu` with *Rename* and a destructive
-    /// *Remove*, on every row alike (grill answer 13); *Rename* focuses this row's own name field
-    /// in place, and while that field has focus this draws it instead of the row's plain text.
+    /// One one-off row's content and the two taps that act on it (grill answers 21-24, reopened
+    /// at the phone check after the long-press *Rename* below proved unreachable on the device: it
+    /// worked around a `contextMenu` teardown race with `DispatchQueue.main.asyncAfter`, and the
+    /// owner asked for a different gesture rather than a fix for it). A tap on the drawn name
+    /// alone starts a rename of this row, on every one-off row: done or not, and a later day's
+    /// row that offers no tick included (answer 24, "rename stays offered on every one-off row").
+    /// A tap anywhere else on it, the lateness words included, ticks or takes back as before,
+    /// offered exactly where `offersTick(asOf:)` says so and a no-op where it is not.
+    ///
+    /// **The name is an always-present `TextField`, never conditionally swapped in for a
+    /// `Button`- or `Text`-drawn name the moment renaming starts.** Three other shapes were each
+    /// built and driven for real on the simulator first, and every one of them left the row a
+    /// plain, unticked button with no field ever gaining focus: (1) a `.highPriorityGesture`
+    /// nested inside the row's enclosing `Button`; (2) a plain `.onTapGesture` nested the same
+    /// way, ruling out `Button` specifically as the cause; (3) the name as its *own*, sibling
+    /// `Button` — not nested in anything — whose action did nothing but `oneOffFocus = .row(row)`.
+    /// A control check on that same freshly-added row, reduced to a lone `Button` calling
+    /// `screen.tick(row)`, ticked correctly on the identical driven tap — ruling out the row, the
+    /// coordinate and a freshly-inserted List cell as the cause. What every failing shape shared
+    /// was asking `@FocusState` to focus a `TextField` that does not exist until that same update
+    /// creates it; the one thing that has ever reliably taken focus from a plain tap in this file
+    /// is the one-off entry, which is a `TextField` from the first frame it is ever drawn. This
+    /// row's name is now built the same way, and driving it — see `tasks.md` § 7.4 — is what
+    /// actually opened the field and brought the keyboard up.
+    ///
+    /// `TextField` draws its own text; it has no `.strikethrough()` the way `Text` does, so a
+    /// done row's struck-through name is drawn by a `Text` `.overlay`, `.allowsHitTesting(false)`
+    /// so the tap still reaches the field beneath it, shown only while not renaming — the field's
+    /// own text is `Color.clear` there rather than removed, so the field itself, and the tap
+    /// target it is, never leaves the tree.
+    ///
+    /// The rest of the row — the mark, the lateness words, the notices — is a second, sibling
+    /// `Button`, proven reliable by the control above: `.frame(maxWidth: .infinity)`, so it fills
+    /// the row's own remaining width and wraps onto a second line for what is below the name, and
+    /// ticks or takes back exactly where `offersTick(asOf:)` says so. Its own `HStack` carries a
+    /// `44`pt minimum height: with neither a mark nor a lateness word to draw — an ordinary
+    /// undone one-off, due today — that line would otherwise collapse to zero height, and driving
+    /// a tap at it for real showed exactly that: a button reporting `{width, 0.0}`, tappable
+    /// nowhere. `lateInWords` is its own `Text` rather than folded into the name's the way
+    /// `rowView(_:)` folds a commitment's rhythm in with `commitmentLine` — a shared `Text` has
+    /// no seam two independent `Button`s can split. Both share `opacity`, so the row still fades
+    /// together (ADR-1045 decisions 3 and 5) on a day it offers no tick, name included. A long
+    /// press still opens a `contextMenu`, now with a destructive *Remove* alone — *Rename* lived
+    /// there; the tap above replaces it rather than fixing it in place.
     @ViewBuilder
     private func oneOffRowView(_ row: DayView.OneOffRow) -> some View {
         let isRenaming = oneOffFocus == .row(row)
         let nameColor: Color = row.isDone ? .secondary : .primary
         let markSystemName: String? = row.isDone ? "checkmark" : nil
         let markColor: Color = Color.green
-        let label = HStack {
-            VStack(alignment: .leading) {
-                if isRenaming {
-                    TextField(row.name, text: oneOffRowTextBinding(for: row))
-                        .focused($oneOffFocus, equals: .row(row))
-                        .onSubmit {
-                            // `commitFocusedOneOffField()` commits this row and drops focus, or
-                            // — a rename it finds refused — leaves the row focused with the
-                            // typed name and the cause showing under it; see its own doc comment.
-                            commitFocusedOneOffField()
-                        }
-                } else {
-                    let nameText = Text(row.name)
-                        .foregroundStyle(nameColor)
-                        .strikethrough(row.isDone)
-                    row.lateInWords.map {
-                        commitmentLine(nameText, rhythmInWords: $0).foregroundStyle(Color.primary)
-                    } ?? nameText
+        let offersTick = row.offersTick(asOf: today())
+
+        HStack(alignment: .top, spacing: 4) {
+            TextField("", text: oneOffRowTextBinding(for: row))
+                .focused($oneOffFocus, equals: .row(row))
+                .onSubmit {
+                    // `commitFocusedOneOffField()` commits this row and drops focus, or — a
+                    // rename it finds refused — leaves the row focused with the typed name and
+                    // the cause showing under it; see its own doc comment.
+                    commitFocusedOneOffField()
                 }
-                if row == screen.notice?.oneOffRow {
-                    Text(screen.notice?.cause ?? "Not saved. Try again.")
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
-                if screen.nameRefusal?.row == row {
-                    Text(screen.nameRefusal?.cause ?? "Not saved. Try again.")
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
-            }
-            if markSystemName != nil {
-                Spacer()
-            }
-            if let markSystemName {
-                Image(systemName: markSystemName)
-                    .foregroundStyle(markColor)
-            }
-        }
-        Group {
-            if isRenaming {
-                label
-            } else if row.offersTick(asOf: today()) {
-                Button {
-                    try? screen.tick(row)
-                } label: {
-                    label
-                }
-            } else {
-                label
-                    .opacity(0.5)
-            }
-        }
-        .contextMenu {
-            if !isRenaming {
-                Button("Rename") {
-                    // Focusing a field from inside a `contextMenu` action races the menu's own
-                    // dismissal: iOS tears the menu's overlay down right after this closure
-                    // returns, and that teardown resigns whatever a same-turn focus request just
-                    // claimed, so the `TextField` this means to show never visibly gains it —
-                    // tapping *Rename* would otherwise do nothing the person can see. Deferring
-                    // past that teardown is the standard fix; everything this closure does
-                    // (committing whatever field currently has focus, then seeding and focusing
-                    // this row's) moves inside the same deferred block so nothing here still
-                    // races it.
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        // Committing whatever field currently has focus before this reaches for
-                        // the one shared `oneOffRowText`: seeding it with `row.name` first, the
-                        // way this once did, stomps whatever the previously focused field's own
-                        // commit was about to read back out of that same shared text —
-                        // `commitFocusedOneOffField()` is what every other explicit move already
-                        // commits through first (`design.md` § *The shell*). A refusal it finds
-                        // still stands keeps that field focused rather than this one; see its own
-                        // doc comment.
-                        commitFocusedOneOffField()
-                        guard oneOffFocus == nil else {
-                            return
-                        }
-                        // A refusal already standing under `row` — left there since an earlier
-                        // attempt nobody has typed over — must stand until its text is edited
-                        // (`openspec/specs/day-screen/spec.md` § *What a day screen tells under a
-                        // one-off name field lasts until…*: opening a rename edits nothing). So
-                        // this seeds the field from `nameRefusal`'s own `text` rather than
-                        // `row.name` where one stands, agreeing with what
-                        // `oneOffRowTextBinding(for:)` already shows there, rather than ending it.
-                        if let nameRefusal = screen.nameRefusal, nameRefusal.row == row {
-                            oneOffRowText = nameRefusal.text
-                        } else {
-                            oneOffRowText = row.name
-                        }
-                        oneOffFocus = .row(row)
+                .foregroundStyle(isRenaming ? Color.primary : Color.clear)
+                .overlay(alignment: .leading) {
+                    if !isRenaming {
+                        Text(row.name)
+                            .foregroundStyle(nameColor)
+                            .strikethrough(row.isDone)
+                            .allowsHitTesting(false)
                     }
                 }
+                .fixedSize()
+
+            if isRenaming {
+                VStack(alignment: .leading) {
+                    if row == screen.notice?.oneOffRow {
+                        Text(screen.notice?.cause ?? "Not saved. Try again.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                    if screen.nameRefusal?.row == row {
+                        Text(screen.nameRefusal?.cause ?? "Not saved. Try again.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                }
+            } else {
+                Button {
+                    if offersTick {
+                        try? screen.tick(row)
+                    }
+                } label: {
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Spacer(minLength: 0)
+                                .frame(minHeight: 44)
+                            if let markSystemName {
+                                Image(systemName: markSystemName)
+                                    .foregroundStyle(markColor)
+                            }
+                        }
+                        if let lateInWords = row.lateInWords {
+                            Text(verbatim: lateInWords)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        if row == screen.notice?.oneOffRow {
+                            Text(screen.notice?.cause ?? "Not saved. Try again.")
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
+                        if screen.nameRefusal?.row == row {
+                            Text(screen.nameRefusal?.cause ?? "Not saved. Try again.")
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .opacity(isRenaming || offersTick ? 1 : 0.5)
+        .contextMenu {
+            if !isRenaming {
                 Button("Remove", role: .destructive) {
                     try? screen.remove(row)
                 }
@@ -933,11 +971,16 @@ struct ContentView: View {
         )
     }
 
-    /// `row`'s own name field's shown text — `nameRefusal`'s own `text` while a refusal stands
-    /// under `row`, `oneOffRowText` otherwise — read by both the `get` and the `set` of
-    /// `oneOffRowTextBinding(for:)` so a stale flush is recognised by the same rule that draws
-    /// the field.
+    /// `row`'s own name field's shown text. The field is now always present (`oneOffRowView(_:)`
+    /// never swaps it out for a `Text`, for reasons its own doc comment gives), so this reads
+    /// `row.name` itself wherever this row is not the one with focus — `nameRefusal`'s own
+    /// `text` while a refusal stands under `row` and it does have focus, `oneOffRowText`
+    /// otherwise. Read by both the `get` and the `set` of `oneOffRowTextBinding(for:)` so a
+    /// stale flush is recognised by the same rule that draws the field.
     private func oneOffRowDisplayText(for row: DayView.OneOffRow) -> String {
+        guard oneOffFocus == .row(row) else {
+            return row.name
+        }
         if let nameRefusal = screen.nameRefusal, nameRefusal.row == row {
             return nameRefusal.text
         }
