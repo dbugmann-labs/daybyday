@@ -9376,3 +9376,33 @@ func whatACommitmentsScreenTellsOnItsSheetEndsWhenTheAppIsShownAgain() {
 
     #expect(screen.sheetRefusal == nil)
 }
+
+@MainActor
+@Test("what a commitments screen tells on its sheet stands when a call asks for no change at all")
+func whatACommitmentsScreenTellsOnItsSheetStandsWhenACallAsksForNoChangeAtAll() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let defineRefusal = screen.define(
+        name: "   ", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(defineRefusal == .namesNothing)
+
+    let changeRefusal = screen.change(
+        gym, toName: "Gym", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil)
+
+    #expect(changeRefusal == nil)
+    #expect(
+        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: .name, refusal: .namesNothing))
+}
