@@ -110,17 +110,22 @@ public final class DayScreen {
     /// it is already keeping one, so it calls `SaveInProgress` directly rather than through this.
     /// Where the save in progress cannot be undone, the record answers as one that could not be
     /// read without opening it for real — `design.md` § *A torn save that cannot be undone reuses
-    /// two existing states* — and the roster is read as usual.
+    /// two existing states* — and the roster is opened read-only: taking `dayOne` on writes the
+    /// roster place, which the same requirement's "write nothing at either place" forbids while a
+    /// torn save stands unresolved, so the check runs first and day one is offered only once it
+    /// has cleared. `openspec/specs/commitment/spec.md` § *A torn save that cannot be undone keeps
+    /// nothing from the record place*.
     private static func readRecordAndRoster(
         recordAt recordPlace: URL, rosterAt rosterPlace: URL, takingOnIfEmpty dayOne: [Commitment]
     ) -> (
         recordStore: RecordStore?, recordState: RecordState, roster: Roster, rosterState: RosterState
     ) {
-        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: dayOne)
-
         guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) else {
-            return (nil, .unreadable, openedRoster.roster, openedRoster.state)
+            let readOnly = Self.openRoster(at: rosterPlace, takingOnIfEmpty: [])
+            return (nil, .unreadable, readOnly.roster, readOnly.state)
         }
+
+        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: dayOne)
 
         let opened = Self.open(at: recordPlace)
         if let recordStore = opened.store, openedRoster.state == .kept {

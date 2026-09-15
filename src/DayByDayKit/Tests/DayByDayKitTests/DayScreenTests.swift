@@ -7914,6 +7914,54 @@ func aDayScreenOpenedOnATornSaveItCannotUndoDrawsItsRowsAndKeepsNoTick() throws 
         try Data(contentsOf: SaveInProgress.place(besideRecordAt: place)) == saveInProgressBytes)
 }
 
+/// A torn save that cannot be undone keeps nothing from the record place — including the roster
+/// place taking on day one, which `openRoster(at:takingOnIfEmpty:)` can write. Before this fix
+/// that write ran before the undo was even checked, so an empty roster place gained day one
+/// while the torn save beside an unwritable record place stood. The roster and record here sit
+/// in separate directories, unlike `freshPlaces()`, so only the record's directory is made
+/// read-only and a write to the roster place would succeed if one were attempted.
+@MainActor
+@Test(
+    "a day screen does not write day one to the roster place while a torn save it cannot undo stands"
+)
+func aDayScreenDoesNotWriteDayOneToTheRosterPlaceWhileATornSaveItCannotUndoStands() throws {
+    let rosterDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = rosterDirectory.appendingPathComponent("roster.json")
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    try FileManager.default.createDirectory(at: rosterDirectory, withIntermediateDirectories: true)
+    defer { try? makeWritable(recordDirectory) }
+
+    let schedule: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(gymEmoji, on: monday)!)
+    try SaveInProgress(carriedFrom: gym, to: gymEmoji).keep(
+        at: SaveInProgress.place(besideRecordAt: recordPlace))
+
+    try makeReadOnly(recordDirectory)
+
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+
+    let screen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+
+    #expect(screen.recordState == .unreadable)
+    #expect(
+        FileManager.default.fileExists(
+            atPath: SaveInProgress.place(besideRecordAt: recordPlace).path))
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
 @MainActor
 @Test("a torn save a day screen could not undo is undone once it is shown again and its places can be written")
 func aTornSaveADayScreenCouldNotUndoIsUndoneOnceItIsShownAgainAndItsPlacesCanBeWritten() throws {

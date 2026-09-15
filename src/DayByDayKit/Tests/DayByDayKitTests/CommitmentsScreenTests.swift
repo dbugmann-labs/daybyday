@@ -7997,6 +7997,128 @@ func aChangeRefusedAtTheRosterPlaceAfterCarryingItsRecordsLeavesNoSaveInProgress
     #expect(screen.kept.map(\.name) == ["Gym"])
 }
 
+/// Unit test beside 3.3's own, which only checks the roster and whether the save in progress
+/// file exists: neither catches this screen going on to write a stale copy of its own record
+/// mirror back over a correction `SaveInProgress.undoTornSave` already made at the record place
+/// through a second, disjoint `RecordStore` — a regression from `main`, where the undo ran
+/// through this screen's own `recordStore`. Proven by a *second* change through the same screen,
+/// after the first is refused and undone: only a write that reaches the record place again can
+/// show whether this screen's own copy was ever brought back into step.
+@MainActor
+@Test(
+    "a change kept after an earlier undone torn save does not write this screen's stale record mirror back over the correction"
+)
+func aChangeKeptAfterAnEarlierUndoneTornSaveDoesNotWriteThisScreensStaleRecordMirrorBackOverTheCorrection()
+    throws
+{
+    let rosterDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = rosterDirectory.appendingPathComponent("roster.json")
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+    let running = Commitment(name: "Running", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(run)
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+    try recordStore.add(Tick(run, on: august4th)!)
+    let rosterBytes = try Data(contentsOf: rosterPlace)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace)
+
+    try FileManager.default.removeItem(at: rosterDirectory)
+    try Data().write(to: rosterDirectory)
+
+    let firstRefusal = screen.change(
+        gym, toName: "Gym 🏋️", on: Rhythm(schedule), keptFrom: keptFrom, under: nil)
+    #expect(firstRefusal == .notKept)
+
+    try FileManager.default.removeItem(at: rosterDirectory)
+    try FileManager.default.createDirectory(at: rosterDirectory, withIntermediateDirectories: true)
+    try rosterBytes.write(to: rosterPlace)
+
+    let secondRefusal = screen.change(
+        run, toName: "Running", on: Rhythm(schedule), keptFrom: keptFrom, under: nil)
+    #expect(secondRefusal == nil)
+
+    let laterRecordStore = try RecordStore(at: recordPlace)
+    #expect(laterRecordStore.history.isKept(gym, on: august3rd))
+    #expect(!laterRecordStore.history.isKept(gymEmoji, on: august3rd))
+    #expect(laterRecordStore.history.isKept(running, on: august4th))
+}
+
+/// Companion to the test above: where the undo itself cannot be completed — a fresh read of the
+/// roster place, made by `SaveInProgress.undoTornSave` independently of this screen's own
+/// already-open `RosterStore`, throws — this screen SHALL from then on hold a torn save it
+/// cannot undo, `openspec/specs/commitment/spec.md` § *A change that carries records leaves a
+/// save in progress until its roster place is written*. Before this fix the `Bool`
+/// `undoTornSave` answers was thrown away, so `rosterState` stayed `.kept` and the lists stayed
+/// drawn.
+@MainActor
+@Test(
+    "a change refused at the roster place holds a torn save it cannot undo where the undo itself fails"
+)
+func aChangeRefusedAtTheRosterPlaceHoldsATornSaveItCannotUndoWhereTheUndoItselfFails() throws {
+    let rosterDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = rosterDirectory.appendingPathComponent("roster.json")
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace)
+
+    // What is at the roster place stops being a roster at all — a fresh `RosterStore(at:)` reads
+    // this and throws — and the directory then stops taking writes too, so the change's own
+    // write to the roster place still fails as scenario 3.3 needs, but the screen's own
+    // already-open `RosterStore`, read before either of these, is untouched.
+    try Data("not a roster".utf8).write(to: rosterPlace)
+    try FileManager.default.setAttributes(
+        [.posixPermissions: 0o500], ofItemAtPath: rosterDirectory.path)
+    defer {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: rosterDirectory.path)
+    }
+
+    let refusal = screen.change(
+        gym, toName: "Gym 🏋️", on: Rhythm(schedule), keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == .notKept)
+    #expect(screen.rosterState == .notKept)
+    #expect(screen.kept.isEmpty)
+    #expect(screen.stopped.isEmpty)
+    #expect(
+        FileManager.default.fileExists(
+            atPath: SaveInProgress.place(besideRecordAt: recordPlace).path))
+}
+
 @MainActor
 @Test("a rename torn between its two places is undone when a commitments screen is opened")
 func aRenameTornBetweenItsTwoPlacesIsUndoneWhenACommitmentsScreenIsOpened() throws {

@@ -461,6 +461,32 @@ public final class CommitmentsScreen {
         return nil
     }
 
+    /// Runs after this screen's own `recordStore` has already carried records forward for a
+    /// change or a restart, to undo the save in progress that carry kept — exactly the call the
+    /// next read of the places would make, but run here so the file never outlives a save that
+    /// landed or stands torn. A successful undo runs through a second, disjoint `RecordStore`
+    /// `SaveInProgress` opens for itself, so this screen's own copy — which already carried the
+    /// records forward before this runs — is left holding what the record place no longer has
+    /// until this reopens it; skipping that reopen would let this screen's next write put the
+    /// stale copy back over whatever the undo just corrected. Where the undo itself cannot be
+    /// completed, this screen goes on to hold a torn save it cannot undo, answering exactly as
+    /// `readPlaces` does for the same condition at `init` — `design.md` § *A torn save that
+    /// cannot be undone reuses two existing states* and `openspec/specs/commitment/spec.md` §
+    /// *A change that carries records leaves a save in progress until its roster place is
+    /// written*: "Where that undo fails, the screen SHALL from then on hold a torn save it
+    /// cannot undo."
+    private func undoTornSaveMadeDuringThisChange() {
+        guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place) else {
+            rosterStore = nil
+            rosterState = .notKept
+            recordStore = nil
+            recordsBelongToNoCommitment = false
+            refreshLists(from: nil)
+            return
+        }
+        recordStore = Self.openRecord(at: recordPlace)
+    }
+
     /// Changes `commitment`, on either of this screen's lists, for the commitment `name`,
     /// `rhythm` and `keptFrom` name, under `category`. Works out from those which of two acts —
     /// carrying every record over to the changed commitment, or superseding — the change needs,
@@ -576,7 +602,7 @@ public final class CommitmentsScreen {
                 _ = try rosterStore.change(commitment, to: changedCommitment, under: category)
             } catch {
                 if changedCommitment != commitment {
-                    _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
+                    undoTornSaveMadeDuringThisChange()
                 }
                 refusedChange = .changing(commitment, .notKept)
                 return .notKept
@@ -587,7 +613,7 @@ public final class CommitmentsScreen {
                 // the same call the next read of the places would make, run here so the file
                 // never outlives a save that landed. `design.md` § *A save finished is told by
                 // the roster, not by the file*.
-                _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
+                undoTornSaveMadeDuringThisChange()
             }
 
             refusedChange = nil
@@ -673,7 +699,7 @@ public final class CommitmentsScreen {
                     under: category)
                 _ = try rosterStore.replace(with: nextRoster)
             } catch {
-                _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
+                undoTornSaveMadeDuringThisChange()
                 refusedChange = .changing(commitment, .notKept)
                 return .notKept
             }
@@ -682,7 +708,7 @@ public final class CommitmentsScreen {
             // call the next read of the places would make, run here so the file never outlives a
             // save that landed. `design.md` § *A save finished is told by the roster, not by the
             // file*.
-            _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
+            undoTornSaveMadeDuringThisChange()
 
             refusedChange = nil
             refreshLists(from: rosterStore)
@@ -818,14 +844,14 @@ public final class CommitmentsScreen {
             _ = try rosterStore.supersede(
                 commitment, with: restarted, keptUntil: supersedeKeptUntil, under: entry.category)
         } catch {
-            _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
+            undoTornSaveMadeDuringThisChange()
             refusedChange = .restarting(commitment, .notKept)
             return .notKept
         }
 
         // Told the save finished by the roster it just wrote, not by the file — `design.md` §
         // *A save finished is told by the roster, not by the file*.
-        _ = SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
+        undoTornSaveMadeDuringThisChange()
 
         refusedChange = nil
         refreshLists(from: rosterStore)
