@@ -306,6 +306,16 @@ public final class CommitmentsScreen {
         sheetRefusal = nil
     }
 
+    /// Sets `refusedChange` and `sheetRefusal` together — the one place every refusal in
+    /// `define`, `change` and `restart` sets both, so a refusal cannot set one without the
+    /// other. `refusal` is passed alongside `change` rather than read back out of it, since
+    /// `RefusedChange`'s cases carry different associated data from one another. Commit
+    /// 55ec407 shows the two hand-paired lines this replaces already broke once.
+    private func refuse(_ change: RefusedChange, _ refusal: Refusal, on field: SheetField?) {
+        refusedChange = change
+        sheetRefusal = SheetRefusal(field: field, refusal: refusal)
+    }
+
     /// The weekday set a form starts its chips from where it has nothing behind them: always all
     /// seven, whatever the roster holds. `design.md` § *The weekdays offered are their own
     /// requirement*.
@@ -345,20 +355,17 @@ public final class CommitmentsScreen {
         kind: KindChoice = .tick, lowest: String = "", highest: String = "", target: String = ""
     ) -> Refusal? {
         if case .weekdays(let weekdays) = rhythm, weekdays.isEmpty {
-            refusedChange = .defining(.dueOnNoDay)
-            sheetRefusal = SheetRefusal(field: .rhythm, refusal: .dueOnNoDay)
+            refuse(.defining(.dueOnNoDay), .dueOnNoDay, on: .rhythm)
             return .dueOnNoDay
         }
 
         guard let schedule = rhythm.schedule(keptFrom: keptFrom) else {
-            refusedChange = .defining(.rhythmOutOfRange)
-            sheetRefusal = SheetRefusal(field: .rhythm, refusal: .rhythmOutOfRange)
+            refuse(.defining(.rhythmOutOfRange), .rhythmOutOfRange, on: .rhythm)
             return .rhythmOutOfRange
         }
 
         guard !Blank.saysNothing(name) else {
-            refusedChange = .defining(.namesNothing)
-            sheetRefusal = SheetRefusal(field: .name, refusal: .namesNothing)
+            refuse(.defining(.namesNothing), .namesNothing, on: .name)
             return .namesNothing
         }
 
@@ -371,8 +378,7 @@ public final class CommitmentsScreen {
             case .success(let range):
                 formedKind = .number(range: range)
             case .failure(let refusal):
-                refusedChange = .defining(refusal)
-                sheetRefusal = SheetRefusal(field: .range, refusal: refusal)
+                refuse(.defining(refusal), refusal, on: .range)
                 return refusal
             }
         case .note:
@@ -382,8 +388,7 @@ public final class CommitmentsScreen {
             case .success(let target):
                 formedKind = .total(target: target)
             case .failure(let refusal):
-                refusedChange = .defining(refusal)
-                sheetRefusal = SheetRefusal(field: .target, refusal: refusal)
+                refuse(.defining(refusal), refusal, on: .target)
                 return refusal
             }
         }
@@ -391,20 +396,17 @@ public final class CommitmentsScreen {
         let commitment = Commitment(name: name, schedule: schedule, keptFrom: keptFrom, kind: formedKind)!
 
         guard let rosterStore else {
-            refusedChange = .defining(.notKept)
-            sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+            refuse(.defining(.notKept), .notKept, on: nil)
             return .notKept
         }
 
         do {
             guard try rosterStore.add(commitment, under: category) else {
-                refusedChange = .defining(.alreadyKept)
-                sheetRefusal = SheetRefusal(field: nil, refusal: .alreadyKept)
+                refuse(.defining(.alreadyKept), .alreadyKept, on: nil)
                 return .alreadyKept
             }
         } catch {
-            refusedChange = .defining(.notKept)
-            sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+            refuse(.defining(.notKept), .notKept, on: nil)
             return .notKept
         }
 
@@ -606,8 +608,7 @@ public final class CommitmentsScreen {
         guard let rosterStore,
             let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
         else {
-            refusedChange = .changing(commitment, .notKept)
-            sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+            refuse(.changing(commitment, .notKept), .notKept, on: nil)
             return .notKept
         }
 
@@ -615,28 +616,25 @@ public final class CommitmentsScreen {
         let sameRhythm = Rhythm(commitment.schedule) == rhythm
 
         guard !isStopped || (sameRhythm && keptFrom == commitment.keptFrom) else {
-            refusedChange = .changing(commitment, .stoppedCommitmentCannotChangeRhythm)
-            sheetRefusal = SheetRefusal(
-                field: Self.ambiguousField(askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment),
-                refusal: .stoppedCommitmentCannotChangeRhythm)
+            refuse(
+                .changing(commitment, .stoppedCommitmentCannotChangeRhythm),
+                .stoppedCommitmentCannotChangeRhythm,
+                on: Self.ambiguousField(askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment))
             return .stoppedCommitmentCannotChangeRhythm
         }
 
         guard !Blank.saysNothing(name) else {
-            refusedChange = .changing(commitment, .namesNothing)
-            sheetRefusal = SheetRefusal(field: .name, refusal: .namesNothing)
+            refuse(.changing(commitment, .namesNothing), .namesNothing, on: .name)
             return .namesNothing
         }
 
         if case .weekdays(let weekdays) = rhythm, weekdays.isEmpty {
-            refusedChange = .changing(commitment, .dueOnNoDay)
-            sheetRefusal = SheetRefusal(field: .rhythm, refusal: .dueOnNoDay)
+            refuse(.changing(commitment, .dueOnNoDay), .dueOnNoDay, on: .rhythm)
             return .dueOnNoDay
         }
 
         guard let newSchedule = rhythm.schedule(keptFrom: keptFrom) else {
-            refusedChange = .changing(commitment, .rhythmOutOfRange)
-            sheetRefusal = SheetRefusal(field: .rhythm, refusal: .rhythmOutOfRange)
+            refuse(.changing(commitment, .rhythmOutOfRange), .rhythmOutOfRange, on: .rhythm)
             return .rhythmOutOfRange
         }
 
@@ -664,27 +662,24 @@ public final class CommitmentsScreen {
                 changedCommitment == commitment
                     || !rosterStore.roster.entries.contains(where: { $0.commitment == changedCommitment })
             else {
-                refusedChange = .changing(commitment, .alreadyKept)
-                sheetRefusal = SheetRefusal(field: nil, refusal: .alreadyKept)
+                refuse(.changing(commitment, .alreadyKept), .alreadyKept, on: nil)
                 return .alreadyKept
             }
 
             if changedCommitment != commitment {
                 guard let recordStore else {
-                    refusedChange = .changing(commitment, .notKept)
-                    sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+                    refuse(.changing(commitment, .notKept), .notKept, on: nil)
                     return .notKept
                 }
 
                 if let refusal = Self.refusalCarryingRecords(
                     from: commitment, to: changedCommitment, in: recordStore.history)
                 {
-                    refusedChange = .changing(commitment, refusal)
                     let field: SheetField? =
                         refusal == .wouldLeaveARecordedDayNotDue
                         ? Self.ambiguousField(askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment)
                         : nil
-                    sheetRefusal = SheetRefusal(field: field, refusal: refusal)
+                    refuse(.changing(commitment, refusal), refusal, on: field)
                     return refusal
                 }
 
@@ -692,8 +687,7 @@ public final class CommitmentsScreen {
                     from: commitment, to: changedCommitment,
                     whenAnyRecorded: recordStore.history.holdsRecords(of: commitment), at: recordPlace)
                 {
-                    refusedChange = .changing(commitment, refusal)
-                    sheetRefusal = SheetRefusal(field: nil, refusal: refusal)
+                    refuse(.changing(commitment, refusal), refusal, on: nil)
                     return refusal
                 }
 
@@ -706,16 +700,14 @@ public final class CommitmentsScreen {
                     // change it cannot make* — "no record SHALL be carried over to a day it
                     // could not have been made on".
                     guard try recordStore.carryOver(commitment, to: changedCommitment) else {
-                        refusedChange = .changing(commitment, .wouldLeaveARecordedDayNotDue)
-                        sheetRefusal = SheetRefusal(
-                            field: Self.ambiguousField(
-                                askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment),
-                            refusal: .wouldLeaveARecordedDayNotDue)
+                        refuse(
+                            .changing(commitment, .wouldLeaveARecordedDayNotDue), .wouldLeaveARecordedDayNotDue,
+                            on: Self.ambiguousField(
+                                askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment))
                         return .wouldLeaveARecordedDayNotDue
                     }
                 } catch {
-                    refusedChange = .changing(commitment, .notKept)
-                    sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+                    refuse(.changing(commitment, .notKept), .notKept, on: nil)
                     return .notKept
                 }
             }
@@ -726,8 +718,7 @@ public final class CommitmentsScreen {
                 if changedCommitment != commitment {
                     undoTornSaveMadeDuringThisChange()
                 }
-                refusedChange = .changing(commitment, .notKept)
-                sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+                refuse(.changing(commitment, .notKept), .notKept, on: nil)
                 return .notKept
             }
 
@@ -776,32 +767,28 @@ public final class CommitmentsScreen {
 
             guard !rosterStore.roster.entries.contains(where: { $0.commitment == carryTarget })
             else {
-                refusedChange = .changing(commitment, .alreadyKept)
-                sheetRefusal = SheetRefusal(field: nil, refusal: .alreadyKept)
+                refuse(.changing(commitment, .alreadyKept), .alreadyKept, on: nil)
                 return .alreadyKept
             }
             guard !rosterStore.roster.entries.contains(where: { $0.commitment == finalNewCommitment })
             else {
-                refusedChange = .changing(commitment, .alreadyKept)
-                sheetRefusal = SheetRefusal(field: nil, refusal: .alreadyKept)
+                refuse(.changing(commitment, .alreadyKept), .alreadyKept, on: nil)
                 return .alreadyKept
             }
 
             guard let recordStore else {
-                refusedChange = .changing(commitment, .notKept)
-                sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+                refuse(.changing(commitment, .notKept), .notKept, on: nil)
                 return .notKept
             }
 
             if let refusal = Self.refusalCarryingRecords(
                 from: commitment, to: carryTarget, in: recordStore.history)
             {
-                refusedChange = .changing(commitment, refusal)
                 let field: SheetField? =
                     refusal == .wouldLeaveARecordedDayNotDue
                     ? Self.ambiguousField(askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment)
                     : nil
-                sheetRefusal = SheetRefusal(field: field, refusal: refusal)
+                refuse(.changing(commitment, refusal), refusal, on: field)
                 return refusal
             }
 
@@ -809,8 +796,7 @@ public final class CommitmentsScreen {
                 from: commitment, to: carryTarget,
                 whenAnyRecorded: recordStore.history.holdsRecords(of: commitment), at: recordPlace)
             {
-                refusedChange = .changing(commitment, refusal)
-                sheetRefusal = SheetRefusal(field: nil, refusal: refusal)
+                refuse(.changing(commitment, refusal), refusal, on: nil)
                 return refusal
             }
 
@@ -819,16 +805,14 @@ public final class CommitmentsScreen {
                 // both causes `carryOver` refuses for, so a `false` here can only be a formation
                 // rule beyond `isDue` that they do not yet cover.
                 guard try recordStore.carryOver(commitment, to: carryTarget) else {
-                    refusedChange = .changing(commitment, .wouldLeaveARecordedDayNotDue)
-                    sheetRefusal = SheetRefusal(
-                        field: Self.ambiguousField(
-                            askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment),
-                        refusal: .wouldLeaveARecordedDayNotDue)
+                    refuse(
+                        .changing(commitment, .wouldLeaveARecordedDayNotDue), .wouldLeaveARecordedDayNotDue,
+                        on: Self.ambiguousField(
+                            askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment))
                     return .wouldLeaveARecordedDayNotDue
                 }
             } catch {
-                refusedChange = .changing(commitment, .notKept)
-                sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+                refuse(.changing(commitment, .notKept), .notKept, on: nil)
                 return .notKept
             }
 
@@ -845,8 +829,7 @@ public final class CommitmentsScreen {
                 _ = try rosterStore.replace(with: nextRoster)
             } catch {
                 undoTornSaveMadeDuringThisChange()
-                refusedChange = .changing(commitment, .notKept)
-                sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+                refuse(.changing(commitment, .notKept), .notKept, on: nil)
                 return .notKept
             }
 
@@ -871,8 +854,7 @@ public final class CommitmentsScreen {
 
         guard !rosterStore.roster.entries.contains(where: { $0.commitment == finalNewCommitment })
         else {
-            refusedChange = .changing(commitment, .alreadyKept)
-            sheetRefusal = SheetRefusal(field: nil, refusal: .alreadyKept)
+            refuse(.changing(commitment, .alreadyKept), .alreadyKept, on: nil)
             return .alreadyKept
         }
 
@@ -880,8 +862,7 @@ public final class CommitmentsScreen {
             _ = try rosterStore.supersede(
                 commitment, with: finalNewCommitment, keptUntil: supersedeKeptUntil, under: category)
         } catch {
-            refusedChange = .changing(commitment, .notKept)
-            sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+            refuse(.changing(commitment, .notKept), .notKept, on: nil)
             return .notKept
         }
 
@@ -941,20 +922,19 @@ public final class CommitmentsScreen {
         }
 
         guard day.days(until: dayToKeepFrom) >= 0 else {
-            refusedChange = .restarting(commitment, .restartDayIsAfterToday)
-            sheetRefusal = SheetRefusal(field: .restartDay, refusal: .restartDayIsAfterToday)
+            refuse(.restarting(commitment, .restartDayIsAfterToday), .restartDayIsAfterToday, on: .restartDay)
             return .restartDayIsAfterToday
         }
 
         guard commitment.keptFrom.days(until: day) >= 0 else {
-            refusedChange = .restarting(commitment, .restartDayIsBeforeKeptFrom)
-            sheetRefusal = SheetRefusal(field: .restartDay, refusal: .restartDayIsBeforeKeptFrom)
+            refuse(
+                .restarting(commitment, .restartDayIsBeforeKeptFrom), .restartDayIsBeforeKeptFrom,
+                on: .restartDay)
             return .restartDayIsBeforeKeptFrom
         }
 
         guard !commitment.isDue(on: day) else {
-            refusedChange = .restarting(commitment, .alreadyDueOnRestartDay)
-            sheetRefusal = SheetRefusal(field: .restartDay, refusal: .alreadyDueOnRestartDay)
+            refuse(.restarting(commitment, .alreadyDueOnRestartDay), .alreadyDueOnRestartDay, on: .restartDay)
             return .alreadyDueOnRestartDay
         }
 
@@ -963,22 +943,19 @@ public final class CommitmentsScreen {
             name: commitment.name, schedule: restartedSchedule, keptFrom: day, kind: commitment.kind)!
 
         guard !rosterStore.roster.entries.contains(where: { $0.commitment == restarted }) else {
-            refusedChange = .restarting(commitment, .alreadyKept)
-            sheetRefusal = SheetRefusal(field: .restartDay, refusal: .alreadyKept)
+            refuse(.restarting(commitment, .alreadyKept), .alreadyKept, on: .restartDay)
             return .alreadyKept
         }
 
         guard let recordStore else {
-            refusedChange = .restarting(commitment, .notKept)
-            sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+            refuse(.restarting(commitment, .notKept), .notKept, on: nil)
             return .notKept
         }
 
         if let refusal = Self.refusalCarryingRecordsOnOrAfter(
             from: commitment, to: restarted, onOrAfter: day, in: recordStore.history)
         {
-            refusedChange = .restarting(commitment, refusal)
-            sheetRefusal = SheetRefusal(field: .restartDay, refusal: refusal)
+            refuse(.restarting(commitment, refusal), refusal, on: .restartDay)
             return refusal
         }
 
@@ -988,20 +965,19 @@ public final class CommitmentsScreen {
         if let refusal = Self.keepSaveInProgressIfCarrying(
             from: commitment, to: restarted, whenAnyRecorded: carriesRecords, at: recordPlace)
         {
-            refusedChange = .restarting(commitment, refusal)
-            sheetRefusal = SheetRefusal(field: nil, refusal: refusal)
+            refuse(.restarting(commitment, refusal), refusal, on: nil)
             return refusal
         }
 
         do {
             guard try recordStore.carryOver(commitment, to: restarted, onOrAfter: day) else {
-                refusedChange = .restarting(commitment, .wouldLeaveARecordedDayNotDue)
-                sheetRefusal = SheetRefusal(field: .restartDay, refusal: .wouldLeaveARecordedDayNotDue)
+                refuse(
+                    .restarting(commitment, .wouldLeaveARecordedDayNotDue), .wouldLeaveARecordedDayNotDue,
+                    on: .restartDay)
                 return .wouldLeaveARecordedDayNotDue
             }
         } catch {
-            refusedChange = .restarting(commitment, .notKept)
-            sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+            refuse(.restarting(commitment, .notKept), .notKept, on: nil)
             return .notKept
         }
 
@@ -1011,8 +987,7 @@ public final class CommitmentsScreen {
                 commitment, with: restarted, keptUntil: supersedeKeptUntil, under: entry.category)
         } catch {
             undoTornSaveMadeDuringThisChange()
-            refusedChange = .restarting(commitment, .notKept)
-            sheetRefusal = SheetRefusal(field: nil, refusal: .notKept)
+            refuse(.restarting(commitment, .notKept), .notKept, on: nil)
             return .notKept
         }
 
