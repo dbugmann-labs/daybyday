@@ -831,11 +831,11 @@ private struct CommitmentSheet: View {
                                 "Restart from", selection: $restartDate,
                                 displayedComponents: [.date])
                         }
-                        Button("Restart") {
-                            restart(commitment)
-                        }
                         if let restartDayRefusal = sheetRefusal(under: .restartDay) {
                             refusalText(restartDayRefusal)
+                        }
+                        Button("Restart") {
+                            restart(commitment)
                         }
                     }
                     .onChange(of: restartDate) { _, _ in screen.sheetFieldEdited(.restartDay) }
