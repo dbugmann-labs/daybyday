@@ -3174,12 +3174,13 @@ func aRenameCommittedSayingNothingRemovesTheOneOff() throws {
 }
 
 @MainActor
-@Test("a kept rename ends what a day screen tells on a commitment row")
-func aKeptRenameEndsWhatADayScreenTellsOnACommitmentRow() throws {
+@Test("what a day screen tells on a row ends when a one-off rename is kept, a blank one included")
+func whatADayScreenTellsOnARowEndsWhenAOneOffRenameIsKeptABlankOneIncluded() throws {
+    let friday = CalendarDate(year: 2026, month: 9, day: 25)!
     let oneOffPlace = freshOneOffPlace()
     let oneOffStore = try OneOffStore(at: oneOffPlace)
-    try oneOffStore.add(
-        OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!)
+    try oneOffStore.add(OneOff(name: "Call mum", date: friday)!)
+    try oneOffStore.add(OneOff(name: "Pay fine", date: friday)!)
 
     let (place, rosterPlace) = try blockerPlaces()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -3197,17 +3198,27 @@ func aKeptRenameEndsWhatADayScreenTellsOnACommitmentRow() throws {
     #expect(throws: (any Error).self) {
         try screen.tick(screen.dayView.rows[0])
     }
-    #expect(screen.notice?.row == screen.dayView.rows[0])
 
-    let row = screen.dayView.oneOffGroup!.rows[0]
-    try screen.rename(row, to: "Ring mum")
+    let callMumRow = screen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Call mum" })!
+    try screen.rename(callMumRow, to: "Ring mum")
 
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Ring mum", "Pay fine"])
+    #expect(screen.notice == nil)
+
+    #expect(throws: (any Error).self) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    let payFineRow = screen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Pay fine" })!
+    try screen.rename(payFineRow, to: "   ")
+
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Ring mum"])
     #expect(screen.notice == nil)
 }
 
 @MainActor
-@Test("a rename committed with its row's own name does not end a refusal already told under it")
-func aRenameCommittedWithItsRowsOwnNameDoesNotEndARefusalAlreadyToldUnderIt() throws {
+@Test("a rename committed with its row's own name leaves a refusal already told under that row standing")
+func aRenameCommittedWithItsRowsOwnNameLeavesARefusalAlreadyToldUnderThatRowStanding() throws {
     let monday = CalendarDate(year: 2026, month: 9, day: 28)!
     let oneOffPlace = freshOneOffPlace()
     let oneOffStore = try OneOffStore(at: oneOffPlace)
