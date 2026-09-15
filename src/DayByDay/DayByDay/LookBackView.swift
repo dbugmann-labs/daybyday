@@ -5,8 +5,16 @@ import DayByDayKit
 /// `NavigationLink` on `CommitmentsView`'s kept or stopped row. Draws `lookBack`'s fields and
 /// lines in the order it says them, decides nothing and offers no control — `design.md` § *The
 /// shell rides this Story*: the kit already answered every rule a page shows.
+///
+/// Holds `screen` and `commitment` rather than an already-formed `LookBack`, so the day-by-day
+/// walk `screen.lookBack(at:)` runs sits behind `body` and only runs once this page is actually
+/// drawn — never while `CommitmentsView`'s row is merely constructed, eagerly, on every redraw of
+/// every row on both its lists. G7 finding 2 on #272.
 struct LookBackView: View {
-    let lookBack: LookBack?
+    let screen: CommitmentsScreen
+    let commitment: Commitment
+
+    private var lookBack: LookBack? { screen.lookBack(at: commitment) }
 
     var body: some View {
         List {
