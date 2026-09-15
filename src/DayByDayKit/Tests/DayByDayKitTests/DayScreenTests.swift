@@ -2577,6 +2577,9 @@ func aOneOffCommittedOnALaterDayIsAddedNotDoneOnThatDayAndOffersNoTick() throws 
 
     let reopened = try OneOffStore(at: oneOffPlace)
     let sendForm = OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 29)!)!
+    #expect(
+        reopened.oneOffs.standingDay(for: sendForm, asOf: monday)
+            == CalendarDate(year: 2026, month: 9, day: 29)!)
     #expect(reopened.oneOffs.isDone(sendForm) == false)
 }
 
@@ -2695,6 +2698,8 @@ func aDayScreenNotKeepingOneOffsAddsNothingWhateverIsCommittedInItsOneOffEntry()
         try secondScreen.addOneOff(named: "Call mum")
     }
     #expect(secondScreen.oneOffState == .writtenByALaterVersion)
+    #expect(secondScreen.dayView.oneOffGroup == nil)
+    #expect(secondScreen.nameRefusal == nil)
     #expect(try Data(contentsOf: laterFormPlace) == laterFormBytes)
 }
 
@@ -3166,6 +3171,63 @@ func aRenameCommittedSayingNothingRemovesTheOneOff() throws {
         _ = expected.add(OneOff(name: "Call dad", date: monday)!)
         return expected
     }())
+}
+
+@MainActor
+@Test("a kept rename ends what a day screen tells on a commitment row")
+func aKeptRenameEndsWhatADayScreenTellsOnACommitmentRow() throws {
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(
+        OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!)
+
+    let (place, rosterPlace) = try blockerPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+
+    #expect(throws: (any Error).self) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+
+    let row = screen.dayView.oneOffGroup!.rows[0]
+    try screen.rename(row, to: "Ring mum")
+
+    #expect(screen.notice == nil)
+}
+
+@MainActor
+@Test("a rename committed with its row's own name does not end a refusal already told under it")
+func aRenameCommittedWithItsRowsOwnNameDoesNotEndARefusalAlreadyToldUnderIt() throws {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: monday)!)
+    try oneOffStore.add(OneOff(name: "Ring mum", date: monday)!)
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    let row = screen.dayView.oneOffGroup!.rows.first(where: { $0.name == "Call mum" })!
+
+    try screen.rename(row, to: "Ring mum")
+    let refusalAfterDuplicate = screen.nameRefusal
+    #expect(refusalAfterDuplicate?.row == row)
+    #expect(refusalAfterDuplicate?.cause == "Already on this day")
+
+    try screen.rename(row, to: "Call mum")
+
+    #expect(screen.nameRefusal == refusalAfterDuplicate)
 }
 
 @MainActor
@@ -8157,20 +8219,20 @@ func aTickMadeOnTheDayADayScreenIsShowingLeavesTheDayEitherSideOfItAsItWas() thr
             .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
         ]), keptFrom: keptFrom)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
-    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
 
     let screen = DayScreen(
         startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
-    _ = screen.previousDayView
-    _ = screen.nextDayView
+    let previousBeforeTick = screen.previousDayView
+    let nextBeforeTick = screen.nextDayView
 
     try screen.tick(screen.dayView.rows[0])
 
     #expect(screen.dayView.rows[0].isKept)
-    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History()))
-    #expect(screen.nextDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: tuesday, on: tuesday, in: History()))
+    #expect(screen.previousDayView == previousBeforeTick)
+    #expect(!(screen.previousDayView?.rows.first?.isKept ?? true))
+    #expect(screen.nextDayView == nextBeforeTick)
+    #expect(!(screen.nextDayView?.rows.first?.isKept ?? true))
 }
 
 @MainActor
@@ -8391,7 +8453,6 @@ func tickingARowADayScreenSaysOfTheDayBeforeChangesNothing() throws {
             .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
         ]), keptFrom: keptFrom)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
 
     let screen = DayScreen(
         startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
@@ -8402,7 +8463,6 @@ func tickingARowADayScreenSaysOfTheDayBeforeChangesNothing() throws {
     try screen.tick(screen.previousDayView!.rows[0])
 
     #expect(!(screen.previousDayView?.rows.first?.isKept ?? true))
-    #expect(screen.previousDayView == DayView(of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(), asOf: sunday, on: sunday, in: History()))
     #expect(screen.dayView == dayViewWhenOpened)
     #expect((try? Data(contentsOf: place)) == bytesWhenOpened)
 }

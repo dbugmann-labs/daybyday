@@ -461,41 +461,7 @@ func renamingAOneOffToANameThatSaysNothingOrRenamingOneNotHeldIsRefused() {
     #expect(oneOffs == before)
 }
 
-@Test(
-    "a rename is kept at a one-off store before the store reports it, and one that cannot be kept is refused"
-)
-func aRenameIsKeptAtAOneOffStoreBeforeTheStoreReportsItKeptAndOneThatCannotBeKeptIsRefused()
-    throws
-{
-    let september25 = CalendarDate(year: 2026, month: 9, day: 25)!
-    let callMum = OneOff(name: "Call mum", date: september25)!
-
-    let place = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        .appendingPathComponent("one-offs.json")
-    let first = try OneOffStore(at: place)
-    try first.add(callMum)
-    try first.rename(callMum, to: "Ring mum")
-
-    let second = try OneOffStore(at: place)
-    #expect(second.oneOffs.standingDay(for: OneOff(name: "Ring mum", date: september25)!, asOf: september25) != nil)
-    #expect(second.oneOffs.standingDay(for: callMum, asOf: september25) == nil)
-
-    let directory = FileManager.default.temporaryDirectory
-        .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let blockedPlace = directory.appendingPathComponent("one-offs.json")
-    let store = try OneOffStore(at: blockedPlace)
-    try store.add(callMum)
-
-    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
-
-    #expect(throws: OneOffStoreError.cannotWrite(at: blockedPlace)) {
-        try store.rename(callMum, to: "Ring mum")
-    }
-
-    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
-    let reopened = try OneOffStore(at: blockedPlace)
-    #expect(reopened.oneOffs.standingDay(for: callMum, asOf: september25) != nil)
-    #expect(reopened.oneOffs.standingDay(for: OneOff(name: "Ring mum", date: september25)!, asOf: september25) == nil)
-}
+// A rename's store-level round trip — kept before the store reports it, and refused without
+// mutating `oneOffs` when it cannot be kept — is `OneOffStoreTests.swift`'s own test, alongside
+// every other `OneOffStore` test: `tasks.md` § 1 keeps `OneOffs` tests here and `OneOffStore`
+// tests there.

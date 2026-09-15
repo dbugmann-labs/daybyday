@@ -90,6 +90,51 @@ func aOneOffChangeThatCannotBeKeptIsRefusedAndNotHeld() throws {
     #expect(later.oneOffs == OneOffs())
 }
 
+@Test(
+    "a rename is kept at a one-off store before the store reports it, and one that cannot be kept is refused"
+)
+func aRenameIsKeptAtAOneOffStoreBeforeTheStoreReportsItKeptAndOneThatCannotBeKeptIsRefused()
+    throws
+{
+    let september25 = CalendarDate(year: 2026, month: 9, day: 25)!
+    let callMum = OneOff(name: "Call mum", date: september25)!
+    let ringMum = OneOff(name: "Ring mum", date: september25)!
+
+    let place = freshPlace()
+    let first = try OneOffStore(at: place)
+    try first.add(callMum)
+    try first.rename(callMum, to: "Ring mum")
+
+    let second = try OneOffStore(at: place)
+    #expect(second.oneOffs.standingDay(for: ringMum, asOf: september25) != nil)
+    #expect(second.oneOffs.standingDay(for: callMum, asOf: september25) == nil)
+
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blockedPlace = directory.appendingPathComponent("oneOffs.json")
+    let store = try OneOffStore(at: blockedPlace)
+    try store.add(callMum)
+
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+
+    #expect(throws: OneOffStoreError.cannotWrite(at: blockedPlace)) {
+        try store.rename(callMum, to: "Ring mum")
+    }
+
+    // The refused write must leave what `store` holds in memory untouched too, not only what is
+    // on disk: a `rename` that set `oneOffs` before writing, rather than after, would still pass
+    // a check that only reopens the store, since the write throwing leaves the place itself
+    // exactly as it was either way.
+    #expect(store.oneOffs.standingDay(for: callMum, asOf: september25) != nil)
+    #expect(store.oneOffs.standingDay(for: ringMum, asOf: september25) == nil)
+
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    let reopened = try OneOffStore(at: blockedPlace)
+    #expect(reopened.oneOffs.standingDay(for: callMum, asOf: september25) != nil)
+    #expect(reopened.oneOffs.standingDay(for: ringMum, asOf: september25) == nil)
+}
+
 @Test("a change the one-offs refuse leaves the place untouched")
 func aChangeTheOneOffsRefuseLeavesThePlaceUntouched() throws {
     let place = freshPlace()

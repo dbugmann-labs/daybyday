@@ -394,6 +394,7 @@ public final class DayScreen {
                 throw error
             }
 
+            notice = nil
             endNameRefusal(forRow: row)
             dayView = dayViewOfShownDay()
             endNameRefusalIfItsRowIsGone()
@@ -402,7 +403,9 @@ public final class DayScreen {
 
         let trimmed = Blank.trimmed(text)
         guard trimmed != row.name else {
-            endNameRefusal(forRow: row)
+            // Changes, writes and tells nothing (shipped requirement): nothing reaches the
+            // one-off place, so neither `notice` nor `nameRefusal` ends here — only a change
+            // that is actually kept, or refused, ends what a name field is telling.
             return
         }
 
@@ -416,6 +419,7 @@ public final class DayScreen {
             throw error
         }
 
+        notice = nil
         endNameRefusal(forRow: row)
         dayView = dayViewOfShownDay()
         endNameRefusalIfItsRowIsGone()
