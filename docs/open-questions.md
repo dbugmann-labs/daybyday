@@ -585,6 +585,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
   before a two-place write. `save-change-whole` (#249) declined it because the app it shipped in
   cannot produce the case; it is owed by whichever change first keeps that screen alive. Surfaced
   2026-09-14 at #249's grill, answer 15.
+- **`docs/agents/issue-tracker.md` documents sub-issues and not native issue dependencies.** Four
+  G2 comments on #26 and #27 use GitHub's `dependencies/blocked_by` and `dependencies/blocking`
+  endpoints for the blocking edge between Stories, and the orchestrator confirms their shape
+  against a live edge each time because the file names only the sub-issue calls. Adding the four
+  endpoints is a chore on that file. Surfaced 2026-09-15 at the ninth pass's G2.
+
 
 ## Settled
 
