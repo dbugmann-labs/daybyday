@@ -9282,3 +9282,58 @@ func whatACommitmentsScreenTellsOnItsSheetEndsWhenTheSheetIsClosed() throws {
 
     #expect(otherScreen.sheetRefusal == nil)
 }
+
+@MainActor
+@Test("a refused restart replaces what a refused save told on a commitments screen's sheet")
+func aRefusedRestartReplacesWhatARefusedSaveToldOnACommitmentsScreensSheet() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let defineRefusal = screen.define(
+        name: "   ", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(defineRefusal == .namesNothing)
+
+    let restartRefusal = screen.restart(nails, from: august3rd)
+    #expect(restartRefusal == .restartDayIsBeforeKeptFrom)
+
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .restartDay, refusal: .restartDayIsBeforeKeptFrom))
+
+    let otherPlaces = freshRosterAndRecordPlaces()
+    let otherNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+    let otherRosterStore = try RosterStore(at: otherPlaces.roster)
+    try otherRosterStore.add(otherNails)
+
+    let otherScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: otherPlaces.roster, keepingRecordAt: otherPlaces.record)
+
+    let otherRestartRefusal = otherScreen.restart(otherNails, from: august3rd)
+    #expect(otherRestartRefusal == .restartDayIsBeforeKeptFrom)
+
+    let otherDefineRefusal = otherScreen.define(
+        name: "   ", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(otherDefineRefusal == .namesNothing)
+
+    #expect(
+        otherScreen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .name, refusal: .namesNothing))
+}
