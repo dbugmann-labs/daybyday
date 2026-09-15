@@ -10,9 +10,10 @@ See `proposal.md` § *Why*, and `grill.md`, whose twenty settled answers this de
 - **`DayScreen.Notice` holds one row of either kind and `cause: String?`**; the shell shows
   `cause ?? "Not saved. Try again."`. `Blank.trimmed` and `Blank.saysNothing` are the kit's one
   whitespace test (ADR-1039).
-- **Six shipped `day-screen` scenarios assert no One-offs group on a screen keeping one-offs**, or
-  compare a day view handed no one-offs with one handed a one-off on another day; the MODIFIED blocks
-  change exactly those.
+- **Thirty-one shipped `day-screen` scenarios are false once the empty group stands:** six assert no
+  One-offs group or compare a day view handed no one-offs, and twenty-five compare a keeping screen's
+  day view with one formed directly of commitments alone. The MODIFIED blocks change exactly those;
+  tasks 6.15 and 6.19 name two tests comparing with such a view where their true scenarios do not.
 - **`ContentView.swift` keys one-off rows by offset**, draws the group only where it is non-nil, and
   has no `+`, no focus state and no context menu on a one-off row.
 - **With no commitments, a day picker's reach starts at today**, so fixtures reaching a past day
@@ -88,13 +89,18 @@ picker and `scenePhase` leaving `.active`, each before the day moves. A long pre
 `contextMenu` with *Rename* and a destructive *Remove*. One-off rows are keyed by value (grill
 answer 19).
 
-### Five requirements MODIFIED
+### Thirteen requirements MODIFIED, and a day view formed directly names its one-offs
 
-*Group headed One-offs* and *is a value* each change a sentence. *Draws the one-offs at its place*
-and *makes and takes back a one-off tick* change only the asserts that said no group. *Tells on the
-one-off row* narrows "a one-off change" to a tick or removal, and gains one scenario. No title moves.
-*Is a value* was over the prose budget on `main` and grows by a sentence; no ADR is written, as
-every decision follows a settled answer or a shipped shape.
+*Group headed One-offs* and *is a value* each change a sentence; *tells on the one-off row* narrows
+"a one-off change" to a tick or removal and gains a scenario. The other ten change only asserts: those
+that said no group, and every comparison with a day view formed directly, now formed of one-offs
+holding nothing as of its own day, since a keeping screen holds the empty group (answers 4 and 5).
+Ragged lines are re-wrapped; no other word or title moves. No ADR is written.
+
+- Rejected: a day view always holding the group, the offer read off the screen keeping one-offs —
+  reverses *The empty group is the offer* and rewrites *cannot read its one-offs draws no group*.
+- Rejected: equality counting no group and an empty one alike — equal values answering differently.
+- Rejected: MODIFIED clauses for tasks 6.15 and 6.19 — their text is true; the tests return to it.
 
 ### Migration
 
@@ -103,7 +109,7 @@ None — the one-off store's form is unchanged; a rename rewrites the file in th
 ## Risks / Trade-offs
 
 - **The shell committing after the day moves** would add to the wrong day, and no kit test sees it.
-  → Task 6.2 names the order, and G7 reads it.
+  → Task 7.2 names the order, and G7 reads it.
 - **A done toggle re-keys a row by value**, so a tick can animate as remove and insert. → Accepted
   at grill answer 19.
 - **A blank rename removes with no confirmation.** → The owner's call, answers 14 and 16.
