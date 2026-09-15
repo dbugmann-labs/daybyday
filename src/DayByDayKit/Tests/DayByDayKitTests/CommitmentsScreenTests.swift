@@ -9357,3 +9357,22 @@ func whatACommitmentsScreenTellsOnItsSheetEndsWhenAnAskIsKept() {
     #expect(keptRefusal == nil)
     #expect(screen.sheetRefusal == nil)
 }
+
+@MainActor
+@Test("what a commitments screen tells on its sheet ends when the app is shown again")
+func whatACommitmentsScreenTellsOnItsSheetEndsWhenTheAppIsShownAgain() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "   ", on: allWeekdays, keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    screen.shown(asOf: monday)
+
+    #expect(screen.sheetRefusal == nil)
+}

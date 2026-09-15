@@ -1363,6 +1363,7 @@ public final class CommitmentsScreen {
     public func shown(asOf today: CalendarDate) {
         dayToKeepFrom = today
         refusedChange = nil
+        sheetRefusal = nil
         awaitingRemoval = nil
         nameTypedBack = ""
 
