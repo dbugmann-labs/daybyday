@@ -809,30 +809,42 @@ struct ContentView: View {
         .contextMenu {
             if !isRenaming {
                 Button("Rename") {
-                    // Committing whatever field currently has focus before this reaches for the
-                    // one shared `oneOffRowText`: seeding it with `row.name` first, the way this
-                    // once did, stomps whatever the previously focused field's own commit was
-                    // about to read back out of that same shared text — `commitFocusedOneOffField()`
-                    // is what every other explicit move already commits through first
-                    // (`design.md` § *The shell*). A refusal it finds still stands keeps that
-                    // field focused rather than this one; see its own doc comment.
-                    commitFocusedOneOffField()
-                    guard oneOffFocus == nil else {
-                        return
+                    // Focusing a field from inside a `contextMenu` action races the menu's own
+                    // dismissal: iOS tears the menu's overlay down right after this closure
+                    // returns, and that teardown resigns whatever a same-turn focus request just
+                    // claimed, so the `TextField` this means to show never visibly gains it —
+                    // tapping *Rename* would otherwise do nothing the person can see. Deferring
+                    // past that teardown is the standard fix; everything this closure does
+                    // (committing whatever field currently has focus, then seeding and focusing
+                    // this row's) moves inside the same deferred block so nothing here still
+                    // races it.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        // Committing whatever field currently has focus before this reaches for
+                        // the one shared `oneOffRowText`: seeding it with `row.name` first, the
+                        // way this once did, stomps whatever the previously focused field's own
+                        // commit was about to read back out of that same shared text —
+                        // `commitFocusedOneOffField()` is what every other explicit move already
+                        // commits through first (`design.md` § *The shell*). A refusal it finds
+                        // still stands keeps that field focused rather than this one; see its own
+                        // doc comment.
+                        commitFocusedOneOffField()
+                        guard oneOffFocus == nil else {
+                            return
+                        }
+                        // A refusal already standing under `row` — left there since an earlier
+                        // attempt nobody has typed over — must stand until its text is edited
+                        // (`openspec/specs/day-screen/spec.md` § *What a day screen tells under a
+                        // one-off name field lasts until…*: opening a rename edits nothing). So
+                        // this seeds the field from `nameRefusal`'s own `text` rather than
+                        // `row.name` where one stands, agreeing with what
+                        // `oneOffRowTextBinding(for:)` already shows there, rather than ending it.
+                        if let nameRefusal = screen.nameRefusal, nameRefusal.row == row {
+                            oneOffRowText = nameRefusal.text
+                        } else {
+                            oneOffRowText = row.name
+                        }
+                        oneOffFocus = .row(row)
                     }
-                    // A refusal already standing under `row` — left there since an earlier
-                    // attempt nobody has typed over — must stand until its text is edited
-                    // (`openspec/specs/day-screen/spec.md` § *What a day screen tells under a
-                    // one-off name field lasts until…*: opening a rename edits nothing). So this
-                    // seeds the field from `nameRefusal`'s own `text` rather than `row.name`
-                    // where one stands, agreeing with what `oneOffRowTextBinding(for:)` already
-                    // shows there, rather than ending it.
-                    if let nameRefusal = screen.nameRefusal, nameRefusal.row == row {
-                        oneOffRowText = nameRefusal.text
-                    } else {
-                        oneOffRowText = row.name
-                    }
-                    oneOffFocus = .row(row)
                 }
                 Button("Remove", role: .destructive) {
                     try? screen.remove(row)
@@ -875,11 +887,21 @@ struct ContentView: View {
     /// standing under the entry — `screen.nameRefusal?.row == nil` reads true both there and
     /// where nothing is told at all, and false only where a *row's* refusal stands, which this
     /// must leave alone (`openspec/specs/day-screen/spec.md` § *What a day screen tells under a
-    /// one-off name field lasts until…*: "the text in *that* field is edited").
+    /// one-off name field lasts until…*: "the text in *that* field is edited"). Guarded on
+    /// `newValue` actually differing from what is shown: a `TextField` flushes its own last-drawn
+    /// text back through this `set` when it loses focus, which lands here *after*
+    /// `commitOneOffEntry()` has already set a fresh `nameRefusal` for the very same text — read
+    /// unguarded, that flush re-ends the refusal it was reporting and restores the stale text
+    /// `commitOneOffEntry()` had just emptied, which is how a refused add both told nothing and
+    /// outlived the entry across a chevron move that committed it a second time. A flush always
+    /// repeats `oneOffEntryCommitText` verbatim, so this cannot also swallow a genuine keystroke.
     private var oneOffEntryTextBinding: Binding<String> {
         Binding(
             get: { oneOffEntryCommitText },
             set: { newValue in
+                guard newValue != oneOffEntryCommitText else {
+                    return
+                }
                 if screen.nameRefusal?.row == nil {
                     screen.oneOffNameEdited()
                 }
@@ -893,22 +915,33 @@ struct ContentView: View {
     /// here ends a refusal standing under this row, or ends nothing where none stands, but must
     /// leave alone a refusal standing under a *different* field — the entry, or (`isRenaming`
     /// only ever showing one row's field at a time) a row reached by `Rename` while another row's
-    /// refusal was left in place. Same requirement as `oneOffEntryTextBinding`.
+    /// refusal was left in place. Same requirement as `oneOffEntryTextBinding`, guarded the same
+    /// way and for the same reason: a stale flush from this field losing focus must not re-end a
+    /// refusal `commitRename(of:to:)` just set for the very text it is echoing back.
     private func oneOffRowTextBinding(for row: DayView.OneOffRow) -> Binding<String> {
         Binding(
-            get: {
-                if let nameRefusal = screen.nameRefusal, nameRefusal.row == row {
-                    return nameRefusal.text
-                }
-                return oneOffRowText
-            },
+            get: { oneOffRowDisplayText(for: row) },
             set: { newValue in
+                guard newValue != oneOffRowDisplayText(for: row) else {
+                    return
+                }
                 if screen.nameRefusal == nil || screen.nameRefusal?.row == row {
                     screen.oneOffNameEdited()
                 }
                 oneOffRowText = newValue
             }
         )
+    }
+
+    /// `row`'s own name field's shown text — `nameRefusal`'s own `text` while a refusal stands
+    /// under `row`, `oneOffRowText` otherwise — read by both the `get` and the `set` of
+    /// `oneOffRowTextBinding(for:)` so a stale flush is recognised by the same rule that draws
+    /// the field.
+    private func oneOffRowDisplayText(for row: DayView.OneOffRow) -> String {
+        if let nameRefusal = screen.nameRefusal, nameRefusal.row == row {
+            return nameRefusal.text
+        }
+        return oneOffRowText
     }
 
     /// ADR-1042, carried forward by `design.md` § *What the shell draws*: a horizontal drag on
