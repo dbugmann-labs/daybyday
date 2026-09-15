@@ -569,6 +569,22 @@ Things that are built, or deliberately not built, in a state someone will trip o
   Story and not the hole. The fix is the script's: scope the match by capability, or by the file the
   test lives in. Unowned. Surfaced at #242's review, 2026-09-14.
 
+- **A commitments screen writes the record place from the copy it read, not from the file as it
+  stands.** A change or restart that carries records goes through `RecordStore.carryOver`, which
+  builds the whole document from that store's own ticks, numbers, notes and additions and replaces
+  the file atomically (`RecordStore.swift:243-312`). A commitments screen reads that copy only when
+  it is made, when the app is shown, and after undoing a torn save (`CommitmentsScreen.swift:34-37`,
+  `:1140-1143`, `:492`). So a record a day screen keeps at the same place after that read, through its
+  own `RecordStore`, would be dropped by the next carrying change, and one taken back in between
+  would come back. Nothing reaches it today: the shell builds a fresh `CommitmentsScreen` on every
+  push and drops it on the way back (`ContentView.swift:132`, `:241`), the screen is pushed rather
+  than presented as a sheet (`:124`), so the day screen cannot be used while it shows, and the app
+  has one window. It becomes live the moment a shell keeps a commitments screen alive across a visit
+  to the day screen, or draws both at once. The guard is to read the record place afresh immediately
+  before a two-place write. `save-change-whole` (#249) declined it because the app it shipped in
+  cannot produce the case; it is owed by whichever change first keeps that screen alive. Surfaced
+  2026-09-14 at #249's grill, answer 15.
+
 ## Settled
 
 - 2026-09-14 — **a week begins on Monday for everyone, and an unmet weekly quota leaves nothing
