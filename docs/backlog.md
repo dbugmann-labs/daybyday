@@ -259,6 +259,9 @@ decision it records is the owner's, twice.*
   not the place to re-decide it, and the next grooming pass is — but the margin it was decided by is
   narrower than the line above reads, and a pass that quotes "already refiles in one tap" is quoting
   something that stopped being true. `grill.md` § *Settled* 14 of #192 recorded that this was owed.
+- **Re-read 2026-09-15**, at the ninth pass, as the amendment above asked: **leave**, not drop. The
+  one-tap argument is gone, but the two Open lines below still price it at an evening per attempt
+  with no test, and the iOS 27 API may make it free. Re-decide when the SDK carries it.
 - **Open** — is it buildable at all? Two things were measured rather than guessed at #147, and any
   future attempt starts from them: **`.onMove` and `.dropDestination(for:)` cannot share a
   `ForEach`** — instrumented, `.onMove` won every long press and `.dropDestination` never fired —
@@ -326,6 +329,9 @@ decision it records is the owner's, twice.*
   scrolling form is one you never see on a phone — the sheet that refuses a name has a name field,
   a rhythm picker, a kind picker and a date picker above the place the message lands. The field you
   got wrong is the only place a refusal can be read at a glance.
+- **Trigger, amended 2026-09-15** at the ninth pass: `fix-change-refusals` (#247) now refuses a change
+  that would carry records onto records already kept, and does not name the day that blocks it.
+  Naming it was left to this want at the eighth pass's grill of B-052.
 - **Open** — "state of the art" is a look, not a rule, and the choice is the owner's: red text
   under the offending field, a red field border, an inline alert, a transient banner. It also
   decides whether the day screen's row notice — already red, but a row rather than a field —
@@ -333,6 +339,72 @@ decision it records is the owner's, twice.*
 - **Open** — is there anything here to specify at all? If the answer is only *which control the
   words hang off and what colour they are*, ADR-1019 makes it a chore on the shell rather than a
   Story, and nothing about it reaches a capability spec.
+
+### B-053 — fill in a commitment on a sheet that fits the phone
+
+*Captured 2026-09-15.*
+
+> "I would like the following adjustments to the 'add' and 'edit' commitment screens:
+> ○ Kind should be below name
+> ○ Category should be a dropdown of existing ones (with the option to type a new one there)
+> ○ For kind 'number' -> lowest and highest in the same row, not 2 rows
+> ○ When choosing weekdays, default should be all enabled, and it should not be one row each, but
+> maybe something like checkboxes (it can be a short version like Mon Tue Wed etc.)
+> ○ Rhythm 'day of month' should be a slider or something rather than +-
+> "Every n days" should not take up more height of a row.."
+
+- **Trigger** — defining a commitment with the `+`, or changing one from the pencil: the one sheet
+  serves both (#148). Rarely, but every time it is a scroll past seven weekday rows.
+- **Touches** — the app shell, `src/DayByDay/DayByDay/CommitmentsView.swift`, for five of the six
+  bullets. No requirement fixes the order of the sheet's fields or the shape of any control, so kind
+  under name, the range on one row, weekdays as short toggles, a day-of-month control other than
+  the stepper and a one-row interval are probably a chore under ADR-1019. The category bullet is
+  already a requirement below the seam — `commitment` § *A commitments screen offers the categories
+  in use* offers the categories in use and accepts a typed one exactly as typed; what the sheet
+  draws is a text field and a separate *Use an existing category* menu (`:598–600`), so only the
+  control changes. The weekday default is the one bullet that may reach `commitment`: see Open.
+- **Principle** — tested against *an iPhone, in your hand*: **passes**. A form of seven weekday
+  rows, two range rows and a stepper is a form built for scrolling, and every bullet shortens what a
+  thumb has to cross. Tested against *five percent of seven things*: **fails** — it deepens a sheet
+  that already defines every rhythm and kind rather than making a new record possible. Both are
+  written down because the second is why a pass might not take it.
+- **Open** — all seven weekdays ticked for a new commitment. The spec says the tick is *the kind
+  offered for a new commitment* and says nothing of which weekdays are; the sheet starts with none
+  (`:508`). A default beside the kind's is probably a requirement, which makes this bullet a Story
+  and the rest a chore — or one Story carrying all six. Grooming decides the shape.
+- **Open** — "a slider or something" for the day of the month. A slider over 1–31 is hard to land
+  on one value with a thumb; a wheel or a grid of days are the alternatives. The owner left the
+  control open.
+- **Open** — the sheet also carries B-050's refusals. Reworking its layout and where its errors
+  land touch the same view, and a pass may want them together.
+
+### B-054 — keep a weekday-set commitment on a day it is not due
+
+*Captured 2026-09-15, from the ninth grooming sweep. The wording is the sweep's; the owner confirmed
+it as a gap rather than saying it unprompted.*
+
+> "Keep a weekday-set commitment on a day it is not due — gym is Mon/Wed/Sat, and a Monday that
+> slips to Tuesday loses its tick."
+
+- **Trigger** — the gym day that moves by one because of work, weather or a sore leg. Rarely, but
+  it is the same event B-052 turned out to be for an every-N-days rhythm: a rhythm kept, late.
+- **Touches** — `record`, whose tick is *of a commitment on a calendar date it is due on, and nothing
+  else*, and `day-screen`, which draws a row only for what is due, so on the Tuesday there is no
+  row to tick. Not `schedule`, unless the answer is a one-time swap of days. The only workaround
+  today is the change sheet — change the rhythm to Tue/Wed/Sat, tick, change it back — which is
+  two supersedes and a split history, the shape B-052's kept-from move had.
+- **Principle** — tested against *five percent of seven things*: **fails** — it deepens a rhythm
+  shape that works. Captured anyway because the workaround splits a history the product exists to
+  keep whole, and because the weekly quota already exists as the shape for "three times a week, any
+  days": the grill may well answer this want by saying gym is a quota, and that is worth deciding
+  on the record rather than by nobody asking.
+- **Open** — is this a tick on a day the commitment is not due, or that week's Monday moved to
+  Tuesday? The first is a record rule; the second is a schedule exception, and the eighth pass
+  declined a late row for intervals.
+- **Open** — is the weekly quota the answer? Gym as 3× a week loses nothing but the named days, and
+  standing (#235) already says where the week stands.
+- **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
+  row for something not due, which is the thing *offered* was landed to keep off the screen.
 
 
 ## Decided
@@ -1005,3 +1077,39 @@ found nothing.
     deltas `day-screen`, so it serialises behind #236 `say-standing-in-quota-row`, and Story 1 waits
     on nothing. A deltas `commitment`, which nothing here touches.
   - **Not re-judged** — the other ten wants; this session held one cluster by design.
+
+- 2026-09-15 — pass over 11 wants, the ninth.
+  - **Sweep** — one silence, confirmed and captured before clustering: **B-054**, keeping a
+    weekday-set commitment on a day it is not due — the weekday-set twin of what B-052 turned out to
+    be, with no workaround that does not split a history. Since pass 8 nine Stories merged (#235,
+    #236, #242–#244, #247–#249) and `EPIC: One-offs` (#238) closed whole; the tracker holds no open
+    issue. Day-one week: every line has a spec, and *yuno 5× a week* is served since #236. Lifecycle
+    verbs: `one-off` create, tick, rename and remove shipped, re-date declined at its grill; the other
+    four all claimed, shipped or declined on record. `docs/open-questions.md` held no want in
+    disguise — #257's record-copy note and row identity are technical, the NaN total a product
+    question. Read from `chore/backlog` (PR #259), which held B-053 unmerged.
+  - **Housekeeping** — B-050 gains #247's unnamed blocking day as a trigger. B-041 re-read as the
+    2026-09-10 amendment asked: leave, not drop.
+  - **Taken forward** — **three clusters at once, by the owner's decision, each groomed in its own
+    session and worktree**, as the eighth pass did:
+    - **A**, the commitment sheet: B-053, B-050, B-043, in the session that ran this sweep
+      (`chore/groom-commitment-sheet`). One view, three wants; layout and red refusals look like a
+      shell chore under ADR-1019, the all-weekdays default and a range or target change like Stories
+      reopening `FEAT: commitment` (#26). The grill decides the shape.
+    - **B**, restore: B-009 (`chore/groom-restore`). Recommended at four passes and taken at the
+      fifth. Three stores now — record, roster, one-offs — and Epic #1 excludes "export and restore"
+      by name, so it amends the Epic or opens one.
+    - **D**, looking back: B-007, B-011 (`chore/groom-look-back`). Epic #1 excludes graphs and detail
+      pages by name, so a new Epic. B-011 waits on what B-007 is a page *per*.
+
+    Each session appends its own dated line recording what its cluster became. **They meet at
+    Stage 4, not before** (`docs/process.md` §7): A deltas `commitment`; B touches the three stores
+    and so `record`, `commitment` and `one-off`, or a capability of its own; D is new and may touch
+    `day-screen` for B-011. Whichever G2 comes second decides what it serialises behind. ADR numbers
+    are claimed against all three open branches, not against `main`.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **C**, kept on a day it is not due: B-054, captured this pass. Stories against `record` (#53)
+      and `day-screen` (#27), or dropped at its grill for "gym is a quota".
+    - **E**, entry affordances: B-034, B-032. Epic #1 excludes prefill by name.
+    - **F**, a reminder: B-039. Unclaimed, and the one want that asks whether this app may nag.
+    - **Singleton**: B-041, leave until the SDK carries `reorderable(collectionID:)`.
