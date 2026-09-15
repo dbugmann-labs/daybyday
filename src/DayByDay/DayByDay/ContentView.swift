@@ -98,14 +98,14 @@ struct ContentView: View {
         case row(DayView.OneOffRow)
     }
     @FocusState private var oneOffFocus: OneOffFocus?
-    // The entry's own typed text, and the text typed into whichever row is being renamed. Each
-    // is emptied only once its commit is *kept* — `commitOneOffEntry()` and `commitRename(of:to:)`
-    // both leave it exactly as typed while refused, so the text a later commit resends always
-    // agrees with what the field is showing: `nameRefusal`'s own `text` while a refusal stands
-    // (`design.md` § *The shell*), this once it does not. Emptying either on a refusal would let
-    // the field keep showing the refused text while silently queuing a resend of nothing — a
-    // no-op `DayScreen.addOneOff` shrugs off, but one `DayScreen.rename` reads as removing the
-    // one-off outright.
+    // The entry's own typed text, and the text typed into whichever row is being renamed. Each is
+    // emptied on every commit `commitOneOffEntry()` or `commitRename(of:to:)` makes, kept or
+    // refused alike (`design.md` § *A refusal under a name field is its own value*: "the shell
+    // empties its field on every commit"). What the field *shows* and *resends* while a refusal
+    // stands is never read off these — `oneOffEntryCommitText` and `oneOffRowTextBinding(for:)`
+    // both read `nameRefusal`'s own `text` there instead — so shown and committed always agree,
+    // and this pair only matters again once the refusal ends: by an edit, a day change, or the
+    // app being shown again, each of which the kit itself clears `nameRefusal` on.
     @State private var oneOffEntryText = ""
     @State private var oneOffRowText = ""
     // Set immediately before `commitFocusedOneOffField()` clears `oneOffFocus`, having already
@@ -287,7 +287,7 @@ struct ContentView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase != .active {
-                commitFocusedOneOffField()
+                commitFocusedOneOffField(forDeparture: true)
             }
             if phase == .active {
                 screen.shown(asOf: today())
@@ -334,15 +334,21 @@ struct ContentView: View {
 
     /// Commits whatever one-off field currently has focus — the entry, or a row's rename field —
     /// and, once committed, drops focus itself: a caller that also means to drop it need not set
-    /// `oneOffFocus` a second time (the checkmark does not). The one exception is a rename this
-    /// finds refused: `commitRename(of:to:)` has already put the row back in focus, and this
-    /// leaves it there rather than clearing it out from under that. Guarded on `oneOffFocus`
-    /// being non-`nil` at entry, so a second, redundant call — `scenePhase` leaving `.active`
-    /// calls this once per phase it passes through on the way to the background, `.inactive` and
-    /// then `.background` — finds nothing left to commit and does nothing. Called before every
-    /// one of the moves `design.md` § *The shell* names: the chevrons, swipe, `Today`, the day
-    /// picker and `scenePhase` leaving `.active`, in each case before the day actually moves.
-    private func commitFocusedOneOffField() {
+    /// `oneOffFocus` a second time (the checkmark does not). Where a rename this finds is refused,
+    /// `forDeparture` decides what becomes of it. `false` — the checkmark and a row's own Return —
+    /// holds the row focused with its typed name and the cause under it (grill answer 18, "exactly
+    /// as a refused add"). `true` — every caller about to move the day away from this field or send
+    /// the app to the background: the chevrons, swipe, `Today`, the day picker and `scenePhase`
+    /// leaving `.active` — drops focus and, since `commitRename(of:to:)` has already emptied
+    /// `oneOffRowText`, the typed text with it, instead of holding it open on a page about to
+    /// become a neighbour or go unseen (grill answer 12, "dropped with its text by the time the
+    /// day lands"). Guarded on `oneOffFocus` being non-`nil` at entry, so a second, redundant call
+    /// — `scenePhase` leaving `.active` calls this once per phase it passes through on the way to
+    /// the background, `.inactive` and then `.background` — finds nothing left to commit and does
+    /// nothing. Called before every one of the moves `design.md` § *The shell* names: the
+    /// chevrons, swipe, `Today`, the day picker and `scenePhase` leaving `.active`, in each case
+    /// before the day actually moves.
+    private func commitFocusedOneOffField(forDeparture: Bool = false) {
         guard let focus = oneOffFocus else {
             return
         }
@@ -350,7 +356,9 @@ struct ContentView: View {
         case .entry:
             commitOneOffEntry()
         case .row(let row):
-            guard !commitRename(of: row, to: oneOffRowText) else {
+            let refused = commitRename(of: row, to: oneOffRowText)
+            guard !refused || forDeparture else {
+                oneOffFocus = .row(row)
                 return
             }
         }
@@ -369,43 +377,33 @@ struct ContentView: View {
         return oneOffEntryText
     }
 
-    /// Commits `oneOffEntryCommitText` as a new one-off from the entry — the same rule
-    /// `commitRename(of:to:)` commits a row's rename by: kept, or a harmless no-op (blank text),
-    /// empties `oneOffEntryText`; refused leaves it holding exactly what was sent, so the entry
-    /// keeps showing what it will send next rather than resending blank once it does.
+    /// Commits `oneOffEntryCommitText` as a new one-off from the entry and empties
+    /// `oneOffEntryText`, kept or refused alike (`design.md` § *A refusal under a name field is
+    /// its own value*: "the shell empties its field on every commit"). What the entry shows and
+    /// resends while a refusal stands is `oneOffEntryCommitText`'s own read of `nameRefusal.text`,
+    /// not this state, so emptying it here never loses the typed text — only ends the entry's
+    /// last claim on it, which the refusal itself, while it stands, already holds.
     private func commitOneOffEntry() {
         let text = oneOffEntryCommitText
         try? screen.addOneOff(named: text)
-        guard screen.nameRefusal?.row == nil, screen.nameRefusal != nil else {
-            oneOffEntryText = ""
-            return
-        }
-        oneOffEntryText = text
+        oneOffEntryText = ""
     }
 
-    /// Commits `text` as a rename of `row` and reports whether it was refused: `false` means it
-    /// was kept (or a harmless no-op — the row's own name, unchanged) and `oneOffRowText` has
-    /// been emptied; `true` means `oneOffFocus` has been put back on `row` and `oneOffRowText`
-    /// left exactly as it was typed, so the row stays in edit with the typed name and the cause
-    /// under it — grill answer 18, "exactly as a refused add" — and `commitFocusedOneOffField()`,
-    /// its one caller, can tell whether it still needs to drop focus itself. Called only from
+    /// Commits `text` as a rename of `row`, empties `oneOffRowText` and reports whether it was
+    /// refused — kept or refused alike (`design.md` § *A refusal under a name field is its own
+    /// value*: "the shell empties its field on every commit"); what the row shows and resends
+    /// while a refusal stands is `oneOffRowTextBinding(for:)`'s own read of `nameRefusal.text`,
+    /// not this state. `commitFocusedOneOffField()`, its one caller, reads the result to decide
+    /// what becomes of a refusal: put back in focus (grill answer 18) or, `forDeparture`, dropped
+    /// with it (grill answer 12) — this function decides only whether, not what. Called only from
     /// there, and not from `onChange(of: oneOffFocus)`'s own, unconditional commit: focus has
     /// already moved on by the time that fires, to wherever a tap elsewhere landed, and putting
     /// it back on `row` there would fight that rather than hold a field that was never actually
-    /// about to lose it. Leaving `oneOffRowText` as typed, rather than emptying it the way a kept
-    /// change's is, also means a redundant second call for the same still-refused row (more than
-    /// one place calls `commitFocusedOneOffField()` for the one field losing focus, and the
-    /// `justCommittedOneOffField` guard on that does not apply to a call that never actually
-    /// dropped focus) resends the same text — refused the same way again — rather than resending
-    /// it blank, which `DayScreen.rename` reads as asking to remove the one-off.
+    /// about to lose it.
     private func commitRename(of row: DayView.OneOffRow, to text: String) -> Bool {
         try? screen.rename(row, to: text)
-        guard screen.nameRefusal?.row == row else {
-            oneOffRowText = ""
-            return false
-        }
-        oneOffFocus = .row(row)
-        return true
+        oneOffRowText = ""
+        return screen.nameRefusal?.row == row
     }
 
     /// The controls that stay put while the day's rows page beneath them: the chevrons and the
@@ -446,7 +444,7 @@ struct ContentView: View {
                                     year: components.year!, month: components.month!,
                                     day: components.day!)
                             else { return }
-                            commitFocusedOneOffField()
+                            commitFocusedOneOffField(forDeparture: true)
                             screen.showDay(picked)
                         }
                     ),
@@ -464,7 +462,7 @@ struct ContentView: View {
             }
             if screen.offersGoingBackToToday {
                 Button {
-                    commitFocusedOneOffField()
+                    commitFocusedOneOffField(forDeparture: true)
                     screen.showToday()
                 } label: {
                     Text("Today")
@@ -873,20 +871,29 @@ struct ContentView: View {
     /// The entry's text: `oneOffEntryCommitText`, the same value `commitOneOffEntry()` would
     /// send — `nameRefusal`'s own `text` while a refusal stands under the entry, so what was
     /// typed is what keeps showing, `oneOffEntryText` otherwise. `design.md` § *A refusal under a
-    /// name field is its own value, and there is one at a time*. Typing anywhere in this field
-    /// ends whatever `nameRefusal` was telling, wherever it was telling it.
+    /// name field is its own value, and there is one at a time*. Typing here ends a refusal
+    /// standing under the entry — `screen.nameRefusal?.row == nil` reads true both there and
+    /// where nothing is told at all, and false only where a *row's* refusal stands, which this
+    /// must leave alone (`openspec/specs/day-screen/spec.md` § *What a day screen tells under a
+    /// one-off name field lasts until…*: "the text in *that* field is edited").
     private var oneOffEntryTextBinding: Binding<String> {
         Binding(
             get: { oneOffEntryCommitText },
             set: { newValue in
-                screen.oneOffNameEdited()
+                if screen.nameRefusal?.row == nil {
+                    screen.oneOffNameEdited()
+                }
                 oneOffEntryText = newValue
             }
         )
     }
 
     /// `row`'s own name field's text, the same rule `oneOffEntryTextBinding` reads by:
-    /// `nameRefusal`'s `text` while it stands under this row, `oneOffRowText` otherwise.
+    /// `nameRefusal`'s `text` while it stands under this row, `oneOffRowText` otherwise. Typing
+    /// here ends a refusal standing under this row, or ends nothing where none stands, but must
+    /// leave alone a refusal standing under a *different* field — the entry, or (`isRenaming`
+    /// only ever showing one row's field at a time) a row reached by `Rename` while another row's
+    /// refusal was left in place. Same requirement as `oneOffEntryTextBinding`.
     private func oneOffRowTextBinding(for row: DayView.OneOffRow) -> Binding<String> {
         Binding(
             get: {
@@ -896,7 +903,9 @@ struct ContentView: View {
                 return oneOffRowText
             },
             set: { newValue in
-                screen.oneOffNameEdited()
+                if screen.nameRefusal == nil || screen.nameRefusal?.row == row {
+                    screen.oneOffNameEdited()
+                }
                 oneOffRowText = newValue
             }
         )
@@ -946,10 +955,10 @@ struct ContentView: View {
                 let width = value.translation.width
                 let carries = abs(width) > pageWidth / 3
                 if width < 0, screen.nextDayView != nil, carries {
-                    commitFocusedOneOffField()
+                    commitFocusedOneOffField(forDeparture: true)
                     settle(to: -pageWidth) { screen.showNextDay() }
                 } else if width > 0, screen.previousDayView != nil, carries {
-                    commitFocusedOneOffField()
+                    commitFocusedOneOffField(forDeparture: true)
                     settle(to: pageWidth) { screen.showPreviousDay() }
                 } else {
                     settle(to: 0, then: nil)
@@ -963,7 +972,7 @@ struct ContentView: View {
     /// has nowhere to go, so the day is moved directly with no slide to play — `showPreviousDay()`
     /// and `showNextDay()` are themselves already a no-op there.
     private func playSettle(towards neighbour: Neighbour) {
-        commitFocusedOneOffField()
+        commitFocusedOneOffField(forDeparture: true)
         switch neighbour {
         case .previous:
             guard screen.previousDayView != nil else {
