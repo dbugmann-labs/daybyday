@@ -69,7 +69,7 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
         rewritten; nothing else in the delta moves.
    ```
 
-   Then **write the change folder anyway**, on your recommended answers, and finish steps 3–8
+   Then **write the change folder anyway**, on your recommended answers, and finish steps 3–9
    as normal. The round is read next to the diff it would change, which is the whole reason it
    is worth more than an interview. The section exists only while the round is outstanding: when
    the answers come back, fold each into the delta, record it under `## Open Questions` as
@@ -119,8 +119,20 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
    place. `add-number-entry` (#139) shipped this box in exactly the right shape and it still
    stalled, because nothing in it said whose tick it was — the implementer left it for the janitor,
    the janitor archived, and the box moved out of reach. One clause prevents it.
-7. **Validate.** `openspec validate <change-id> --strict` must exit 0 before you hand back.
-8. **Open the draft PR.** G4 is read as a diff, so leave one behind. Commit the change folder
+7. **Write the walk, if the Story reaches the shell.** A change whose diff will touch
+   `src/DayByDay/` carries a `## The walk` section in `tasks.md`: one box per screenshot, one
+   line each, naming the state the implementer drives the simulator to and what the picture
+   must show — *the day screen a day back, the first row ticked*. Take the steps from
+   `grill.md` and the delta's scenarios; a walk shows the requirements, it does not restate
+   them. A step a simulator cannot prove — a drag between groups, paging under the finger, a
+   long press — is one line marked `phone:` instead, and the conductor puts it to the human at
+   G7. Close the section with the handover box: the implementer posts the pictures to the PR
+   with `gh pr comment --attach` before hand-back, and ticks it on the comment's URL. These
+   lines sit outside the 80-line budget, one per screenshot like a scenario. A Story that does
+   not reach the shell carries no walk section, and says nothing about it. ADR-1053.
+
+8. **Validate.** `openspec validate <change-id> --strict` must exit 0 before you hand back.
+9. **Open the draft PR.** G4 is read as a diff, so leave one behind. Commit the change folder
    as `docs(<capability>): propose <change-id>` — `grill.md` and `.openspec.yaml` are both
    uncommitted when you arrive, and both go in with the rest of the folder rather than as a
    commit of their own; they are documentation until G4 like everything else there. Make sure the branch sits on current `main`, push, and open it:
@@ -145,8 +157,8 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
 
 **Every artifact has a budget, and the budgets are ADR-1047's.** `openspec/config.yaml` puts
 them in front of you at each `openspec instructions` call: `proposal.md` at most 60 lines;
-`design.md` at most 150; `tasks.md` one line per scenario plus at most 80 for setup, shell, gates
-and the archive handover; every requirement's prose 40–150 normative words, with every rule a
+`design.md` at most 150; `tasks.md` one line per scenario and one per walk screenshot plus at
+most 80 for setup, shell, gates and the archive handover; every requirement's prose 40–150 normative words, with every rule a
 scenario tests written as a SHALL/MUST sentence and never only as a "so that" or a "therefore".
 No measurement chronologies, no test counts derived by arithmetic, no pasted source or logs, no
 "what the Nth review pass found". **On a reopen, edit in place**: change the sentences that

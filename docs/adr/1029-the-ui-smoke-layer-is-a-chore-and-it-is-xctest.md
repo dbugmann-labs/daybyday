@@ -8,6 +8,10 @@
   consequence below is rewritten to say what it actually is. Nothing in the Decision moves: the
   lane, the framework and the thin assertion are untouched, and so is the rule that this layer
   asserts the shell drew and never what it drew.
+- Amended: 2026-09-15 — the walk (ADR-1053) is the per-Story layer this record left to
+  "looking at it": it runs the same bundle on the same simulator, and the consequence that says
+  the walkthrough cost "drops but does not vanish" now says where it went. Nothing in the
+  Decision moves; `ui-smoke` stays thin, required and unchanged.
 - Amended: 2026-09-08 — the draft half of the gate moves from the steps to the job. Nothing about
   what is gated changes; where the condition is written does, and with it what a skip costs. The
   gate bullet below is rewritten and now also says what the required check actually promises.
@@ -249,10 +253,15 @@ Anything that needs to assert *what* is a requirement, and requirements live beh
   and is not ours to pin; the step prints which device it took, so a green run is attributable.
 - **`docs/open-questions.md` § *No UI smoke layer* closes**, four Stories and six days after it
   was opened. It moves to *Settled* with this pointer.
-- **The per-Story walkthrough cost drops but does not vanish.** A Story that adds a screen still
-  has to look at it — `docs/running-the-app.md` is still how anyone sees the app, and a screenshot
-  is still how an agent proves it drew. What ends is rebuilding a throwaway harness to prove the
-  shell is not blank, and evidencing it at length in a `tasks.md` that then gets archived.
+- **The per-Story walkthrough cost drops but does not vanish, and since 2026-09-15 it has a
+  name.** A Story that adds a screen still has to look at it, and for five days after ADR-1047
+  nobody did: the budget took the written evidence out of `tasks.md`, a watchdog stall put a
+  never-run rule on this bundle, and the phone walk was left out of every Story from #192. The
+  **walk** (ADR-1053) is that step made owed rather than optional — a throwaway XCUITest in this
+  same bundle, driven on this same simulator, one screenshot per line of `tasks.md` § *The walk*,
+  posted to the PR before review. What ended is what this record said would end: a harness rebuilt
+  per Story to prove the shell is not blank, which is this layer's job, and long-form evidence in
+  a file that gets archived, which is now a PR comment.
 - **This layer will be under-maintained, and that is the accepted risk.** It is the one test in
   the repository that no Story owns, no scenario drives and no gate reads. The guard against it
   rotting into either uselessness or flakiness is the rule above: it asserts that the shell drew,

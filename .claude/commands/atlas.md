@@ -227,6 +227,13 @@ durable files, applied to the gate. Omit the line when nothing ran, never pad it
 one artifact that must reach the human unmediated, and that outranks the budget. Everything else
 obeys it.
 
+**A G7 stop on a Story with a walk carries two more lines in `Detail`, and no more than two.**
+The link to the walk comment on the PR — the pictures are read there, never pasted — and, where
+`tasks.md` has lines marked `phone:`, those lines verbatim under *walk on the phone:*, because
+they are the steps no simulator could show and the human's G7 reply is the only place they get
+answered. The reply vocabulary does not change: `approved` says the pictures and the phone were
+looked at, and `changes: <what>` names the box that showed the wrong thing. ADR-1053.
+
 **The pair is *If you take the recommendation* against *If you don't*** — not yes against no.
 The two read identically at a binary gate and, unlike yes/no, they fit a stop whose reply is a
 choice — a cluster to take forward, `1: clamp` against `1: skip` — without the form being bent
@@ -695,7 +702,11 @@ delta on answers rather than on its own recommendations. ADR-1006, amended.
 3. **Rounds, in the round shape, until the frontier is empty.** What a short month does, what an
    out-of-range number does, what happens to a record when the thing it records is retired — the
    edges that are invisible until someone tries to phrase the requirement. Dispatch an agent for
-   every fact; ask only what is genuinely theirs.
+   every fact; ask only what is genuinely theirs. **If the Story will reach `src/DayByDay/`, the
+   walk is on the frontier**: which screens and states the human wants to see before it merges,
+   and which steps only a phone can prove — a drag, paging feel, a long press. Record the
+   answers under `## Settled`; `spec-author` writes `## The walk` from them (ADR-1053). A Story
+   that stays behind the seam has no walk and no question about one.
 
 4. **Create the change folder and write `grill.md` into it**, and nothing else. Both at the
    close, in that order — a grill in progress leaves nothing on disk, deliberately:

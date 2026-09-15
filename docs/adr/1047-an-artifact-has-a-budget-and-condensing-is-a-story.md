@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-15 — decision 1's `tasks.md` budget gains the walk: one line per screenshot,
+  outside the 80, the way a scenario is. ADR-1053 is the decision; this record only holds the
+  number.
 - Amended: 2026-09-13 — decision 7 widened by points 7–10. A covering Story also strengthens in
   place a shipped test that asserts less than its scenario, and proves a rewrite by mutation where
   the test was shown to survive one. It may widen an internal member for tests where no test can
@@ -76,8 +79,9 @@ enforced — the stock schema says "keep it concise" and the folders grew anyway
 - `design.md` at most 150 lines, with `### The seam` always present under Decisions and written as
   **signature lines only** — no doc comments, no bodies. Context states each fact once at its current
   value.
-- `tasks.md` one line per scenario — the title verbatim plus at most one clause — and at most 80
-  lines for everything else together. Never a pasted source, transcript or log.
+- `tasks.md` one line per scenario — the title verbatim plus at most one clause — one line per
+  walk screenshot where the Story reaches the shell (ADR-1053), and at most 80 lines for
+  everything else together. Never a pasted source, transcript or log.
 - **Requirement prose is 40 to 150 normative words**: SHALL/MUST sentences, no rationale, no
   alternatives, no bold sentences, no Story history, and **every rule a scenario tests stated as a
   SHALL/MUST sentence** rather than only as a consequence or a "so that".

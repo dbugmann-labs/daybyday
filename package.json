@@ -28,6 +28,7 @@
     "check:config": "node scripts/check-config.ts",
     "graph": "node scripts/generate-graph.ts",
     "phone": "node scripts/install-on-phone.ts",
+    "walk": "node scripts/walk.ts",
     "status": "node scripts/status.ts"
   },
   "devDependencies": {

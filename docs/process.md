@@ -225,8 +225,8 @@ than spawns is the grill, which produces decisions — never a delta, never a te
 | 2 | Story decomposition | **you** accept; **you** type `to-tickets`, which proposes | `orchestrator` / Opus writes what you accepted | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
 | 4 | Propose | **you** grill, then the agent writes and you approve | the conductor grills via `grill`; then `spec-author` / Opus via `/opsx:propose` | the grill first — `grill.md`, plus any new `CONTEXT.md` terms — then the change folder written on those answers: proposal, delta specs, design, tasks, with `design.md` **Open Questions** filled in and a `## Questions for you` residual round only if writing the delta turned one up. The worktree is cut before the grill; commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
 | 5 | Red | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` | one failing acceptance test | A |
-| 6 | Green + next | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` and `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes | A |
-| 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `mattpocock-skills:code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity | **G7 (H)** |
+| 6 | Green + next | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` and `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes; then, on a Story that reaches the shell, the **walk** — the simulator driven through `tasks.md` § *The walk*, one screenshot per box posted to the PR as a comment (ADR-1053) | A |
+| 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `mattpocock-skills:code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity, the walk's pictures read on the second; the G7 stop links the walk comment and carries any `phone:` lines for you to walk | **G7 (H)** |
 | 8 | Archive | agent | `janitor` / Haiku, via `/opsx:archive` | delta merged into `openspec/specs/`, change moved to `changes/archive/`, PR taken out of draft with `gh pr ready` | — |
 | 9 | Merge | agent | `janitor` / Haiku | issue auto-closed, parents settled, the Story's worktree removed | **G8 (CI)** |
 
@@ -355,7 +355,11 @@ records why the change folder is *not* merged to `main` in a PR of its own first
 **G7 — Review clean.** `code-review` reports no unresolved findings on either axis. The reviewer
 never edits code; it reports and the implementer fixes. The same PR is refreshed against `main`
 first, so what is reviewed is what will merge. Review runs *before* the archive commit, so the
-reviewer sees the change folder at the path you approved at G4.
+reviewer sees the change folder at the path you approved at G4. **On a Story that reaches the
+shell, G7 is also where you see the screen**: the stop links the walk comment on the PR, one
+picture per box of `tasks.md` § *The walk*, and lists any step marked `phone:` for you to walk
+on your own phone before you reply. Nothing else in the pipeline looks at the app before it
+merges — `ui-smoke` proves the shell drew, never what. ADR-1053.
 
 **G8 — CI green.** The only gate between a finished Story and `main`. It also carries what used
 to be a separate archive gate: `openspec validate --archived` proves every `tasks.md` box is
@@ -660,6 +664,9 @@ finished — never per-commit — so it can never push you into writing tests in
 - [ ] `pnpm run verify` green; full CI green
 - [ ] PR rebased onto current `main` before the review, and out of draft after the archive
 - [ ] `code-review` clean on both axes
+- [ ] On a Story that reaches `src/DayByDay/`, every box of `tasks.md` § *The walk* ticked, its
+      pictures posted to the PR as one comment, its throwaway test not in the diff, and any
+      `phone:` line answered in the G7 reply (ADR-1053)
 - [ ] ADR written if a decision was hard, reversible-with-pain, or surprising
 - [ ] `/opsx:archive` run as the last commit on the branch: `openspec/specs/` updated, change
       under `changes/archive/`, every `tasks.md` box ticked

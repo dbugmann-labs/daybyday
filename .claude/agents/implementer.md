@@ -95,6 +95,37 @@ has taken a decision it was not allowed to take, and the right response is to st
 decision back, never to cover it with a test. `docs/open-questions.md` § *No UI smoke layer*
 records what the eventual answer is and why it is deferred; it is not yours to bring forward.
 
+## The walk — story branch, when `tasks.md` has one
+
+A Story whose diff reaches `src/DayByDay/` carries a `## The walk` section: one box per
+screenshot, each naming a state to drive the simulator to and what the picture must show. It is
+the last thing you do before the hand-back, after every scenario is green and committed, and it
+is how the reviewer and the human see the screen before it merges. ADR-1053; the exact commands
+are `docs/running-the-app.md` § *The walk*, and you run them as written:
+
+1. **Commit first.** A failing run returns only after Xcode has finished its failure diagnostics,
+   which is minutes, and a session killed while it waits loses whatever was uncommitted.
+2. **Uninstall the app from the simulator**, so the walk starts from a fresh install and the
+   day-one roster; the walk list says what to define or tick before each picture.
+3. **Write a throwaway `WalkUITests.swift`** in `src/DayByDay/DayByDayUITests/`: one XCUITest
+   method that drives the steps in order and attaches a screenshot named for each box. It waits
+   for the control it taps and fails only when a step cannot be driven; it asserts nothing
+   about what is shown, because the seam tests already do. A step marked `phone:` is skipped.
+4. **Run it in the background, output to a file**, then export the pictures into `walk/` at the
+   worktree root, which is gitignored, named for their boxes.
+5. **Read every picture yourself** against its box. A picture that does not show what the box
+   says is a stop under rule 5 — say which box and what it shows instead — unless the scenario
+   the box comes from is green and the box is what is wrong, which you report the same way.
+6. **Post them to the PR** as one comment, one `--attach` per picture with the box's line as its
+   caption, and tick the walk boxes and the handover box on the comment's URL.
+7. **Delete `WalkUITests.swift`.** It is never committed, and the reviewer checks that
+   `git diff --stat origin/main... -- src/DayByDay/DayByDayUITests/` is empty. The pictures
+   in `walk/` stay for the reviewer.
+
+A step you cannot drive — the control is not there, the sheet does not open — is a stop with the
+failing step and the runner's own error verbatim, never a `sleep`, a retry loop or a walk written
+around it. The ten-minute wait after a failure is Xcode's, not a hang: read the output file.
+
 ## Before you hand back
 
 `pnpm run verify` and `pnpm run checks` both green. The second runs the merge-time checks
@@ -127,8 +158,8 @@ Do not run `/opsx:archive` — that is the janitor's step, and it happens after 
 
 **What you hand back** is what the conductor's step report is made of, and it can only relay
 what you name: the PR URL, the last commit on the branch, `verify` and `checks` as exit codes,
-how many scenarios are ticked in `tasks.md` out of how many, and whether the branch sits on
-current `main`. Facts it can open, run or count — not an account of how it went. On a chore
+how many scenarios are ticked in `tasks.md` out of how many, the URL of the walk comment where
+the Story has a walk, and whether the branch sits on current `main`. Facts it can open, run or count — not an account of how it went. On a chore
 branch there are no scenarios to count, so name instead the exact command that builds it and the
 exact command that launches it, both as you actually ran them.
 
