@@ -9115,3 +9115,33 @@ func aChangeAStoppedCommitmentDoesNotTakeIsAboutTheRhythmFieldWhereOnlyTheRhythm
             == CommitmentsScreen.SheetRefusal(
                 field: .rhythm, refusal: .stoppedCommitmentCannotChangeRhythm))
 }
+
+@MainActor
+@Test(
+    "a change a stopped commitment does not take is about the day-kept-from field where only that day differs"
+)
+func aChangeAStoppedCommitmentDoesNotTakeIsAboutTheDayKeptFromFieldWhereOnlyThatDayDiffers() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let january5th = CalendarDate(year: 2026, month: 1, day: 5)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    try rosterStore.retire(gym, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        gym, toName: "Gym", on: Rhythm(schedule), keptFrom: january5th, under: nil)
+
+    #expect(refusal == .stoppedCommitmentCannotChangeRhythm)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(
+                field: .keptFrom, refusal: .stoppedCommitmentCannotChangeRhythm))
+}
