@@ -1,7 +1,9 @@
 /**
  * Runs a Story's walk: drives the simulator through the throwaway `WalkUITests.swift`, exports
  * one screenshot per step into `walk/`, and posts them to the PR. `pnpm run walk` runs and
- * exports; `pnpm run walk -- --post <pr-number>` also posts the comment. ADR-1053;
+ * exports; `pnpm run walk -- --post <pr-number>` also posts the comment, and
+ * `pnpm run walk -- --post-only <pr-number>` posts what an earlier run left in `walk/` without
+ * running again — for after the pictures have been read. ADR-1053;
  * `docs/running-the-app.md` § *The walk* carries the same commands written out longhand, for
  * when this script is the thing that is broken.
  *
@@ -18,9 +20,15 @@
  * **Posting needs `gh` 2.99.0 or later** for `--attach`, which is `~/.local/bin/gh` on this
  * machine (`AGENTS.md` § *This machine*); the Actions token is refused by that flag, which is
  * why the walk is run here and not in CI.
+ *
+ * **What is posted is a 1x copy, two to a row.** The simulator exports at 3x — 1206 by 2622 —
+ * and a Markdown image cannot be given a width, so a full-size picture fills the PR's column
+ * and a walk of eighteen is a long scroll. The copies are resampled with `sips` to 402 pixels
+ * wide, the device's own point width, and laid out in a table with the box's line under each;
+ * `walk/` keeps the full-size originals for the reviewer.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, copyFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, copyFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -46,8 +54,50 @@ function gh(): string {
 
 const args = process.argv.slice(2)
 const postAt = args.indexOf('--post')
-const prNumber = postAt >= 0 ? args[postAt + 1] : undefined
-if (postAt >= 0 && !/^\d+$/.test(prNumber ?? '')) fail('--post takes a PR number')
+const postOnlyAt = args.indexOf('--post-only')
+const prNumber = postAt >= 0 ? args[postAt + 1] : postOnlyAt >= 0 ? args[postOnlyAt + 1] : undefined
+if ((postAt >= 0 || postOnlyAt >= 0) && !/^\d+$/.test(prNumber ?? '')) fail('--post and --post-only take a PR number')
+const postOnly = postOnlyAt >= 0
+
+type Picture = { name: string; file: string }
+
+function post(pictures: Picture[], pr: string): void {
+  // Inside `walk/`, which is gitignored, so `gh` runs from the worktree and can see the repo.
+  const small = path.join(OUT_DIR, 'small')
+  rmSync(small, { recursive: true, force: true })
+  mkdirSync(small, { recursive: true })
+  const rows: string[] = []
+  const attachArgs: string[] = []
+  for (let i = 0; i < pictures.length; i += 2) {
+    const pair = pictures.slice(i, i + 2)
+    const cells = pair.map((picture, offset) => {
+      const short = `${String(i + offset + 1).padStart(2, '0')}.png`
+      run('sips', ['--resampleWidth', '402', picture.file, '--out', path.join(small, short)])
+      attachArgs.push('--attach', `./${small}/${short}#${picture.name}`)
+      return `![${picture.name}](./${small}/${short})`
+    })
+    rows.push(`| ${cells.join(' | ')} |`)
+    rows.push(`| ${pair.map((picture) => picture.name).join(' | ')} |`)
+  }
+  const sha = run('git', ['rev-parse', '--short', 'HEAD']).trim()
+  const body = [
+    `**The walk** — ${pictures.length} pictures from a fresh install, at ${sha}. Full size in \`walk/\` on the branch.`,
+    '',
+    '| | |',
+    '|---|---|',
+    ...rows,
+  ].join('\n')
+  run(gh(), ['pr', 'comment', pr, '--body', body, ...attachArgs])
+  const url = run(gh(), ['api', `repos/{owner}/{repo}/issues/${pr}/comments`, '--jq', '.[-1].html_url']).trim()
+  console.log(`walk: posted ${url}`)
+}
+
+if (postOnly) {
+  const files = existsSync(OUT_DIR) ? readdirSync(OUT_DIR).filter((f) => f.endsWith('.png')).sort() : []
+  if (files.length === 0) fail(`nothing in ${OUT_DIR}/ to post — run the walk first`)
+  post(files.map((f) => ({ name: f.replace(/\.png$/, ''), file: path.join(OUT_DIR, f) })), prNumber!)
+  process.exit(0)
+}
 
 if (!existsSync(WALK_TEST)) fail(`${WALK_TEST} is not there — write the walk first`)
 
@@ -144,14 +194,8 @@ for (const picture of pictures) console.log(`  ${picture.file}`)
 if (!passed) fail('a step could not be driven — the runner\'s own error is above; that is a stop, not a retry')
 if (pictures.length === 0) fail('the walk passed and attached nothing — no shot() call ran')
 
-const sha = run('git', ['rev-parse', '--short', 'HEAD']).trim()
-const body = `The walk — ${pictures.length} pictures from a fresh install on ${device.name}, at ${sha}.`
-const attachArgs = pictures.flatMap((picture) => ['--attach', `${picture.file}#${picture.name}`])
 if (prNumber) {
-  run(gh(), ['pr', 'comment', prNumber, '--body', body, ...attachArgs])
-  const url = run(gh(), ['api', `repos/{owner}/{repo}/issues/${prNumber}/comments`, '--jq', '.[-1].html_url']).trim()
-  console.log(`walk: posted ${url}`)
+  post(pictures, prNumber)
 } else {
-  console.log('walk: to post them, run again with -- --post <pr-number>, or:')
-  console.log(`  ${gh()} pr comment <pr> --body '${body}' ${attachArgs.map((a) => (a.startsWith('--') ? a : `'${a}'`)).join(' ')}`)
+  console.log('walk: read them, then post with: pnpm run walk -- --post-only <pr-number>')
 }

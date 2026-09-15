@@ -116,8 +116,9 @@ are `docs/running-the-app.md` § *The walk*, and you run them as written:
 5. **Read every picture yourself** against its box. A picture that does not show what the box
    says is a stop under rule 5 — say which box and what it shows instead — unless the scenario
    the box comes from is green and the box is what is wrong, which you report the same way.
-6. **Post them to the PR** as one comment, one `--attach` per picture with the box's line as its
-   caption, and tick the walk boxes and the handover box on the comment's URL.
+6. **Post them to the PR** with `pnpm run walk -- --post-only <pr>`: one comment, the pictures
+   at 1x two to a row with the box's line under each. Tick the walk boxes and the handover box
+   on the comment's URL.
 7. **Delete `WalkUITests.swift`.** It is never committed, and the reviewer checks that
    `git diff --stat origin/main... -- src/DayByDay/DayByDayUITests/` is empty. The pictures
    in `walk/` stay for the reviewer.
