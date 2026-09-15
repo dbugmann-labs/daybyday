@@ -1342,6 +1342,15 @@ never had, and it is the shape the day screen's one-off entry already has; wheth
 change gaining a place or a second thing beside it — the point above at which one word should
 replace both — is the delta's to say. The words a person reads are still the **app shell**'s.
 
+**Sheet refusal** — the delta's answer to that, and a second thing beside the refused change rather
+than a place added to it: the refusal a **commitment sheet** is telling and which of its fields —
+the name, the rhythm, the day kept from, the range, the target, the restart day — it is about,
+about *no* field being what puts it at the foot of the form. A screen tells one at a time. Two
+values, because the refused change belongs to the two lists as much as to the sheet, and a name
+typed on a sheet must not end a refusal told beside a row; the **day screen** already divides its
+*notice* from what it tells under a one-off name field for the same reason. Named at
+`place-sheet-refusals` (#261), 2026-09-15.
+
 **Record place** — the one place a day screen keeps its record at, and the only thing about the
 record that is a day screen's to choose. It is a file inside the directory the platform reserves for
 an application's own supporting data, in a directory of this app's own, and it is the same place
