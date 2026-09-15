@@ -3235,6 +3235,7 @@ func aRenameCommittedWithItsRowsOwnNameLeavesARefusalAlreadyToldUnderThatRowStan
     let refusalAfterDuplicate = screen.nameRefusal
     #expect(refusalAfterDuplicate?.row == row)
     #expect(refusalAfterDuplicate?.cause == "Already on this day")
+    #expect(refusalAfterDuplicate?.text == "Ring mum")
 
     try screen.rename(row, to: "Call mum")
 

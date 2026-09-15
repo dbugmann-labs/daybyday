@@ -98,13 +98,14 @@ struct ContentView: View {
         case row(DayView.OneOffRow)
     }
     @FocusState private var oneOffFocus: OneOffFocus?
-    // The entry's own typed text, and the text typed into whichever row is being renamed. The
-    // entry's is emptied on every commit attempt from it, successful or refused: an empty add is
-    // always a harmless no-op (`DayScreen.addOneOff` ignores blank text), so the field can show
-    // `nameRefusal`'s own `text` while a refusal stands (`design.md` § *The shell*) and read back
-    // from `oneOffEntryText` once it does not. A row's is emptied only once its commit is *kept*
-    // — `commitRename(of:to:)` leaves it exactly as typed while refused, since a blank text
-    // resent to `DayScreen.rename` is not a no-op the way a blank add is: it removes the one-off.
+    // The entry's own typed text, and the text typed into whichever row is being renamed. Each
+    // is emptied only once its commit is *kept* — `commitOneOffEntry()` and `commitRename(of:to:)`
+    // both leave it exactly as typed while refused, so the text a later commit resends always
+    // agrees with what the field is showing: `nameRefusal`'s own `text` while a refusal stands
+    // (`design.md` § *The shell*), this once it does not. Emptying either on a refusal would let
+    // the field keep showing the refused text while silently queuing a resend of nothing — a
+    // no-op `DayScreen.addOneOff` shrugs off, but one `DayScreen.rename` reads as removing the
+    // one-off outright.
     @State private var oneOffEntryText = ""
     @State private var oneOffRowText = ""
     // Set immediately before `commitFocusedOneOffField()` clears `oneOffFocus`, having already
@@ -323,8 +324,7 @@ struct ContentView: View {
             }
             switch oldValue {
             case .entry:
-                try? screen.addOneOff(named: oneOffEntryText)
-                oneOffEntryText = ""
+                commitOneOffEntry()
             case .row(let row):
                 try? screen.rename(row, to: oneOffRowText)
                 oneOffRowText = ""
@@ -348,8 +348,7 @@ struct ContentView: View {
         }
         switch focus {
         case .entry:
-            try? screen.addOneOff(named: oneOffEntryText)
-            oneOffEntryText = ""
+            commitOneOffEntry()
         case .row(let row):
             guard !commitRename(of: row, to: oneOffRowText) else {
                 return
@@ -357,6 +356,31 @@ struct ContentView: View {
         }
         justCommittedOneOffField = true
         oneOffFocus = nil
+    }
+
+    /// The entry's committed candidate: `nameRefusal`'s own `text` while a refusal stands under
+    /// the entry, `oneOffEntryText` otherwise — the same rule `oneOffEntryTextBinding` reads the
+    /// field's display by, kept in one place so every commit site sends exactly the text the
+    /// entry is showing rather than a possibly-stale `oneOffEntryText` of its own.
+    private var oneOffEntryCommitText: String {
+        if let nameRefusal = screen.nameRefusal, nameRefusal.row == nil {
+            return nameRefusal.text
+        }
+        return oneOffEntryText
+    }
+
+    /// Commits `oneOffEntryCommitText` as a new one-off from the entry — the same rule
+    /// `commitRename(of:to:)` commits a row's rename by: kept, or a harmless no-op (blank text),
+    /// empties `oneOffEntryText`; refused leaves it holding exactly what was sent, so the entry
+    /// keeps showing what it will send next rather than resending blank once it does.
+    private func commitOneOffEntry() {
+        let text = oneOffEntryCommitText
+        try? screen.addOneOff(named: text)
+        guard screen.nameRefusal?.row == nil, screen.nameRefusal != nil else {
+            oneOffEntryText = ""
+            return
+        }
+        oneOffEntryText = text
     }
 
     /// Commits `text` as a rename of `row` and reports whether it was refused: `false` means it
@@ -798,14 +822,18 @@ struct ContentView: View {
                     guard oneOffFocus == nil else {
                         return
                     }
-                    // A stale refusal of `row`'s own — left standing since an earlier attempt
-                    // nobody has typed over — is what `oneOffRowTextBinding(for:)` would keep
-                    // showing here instead of the name this is about to seed; ending it first
-                    // keeps the field showing exactly the text this will commit.
-                    if screen.nameRefusal?.row == row {
-                        screen.oneOffNameEdited()
+                    // A refusal already standing under `row` — left there since an earlier
+                    // attempt nobody has typed over — must stand until its text is edited
+                    // (`openspec/specs/day-screen/spec.md` § *What a day screen tells under a
+                    // one-off name field lasts until…*: opening a rename edits nothing). So this
+                    // seeds the field from `nameRefusal`'s own `text` rather than `row.name`
+                    // where one stands, agreeing with what `oneOffRowTextBinding(for:)` already
+                    // shows there, rather than ending it.
+                    if let nameRefusal = screen.nameRefusal, nameRefusal.row == row {
+                        oneOffRowText = nameRefusal.text
+                    } else {
+                        oneOffRowText = row.name
                     }
-                    oneOffRowText = row.name
                     oneOffFocus = .row(row)
                 }
                 Button("Remove", role: .destructive) {
@@ -826,8 +854,7 @@ struct ContentView: View {
                 TextField("New one-off", text: oneOffEntryTextBinding)
                     .focused($oneOffFocus, equals: .entry)
                     .onSubmit {
-                        try? screen.addOneOff(named: oneOffEntryText)
-                        oneOffEntryText = ""
+                        commitOneOffEntry()
                         oneOffFocus = .entry
                     }
                 if screen.nameRefusal?.row == nil, let nameRefusal = screen.nameRefusal {
@@ -843,19 +870,14 @@ struct ContentView: View {
         }
     }
 
-    /// The entry's text: `nameRefusal`'s own `text` while a refusal stands under the entry, so
-    /// what was typed is what keeps showing; `oneOffEntryText` otherwise, which every commit
-    /// attempt from the entry empties, refused or not. `design.md` § *A refusal under a name
-    /// field is its own value, and there is one at a time*. Typing anywhere in this field ends
-    /// whatever `nameRefusal` was telling, wherever it was telling it.
+    /// The entry's text: `oneOffEntryCommitText`, the same value `commitOneOffEntry()` would
+    /// send — `nameRefusal`'s own `text` while a refusal stands under the entry, so what was
+    /// typed is what keeps showing, `oneOffEntryText` otherwise. `design.md` § *A refusal under a
+    /// name field is its own value, and there is one at a time*. Typing anywhere in this field
+    /// ends whatever `nameRefusal` was telling, wherever it was telling it.
     private var oneOffEntryTextBinding: Binding<String> {
         Binding(
-            get: {
-                if let nameRefusal = screen.nameRefusal, nameRefusal.row == nil {
-                    return nameRefusal.text
-                }
-                return oneOffEntryText
-            },
+            get: { oneOffEntryCommitText },
             set: { newValue in
                 screen.oneOffNameEdited()
                 oneOffEntryText = newValue
