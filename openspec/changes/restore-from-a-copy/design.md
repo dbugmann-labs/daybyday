@@ -118,18 +118,9 @@ draws `copyRestored` as *Restored the copy from* its moment. `ContentView` calls
 - **A phone holding only removed commitments reads 0 kept, 0 stopped** while its history goes.
   Accepted, as settled 12.
 
-## Questions for you
-
-1. **A copy of nothing, then the day screen.** Restoring it leaves a roster holding nothing at all.
-   A day screen returned to then takes on day one, exactly as on a fresh install. Keep that, or
-   leave the phone empty?
-   - *Recommended:* day one is taken on. No special case (ADR-1054), and every real copy already
-     holds day one, because a phone writes it on first open.
-   - *If you say leave it empty:* the last scenario of the day-screen restore requirement inverts,
-     and the day-one rule in `day-screen` gains an exception that a store must remember.
-
 ## Open Questions
 
-None beyond the residual round above. `grill.md` § *Left open* is "None." with its reason. The two
-things it left to this delta, how a restore is made whole and whether the walk drives the picker,
-are settled above, and the second is bounded by a stop.
+None. `grill.md` § *Left open* is "None." with its reason, and the two things it left to this delta
+— how a restore is made whole, and whether the walk drives the picker — are settled above, the second
+bounded by a stop. The residual round is settled: a copy of nothing restored leaves a roster holding
+nothing, and a day screen returned to takes on day one, with no special case (ADR-1054).
