@@ -321,7 +321,7 @@ export PATH="$PNPM_HOME/bin:$FNM_DIR:$PATH"; eval "$(fnm env)"; fnm use 24
 If a tool fails oddly, run `node --version` before diagnosing anything else.
 
 `gh` is `~/.local/bin/gh`, 2.100.0, installed by hand from the release zip on 2026-09-15 because
-`pnpm run` and the walk need `gh pr comment --attach`, which arrived in 2.99.0; Homebrew's
+the walk needs `gh pr comment --attach`, which arrived in 2.99.0; Homebrew's
 `/opt/homebrew/bin/gh` is 2.83.0 and cannot be upgraded from this account. `~/.local/bin` precedes
 Homebrew on `PATH` in an interactive shell; a non-interactive one has neither, so a script that
 needs `gh` says `~/.local/bin/gh` or puts that directory first. Check with `gh --version`.
