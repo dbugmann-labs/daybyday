@@ -48,6 +48,7 @@ so the diff is expected. A test writes a torn save through `SaveInProgress.keep(
 - `static func undoTornSave(recordAt recordPlace: URL, rosterAt rosterPlace: URL) -> Bool` — internal, on `SaveInProgress`
 - `static func carryBackOrphanedRecords(in store: RecordStore, against roster: Roster) -> Bool` — internal, on `SaveInProgress`
 - `mutating func carryBack(_ orphan: Commitment, to source: Commitment) -> Bool` — internal, on `History`
+- `func commitmentsWithRecords() -> Set<Commitment>` — internal, on `History`
 - `func carryBack(_ orphan: Commitment, to source: Commitment) throws -> Bool` — internal, on `RecordStore`
 
 ### The save in progress lives beside the record place, not at a place of its own
