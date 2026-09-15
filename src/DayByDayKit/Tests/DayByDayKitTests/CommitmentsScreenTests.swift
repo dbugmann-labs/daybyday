@@ -9337,3 +9337,23 @@ func aRefusedRestartReplacesWhatARefusedSaveToldOnACommitmentsScreensSheet() thr
         otherScreen.sheetRefusal
             == CommitmentsScreen.SheetRefusal(field: .name, refusal: .namesNothing))
 }
+
+@MainActor
+@Test("what a commitments screen tells on its sheet ends when an ask is kept")
+func whatACommitmentsScreenTellsOnItsSheetEndsWhenAnAskIsKept() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "   ", on: allWeekdays, keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    let keptRefusal = screen.define(name: "Journaling", on: allWeekdays, keptFrom: monday, under: nil)
+
+    #expect(keptRefusal == nil)
+    #expect(screen.sheetRefusal == nil)
+}

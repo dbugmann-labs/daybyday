@@ -409,6 +409,7 @@ public final class CommitmentsScreen {
         }
 
         refusedChange = nil
+        sheetRefusal = nil
         refreshLists(from: rosterStore)
         return nil
     }
@@ -727,11 +728,13 @@ public final class CommitmentsScreen {
                 // from it here would redraw exactly what the screen can no longer answer for.
                 guard undoTornSaveMadeDuringThisChange() else {
                     refusedChange = nil
+                    sheetRefusal = nil
                     return nil
                 }
             }
 
             refusedChange = nil
+            sheetRefusal = nil
             refreshLists(from: rosterStore)
             return nil
         }
@@ -828,10 +831,12 @@ public final class CommitmentsScreen {
             // what the screen can no longer answer for.
             guard undoTornSaveMadeDuringThisChange() else {
                 refusedChange = nil
+                sheetRefusal = nil
                 return nil
             }
 
             refusedChange = nil
+            sheetRefusal = nil
             refreshLists(from: rosterStore)
             return nil
         }
@@ -851,6 +856,7 @@ public final class CommitmentsScreen {
         }
 
         refusedChange = nil
+        sheetRefusal = nil
         refreshLists(from: rosterStore)
         return nil
     }
@@ -987,10 +993,12 @@ public final class CommitmentsScreen {
         // here would redraw exactly what the screen can no longer answer for.
         guard undoTornSaveMadeDuringThisChange() else {
             refusedChange = nil
+            sheetRefusal = nil
             return nil
         }
 
         refusedChange = nil
+        sheetRefusal = nil
         refreshLists(from: rosterStore)
         return nil
     }
