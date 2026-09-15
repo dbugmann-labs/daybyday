@@ -1294,6 +1294,16 @@ screen's row. Two refusals come with it, *a range that is not a range* and *a ta
 target*, each collapsing three ways to fail for ADR-1021's reason; neither is a new **kind** of
 refused change, so the seven below stand. ADR-1046.
 
+**Amended 2026-09-15**, at the grill of `look-back-at-a-tick` (#272). A commitments screen also
+**answers a look-back** at a commitment on either of its lists, and an entry's **tap is the door to
+it**. The tap was taken away on 2026-09-09 at `rework-commitment-row-actions` (#192) because it
+opened the change sheet, which mutates; what is restored is not that, but what a tap on a list entry
+under a navigation stack means — looking. The swipes stay the doors for acting, unchanged: Edit
+leading, Stop, Remove and Resume trailing. The screen is the one place in the kit that holds a
+roster, a record and a **today** together, which is why the look-back is its answer rather than a
+second screen's; it answers none at a commitment on neither list, and none at all while it cannot
+read either place.
+
 **The kinds of refused change are eight, and they are counted in one place and numbered nowhere.**
 The eighth is a **restart**, added 2026-09-14 while writing the delta of `add-interval-restart`
 (#248), and it names the commitment tapped, as a change does.
@@ -1688,3 +1698,29 @@ not an *area*, the word dropped 2026-08-28 that B-007 was captured in. A fractio
 never a percentage and is never shown on the day screen: ADR-1045 draws that line, amended for it.
 Agreed 2026-09-15 at the ninth grooming pass, for B-007; B-011 was dropped at the same grill,
 because everything the day screen could add was either that streak or a prefill.
+
+**Amended 2026-09-15**, at the grill of `look-back-at-a-tick` (#272), which built the page. A
+look-back is reached by an **entry's tap** on the commitments screen, kept or stopped alike, and it
+is answered for a commitment of **any** kind — the four later Stories fill in what each kind's page
+shows, and until then a page that is not a tick's lists nothing. It says the commitment's name, the
+rhythm in words and the dates at its head, because the page is the one place a date is worth reading
+and nothing on it competes for the top. Its months run **unbroken** from the day kept from to the
+last day it counts, a month with no due day among them, since the list is calendar time read
+downward and a skipped month looks like a defect. Beside them it says one **whole** — a single
+fraction across everything since the day kept from — which is the owner's call, put against the
+recommendation twice and reaffirmed, and which ADR-1045 is amended for. It reads a commitment's
+**eras** as one chain, and says a line in words wherever one gives way to the next. A weekly quota's
+months, and a whole over a chain holding one, say nothing yet: a quota is due every day, so the
+day's fraction is the wrong answer and the week's is #273's.
+
+**Era** — one commitment's span of being kept on one rhythm: from the day it is kept from through
+the day it was kept until, or through today while it is still kept. A **rhythm change** or an
+**interval restart** ends one era and begins the next by **superseding** — the old commitment held
+removed with a day kept until, the new one kept from the next day — and the roster holds no link
+between them. To a person the eras are one commitment, and a **look-back** reads them as one
+**chain** by resemblance: behind a commitment stands the removed commitment of the same name and the
+same kind whose day kept until is the day before this one's day kept from, and behind that one the
+same again, the nearest in the roster's own order winning where more than one answers. Nothing is
+recorded, deliberately — ADR-1055 has why, and the two readings it gets wrong. An era the roster has
+taken up again is kept rather than removed, and ends a chain there. Agreed 2026-09-15 at the grill of
+`look-back-at-a-tick` (#272).
