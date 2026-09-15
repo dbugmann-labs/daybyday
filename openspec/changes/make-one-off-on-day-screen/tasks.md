@@ -60,33 +60,33 @@ already edited on this branch: tick each only once its asserts read as its scena
 
 ## 6. `day-screen`: shipped scenarios comparing with a day view formed directly — one test each
 
-- [ ] 6.1 *edited* a day screen moved to the day before shows the previous day — catches the empty One-offs group dropped
-- [ ] 6.2 *edited* a day screen moved to the day after shows the next day — catches the empty One-offs group dropped
-- [ ] 6.3 *edited* a day screen moves onto a day that has not arrived and shows it — catches the empty One-offs group dropped
-- [ ] 6.4 *edited* a day screen that is not keeping a record moves and goes on saying it is keeping none — catches the empty One-offs group dropped
-- [ ] 6.5 *edited* a day screen that is not keeping a roster moves and goes on saying why — catches the empty One-offs group dropped
-- [ ] 6.6 *edited* a day screen showing the first supported date is unchanged when it is moved to the day before — catches the empty One-offs group dropped
-- [ ] 6.7 *edited* a day screen showing the last supported date is unchanged when it is moved to the day after — catches the empty One-offs group dropped
-- [ ] 6.8 *edited* a day screen holds the day it was handed rather than the day it really is — catches the empty One-offs group dropped
-- [ ] 6.9 *edited* a day screen holds the same day view as one formed directly from the same commitments, day and history — catches the empty One-offs group dropped
-- [ ] 6.10 *edited* a day screen shows a day picked between the earliest day its picker reaches and the day it was showing — catches the empty One-offs group dropped
-- [ ] 6.11 *edited* a day screen showing the first supported date says no day view before it and says the day after — catches the empty One-offs group dropped
-- [ ] 6.12 *edited* a day screen showing the last supported date says no day view after it and says the day before — catches the empty One-offs group dropped
-- [ ] 6.13 *edited* a day screen moved off an end of the calendar says a day view either side of it — catches the empty One-offs group dropped
-- [ ] 6.14 *edited* a day screen showing the first supported date says no day view before it whatever its places, its rows and its today — catches the empty One-offs group dropped
-- [ ] 6.15 *edited* ticking a row a day screen says of the day before changes nothing — scenario unchanged; its asserts drop the comparison with a day view formed directly, which the scenario never names
-- [ ] 6.16 *edited* a day screen says the day view of the day before the one it is showing — catches the empty One-offs group dropped
-- [ ] 6.17 *edited* a day screen says the day view of the day after the one it is showing — catches the empty One-offs group dropped
-- [ ] 6.18 *edited* a day screen says the day one calendar day either side and no day further — catches the empty One-offs group dropped
-- [ ] 6.19 *edited* a tick made on the day a day screen is showing leaves the day either side of it as it was — scenario unchanged; each side is compared with the day view said before the tick, not one formed directly
-- [ ] 6.20 *edited* a day screen moved to another day says the day either side of that day — catches the empty One-offs group dropped
-- [ ] 6.21 *edited* a day screen sent back to today says the day either side of that today — catches the empty One-offs group dropped
-- [ ] 6.22 *edited* a day screen showing a day picked on its day picker says the day either side of that day — catches the empty One-offs group dropped
-- [ ] 6.23 *edited* a day screen shown again on a new day says the day either side of that day — catches the empty One-offs group dropped
-- [ ] 6.24 *edited* a day screen that cannot read its record says the day either side of it with nothing kept — catches the empty One-offs group dropped
-- [ ] 6.25 *edited* a day screen does not change day when a tick is made on it — catches the empty One-offs group dropped
-- [ ] 6.26 *edited* a day screen moved off today keeps the day it is showing when the app is shown again — catches the empty One-offs group dropped
-- [ ] 6.27 *edited* a day screen moved away and back onto today moves onto the new day when the app is shown again — catches the empty One-offs group dropped
+- [x] 6.1 *edited* a day screen moved to the day before shows the previous day — catches the empty One-offs group dropped
+- [x] 6.2 *edited* a day screen moved to the day after shows the next day — catches the empty One-offs group dropped
+- [x] 6.3 *edited* a day screen moves onto a day that has not arrived and shows it — catches the empty One-offs group dropped
+- [x] 6.4 *edited* a day screen that is not keeping a record moves and goes on saying it is keeping none — catches the empty One-offs group dropped
+- [x] 6.5 *edited* a day screen that is not keeping a roster moves and goes on saying why — catches the empty One-offs group dropped
+- [x] 6.6 *edited* a day screen showing the first supported date is unchanged when it is moved to the day before — catches the empty One-offs group dropped
+- [x] 6.7 *edited* a day screen showing the last supported date is unchanged when it is moved to the day after — catches the empty One-offs group dropped
+- [x] 6.8 *edited* a day screen holds the day it was handed rather than the day it really is — catches the empty One-offs group dropped
+- [x] 6.9 *edited* a day screen holds the same day view as one formed directly from the same commitments, day and history — catches the empty One-offs group dropped
+- [x] 6.10 *edited* a day screen shows a day picked between the earliest day its picker reaches and the day it was showing — catches the empty One-offs group dropped
+- [x] 6.11 *edited* a day screen showing the first supported date says no day view before it and says the day after — catches the empty One-offs group dropped
+- [x] 6.12 *edited* a day screen showing the last supported date says no day view after it and says the day before — catches the empty One-offs group dropped
+- [x] 6.13 *edited* a day screen moved off an end of the calendar says a day view either side of it — catches the empty One-offs group dropped
+- [x] 6.14 *edited* a day screen showing the first supported date says no day view before it whatever its places, its rows and its today — catches the empty One-offs group dropped
+- [x] 6.15 *edited* ticking a row a day screen says of the day before changes nothing — scenario unchanged; its asserts drop the comparison with a day view formed directly, which the scenario never names
+- [x] 6.16 *edited* a day screen says the day view of the day before the one it is showing — catches the empty One-offs group dropped
+- [x] 6.17 *edited* a day screen says the day view of the day after the one it is showing — catches the empty One-offs group dropped
+- [x] 6.18 *edited* a day screen says the day one calendar day either side and no day further — catches the empty One-offs group dropped
+- [x] 6.19 *edited* a tick made on the day a day screen is showing leaves the day either side of it as it was — scenario unchanged; each side is compared with the day view said before the tick, not one formed directly
+- [x] 6.20 *edited* a day screen moved to another day says the day either side of that day — catches the empty One-offs group dropped
+- [x] 6.21 *edited* a day screen sent back to today says the day either side of that today — catches the empty One-offs group dropped
+- [x] 6.22 *edited* a day screen showing a day picked on its day picker says the day either side of that day — catches the empty One-offs group dropped
+- [x] 6.23 *edited* a day screen shown again on a new day says the day either side of that day — catches the empty One-offs group dropped
+- [x] 6.24 *edited* a day screen that cannot read its record says the day either side of it with nothing kept — catches the empty One-offs group dropped
+- [x] 6.25 *edited* a day screen does not change day when a tick is made on it — catches the empty One-offs group dropped
+- [x] 6.26 *edited* a day screen moved off today keeps the day it is showing when the app is shown again — catches the empty One-offs group dropped
+- [x] 6.27 *edited* a day screen moved away and back onto today moves onto the new day when the app is shown again — catches the empty One-offs group dropped
 
 ## 7. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
@@ -101,8 +101,8 @@ already edited on this branch: tick each only once its asserts read as its scena
 
 ## 9. The gates
 
-- [ ] 9.1 `openspec validate make-one-off-on-day-screen --strict` exits 0 and `pnpm run check:scenarios` exits 0
+- [x] 9.1 `openspec validate make-one-off-on-day-screen --strict` exits 0 and `pnpm run check:scenarios` exits 0
 - [x] 9.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, the four kit sources, the four test files and `ContentView.swift`
-- [ ] 9.3 `pnpm run check:budgets` warns about this folder only for *A day view is a value and nothing else*, *A day screen moves the day it is showing one calendar day either way*, *A move with nowhere to go leaves a day screen exactly as it was*, *A day screen holds the day view of the day it was handed, formed from the record kept at its place* and *A day screen re-reads its day and its places when the app is shown again*, each already over budget on `main`
+- [x] 9.3 `pnpm run check:budgets` warns about this folder only for *A day view is a value and nothing else*, *A day screen moves the day it is showing one calendar day either way*, *A move with nowhere to go leaves a day screen exactly as it was*, *A day screen holds the day view of the day it was handed, formed from the record kept at its place* and *A day screen re-reads its day and its places when the app is shown again*, each already over budget on `main`
 - [ ] 9.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is twenty-seven more than a run on `main` reports — both read off runs
 - [ ] 9.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–9.4 are ticked and that the instruction below is written here for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/one-off/spec.md` gains one requirement with four scenarios; `openspec/specs/day-screen/spec.md` gains four requirements with twenty-two scenarios, and thirteen others change — two by a sentence, one by a sentence and a new scenario, and thirty-one scenarios' asserts across twelve of them, with ragged lines re-wrapped and no other word moved; nothing else in any spec moves. `pnpm run checks` runs after the archive commit exists. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
