@@ -21,11 +21,12 @@
  * machine (`AGENTS.md` § *This machine*); the Actions token is refused by that flag, which is
  * why the walk is run here and not in CI.
  *
- * **What is posted is a small copy, three to a row.** The simulator exports at 3x — 1206 by
- * 2622 — and a Markdown image cannot be given a width, so a full-size picture fills the PR's
- * column and a walk of eighteen is a long scroll. The copies are resampled with `sips` to
- * `POSTED_WIDTH` pixels wide and laid out `PER_ROW` to a table row with the box's line under
- * each; `walk/` keeps the full-size originals for the reviewer.
+ * **What is posted is full size, shown small, three to a row.** The simulator exports at 3x —
+ * 1206 by 2622 — and a Markdown image cannot be given a width, so a full-size picture fills the
+ * PR's column and a walk of eighteen is a long scroll. The comment is therefore an HTML table:
+ * cells a third of the column each, `<img width="POSTED_WIDTH">` so every picture is the same
+ * width whatever its caption says, and the box's line under each. Clicking one opens it full
+ * size. `walk/` keeps the originals for the reviewer.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, copyFileSync } from 'node:fs'
@@ -37,9 +38,9 @@ const SCHEME = 'DayByDay'
 const BUNDLE_ID = 'com.dbugmann.daybyday'
 const WALK_TEST = 'src/DayByDay/DayByDayUITests/WalkUITests.swift'
 const OUT_DIR = 'walk'
-// What a posted picture measures, in pixels wide, and how many share a row. 300 is a quarter of
-// the 3x export and three of them fit a PR comment's column; the owner chose the size on
-// 2026-09-15 after seeing 402 two to a row. Change both together.
+// How wide a posted picture is shown, in pixels, and how many share a row. Three at 300 fit a
+// PR comment's column; the owner chose the size on 2026-09-15 after seeing 402 two to a row.
+// Change both together.
 const POSTED_WIDTH = 300
 const PER_ROW = 3
 
@@ -67,34 +68,41 @@ const postOnly = postOnlyAt >= 0
 type Picture = { name: string; file: string }
 
 function post(pictures: Picture[], pr: string): void {
-  // Inside `walk/`, which is gitignored, so `gh` runs from the worktree and can see the repo.
-  const small = path.join(OUT_DIR, 'small')
-  rmSync(small, { recursive: true, force: true })
-  mkdirSync(small, { recursive: true })
-  const rows: string[] = []
-  const attachArgs: string[] = []
-  for (let i = 0; i < pictures.length; i += PER_ROW) {
-    const pair = pictures.slice(i, i + PER_ROW)
-    const cells = pair.map((picture, offset) => {
-      const short = `${String(i + offset + 1).padStart(2, '0')}.png`
-      run('sips', ['--resampleWidth', String(POSTED_WIDTH), picture.file, '--out', path.join(small, short)])
-      attachArgs.push('--attach', `./${small}/${short}#${picture.name}`)
-      return `![${picture.name}](./${small}/${short})`
-    })
-    rows.push(`| ${cells.join(' | ')} |`)
-    rows.push(`| ${pair.map((picture) => picture.name).join(' | ')} |`)
-  }
+  // Two steps, because `gh` rewrites only a Markdown image reference to its uploaded asset and
+  // a Markdown image cannot be given a width: post the full-size pictures as Markdown, read the
+  // asset URLs back, then rewrite the comment as an HTML table whose cells are fixed at a third
+  // of the column and whose images are `POSTED_WIDTH` wide. Full size is one click away.
+  // Copied under short names first: a box's line has spaces and commas, and a Markdown
+  // reference with a space in its path is not one `gh` can recognise and rewrite.
+  const staged = path.join(OUT_DIR, 'post')
+  rmSync(staged, { recursive: true, force: true })
+  mkdirSync(staged, { recursive: true })
+  const files = pictures.map((picture, i) => {
+    const file = path.join(staged, `${String(i + 1).padStart(2, '0')}.png`)
+    copyFileSync(picture.file, file)
+    return file
+  })
   const sha = run('git', ['rev-parse', '--short', 'HEAD']).trim()
-  const body = [
-    `**The walk** — ${pictures.length} pictures from a fresh install, at ${sha}. Full size in \`walk/\` on the branch.`,
-    '',
-    `|${' |'.repeat(PER_ROW)}`,
-    `|${'---|'.repeat(PER_ROW)}`,
-    ...rows,
-  ].join('\n')
-  run(gh(), ['pr', 'comment', pr, '--body', body, ...attachArgs])
-  const url = run(gh(), ['api', `repos/{owner}/{repo}/issues/${pr}/comments`, '--jq', '.[-1].html_url']).trim()
-  console.log(`walk: posted ${url}`)
+  const heading = `**The walk** — ${pictures.length} pictures from a fresh install, at ${sha}. Click one for full size.`
+  const draft = [heading, '', ...pictures.map((picture, i) => `![${picture.name}](./${files[i]})`)].join('\n')
+  const attachArgs = pictures.flatMap((picture, i) => ['--attach', `./${files[i]}#${picture.name}`])
+  run(gh(), ['pr', 'comment', pr, '--body', draft, ...attachArgs])
+  const posted = JSON.parse(run(gh(), ['api', `repos/{owner}/{repo}/issues/${pr}/comments`, '--jq', '.[-1]'])) as { id: number; body: string; html_url: string }
+  const urls = [...posted.body.matchAll(/\]\((https:\/\/[^)]+)\)/g)].map((m) => m[1])
+  if (urls.length !== pictures.length) fail(`posted ${urls.length} asset URL(s) for ${pictures.length} pictures — comment ${posted.html_url} left as it is`)
+
+  const rows: string[] = []
+  for (let i = 0; i < pictures.length; i += PER_ROW) {
+    const cells = pictures.slice(i, i + PER_ROW).map(
+      (picture, offset) =>
+        `<td width="${Math.floor(100 / PER_ROW)}%" align="center" valign="top"><img src="${urls[i + offset]}" width="${POSTED_WIDTH}" alt="${picture.name}"><br><sub>${picture.name}</sub></td>`,
+    )
+    while (cells.length < PER_ROW) cells.push(`<td width="${Math.floor(100 / PER_ROW)}%"></td>`)
+    rows.push(`<tr>${cells.join('')}</tr>`)
+  }
+  const body = `${heading}\n\n<table>${rows.join('')}</table>`
+  run(gh(), ['api', '-X', 'PATCH', `repos/{owner}/{repo}/issues/comments/${posted.id}`, '-f', `body=${body}`])
+  console.log(`walk: posted ${posted.html_url}`)
 }
 
 if (postOnly) {

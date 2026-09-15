@@ -360,12 +360,14 @@ session. It refuses to start while anything but the walk test is uncommitted, di
 simulator the way CI's `ui-smoke` does, boots it, uninstalls the app so the walk starts on the
 day-one roster, builds, runs only `WalkUITests`, exports every PNG the run attached, names each
 for its box in `walk/`, and posts them with one `--attach` per picture captioned with the box's
-line, three to a row with the line under each. **What is posted is a small copy**: the
-simulator exports at 3x, 1206 by 2622, and a Markdown image cannot be given a width, so a
-full-size picture fills the PR's column and eighteen of them are a long scroll; the copies are
-resampled with `sips` to 300 pixels wide into `walk/small/`, a size the owner chose on
-2026-09-15 and `scripts/walk.ts` fixes as `POSTED_WIDTH`, and `walk/` keeps the originals for
-the reviewer. `walk/` is gitignored. On a failure it still exports what was captured up to the step that
+line, three to a row with the line under each, every picture shown 300 pixels wide and full
+size on a click. **That takes two steps, and the reason is `gh`'s**: it rewrites a Markdown image
+reference to the asset it uploaded, and a Markdown image cannot be given a width, while an HTML
+`<img width>` can but is not rewritten. So the script posts the full-size pictures as Markdown,
+reads the asset URLs back, and edits the comment into an HTML table with cells a third of the
+column each — a Markdown table sizes its columns by the caption text, which is what made the
+first picture of a row narrower than the rest. The width is `POSTED_WIDTH` in `scripts/walk.ts`,
+chosen by the owner on 2026-09-15; `walk/` keeps the originals for the reviewer. `walk/` is gitignored. On a failure it still exports what was captured up to the step that
 could not be driven, prints the runner's own error, and exits 1 — that is a rule-5 stop, not a
 retry. The eighteen-picture walk of `main` ran in 100 seconds here on a warm simulator, 92 of
 them the test itself — a typed field, a scrolled form and a sheet each cost a few seconds.
@@ -398,10 +400,12 @@ xcodebuild test-without-building -project src/DayByDay/DayByDay.xcodeproj -schem
 xcrun xcresulttool export attachments --path /tmp/walk.xcresult --output-path /tmp/walk --filter '*.png'
 # /tmp/walk/manifest.json maps each exported UUID file to its attachment name
 
-sips --resampleWidth 300 'walk/01 the day screen on today.png' --out walk/small/01.png
-~/.local/bin/gh pr comment <pr> --body '![01 the day screen on today](./walk/small/01.png)' \
-  --attach './walk/small/01.png#01 the day screen on today'
-# a reference in the body is rewritten to the uploaded asset; an unreferenced file is appended
+cp 'walk/01 the day screen on today.png' walk/post/01.png      # no spaces in a reference
+~/.local/bin/gh pr comment <pr> --body '![01 the day screen on today](./walk/post/01.png)' \
+  --attach './walk/post/01.png#01 the day screen on today'
+# the reference is rewritten to the uploaded asset's URL; read it back, then
+~/.local/bin/gh api -X PATCH repos/{owner}/{repo}/issues/comments/<id> \
+  -f body='<table><tr><td width="33%" align="center"><img src="<asset url>" width="300"><br><sub>01 the day screen on today</sub></td></tr></table>'
 ```
 
 `--attach` needs `gh` 2.99.0 or later, which is `~/.local/bin/gh` here and not Homebrew's
