@@ -13,24 +13,24 @@ should need editing; one that does is a stop.
 
 ## 2. The seam
 
-- [ ] 2.1 Every member in `design.md` § *The seam* exists with that signature, and 3.1 is red before they do anything but compile
+- [x] 2.1 Every member in `design.md` § *The seam* exists with that signature, and 3.1 is red before they do anything but compile
 
 ## 3. `commitment` — one test each
 
-- [ ] 3.1 a refusal that a name says nothing is about the name field — catches the field left unset while `refusedChange` is set
-- [ ] 3.2 a refusal that a rhythm is due on no day is about the rhythm field — catches empty chips placed at the foot
-- [ ] 3.3 a refusal that the calendar will not take a rhythm's number is about the rhythm field — catches a day-of-the-month number placed elsewhere than an interval's
-- [ ] 3.4 a refusal that a range is not a range is about the range field — catches the range and the target sharing one field
-- [ ] 3.5 a refusal that a target is not a target is about the target field — catches the range and the target sharing one field
-- [ ] 3.6 a refusal that a commitment is already kept is about the whole change and no field — catches a field guessed from the ask rather than from the refusal
-- [ ] 3.7 a refusal that a roster could not be written is about the whole change and no field — catches a place failure placed under the last field touched
-- [ ] 3.8 a refusal that records are already kept under the commitment a change would produce is about the whole change — catches it read as the not-due cause and placed under a field
-- [ ] 3.9 a restart refused for the day it was asked from is about the restart day field — catches a restart's refusal placed by the same rule as a save's
-- [ ] 3.10 a restart refused as a commitment already kept is about the restart day field — catches already-kept placed at the foot whichever ask it answers
-- [ ] 3.11 a restart refused for records already kept or a day recorded on is about the restart day field — catches the two causes placed at the foot whichever ask they answer
-- [ ] 3.12 a restart refused by a place that could not be written is about the whole change — catches every restart refusal placed under the restart day
-- [ ] 3.13 a day recorded on that a change would leave not due is about the day-kept-from field — catches it placed under the rhythm because a schedule is what changed
-- [ ] 3.14 a change a stopped commitment does not take is about the rhythm field where only the rhythm differs — catches the comparison made against the ask rather than against the commitment
+- [x] 3.1 a refusal that a name says nothing is about the name field — catches the field left unset while `refusedChange` is set
+- [x] 3.2 a refusal that a rhythm is due on no day is about the rhythm field — catches empty chips placed at the foot
+- [x] 3.3 a refusal that the calendar will not take a rhythm's number is about the rhythm field — catches a day-of-the-month number placed elsewhere than an interval's
+- [x] 3.4 a refusal that a range is not a range is about the range field — catches the range and the target sharing one field
+- [x] 3.5 a refusal that a target is not a target is about the target field — catches the range and the target sharing one field
+- [x] 3.6 a refusal that a commitment is already kept is about the whole change and no field — catches a field guessed from the ask rather than from the refusal
+- [x] 3.7 a refusal that a roster could not be written is about the whole change and no field — catches a place failure placed under the last field touched
+- [x] 3.8 a refusal that records are already kept under the commitment a change would produce is about the whole change — catches it read as the not-due cause and placed under a field
+- [x] 3.9 a restart refused for the day it was asked from is about the restart day field — catches a restart's refusal placed by the same rule as a save's
+- [x] 3.10 a restart refused as a commitment already kept is about the restart day field — catches already-kept placed at the foot whichever ask it answers
+- [x] 3.11 a restart refused for records already kept or a day recorded on is about the restart day field — catches the two causes placed at the foot whichever ask they answer
+- [x] 3.12 a restart refused by a place that could not be written is about the whole change — catches every restart refusal placed under the restart day
+- [x] 3.13 a day recorded on that a change would leave not due is about the day-kept-from field — catches it placed under the rhythm because a schedule is what changed
+- [x] 3.14 a change a stopped commitment does not take is about the rhythm field where only the rhythm differs — catches the comparison made against the ask rather than against the commitment
 - [ ] 3.15 a change a stopped commitment does not take is about the day-kept-from field where only that day differs — catches both causes placed under the rhythm
 - [ ] 3.16 a refusal is about the whole change where both the rhythm and the day kept from differ — catches the first difference found deciding the field
 - [ ] 3.17 what a commitments screen tells on its sheet ends when the field it is about is edited — catches an edit that clears nothing
