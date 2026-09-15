@@ -360,11 +360,12 @@ session. It refuses to start while anything but the walk test is uncommitted, di
 simulator the way CI's `ui-smoke` does, boots it, uninstalls the app so the walk starts on the
 day-one roster, builds, runs only `WalkUITests`, exports every PNG the run attached, names each
 for its box in `walk/`, and posts them with one `--attach` per picture captioned with the box's
-line, two to a row with the line under each. **What is posted is a 1x copy**: the simulator
-exports at 3x, 1206 by 2622, and a Markdown image cannot be given a width, so a full-size picture
-fills the PR's column and eighteen of them are a long scroll; the copies are resampled with
-`sips` to 402 pixels wide, the device's point width, into `walk/small/`, and `walk/` keeps the
-originals for the reviewer. `walk/` is gitignored. On a failure it still exports what was captured up to the step that
+line, three to a row with the line under each. **What is posted is a small copy**: the
+simulator exports at 3x, 1206 by 2622, and a Markdown image cannot be given a width, so a
+full-size picture fills the PR's column and eighteen of them are a long scroll; the copies are
+resampled with `sips` to 300 pixels wide into `walk/small/`, a size the owner chose on
+2026-09-15 and `scripts/walk.ts` fixes as `POSTED_WIDTH`, and `walk/` keeps the originals for
+the reviewer. `walk/` is gitignored. On a failure it still exports what was captured up to the step that
 could not be driven, prints the runner's own error, and exits 1 — that is a rule-5 stop, not a
 retry. The eighteen-picture walk of `main` ran in 100 seconds here on a warm simulator, 92 of
 them the test itself — a typed field, a scrolled form and a sheet each cost a few seconds.
@@ -397,7 +398,7 @@ xcodebuild test-without-building -project src/DayByDay/DayByDay.xcodeproj -schem
 xcrun xcresulttool export attachments --path /tmp/walk.xcresult --output-path /tmp/walk --filter '*.png'
 # /tmp/walk/manifest.json maps each exported UUID file to its attachment name
 
-sips --resampleWidth 402 'walk/01 the day screen on today.png' --out walk/small/01.png
+sips --resampleWidth 300 'walk/01 the day screen on today.png' --out walk/small/01.png
 ~/.local/bin/gh pr comment <pr> --body '![01 the day screen on today](./walk/small/01.png)' \
   --attach './walk/small/01.png#01 the day screen on today'
 # a reference in the body is rewritten to the uploaded asset; an unreferenced file is appended

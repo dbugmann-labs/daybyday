@@ -21,11 +21,11 @@
  * machine (`AGENTS.md` § *This machine*); the Actions token is refused by that flag, which is
  * why the walk is run here and not in CI.
  *
- * **What is posted is a 1x copy, two to a row.** The simulator exports at 3x — 1206 by 2622 —
- * and a Markdown image cannot be given a width, so a full-size picture fills the PR's column
- * and a walk of eighteen is a long scroll. The copies are resampled with `sips` to 402 pixels
- * wide, the device's own point width, and laid out in a table with the box's line under each;
- * `walk/` keeps the full-size originals for the reviewer.
+ * **What is posted is a small copy, three to a row.** The simulator exports at 3x — 1206 by
+ * 2622 — and a Markdown image cannot be given a width, so a full-size picture fills the PR's
+ * column and a walk of eighteen is a long scroll. The copies are resampled with `sips` to
+ * `POSTED_WIDTH` pixels wide and laid out `PER_ROW` to a table row with the box's line under
+ * each; `walk/` keeps the full-size originals for the reviewer.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, copyFileSync } from 'node:fs'
@@ -37,6 +37,11 @@ const SCHEME = 'DayByDay'
 const BUNDLE_ID = 'com.dbugmann.daybyday'
 const WALK_TEST = 'src/DayByDay/DayByDayUITests/WalkUITests.swift'
 const OUT_DIR = 'walk'
+// What a posted picture measures, in pixels wide, and how many share a row. 300 is a quarter of
+// the 3x export and three of them fit a PR comment's column; the owner chose the size on
+// 2026-09-15 after seeing 402 two to a row. Change both together.
+const POSTED_WIDTH = 300
+const PER_ROW = 3
 
 function run(command: string, args: string[]): string {
   return execFileSync(command, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] })
@@ -68,11 +73,11 @@ function post(pictures: Picture[], pr: string): void {
   mkdirSync(small, { recursive: true })
   const rows: string[] = []
   const attachArgs: string[] = []
-  for (let i = 0; i < pictures.length; i += 2) {
-    const pair = pictures.slice(i, i + 2)
+  for (let i = 0; i < pictures.length; i += PER_ROW) {
+    const pair = pictures.slice(i, i + PER_ROW)
     const cells = pair.map((picture, offset) => {
       const short = `${String(i + offset + 1).padStart(2, '0')}.png`
-      run('sips', ['--resampleWidth', '402', picture.file, '--out', path.join(small, short)])
+      run('sips', ['--resampleWidth', String(POSTED_WIDTH), picture.file, '--out', path.join(small, short)])
       attachArgs.push('--attach', `./${small}/${short}#${picture.name}`)
       return `![${picture.name}](./${small}/${short})`
     })
@@ -83,8 +88,8 @@ function post(pictures: Picture[], pr: string): void {
   const body = [
     `**The walk** — ${pictures.length} pictures from a fresh install, at ${sha}. Full size in \`walk/\` on the branch.`,
     '',
-    '| | |',
-    '|---|---|',
+    `|${' |'.repeat(PER_ROW)}`,
+    `|${'---|'.repeat(PER_ROW)}`,
     ...rows,
   ].join('\n')
   run(gh(), ['pr', 'comment', pr, '--body', body, ...attachArgs])
