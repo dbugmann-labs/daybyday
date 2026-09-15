@@ -28,7 +28,7 @@ None.
 ### Modified Capabilities
 
 - `one-off`: ADDED one requirement.
-- `day-screen`: ADDED four requirements; MODIFIED thirteen.
+- `day-screen`: ADDED four requirements; MODIFIED fourteen.
 
 ## Impact
 

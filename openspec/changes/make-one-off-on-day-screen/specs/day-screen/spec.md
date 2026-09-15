@@ -231,6 +231,18 @@ name field SHALL also end when the day view no longer holds that row.
 - **AND** after the row named "Call mum" is ticked, it tells nothing under its one-off entry or under
   any one-off row's name field
 
+#### Scenario: a rename committed with its row's own name leaves a refusal already told under that row standing
+
+- **WHEN** one-offs named "Call mum" and then "Ring mum", both on 28 September 2026, are added at a
+  one-off place; a day screen of no commitments at all is opened at that one-off place as of Monday
+  28 September 2026, at a record place and a roster place where nothing has been kept; "Ring mum" is
+  committed in the name field of the row named "Call mum" and refused; and "Call mum" is then
+  committed in that same name field
+- **THEN** committing is not refused with an error
+- **AND** it still tells, under the name field of the row named "Call mum", "Already on this day",
+  carrying the text "Ring mum"
+- **AND** its One-offs group holds rows named "Call mum" and then "Ring mum"
+
 ### Requirement: A day screen renames and removes the one-off a row holds, on any day and done or not
 
 A day screen SHALL rename the one-off a one-off row holds to the text committed in that row's name
@@ -599,6 +611,245 @@ change what a day screen says about keeping one-offs.
 - **AND** it tells, on that one-off row, that the change could not be kept, naming no cause
 - **AND** its One-offs group still holds one row, named "Call mum"
 - **AND** it tells nothing under its one-off entry
+
+### Requirement: What a day screen tells on a row lasts only until the app is shown again, a change is kept, or the day it is showing changes
+
+A day screen SHALL go on telling it, on the same row, until one of exactly three things happens, and
+SHALL then tell nothing on any row. Nothing else SHALL end it, time passing included. The app being
+shown again SHALL end it, whether or not the record can then be read. A change reaching the record's
+place or the one-off place SHALL end it, on whichever row it was made, whatever the change. The day
+being shown changing
+SHALL end it — the day changing and never the gesture made — so a move with nowhere to go, and today
+sent back to today, SHALL leave it standing.
+
+A change that reaches neither place SHALL NOT end it: a refused value moves what is told rather
+than ending it. A commit in a total entry that says nothing is neither an end nor a refusal, so what
+was told SHALL stand exactly as it was; closing a number or note entry without committing it SHALL
+end nothing either.
+
+#### Scenario: what a day screen tells on a row ends when the app is shown again
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing can be
+  written — a path beneath an existing ordinary file — of a commitment named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026; its one row is ticked; and the
+  app is then shown again as of that same day
+- **THEN** the day screen tells nothing on any row
+- **AND** its one row still says the commitment is not kept on that date
+
+#### Scenario: what a day screen tells on a row ends when the app is shown again where the record then cannot be read
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing can be
+  written — a path beneath an existing ordinary file — of a commitment named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026; its one row is ticked; that
+  place is then made to hold a run of bytes that is not what a record is written as; and the app
+  is shown again as of that same day
+- **THEN** the day screen says it is not keeping a record
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells on a row ends when a change is kept on another row
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place that can be read from
+  but not written to and where nothing has been kept, of a commitment named "Gym" on a schedule
+  listing Monday, Wednesday and Saturday and a commitment named "Journaling" on a schedule listing
+  all seven weekdays, in that order and both kept from 1 January 2026; its first row is ticked and
+  refused; the place is then made writable; and its second row is ticked
+- **THEN** the day screen's day view says "Journaling" is kept on that date and "Gym" is not
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells on a row ends when a take-back is kept
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday and a
+  commitment named "Journaling" on a schedule listing all seven weekdays, in that order and both
+  kept from 1 January 2026; its second row is ticked and kept; the place is then made unwritable;
+  its first row is ticked and refused; the place is made writable again; and the row for
+  "Journaling" is ticked once more
+- **THEN** the day screen's day view says "Journaling" is not kept on that date
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells on a row ends when the day screen is moved to the day before
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing can be
+  written — a path beneath an existing ordinary file — of a commitment named "Journaling" on a
+  schedule listing all seven weekdays, kept from 1 January 2026; its one row is ticked; and it is
+  then moved to the day before
+- **THEN** the day screen tells nothing on any row
+- **AND** its day picker opens on Sunday 30 August 2026
+
+#### Scenario: what a day screen tells on a row ends when the day screen is moved to the day after
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing can be
+  written — a path beneath an existing ordinary file — of a commitment named "Journaling" on a
+  schedule listing all seven weekdays, kept from 1 January 2026; its one row is ticked; and it is
+  then moved to the day after
+- **THEN** the day screen tells nothing on any row
+- **AND** its day picker opens on Tuesday 1 September 2026
+
+#### Scenario: what a day screen tells on a row ends when the day screen is sent back to today from another day
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing can be
+  written — a path beneath an existing ordinary file — of a commitment named "Journaling" on a
+  schedule listing all seven weekdays, kept from 1 January 2026; it is moved to the day before;
+  its one row is ticked; and it is then sent back to today
+- **THEN** the day screen tells nothing on any row
+- **AND** its day picker opens on Monday 31 August 2026, and it offers no way back to today
+
+#### Scenario: what a day screen tells on a row stands when a move has nowhere to go
+
+- **WHEN** a day screen is opened as of Saturday 1 January 1583 and another as of Friday 31
+  December 9999, each at its own place where nothing can be written — a path beneath an existing
+  ordinary file — of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 1583; each screen's one row is ticked; and the first is then moved to the
+  day before and the second to the day after
+- **THEN** each day screen still tells, on the row that was ticked on it, that the change could
+  not be kept
+- **AND** the first's day picker still opens on Saturday 1 January 1583 and the second's on Friday
+  31 December 9999
+
+#### Scenario: what a day screen tells on a row stands when a day screen showing today is sent back to today
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing can be
+  written — a path beneath an existing ordinary file — of a commitment named "Journaling" on a
+  schedule listing all seven weekdays, kept from 1 January 2026; its one row is ticked; and it is
+  then sent back to today without having been moved
+- **THEN** the day screen still tells, on that row, that the change could not be kept
+- **AND** its day picker still opens on Monday 31 August 2026, and it offers no way back to today
+
+#### Scenario: what a day screen tells on a row ends when a number is entered and kept
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place that can be read from
+  but not written to and where nothing has been kept, of a commitment named "Weight" of the number
+  kind with a range of 40 to 150, on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026; "70.5" is committed on its one row and refused; the place is then made writable;
+  and "70.5" is committed again on the row the screen then holds
+- **THEN** the day screen's day view says the commitment is kept on that date
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells on a row ends when a number is taken back and kept
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with a range of 40 to 150 on a schedule
+  listing Monday, Wednesday and Saturday and a commitment named "Journaling" of the tick kind on a
+  schedule listing all seven weekdays, in that order and both kept from 1 January 2026; "70.5" is
+  committed on the first row and kept; the place is then made unwritable; the second row is ticked
+  and refused; the place is made writable again; and nothing at all is committed on the row for
+  "Weight"
+- **THEN** the day screen's day view says "Weight" is not kept on that date
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells about a refused value ends when the app is shown again
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026; "300" is committed on its one
+  row; and the app is then shown again as of that same day
+- **THEN** the day screen tells nothing on any row
+- **AND** its one row still says the commitment is not kept on that date
+
+#### Scenario: what a day screen tells about a refused value ends when the day screen is moved to the day before
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
+  listing all seven weekdays, kept from 1 January 2026; "1.2.3" is committed on its one row; and
+  it is then moved to the day before
+- **THEN** the day screen tells nothing on any row
+- **AND** its day picker opens on Sunday 30 August 2026
+
+#### Scenario: what a day screen tells on a row ends when a note is written and kept
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place that can be read from but
+  not written to and where nothing has been kept, of a commitment named "Journal" of the note kind,
+  on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026; "Ran 8k." is
+  committed on its one row and refused; the place is then made writable; and "Ran 8k." is committed
+  again on the row the screen then holds
+- **THEN** the day screen's day view says the commitment is kept on that date
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells on a row ends when a note is taken back and kept
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Journal" of the note kind on a schedule listing Monday, Wednesday and
+  Saturday and a commitment named "Gym" of the tick kind on a schedule listing all seven weekdays,
+  in that order and both kept from 1 January 2026; "Ran 8k." is committed on the first row and kept;
+  the place is then made unwritable; the second row is ticked and refused; the place is made
+  writable again; and nothing at all is committed on the row for "Journal"
+- **THEN** the day screen's day view says "Journal" is not kept on that date
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells on a row ends when an addition is made and kept
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place that can be read from but
+  not written to and where nothing has been kept, of a commitment named "Protein" of the total kind
+  with a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
+  2026; "30" is committed on its one row and refused; the place is then made writable; and "30" is
+  committed again on the row the screen then holds
+- **THEN** the entry the row the day screen then holds offers says "30 of 120"
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells on a row ends when a last addition is taken back and kept
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Protein" of the total kind with a target of 120 on a schedule listing
+  Monday, Wednesday and Saturday and a commitment named "Gym" of the tick kind on a schedule listing
+  all seven weekdays, in that order and both kept from 1 January 2026; "30" is committed on the first
+  row and kept; the place is then made unwritable; the second row is ticked and refused; the place is
+  made writable again; and the last addition is taken back on the row for "Protein"
+- **THEN** the entry that row then offers says "0 of 120"
+- **AND** it tells nothing on any row
+
+#### Scenario: a commit saying nothing in a total entry leaves what a day screen is telling standing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing can be
+  written — a path beneath an existing ordinary file — of a commitment named "Protein" of the total
+  kind with a target of 120, on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026; "30" is committed on its one row and refused; and nothing at all is then committed
+  on the row it holds
+- **THEN** the day screen still tells, on that row, that the change could not be kept
+- **AND** the entry that row offers still says "0 of 120"
+
+#### Scenario: what a day screen tells on a row ends when a one-off tick is kept
+
+- **WHEN** a one-off named "Call mum" on 25 September 2026 is added at a one-off place; a day screen
+  of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from 1 January
+  2026, is opened at that one-off place as of Monday 28 September 2026, at a record place where
+  nothing can be written — a path beneath an existing ordinary file — and a roster place where
+  nothing has been kept; its one commitment row is ticked and refused; and its one one-off row is
+  then ticked
+- **THEN** its One-offs group holds one row, named "Call mum", saying it is done
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells on a one-off row ends when a commitment tick is kept
+
+- **WHEN** a one-off named "Call mum" on 25 September 2026 is added at a one-off place that is then
+  made so that it can be read from but not written to; a day screen of a commitment named
+  "Journaling" on a schedule listing all seven weekdays, kept from 1 January 2026, is opened at that
+  one-off place as of Monday 28 September 2026, at a record place and a roster place where nothing
+  has been kept; its one one-off row is ticked and refused; and its one commitment row is then ticked
+- **THEN** its day view says "Journaling" is kept on that date
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells on a one-off row stands when returned to and ends when the app is shown again
+
+- **WHEN** a one-off named "Call mum" on 25 September 2026 is added at a one-off place that is then
+  made so that it can be read from but not written to; a day screen of no commitments at all is
+  opened at that one-off place as of Monday 28 September 2026, at a record place and a roster place
+  where nothing has been kept; its one one-off row is ticked and refused; and it is returned to
+- **THEN** it still tells, on that one-off row, that the change could not be kept
+- **AND** after the app is then shown again as of that same day, it tells nothing on any row
+
+#### Scenario: what a day screen tells on a row ends when a one-off rename is kept, a blank one included
+
+- **WHEN** one-offs named "Call mum" and then "Pay fine", both on 25 September 2026, are added at a
+  one-off place; a day screen of a commitment named "Journaling" on a schedule listing all seven
+  weekdays, kept from 1 January 2026, is opened at that one-off place as of Monday 28 September 2026,
+  at a record place where nothing can be written — a path beneath an existing ordinary file — and a
+  roster place where nothing has been kept; its one commitment row is ticked and refused; and
+  "Ring mum" is committed in the name field of the row named "Call mum"
+- **THEN** its One-offs group holds rows named "Ring mum" and then "Pay fine"
+- **AND** it tells nothing on any row
+- **AND** after its commitment row is ticked and refused again and a text of blank space alone is
+  committed in the name field of the row named "Pay fine", its One-offs group holds one row, named
+  "Ring mum", and it tells nothing on any row
 
 ### Requirement: A day screen moves the day it is showing one calendar day either way
 

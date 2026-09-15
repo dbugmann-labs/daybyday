@@ -89,10 +89,11 @@ picker and `scenePhase` leaving `.active`, each before the day moves. A long pre
 `contextMenu` with *Rename* and a destructive *Remove*. One-off rows are keyed by value (grill
 answer 19).
 
-### Thirteen requirements MODIFIED, and a day view formed directly names its one-offs
+### Fourteen requirements MODIFIED, and a day view formed directly names its one-offs
 
 *Group headed One-offs* and *is a value* each change a sentence; *tells on the one-off row* narrows
-"a one-off change" to a tick or removal and gains a scenario. The other ten change only asserts: those
+"a one-off change" to a tick or removal and gains a scenario; *tells on a row lasts only until* gains
+one for a kept rename. The other ten change only asserts: those
 that said no group, and every comparison with a day view formed directly, now formed of one-offs
 holding nothing as of its own day, since a keeping screen holds the empty group (answers 4 and 5).
 Ragged lines are re-wrapped; no other word or title moves. No ADR is written.
