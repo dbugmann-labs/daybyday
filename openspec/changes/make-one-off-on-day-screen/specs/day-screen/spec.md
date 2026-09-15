@@ -618,9 +618,8 @@ A day screen SHALL go on telling it, on the same row, until one of exactly three
 SHALL then tell nothing on any row. Nothing else SHALL end it, time passing included. The app being
 shown again SHALL end it, whether or not the record can then be read. A change reaching the record's
 place or the one-off place SHALL end it, on whichever row it was made, whatever the change. The day
-being shown changing
-SHALL end it — the day changing and never the gesture made — so a move with nowhere to go, and today
-sent back to today, SHALL leave it standing.
+being shown changing SHALL end it — the day changing and never the gesture made — so a move with
+nowhere to go, and today sent back to today, SHALL leave it standing.
 
 A change that reaches neither place SHALL NOT end it: a refused value moves what is told rather
 than ending it. A commit in a total entry that says nothing is neither an end nor a refusal, so what

@@ -98,6 +98,13 @@ that said no group, and every comparison with a day view formed directly, now fo
 holding nothing as of its own day, since a keeping screen holds the empty group (answers 4 and 5).
 Ragged lines are re-wrapped; no other word or title moves. No ADR is written.
 
+Six MODIFIED requirements run over the 150-word budget. Five are carried whole at their length on
+`main`: *tells on a row lasts only until* (169), *moves one calendar day* (213), *A move with nowhere
+to go* (205), *holds the day view of the day it was handed* (247), *re-reads its day and its places*
+(254). *A day view is a value* grows here from 217 to 240 with its new SHALL NOT sentence. Each of
+its four not-reaching-a-row cases is a rule a scenario tests, so none is folded away to make room,
+and splitting any of the six is left to an editorial Story.
+
 - Rejected: a day view always holding the group, the offer read off the screen keeping one-offs —
   reverses *The empty group is the offer* and rewrites *cannot read its one-offs draws no group*.
 - Rejected: equality counting no group and an empty one alike — equal values answering differently.
