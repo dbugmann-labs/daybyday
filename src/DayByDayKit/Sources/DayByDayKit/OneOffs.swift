@@ -64,7 +64,7 @@ public struct OneOffs: Hashable, Sendable {
         return true
     }
 
-    /// Renames `oneOff`, held or not, to `name` in place — one write, so a refused rename holds
+    /// Renames `oneOff`, done or not, to `name` in place — one write, so a refused rename holds
     /// nothing changed and a kept one keeps the entry's place among one-offs owed on the same
     /// date. Refused, changing nothing, when this does not hold `oneOff`, when `name` says
     /// nothing, or when a one-off named `name` on `oneOff`'s date is already held, `oneOff`

@@ -361,10 +361,7 @@ public final class DayScreen {
             throw error
         }
 
-        notice = nil
-        endNameRefusal(forRow: nil)
-        dayView = dayViewOfShownDay()
-        endNameRefusalIfItsRowIsGone()
+        oneOffChangeKept(endingRefusalFor: nil)
     }
 
     /// Renames the one-off `row` holds to `text`, blank space at both ends disregarded, keeping
@@ -394,10 +391,7 @@ public final class DayScreen {
                 throw error
             }
 
-            notice = nil
-            endNameRefusal(forRow: row)
-            dayView = dayViewOfShownDay()
-            endNameRefusalIfItsRowIsGone()
+            oneOffChangeKept(endingRefusalFor: row)
             return
         }
 
@@ -419,10 +413,7 @@ public final class DayScreen {
             throw error
         }
 
-        notice = nil
-        endNameRefusal(forRow: row)
-        dayView = dayViewOfShownDay()
-        endNameRefusalIfItsRowIsGone()
+        oneOffChangeKept(endingRefusalFor: row)
     }
 
     /// Removes the one-off `row` holds outright. Does nothing when `row` is not one this screen's
@@ -452,9 +443,9 @@ public final class DayScreen {
     }
 
     /// The person has started editing a one-off name field — the entry or a row's. Ends whatever
-    /// `nameRefusal` was telling. `design.md` § *What a day screen tells under a one-off name
-    /// field lasts until its text is edited, the day it is showing changes, or the app is shown
-    /// again*.
+    /// `nameRefusal` was telling — `openspec/specs/day-screen/spec.md` requirement *What a day
+    /// screen tells under a one-off name field lasts until its text is edited, the day it is
+    /// showing changes, or the app is shown again*.
     public func oneOffNameEdited() {
         nameRefusal = nil
     }
@@ -480,6 +471,17 @@ public final class DayScreen {
         if dayView.oneOffGroup?.rows.contains(row) != true {
             nameRefusal = nil
         }
+    }
+
+    /// The four steps a kept one-off add, remove-by-blank-rename or rename all end with alike:
+    /// nothing is owed any more, whatever `row`'s own field was telling (the entry when `nil`) is
+    /// over, `dayView` reads the place fresh, and a refusal left standing under a row the change
+    /// just removed does not outlive it.
+    private func oneOffChangeKept(endingRefusalFor row: DayView.OneOffRow?) {
+        notice = nil
+        endNameRefusal(forRow: row)
+        dayView = dayViewOfShownDay()
+        endNameRefusalIfItsRowIsGone()
     }
 
     /// Makes the tick `row` offers, or takes it back where `row` says its commitment is kept, and

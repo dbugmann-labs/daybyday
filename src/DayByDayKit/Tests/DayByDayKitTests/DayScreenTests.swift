@@ -3238,6 +3238,7 @@ func aRenameCommittedWithItsRowsOwnNameLeavesARefusalAlreadyToldUnderThatRowStan
 
     try screen.rename(row, to: "Call mum")
 
+    #expect(screen.dayView.oneOffGroup?.rows.map(\.name) == ["Call mum", "Ring mum"])
     #expect(screen.nameRefusal == refusalAfterDuplicate)
 }
 

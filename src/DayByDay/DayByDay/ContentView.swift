@@ -787,6 +787,24 @@ struct ContentView: View {
         .contextMenu {
             if !isRenaming {
                 Button("Rename") {
+                    // Committing whatever field currently has focus before this reaches for the
+                    // one shared `oneOffRowText`: seeding it with `row.name` first, the way this
+                    // once did, stomps whatever the previously focused field's own commit was
+                    // about to read back out of that same shared text — `commitFocusedOneOffField()`
+                    // is what every other explicit move already commits through first
+                    // (`design.md` § *The shell*). A refusal it finds still stands keeps that
+                    // field focused rather than this one; see its own doc comment.
+                    commitFocusedOneOffField()
+                    guard oneOffFocus == nil else {
+                        return
+                    }
+                    // A stale refusal of `row`'s own — left standing since an earlier attempt
+                    // nobody has typed over — is what `oneOffRowTextBinding(for:)` would keep
+                    // showing here instead of the name this is about to seed; ending it first
+                    // keeps the field showing exactly the text this will commit.
+                    if screen.nameRefusal?.row == row {
+                        screen.oneOffNameEdited()
+                    }
                     oneOffRowText = row.name
                     oneOffFocus = .row(row)
                 }
