@@ -45,10 +45,10 @@ should need editing; one that does is a stop.
 
 ## 4. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
-- [ ] 4.1 `CommitmentsView.swift`'s sheet drops its two `@State` refusal copies and draws `screen.sheetRefusal` under the control its field names — the name field, the rhythm control whichever rhythm is chosen, the kept-from picker, the range row, the target field, the restart day picker — and at the foot of the first section where the field is `nil`
-- [ ] 4.2 That sheet calls `screen.sheetFieldEdited(_:)` from every one of those controls' edits and `screen.sheetClosed()` on every dismiss, cancel included, read in the diff line by line
-- [ ] 4.3 That sheet starts its weekday chips from `screen.weekdaysToOffer` where it has no weekday set behind them — a new commitment, and a rhythm switched onto weekdays — and keeps whatever was chosen when the rhythm is switched away and back
-- [ ] 4.4 `pnpm run verify` passes and the app target builds; the UI test bundle is run only as `## The walk` below says
+- [x] 4.1 `CommitmentsView.swift`'s sheet drops its two `@State` refusal copies and draws `screen.sheetRefusal` under the control its field names — the name field, the rhythm control whichever rhythm is chosen, the kept-from picker, the range row, the target field, the restart day picker — and at the foot of the first section where the field is `nil`
+- [x] 4.2 That sheet calls `screen.sheetFieldEdited(_:)` from every one of those controls' edits and `screen.sheetClosed()` on every dismiss, cancel included, read in the diff line by line
+- [x] 4.3 That sheet starts its weekday chips from `screen.weekdaysToOffer` where it has no weekday set behind them — a new commitment, and a rhythm switched onto weekdays — and keeps whatever was chosen when the rhythm is switched away and back
+- [x] 4.4 `pnpm run verify` passes and the app target builds; the UI test bundle is run only as `## The walk` below says
 
 ## 5. The records
 
