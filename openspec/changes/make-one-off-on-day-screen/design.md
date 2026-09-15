@@ -1,6 +1,6 @@
 ## Context
 
-See `proposal.md` § *Why*, and `grill.md`, whose twenty settled answers, and the four reopened at the phone check, this delta is written on.
+See `proposal.md` § *Why*, and `grill.md`, whose twenty settled answers, and the five reopened at the phone check, this delta is written on.
 
 - **`OneOffs` adds, ticks, takes back and removes; it has no rename.** Entries are held in the order
   added, and `OneOffStore` mirrors each change, writing the whole document before it holds the change.
@@ -84,7 +84,8 @@ register. A removal has no field, so its failed write is told on the row by the 
 The entry is a `TextField` as the last line of the group on the shown page, and a disabled line on
 each neighbour. The toolbar `+` shows where `oneOffGroup != nil` and focuses the entry. While any
 one-off field is focused, a green checkmark shows in the toolbar; it commits and drops focus. Return
-commits and refocuses a fresh entry. Losing focus commits. So do the chevrons, swipe, `Today`, the
+commits and, once the add is kept, drops focus as the checkmark does; a refused add keeps focus with
+its text (grill answer 25). Losing focus commits. So do the chevrons, swipe, `Today`, the
 picker and `scenePhase` leaving `.active`, each before the day moves. A tap on a one-off row's
 drawn name alone puts that row into rename, on every one-off row; a tap anywhere else on it, the
 lateness words included, is its tick or take-back as before, and does nothing on a later day's row.
