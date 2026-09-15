@@ -1627,3 +1627,17 @@ takes a `chore/` branch **except** where it exists only to make a Story usable, 
 ride that Story's branch — the immediate consumer of the Story landing in the same PR, introducing
 no behaviour the kit does not specify, and named as its own section in that change's `tasks.md`.
 All three conditions must hold. What the shell may *contain* is unchanged and is the sentence above.
+
+**Look-back** — one commitment seen on its own, over everything since the day it was kept from:
+the page reached from a commitment on the **commitments screen**, kept or stopped alike, visited
+deliberately and never as part of a daily visit, that shows and enters nothing. What it shows
+follows the commitment's **kind**. A tick's page counts kept days out of due days per calendar
+month, "11/12", counted through today or through the day it was **kept until**, so a month in
+progress owes nothing yet; a tick on a **weekly quota** is counted per **week** against its quota
+instead, "2/3", which is its **standing**. A number's page draws its numbers as a line over dates;
+a total's page draws its day sums as a line with the target across; a note's page is the notes
+themselves, newest first. Deliberately not the **history**, which answers and draws nothing, and
+not an *area*, the word dropped 2026-08-28 that B-007 was captured in. A fraction on this page is
+never a percentage and is never shown on the day screen: ADR-1045 draws that line, amended for it.
+Agreed 2026-09-15 at the ninth grooming pass, for B-007; B-011 was dropped at the same grill,
+because everything the day screen could add was either that streak or a prefill.

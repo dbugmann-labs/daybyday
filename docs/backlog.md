@@ -70,63 +70,6 @@ shape it lacks, not the quota.
 
 ## Wants
 
-### B-007 — look at one commitment on its own, deliberately and rarely
-*Captured 2026-08-28, migrated 2026-09-02.*
-
-> "a detail page per area, visited deliberately and rarely, to look rather than to enter"
-
-*Folded in 2026-09-02:*
-
-> "It's possible that there will be some areas which have a detail page, e.g. a graph where you
-> can see the weight / mood / protein over time. But this should be a separate area which can be
-> navigated to."
-
-*Merged in 2026-09-02, from B-008 (captured 2026-08-29):*
-
-> "still open: whether looking back means navigating to a past day, or a view that aggregates a
-> commitment over time"
-
-- **Trigger** — occasionally, and never as part of the five daily visits.
-- **Touches** — unclaimed. Probably its own capability rather than `day-screen`, because its
-  whole point is that it is not the landing screen — and the braindump says so twice, calling it
-  "a separate area which can be navigated to".
-- **Principle** — tested against *five percent of seven things*: strains. A page per
-  commitment is depth on one thing at a time, and it passes only if the page is the same
-  thin thing for every commitment rather than a deep one for weight.
-- **Open** — the word *area* was dropped from the vocabulary (`CONTEXT.md`). What this is a page
-  *per* needs re-deciding before it is a Feature. The braindump narrows it without settling it:
-  the three examples it gives — weight, mood, protein — are the commitments that carry a number,
-  and it says "some areas", not all. A page per numeric commitment and a page per commitment are
-  different Features.
-- **Open** — from B-008: the page *is* the aggregate — "eleven gym sessions last month" for a
-  tick, a line for a number — and B-008's principle test travels with it: a count is one step
-  from a streak, and it stays on the right side only while it is looked at deliberately and
-  never shown unasked. B-008's other half, navigating to a past day, is B-016.
-- **Open** — *folded in 2026-09-08, at the grill of `add-note-record` (#140), at the owner's
-  direction rather than from a want of his own, so there is nothing to quote.* That grill settled
-  that a row says **nothing** about a note: a note is reachable only through the entry its row
-  offers, so the only way to read what you wrote on Tuesday is to move to Tuesday and open that
-  row's field. Nothing in the product draws a note anywhere else, and nothing is planned to. The
-  note is therefore a third thing this page would be for, beside the count for a tick and the line
-  for a number the Open above already names — and it is the one that is least like an aggregate,
-  because what you want back is the words themselves rather than a shape they add up to. Whether
-  that is the same page or a different one is part of what "a page *per* what" has to settle.
-
-### B-011 — see something of a commitment's history on the day screen itself
-*Captured 2026-09-02.*
-
-> "It can be decided if you want to see some information also on the landing screen, where
-> entries are made"
-
-- **Trigger** — passive, during a daily entry visit rather than a deliberate look.
-- **Touches** — `day-screen`, and whatever B-007's page turns out to be: it is the same history,
-  shown in the other place.
-- **Principle** — tested against *nothing congratulates you*: a number's recent trend is a record
-  and survives, but this want is one design decision away from failing — "six days in a row" on
-  the landing screen is the streak the principle exists to forbid.
-- **Open** — the owner explicitly left this undecided ("it can be decided"), so what grooming
-  inherits is a decision, not a want. It cannot be taken before B-007, because what may appear on
-  the day screen depends on what the detail page is a page *per*.
 
 ### B-032 — start a weight entry from the last weight I gave
 *Captured 2026-09-06.*
@@ -290,6 +233,25 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-15 — look at one commitment on its own, deliberately and rarely (B-007) →
+  `FEAT: look-back` (#271) under `EPIC: Looking back` (#269), a new Epic because #1 excludes
+  "graphs and per-area detail pages" by name and is closed. Grilled at the ninth pass in its own
+  session, thirteen questions over four rounds, one fact agent, no fact sent to the owner. A page
+  per commitment of any kind, not per numeric one; reached from the commitments screen, kept or
+  stopped alike; everything since the day kept from, no window; shows and enters nothing. A tick's
+  months as kept out of due, "11/12", counted through today or kept-until — the owner's addition to
+  the recommended count, held against ADR-1045's "a percentage" and reaffirmed, so ADR-1045 is
+  amended; a weekly quota's weeks against its quota, the standing; a number's line; a total's line
+  with the target across; a note's words newest first. Term **Look-back** in `CONTEXT.md`. Five
+  Stories at G2: #272 `look-back-at-a-tick`, then #273 `-quota`, #274 `-number`, #276 `-note` each
+  behind it, and #275 `-total` behind #274. Left behind by id: B-011, B-032.
+
+- 2026-09-15 — see something of a commitment's history on the day screen itself (B-011) → dropped
+  at B-007's grill, at the ninth pass. With the look-back page settled, every candidate for the day
+  screen — a run, a trend mark, the previous number — is either the streak *nothing congratulates
+  you* forbids or the prefill Epic #1 excludes; the weekly quota's standing, shipped in #236, is the
+  one glance that survives, and it already exists. The owner had captured this as a decision to be
+  made rather than a want, and this is the decision. `EPIC: Looking back` (#269) excludes it by name.
 - 2026-09-15 — carry my history to a new phone (B-009) → `FEAT: restore` (#264) under
   `EPIC: Restore` (#263), a new Epic by the owner's decision, on the recommendation: #1's exclusion
   of "export and restore" was a scope statement that still reads true. Grilled at the ninth pass in
@@ -1065,3 +1027,30 @@ found nothing.
     were being written; its Stories were not yet on the tracker when this line was written. ADR numbers: 1053 was the
     highest on every branch and worktree, and none was claimed here.
   - **Not re-judged** — the other ten wants; this session held one cluster by design.
+- 2026-09-15 — cluster D of the ninth pass, looking back, groomed in its own session and worktree
+  (`chore/groom-look-back`) as the line above says it would be.
+  - **Sweep** — `origin/main` was still at bd85f59, the commit the ninth pass swept at: nothing had
+    changed, and the sweep was one line.
+  - **Promoted** — B-007 → `FEAT: look-back` (#271) under `EPIC: Looking back` (#269), a new Epic as
+    the seventh, eighth and ninth passes all said: #1 excludes graphs and detail pages by name. Five
+    Stories from `/to-tickets 271`, stopped after its quiz: #272 `look-back-at-a-tick` first, then
+    #273, #274 and #276 each behind it, #275 behind #274. B-011 dropped at the same grill.
+  - **Settled at the grill**, thirteen questions over four rounds, one fact agent: per commitment of
+    any kind; from the commitments screen, never the row; stopped ones identical; a narrow Epic;
+    kept out of due per month for a tick, the owner's addition to the recommended count; a number's
+    line; a total's line with the target across; a note's words newest first; everything since kept
+    from, no window; nothing on the day screen; "11/12" reaffirmed against ADR-1045's "a percentage"
+    and that ADR amended to say where the line now lies; the slug `look-back`; a quota per week
+    against its quota; the month in progress counted through today or kept-until. Term
+    **Look-back** landed.
+  - **§7 against the other two clusters** — third G2 to land. `look-back` is a new capability; Story
+    1's route is expected to be shell work on the commitments view, which already hands out its
+    commitments, so nothing serialises behind A's #261 and #262 unless #272's delta reaches
+    `commitment`, which is a stop at its G4. B's three stores are not touched. All five Stories delta
+    `look-back`, so one at a time and no `archive/` split. ADR-1053 was the highest number on all
+    three branches; none was claimed here — the amendment went into ADR-1045.
+  - **Two tracker findings from the orchestrator, for a chore** — `docs/agents/issue-tracker.md`
+    documents no blocking relationship, while #26's and #271's G2s both use GitHub's native
+    dependency endpoints beside the body field; and `feature.yml` has no G2 box for the G2 that
+    `docs/process.md` §4 says the orchestrator ticks, so G2 is a comment on #271 as it was on #26.
+  - **Not re-judged** — the other nine wants; this session held one cluster by design.
