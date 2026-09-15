@@ -1258,6 +1258,24 @@ public final class CommitmentsScreen {
         }
     }
 
+    /// The look-back at `commitment` — one commitment seen on its own, over everything since the
+    /// day it is kept from. `nil` where `commitment` is on neither this screen's kept list nor its
+    /// stopped list, or where this screen cannot read its roster or its record.
+    /// `openspec/changes/look-back-at-a-tick/design.md` § *The screen answers it, rather than a
+    /// second screen opening the same places*.
+    public func lookBack(at commitment: Commitment) -> LookBack? {
+        guard let rosterStore, let recordStore,
+            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment }),
+            !entry.isRemoved
+        else {
+            return nil
+        }
+
+        return LookBack.form(
+            for: commitment, keptUntil: entry.keptUntil, entries: rosterStore.roster.entries,
+            today: dayToKeepFrom, history: recordStore.history)
+    }
+
     /// The app has been shown on `today`: the day this screen holds is replaced and the roster is
     /// read again.
     public func shown(asOf today: CalendarDate) {

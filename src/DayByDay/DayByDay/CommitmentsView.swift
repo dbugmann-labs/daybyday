@@ -235,9 +235,13 @@ struct CommitmentsView: View {
                     // this `ForEach`. `.onMove` still takes its offsets from the underlying
                     // `group.commitments`, whatever the `id:` is keyed on.
                     ForEach(group.commitments, id: \.self) { commitment in
-                        commitmentLine(
-                            Text(commitment.name), rhythmInWords: commitment.rhythmInWords
-                        )
+                        NavigationLink {
+                            LookBackView(lookBack: screen.lookBack(at: commitment))
+                        } label: {
+                            commitmentLine(
+                                Text(commitment.name), rhythmInWords: commitment.rhythmInWords
+                            )
+                        }
                         .swipeActions(edge: .leading) {
                             Button {
                                 sheetTarget = .changing(commitment)
@@ -347,9 +351,13 @@ struct CommitmentsView: View {
                     Text("Nothing has been stopped.")
                 }
                 ForEach(screen.stopped, id: \.self) { commitment in
-                    commitmentLine(
-                        Text(commitment.name), rhythmInWords: commitment.rhythmInWords
-                    )
+                    NavigationLink {
+                        LookBackView(lookBack: screen.lookBack(at: commitment))
+                    } label: {
+                        commitmentLine(
+                            Text(commitment.name), rhythmInWords: commitment.rhythmInWords
+                        )
+                    }
                     .swipeActions(edge: .leading) {
                         Button {
                             sheetTarget = .changing(commitment)
