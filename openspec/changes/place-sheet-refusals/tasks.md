@@ -31,7 +31,7 @@ should need editing; one that does is a stop.
 - [x] 3.12 a restart refused by a place that could not be written is about the whole change — catches every restart refusal placed under the restart day
 - [x] 3.13 a day recorded on that a change would leave not due is about the day-kept-from field — catches it placed under the rhythm because a schedule is what changed
 - [x] 3.14 a change a stopped commitment does not take is about the rhythm field where only the rhythm differs — catches the comparison made against the ask rather than against the commitment
-- [ ] 3.15 a change a stopped commitment does not take is about the day-kept-from field where only that day differs — catches both causes placed under the rhythm
+- [x] 3.15 a change a stopped commitment does not take is about the day-kept-from field where only that day differs — catches both causes placed under the rhythm
 - [ ] 3.16 a refusal is about the whole change where both the rhythm and the day kept from differ — catches the first difference found deciding the field
 - [ ] 3.17 what a commitments screen tells on its sheet ends when the field it is about is edited — catches an edit that clears nothing
 - [ ] 3.18 what a commitments screen tells on its sheet stands when another field is edited — catches any edit clearing it
