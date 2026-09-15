@@ -68,6 +68,81 @@ struct CopyDocument: Codable {
             moment: formedMoment, history: formedHistory, roster: formedRoster,
             oneOffs: formedOneOffs)
     }
+
+    /// Reads `data` as a copy — `openspec/changes/restore-from-a-copy/design.md` § *Reading a
+    /// copy: the envelope decides, and a later version outranks damage*. Reads an envelope of
+    /// this document's own `version` and `moment` first: where that does not read, or its form is
+    /// below 1, `data` is not a copy; where it is above `currentVersion`, it is from a later
+    /// version. Next come the envelopes of the three nested stores, read independently of one
+    /// another and of the rest of the document — any one of them holding a later form than that
+    /// store reads makes the whole copy one from a later version, whatever state the other two are
+    /// in. Only then is the whole document decoded and each store's own shape checked against its
+    /// declared form, exactly as that store's `init(at:)` checks its own place; any failure there
+    /// is a damaged copy.
+    static func read(_ data: Data) -> Result<Copy, CommitmentsScreen.Refusal> {
+        struct Envelope: Decodable {
+            var version: Int
+            var moment: MomentRecord
+        }
+        guard let envelope = try? JSONDecoder().decode(Envelope.self, from: data),
+            envelope.version >= 1, let moment = envelope.moment.moment()
+        else {
+            return .failure(.notACopy)
+        }
+        guard envelope.version <= Self.currentVersion else {
+            return .failure(.copyFromALaterVersion)
+        }
+
+        let storeEnvelopes = try? JSONDecoder().decode(StoreEnvelopes.self, from: data)
+        if let recordVersion = storeEnvelopes?.record?.version,
+            recordVersion > RecordDocument.currentVersion
+        {
+            return .failure(.copyFromALaterVersion)
+        }
+        if let rosterVersion = storeEnvelopes?.roster?.version,
+            rosterVersion > RosterDocument.currentVersion
+        {
+            return .failure(.copyFromALaterVersion)
+        }
+        if let oneOffsVersion = storeEnvelopes?.oneOffs?.version,
+            oneOffsVersion > OneOffDocument.currentVersion
+        {
+            return .failure(.copyFromALaterVersion)
+        }
+
+        guard let document = try? JSONDecoder().decode(CopyDocument.self, from: data),
+            let formedRecord = RecordStore.formed(from: document.record),
+            let formedRoster = RosterStore.formed(from: document.roster),
+            let formedOneOffs = OneOffStore.formed(from: document.oneOffs)
+        else {
+            return .failure(.damagedCopy)
+        }
+
+        return .success(
+            Copy(
+                moment: moment, history: formedRecord.history, roster: formedRoster,
+                oneOffs: formedOneOffs))
+    }
+
+    /// The three nested stores' own envelopes, each read independently — a store whose object is
+    /// missing, or is not an object at all, answers `nil` for that store alone rather than failing
+    /// the whole decode, so a broken record does not hide a roster written in a later form.
+    private struct StoreEnvelopes: Decodable {
+        var record: RecordDocumentEnvelope?
+        var roster: RosterDocumentEnvelope?
+        var oneOffs: OneOffDocumentEnvelope?
+
+        private enum CodingKeys: String, CodingKey {
+            case record, roster, oneOffs
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            record = try? container.decode(RecordDocumentEnvelope.self, forKey: .record)
+            roster = try? container.decode(RosterDocumentEnvelope.self, forKey: .roster)
+            oneOffs = try? container.decode(OneOffDocumentEnvelope.self, forKey: .oneOffs)
+        }
+    }
 }
 
 /// The wire shape of a `Moment`: a `DateRecord` day beside the hour and the minute, exactly as

@@ -39,31 +39,51 @@ public final class RecordStore {
             }
             throw RecordStoreError.notAStore(at: place)
         }
-        guard let document = try? JSONDecoder().decode(RecordDocument.self, from: data) else {
-            throw RecordStoreError.notAStore(at: place)
-        }
-        // Each form is read as the shape that form has, per `design.md` § *Each form is read as
-        // the shape that form has*: the `numbers`, `notes` and `additions` fields are each present
-        // at the form that introduced them and at every form since, so their presence must agree
-        // with the declared version in both directions. Checked against each field's own
-        // `...IntroducedInVersion` constant, not `currentVersion` — judged against the form each
-        // part was first written at, never against whichever form happens to be the newest.
-        guard (document.numbers != nil)
-            == (document.version >= RecordDocument.numbersIntroducedInVersion),
-            (document.notes != nil)
-                == (document.version >= RecordDocument.notesIntroducedInVersion),
-            (document.additions != nil)
-                == (document.version >= RecordDocument.additionsIntroducedInVersion)
-        else {
-            throw RecordStoreError.notAStore(at: place)
-        }
-        guard let ticks = document.formTicks(), let formedNumbers = document.formNumbers(),
-            let formedNotes = document.formNotes(), let formedAdditions = document.formAdditions()
+        guard let document = try? JSONDecoder().decode(RecordDocument.self, from: data),
+            let formed = Self.formed(from: document)
         else {
             throw RecordStoreError.notAStore(at: place)
         }
 
-        self.ticks = ticks
+        self.ticks = formed.ticks
+        self.numbers = formed.numbers
+        self.notes = formed.notes
+        self.additions = formed.additions
+        self.history = formed.history
+    }
+
+    /// Whether `document`'s shape agrees with its own declared form, per `design.md` § *Each
+    /// form is read as the shape that form has*: the `numbers`, `notes` and `additions` fields
+    /// are each present at the form that introduced them and at every form since, so their
+    /// presence must agree with the declared version in both directions. Checked against each
+    /// field's own `...IntroducedInVersion` constant, not `currentVersion` — judged against the
+    /// form each part was first written at, never against whichever form happens to be the newest.
+    private static func shapeMatchesItsForm(_ document: RecordDocument) -> Bool {
+        (document.numbers != nil)
+            == (document.version >= RecordDocument.numbersIntroducedInVersion)
+            && (document.notes != nil)
+                == (document.version >= RecordDocument.notesIntroducedInVersion)
+            && (document.additions != nil)
+                == (document.version >= RecordDocument.additionsIntroducedInVersion)
+    }
+
+    /// Forms the ticks, numbers, notes and additions `document` holds — `nil` where its shape
+    /// disagrees with its own declared form, or where any one of the four fails to form. The one
+    /// place `init(at:)` reads a decoded document into this store's own shape, shared with
+    /// `CopyDocument.read`'s own per-store reading — `openspec/changes/restore-from-a-copy
+    /// /design.md` § *Reading a copy: the envelope decides, and a later version outranks damage*
+    /// — so a copy's nested record is judged by exactly the rule a store's own place is.
+    static func formed(from document: RecordDocument) -> (
+        ticks: Set<Tick>, numbers: [RecordedDay: Decimal], notes: [RecordedDay: String],
+        additions: [RecordedDay: [Decimal]], history: History
+    )? {
+        guard shapeMatchesItsForm(document), let ticks = document.formTicks(),
+            let formedNumbers = document.formNumbers(), let formedNotes = document.formNotes(),
+            let formedAdditions = document.formAdditions()
+        else {
+            return nil
+        }
+
         var history = History()
         for tick in ticks {
             history.add(tick)
@@ -73,21 +93,19 @@ public final class RecordStore {
             numbers[RecordedDay(commitment: number.commitment, date: number.date)] = number.number
             history.add(number)
         }
-        self.numbers = numbers
         var notes: [RecordedDay: String] = [:]
         for note in formedNotes {
             notes[RecordedDay(commitment: note.commitment, date: note.date)] = note.text
             history.add(note)
         }
-        self.notes = notes
         var additions: [RecordedDay: [Decimal]] = [:]
         for addition in formedAdditions {
             let day = RecordedDay(commitment: addition.commitment, date: addition.date)
             additions[day, default: []].append(addition.amount)
             history.add(addition)
         }
-        self.additions = additions
-        self.history = history
+
+        return (ticks, numbers, notes, additions, history)
     }
 
     /// Every tick and every number added and not since taken back — exactly what is kept at

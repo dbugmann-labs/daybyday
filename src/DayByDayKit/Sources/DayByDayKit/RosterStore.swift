@@ -28,16 +28,26 @@ public final class RosterStore {
             }
             throw RosterStoreError.notAStore(at: place)
         }
-        guard let document = try? JSONDecoder().decode(RosterDocument.self, from: data) else {
+        guard let document = try? JSONDecoder().decode(RosterDocument.self, from: data),
+            let roster = Self.formed(from: document)
+        else {
             throw RosterStoreError.notAStore(at: place)
         }
-        // Each form is read as the shape that form has, per `design.md` § *The form on disk*:
-        // the `removed` field is present on every entry at the form that introduced it and at
-        // every form since, so its presence must agree with the declared version in both
-        // directions. Checked against `removalIntroducedInVersion`, not `currentVersion` — the
-        // two agree today only because form 3 is both, and a later form raising `currentVersion`
-        // alone must not move which forms this check accepts. `category` is checked the same
-        // way, against `categoryIntroducedInVersion`.
+
+        self.roster = roster
+    }
+
+    /// Forms the roster `document` holds — `nil` where its shape disagrees with its own declared
+    /// form, per `design.md` § *The form on disk*: the `removed` field is present on every entry
+    /// at the form that introduced it and at every form since, so its presence must agree with
+    /// the declared version in both directions. Checked against `removalIntroducedInVersion`, not
+    /// `currentVersion` — the two agree today only because form 3 is both, and a later form
+    /// raising `currentVersion` alone must not move which forms this check accepts. `category` is
+    /// checked the same way, against `categoryIntroducedInVersion`. The one place `init(at:)`
+    /// reads a decoded document into this store's own shape, shared with `CopyDocument.read`'s
+    /// own per-store reading — `openspec/changes/restore-from-a-copy/design.md` § *Reading a
+    /// copy: the envelope decides, and a later version outranks damage*.
+    static func formed(from document: RosterDocument) -> Roster? {
         guard
             document.commitments.allSatisfy({
                 ($0.removed != nil) == (document.version >= RosterDocument.removalIntroducedInVersion)
@@ -45,13 +55,9 @@ public final class RosterStore {
                         == (document.version >= RosterDocument.categoryIntroducedInVersion)
             })
         else {
-            throw RosterStoreError.notAStore(at: place)
+            return nil
         }
-        guard let roster = document.formRoster() else {
-            throw RosterStoreError.notAStore(at: place)
-        }
-
-        self.roster = roster
+        return document.formRoster()
     }
 
     /// Exactly what is kept at `place`.

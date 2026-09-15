@@ -8715,3 +8715,171 @@ func anOrphanedRecordWithNoPossibleSourceStaysWhereItIsAndIsSaid() throws {
     #expect(screen.recordsBelongToNoCommitment)
     #expect(try Data(contentsOf: places.record) == recordBytes)
 }
+
+@MainActor
+@Test("a commitments screen holds a refused restore against restoring a copy, naming no store")
+func aCommitmentsScreenHoldsARefusedRestoreAgainstRestoringACopyNamingNoStore() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+
+    // A file that does not read as a copy.
+    do {
+        let places = freshRosterAndRecordPlaces()
+        let oneOffPlace = freshOneOffPlace()
+        let rosterStore = try RosterStore(at: places.roster)
+        try rosterStore.add(gym)
+
+        let screen = CommitmentsScreen(
+            asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+            keepingOneOffsAt: oneOffPlace)
+
+        let file = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            .appendingPathComponent("DayByDay 2026-08-31 14.32.daybyday")
+        try FileManager.default.createDirectory(
+            at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("not what a copy is written as".utf8).write(to: file)
+
+        #expect(screen.askToRestore(from: file) == .notACopy)
+        #expect(screen.refusedChange == .restoring(.notACopy))
+    }
+
+    // A restore confirmed where the one-off place cannot be written.
+    do {
+        let places = freshRosterAndRecordPlaces()
+        let blockerDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: blockerDirectory, withIntermediateDirectories: true)
+        let blocker = blockerDirectory.appendingPathComponent("blocker")
+        try Data().write(to: blocker)
+        let oneOffPlace = blocker.appendingPathComponent("one-offs.json")
+
+        let sourcePlaces = freshRosterAndRecordPlaces()
+        let sourceOneOffPlace = freshOneOffPlace()
+        let sourceRoster = try RosterStore(at: sourcePlaces.roster)
+        try sourceRoster.add(gym)
+        let sourceScreen = CommitmentsScreen(
+            asOf: monday, keepingRosterAt: sourcePlaces.roster,
+            keepingRecordAt: sourcePlaces.record, keepingOneOffsAt: sourceOneOffPlace)
+        let copyResult = sourceScreen.makeACopy(
+            asOf: Moment(on: monday, hour: 14, minute: 32)!,
+            writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+                UUID().uuidString, isDirectory: true))
+        guard case .success(let copyURL) = copyResult else {
+            Issue.record("expected a copy to be made")
+            return
+        }
+
+        let screen = CommitmentsScreen(
+            asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+            keepingOneOffsAt: oneOffPlace)
+        #expect(screen.askToRestore(from: copyURL) == nil)
+        #expect(screen.confirmRestoring() == .notKept)
+        #expect(screen.refusedChange == .restoring(.notKept))
+    }
+}
+
+@MainActor
+@Test(
+    "what a commitments screen holds about a refused change stands when a restore is confirmed with none awaiting confirmation"
+)
+func whatACommitmentsScreenHoldsAboutARefusedChangeStandsWhenARestoreIsConfirmedWithNoneAwaitingConfirmation()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: oneOffPlace)
+
+    let refusal = screen.define(
+        name: "   ",
+        on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    let confirmRefusal = screen.confirmRestoring()
+
+    #expect(confirmRefusal == nil)
+    #expect(screen.refusedChange == .defining(.namesNothing))
+    #expect(screen.copyRestored == nil)
+    #expect(!FileManager.default.fileExists(atPath: places.roster.path))
+    #expect(!FileManager.default.fileExists(atPath: places.record.path))
+    #expect(!FileManager.default.fileExists(atPath: oneOffPlace.path))
+}
+
+@MainActor
+@Test("what a commitments screen holds about a refused change ends when a copy is restored")
+func whatACommitmentsScreenHoldsAboutARefusedChangeEndsWhenACopyIsRestored() throws {
+    let places = freshRosterAndRecordPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: oneOffPlace)
+    let copyResult = screen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+
+    let refusal = screen.define(
+        name: "   ",
+        on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    #expect(screen.askToRestore(from: copyURL) == nil)
+    #expect(screen.confirmRestoring() == nil)
+
+    #expect(screen.refusedChange == nil)
+}
+
+@MainActor
+@Test(
+    "what a commitments screen holds about a refused change stands when a restore is asked for and cancelled"
+)
+func whatACommitmentsScreenHoldsAboutARefusedChangeStandsWhenARestoreIsAskedForAndCancelled()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: oneOffPlace)
+    let copyResult = screen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+
+    let refusal = screen.define(
+        name: "   ",
+        on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    #expect(screen.askToRestore(from: copyURL) == nil)
+    screen.cancelRestoring()
+
+    #expect(screen.refusedChange == .defining(.namesNothing))
+}
