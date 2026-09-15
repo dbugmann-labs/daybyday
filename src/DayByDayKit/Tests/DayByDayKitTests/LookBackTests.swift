@@ -142,9 +142,13 @@ func askingACommitmentsScreenForALookBackChangesNothingAndWritesNothing() throws
 
     let screen = CommitmentsScreen(
         asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    // A refused change already held, before the ask — so the AND below is not comparing two
+    // `nil`s regardless of what a look-back does to `refusedChange`.
+    _ = screen.change(gym, toName: "", on: Rhythm(gym.schedule), keptFrom: gym.keptFrom, under: nil)
     let keptBefore = screen.kept
     let stoppedBefore = screen.stopped
     let refusedChangeBefore = screen.refusedChange
+    #expect(refusedChangeBefore != nil)
     let rosterBytesBefore = try Data(contentsOf: places.roster)
     let recordBytesBefore = try Data(contentsOf: places.record)
 
@@ -656,12 +660,19 @@ func anEraTheRosterHasTakenUpAgainIsKeptRatherThanRemovedAndEndsAChain() throws 
     let gymKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
     let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
     let oldKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let stoppedKeptFrom = CalendarDate(year: 2025, month: 12, day: 1)!
     let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: gymKeptFrom)!
     let oldGym = Commitment(name: "Gym", schedule: everyDay, keptFrom: oldKeptFrom)!
+    // Stopped, not removed, of the same name and kind, kept until the day the chain would ask
+    // for — the state `entry.isRemoved` alone tells apart from a removed era: it answers the
+    // guard's `keptUntil` and `name`/`kind` clauses but must fail on `isRemoved`.
+    let stoppedGym = Commitment(name: "Gym", schedule: everyDay, keptFrom: stoppedKeptFrom)!
     let today = CalendarDate(year: 2026, month: 3, day: 31)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(gym)
+    try rosterStore.add(stoppedGym)
+    try rosterStore.retire(stoppedGym, keptUntil: boundary)
     try rosterStore.add(oldGym)
     try rosterStore.remove(oldGym, keptUntil: boundary)
     try rosterStore.add(oldGym)
@@ -771,6 +782,43 @@ func aLookBackOfThreeErasSaysOneLineWhereTheRhythmChangedForEachBoundary() throw
     #expect(changedLines.count == 2)
     #expect(changedLines[0] == ("Wed", "1 March 2026"))
     #expect(changedLines[1] == ("Tue", "1 February 2026"))
+}
+
+// Not a scenario in the delta: scenario 7.3's own three eras start in three different months, so
+// nothing in that fixture reaches two boundaries landing inside one calendar month — this reaches
+// `LookBack.swift`'s `changedLinesFor` directly. G7 finding 1 on #272.
+@MainActor
+@Test("a look-back says two lines where the rhythm changed inside the same month, newest first")
+func aLookBackSaysTwoLinesWhereTheRhythmChangedInsideTheSameMonthNewestFirst() throws {
+    let places = freshRosterAndRecordPlaces()
+    let firstKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let firstKeptUntil = CalendarDate(year: 2026, month: 3, day: 5)!
+    let secondKeptFrom = CalendarDate(year: 2026, month: 3, day: 6)!
+    let secondKeptUntil = CalendarDate(year: 2026, month: 3, day: 10)!
+    let thirdKeptFrom = CalendarDate(year: 2026, month: 3, day: 11)!
+    let first = Commitment(name: "Gym", schedule: .weekdays([.monday]), keptFrom: firstKeptFrom)!
+    let second = Commitment(name: "Gym", schedule: .weekdays([.tuesday]), keptFrom: secondKeptFrom)!
+    let third = Commitment(
+        name: "Gym", schedule: .weekdays([.wednesday]), keptFrom: thirdKeptFrom)!
+    let today = CalendarDate(year: 2026, month: 3, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(first)
+    try rosterStore.supersede(first, with: second, keptUntil: firstKeptUntil, under: nil)
+    try rosterStore.supersede(second, with: third, keptUntil: secondKeptUntil, under: nil)
+    _ = try RecordStore(at: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: third)
+
+    let changedLines = lookBack!.lines.compactMap { line -> (String, String)? in
+        if case .rhythmChanged(let inWords, let from) = line { return (inWords, from) }
+        return nil
+    }
+    #expect(changedLines.count == 2)
+    #expect(changedLines[0] == ("Wed", "11 March 2026"))
+    #expect(changedLines[1] == ("Tue", "6 March 2026"))
 }
 
 @MainActor

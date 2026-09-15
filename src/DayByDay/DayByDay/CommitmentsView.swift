@@ -235,9 +235,14 @@ struct CommitmentsView: View {
                     // this `ForEach`. `.onMove` still takes its offsets from the underlying
                     // `group.commitments`, whatever the `id:` is keyed on.
                     ForEach(group.commitments, id: \.self) { commitment in
-                        NavigationLink {
-                            LookBackView(lookBack: screen.lookBack(at: commitment))
-                        } label: {
+                        // `NavigationLink(value:)`, resolved by the one `.navigationDestination`
+                        // below, rather than the trailing-closure initializer: that one builds
+                        // its destination — `screen.lookBack(at:)`, a day-by-day walk since the
+                        // commitment is kept from — eagerly on every redraw of every row on both
+                        // lists, not lazily on a tap. `design.md:117-119` accepted the walk only
+                        // because nothing on the daily path calls it; this screen redrawing was
+                        // the path it missed. G7 finding 2 on #272.
+                        NavigationLink(value: commitment) {
                             commitmentLine(
                                 Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                             )
@@ -351,9 +356,7 @@ struct CommitmentsView: View {
                     Text("Nothing has been stopped.")
                 }
                 ForEach(screen.stopped, id: \.self) { commitment in
-                    NavigationLink {
-                        LookBackView(lookBack: screen.lookBack(at: commitment))
-                    } label: {
+                    NavigationLink(value: commitment) {
                         commitmentLine(
                             Text(commitment.name), rhythmInWords: commitment.rhythmInWords
                         )
@@ -438,6 +441,9 @@ struct CommitmentsView: View {
         // exactly 0 and exactly 20, so the measurement has no hidden offset to account for. 12 is
         // about two thirds of that, per the owner's ask.
         .listSectionSpacing(12)
+        .navigationDestination(for: Commitment.self) { commitment in
+            LookBackView(lookBack: screen.lookBack(at: commitment))
+        }
         .navigationTitle("Commitments")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

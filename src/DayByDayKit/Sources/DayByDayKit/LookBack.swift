@@ -79,18 +79,26 @@ public struct LookBack: Hashable, Sendable {
         let (monthTallies, totalDue, totalKept) = Self.walkDays(
             from: earliestEra.start, through: frontEnd, eras: eras, history: history)
 
-        var changedLineFor: [YearMonth: Line] = [:]
+        // Keyed on the calendar month a boundary's newer era is kept from, so two boundaries
+        // landing in the same month say two lines rather than the second overwriting the first
+        // — `design.md` § *The change line sits above the month the newer era is kept from* and
+        // `spec.md` § *A look-back says where the rhythm changed, between its months*: "one such
+        // line for each boundary ... in the same newest-first order its months are in". The loop
+        // below already visits `eras` newest-first, so appending rather than assigning keeps that
+        // order inside one month's list too.
+        var changedLinesFor: [YearMonth: [Line]] = [:]
         for index in 0..<max(eras.count - 1, 0) {
             let newer = eras[index]
             let ym = YearMonth(year: newer.start.year, month: newer.start.month)
-            changedLineFor[ym] = .rhythmChanged(
-                inWords: newer.commitment.rhythmInWords, from: LookBackWords.day(newer.start))
+            changedLinesFor[ym, default: []].append(
+                .rhythmChanged(
+                    inWords: newer.commitment.rhythmInWords, from: LookBackWords.day(newer.start)))
         }
 
         var lines: [Line] = []
         for tally in monthTallies {
-            if let changedLine = changedLineFor[YearMonth(year: tally.year, month: tally.month)] {
-                lines.append(changedLine)
+            if let changedLines = changedLinesFor[YearMonth(year: tally.year, month: tally.month)] {
+                lines.append(contentsOf: changedLines)
             }
             lines.append(tally.line)
         }
@@ -123,9 +131,21 @@ public struct LookBack: Hashable, Sendable {
         var current = eras[0]
 
         while searchFrom < entries.count {
-            let targetKeptUntil = current.start.adding(days: -1) ?? current.start
+            // Where the day before `current.start` cannot be formed at all — the earliest day
+            // this calendar can hold — there is no honest day to search for: falling back to
+            // `current.start` itself would search for an era kept until the same day the front
+            // era is kept from, which `spec.md` § *A removed commitment kept until any day but
+            // the day before is not an earlier era* rules out as one day too late. The chain
+            // ends here instead.
+            guard let targetKeptUntil = current.start.adding(days: -1) else {
+                break
+            }
+            // A slice's `firstIndex(where:)` answers an index into the base array `entries`
+            // already — an `ArraySlice` keeps the indices it was sliced from rather than
+            // rebasing them to zero — so this is the found entry's own index, not an offset
+            // still needing `searchFrom` added back in.
             guard
-                let foundOffset = entries[searchFrom...].firstIndex(where: { entry in
+                let foundIndex = entries[searchFrom...].firstIndex(where: { entry in
                     entry.isRemoved && entry.keptUntil == targetKeptUntil
                         && entry.commitment.name == current.commitment.name
                         && entry.commitment.kind == current.commitment.kind
@@ -134,11 +154,11 @@ public struct LookBack: Hashable, Sendable {
                 break
             }
 
-            let foundEntry = entries[foundOffset]
+            let foundEntry = entries[foundIndex]
             let era = Era(commitment: foundEntry.commitment, end: foundEntry.keptUntil!)
             eras.append(era)
             current = era
-            searchFrom = foundOffset + 1
+            searchFrom = foundIndex + 1
         }
 
         return eras
