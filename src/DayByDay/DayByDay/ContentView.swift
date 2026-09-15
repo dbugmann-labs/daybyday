@@ -98,12 +98,24 @@ struct ContentView: View {
         case row(DayView.OneOffRow)
     }
     @FocusState private var oneOffFocus: OneOffFocus?
-    // The entry's own typed text, and the text typed into whichever row is being renamed — each
-    // emptied on every commit attempt, successful or refused, so the field shows `nameRefusal`'s
-    // own `text` while a refusal stands (`design.md` § *The shell*) and reads back from these
-    // once it does not.
+    // The entry's own typed text, and the text typed into whichever row is being renamed. The
+    // entry's is emptied on every commit attempt from it, successful or refused: an empty add is
+    // always a harmless no-op (`DayScreen.addOneOff` ignores blank text), so the field can show
+    // `nameRefusal`'s own `text` while a refusal stands (`design.md` § *The shell*) and read back
+    // from `oneOffEntryText` once it does not. A row's is emptied only once its commit is *kept*
+    // — `commitRename(of:to:)` leaves it exactly as typed while refused, since a blank text
+    // resent to `DayScreen.rename` is not a no-op the way a blank add is: it removes the one-off.
     @State private var oneOffEntryText = ""
     @State private var oneOffRowText = ""
+    // Set immediately before `commitFocusedOneOffField()` clears `oneOffFocus`, having already
+    // committed whichever field it found focused; consumed — read once and reset — the next time
+    // `onChange(of: oneOffFocus)` fires, so the commit that focus change would otherwise trigger
+    // there does not repeat one `commitFocusedOneOffField()` already made. Losing focus commits
+    // from more than one place (the checkmark, a row's own Return, every day move and
+    // `scenePhase` leaving `.active`), and more than one of those can fire for the one field
+    // losing focus; without this, the second finds the field already emptied by the first — a
+    // harmless no-op for an add, but not for a rename, which a blank text removes outright.
+    @State private var justCommittedOneOffField = false
     // The paged day content's own width, measured off `GeometryReader` and used both to size the
     // full slide a carry or a chevron tap settles to and as the threshold a drag must cross to
     // carry. `dragTranslation` is the live offset applied to the three-list `HStack`: the drag's
@@ -165,8 +177,11 @@ struct ContentView: View {
                 if oneOffFocus != nil {
                     ToolbarItem(placement: .confirmationAction) {
                         Button {
+                            // `commitFocusedOneOffField()` already drops focus itself once it
+                            // has committed — except where a rename it just made is refused, in
+                            // which case the row stays focused on purpose (grill answer 18): see
+                            // its own doc comment.
                             commitFocusedOneOffField()
-                            oneOffFocus = nil
                         } label: {
                             Image(systemName: "checkmark")
                                 .foregroundStyle(Color.green)
@@ -285,12 +300,25 @@ struct ContentView: View {
             }
         }
         // Losing focus commits (`design.md` § *The shell*): whichever one-off field just gave up
-        // focus — by a tap elsewhere, the checkmark, or one of the explicit moves below, each of
-        // which has already committed its own field before this fires — is committed here too,
-        // harmlessly a second time where it already has been, since a field already emptied by
-        // its own commit commits nothing on a second pass.
+        // focus — by a tap elsewhere, which is what this exists to catch, or by the checkmark or
+        // one of the explicit moves below, each of which has already committed its own field via
+        // `commitFocusedOneOffField()` before this fires — is committed here too. The comment
+        // this replaced claimed that second pass was always harmless because a field already
+        // emptied by its own commit commits nothing on a second pass; true for an add, which
+        // `DayScreen.addOneOff` no-ops on blank text, but not for a rename, which a blank text
+        // removes outright — `justCommittedOneOffField` is what actually makes the second pass
+        // harmless, by skipping it exactly once for every commit `commitFocusedOneOffField()`
+        // has already made. This does not route a rename through `commitRename(of:to:)` the way
+        // `commitFocusedOneOffField()` does, and so does not refocus a row it finds refused:
+        // focus has already moved on by the time this fires, to whatever a tap elsewhere landed
+        // on, and forcing it back could only fight that — not, as `commitFocusedOneOffField()`
+        // can, hold a field that was never actually going to lose focus in the first place.
         .onChange(of: oneOffFocus) { oldValue, newValue in
             guard let oldValue, oldValue != newValue else {
+                return
+            }
+            guard !justCommittedOneOffField else {
+                justCommittedOneOffField = false
                 return
             }
             switch oldValue {
@@ -305,21 +333,55 @@ struct ContentView: View {
     }
 
     /// Commits whatever one-off field currently has focus — the entry, or a row's rename field —
-    /// and leaves `oneOffFocus` exactly as it is; a caller that means to drop focus too sets it
-    /// itself, as the checkmark does. Called before every one of the moves `design.md` § *The
-    /// shell* names: the chevrons, swipe, `Today`, the day picker and `scenePhase` leaving
-    /// `.active`, in each case before the day actually moves.
+    /// and, once committed, drops focus itself: a caller that also means to drop it need not set
+    /// `oneOffFocus` a second time (the checkmark does not). The one exception is a rename this
+    /// finds refused: `commitRename(of:to:)` has already put the row back in focus, and this
+    /// leaves it there rather than clearing it out from under that. Guarded on `oneOffFocus`
+    /// being non-`nil` at entry, so a second, redundant call — `scenePhase` leaving `.active`
+    /// calls this once per phase it passes through on the way to the background, `.inactive` and
+    /// then `.background` — finds nothing left to commit and does nothing. Called before every
+    /// one of the moves `design.md` § *The shell* names: the chevrons, swipe, `Today`, the day
+    /// picker and `scenePhase` leaving `.active`, in each case before the day actually moves.
     private func commitFocusedOneOffField() {
-        switch oneOffFocus {
+        guard let focus = oneOffFocus else {
+            return
+        }
+        switch focus {
         case .entry:
             try? screen.addOneOff(named: oneOffEntryText)
             oneOffEntryText = ""
         case .row(let row):
-            try? screen.rename(row, to: oneOffRowText)
-            oneOffRowText = ""
-        case nil:
-            break
+            guard !commitRename(of: row, to: oneOffRowText) else {
+                return
+            }
         }
+        justCommittedOneOffField = true
+        oneOffFocus = nil
+    }
+
+    /// Commits `text` as a rename of `row` and reports whether it was refused: `false` means it
+    /// was kept (or a harmless no-op — the row's own name, unchanged) and `oneOffRowText` has
+    /// been emptied; `true` means `oneOffFocus` has been put back on `row` and `oneOffRowText`
+    /// left exactly as it was typed, so the row stays in edit with the typed name and the cause
+    /// under it — grill answer 18, "exactly as a refused add" — and `commitFocusedOneOffField()`,
+    /// its one caller, can tell whether it still needs to drop focus itself. Called only from
+    /// there, and not from `onChange(of: oneOffFocus)`'s own, unconditional commit: focus has
+    /// already moved on by the time that fires, to wherever a tap elsewhere landed, and putting
+    /// it back on `row` there would fight that rather than hold a field that was never actually
+    /// about to lose it. Leaving `oneOffRowText` as typed, rather than emptying it the way a kept
+    /// change's is, also means a redundant second call for the same still-refused row (more than
+    /// one place calls `commitFocusedOneOffField()` for the one field losing focus, and the
+    /// `justCommittedOneOffField` guard on that does not apply to a call that never actually
+    /// dropped focus) resends the same text — refused the same way again — rather than resending
+    /// it blank, which `DayScreen.rename` reads as asking to remove the one-off.
+    private func commitRename(of row: DayView.OneOffRow, to text: String) -> Bool {
+        try? screen.rename(row, to: text)
+        guard screen.nameRefusal?.row == row else {
+            oneOffRowText = ""
+            return false
+        }
+        oneOffFocus = .row(row)
+        return true
     }
 
     /// The controls that stay put while the day's rows page beneath them: the chevrons and the
@@ -676,9 +738,10 @@ struct ContentView: View {
                     TextField(row.name, text: oneOffRowTextBinding(for: row))
                         .focused($oneOffFocus, equals: .row(row))
                         .onSubmit {
-                            try? screen.rename(row, to: oneOffRowText)
-                            oneOffRowText = ""
-                            oneOffFocus = nil
+                            // `commitFocusedOneOffField()` commits this row and drops focus, or
+                            // — a rename it finds refused — leaves the row focused with the
+                            // typed name and the cause showing under it; see its own doc comment.
+                            commitFocusedOneOffField()
                         }
                 } else {
                     let nameText = Text(row.name)
