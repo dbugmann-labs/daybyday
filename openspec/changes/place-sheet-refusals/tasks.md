@@ -52,8 +52,8 @@ should need editing; one that does is a stop.
 
 ## 5. The records
 
-- [ ] 5.1 Confirm `CONTEXT.md` § *Refused change* still describes what shipped, its 2026-09-15 amendment included; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
-- [ ] 5.2 Confirm `git diff --stat origin/main... -- openspec/specs/ docs/adr/` reports nothing (rule 2; no ADR is written)
+- [x] 5.1 Confirm `CONTEXT.md` § *Refused change* still describes what shipped, its 2026-09-15 amendment included; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
+- [x] 5.2 Confirm `git diff --stat origin/main... -- openspec/specs/ docs/adr/` reports nothing (rule 2; no ADR is written)
 
 ## 6. The gates
 
