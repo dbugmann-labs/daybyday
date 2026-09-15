@@ -1330,6 +1330,18 @@ commitments screen has no equivalent of — the day being shown changing. A refu
 to do. Two words for two things, not one thing twice; if a third screen wants the same shape, that is
 the point at which one word should replace both.
 
+**Amended 2026-09-15**, at the grill of `place-sheet-refusals` (#261). On the **commitment sheet** a
+refused change is told **under the field it is about** — the name, the weekday chips, the rhythm's
+number, the range row, the target, the restart day — and **at the foot of the form** where it is
+about the whole change: already kept, a place that could not be written, records already under that,
+or both the rhythm and the kept-from day moved at once. What is told under a field ends when that
+field is edited and not when another is; the foot ends on the next save; and closing the sheet ends
+whatever it told, so a sheet opened again tells nothing. One is told at a time on a sheet, the one
+asked last, a restart's included. That is a third end condition the refused change on the lists has
+never had, and it is the shape the day screen's one-off entry already has; whether it is the refused
+change gaining a place or a second thing beside it — the point above at which one word should
+replace both — is the delta's to say. The words a person reads are still the **app shell**'s.
+
 **Record place** — the one place a day screen keeps its record at, and the only thing about the
 record that is a day screen's to choose. It is a file inside the directory the platform reserves for
 an application's own supporting data, in a directory of this app's own, and it is the same place
