@@ -8199,6 +8199,106 @@ func aChangeKeptAtTheRosterPlaceHoldsATornSaveItCannotUndoWhereTakingItAwayFails
     #expect(laterRosterStore.roster.entries.map(\.commitment) == [gymEmoji])
 }
 
+/// Companion to the test above, covering the second of the three call sites the docstring above
+/// `undoTornSaveMadeDuringThisChange()` names: the branch taken when both the name and the
+/// rhythm change in one save, which lands its own roster write — a rename onto `carryTarget`
+/// then a supersession onto `finalNewCommitment`, both applied to one in-memory `Roster` before
+/// it is replaced — before reaching its own `undoTornSaveMadeDuringThisChange()` guard.
+/// Reproduced the same way as the test above: `gym` carries no record, so this call's own
+/// `keepSaveInProgressIfCarrying` never touches the save-in-progress place, leaving it free to
+/// plant a save in progress at directly, naming the commitment the roster write below is about
+/// to carry `gym` to.
+@MainActor
+@Test(
+    "a change with a new name and rhythm kept at the roster place holds a torn save it cannot undo where taking it away fails"
+)
+func aChangeWithANewNameAndRhythmKeptAtTheRosterPlaceHoldsATornSaveItCannotUndoWhereTakingItAwayFails()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let originalSchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: originalSchedule, keptFrom: keptFrom)!
+    let carryTarget = Commitment(name: "Gym 🏋️", schedule: originalSchedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    #expect(screen.kept == [gym])
+
+    let saveInProgressPlace = SaveInProgress.place(besideRecordAt: places.record)
+    try SaveInProgress(carriedFrom: gym, to: carryTarget).keep(at: saveInProgressPlace)
+    try makeImmutable(saveInProgressPlace)
+    defer { try? makeMutable(saveInProgressPlace) }
+
+    let refusal = screen.change(
+        gym, toName: "Gym 🏋️", on: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.rosterState == .notKept)
+    #expect(screen.kept.isEmpty)
+    #expect(screen.keptGroups.isEmpty)
+    #expect(screen.stopped.isEmpty)
+    #expect(FileManager.default.fileExists(atPath: saveInProgressPlace.path))
+
+    let laterRosterStore = try RosterStore(at: places.roster)
+    let newGym = Commitment(
+        name: "Gym 🏋️", schedule: .weekdays([.tuesday, .thursday]), keptFrom: monday)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    #expect(laterRosterStore.roster.commitments(on: sunday) == [newGym, carryTarget])
+}
+
+/// Companion to the two tests above, covering the third of `undoTornSaveMadeDuringThisChange()`'s
+/// three call sites: `restart`'s own guard. Reproduced the same way: `nails` carries no record on
+/// or after the day it restarts from, so this call's own `keepSaveInProgressIfCarrying` never
+/// touches the save-in-progress place, leaving it free to plant a save in progress at directly,
+/// naming the restarted commitment the roster write below is about to carry `nails` to.
+@MainActor
+@Test(
+    "a restart kept at the roster place holds a torn save it cannot undo where taking it away fails"
+)
+func aRestartKeptAtTheRosterPlaceHoldsATornSaveItCannotUndoWhereTakingItAwayFails() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+    let restartedNails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: monday), keptFrom: monday)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    #expect(screen.kept == [nails])
+
+    let saveInProgressPlace = SaveInProgress.place(besideRecordAt: places.record)
+    try SaveInProgress(carriedFrom: nails, to: restartedNails).keep(at: saveInProgressPlace)
+    try makeImmutable(saveInProgressPlace)
+    defer { try? makeMutable(saveInProgressPlace) }
+
+    let refusal = screen.restart(nails, from: monday)
+
+    #expect(refusal == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.rosterState == .notKept)
+    #expect(screen.kept.isEmpty)
+    #expect(screen.keptGroups.isEmpty)
+    #expect(screen.stopped.isEmpty)
+    #expect(FileManager.default.fileExists(atPath: saveInProgressPlace.path))
+
+    let laterRosterStore = try RosterStore(at: places.roster)
+    #expect(laterRosterStore.roster.commitments(on: august30th) == [restartedNails, nails])
+}
+
 @MainActor
 @Test("a rename torn between its two places is undone when a commitments screen is opened")
 func aRenameTornBetweenItsTwoPlacesIsUndoneWhenACommitmentsScreenIsOpened() throws {
