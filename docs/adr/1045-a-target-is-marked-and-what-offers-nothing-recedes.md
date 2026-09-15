@@ -4,6 +4,15 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-15 — a look-back also says a **whole**: one fraction across everything since the
+  day the commitment was kept from, "120/140", beside the per-month ones. The amendment below says
+  the fraction stands "per month or per week", and this goes further than that wording allowed, so
+  it was put to the owner twice — once as the objection that a whole is the run the principle
+  forbids, and once again with that sentence quoted back — and reaffirmed both times. What makes it
+  a count of days and not a run is unchanged from below: it is counted by the same rule a month is,
+  it is never rendered as a percentage, it is on a page visited deliberately, and the day screen
+  shows none of it. It says nothing at all where any era of the chain runs on a weekly quota, whose
+  right answer is the week's and not the day's. Written by `look-back-at-a-tick` (#272).
 - Amended: 2026-09-15 — the **look-back** page (B-007, grilled at the ninth grooming pass) shows a
   tick commitment's kept days out of due days per month, "11/12", and a weekly quota's per week,
   "2/3". The Decision's line that the principle forbids "a percentage" is kept and narrowed: what it

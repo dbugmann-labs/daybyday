@@ -235,9 +235,21 @@ struct CommitmentsView: View {
                     // this `ForEach`. `.onMove` still takes its offsets from the underlying
                     // `group.commitments`, whatever the `id:` is keyed on.
                     ForEach(group.commitments, id: \.self) { commitment in
-                        commitmentLine(
-                            Text(commitment.name), rhythmInWords: commitment.rhythmInWords
-                        )
+                        // `LookBackView(screen:commitment:)` is cheap to construct — two
+                        // references — so building it here, in the trailing closure this
+                        // initializer resolves to, costs nothing on every redraw of every row on
+                        // both lists; `screen.lookBack(at:)`, the day-by-day walk, sits behind
+                        // `LookBackView`'s own `body` and only runs once this row is tapped.
+                        // `design.md:117-119` accepted that walk only because nothing on the
+                        // daily path calls it — this screen redrawing every row's destination was
+                        // the path it missed. G7 finding 2 on #272.
+                        NavigationLink {
+                            LookBackView(screen: screen, commitment: commitment)
+                        } label: {
+                            commitmentLine(
+                                Text(commitment.name), rhythmInWords: commitment.rhythmInWords
+                            )
+                        }
                         .swipeActions(edge: .leading) {
                             Button {
                                 sheetTarget = .changing(commitment)
@@ -347,9 +359,13 @@ struct CommitmentsView: View {
                     Text("Nothing has been stopped.")
                 }
                 ForEach(screen.stopped, id: \.self) { commitment in
-                    commitmentLine(
-                        Text(commitment.name), rhythmInWords: commitment.rhythmInWords
-                    )
+                    NavigationLink {
+                        LookBackView(screen: screen, commitment: commitment)
+                    } label: {
+                        commitmentLine(
+                            Text(commitment.name), rhythmInWords: commitment.rhythmInWords
+                        )
+                    }
                     .swipeActions(edge: .leading) {
                         Button {
                             sheetTarget = .changing(commitment)
