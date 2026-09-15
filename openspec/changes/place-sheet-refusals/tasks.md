@@ -39,7 +39,7 @@ should need editing; one that does is a stop.
 - [x] 3.20 what a commitments screen tells on its sheet ends when the sheet is closed — catches the sheet's close doing nothing
 - [x] 3.21 a refused restart replaces what a refused save told on a commitments screen's sheet — catches a second value held for a restart
 - [x] 3.22 what a commitments screen tells on its sheet ends when an ask is kept — catches only the refused paths writing the value
-- [ ] 3.23 what a commitments screen tells on its sheet ends when the app is shown again — catches `shown(asOf:)` clearing `refusedChange` alone
+- [x] 3.23 what a commitments screen tells on its sheet ends when the app is shown again — catches `shown(asOf:)` clearing `refusedChange` alone
 - [ ] 3.24 what a commitments screen tells on its sheet stands when a call asks for no change at all — catches an early return clearing it
 - [ ] 3.25 a commitments screen offers all seven weekdays for a form's weekday chips — catches the seven read from what the roster holds
 
