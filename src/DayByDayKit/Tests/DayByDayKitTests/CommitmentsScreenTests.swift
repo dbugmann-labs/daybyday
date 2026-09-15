@@ -9193,3 +9193,27 @@ func whatACommitmentsScreenTellsOnItsSheetEndsWhenTheFieldItIsAboutIsEdited() {
     #expect(screen.sheetRefusal == nil)
     #expect(screen.refusedChange == .defining(.namesNothing))
 }
+
+@MainActor
+@Test("what a commitments screen tells on its sheet stands when another field is edited")
+func whatACommitmentsScreenTellsOnItsSheetStandsWhenAnotherFieldIsEdited() {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    let refusal = screen.define(name: "   ", on: allWeekdays, keptFrom: monday, under: nil)
+    #expect(refusal == .namesNothing)
+
+    screen.sheetFieldEdited(.rhythm)
+    screen.sheetFieldEdited(.keptFrom)
+    screen.sheetFieldEdited(.range)
+    screen.sheetFieldEdited(.target)
+    screen.sheetFieldEdited(.restartDay)
+
+    #expect(
+        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: .name, refusal: .namesNothing))
+}
