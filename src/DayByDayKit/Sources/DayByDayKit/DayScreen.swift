@@ -611,16 +611,22 @@ public final class DayScreen {
     /// place as of the today it was handed" says "at no other moment" than being opened and the
     /// app being shown again.
     public func returnedTo() {
-        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
-        self.rosterState = openedRoster.state
-        self.roster = openedRoster.roster
+        let openedRoster: (state: RosterState, roster: Roster)
 
         if recordState == .kept {
-            // The save in progress is read here, before the record itself — `design.md` §
-            // *Reading the places undoes a torn save as it was* — and only on this path: a
-            // screen not keeping a record does not start reading its places for one by being
-            // returned to, exactly as it does not start keeping one.
+            // The save in progress is read here, before the roster is ever handed day one to
+            // take on — `design.md` § *Reading the places undoes a torn save as it was* — and
+            // only on this path: a screen not keeping a record does not start reading its places
+            // for one by being returned to, exactly as it does not start keeping one. Where the
+            // undo cannot be completed, the roster is opened read-only, exactly as
+            // `readRecordAndRoster` opens it for the same condition at `init` and
+            // `shown(asOf:)` — `openspec/specs/commitment/spec.md` § *A torn save that cannot be
+            // undone keeps nothing from the record place*: "a screen reading its places SHALL
+            // write nothing at either place". Taking on day one unconditionally, before this
+            // check, would write it to an empty roster place while the torn save still stood.
             if SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) {
+                openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
+
                 let opened = Self.open(at: recordPlace)
                 self.recordStore = opened.store
                 self.recordState = opened.state
@@ -629,10 +635,16 @@ public final class DayScreen {
                     SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
                 }
             } else {
+                openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: [])
                 self.recordStore = nil
                 self.recordState = .unreadable
             }
+        } else {
+            openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
         }
+
+        self.rosterState = openedRoster.state
+        self.roster = openedRoster.roster
 
         self.dayView = DayView(
             of: openedRoster.roster.groups(on: shownDay), oneOffs: oneOffStore?.oneOffs ?? OneOffs(),

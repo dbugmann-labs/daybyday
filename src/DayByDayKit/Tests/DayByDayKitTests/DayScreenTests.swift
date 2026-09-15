@@ -7962,6 +7962,62 @@ func aDayScreenDoesNotWriteDayOneToTheRosterPlaceWhileATornSaveItCannotUndoStand
     #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
 }
 
+/// The same requirement as the test above, reached the other way `readRecordAndRoster` is not
+/// shared into: `returnedTo()` inlines its own version rather than calling that function, and
+/// before this fix wrote day one to the roster place before ever checking the torn save at all —
+/// unconditionally, on every call where this screen is keeping a record, not merely when one
+/// stands. The screen is opened clean first, with day one already taken on once by `init`, so
+/// `returnedTo()` — not `init` — is the call under test; the roster place is then emptied again
+/// and a fresh torn save is planted directly, beside an unwritable record directory, so the undo
+/// `returnedTo()` runs cannot complete. Reproducing "the roster place is empty" therefore takes
+/// deleting what `init` had already written there, not merely never writing it — day one is
+/// `screen`'s own `commitments`, handed again on every call that takes it on, so starting from an
+/// empty `dayOne` would give `returnedTo()` nothing to write either way and prove nothing.
+@MainActor
+@Test(
+    "a day screen does not write day one to the roster place while a torn save it cannot undo stands, returned to"
+)
+func aDayScreenDoesNotWriteDayOneToTheRosterPlaceWhileATornSaveItCannotUndoStandsReturnedTo() throws {
+    let rosterDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = rosterDirectory.appendingPathComponent("roster.json")
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    defer { try? makeWritable(recordDirectory) }
+
+    let schedule: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+
+    let screen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    #expect(screen.recordState == .kept)
+    #expect(FileManager.default.fileExists(atPath: rosterPlace.path))
+
+    try FileManager.default.removeItem(at: rosterPlace)
+
+    let otherRecordStore = try RecordStore(at: recordPlace)
+    try otherRecordStore.add(Tick(gymEmoji, on: monday)!)
+    try SaveInProgress(carriedFrom: gym, to: gymEmoji).keep(
+        at: SaveInProgress.place(besideRecordAt: recordPlace))
+
+    try makeReadOnly(recordDirectory)
+
+    screen.returnedTo()
+
+    #expect(screen.recordState == .unreadable)
+    #expect(
+        FileManager.default.fileExists(
+            atPath: SaveInProgress.place(besideRecordAt: recordPlace).path))
+    #expect(!FileManager.default.fileExists(atPath: rosterPlace.path))
+}
+
 @MainActor
 @Test("a torn save a day screen could not undo is undone once it is shown again and its places can be written")
 func aTornSaveADayScreenCouldNotUndoIsUndoneOnceItIsShownAgainAndItsPlacesCanBeWritten() throws {

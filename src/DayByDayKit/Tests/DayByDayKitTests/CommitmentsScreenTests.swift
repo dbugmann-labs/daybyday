@@ -24,6 +24,21 @@ private func freshRosterAndRecordPlaces() -> (roster: URL, record: URL) {
     )
 }
 
+/// Sets the user-immutable flag on the file at `place`: it still reads, but a rename or removal
+/// of it — `chflags uchg` at the shell, `FileAttributeKey.immutable` through `FileManager` —
+/// fails with `NSCocoaErrorDomain 513`, unlike `makeReadOnly(_:)` in `DayScreenTests.swift`, which
+/// denies an entire directory and so also denies writing any *other* file inside it. Every caller
+/// must pair this with `makeMutable(_:)` before returning, including on its failure path, or the
+/// file is left impossible to remove behind it.
+private func makeImmutable(_ place: URL) throws {
+    try FileManager.default.setAttributes([.immutable: true], ofItemAtPath: place.path)
+}
+
+/// Undoes `makeImmutable(_:)`, restoring `place` to a file that can be renamed or removed again.
+private func makeMutable(_ place: URL) throws {
+    try FileManager.default.setAttributes([.immutable: false], ofItemAtPath: place.path)
+}
+
 /// Bytes for a record place at the form this app reads (version 5), holding `ticksJSON` — the raw
 /// JSON array literal for the `ticks` key's value — alongside the `numbers`, `notes` and
 /// `additions` keys `RecordStore.init(at:)`'s shape guard requires at that version
@@ -8117,6 +8132,71 @@ func aChangeRefusedAtTheRosterPlaceHoldsATornSaveItCannotUndoWhereTheUndoItselfF
     #expect(
         FileManager.default.fileExists(
             atPath: SaveInProgress.place(besideRecordAt: recordPlace).path))
+}
+
+/// The same requirement as the test above, on the success path rather than the roster's own
+/// write failing: `undoTornSaveMadeDuringThisChange()` already clears `self.rosterStore`,
+/// `rosterState`, `self.recordStore` and every list when the undo it runs fails — the test above
+/// proves that. What it did not prove is that the three call sites *after a roster write that
+/// landed* — `change`'s same-rhythm path, its both-changed path, and `restart` — stop there too:
+/// each fell straight through to `refreshLists(from: rosterStore)`, `rosterStore` being the
+/// `guard let rosterStore` bound at the top of this call, still set and still reflecting the
+/// write, which redrew the lists from the very roster this screen can no longer answer for.
+///
+/// Reproduced without a new seam. `commitment` carries no record, so this call's own
+/// `keepSaveInProgressIfCarrying` has nothing to carry and never touches the save-in-progress
+/// place — `hasRecords` false, `design.md` § *The save in progress lives beside the record place,
+/// not at a place of its own* — which leaves the place free to plant a save in progress at
+/// directly, once the screen has already opened clean, naming the very commitment this call's own
+/// roster write is about to write under. `makeImmutable(_:)` then stops
+/// `SaveInProgress.undoTornSave`'s own `takeAway` from removing it once that write lands and the
+/// undo finds the roster already holding what the file names: reading it still succeeds, so the
+/// undo reaches that check at all, and only the removal fails, matching "taking the save in
+/// progress away … fails" once the roster write has landed rather than "re-reading it" failing.
+@MainActor
+@Test(
+    "a change kept at the roster place holds a torn save it cannot undo where taking it away fails"
+)
+func aChangeKeptAtTheRosterPlaceHoldsATornSaveItCannotUndoWhereTakingItAwayFails() throws {
+    let rosterDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let rosterPlace = rosterDirectory.appendingPathComponent("roster.json")
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace)
+    #expect(screen.kept == [gym])
+
+    let saveInProgressPlace = SaveInProgress.place(besideRecordAt: recordPlace)
+    try SaveInProgress(carriedFrom: gym, to: gymEmoji).keep(at: saveInProgressPlace)
+    try makeImmutable(saveInProgressPlace)
+    defer { try? makeMutable(saveInProgressPlace) }
+
+    let refusal = screen.change(
+        gym, toName: "Gym 🏋️", on: Rhythm(schedule), keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(screen.rosterState == .notKept)
+    #expect(screen.kept.isEmpty)
+    #expect(screen.keptGroups.isEmpty)
+    #expect(screen.stopped.isEmpty)
+    #expect(FileManager.default.fileExists(atPath: saveInProgressPlace.path))
+
+    let laterRosterStore = try RosterStore(at: rosterPlace)
+    #expect(laterRosterStore.roster.entries.map(\.commitment) == [gymEmoji])
 }
 
 @MainActor

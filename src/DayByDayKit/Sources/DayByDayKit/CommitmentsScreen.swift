@@ -474,17 +474,23 @@ public final class CommitmentsScreen {
     /// cannot be undone reuses two existing states* and `openspec/specs/commitment/spec.md` §
     /// *A change that carries records leaves a save in progress until its roster place is
     /// written*: "Where that undo fails, the screen SHALL from then on hold a torn save it
-    /// cannot undo."
-    private func undoTornSaveMadeDuringThisChange() {
+    /// cannot undo." Answers whether the undo succeeded: every caller on a success path — the
+    /// roster place was just written and this is only tidying the file up after it — MUST stop
+    /// at `false` rather than going on to draw its lists from the local `RosterStore` binding it
+    /// opened this change or restart with, which is still set and still reflects the write even
+    /// once this has cleared `self.rosterStore` for it.
+    @discardableResult
+    private func undoTornSaveMadeDuringThisChange() -> Bool {
         guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place) else {
             rosterStore = nil
             rosterState = .notKept
             recordStore = nil
             recordsBelongToNoCommitment = false
             refreshLists(from: nil)
-            return
+            return false
         }
         recordStore = Self.openRecord(at: recordPlace)
+        return true
     }
 
     /// Changes `commitment`, on either of this screen's lists, for the commitment `name`,
@@ -612,8 +618,14 @@ public final class CommitmentsScreen {
                 // Told the save finished by the roster it just wrote, not by the file: this is
                 // the same call the next read of the places would make, run here so the file
                 // never outlives a save that landed. `design.md` § *A save finished is told by
-                // the roster, not by the file*.
-                undoTornSaveMadeDuringThisChange()
+                // the roster, not by the file*. Where that undo itself cannot be completed, this
+                // screen now holds a torn save it cannot undo — `rosterStore` above is the
+                // `self.rosterStore` this just cleared, not a fresh read, so drawing the lists
+                // from it here would redraw exactly what the screen can no longer answer for.
+                guard undoTornSaveMadeDuringThisChange() else {
+                    refusedChange = nil
+                    return nil
+                }
             }
 
             refusedChange = nil
@@ -707,8 +719,14 @@ public final class CommitmentsScreen {
             // Told the save finished by the roster it just wrote, not by the file — the same
             // call the next read of the places would make, run here so the file never outlives a
             // save that landed. `design.md` § *A save finished is told by the roster, not by the
-            // file*.
-            undoTornSaveMadeDuringThisChange()
+            // file*. Where that undo itself cannot be completed, this screen now holds a torn
+            // save it cannot undo — `rosterStore` above is the `self.rosterStore` this just
+            // cleared, not a fresh read, so drawing the lists from it here would redraw exactly
+            // what the screen can no longer answer for.
+            guard undoTornSaveMadeDuringThisChange() else {
+                refusedChange = nil
+                return nil
+            }
 
             refusedChange = nil
             refreshLists(from: rosterStore)
@@ -850,8 +868,14 @@ public final class CommitmentsScreen {
         }
 
         // Told the save finished by the roster it just wrote, not by the file — `design.md` §
-        // *A save finished is told by the roster, not by the file*.
-        undoTornSaveMadeDuringThisChange()
+        // *A save finished is told by the roster, not by the file*. Where that undo itself cannot
+        // be completed, this screen now holds a torn save it cannot undo — `rosterStore` above is
+        // the `self.rosterStore` this just cleared, not a fresh read, so drawing the lists from it
+        // here would redraw exactly what the screen can no longer answer for.
+        guard undoTornSaveMadeDuringThisChange() else {
+            refusedChange = nil
+            return nil
+        }
 
         refusedChange = nil
         refreshLists(from: rosterStore)
