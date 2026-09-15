@@ -41,7 +41,7 @@ should need editing; one that does is a stop.
 - [x] 3.22 what a commitments screen tells on its sheet ends when an ask is kept — catches only the refused paths writing the value
 - [x] 3.23 what a commitments screen tells on its sheet ends when the app is shown again — catches `shown(asOf:)` clearing `refusedChange` alone
 - [x] 3.24 what a commitments screen tells on its sheet stands when a call asks for no change at all — catches an early return clearing it
-- [ ] 3.25 a commitments screen offers all seven weekdays for a form's weekday chips — catches the seven read from what the roster holds
+- [x] 3.25 a commitments screen offers all seven weekdays for a form's weekday chips — catches the seven read from what the roster holds
 
 ## 4. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 

@@ -310,7 +310,7 @@ public final class CommitmentsScreen {
     /// seven, whatever the roster holds. `design.md` § *The weekdays offered are their own
     /// requirement*.
     public var weekdaysToOffer: Set<Weekday> {
-        []
+        [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
     }
 
     /// What a commitment on either of this screen's lists is made of — the value a sheet fills

@@ -9406,3 +9406,28 @@ func whatACommitmentsScreenTellsOnItsSheetStandsWhenACallAsksForNoChangeAtAll() 
     #expect(
         screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: .name, refusal: .namesNothing))
 }
+
+@MainActor
+@Test("a commitments screen offers all seven weekdays for a form's weekday chips")
+func aCommitmentsScreenOffersAllSevenWeekdaysForAFormsWeekdayChips() throws {
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allSeven: Set<Weekday> = [
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ]
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.weekdaysToOffer == allSeven)
+
+    let otherRosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: .weekdays([.monday]), keptFrom: keptFrom)!
+    let otherRosterStore = try RosterStore(at: otherRosterPlace)
+    try otherRosterStore.add(gym)
+
+    let otherScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: otherRosterPlace)
+
+    #expect(otherScreen.weekdaysToOffer == allSeven)
+    #expect(otherScreen.whatItIsMadeOf(gym)?.rhythm == .weekdays([.monday]))
+}
