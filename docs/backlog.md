@@ -112,26 +112,6 @@ shape it lacks, not the quota.
   because what you want back is the words themselves rather than a shape they add up to. Whether
   that is the same page or a different one is part of what "a page *per* what" has to settle.
 
-### B-009 — carry my history to a new phone
-*Captured 2026-08-28, migrated 2026-09-02.*
-
-> "carrying your history to a new phone; restore, not live sync between devices"
-
-- **Trigger** — once every few years, and catastrophically if it does not work.
-- **Touches** — unclaimed. Storage, whose shape was settled after this want was captured by
-  `add-record-store` (#56): one versioned JSON file at a place the app names, which is the one
-  thing a backup has to carry. ADR-1017.
-- **Principle** — tested against *restore, not sync*: passes by definition. It is the want
-  the principle exists to promise, and the principle's second half — no live sync — is the
-  boundary the quote already draws.
-- **Open** — restore is stated as the boundary, so live sync is out. What "restore" means
-  concretely — a file, iCloud, a backup you can see — is not decided.
-- **Open** — *folded in 2026-09-03, from the fourth sweep:* what a person does when the record
-  cannot be read. `add-day-screen` (#91) has the day screen draw the day, keep nothing, and leave
-  the file "for a person or a later version of the app to recover" — indefinitely. Nothing says
-  how a person recovers. Restoring from a copy is the answer to a corrupt file as much as to a new
-  phone, so it belongs here rather than as a want of its own.
-
 ### B-011 — see something of a commitment's history on the day screen itself
 *Captured 2026-09-02.*
 
@@ -309,6 +289,19 @@ it as a gap rather than saying it unprompted.*
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-15 — carry my history to a new phone (B-009) → `FEAT: restore` (#264) under
+  `EPIC: Restore` (#263), a new Epic by the owner's decision, on the recommendation: #1's exclusion
+  of "export and restore" was a scope statement that still reads true. Grilled at the ninth pass in
+  its own session, sixteen questions over four rounds. Restore is a **copy** the app writes — one
+  file holding the record, the roster and the one-offs — made by hand and, the owner's call against
+  the recommendation, by the app on its own at a **copy place** picked once, on every kept change,
+  one file overwritten whole; put back whole from the commitments screen after saying what will go,
+  never merged; the broken store is a person's to take out as it stands, and the day screen names
+  the way out when a store cannot be read. Apple's own migration was not trusted: nothing Apple
+  publishes covers a developer-signed app's container, and a free team gets no iCloud. Terms
+  **Copy**, **Copy place**, **Restore** in `CONTEXT.md`, with **Store** and *a day screen without
+  its record* amended. Left behind by id: B-039.
 
 - 2026-09-15 — fill in a commitment on a sheet that fits the phone (B-053), see why something was
   refused, in red, where it went wrong (B-050), and change a number's range or a total's target
@@ -1045,3 +1038,28 @@ found nothing.
     the three stores and may delta `commitment` for the roster store, so whichever G2 lands second
     serialises behind the first; looking back (D) is a new Epic and shares nothing here.
   - **Not re-judged** — the other wants; this session held one cluster by design.
+
+- 2026-09-15 — cluster B of the ninth pass, restore, groomed in its own session and worktree
+  (`chore/groom-restore`) as the ninth pass's line says it would be.
+  - **Sweep** — `origin/main` was still at bd85f59, the commit the ninth pass swept at: nothing had
+    changed, and the sweep was one line.
+  - **Promoted** — B-009 → `FEAT: restore` (#264) under `EPIC: Restore` (#263), a new Epic on the
+    recommendation. Capability spec to come at `openspec/specs/restore/spec.md`.
+  - **Settled at the grill**, sixteen questions over four rounds, two fact agents, no fact sent to
+    the owner: a copy in the app, not Apple's migration and not iCloud; the broken file out as well;
+    a new Epic; one file for three stores; replace whole, said first; by hand *and* on the app's own
+    (the owner's call against the recommendation); the commitments screen; the words *copy* and
+    *restore*; every kept change; a folder picked once; told on the commitments screen only; one file
+    overwritten whole, never yesterday; the day screen names the way out; slug `restore`;
+    `EPIC: Restore`; nothing on a fresh install. Carried to `spec-author` unverified: whether the
+    picker's lasting access to a folder survives a new phone.
+  - **Proposed for G2** — the copy by hand first, one file handed to the share sheet from the
+    commitments screen, because its form is the seam every later Story reads; then restore; then the
+    copy the app writes on its own; then the broken file out with the day screen's line. `/to-tickets`
+    is the owner's keystroke and had not run when this line was written.
+  - **§7 against the other two clusters** — A's G2 landed first: #261 and #262 are open under
+    `FEAT: commitment` (#26) and both reach the commitments screen, which restore's surface shares, so
+    a restore Story touching that screen serialises behind them; `restore` is a capability of its own
+    and deltas none of theirs. D was undecided when this line was written. ADR numbers: 1053 was the
+    highest on every branch and worktree, and none was claimed here.
+  - **Not re-judged** — the other ten wants; this session held one cluster by design.
