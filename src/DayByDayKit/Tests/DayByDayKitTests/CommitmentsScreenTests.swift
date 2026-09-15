@@ -8199,8 +8199,8 @@ func aChangeKeptAtTheRosterPlaceHoldsATornSaveItCannotUndoWhereTakingItAwayFails
     #expect(laterRosterStore.roster.entries.map(\.commitment) == [gymEmoji])
 }
 
-/// Companion to the test above, covering the second of the three call sites the docstring above
-/// `undoTornSaveMadeDuringThisChange()` names: the branch taken when both the name and the
+/// Companion to the test above, covering the second of the three calls after a roster write that
+/// landed, named in the older test's docstring above: the branch taken when both the name and the
 /// rhythm change in one save, which lands its own roster write — a rename onto `carryTarget`
 /// then a supersession onto `finalNewCommitment`, both applied to one in-memory `Roster` before
 /// it is replaced — before reaching its own `undoTornSaveMadeDuringThisChange()` guard.
@@ -8252,11 +8252,12 @@ func aChangeWithANewNameAndRhythmKeptAtTheRosterPlaceHoldsATornSaveItCannotUndoW
     #expect(laterRosterStore.roster.commitments(on: sunday) == [newGym, carryTarget])
 }
 
-/// Companion to the two tests above, covering the third of `undoTornSaveMadeDuringThisChange()`'s
-/// three call sites: `restart`'s own guard. Reproduced the same way: `nails` carries no record on
-/// or after the day it restarts from, so this call's own `keepSaveInProgressIfCarrying` never
-/// touches the save-in-progress place, leaving it free to plant a save in progress at directly,
-/// naming the restarted commitment the roster write below is about to carry `nails` to.
+/// Companion to the two tests above, covering the third of the three calls after a roster write
+/// that landed, named in the older test's docstring above: `restart`'s own guard. Reproduced the
+/// same way: `nails` carries no record on or after the day it restarts from, so this call's own
+/// `keepSaveInProgressIfCarrying` never touches the save-in-progress place, leaving it free to
+/// plant a save in progress at directly, naming the restarted commitment the roster write below
+/// is about to carry `nails` to.
 @MainActor
 @Test(
     "a restart kept at the roster place holds a torn save it cannot undo where taking it away fails"
