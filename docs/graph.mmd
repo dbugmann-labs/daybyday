@@ -81,6 +81,10 @@ flowchart TD
   I264["Feature 264 — restore"]
   I266["Story 266 — make-a-copy"]
   I267["Story 267 — restore-from-a-copy"]
+  I268["Story 268 — copy-on-every-change"]
+  I269["Epic 269 — Looking back"]
+  I270["Story 270 — take-out-an-unreadable-store"]
+  I271["Feature 271 — look-back"]
 
   I1 --> I26
   I1 --> I27
@@ -112,6 +116,10 @@ flowchart TD
   I26 --> I42
   I263 --> I264
   I264 --> I266
+  I264 --> I267
+  I264 --> I268
+  I264 --> I270
+  I269 --> I271
   I27 --> I100
   I27 --> I174
   I27 --> I175
@@ -216,4 +224,8 @@ flowchart TD
   class I263 epic
   class I264 feature
   class I266 story
-  class I267 story,orphan
+  class I267 story
+  class I268 story
+  class I269 epic
+  class I270 story
+  class I271 feature
