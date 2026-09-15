@@ -36,7 +36,7 @@ should need editing; one that does is a stop.
 - [x] 3.17 what a commitments screen tells on its sheet ends when the field it is about is edited — catches an edit that clears nothing
 - [x] 3.18 what a commitments screen tells on its sheet stands when another field is edited — catches any edit clearing it
 - [x] 3.19 what a commitments screen tells at the foot of its sheet stands when a field is edited — catches a `nil` field matching the field edited
-- [ ] 3.20 what a commitments screen tells on its sheet ends when the sheet is closed — catches the sheet's close doing nothing
+- [x] 3.20 what a commitments screen tells on its sheet ends when the sheet is closed — catches the sheet's close doing nothing
 - [ ] 3.21 a refused restart replaces what a refused save told on a commitments screen's sheet — catches a second value held for a restart
 - [ ] 3.22 what a commitments screen tells on its sheet ends when an ask is kept — catches only the refused paths writing the value
 - [ ] 3.23 what a commitments screen tells on its sheet ends when the app is shown again — catches `shown(asOf:)` clearing `refusedChange` alone
