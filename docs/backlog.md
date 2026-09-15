@@ -372,6 +372,34 @@ decision it records is the owner's, twice.*
 - **Open** — the sheet also carries B-050's refusals. Reworking its layout and where its errors
   land touch the same view, and a pass may want them together.
 
+### B-054 — keep a weekday-set commitment on a day it is not due
+
+*Captured 2026-09-15, from the ninth grooming sweep. The wording is the sweep's; the owner confirmed
+it as a gap rather than saying it unprompted.*
+
+> "Keep a weekday-set commitment on a day it is not due — gym is Mon/Wed/Sat, and a Monday that
+> slips to Tuesday loses its tick."
+
+- **Trigger** — the gym day that moves by one because of work, weather or a sore leg. Rarely, but
+  it is the same event B-052 turned out to be for an every-N-days rhythm: a rhythm kept, late.
+- **Touches** — `record`, whose tick is *of a commitment on a calendar date it is due on, and nothing
+  else*, and `day-screen`, which draws a row only for what is due, so on the Tuesday there is no
+  row to tick. Not `schedule`, unless the answer is a one-time swap of days. The only workaround
+  today is the change sheet — change the rhythm to Tue/Wed/Sat, tick, change it back — which is
+  two supersedes and a split history, the shape B-052's kept-from move had.
+- **Principle** — tested against *five percent of seven things*: **fails** — it deepens a rhythm
+  shape that works. Captured anyway because the workaround splits a history the product exists to
+  keep whole, and because the weekly quota already exists as the shape for "three times a week, any
+  days": the grill may well answer this want by saying gym is a quota, and that is worth deciding
+  on the record rather than by nobody asking.
+- **Open** — is this a tick on a day the commitment is not due, or that week's Monday moved to
+  Tuesday? The first is a record rule; the second is a schedule exception, and the eighth pass
+  declined a late row for intervals.
+- **Open** — is the weekly quota the answer? Gym as 3× a week loses nothing but the named days, and
+  standing (#235) already says where the week stands.
+- **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
+  row for something not due, which is the thing *offered* was landed to keep off the screen.
+
 
 ## Decided
 
