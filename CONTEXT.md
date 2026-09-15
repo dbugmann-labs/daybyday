@@ -577,6 +577,17 @@ whole. Where the roster holds the commitment it names the records carried to, th
 and the save in progress is simply taken away. Deliberately not called a note, which is a record.
 Agreed 2026-09-14 while writing the delta of `save-change-whole` (#249).
 
+**Restore in progress** — what a **restore** keeps beside the **record place** before it writes
+anything: what stood at the three places, and at the place a save in progress is kept, or that
+nothing stood there. It is taken away once all three stores are written. One still standing when the
+places are next opened means a restore was stopped before it was whole, and it is undone as it was:
+the phone goes back to what it held before the restore began, and nothing is said, because a restore
+is said only once it is whole. It is looked for before a **save in progress** is. One that cannot be
+read or undone withholds all three places, so nothing is read from them and nothing is written over
+them. Deliberately not a **copy**: it is the phone's own bytes, kept for as long as one restore lasts,
+and nothing but undoing that restore ever reads it. Agreed 2026-09-15 while writing the delta of
+`restore-from-a-copy` (#267); ADR-1056.
+
 **Untick** — to take a tick back, leaving the history as though that tick had never been: the
 commitment is not kept on that day, every other tick stands, and nothing remembers that the tick was
 ever there — an untick is not a record of its own. Taking back a tick that was never there is
