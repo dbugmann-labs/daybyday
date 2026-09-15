@@ -133,7 +133,8 @@ mkdirSync(OUT_DIR)
 const pictures = attachments.map((attachment) => {
   // `xcresulttool` appends `_0_<uuid>.png` to the attachment's own name.
   const name = attachment.suggestedHumanReadableName.replace(/_\d+_[0-9A-F-]+\.png$/i, '')
-  const file = path.join(OUT_DIR, `${name}.png`)
+  // A box line may carry a colon or a slash; neither belongs in a file name.
+  const file = path.join(OUT_DIR, `${name.replace(/[/:]/g, '-')}.png`)
   copyFileSync(path.join(exported, attachment.exportedFileName), file)
   return { name, file }
 })
