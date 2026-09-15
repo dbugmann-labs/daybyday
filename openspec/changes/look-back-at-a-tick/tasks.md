@@ -83,10 +83,10 @@ implementation.** These boxes confirm rather than write.
 
 ## 12. The gates
 
-- [ ] 12.1 `openspec validate look-back-at-a-tick --strict` exits 0 and `pnpm run check:scenarios` exits 0
-- [ ] 12.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, the two new kit sources, `CommitmentsScreen.swift`, the new test file and the two shell files
-- [ ] 12.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
-- [ ] 12.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is thirty-two more than a run on `main` reports — both read off runs, neither derived
+- [x] 12.1 `openspec validate look-back-at-a-tick --strict` exits 0 and `pnpm run check:scenarios` exits 0
+- [x] 12.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, the two new kit sources, `CommitmentsScreen.swift`, the new test file and the two shell files
+- [x] 12.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
+- [x] 12.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is thirty-two more than a run on `main` reports — both read off runs, neither derived
 - [ ] 12.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–12.4 and the walk below are ticked and that the instruction here is written for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/look-back/spec.md` is created with this delta's seven requirements and thirty-two scenarios and its `## Purpose`, carrying no `TBD`; nothing else in any spec moves. `pnpm run checks` runs after the archive commit exists, and the archive commit is pushed. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
