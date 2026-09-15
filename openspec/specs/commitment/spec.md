@@ -2281,7 +2281,9 @@ A call that reaches the place with no change to make SHALL NOT end it: a move dr
 where it already is, a group move leaving a group where it is drawn, a change naming what a commitment
 already is — the category it is already under among the fields it names — and a change asked
 about a commitment on neither of the screen's lists. Nor SHALL putting a stop or a removal up for
-confirmation, typing a name back, or cancelling either end it: none reaches the roster place.
+confirmation, typing a name back, or cancelling either end it: none reaches the roster place. Nor
+SHALL a copy made end it: the file a copy is written at is not a place this screen keeps a change
+at.
 
 #### Scenario: what a commitments screen holds about a refused change ends when the app is shown again
 
@@ -2489,6 +2491,17 @@ confirmation, typing a name back, or cancelling either end it: none reaches the 
 - **THEN** the change is not refused and the screen holds no refused change
 - **AND** a store opened afterwards at that record place answers that "Gym 🏋️" was kept on Monday 3
   August 2026
+
+#### Scenario: a copy made does not end what a commitments screen holds about a refused change
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster
+  place, a record place and a one-off place where nothing has been kept as of Monday 31 August 2026;
+  a commitment named "   " on a weekday-set rhythm of all seven weekdays, kept from that same day,
+  is defined through it and refused; and a copy is asked for as of that day at 14:32, written into a
+  directory of its own
+- **THEN** the copy is not refused
+- **AND** the screen still holds a name that says nothing, against defining a commitment
 
 ### Requirement: A roster removes a commitment it holds, and never lets it go
 
@@ -4950,12 +4963,14 @@ refused as a roster that could not be written, leaving both lists as they were.
 
 Where a change asked of a commitments screen is refused, the screen SHALL hold which change was
 asked for and why it was refused, as well as answering the refusal to the caller. The change held
-SHALL be one of the seven a person can ask for — defining a commitment, stopping keeping one, taking
-a stopped one up again, removing one, moving one, moving a whole group, changing one — and for the
-five asked about a commitment already on one of its lists it SHALL name that commitment: the one it
-was asked about, not the one the change would have produced. A refused group move SHALL name the
-category instead. The seven are counted here and numbered nowhere else: a requirement that
-introduces one SHALL name it, and SHALL NOT identify it by its position among them.
+SHALL be one of the nine a person can ask for — defining a commitment, stopping keeping one, taking
+a stopped one up again, removing one, moving one, moving a whole group, changing one, restarting
+one, making a copy — and for the six asked about a commitment already on one of its lists it SHALL
+name that commitment: the one it was asked about, not the one the change would have produced. A
+refused group move SHALL name the category instead, and a refused copy SHALL name the store that
+could not be read, or no store at all where the copy could not be written. The nine are counted here
+and numbered nowhere else: a requirement that introduces one SHALL name it, and SHALL NOT identify
+it by its position among them.
 
 Why it was refused SHALL be the same refusal answered to the caller and no more, and a commitments
 screen SHALL hold no words a person reads. It SHALL hold at most one refused change at a time, the
@@ -5245,6 +5260,18 @@ not a refusal.
 - **AND** the screen still holds a name that says nothing, against defining a commitment
 - **AND** what it keeps is one group, "Sport", holding "Gym", and what it has stopped is one entry,
   named "Journaling"
+
+#### Scenario: a commitments screen holds a refused copy against making a copy, naming the store that could not be read
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster
+  place, a record place and a one-off place where nothing has been kept as of Monday 31 August 2026;
+  what is at that record place is then made a run of bytes that is not a record; and a copy is asked
+  for as of that day at 14:32
+- **THEN** it is refused as a store that could not be read
+- **AND** the screen holds that refusal, against making a copy, naming the record
+- **AND** a copy asked for at a readable record place but written into a directory that cannot be
+  written to is held against making a copy naming no store, as a place that could not be written
 
 ### Requirement: A commitments screen moves a commitment among the ones it is keeping
 

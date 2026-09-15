@@ -1304,6 +1304,13 @@ than the one it would have produced. Neither is *the seventh* or *the eighth* an
 requirement states a kind's position. The archived change folders that cite one keep their ordinals
 and go on describing the specs they were written against.
 
+**Amended 2026-09-15**, at the grill of `make-a-copy` (#266). A commitments screen also holds the way
+a history leaves the phone: beside its two lists, in a place of its own, it offers a **copy** on
+request — the first of the three things `FEAT: restore` (#264) puts there, with **restore** and the
+**copy place** to follow. A copy it cannot make is a **refused change** like any other, replacing the
+one held and naming the store that would not read; a copy it has made leaves nothing on the screen,
+because the screen cannot know whether the share sheet kept it.
+
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
 one, because one refusal is one event and the ask a person is waiting on an answer for is the one
@@ -1363,6 +1370,25 @@ change is kept, so that copy is at most one change behind; it is one file overwr
 mirror of now and never of yesterday — *restore, not undo*, since taking a record back is what a
 mistake gets. Agreed 2026-09-15 at the grill of B-009, `FEAT: restore`; the copy the app writes on
 its own was the owner's call against the recommendation to start by hand alone.
+
+**Amended 2026-09-15**, at the grill of `make-a-copy` (#266). A copy holds what the app *reads* from
+the three stores, written in the form the app writes now — never the files as they lie, so a torn
+save is undone before a copy is taken and a copy of an earlier-form store is a current-form copy. It
+carries a form of its own, and the **moment** it was made, which no store carries and none will: a
+copy is the one thing here that knows when. It is taken whole or not at all — a store that cannot be
+read refuses the copy, and what leaves the phone then is a take-out of the file as it stands, which
+is `take-out-an-unreadable-store` (#270) — and a copy of nothing is still a copy, since putting it
+back empties the phone and says so. The one a person asks for leaves through the share sheet under a
+name that says when it was made, as a file of its own kind, and leaves no trace behind on the phone.
+
+**Moment** — when something happened, said to the minute: a **calendar date**, an hour of that day
+and a minute of that hour, in the reckoning of the phone it was formed on. It is the only thing here
+that knows a time of day, and it exists because a **copy** carries one; no **store** holds a moment
+and none will. Like a **today**, it is read from a clock at the edge of the app and handed in, never
+read inside the engine, so the rule engine still speaks calendar dates alone (ADR-1004). An hour
+outside the twenty-four or a minute outside the sixty forms no moment, exactly as an impossible
+date forms no calendar date. Agreed 2026-09-15, while the delta of `make-a-copy` (#266) was being
+written; ADR-1054.
 
 **Copy place** — the one folder a person picked, once, for the app to write its **copy** at on its
 own. It is chosen by the person and never named by the app, because it has to be a place that

@@ -16,6 +16,11 @@ public final class CommitmentsScreen {
     /// a second expression that is definitionally the same thing. `design.md` § *The seam*.
     let place: URL
     private let recordPlace: URL
+    /// The one-off place `makeACopy` reads — this screen keeps no one-off store of its own to
+    /// draw from, `design.md` § *Context*: a copy is read fresh from the three places every time
+    /// it is asked for, never from what a screen already holds.
+    /// `openspec/changes/make-a-copy/design.md` § *The seam*.
+    private let oneOffPlace: URL
     private var rosterStore: RosterStore?
     private var recordStore: RecordStore?
 
@@ -23,12 +28,16 @@ public final class CommitmentsScreen {
     /// carries over at, the record kept at `keepingRecordAt`. Defaults to exactly the place a day
     /// screen keeps its record, `design.md` § *The seam*: `CommitmentsScreen.init` gains this
     /// parameter and nothing else changes shape, so every existing call site compiles unchanged.
+    /// `keepingOneOffsAt` defaults to the place a day screen keeps its one-offs, on the same
+    /// footing — `openspec/changes/make-a-copy/design.md` § *The seam*.
     public init(
         asOf today: CalendarDate, keepingRosterAt place: URL = CommitmentsScreen.rosterPlace,
-        keepingRecordAt recordPlace: URL = DayScreen.recordPlace
+        keepingRecordAt recordPlace: URL = DayScreen.recordPlace,
+        keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace
     ) {
         self.place = place
         self.recordPlace = recordPlace
+        self.oneOffPlace = oneOffPlace
         self.dayToKeepFrom = today
 
         let opened = Self.readPlaces(place: place, recordPlace: recordPlace)
@@ -202,11 +211,18 @@ public final class CommitmentsScreen {
         /// eighth kind of refused change. `openspec/changes/add-interval-restart/design.md` §
         /// *The seam*.
         case restarting(Commitment, Refusal)
+        /// A copy asked for and refused — the ninth kind of refused change. Names which of the
+        /// three stores could not be read, or `nil` where the copy could not be written instead.
+        /// `openspec/changes/make-a-copy/design.md` § *The refusal is the screen's existing one,
+        /// with one new cause*.
+        case makingACopy(Copy.Store?, Refusal)
     }
 
     /// Why a change was refused. `nil` from any of the thirteen below means it was kept at the
-    /// place before that call returned.
-    public enum Refusal: Equatable, Sendable {
+    /// place before that call returned. `Error` conformance is for `makeACopy`'s
+    /// `Result<URL, Refusal>` alone — `design.md` § *The seam* — and carries no behaviour: every
+    /// other caller still reads a plain `Refusal?`, never catches one.
+    public enum Refusal: Error, Equatable, Sendable {
         /// A name that is empty or made only of blank space.
         case namesNothing
         /// A weekday set with no days in it — the one refusal the rule engine does not make.
@@ -244,6 +260,11 @@ public final class CommitmentsScreen {
         /// A restart asked from a date the commitment is already due on — restarting there would
         /// change nothing.
         case alreadyDueOnRestartDay
+        /// A store that could not be read while forming a copy — which one is named on the
+        /// `RefusedChange` this leaves, not here, so the value answered to the caller stays the
+        /// same whichever store it was. `openspec/changes/make-a-copy/design.md` § *The refusal
+        /// is the screen's existing one, with one new cause*.
+        case storeCouldNotBeRead
     }
 
     /// What a commitment on either of this screen's lists is made of — the value a sheet fills
@@ -1127,6 +1148,114 @@ public final class CommitmentsScreen {
         }
         refreshLists(from: rosterStore)
         return nil
+    }
+
+    /// The place `makeACopy` writes into when it is not told another: the platform's temporary
+    /// directory, which the platform may clear on its own schedule — nothing holds a copy's URL
+    /// past the share sheet. This is **not** the **copy place** `#269` adds, which a person picks
+    /// once for the app to write a copy at on its own. `openspec/changes/make-a-copy/design.md`
+    /// § *The file is written where the platform may clear it, and the screen answers where*.
+    public static var copyDirectory: URL {
+        FileManager.default.temporaryDirectory
+    }
+
+    /// What reading the three stores for a copy comes back as — a plain enum rather than
+    /// `Swift.Result`, which `Copy.Store` need not conform to `Error` merely to be handed back
+    /// alongside a success, on the same footing as `Reading<Value>` above.
+    private enum StoresForCopy {
+        case opened(record: RecordStore, roster: RosterStore, oneOffs: OneOffStore)
+        case unreadable(Copy.Store)
+    }
+
+    /// Opens the record, the roster and the one-off store at `recordPlace`, `rosterPlace` and
+    /// `oneOffPlace`, undoing a save in progress first — the same `undoTornSave` path
+    /// `readPlaces` takes, so a torn save is undone and an earlier-form store yields a
+    /// current-form copy. Unlike `readPlaces`, this never carries an orphaned record back: a copy
+    /// SHALL leave the three places exactly as it found them, apart from a save in progress
+    /// undone — `openspec/specs/restore/spec.md` § *A copy is what the three places hold, read
+    /// when it is asked for*. `.failure` names the first of the three, checked in that order,
+    /// that could not be read; a save in progress that could not itself be undone is told as the
+    /// record, the place it stands beside.
+    private static func readStoresForCopy(
+        recordPlace: URL, rosterPlace: URL, oneOffPlace: URL
+    ) -> StoresForCopy {
+        guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) else {
+            return .unreadable(.record)
+        }
+        guard let recordStore = try? RecordStore(at: recordPlace) else {
+            return .unreadable(.record)
+        }
+        guard let rosterStore = try? RosterStore(at: rosterPlace) else {
+            return .unreadable(.roster)
+        }
+        guard let oneOffStore = try? OneOffStore(at: oneOffPlace) else {
+            return .unreadable(.oneOffs)
+        }
+        return .opened(record: recordStore, roster: rosterStore, oneOffs: oneOffStore)
+    }
+
+    /// The file name a copy asked for at `moment` is written under: the app's name, the day as
+    /// `yyyy-MM-dd`, and the hour and the minute as `HH.mm`, each padded to two digits, with a
+    /// single space between the three parts and the extension `daybyday`.
+    /// `openspec/specs/restore/spec.md` § *A copy is a file named for the minute it was made, of
+    /// the app's own kind*.
+    private static func fileName(for moment: Moment) -> String {
+        String(
+            format: "DayByDay %04d-%02d-%02d %02d.%02d.daybyday",
+            moment.day.year, moment.day.month, moment.day.day, moment.hour, moment.minute)
+    }
+
+    /// Writes `copy` into `directory`, creating it first where it does not yet exist, and answers
+    /// where it was written. Replaces a file of the same name already there — the same minute's
+    /// copy, asked for twice. Throws where the directory could not be created or the file could
+    /// not be written.
+    private static func writeCopy(_ copy: Copy, into directory: URL) throws -> URL {
+        let document = CopyDocument(copy)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let data = try encoder.encode(document)
+
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let url = directory.appendingPathComponent(Self.fileName(for: copy.moment))
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    /// Forms a copy of the record, the roster and the one-offs as of `moment`, and writes it as a
+    /// single file into `directory`, answering where. Reads the three places fresh — never what
+    /// this screen already holds, `openspec/specs/restore/spec.md` § *A copy is what the three
+    /// places hold, read when it is asked for* — so a copy is exactly what those places hold at
+    /// the moment it is asked for, whether or not this screen can read its own roster.
+    ///
+    /// A store that cannot be read refuses the whole copy as `.storeCouldNotBeRead`, holding
+    /// which store against `.makingACopy`; a directory that cannot be written to refuses as
+    /// `.notKept`, naming no store. Either replaces whatever refused change this screen already
+    /// held, exactly as every other refusal does. A copy made does **not** end a refused change
+    /// already held — `refusedChange` is left untouched on success:
+    /// `openspec/specs/commitment/spec.md` § *What a commitments screen holds about a refused
+    /// change lasts until the app is shown again or a change is kept* — "Nor SHALL a copy made
+    /// end it: the file a copy is written at is not a place this screen keeps a change at."
+    public func makeACopy(
+        asOf moment: Moment, writingInto directory: URL = CommitmentsScreen.copyDirectory
+    ) -> Result<URL, Refusal> {
+        switch Self.readStoresForCopy(
+            recordPlace: recordPlace, rosterPlace: place, oneOffPlace: oneOffPlace)
+        {
+        case .unreadable(let store):
+            refusedChange = .makingACopy(store, .storeCouldNotBeRead)
+            return .failure(.storeCouldNotBeRead)
+        case .opened(let record, let roster, let oneOffs):
+            let copy = Copy(
+                moment: moment, history: record.history, roster: roster.roster,
+                oneOffs: oneOffs.oneOffs)
+            do {
+                let url = try Self.writeCopy(copy, into: directory)
+                return .success(url)
+            } catch {
+                refusedChange = .makingACopy(nil, .notKept)
+                return .failure(.notKept)
+            }
+        }
     }
 
     /// The app has been shown on `today`: the day this screen holds is replaced and the roster is

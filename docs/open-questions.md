@@ -590,6 +590,17 @@ Things that are built, or deliberately not built, in a state someone will trip o
   endpoints for the blocking edge between Stories, and the orchestrator confirms their shape
   against a live edge each time because the file names only the sub-issue calls. Adding the four
   endpoints is a chore on that file. Surfaced 2026-09-15 at the ninth pass's G2.
+- **A roster from a later version is given two causes at once when a copy is asked for.** The
+  commitments screen already tells a roster written by a newer version of DayByDay apart from one
+  that is not a roster, and says of the first that it must not be deleted. `make-a-copy` (#266)
+  refuses a copy whenever a store cannot be read and names the store, and its delta names only two
+  causes — the store could not be read, or the file could not be written — so a copy asked for over
+  a later-form roster draws *must not be deleted* and, four rows below it in the Copy section, *could
+  not be read*: the same file, two causes, the second inviting what the first forbids. No scenario
+  covers a later-form store on this path; every one corrupts a store as bytes that are not a
+  roster. It follows the approved delta, so it was left as built. It is the concern of
+  `take-out-an-unreadable-store` (#270), whose grill decides whether a refused copy says *from a
+  later version* as the roster line does. Surfaced 2026-09-15 at #266's review, finding 1.
 
 
 ## Settled
