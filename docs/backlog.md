@@ -334,6 +334,44 @@ decision it records is the owner's, twice.*
   words hang off and what colour they are*, ADR-1019 makes it a chore on the shell rather than a
   Story, and nothing about it reaches a capability spec.
 
+### B-053 — fill in a commitment on a sheet that fits the phone
+
+*Captured 2026-09-15.*
+
+> "I would like the following adjustments to the 'add' and 'edit' commitment screens:
+> ○ Kind should be below name
+> ○ Category should be a dropdown of existing ones (with the option to type a new one there)
+> ○ For kind 'number' -> lowest and highest in the same row, not 2 rows
+> ○ When choosing weekdays, default should be all enabled, and it should not be one row each, but
+> maybe something like checkboxes (it can be a short version like Mon Tue Wed etc.)
+> ○ Rhythm 'day of month' should be a slider or something rather than +-
+> "Every n days" should not take up more height of a row.."
+
+- **Trigger** — defining a commitment with the `+`, or changing one from the pencil: the one sheet
+  serves both (#148). Rarely, but every time it is a scroll past seven weekday rows.
+- **Touches** — the app shell, `src/DayByDay/DayByDay/CommitmentsView.swift`, for five of the six
+  bullets. No requirement fixes the order of the sheet's fields or the shape of any control, so kind
+  under name, the range on one row, weekdays as short toggles, a day-of-month control other than
+  the stepper and a one-row interval are probably a chore under ADR-1019. The category bullet is
+  already a requirement below the seam — `commitment` § *A commitments screen offers the categories
+  in use* offers the categories in use and accepts a typed one exactly as typed; what the sheet
+  draws is a text field and a separate *Use an existing category* menu (`:598–600`), so only the
+  control changes. The weekday default is the one bullet that may reach `commitment`: see Open.
+- **Principle** — tested against *an iPhone, in your hand*: **passes**. A form of seven weekday
+  rows, two range rows and a stepper is a form built for scrolling, and every bullet shortens what a
+  thumb has to cross. Tested against *five percent of seven things*: **fails** — it deepens a sheet
+  that already defines every rhythm and kind rather than making a new record possible. Both are
+  written down because the second is why a pass might not take it.
+- **Open** — all seven weekdays ticked for a new commitment. The spec says the tick is *the kind
+  offered for a new commitment* and says nothing of which weekdays are; the sheet starts with none
+  (`:508`). A default beside the kind's is probably a requirement, which makes this bullet a Story
+  and the rest a chore — or one Story carrying all six. Grooming decides the shape.
+- **Open** — "a slider or something" for the day of the month. A slider over 1–31 is hard to land
+  on one value with a thumb; a wheel or a grid of days are the alternatives. The owner left the
+  control open.
+- **Open** — the sheet also carries B-050's refusals. Reworking its layout and where its errors
+  land touch the same view, and a pass may want them together.
+
 
 ## Decided
 
