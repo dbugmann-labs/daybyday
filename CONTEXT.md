@@ -833,6 +833,11 @@ saying so stay out of #147's delta entirely.
 *One-offs*, and draws no such group where none stands there. Rows still come only from what it was
 handed — the one-offs are handed to it too — and it still orders nothing of its own.
 
+**Amended 2026-09-14**, at the grill of `make-one-off-on-day-screen` (#244). The One-offs group is
+drawn on **every** date wherever one-offs are being kept, holding the **one-off entry** last and no
+rows where none stands there; "draws no such group where none stands" above is withdrawn. Where
+one-offs cannot be read, still no group is drawn.
+
 **Row** — one commitment's line in a day view: its name, the **rhythm in words** it runs on, whether
 it is kept, and the place a tick is made. Ticking belongs to the row and therefore to `day-screen`:
 `record` says what a tick is and what a history answers and knows nothing of a row, of a date being
@@ -1413,6 +1418,42 @@ and two owed on one date keep the order they were added in — a rule about date
 tick is the one-off's own and records the **today**, so a one-off done on a day the app was not
 opened is ticked as done on the day it was ticked. Taking a tick back is offered wherever a ticked
 row is drawn, a past day included, and the row then leaves that day for today.
+
+**Amended 2026-09-14**, at the grill of `make-one-off-on-day-screen` (#244). A one-off is made through
+the **one-off entry**, on the day being shown and only that day: on today or a later day it is made
+undone, and on a past day it is made **already done on that day**, since one made undone there would
+stand on today at once and leave the day it was made on. It is renamed from its row by a **tap on its
+name** — the rest of the row stays its tick — and removed by a **long press**, never a swipe, which
+ADR-1042 keeps for the day; both on any one-off row, done or not, and a row offering no tick still
+renames. *Corrected 2026-09-15 at that Story's phone check, where it first read "renamed and removed by
+a long press".*
+Removal asks for no confirmation, and a rename committed blank **is** a removal. A rename keeps the
+date and, where the one-off is done, the day it was done; one that would make a one-off already held,
+alike in name and date, is refused and its cause named, as an add is. The screen trims blank space
+around a typed name before it is added or renamed; the one-off still keeps exactly what it is given.
+A rename also keeps the one-off's **place** among those owed on its date, since it is one act and not
+a removal and an add. The sentence above that no *One-offs* group is drawn where none stands is
+withdrawn, as it is under **Day view**.
+
+**One-off entry** — the line a **day view**'s One-offs group always ends with, where a person types a
+new one-off's name in place, as in Apple Reminders; the toolbar's `+` brings it into focus. It is
+deliberately not a **one-off**, which is what `one-off` holds — this is the place one is made, in the
+way a **number entry** is the place a number is made — and it holds no one-off, which is why it is an
+entry and not a row. What is typed is committed on Return and on the
+green checkmark shown while any one-off name is being typed, either of which closes the keyboard once
+the one-off is made (corrected 2026-09-15 at the phone check; Return first left a fresh entry focused),
+while a refused one stays in the field; and on leaving
+the field any other way, a change of day and the app leaving the screen included, in which case it is
+made on the day it was typed on. Committed blank it makes nothing and says nothing. A refused add is
+told **under the entry**, which keeps the typed text, naming the cause where a person can act on it —
+a one-off of that name already on that day — and saying only *not saved* where a write failed. That
+is not the screen's one **notice**, so the two can be told at once; it ends when the text is edited,
+when the day changes and when the app is shown again, taking the text with it. A rename in a row's
+field is told and ended the same way. It is not offered where one-offs cannot be read. Agreed
+2026-09-14 at the grill of `make-one-off-on-day-screen` (#244). Only one field is ever told under at
+a time — only one has focus, and leaving it commits it — so a refusal in one replaces what was told
+under another; one told under a row also ends once that row is no longer drawn. Added while its
+delta was written.
 
 **Calendar date** — a year, a month of that year and a day of that month: the argument every
 due-ness question is asked about. It carries no clock, no time zone and no locale, and a

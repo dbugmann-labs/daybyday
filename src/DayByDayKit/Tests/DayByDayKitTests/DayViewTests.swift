@@ -58,10 +58,11 @@ func aDayViewOfAPastDayDrawsNoUndoneOneOffOwedOnThatDay() {
     let dayView = DayView(
         of: [Roster.Group](), oneOffs: oneOffs, asOf: monday, on: friday, in: history)
 
-    #expect(dayView.oneOffGroup == nil)
+    #expect(dayView.oneOffGroup?.heading == "One-offs")
+    #expect(dayView.oneOffGroup?.rows.isEmpty == true)
 
-    let expected = DayView(of: [Roster.Group](), on: friday, in: history)
-    #expect(dayView == expected)
+    let noOneOffsAtAll = DayView(of: [Roster.Group](), on: friday, in: history)
+    #expect(noOneOffsAtAll.oneOffGroup == nil)
 }
 
 @Test("a day view's one-off rows are in the order one-offs answer them")
@@ -257,14 +258,16 @@ func twoDayViewsDifferingOnlyInAOneOffStandingOnAnotherDayAreTheSameDayView() {
         ]), keptFrom: keptFrom)!
     let monday = CalendarDate(year: 2026, month: 9, day: 28)!
     let groups = [Roster.Group(category: nil, commitments: [journaling])]
+    let history = History()
 
-    let first = DayView(of: groups, on: monday, in: History())
+    let first = DayView(
+        of: groups, oneOffs: OneOffs(), asOf: monday, on: monday, in: history)
 
     var sendFormOneOffs = OneOffs()
     _ = sendFormOneOffs.add(
         OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 30)!)!)
     let second = DayView(
-        of: groups, oneOffs: sendFormOneOffs, asOf: monday, on: monday, in: History())
+        of: groups, oneOffs: sendFormOneOffs, asOf: monday, on: monday, in: history)
 
     #expect(first == second)
 
@@ -272,10 +275,13 @@ func twoDayViewsDifferingOnlyInAOneOffStandingOnAnotherDayAreTheSameDayView() {
     _ = callMumOneOffs.add(
         OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!)
     let third = DayView(
-        of: groups, oneOffs: callMumOneOffs, asOf: monday, on: monday, in: History())
+        of: groups, oneOffs: callMumOneOffs, asOf: monday, on: monday, in: history)
 
     #expect(third != first)
     #expect(third != second)
+
+    let fourth = DayView(of: groups, on: monday, in: history)
+    #expect(fourth != first)
 }
 
 @Test("a commitment not due on the date has no row")

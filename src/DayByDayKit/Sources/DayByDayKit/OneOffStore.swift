@@ -100,6 +100,21 @@ public final class OneOffStore {
         return true
     }
 
+    /// Kept at `place` before this returns. Answers what `OneOffs.rename` answers — `false`,
+    /// without throwing and without writing, when this does not hold `oneOff`, when `name` says
+    /// nothing, or when a one-off with `name` on `oneOff`'s date is already held.
+    @discardableResult
+    public func rename(_ oneOff: OneOff, to name: String) throws -> Bool {
+        var next = oneOffs
+        guard next.rename(oneOff, to: name) else {
+            return false
+        }
+        try write(next)
+
+        oneOffs = next
+        return true
+    }
+
     /// Kept at `place` before this returns. Answers what `OneOffs.remove` answers — `false`,
     /// without throwing and without writing, when this does not hold `oneOff`.
     @discardableResult

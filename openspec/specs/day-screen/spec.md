@@ -216,8 +216,9 @@ screen not keeping one of them SHALL move like any other and go on saying so.
   kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday and a
   commitment named "Journaling" on a schedule listing all seven weekdays, in that order and both kept
   from 1 January 2026, and it is moved to the day before
-- **THEN** its day view is the same day view as one formed directly of those two commitments, in that
-  order, on Sunday 30 August 2026, from a history that has taken no tick
+- **THEN** its day view is the same day view as one formed directly of those two commitments, in
+  that order and of one-offs holding nothing, on Sunday 30 August 2026 as of that same day, from a
+  history that has taken no tick
 - **AND** it holds one row, named "Journaling"
 
 #### Scenario: a day screen moved to the day after shows the next day
@@ -226,8 +227,9 @@ screen not keeping one of them SHALL move like any other and go on saying so.
   kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday and a
   commitment named "Journaling" on a schedule listing all seven weekdays, in that order and both kept
   from 1 January 2026, and it is moved to the day after
-- **THEN** its day view is the same day view as one formed directly of those two commitments, in that
-  order, on Tuesday 1 September 2026, from a history that has taken no tick
+- **THEN** its day view is the same day view as one formed directly of those two commitments, in
+  that order and of one-offs holding nothing, on Tuesday 1 September 2026 as of that same day, from
+  a history that has taken no tick
 - **AND** it holds one row, named "Journaling"
 
 #### Scenario: moving a day screen does not change the today it was handed
@@ -244,8 +246,9 @@ screen not keeping one of them SHALL move like any other and go on saying so.
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026, and it is moved to the day after four times
-- **THEN** its day view is the same day view as one formed directly of that commitment on Friday
-  4 September 2026 from a history that has taken no tick
+- **THEN** its day view is the same day view as one formed directly of that commitment and of
+  one-offs holding nothing, on Friday 4 September 2026 as of that same day, from a history that has
+  taken no tick
 - **AND** its day picker opens on Friday 4 September 2026
 
 #### Scenario: a day screen moves back to a day before every commitment was kept from and shows no rows
@@ -280,8 +283,9 @@ screen not keeping one of them SHALL move like any other and go on saying so.
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a run of bytes that
   is not what a record is written as, of a commitment named "Journaling" on a schedule listing all
   seven weekdays, kept from 1 January 2026, and it is moved to the day before
-- **THEN** its day view is the same day view as one formed directly of that commitment on Sunday
-  30 August 2026 from a history that has taken no tick
+- **THEN** its day view is the same day view as one formed directly of that commitment and of
+  one-offs holding nothing, on Sunday 30 August 2026 as of that same day, from a history that has
+  taken no tick
 - **AND** it says it is not keeping a record
 
 #### Scenario: a day screen that is not keeping a roster moves and goes on saying why
@@ -291,10 +295,12 @@ screen not keeping one of them SHALL move like any other and go on saying so.
   place where nothing has been kept, of a commitment named "Journaling" on a schedule listing all
   seven weekdays, kept from 1 January 2026, and it is moved to the day before and then to the day
   after
-- **THEN** after the move to the day before, its day view is the same day view as one formed directly
-  of no commitments at all on Sunday 30 August 2026 from a history that has taken no tick
-- **AND** after the move to the day after, its day view is the same day view as one formed directly of
-  no commitments at all on Monday 31 August 2026 from that same history
+- **THEN** after the move to the day before, its day view is the same day view as one formed
+  directly of no commitments at all and of one-offs holding nothing, on Sunday 30 August 2026 as of
+  that same day, from a history that has taken no tick
+- **AND** after the move to the day after, its day view is the same day view as one formed directly
+  of no commitments at all and of one-offs holding nothing, on Monday 31 August 2026 as of that same
+  day, from that same history
 - **AND** after each move it says it is not keeping a roster
 - **AND** after each move it says the roster was written by a later version of DayByDay
 - **AND** after each move its day view holds no rows
@@ -409,11 +415,12 @@ both ways.
 
 #### Scenario: a day screen showing the first supported date is unchanged when it is moved to the day before
 
-- **WHEN** a day screen is opened as of Sunday 2 January 1583, at a place where nothing has been kept,
-  of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from 1 January
-  1583; it is moved to the day before; and it is moved to the day before again
-- **THEN** its day view is the same day view as one formed directly of that commitment on Saturday
-  1 January 1583 from a history that has taken no tick
+- **WHEN** a day screen is opened as of Sunday 2 January 1583, at a place where nothing has been
+  kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from 1
+  January 1583; it is moved to the day before; and it is moved to the day before again
+- **THEN** its day view is the same day view as one formed directly of that commitment and of
+  one-offs holding nothing, on Saturday 1 January 1583 as of that same day, from a history that has
+  taken no tick
 - **AND** its day picker opens on Saturday 1 January 1583
 - **AND** it says it is keeping a record
 
@@ -422,8 +429,9 @@ both ways.
 - **WHEN** a day screen is opened as of Thursday 30 December 9999, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 1583; it is moved to the day after; and it is moved to the day after again
-- **THEN** its day view is the same day view as one formed directly of that commitment on Friday
-  31 December 9999 from a history that has taken no tick
+- **THEN** its day view is the same day view as one formed directly of that commitment and of
+  one-offs holding nothing, on Friday 31 December 9999 as of that same day, from a history that has
+  taken no tick
 - **AND** its day picker opens on Friday 31 December 9999
 - **AND** it says it is keeping a record
 
@@ -443,9 +451,8 @@ A day screen SHALL be opened from five things: some commitments, the day it is b
 place its record is kept at, the place its roster is kept at and the place its one-offs are kept at.
 It SHALL hold the day view of that day, of the commitments its roster answers with on it and of the
 one-offs held at its one-off place, formed from the history held at the record's place, and SHALL
-give that day view back whole and unaltered. The commitments it is opened from
-SHALL be the ones it takes on when its roster holds nothing at all, and SHALL NOT be a list it
-draws.
+give that day view back whole and unaltered. The commitments it is opened from SHALL be the ones it
+takes on when its roster holds nothing at all, and SHALL NOT be a list it draws.
 
 The today SHALL be given to a day screen and never asked for, this capability reading no clock and
 consulting no time zone or locale. A day screen SHALL hold two separate days: the today it was
@@ -476,8 +483,9 @@ its today SHALL be replaced only when the app is shown again.
 - **WHEN** a day screen is opened as of Monday 3 January 1583, at a place where nothing has been
   kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
   1 January 1583
-- **THEN** its day view is the same day view as one formed directly of that commitment on Monday
-  3 January 1583 from a history that has taken no tick
+- **THEN** its day view is the same day view as one formed directly of that commitment and of
+  one-offs holding nothing, on Monday 3 January 1583 as of that same day, from a history that has
+  taken no tick
 - **AND** a day screen opened the same way as of Monday 27 December 9999 holds the day view of that
   date instead
 
@@ -489,7 +497,8 @@ its today SHALL be replaced only when the app is shown again.
   back; and a day screen of those two commitments, in that order, is opened at that place as of
   Monday 31 August 2026
 - **THEN** its day view is the same day view as one formed directly of those two commitments, in
-  that order, on Monday 31 August 2026, from a history holding exactly the remaining tick
+  that order and of one-offs holding nothing, on Monday 31 August 2026 as of that same day, from a
+  history holding exactly the remaining tick
 
 ### Requirement: A day screen keeps its record at a place that survives the app being closed
 
@@ -1934,7 +1943,8 @@ picked day SHALL be asked of the screen and handed one thing, the day to show.
   named "Journaling" on a schedule listing all seven weekdays, in that order and both kept from
   1 January 2026; and Monday 15 June 2026 is picked
 - **THEN** its day view is the same day view as one formed directly of those two commitments, in
-  that order, on Monday 15 June 2026, from a history that has taken no tick
+  that order and of one-offs holding nothing, on Monday 15 June 2026 as of that same day, from a
+  history that has taken no tick
 - **AND** its day picker opens on Monday 15 June 2026
 
 #### Scenario: a day screen shows a day picked after the today it was handed
@@ -1976,11 +1986,10 @@ picked day SHALL be asked of the screen and handed one thing, the day to show.
 
 #### Scenario: a day screen picking a day draws the commitments its roster had not stopped keeping on that day
 
-- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all
-  seven weekdays and both kept from 1 January 2026, are taken on at a roster place in that order;
-  "Gym" is stopped there as of Monday 15 June 2026; and a day screen of no commitments at all is
-  opened at that roster place as of Monday 31 August 2026, at a record place where nothing has been
-  kept
+- **WHEN** a commitment named "Gym" and one named "Journaling", both on a schedule listing all seven
+  weekdays and both kept from 1 January 2026, are taken on at a roster place in that order; "Gym" is
+  stopped there as of Monday 15 June 2026; and a day screen of no commitments at all is opened at
+  that roster place as of Monday 31 August 2026, at a record place where nothing has been kept
 - **THEN** picking Wednesday 10 June 2026 gives a day view holding two rows, named "Gym" and then
   "Journaling"
 - **AND** picking Saturday 20 June 2026 from there gives a day view holding one row, named
@@ -2052,7 +2061,8 @@ which *A move with nowhere to go leaves a day screen exactly as it was* states.
   1 January 1583
 - **THEN** it says no day view of the day before
 - **AND** the day view it says of the day after is the same day view as one formed directly of that
-  commitment on Sunday 2 January 1583 from a history that has taken no tick
+  commitment and of one-offs holding nothing, on Sunday 2 January 1583 as of that same day, from a
+  history that has taken no tick
 
 #### Scenario: a day screen showing the last supported date says no day view after it and says the day before
 
@@ -2061,17 +2071,20 @@ which *A move with nowhere to go leaves a day screen exactly as it was* states.
   1 January 1583
 - **THEN** it says no day view of the day after
 - **AND** the day view it says of the day before is the same day view as one formed directly of that
-  commitment on Thursday 30 December 9999 from a history that has taken no tick
+  commitment and of one-offs holding nothing, on Thursday 30 December 9999 as of that same day, from
+  a history that has taken no tick
 
 #### Scenario: a day screen moved off an end of the calendar says a day view either side of it
 
 - **WHEN** a day screen is opened as of Saturday 1 January 1583, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 1583, and it is moved to the day after
-- **THEN** the day view it says of the day before is the same day view as one formed directly of that
-  commitment on Saturday 1 January 1583 from a history that has taken no tick
+- **THEN** the day view it says of the day before is the same day view as one formed directly of
+  that commitment and of one-offs holding nothing, on Saturday 1 January 1583 as of that same day,
+  from a history that has taken no tick
 - **AND** the day view it says of the day after is the same day view as one formed directly of that
-  commitment on Monday 3 January 1583 from that same history
+  commitment and of one-offs holding nothing, on Monday 3 January 1583 as of that same day, from
+  that same history
 
 #### Scenario: a day screen showing the first supported date says no day view before it whatever its places, its rows and its today
 
@@ -2081,7 +2094,8 @@ which *A move with nowhere to go leaves a day screen exactly as it was* states.
   seven weekdays, kept from 1 January 1583, and it is moved to the day before
 - **THEN** its day view holds no rows, and it says no day view of the day before
 - **AND** the day view it says of the day after is the same day view as one formed directly of no
-  commitments at all on Sunday 2 January 1583 from a history that has taken no tick
+  commitments at all and of one-offs holding nothing, on Sunday 2 January 1583 as of that same day,
+  from a history that has taken no tick
 - **AND** moved to the day after, it says a day view of the day before and a day view of the day
   after
 
@@ -2532,8 +2546,8 @@ day being shown. Exactly one day either side SHALL be said, never a run of them.
   commitment named "Journaling" on a schedule listing all seven weekdays, in that order and both kept
   from 1 January 2026
 - **THEN** the day view it says of the day before is the same day view as one formed directly of
-  those two commitments, in that order, on Sunday 30 August 2026, from a history that has taken no
-  tick
+  those two commitments, in that order and of one-offs holding nothing, on Sunday 30 August 2026 as
+  of that same day, from a history that has taken no tick
 - **AND** that day view holds one row, named "Journaling"
 
 #### Scenario: a day screen says the day view of the day after the one it is showing
@@ -2542,8 +2556,9 @@ day being shown. Exactly one day either side SHALL be said, never a run of them.
   kept, of a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday and a
   commitment named "Journaling" on a schedule listing all seven weekdays, in that order and both kept
   from 1 January 2026
-- **THEN** the day view it says of the day after is the same day view as one formed directly of those
-  two commitments, in that order, on Tuesday 1 September 2026, from a history that has taken no tick
+- **THEN** the day view it says of the day after is the same day view as one formed directly of
+  those two commitments, in that order and of one-offs holding nothing, on Tuesday 1 September 2026
+  as of that same day, from a history that has taken no tick
 - **AND** that day view holds one row, named "Journaling"
 
 #### Scenario: a day screen says the day one calendar day either side and no day further
@@ -2551,11 +2566,12 @@ day being shown. Exactly one day either side SHALL be said, never a run of them.
 - **WHEN** a day screen is opened as of Sunday 1 March 2026, at a place where nothing has been kept,
   of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from 1 January
   2026
-- **THEN** the day view it says of the day before is the same day view as one formed directly of that
-  commitment on Saturday 28 February 2026 from a history that has taken no tick, which is one
-  calendar day earlier and not two
+- **THEN** the day view it says of the day before is the same day view as one formed directly of
+  that commitment and of one-offs holding nothing, on Saturday 28 February 2026 as of that same day,
+  from a history that has taken no tick, which is one calendar day earlier and not two
 - **AND** the day view it says of the day after is the same day view as one formed directly of that
-  commitment on Monday 2 March 2026 from that same history
+  commitment and of one-offs holding nothing, on Monday 2 March 2026 as of that same day, from that
+  same history
 
 #### Scenario: a day screen says a day either side drawn from the commitments its roster had not stopped keeping on that day
 
@@ -2613,40 +2629,48 @@ like any other, and what it says about either place SHALL be untouched by being 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026, and it is moved to the day after
-- **THEN** the day view it says of the day before is the same day view as one formed directly of that
-  commitment on Monday 31 August 2026 from a history that has taken no tick
+- **THEN** the day view it says of the day before is the same day view as one formed directly of
+  that commitment and of one-offs holding nothing, on Monday 31 August 2026 as of that same day,
+  from a history that has taken no tick
 - **AND** the day view it says of the day after is the same day view as one formed directly of that
-  commitment on Wednesday 2 September 2026 from that same history
+  commitment and of one-offs holding nothing, on Wednesday 2 September 2026 as of that same day,
+  from that same history
 
 #### Scenario: a day screen sent back to today says the day either side of that today
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026; it is moved to the day before three times; and it is then sent back to today
-- **THEN** the day view it says of the day before is the same day view as one formed directly of that
-  commitment on Sunday 30 August 2026 from a history that has taken no tick
+- **THEN** the day view it says of the day before is the same day view as one formed directly of
+  that commitment and of one-offs holding nothing, on Sunday 30 August 2026 as of that same day,
+  from a history that has taken no tick
 - **AND** the day view it says of the day after is the same day view as one formed directly of that
-  commitment on Tuesday 1 September 2026 from that same history
+  commitment and of one-offs holding nothing, on Tuesday 1 September 2026 as of that same day, from
+  that same history
 
 #### Scenario: a day screen showing a day picked on its day picker says the day either side of that day
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026, and Friday 25 September 2026 is picked on its day picker
-- **THEN** the day view it says of the day before is the same day view as one formed directly of that
-  commitment on Thursday 24 September 2026 from a history that has taken no tick
+- **THEN** the day view it says of the day before is the same day view as one formed directly of
+  that commitment and of one-offs holding nothing, on Thursday 24 September 2026 as of that same
+  day, from a history that has taken no tick
 - **AND** the day view it says of the day after is the same day view as one formed directly of that
-  commitment on Saturday 26 September 2026 from that same history
+  commitment and of one-offs holding nothing, on Saturday 26 September 2026 as of that same day,
+  from that same history
 
 #### Scenario: a day screen shown again on a new day says the day either side of that day
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
   1 January 2026, and the app is then shown again as of Wednesday 2 September 2026
-- **THEN** the day view it says of the day before is the same day view as one formed directly of that
-  commitment on Tuesday 1 September 2026 from a history that has taken no tick
+- **THEN** the day view it says of the day before is the same day view as one formed directly of
+  that commitment and of one-offs holding nothing, on Tuesday 1 September 2026 as of that same day,
+  from a history that has taken no tick
 - **AND** the day view it says of the day after is the same day view as one formed directly of that
-  commitment on Thursday 3 September 2026 from that same history
+  commitment and of one-offs holding nothing, on Thursday 3 September 2026 as of that same day, from
+  that same history
 
 #### Scenario: saying the day either side of a day screen does not read its record or its roster again
 
@@ -2666,10 +2690,12 @@ like any other, and what it says about either place SHALL be untouched by being 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a run of bytes that
   is not what a record is written as, of a commitment named "Journaling" on a schedule listing all
   seven weekdays, kept from 1 January 2026
-- **THEN** the day view it says of the day before is the same day view as one formed directly of that
-  commitment on Sunday 30 August 2026 from a history that has taken no tick
+- **THEN** the day view it says of the day before is the same day view as one formed directly of
+  that commitment and of one-offs holding nothing, on Sunday 30 August 2026 as of that same day,
+  from a history that has taken no tick
 - **AND** the day view it says of the day after is the same day view as one formed directly of that
-  commitment on Tuesday 1 September 2026 from that same history
+  commitment and of one-offs holding nothing, on Tuesday 1 September 2026 as of that same day, from
+  that same history
 - **AND** it says it is not keeping a record
 
 #### Scenario: a day screen that cannot read its roster says the day either side of it and neither holds rows
@@ -2989,16 +3015,18 @@ handing the same commitment to a day view twice SHALL give two rows.
 A day view SHALL be the groups it holds, its One-offs group where it holds one, and the calendar
 date it was formed on, and nothing else. Two day views SHALL be the same day view when they are of
 the same date and hold the same groups in the same order, each group holding the same rows in the
-same order, and the same One-offs group or none, and SHALL be different when any of that differs; two day views holding the same rows in the same order under different groupings
-SHALL therefore be two day views.
+same order, and the same One-offs group or none, and SHALL be different when any of that differs;
+two day views holding the same rows in the same order under different groupings SHALL therefore be
+two day views.
 
 A difference in what a day view was handed that does not reach a row SHALL make no difference to the
 day view: a commitment not due produces no row, a group none of whose commitments is due produces no
-group, and a tick for a commitment the day view was not handed is never looked up, and a one-off standing
-on another day produces no one-off row, so a day view handed any of the four SHALL be the same day
-view as one that was not. A day view SHALL be an
-answer given from a history as it stood rather than a window onto one, and ticking that history
-afterwards MUST NOT change the day view.
+group, and a tick for a commitment the day view was not handed is never looked up, and a one-off
+standing on another day produces no one-off row, so a day view handed any of the four SHALL be the
+same day view as one that was not handed it. A day view handed no one-offs at all SHALL NOT be the
+same day view as one handed one-offs holding none. A day view SHALL be an answer given from a
+history as it stood rather than a window onto one, and ticking that history afterwards MUST NOT
+change the day view.
 
 #### Scenario: two day views of the same commitments and history on different dates are different day views
 
@@ -3058,12 +3086,14 @@ afterwards MUST NOT change the day view.
 #### Scenario: two day views differing only in a one-off standing on another day are the same day view
 
 - **WHEN** a day view is formed on Monday 28 September 2026 as of that same day, from a history that
-  has taken no tick, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept
-  from 1 January 2026, handed no one-offs; and a second is formed the same way of one-offs holding
-  "Send form" on 30 September 2026, not done
+  has taken no tick, of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, and of one-offs holding nothing; and a second is formed the same way of
+  one-offs holding "Send form" on 30 September 2026, not done
 - **THEN** the two are the same day view
 - **AND** a third formed the same way of one-offs holding "Call mum" on 25 September 2026, not done,
   is a different day view from both
+- **AND** a fourth formed the same way and handed no one-offs at all is a different day view from the
+  first
 
 ### Requirement: A day screen makes and takes back the tick a row offers, and keeps the change before the day view says so
 
@@ -3160,20 +3190,20 @@ the screen says about its roster.
 
 A day screen SHALL be told when the app has been shown — opened from nothing, or brought back in
 front of a person — and SHALL be handed the day it has been shown on. It SHALL then take that day as
-its today and form its day view again from the record, the roster and the one-offs read again at their places,
-whatever day it is showing, a tick made on it being no such moment. A day screen showing the day it
-was last handed as today SHALL show the day it has now been shown on, and one showing any other day
-SHALL go on showing that day; that comparison SHALL be made against the today the screen held before
-it was told, and against nothing kept for the purpose. A day screen shown again on the day it is
-already showing SHALL hold that day's day view, formed again rather than merely kept.
+its today and form its day view again from the record, the roster and the one-offs read again at
+their places, whatever day it is showing, a tick made on it being no such moment. A day screen
+showing the day it was last handed as today SHALL show the day it has now been shown on, and one
+showing any other day SHALL go on showing that day; that comparison SHALL be made against the today
+the screen held before it was told, and against nothing kept for the purpose. A day screen shown
+again on the day it is already showing SHALL hold that day's day view, formed again rather than
+merely kept.
 
 Reading either place again SHALL be a fresh opening there, so a change made since SHALL be seen, and
 what the screen says about the record, about the roster and about its one-offs SHALL each be formed
-again from what is
-then there, the reason included and nothing carried over. A roster read again that holds nothing at
-all SHALL have the commitments the screen was handed taken on into it. Nothing else SHALL survive
-being shown again: those commitments, the three places and the day it is showing are all a day screen
-carries across.
+again from what is then there, the reason included and nothing carried over. A roster read again
+that holds nothing at all SHALL have the commitments the screen was handed taken on into it. Nothing
+else SHALL survive being shown again: those commitments, the three places and the day it is showing
+are all a day screen carries across.
 
 #### Scenario: a day screen shown again on a later day holds that day's day view
 
@@ -3227,7 +3257,8 @@ carries across.
   commitment named "Run" on a schedule listing Tuesday, Thursday and Sunday, both kept from 1 January
   2026, and its one row is ticked
 - **THEN** its day view is the same day view as one formed directly of those two commitments, in
-  that order, on Monday 31 August 2026, from a history holding exactly that one tick
+  that order and of one-offs holding nothing, on Monday 31 August 2026 as of that same day, from a
+  history holding exactly that one tick
 
 #### Scenario: a day screen shown again reads its roster again
 
@@ -3268,8 +3299,9 @@ carries across.
   commitment named "Journaling" on a schedule listing all seven weekdays, in that order and both kept
   from 1 January 2026; it is moved to the day before; and the app is then shown again as of Wednesday
   2 September 2026
-- **THEN** its day view is the same day view as one formed directly of those two commitments, in that
-  order, on Sunday 30 August 2026, from a history that has taken no tick
+- **THEN** its day view is the same day view as one formed directly of those two commitments, in
+  that order and of one-offs holding nothing, on Sunday 30 August 2026 as of that same day, from a
+  history that has taken no tick
 - **AND** its day picker opens on Sunday 30 August 2026, and it offers the way back to today
 
 #### Scenario: a day screen moved away and back onto today moves onto the new day when the app is shown again
@@ -3279,8 +3311,9 @@ carries across.
   commitment named "Journaling" on a schedule listing all seven weekdays, in that order and both kept
   from 1 January 2026; it is moved to the day before and then to the day after; and the app is then
   shown again as of Wednesday 2 September 2026
-- **THEN** its day view is the same day view as one formed directly of those two commitments, in that
-  order, on Wednesday 2 September 2026, from a history that has taken no tick
+- **THEN** its day view is the same day view as one formed directly of those two commitments, in
+  that order and of one-offs holding nothing, on Wednesday 2 September 2026 as of that same day,
+  from a history that has taken no tick
 - **AND** its day picker opens on Wednesday 2 September 2026, and it offers no way back to today
 
 #### Scenario: a day screen sent back to today moves onto the new day when the app is shown again
@@ -3487,9 +3520,8 @@ A day screen SHALL go on telling it, on the same row, until one of exactly three
 SHALL then tell nothing on any row. Nothing else SHALL end it, time passing included. The app being
 shown again SHALL end it, whether or not the record can then be read. A change reaching the record's
 place or the one-off place SHALL end it, on whichever row it was made, whatever the change. The day
-being shown changing
-SHALL end it — the day changing and never the gesture made — so a move with nowhere to go, and today
-sent back to today, SHALL leave it standing.
+being shown changing SHALL end it — the day changing and never the gesture made — so a move with
+nowhere to go, and today sent back to today, SHALL leave it standing.
 
 A change that reaches neither place SHALL NOT end it: a refused value moves what is told rather
 than ending it. A commit in a total entry that says nothing is neither an end nor a refusal, so what
@@ -3705,6 +3737,20 @@ end nothing either.
   where nothing has been kept; its one one-off row is ticked and refused; and it is returned to
 - **THEN** it still tells, on that one-off row, that the change could not be kept
 - **AND** after the app is then shown again as of that same day, it tells nothing on any row
+
+#### Scenario: what a day screen tells on a row ends when a one-off rename is kept, a blank one included
+
+- **WHEN** one-offs named "Call mum" and then "Pay fine", both on 25 September 2026, are added at a
+  one-off place; a day screen of a commitment named "Journaling" on a schedule listing all seven
+  weekdays, kept from 1 January 2026, is opened at that one-off place as of Monday 28 September 2026,
+  at a record place where nothing can be written — a path beneath an existing ordinary file — and a
+  roster place where nothing has been kept; its one commitment row is ticked and refused; and
+  "Ring mum" is committed in the name field of the row named "Call mum"
+- **THEN** its One-offs group holds rows named "Ring mum" and then "Pay fine"
+- **AND** it tells nothing on any row
+- **AND** after its commitment row is ticked and refused again and a text of blank space alone is
+  committed in the name field of the row named "Pay fine", its One-offs group holds one row, named
+  "Ring mum", and it tells nothing on any row
 
 ### Requirement: A day screen tells nothing on a row where there was no change to refuse
 
@@ -4620,17 +4666,18 @@ not it is keeping a record or a roster.
 A day view MAY be handed one-offs and a today beside its commitments. It SHALL then hold one group
 of one-off rows, headed "One-offs" in this package's own words, holding a row for each one-off
 standing on its date as of that today, in the order the `one-off` capability answers them; a day
-view MUST NOT order them itself. Where none stands on its date it SHALL hold no such group. That
-group SHALL NOT be one of its groups of commitments, its rows SHALL NOT be among the commitment rows
-it holds, and it SHALL come after every group of commitments. A day view handed no one-offs SHALL
-hold no One-offs group. A one-off row SHALL say its one-off's name exactly as given.
+view MUST NOT order them itself. Where none stands on its date it SHALL still hold that group,
+holding no rows. That group SHALL NOT be one of its groups of commitments, its rows SHALL NOT be
+among the commitment rows it holds, and it SHALL come after every group of commitments. A day view
+handed no one-offs SHALL hold no One-offs group. A one-off row SHALL say its one-off's name exactly
+as given.
 
 #### Scenario: a day view holds a One-offs group of the one-offs standing on its date
 
 - **WHEN** a day view is formed on Monday 28 September 2026 as of that same day, from a history that
-  has taken no tick, of a commitment named "Journaling" on a schedule listing all seven weekdays, kept
-  from 1 January 2026, and of one-offs holding "Call mum" on 25 September 2026 and "Send form" on
-  30 September 2026, neither done
+  has taken no tick, of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, and of one-offs holding "Call mum" on 25 September 2026 and "Send form"
+  on 30 September 2026, neither done
 - **THEN** it holds one group of commitments, with no category, holding one row named "Journaling"
 - **AND** it holds a One-offs group headed "One-offs", holding one row named "Call mum"
 - **AND** its commitment rows are named "Journaling" alone
@@ -4640,9 +4687,9 @@ hold no One-offs group. A one-off row SHALL say its one-off's name exactly as gi
 - **WHEN** a day view is formed on Friday 25 September 2026 as of Monday 28 September 2026, from a
   history that has taken no tick, of no commitments at all and of one-offs holding "Call mum" on
   25 September 2026, not done
-- **THEN** it holds no One-offs group
-- **AND** it is the same day view as one formed on that date from that same history of no
-  commitments and handed no one-offs
+- **THEN** it holds a One-offs group headed "One-offs", holding no rows
+- **AND** a day view formed on that date from that same history of no commitments and handed no
+  one-offs holds no One-offs group
 
 #### Scenario: a day view's one-off rows are in the order one-offs answer them
 
@@ -4785,7 +4832,7 @@ move the reach of its day picker.
   listing all seven weekdays, kept from 1 January 2026, is opened at that one-off place as of Monday
   28 September 2026, at a record place and a roster place where nothing has been kept; and it is
   moved to the day before
-- **THEN** its day view holds no One-offs group
+- **THEN** its One-offs group holds no rows
 - **AND** the day view it says of the day after holds a One-offs group holding one row, named
   "Call mum"
 - **AND** after Wednesday 30 September 2026 is picked, its One-offs group holds one row, named
@@ -4796,7 +4843,7 @@ move the reach of its day picker.
 - **WHEN** a day screen of a commitment named "Journaling" on a schedule listing all seven weekdays,
   kept from 1 January 2026, is opened as of Monday 28 September 2026, at a one-off place, a record
   place and a roster place where nothing has been kept
-- **THEN** its day view holds no One-offs group
+- **THEN** its day view holds a One-offs group holding no rows
 - **AND** it says it is keeping one-offs
 - **AND** nothing has been kept at its one-off place
 
@@ -4806,7 +4853,7 @@ move the reach of its day picker.
   kept from 1 January 2026, is opened as of Monday 28 September 2026, at a one-off place, a record
   place and a roster place where nothing has been kept; a one-off named "Call mum" on 25 September
   2026 is then added at that one-off place by something else; and the day screen is returned to
-- **THEN** its day view holds no One-offs group
+- **THEN** its One-offs group holds no rows
 - **AND** after the app is shown again as of that same day, its One-offs group holds one row, named
   "Call mum"
 
@@ -4902,16 +4949,16 @@ to the record's place or the roster's.
   all seven weekdays, kept from 1 January 2026, is opened at that one-off place as of Monday
   28 September 2026, at a record place and a roster place where nothing has been kept; Friday
   25 September 2026 is picked; and its one one-off row is ticked
-- **THEN** its day view holds no One-offs group
+- **THEN** its One-offs group holds no rows
 - **AND** sent back to today, its One-offs group holds one row, named "Call mum", saying it is not
   done and saying "3 days late"
 
 #### Scenario: a one-off tick that cannot be kept is refused and leaves the day view as it was
 
 - **WHEN** a one-off named "Call mum" on 25 September 2026 is added at a one-off place that is then
-  made so that it can be read from but not written to, and a day screen of no commitments at all is opened at that
-  one-off place as of Monday 28 September 2026, at a record place and a roster place where nothing
-  has been kept; and its one one-off row is ticked
+  made so that it can be read from but not written to, and a day screen of no commitments at all is
+  opened at that one-off place as of Monday 28 September 2026, at a record place and a roster place
+  where nothing has been kept; and its one one-off row is ticked
 - **THEN** ticking is refused with an error
 - **AND** its One-offs group still holds one row, named "Call mum", saying it is not done
 - **AND** a one-off store opened afterwards at that place holds "Call mum" not done
@@ -4934,21 +4981,21 @@ to the record's place or the roster's.
 
 ### Requirement: A day screen tells on the one-off row that was tapped that its change could not be kept
 
-Where a one-off change cannot be kept, a day screen SHALL tell it on the one-off row tapped as well
-as refusing it to the caller, and what it tells SHALL name no cause. A day screen SHALL tell at most
-one row at a time, whether a commitment row or a one-off row: a refusal on a one-off row SHALL move
-what is told onto that row and leave nothing told on any commitment row, and a refusal on a
-commitment row SHALL leave nothing told on any one-off row. Telling on a one-off row MUST NOT change
-what a day screen says about keeping one-offs.
+Where a one-off tick or removal cannot be kept, a day screen SHALL tell it on the one-off row tapped
+as well as refusing it to the caller, and what it tells SHALL name no cause. A day screen SHALL tell
+at most one row at a time, whether a commitment row or a one-off row: a refusal on a one-off row
+SHALL move what is told onto that row and leave nothing told on any commitment row, and a refusal on
+a commitment row SHALL leave nothing told on any one-off row. Telling on a one-off row MUST NOT
+change what a day screen says about keeping one-offs.
 
 #### Scenario: a refused one-off tick is told on its row and ends what was told on a commitment row
 
 - **WHEN** a one-off named "Call mum" on 25 September 2026 is added at a one-off place that is then
-  made so that it can be read from but not written to; a day screen of a commitment named "Journaling" on a schedule
-  listing all seven weekdays, kept from 1 January 2026, is opened at that one-off place as of Monday
-  28 September 2026, at a record place where nothing can be written — a path beneath an existing
-  ordinary file — and a roster place where nothing has been kept; its one commitment row is ticked
-  and refused; and its one one-off row is then ticked
+  made so that it can be read from but not written to; a day screen of a commitment named
+  "Journaling" on a schedule listing all seven weekdays, kept from 1 January 2026, is opened at that
+  one-off place as of Monday 28 September 2026, at a record place where nothing can be written — a
+  path beneath an existing ordinary file — and a roster place where nothing has been kept; its one
+  commitment row is ticked and refused; and its one one-off row is then ticked
 - **THEN** ticking the one-off row is refused with an error
 - **AND** it tells, on the one-off row, that the change could not be kept, naming no cause
 - **AND** it tells nothing on the commitment row
@@ -4957,10 +5004,334 @@ what a day screen says about keeping one-offs.
 #### Scenario: a refused commitment tick ends what was told on a one-off row
 
 - **WHEN** a one-off named "Call mum" on 25 September 2026 is added at a one-off place that is then
-  made so that it can be read from but not written to; a day screen of a commitment named "Journaling" on a schedule
-  listing all seven weekdays, kept from 1 January 2026, is opened at that one-off place as of Monday
-  28 September 2026, at a record place where nothing can be written — a path beneath an existing
-  ordinary file — and a roster place where nothing has been kept; its one one-off row is ticked and
-  refused; and its one commitment row is then ticked
+  made so that it can be read from but not written to; a day screen of a commitment named
+  "Journaling" on a schedule listing all seven weekdays, kept from 1 January 2026, is opened at that
+  one-off place as of Monday 28 September 2026, at a record place where nothing can be written — a
+  path beneath an existing ordinary file — and a roster place where nothing has been kept; its one
+  one-off row is ticked and refused; and its one commitment row is then ticked
 - **THEN** it tells, on the commitment row, that the change could not be kept
 - **AND** it tells nothing on the one-off row
+
+#### Scenario: a one-off removal that cannot be kept is refused with an error and told on its row
+
+- **WHEN** a one-off named "Call mum" on 25 September 2026 is added at a one-off place that is then
+  made so that it can be read from but not written to; a day screen of no commitments at all is
+  opened at that one-off place as of Monday 28 September 2026, at a record place and a roster place
+  where nothing has been kept; and removal is asked of its one one-off row
+- **THEN** removing is refused with an error
+- **AND** it tells, on that one-off row, that the change could not be kept, naming no cause
+- **AND** its One-offs group still holds one row, named "Call mum"
+- **AND** it tells nothing under its one-off entry
+
+### Requirement: A day screen adds a one-off committed in its one-off entry on the day it is showing
+
+A day screen SHALL add a one-off named what is committed in its one-off entry, with blank space at
+both ends disregarded, dated the day it is showing and no other day. Where that day is earlier than
+the today it was last handed, the one-off SHALL be added already done on that day; on that today or
+a later day it SHALL be added not done. The addition SHALL be kept at the one-off place before the
+day view says so, every day view then being formed again, and, as every change reaching that place
+does, SHALL end what the screen tells on a row. A commit saying nothing SHALL add nothing, write
+nothing and tell nothing, and SHALL leave whatever is already told as it was. A day screen not
+keeping one-offs SHALL add nothing, throw nothing and tell nothing, whatever is committed.
+
+#### Scenario: a one-off committed in the one-off entry on today is added not done on today
+
+- **WHEN** a day screen of no commitments at all is opened as of Monday 28 September 2026, at a
+  one-off place, a record place and a roster place where nothing has been kept, and "Call mum" is
+  committed in its one-off entry
+- **THEN** its One-offs group holds one row, named "Call mum", saying it is not done and saying
+  nothing in the rhythm's place
+- **AND** a one-off store opened afterwards at that one-off place holds "Call mum" on 28 September
+  2026, standing on 5 October 2026 as of 5 October 2026
+- **AND** nothing has been kept at its record place or its roster place
+
+#### Scenario: a one-off committed on a later day is added not done on that day and offers no tick
+
+- **WHEN** a day screen of no commitments at all is opened as of Monday 28 September 2026, at a
+  one-off place, a record place and a roster place where nothing has been kept; it is moved to the
+  day after; and "Send form" is committed in its one-off entry
+- **THEN** its One-offs group holds one row, named "Send form", saying it is not done and offering no
+  tick as of 28 September 2026
+- **AND** sent back to today, its One-offs group holds no rows
+- **AND** a one-off store opened afterwards at that one-off place holds "Send form" on 29 September
+  2026, not done
+
+#### Scenario: a one-off committed on a past day is added already done on that day and stays on it
+
+- **WHEN** a day screen of no commitments at all is opened as of Monday 28 September 2026, at a
+  one-off place, a record place and a roster place where nothing has been kept; it is moved to the
+  day before; and "Call mum" is committed in its one-off entry
+- **THEN** its One-offs group holds one row, named "Call mum", saying it is done
+- **AND** sent back to today, its One-offs group holds no rows
+- **AND** a one-off store opened afterwards at that one-off place holds "Call mum" on 27 September
+  2026, standing on 27 September 2026 as of 5 October 2026
+
+#### Scenario: blank space around a name committed in the one-off entry is not part of the one-off added
+
+- **WHEN** a day screen of no commitments at all is opened as of Monday 28 September 2026, at a
+  one-off place, a record place and a roster place where nothing has been kept, and a text of two
+  spaces, then "Call mum", then one space is committed in its one-off entry
+- **THEN** its One-offs group holds one row, named "Call mum"
+- **AND** a one-off store opened afterwards at that one-off place holds a one-off named "Call mum" on
+  28 September 2026 and none whose name has blank space at either end
+
+#### Scenario: a commit saying nothing in the one-off entry adds nothing and tells nothing
+
+- **WHEN** a day screen of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, is opened as of Monday 28 September 2026, at a record place where
+  nothing can be written — a path beneath an existing ordinary file — and a one-off place and a
+  roster place where nothing has been kept; its one commitment row is ticked and refused; and an
+  empty text and then a text of blank space alone are committed in its one-off entry
+- **THEN** its One-offs group holds no rows
+- **AND** it tells nothing under its one-off entry
+- **AND** it still tells, on its commitment row, that the change could not be kept
+- **AND** nothing has been kept at its one-off place
+
+#### Scenario: a day screen not keeping one-offs adds nothing whatever is committed in its one-off entry
+
+- **WHEN** a day screen of no commitments at all is opened as of Monday 28 September 2026, at a
+  one-off place holding a run of bytes that is not what one-offs are written as, at a record place
+  and a roster place where nothing has been kept, and "Call mum" is committed in its one-off entry
+- **THEN** committing is not refused with an error
+- **AND** its day view holds no One-offs group, and it tells nothing under its one-off entry
+- **AND** the content at that one-off place is byte-for-byte what it was before the screen was opened
+- **AND** a day screen opened the same way at a one-off place holding a one-off store written in a
+  form one later than the form this app writes says and keeps the same
+
+#### Scenario: a one-off added ends what a day screen tells on a row
+
+- **WHEN** a day screen of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, is opened as of Monday 28 September 2026, at a record place where
+  nothing can be written — a path beneath an existing ordinary file — and a one-off place and a
+  roster place where nothing has been kept; its one commitment row is ticked and refused; and
+  "Call mum" is committed in its one-off entry
+- **THEN** its One-offs group holds one row, named "Call mum"
+- **AND** it tells nothing on any row
+
+### Requirement: A day screen refuses an add or a rename it cannot make, and tells it under the field it was committed in
+
+Where a one-off with the committed name, blank space at both ends disregarded, is already held on
+the date an add or a rename would give, done or not and wherever it stands, the add or rename SHALL
+be refused without an error and keep nothing, and the screen SHALL tell "Already on this day". Where
+an add or a rename, a rename committed saying nothing included, cannot be kept at the one-off place,
+it SHALL be refused to the caller with an error, keep nothing, and be told naming no cause. What is
+told SHALL be told under the one-off entry for an add and under the row's name field for a rename,
+and SHALL carry the text committed exactly as it was typed. It SHALL NOT be what the screen tells on
+a row, and neither SHALL end, move or replace the other.
+
+#### Scenario: an add of a name already held on the day shown is refused and told under the one-off entry
+
+- **WHEN** a one-off named "Call mum" on 28 September 2026 is added at a one-off place; a day screen
+  of no commitments at all is opened at that one-off place as of Monday 28 September 2026, at a
+  record place and a roster place where nothing has been kept; and "Call mum" followed by one space
+  is committed in its one-off entry
+- **THEN** committing is not refused with an error
+- **AND** its One-offs group holds one row, named "Call mum"
+- **AND** it tells, under its one-off entry, "Already on this day", carrying the text "Call mum"
+  followed by one space
+- **AND** the content at that one-off place is byte-for-byte what it was before the commit
+- **AND** where "Call mum" on 28 September 2026 was added there already done on that day, the commit
+  is refused and told the same way
+
+#### Scenario: an add is refused on a past day where a one-off of that name owed there now stands on today
+
+- **WHEN** a one-off named "Call mum" on 25 September 2026, not done, is added at a one-off place; a
+  day screen of a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is opened at that one-off place as of Monday 28 September 2026, at a record place
+  and a roster place where nothing has been kept; Friday 25 September 2026 is picked; and "Call mum"
+  is committed in its one-off entry
+- **THEN** it tells, under its one-off entry, "Already on this day"
+- **AND** its One-offs group holds no rows
+- **AND** sent back to today, with "Call mum" committed in its one-off entry again, its One-offs
+  group holds two rows named "Call mum", the first saying "3 days late" and the second saying
+  nothing in the rhythm's place
+
+#### Scenario: an add that cannot be kept is refused with an error and told under the one-off entry beside what is told on a row
+
+- **WHEN** a day screen of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, is opened as of Monday 28 September 2026, at a record place where
+  nothing can be written — a path beneath an existing ordinary file — at a one-off place that can be
+  read from but not written to and where nothing has been kept, and at a roster place where nothing
+  has been kept; its one commitment row is ticked and refused; and "Call mum" is committed in its
+  one-off entry
+- **THEN** committing is refused with an error
+- **AND** it tells, under its one-off entry, that the one-off could not be kept, naming no cause and
+  carrying the text "Call mum"
+- **AND** it still tells, on its commitment row, that the change could not be kept
+- **AND** its One-offs group holds no rows
+
+#### Scenario: a rename onto a one-off already held is refused and told under its row, which keeps its name
+
+- **WHEN** one-offs named "Call mum" and then "Ring mum", both on 28 September 2026, are added at a
+  one-off place; a day screen of no commitments at all is opened at that one-off place as of Monday
+  28 September 2026, at a record place and a roster place where nothing has been kept; and
+  "Ring mum" is committed in the name field of the row named "Call mum"
+- **THEN** committing is not refused with an error
+- **AND** its One-offs group holds rows named "Call mum" and then "Ring mum"
+- **AND** it tells, under the name field of the row named "Call mum", "Already on this day",
+  carrying the text "Ring mum"
+- **AND** it tells nothing under its one-off entry
+- **AND** the content at that one-off place is byte-for-byte what it was before the commit
+
+#### Scenario: a rename that cannot be kept is refused with an error and told under its row
+
+- **WHEN** a one-off named "Call mum" on 25 September 2026 is added at a one-off place that is then
+  made so that it can be read from but not written to; a day screen of no commitments at all is
+  opened at that one-off place as of Monday 28 September 2026, at a record place and a roster place
+  where nothing has been kept; and "Ring mum" is committed in the name field of its one one-off row
+- **THEN** committing is refused with an error
+- **AND** it tells, under that row's name field, that the one-off could not be kept, naming no cause
+  and carrying the text "Ring mum"
+- **AND** it tells nothing on any row
+- **AND** its One-offs group still holds one row, named "Call mum"
+- **AND** a text of blank space alone committed in that name field is refused and told the same way,
+  and that row is still held
+
+### Requirement: What a day screen tells under a one-off name field lasts until its text is edited, the day it is showing changes, or the app is shown again
+
+What a day screen tells under its one-off entry or under a one-off row's name field SHALL stand
+until the text in that field is edited, a commit from that field is kept, the day being shown
+changes, or the app is shown again, and SHALL then be told no longer. The day changing, and never
+the gesture made, SHALL end it, so a screen on its today sent back to today SHALL leave it standing.
+Nothing else SHALL end it: a change kept on a row or from another field, a refusal told on a row,
+and being returned to SHALL NOT. A day screen SHALL tell under at most one one-off name field at a
+time, and a refusal in another field SHALL replace what it was telling. What is told under a row's
+name field SHALL also end when the day view no longer holds that row.
+
+#### Scenario: what is told under the one-off entry stands when a change is kept on a row or from another field and when returned to
+
+- **WHEN** one-offs named "Pay fine" on 25 September 2026 and "Call mum" on 28 September 2026 are
+  added at a one-off place; a day screen of a commitment named "Journaling" on a schedule listing all
+  seven weekdays, kept from 1 January 2026, is opened at that one-off place as of Monday
+  28 September 2026, at a record place and a roster place where nothing has been kept; "Call mum" is
+  committed in its one-off entry and refused; its commitment row is ticked; "Pay the fine" is
+  committed in the name field of the row named "Pay fine"; and it is returned to
+- **THEN** it still tells, under its one-off entry, "Already on this day"
+- **AND** its day view says "Journaling" is kept on that date
+- **AND** its One-offs group holds rows named "Pay the fine" and then "Call mum"
+
+#### Scenario: what is told under a one-off name field ends when its text is edited or a commit from it is kept
+
+- **WHEN** a one-off named "Call mum" on 28 September 2026 is added at a one-off place; a day screen
+  of no commitments at all is opened at that one-off place as of Monday 28 September 2026, at a
+  record place and a roster place where nothing has been kept; "Call mum" is committed in its one-off
+  entry and refused; and the text in its one-off entry is then edited
+- **THEN** it tells nothing under its one-off entry or under any one-off row's name field
+- **AND** its One-offs group holds one row, named "Call mum"
+- **AND** after "Call mum" is committed in its one-off entry and refused again, and "Call dad" is
+  committed there with no edit told between, its One-offs group holds rows named "Call mum" and then
+  "Call dad", and it tells nothing under its one-off entry
+
+#### Scenario: what is told under a one-off name field ends when the day being shown changes and stands when today is sent back to today
+
+- **WHEN** a one-off named "Call mum" on 28 September 2026 is added at a one-off place; a day screen
+  of no commitments at all is opened at that one-off place as of Monday 28 September 2026, at a
+  record place and a roster place where nothing has been kept; "Call mum" is committed in its one-off
+  entry and refused; and it is sent back to today without having been moved
+- **THEN** it still tells, under its one-off entry, "Already on this day"
+- **AND** after it is moved to the day after, it tells nothing under its one-off entry
+- **AND** a day screen opened the same way, on which "Call mum" is committed and refused and
+  Wednesday 30 September 2026 is then picked, tells nothing under its one-off entry
+
+#### Scenario: what is told under a one-off name field ends when the app is shown again
+
+- **WHEN** a one-off named "Call mum" on 28 September 2026 is added at a one-off place; a day screen
+  of no commitments at all is opened at that one-off place as of Monday 28 September 2026, at a
+  record place and a roster place where nothing has been kept; "Call mum" is committed in its one-off
+  entry and refused; and the app is shown again as of that same day
+- **THEN** it tells nothing under its one-off entry
+- **AND** its One-offs group holds one row, named "Call mum"
+
+#### Scenario: a refusal under one one-off name field replaces what is told under another, and ends when its row is no longer held
+
+- **WHEN** one-offs named "Call mum" and then "Ring mum", both on 28 September 2026, are added at a
+  one-off place; a day screen of no commitments at all is opened at that one-off place as of Monday
+  28 September 2026, at a record place and a roster place where nothing has been kept; "Call mum" is
+  committed in its one-off entry and refused; and "Ring mum" is then committed in the name field of
+  the row named "Call mum" and refused
+- **THEN** it tells, under the name field of the row named "Call mum", "Already on this day"
+- **AND** it tells nothing under its one-off entry
+- **AND** after the row named "Call mum" is ticked, it tells nothing under its one-off entry or under
+  any one-off row's name field
+
+#### Scenario: a rename committed with its row's own name leaves a refusal already told under that row standing
+
+- **WHEN** one-offs named "Call mum" and then "Ring mum", both on 28 September 2026, are added at a
+  one-off place; a day screen of no commitments at all is opened at that one-off place as of Monday
+  28 September 2026, at a record place and a roster place where nothing has been kept; "Ring mum" is
+  committed in the name field of the row named "Call mum" and refused; and "Call mum" is then
+  committed in that same name field
+- **THEN** committing is not refused with an error
+- **AND** it still tells, under the name field of the row named "Call mum", "Already on this day",
+  carrying the text "Ring mum"
+- **AND** its One-offs group holds rows named "Call mum" and then "Ring mum"
+
+### Requirement: A day screen renames and removes the one-off a row holds, on any day and done or not
+
+A day screen SHALL rename the one-off a one-off row holds to the text committed in that row's name
+field, with blank space at both ends disregarded, and SHALL remove that one-off outright when removal
+is asked of the row. Either SHALL be made on any one-off row its day view holds, done or not and
+whether or not it offers its tick, and SHALL be kept at the one-off place before the day view says
+so. A rename SHALL keep the one-off's date, whether it is done and the day it was done. A rename
+committed saying nothing SHALL remove the one-off, and one whose text, so disregarded, is the row's
+own name SHALL change nothing, write nothing and tell nothing. A one-off row the day view does not
+hold SHALL change nothing, throw nothing and tell nothing, whether renamed or removed.
+
+#### Scenario: a one-off renamed from its row on a past day keeps its date and stays done there
+
+- **WHEN** a one-off named "Call mum" on 25 September 2026, ticked on 25 September 2026, and one
+  named "Send form" on 30 September 2026, not done, are added at a one-off place; a day screen of a
+  commitment named "Journaling" on a schedule listing all seven weekdays, kept from 1 January 2026,
+  is opened at that one-off place as of Monday 28 September 2026, at a record place and a roster
+  place where nothing has been kept; Friday 25 September 2026 is picked; and "Ring mum" is committed
+  in the name field of its one one-off row
+- **THEN** its One-offs group holds one row, named "Ring mum", saying it is done
+- **AND** a one-off store opened afterwards at that one-off place holds "Ring mum" on 25 September
+  2026, standing on 25 September 2026 as of 5 October 2026, and none named "Call mum"
+- **AND** after Wednesday 30 September 2026 is picked and "Send the form" is committed in the name
+  field of its one one-off row, which offers no tick as of 28 September 2026, its One-offs group
+  holds one row, named "Send the form"
+
+#### Scenario: a rename committed with its row's own name changes nothing and writes nothing
+
+- **WHEN** a one-off named "Call mum" on 28 September 2026 is added at a one-off place; a day screen
+  of no commitments at all is opened at that one-off place as of Monday 28 September 2026, at a
+  record place and a roster place where nothing has been kept; and "Call mum" followed by one space
+  is committed in the name field of its one one-off row
+- **THEN** committing is not refused with an error
+- **AND** it tells nothing under that row's name field or under its one-off entry
+- **AND** the content at that one-off place is byte-for-byte what it was before the commit
+
+#### Scenario: a rename committed saying nothing removes the one-off
+
+- **WHEN** one-offs named "Call mum" on 25 September 2026 and "Call dad" on 28 September 2026 are
+  added at a one-off place; a day screen of no commitments at all is opened at that one-off place as
+  of Monday 28 September 2026, at a record place and a roster place where nothing has been kept; and
+  a text of blank space alone is committed in the name field of the row named "Call mum"
+- **THEN** its One-offs group holds one row, named "Call dad"
+- **AND** a one-off store opened afterwards at that one-off place holds "Call dad" alone
+- **AND** it tells nothing under any one-off row's name field or under its one-off entry
+
+#### Scenario: a one-off removed from its row is held no longer, done or not and whether or not it offers its tick
+
+- **WHEN** one-offs named "Call mum" on 25 September 2026, not done, "Call dad" on 28 September 2026,
+  ticked on 28 September 2026, and "Pay fine" on 30 September 2026, not done, are added at a one-off
+  place; a day screen of no commitments at all is opened at that one-off place as of Monday
+  28 September 2026, at a record place and a roster place where nothing has been kept; its rows
+  named "Call mum" and "Call dad" are removed; it is moved to the day after twice; and its row named
+  "Pay fine", which offers no tick as of 28 September 2026, is removed
+- **THEN** its One-offs group holds no rows
+- **AND** sent back to today, its One-offs group holds no rows
+- **AND** a one-off store opened afterwards at that one-off place holds no one-offs
+
+#### Scenario: renaming or removing a one-off row a day screen's day view does not hold changes nothing
+
+- **WHEN** one-offs named "Call mum" on 25 September 2026 and "Pay fine" on 29 September 2026 are
+  added at a one-off place; a day screen of no commitments at all is opened at that one-off place as
+  of Monday 28 September 2026, at a record place and a roster place where nothing has been kept; and
+  on the one one-off row of the day view it says of the day after, "Pay the fine" is committed in
+  that row's name field and removal is asked
+- **THEN** neither is refused with an error
+- **AND** the day view it says of the day after still holds one one-off row, named "Pay fine"
+- **AND** it tells nothing on any row, under any one-off row's name field or under its one-off entry
+- **AND** the content at that one-off place is byte-for-byte what it was before either was asked
