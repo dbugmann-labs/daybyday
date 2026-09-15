@@ -725,6 +725,10 @@ moment anything is written at a place: undoing a **torn save** and carrying back
 record** write when the places are opened. Both put a history back to what it was and invent
 nothing, so what a store persists is still exactly a value it was given.
 
+**Amended 2026-09-15**, at the grill of B-009, `FEAT: restore`. Carrying a store to a new phone is a
+**copy**'s, and a store's part in it is what it was: one thing at one place, whose contents a copy
+takes whole and a **restore** puts back whole.
+
 **Record store** — the store that keeps a **history**: every record added and not since taken back,
 keyed to the calendar date and never to the moment of entry. Agreed 2026-09-02 at the grill of
 `add-record-store` (#56), where this was the whole of **Store**. **Amended 2026-09-06** at
@@ -1140,6 +1144,11 @@ other reason is told apart. ADR-1021, settled by the owner at the Feature grill 
 sharpened by them on the same day on `add-day-screen`'s question round; recorded by
 `add-day-screen` (#91).
 
+**Amended 2026-09-15**, at the grill of B-009, `FEAT: restore`. A day screen without its record now
+says one thing more: that a **copy** can be **restored**, and where. It still keeps nothing, still
+touches nothing at the place, and still says nothing on a fresh install, where there is nothing to
+restore and a line would be a nag.
+
 **Commitments screen** — where a person manages what they keep, rather than what a day asks of
 them: the list of the commitments the roster is keeping, the form that defines a new one from a
 name, a rhythm and the day it is kept from, and the way to stop keeping one. Beside that list it
@@ -1342,6 +1351,37 @@ leaves what is there untouched, naming a file written by a later version as the 
 (ADR-1021). A one-off change shares the day screen's one **notice**: a refused one replaces a notice
 on any row, and one that lands ends it. It does not move a **reach**, which stays the roster's.
 Agreed 2026-09-14 at the grill of `draw-one-offs-on-day-screen` (#243).
+
+**Copy** — one file holding what the **record store**, the **roster store** and the one-off store
+hold at one moment, written for a person to keep somewhere the phone is not: their own files,
+another device, a folder they chose. It is the whole of a history and never part of one — a record
+without its roster is numbers with no names. It is deliberately **not a backup** in the platform's
+sense, which this app does not lean on for a phone it never reached through a store, and **not a
+sync**, because nothing ever reads a copy back except a **restore** the person asked for. The app
+writes one whenever the person asks, and writes one on its own at the **copy place** every time a
+change is kept, so that copy is at most one change behind; it is one file overwritten whole, a
+mirror of now and never of yesterday — *restore, not undo*, since taking a record back is what a
+mistake gets. Agreed 2026-09-15 at the grill of B-009, `FEAT: restore`; the copy the app writes on
+its own was the owner's call against the recommendation to start by hand alone.
+
+**Copy place** — the one folder a person picked, once, for the app to write its **copy** at on its
+own. It is chosen by the person and never named by the app, because it has to be a place that
+outlives the phone, and no such place is the app's to name. While there is none, the app copies only
+when asked. When it can no longer be written at — the folder gone, the write refused — that is said
+on the **commitments screen**, next to when the last copy was made, and nowhere else: the **day
+screen** stays quiet, because a stopped copy is looked after where things are looked after and not
+nagged about where days are entered. Agreed 2026-09-15 at the grill of B-009, `FEAT: restore`.
+
+**Restore** — putting a **copy** back: the record, the roster and the one-offs the phone holds become
+what the copy holds, whole, and what was there goes — said before it does, and never merged, since a
+merge is sync under another name. It is the answer to a new phone and to a store that cannot be read
+alike, and it lives on the **commitments screen**, where a person looks after what they keep; a
+**day screen** whose store cannot be read says that a copy can be restored and where, and no more. A
+store that cannot be read is also a person's to take **out** of the phone as it stands, by the same
+means a copy leaves it, because "left for a person to recover" is empty when no person can reach
+it. Agreed 2026-09-15 at the grill of B-009, `FEAT: restore`, under `EPIC: Restore` — opened rather
+than `EPIC: Daily commitments` (#1) amended, the owner's decision: #1's exclusion of restore was a
+scope statement that still reads true.
 
 **Shown** — the moment the app comes in front of a person: opened from nothing, or brought back from
 behind whatever was in front of it. It is the only moment a day screen is handed a **today**, and so
