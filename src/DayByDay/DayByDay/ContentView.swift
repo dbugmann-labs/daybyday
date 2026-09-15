@@ -297,7 +297,7 @@ struct ContentView: View {
         }
         .onChange(of: showingCommitments) { _, isShowing in
             if !isShowing {
-                screen.returnedTo()
+                screen.returnedTo(from: commitmentsScreen)
                 commitmentsScreen = nil
             }
         }
