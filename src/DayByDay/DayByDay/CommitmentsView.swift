@@ -17,15 +17,18 @@ private let allWeekdays: [Weekday] = [
     .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
 ]
 
-private func weekdayName(_ weekday: Weekday) -> String {
+/// The short label the single-row weekday toggles draw — `chore/reshape-commitment-sheet`,
+/// ADR-1019. The value each toggle carries is still the same `Weekday`; this names only what it
+/// draws.
+private func weekdayShortName(_ weekday: Weekday) -> String {
     switch weekday {
-    case .monday: "Monday"
-    case .tuesday: "Tuesday"
-    case .wednesday: "Wednesday"
-    case .thursday: "Thursday"
-    case .friday: "Friday"
-    case .saturday: "Saturday"
-    case .sunday: "Sunday"
+    case .monday: "Mon"
+    case .tuesday: "Tue"
+    case .wednesday: "Wed"
+    case .thursday: "Thu"
+    case .friday: "Fri"
+    case .saturday: "Sat"
+    case .sunday: "Sun"
     }
 }
 
@@ -56,34 +59,41 @@ private func date(from calendarDate: CalendarDate) -> Date {
 /// and `CommitmentSheet` read off the same words.
 @ViewBuilder
 private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
-    switch refusal {
-    case .namesNothing:
-        Text("Give it a name.")
-    case .dueOnNoDay:
-        Text("Choose at least one weekday.")
-    case .rhythmOutOfRange:
-        Text("That number isn't one this rhythm accepts.")
-    case .alreadyKept:
-        Text("Already being kept.")
-    case .notKept:
-        Text("The roster could not be read or could not be written.")
-    case .stoppedCommitmentCannotChangeRhythm:
-        Text("Take it up again first to change its rhythm.")
-    case .wouldLeaveARecordedDayNotDue:
-        Text("Choose a day that leaves every recorded day due.")
-    case .recordsAlreadyExist:
-        Text("Records already exist under that.")
-    case .rangeIsNotARange:
-        Text("That's not a range.")
-    case .targetIsNotATarget:
-        Text("That's not a target.")
-    case .restartDayIsAfterToday:
-        Text("Choose a day that isn't after today.")
-    case .restartDayIsBeforeKeptFrom:
-        Text("Choose a day that isn't before it's kept from.")
-    case .alreadyDueOnRestartDay:
-        Text("It's already due that day.")
+    // One appearance for every refusal this file draws, matching the day screen's row notice —
+    // `chore/reshape-commitment-sheet`, ADR-1019. The words above decide what a refusal says;
+    // this decides only how it looks, which is why it wraps rather than repeats per case.
+    Group {
+        switch refusal {
+        case .namesNothing:
+            Text("Give it a name.")
+        case .dueOnNoDay:
+            Text("Choose at least one weekday.")
+        case .rhythmOutOfRange:
+            Text("That number isn't one this rhythm accepts.")
+        case .alreadyKept:
+            Text("Already being kept.")
+        case .notKept:
+            Text("The roster could not be read or could not be written.")
+        case .stoppedCommitmentCannotChangeRhythm:
+            Text("Take it up again first to change its rhythm.")
+        case .wouldLeaveARecordedDayNotDue:
+            Text("Choose a day that leaves every recorded day due.")
+        case .recordsAlreadyExist:
+            Text("Records already exist under that.")
+        case .rangeIsNotARange:
+            Text("That's not a range.")
+        case .targetIsNotATarget:
+            Text("That's not a target.")
+        case .restartDayIsAfterToday:
+            Text("Choose a day that isn't after today.")
+        case .restartDayIsBeforeKeptFrom:
+            Text("Choose a day that isn't before it's kept from.")
+        case .alreadyDueOnRestartDay:
+            Text("It's already due that day.")
+        }
     }
+    .font(.caption)
+    .foregroundStyle(.red)
 }
 
 /// Which commitment `CommitmentSheet` is open for — nothing, for a sheet that defines a new one,
@@ -444,6 +454,11 @@ private struct CommitmentSheet: View {
 
     @State private var name: String
     @State private var category: String
+    /// Whether the category control is showing the *New…* text field rather than the menu of
+    /// categories in use — `chore/reshape-commitment-sheet`. Starts `true` only when the
+    /// category this sheet opened with is not one the menu would offer, so its word is still
+    /// visible rather than silently dropped.
+    @State private var enteringNewCategory: Bool
     @State private var rhythmKind: RhythmKind
     @State private var selectedWeekdays: Set<Weekday>
     @State private var dayOfMonth: Int
@@ -473,7 +488,11 @@ private struct CommitmentSheet: View {
         restartLowerBound = date(from: madeOf?.keptFrom ?? screen.dayToKeepFrom)
 
         _name = State(initialValue: madeOf?.name ?? "")
-        _category = State(initialValue: madeOf?.category ?? "")
+        let initialCategory = madeOf?.category ?? ""
+        _category = State(initialValue: initialCategory)
+        _enteringNewCategory = State(
+            initialValue: !initialCategory.isEmpty
+                && !screen.categoriesInUse.contains(initialCategory))
         _keptFromDate = State(initialValue: date(from: madeOf?.keptFrom ?? screen.dayToKeepFrom))
         _restartDate = State(initialValue: date(from: screen.dayToKeepFrom))
         _restartRefusal = State(initialValue: nil)
@@ -553,59 +572,6 @@ private struct CommitmentSheet: View {
                 Section {
                     TextField("Name", text: $name)
 
-                    Picker("Rhythm", selection: $rhythmKind) {
-                        ForEach(RhythmKind.allCases) { kind in
-                            Text(kind.rawValue).tag(kind)
-                        }
-                    }
-                    .disabled(!canChangeRhythmAndKeptFrom)
-
-                    switch rhythmKind {
-                    case .weekdays:
-                        ForEach(allWeekdays, id: \.self) { weekday in
-                            Toggle(
-                                weekdayName(weekday),
-                                isOn: Binding(
-                                    get: { selectedWeekdays.contains(weekday) },
-                                    set: { isOn in
-                                        if isOn {
-                                            selectedWeekdays.insert(weekday)
-                                        } else {
-                                            selectedWeekdays.remove(weekday)
-                                        }
-                                    }
-                                ))
-                        }
-                        .disabled(!canChangeRhythmAndKeptFrom)
-                    case .dayOfMonth:
-                        Stepper("Day \(dayOfMonth)", value: $dayOfMonth, in: 1...31)
-                            .disabled(!canChangeRhythmAndKeptFrom)
-                    case .everyNDays:
-                        LabeledContent("Every") {
-                            TextField("Days", value: $intervalDays, format: .number)
-                                .keyboardType(.numberPad)
-                            Text("day(s)")
-                        }
-                        .disabled(!canChangeRhythmAndKeptFrom)
-                    case .weeklyQuota:
-                        Stepper("\(timesPerWeek) time(s) a week", value: $timesPerWeek, in: 1...7)
-                            .disabled(!canChangeRhythmAndKeptFrom)
-                    }
-
-                    DatePicker("Kept from", selection: $keptFromDate, displayedComponents: [.date])
-                        .disabled(!canChangeRhythmAndKeptFrom)
-
-                    TextField("Category (optional)", text: $category)
-                    if !screen.categoriesInUse.isEmpty {
-                        Menu("Use an existing category") {
-                            ForEach(screen.categoriesInUse, id: \.self) { existing in
-                                Button(existing) {
-                                    category = existing
-                                }
-                            }
-                        }
-                    }
-
                     Picker("Kind", selection: $kindChoice) {
                         ForEach(CommitmentsScreen.KindChoice.allCases, id: \.self) { kind in
                             Text(kindChoiceName(kind)).tag(kind)
@@ -621,13 +587,86 @@ private struct CommitmentSheet: View {
                     case .tick, .note:
                         EmptyView()
                     case .number:
-                        TextField("Lowest", text: $lowest)
-                            .disabled(changing != nil)
-                        TextField("Highest", text: $highest)
-                            .disabled(changing != nil)
+                        HStack {
+                            TextField("Lowest", text: $lowest)
+                            TextField("Highest", text: $highest)
+                        }
+                        .disabled(changing != nil)
                     case .total:
                         TextField("Target", text: $target)
                             .disabled(changing != nil)
+                    }
+
+                    Picker("Rhythm", selection: $rhythmKind) {
+                        ForEach(RhythmKind.allCases) { kind in
+                            Text(kind.rawValue).tag(kind)
+                        }
+                    }
+                    .disabled(!canChangeRhythmAndKeptFrom)
+
+                    switch rhythmKind {
+                    case .weekdays:
+                        HStack(spacing: 4) {
+                            ForEach(allWeekdays, id: \.self) { weekday in
+                                Toggle(
+                                    weekdayShortName(weekday),
+                                    isOn: Binding(
+                                        get: { selectedWeekdays.contains(weekday) },
+                                        set: { isOn in
+                                            if isOn {
+                                                selectedWeekdays.insert(weekday)
+                                            } else {
+                                                selectedWeekdays.remove(weekday)
+                                            }
+                                        }
+                                    )
+                                )
+                                .toggleStyle(.button)
+                                .fixedSize()
+                            }
+                        }
+                        .controlSize(.small)
+                        .disabled(!canChangeRhythmAndKeptFrom)
+                    case .dayOfMonth:
+                        Picker("Day", selection: $dayOfMonth) {
+                            ForEach(1...31, id: \.self) { day in
+                                Text("\(day)").tag(day)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(height: 150)
+                        .disabled(!canChangeRhythmAndKeptFrom)
+                    case .everyNDays:
+                        LabeledContent("Every") {
+                            TextField("Days", value: $intervalDays, format: .number)
+                                .keyboardType(.numberPad)
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 44)
+                            Text("day(s)")
+                        }
+                        .disabled(!canChangeRhythmAndKeptFrom)
+                    case .weeklyQuota:
+                        Stepper("\(timesPerWeek) time(s) a week", value: $timesPerWeek, in: 1...7)
+                            .disabled(!canChangeRhythmAndKeptFrom)
+                    }
+
+                    DatePicker("Kept from", selection: $keptFromDate, displayedComponents: [.date])
+                        .disabled(!canChangeRhythmAndKeptFrom)
+
+                    if enteringNewCategory {
+                        TextField("New category", text: $category)
+                    } else {
+                        Menu(category.isEmpty ? "Category (optional)" : category) {
+                            ForEach(screen.categoriesInUse, id: \.self) { existing in
+                                Button(existing) {
+                                    category = existing
+                                }
+                            }
+                            Button("New…") {
+                                category = ""
+                                enteringNewCategory = true
+                            }
+                        }
                     }
 
                     if let refusal {
