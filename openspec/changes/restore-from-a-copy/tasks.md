@@ -88,7 +88,7 @@ edited here (rule 2).
 ## 12. The gates
 
 - [x] 12.1 `openspec validate restore-from-a-copy --strict` exits 0 and `pnpm run check:scenarios` exits 0
-- [ ] 12.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, the kit sources and tests, `CommitmentsView.swift` and `ContentView.swift`
-- [ ] 12.3 `pnpm run check:budgets` warns about this folder only for the five MODIFIED requirements `design.md` § *Three capabilities, every block whole* names
-- [ ] 12.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is thirty more than a run on `main` reports, both read off runs
+- [x] 12.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, the kit sources and tests, `CommitmentsView.swift` and `ContentView.swift`
+- [x] 12.3 `pnpm run check:budgets` warns about this folder only for the five MODIFIED requirements `design.md` § *Three capabilities, every block whole* names
+- [x] 12.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is thirty more than a run on `main` reports, both read off runs
 - [ ] 12.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–12.4 are ticked, 11.6 included once the owner has walked it, and that this instruction is written here for the janitor. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints. It then reads the spec diff that produced: `openspec/specs/restore/spec.md` gains five requirements; `commitment/spec.md` changes two requirements and gains four scenarios; `day-screen/spec.md` changes four requirements by one clause each and gains no scenario. Nothing else in any spec may move. `pnpm run checks` runs after the archive commit exists. **Any other drift is a stop and a report, never a hand-edit**: rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
