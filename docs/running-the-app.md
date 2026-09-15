@@ -361,7 +361,8 @@ day-one roster, builds, runs only `WalkUITests`, exports every PNG the run attac
 for its box in `walk/`, and posts them with one `--attach` per picture captioned with the box's
 line. `walk/` is gitignored. On a failure it still exports what was captured up to the step that
 could not be driven, prints the runner's own error, and exits 1 — that is a rule-5 stop, not a
-retry. A run of eighteen pictures takes about a minute here on a warm simulator.
+retry. The eighteen-picture walk of `main` ran in 100 seconds here on a warm simulator, 92 of
+them the test itself — a typed field, a scrolled form and a sheet each cost a few seconds.
 
 **The ten-minute silence was a sysdiagnose, and the script turns it off.** Every earlier stall
 on this bundle was a *failing* test: `xcodebuild` then collects Xcode's default failure
