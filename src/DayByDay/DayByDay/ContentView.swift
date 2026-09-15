@@ -951,6 +951,24 @@ struct ContentView: View {
     /// focused by the toolbar `+` and by nothing else; a disabled, non-interactive line in the
     /// same place on either neighbour, since typing there would commit to the wrong day.
     /// `design.md` § *The shell*.
+    ///
+    /// **Return no longer opens a fresh entry (grill answer 25, reopened from answer 6).** A
+    /// kept add — or a blank one, which adds nothing — drops focus and closes the keyboard,
+    /// exactly as the checkmark already does for a kept commit; a refused add leaves focus where
+    /// it is, showing the typed text and the cause under it, same as check 1 already does. This
+    /// reads `screen.nameRefusal` itself, deliberately *not* routed through
+    /// `commitFocusedOneOffField()`: that function's own `.entry` case has no refusal check at
+    /// all, and giving it one would also change what the checkmark does for a refused entry —
+    /// asked for here only for Return.
+    ///
+    /// **The refused branch re-asserts `oneOffFocus = .entry` rather than simply leaving it
+    /// untouched, and driving this for real on the simulator is what found that the second half
+    /// matters.** Pressing Return on a `TextField` resigns its first responder as part of
+    /// handling the key itself, independently of anything this closure does; `@FocusState`
+    /// reflects that resignation back, so a refusal found by *only* skipping the drop — never
+    /// writing `oneOffFocus` at all — still lost focus, keyboard included, exactly the outcome
+    /// this exists to avoid. `commitFocusedOneOffField()`'s own refused branch for a row already
+    /// re-asserts `oneOffFocus = .row(row)` for the same reason; this mirrors it for `.entry`.
     @ViewBuilder
     private func oneOffEntryView(isShown: Bool) -> some View {
         if isShown {
@@ -959,7 +977,17 @@ struct ContentView: View {
                     .focused($oneOffFocus, equals: .entry)
                     .onSubmit {
                         commitOneOffEntry()
-                        oneOffFocus = .entry
+                        if let nameRefusal = screen.nameRefusal, nameRefusal.row == nil {
+                            // Refused: re-assert focus, showing the typed text and the
+                            // cause under it (check 1) — see this function's own doc
+                            // comment for why re-asserting, not just leaving it, is needed.
+                            oneOffFocus = .entry
+                        } else {
+                            // Kept, or blank (adds nothing): drop focus and close the
+                            // keyboard, matching what the checkmark already does.
+                            justCommittedOneOffField = true
+                            oneOffFocus = nil
+                        }
                     }
                 if screen.nameRefusal?.row == nil, let nameRefusal = screen.nameRefusal {
                     Text(nameRefusal.cause ?? "Not saved. Try again.")
