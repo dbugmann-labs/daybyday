@@ -57,10 +57,10 @@ should need editing; one that does is a stop.
 
 ## 6. The gates
 
-- [ ] 6.1 `openspec validate place-sheet-refusals --strict` exits 0 and `pnpm run check:scenarios` exits 0
-- [ ] 6.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `CommitmentsScreen.swift`, `CommitmentsScreenTests.swift` and `CommitmentsView.swift`
-- [ ] 6.3 `pnpm run check:budgets` warns about this folder for nothing at all
-- [ ] 6.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is twenty-five more than a run on `main` reports — both read off runs
+- [x] 6.1 `openspec validate place-sheet-refusals --strict` exits 0 and `pnpm run check:scenarios` exits 0
+- [x] 6.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `CommitmentsScreen.swift`, `CommitmentsScreenTests.swift` and `CommitmentsView.swift`
+- [x] 6.3 `pnpm run check:budgets` warns about this folder for nothing at all
+- [x] 6.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is twenty-five more than a run on `main` reports — both read off runs
 - [ ] 6.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–6.4 are ticked and that the instruction below is written here for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/commitment/spec.md` gains four requirements with twenty-five scenarios between them and nothing else in it moves; no other spec changes at all. `pnpm run checks` runs after the archive commit exists. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
