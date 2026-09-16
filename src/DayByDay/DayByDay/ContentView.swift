@@ -82,6 +82,88 @@ private func date(from calendarDate: CalendarDate) -> Date {
 /// finding 6).
 private let oneOffEntryScrollID = "oneOffEntry"
 
+/// Jumps the shown day's `List` straight to its own bottom by reaching past SwiftUI to the
+/// `UIScrollView` (a `UICollectionView`, on this SDK) the List's cells actually live in, and
+/// calls `onScrolled` once that has happened. `.background(_:)` on the List in
+/// `dayList(for:isShown:)`, keyed off `request` — a token the toolbar `+` bumps.
+///
+/// **Neither `ScrollViewReader.scrollTo(id:anchor:)` nor `.scrollPosition(id:anchor:)` ever did
+/// this**, driven for real on the simulator 2026-09-16: both left the list exactly where it was,
+/// silently, the moment the entry's row had not yet been drawn — measured on a day with as few as
+/// two rows below the fold, so this is not a matter of the jump being unusually far. Both address
+/// a row *by identity*, and a row `List` has not yet drawn has never published one for either
+/// mechanism to resolve; a manual swipe, which drives the same `UIScrollView` directly rather than
+/// asking SwiftUI to resolve an identity, was the one thing that reliably brought the row into
+/// being. This does the same thing a swipe does — move the scroll view's own `contentOffset` — but
+/// as a straight jump to the bottom rather than a distance-carrying gesture, which is exactly
+/// where the one-off entry always sits (`design.md` § *The shell*: it is always the group's last
+/// line).
+///
+/// **Finding the right `UIScrollView` is the hard part, and two things about it are load-bearing.**
+/// `pagedDayContent` lays out three `List`s side by side, so the window holds three
+/// `UIScrollView`s at once; picking the first one found anywhere in the window (tried first, and
+/// wrong) reliably returned the *previous* day's, since it is earlier in view-hierarchy order,
+/// regardless of which day is actually shown. Only the shown list ever sits at `x == 0` once
+/// `pagedDayContent`'s own `-width + dragTranslation` offset is applied — the other two sit at
+/// `±width`, off screen — so converting every candidate's frame to window coordinates and taking
+/// the one nearest `x == 0` picks the shown list correctly regardless of which of the three this
+/// view's own `.background` happens to be attached to. The other: this view is placed as the
+/// List's own background rather than as one of its rows, on purpose — a row this far below the
+/// fold is exactly the thing `List`'s laziness would leave undrawn, the same problem this exists
+/// to solve, so a marker that needed to *be* one of those rows to run would never run when it was
+/// needed.
+private struct ScrollListToBottom: UIViewRepresentable {
+    let request: Int
+    let onScrolled: () -> Void
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        view.isHidden = true
+        view.isUserInteractionEnabled = false
+        return view
+    }
+
+    // Deferred one runloop turn: `updateUIView` runs as SwiftUI applies this update, before the
+    // List's own `UICollectionView` has necessarily finished laying out for the same change, and
+    // `contentSize` read a turn early undercounts the very rows this exists to reach.
+    // `DispatchQueue.main.async` costs no arbitrary duration, unlike the `asyncAfter` this file
+    // has already dropped elsewhere for being unreliable on the device — it waits for "whatever
+    // is left of this pass", not a guessed number of milliseconds.
+    func updateUIView(_ uiView: UIView, context: Context) {
+        guard context.coordinator.lastHandled != request else { return }
+        context.coordinator.lastHandled = request
+        DispatchQueue.main.async {
+            guard let window = uiView.window else { return }
+            let shownList = Self.scrollViews(in: window).min {
+                abs($0.convert($0.bounds, to: nil).origin.x)
+                    < abs($1.convert($1.bounds, to: nil).origin.x)
+            }
+            guard let scrollView = shownList else { return }
+            scrollView.setContentOffset(
+                CGPoint(x: 0, y: max(0, scrollView.contentSize.height - scrollView.bounds.height)),
+                animated: false)
+            scrollView.layoutIfNeeded()
+            onScrolled()
+        }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+    final class Coordinator {
+        var lastHandled = 0
+    }
+
+    private static func scrollViews(in view: UIView) -> [UIScrollView] {
+        var result: [UIScrollView] = []
+        if let scrollView = view as? UIScrollView {
+            result.append(scrollView)
+        }
+        for subview in view.subviews {
+            result.append(contentsOf: scrollViews(in: subview))
+        }
+        return result
+    }
+}
+
 struct ContentView: View {
     @State private var screen = DayScreen(startingFrom: dayOneCommitments, asOf: today())
     @Environment(\.scenePhase) private var scenePhase
@@ -114,6 +196,13 @@ struct ContentView: View {
     // keyboard, because that field is already the list's last row and there is nothing below it
     // left to reveal.
     @State private var oneOffKeyboardHeight: CGFloat = 0
+    // A request token for `ScrollListToBottom`'s own doc comment — bumped only by the toolbar `+`,
+    // and read only to notice that it changed, never for its value. `List` renders cells lazily
+    // like any other lazy container, so on a day with enough rows that the one-off entry sits off
+    // screen, its `TextField` does not exist yet and the toolbar `+` alone did nothing:
+    // `oneOffFocus = .entry` has no view to focus. `ScrollListToBottom` is what actually carries
+    // the list to its own bottom first, so the field exists by the time focus is asked of it.
+    @State private var oneOffEntryScrollTarget = 0
     // The entry's own typed text, and the text typed into whichever row is being renamed. Each is
     // emptied on every commit `commitOneOffEntry()` or `commitRename(of:to:)` makes, kept or
     // refused alike (`design.md` § *A refusal under a name field is its own value*: "the shell
@@ -206,10 +295,19 @@ struct ContentView: View {
                 }
                 // The `+`: shown exactly where `oneOffGroup != nil` says adding is offered
                 // (`design.md` § *The empty group is the offer*), and focuses the entry.
+                //
+                // **Only bumps a request token — it does not set `oneOffFocus` itself.** Setting
+                // `oneOffFocus = .entry` straight from this button, as this once did, focused
+                // nothing on a day with enough rows to push the entry off screen: driven for real
+                // on the simulator, the field stayed absent from the accessibility tree and the
+                // tap did nothing until the list was scrolled by hand. `ScrollListToBottom`'s own
+                // doc comment has the rest of what was found and why a scroll has to land first;
+                // `dayList(for:isShown:)`'s `.background` is where it sets `oneOffFocus = .entry`
+                // once that scroll has actually happened.
                 if screen.dayView.oneOffGroup != nil {
                     ToolbarItem {
                         Button {
-                            oneOffFocus = .entry
+                            oneOffEntryScrollTarget += 1
                         } label: {
                             Image(systemName: "plus")
                         }
@@ -721,6 +819,13 @@ struct ContentView: View {
         // `.safeAreaPadding` because this is padding for the scrollable content specifically,
         // not a claim on the view's own layout frame — a plain `List` reads it the same way a
         // `ScrollView` does.
+        //
+        // **This `proxy` only ever reaches a row that already exists, and that is a second,
+        // narrower job than `ScrollListToBottom` below has.** Both `.onChange`s here fire after
+        // the entry (or a row) already has focus or a refusal, which only happens once its
+        // `TextField` is in the tree; carrying an *unrendered* row into being — what the toolbar
+        // `+` needs on a day with enough rows to push the entry off screen — is
+        // `ScrollListToBottom`'s job instead, on the List's own `.background` below.
         ScrollViewReader { proxy in
             List {
                 if let dayView {
@@ -785,6 +890,17 @@ struct ContentView: View {
             // Same measured value as `CommitmentsView`'s kept list — see the comment there for
             // how it was determined.
             .listSectionSpacing(12)
+            // Only the shown list ever needs carrying to its own bottom — a neighbour's entry is
+            // the disabled placeholder line `oneOffEntryView(isShown:)` draws for it, never the
+            // live `TextField` this exists to reach. `ScrollListToBottom`'s own doc comment has
+            // the rest.
+            .background {
+                if isShown {
+                    ScrollListToBottom(request: oneOffEntryScrollTarget) {
+                        oneOffFocus = .entry
+                    }
+                }
+            }
             // See this function's own doc comment for why: room below the entry for the scroll
             // below to carry it into, on an SDK where keyboard avoidance alone does not make any.
             .contentMargins(
@@ -951,6 +1067,19 @@ struct ContentView: View {
     /// 5) on a day it offers no tick, name included. A long press still opens a `contextMenu`,
     /// now with a destructive *Remove* alone — *Rename* lived there; the tap above replaces it
     /// rather than fixing it in place.
+    ///
+    /// **The outer `VStack`'s `.alignmentGuide(.listRowSeparatorLeading)` is what keeps this
+    /// row's separator the same length as a commitment row's, and only a late row ever needed
+    /// it.** Measured 2026-09-16, unmodified: the separator under an on-time one-off (no
+    /// `lateInWords`) already started at the same leading x, 32.0pt, as the commitment rows
+    /// above it — `List` had picked the `TextField`'s own leading edge, the first child it found.
+    /// Under a *late* one-off it instead started at 110.67pt and ran only 259.33pt instead of
+    /// 338.0 — cut short by exactly the 78.67pt the `lateInWords` `Text` sits to the right of the
+    /// name by, because `List` picked *that* view's leading edge once it was there to compete
+    /// with the `TextField`'s. Pinning the guide to this `VStack`'s own leading edge, the same
+    /// one `rowView(_:)`'s commitment rows read without asking (a plain `Text` has no separate
+    /// leading child to compete), fixes both cases at once rather than only the one this was
+    /// driven to find.
     @ViewBuilder
     private func oneOffRowView(_ row: DayView.OneOffRow) -> some View {
         let isRenaming = oneOffFocus == .row(row)
@@ -1034,6 +1163,10 @@ struct ContentView: View {
                     .foregroundStyle(.red)
             }
         }
+        // See this function's own doc comment for what was measured and why this is on the
+        // outer `VStack` rather than left to `List`'s own default (the first leading-aligned
+        // child it finds, which a late row's `lateInWords` competes with).
+        .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
         .opacity(isRenaming || offersTick ? 1 : 0.5)
         .contextMenu {
             if !isRenaming {
@@ -1045,7 +1178,9 @@ struct ContentView: View {
     }
 
     /// The one-off entry: a `TextField` as the last line of the shown day's One-offs group,
-    /// focused by the toolbar `+` and by nothing else; a disabled, non-interactive line in the
+    /// focused by the toolbar `+` and by nothing else — indirectly since 2026-09-16, through the
+    /// scroll `ScrollListToBottom`'s own doc comment describes, because this row may not exist
+    /// yet for a direct `oneOffFocus = .entry` to reach; a disabled, non-interactive line in the
     /// same place on either neighbour, since typing there would commit to the wrong day.
     /// `design.md` § *The shell*.
     ///
