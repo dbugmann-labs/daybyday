@@ -706,7 +706,9 @@ delta on answers rather than on its own recommendations. ADR-1006, amended.
    walk is on the frontier**: which screens and states the human wants to see before it merges,
    and which steps only a phone can prove — a drag, paging feel, a long press. Record the
    answers under `## Settled`; `spec-author` writes `## The walk` from them (ADR-1053). A Story
-   that stays behind the seam has no walk and no question about one.
+   that stays behind the seam has no walk and no question about one. **The layout is on the same
+   frontier, and it is asked last**, as its own round once `grill.md` exists — step 5 — because
+   the agent that draws it reads that file (ADR-1057).
 
 4. **Create the change folder and write `grill.md` into it**, and nothing else. Both at the
    close, in that order — a grill in progress leaves nothing on disk, deliberately:
@@ -741,10 +743,19 @@ delta on answers rather than on its own recommendations. ADR-1006, amended.
 
    - **pause window** — the span a commitment is suspended for, open-ended if no end date.
 
+   ## Layout
+
+   Option A, a labelled head over a headed table, chosen from three at
+   https://claude.ai/artifact/<id> — *it stays inside the list idiom the other screens use.*
+   The wireframe follows, verbatim from the designer.
+
    ## Left open
 
    None. Every question the frontier raised was answered.
    ```
+
+   `## Layout` is there only on a Story that reaches the shell, and it is appended by step 5
+   after the rest of the file is written.
 
    **`## Settled` is answers, not requirements.** One line of decision and one clause of why —
    phrasing it as a requirement is you writing the delta, which is `spec-author`'s. **`## Left
@@ -752,10 +763,22 @@ delta on answers rather than on its own recommendations. ADR-1006, amended.
    `design.md` § *Open Questions* carries, one step earlier, and `spec-author` carries the answer
    forward into that section.
 
-5. **Print the `▸` report** — questions, rounds, the file, any `CONTEXT.md` terms — then **spawn
-   `spec-author` with the issue number and nothing else**, and say in the report's `next` line
-   that they are not needed until G4. The grill is the interruption; everything after it to G7
-   runs unattended.
+5. **Ask the layout round, if the Story reaches the shell.** Spawn `designer` with the issue
+   number and nothing else. It reads `grill.md` and returns one HTML file in its scratch
+   directory — two or three options as phone mockups, light and dark, with a wireframe of each
+   and a recommendation — or the one line *no layout question here*, for a change confined to
+   one control, which ends the step. Load `artifact-design`, publish the file with the Artifact
+   tool, and ask **one round**: which option, the designer's recommendation first, the link in
+   the question body so the human reads the mockup before answering. Then append `## Layout` to
+   `grill.md`: the option chosen, the artifact URL, and that option's wireframe verbatim.
+   `spec-author` carries the wireframe into `design.md` § *What the shell draws*, the
+   implementer builds the view to it, and the reviewer reads the walk pictures against it. The
+   mockup is a decision aid and never a requirement. ADR-1057.
+
+6. **Print the `▸` report** — questions, rounds, the file, any `CONTEXT.md` terms, the layout
+   chosen — then **spawn `spec-author` with the issue number and nothing else**, and say in the
+   report's `next` line that they are not needed until G4. The grill is the interruption;
+   everything after it to G7 runs unattended.
 
 **Why this is yours and not `spec-author`'s.** A subagent runs to completion and returns one
 report — it cannot ask a round and wait, so a grill inside one collapses to a single pass and the

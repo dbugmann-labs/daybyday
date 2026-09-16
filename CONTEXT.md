@@ -50,6 +50,18 @@ asks for answers rather than a decision. ADR-1012.
 raised by `spec-author` in `design.md` under `## Questions for you` and relayed as a stop. Named
 for what it is: the leftover after the grill, not the grill itself.
 
+**Layout round** — the last round of a Story grill whose diff reaches the shell: which of the
+`designer`'s options the screen takes, asked from a **mockup** once `grill.md` exists, and
+recorded there under `## Layout` with the option's wireframe. A change confined to one control
+has none. ADR-1057.
+
+**Mockup** — the drawing a screen is chosen from before it is built: two or three layouts as
+phone screens in light and dark, on the seam's real strings and example figures marked as such,
+drawn by `designer` and published as an artifact. A decision aid and never a requirement; the
+repo keeps only the wireframe of the option chosen, in `grill.md` and in `design.md` § *What the
+shell draws*. Agreed 2026-09-16, after the look-back page (#272) was first judged from its walk
+pictures at G7 and sent back. ADR-1057.
+
 **Change** — OpenSpec's unit of work: the folder `openspec/changes/<change-id>/` holding a
 proposal, delta specs, a design and a task list, plus the `grill.md` the grill left. One change
 is one Story.

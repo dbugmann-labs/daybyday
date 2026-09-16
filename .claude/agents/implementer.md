@@ -101,7 +101,10 @@ A Story whose diff reaches `src/DayByDay/` carries a `## The walk` section: one 
 screenshot, each naming a state to drive the simulator to and what the picture must show. It is
 the last thing you do before the hand-back, after every scenario is green and committed, and it
 is how the reviewer and the human see the screen before it merges. ADR-1053; the exact commands
-are `docs/running-the-app.md` § *The walk*, and you run them as written:
+are `docs/running-the-app.md` § *The walk*, and you run them as written. **Before the walk, the
+view is built to `design.md` § *What the shell draws***: the wireframe the owner chose at the
+grill, from a mockup. It is the layout, not a suggestion — a picture that shows a different one
+is the finding the reviewer sends back, so build to it and let the walk prove it (ADR-1057).
 
 1. **Commit first.** A failing run returns only after Xcode has finished its failure diagnostics,
    which is minutes, and a session killed while it waits loses whatever was uncommitted.

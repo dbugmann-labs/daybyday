@@ -66,6 +66,12 @@ rules:
       A change that alters a persisted type or its encoding carries "### Migration" under
       Decisions, in at most 6 lines, naming what happens to records already on a phone.
       "None — additive" is valid and required where it applies.
+    - >-
+      A change whose diff reaches src/DayByDay/ carries "### What the shell draws" under
+      Decisions: one line naming the option chosen at the grill's layout round and its
+      artifact, then the wireframe verbatim from grill.md "## Layout" in one fenced block.
+      The fenced lines sit outside the 150. A change that does not reach src/DayByDay/, or
+      whose grill.md has no "## Layout", carries no such section. ADR-1057.
   tasks:
     - >-
       One box per scenario, one line: the title verbatim plus at most one clause naming the

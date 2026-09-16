@@ -80,14 +80,18 @@ it.
   the PR comment the handover box links; `Read` shows you each one. Read every picture against
   its box and against the requirement the box comes from: a screen that contradicts a
   requirement is a finding named by box, and so is a box with no picture, a picture that shows
-  a different state from the one its line names, or a walk comment missing from the PR. Then
+  a different state from the one its line names, or a walk comment missing from the PR. So is a
+  picture whose layout is not the one `design.md` § *What the shell draws* carries — the
+  wireframe the owner chose at the grill (ADR-1057): read every picture against that section as
+  well as its box, and name the box where the two differ. Then
   confirm `git diff --stat origin/main... -- src/DayByDay/DayByDayUITests/` is empty — the
   walk's test is thrown away, never committed (ADR-1053) — and that a Story whose diff reaches
   `src/DayByDay/` has the section at all. What a picture *feels* like on a phone is not yours
   to judge; the lines marked `phone:` go to the human at G7 and you say nothing about them.
 
 **The budgets are part of the standards axis.** ADR-1047 gives every artifact a budget —
-`proposal.md` 60 lines, `design.md` 150, `tasks.md` one line per scenario and per walk
+`proposal.md` 60 lines, `design.md` 150 with the wireframe under `### What the shell draws`
+outside it, `tasks.md` one line per scenario and per walk
 screenshot plus 80, requirement
 prose 40–150 normative words with no rationale, no bold sentences, and every tested rule a
 SHALL/MUST sentence — and the reviewer is where they are enforced, because `openspec/config.yaml`

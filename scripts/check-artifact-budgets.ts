@@ -45,11 +45,37 @@ function wordCount(text: string): number {
   return trimmed === '' ? 0 : trimmed.split(/\s+/).length
 }
 
+/**
+ * `design.md` minus the wireframe: the fenced block(s) under `### What the shell draws` sit
+ * outside the 150 (ADR-1057), the way the walk sits outside `tasks.md`'s 80. Everything else in
+ * the section — the line naming the option and its artifact — still counts.
+ */
+function withoutWireframe(text: string): string {
+  const lines = text.split('\n')
+  const kept: string[] = []
+  let inSection = false
+  let inFence = false
+  for (const line of lines) {
+    if (/^#{2,3}\s/.test(line)) {
+      inSection = /^###\s+What the shell draws\b/.test(line)
+      inFence = false
+    }
+    if (inSection && /^\s*```/.test(line)) {
+      inFence = !inFence
+      continue
+    }
+    if (inSection && inFence) continue
+    kept.push(line)
+  }
+  return kept.join('\n')
+}
+
 /** Warns once if `file`, relative to the change folder, is over `budget` lines. Missing files are silent — this check only measures what was written. */
 function checkLines(dir: string, file: string, budget: number, note: string): number {
   const full = path.join(dir, file)
   if (!existsSync(full)) return 0
-  const lines = lineCount(readFileSync(full, 'utf8'))
+  const raw = readFileSync(full, 'utf8')
+  const lines = lineCount(file === 'design.md' ? withoutWireframe(raw) : raw)
   if (lines <= budget) return 0
   warn(CHECK, `${file}: ${lines} lines, budget ${budget}${note}`)
   return 1

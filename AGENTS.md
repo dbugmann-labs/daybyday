@@ -167,6 +167,7 @@ answers, a `▸` line tells; there is no fourth shape.** Worked examples in
 | `spec-author` | Opus | `openspec/changes/**`, `docs/adr/**`, `CONTEXT.md` |
 | `implementer` | Sonnet | `src/**`, `tests/**`, and `tasks.md` checkboxes |
 | `reviewer` | Opus | nothing — reports findings only |
+| `designer` | Opus | nothing in the repo — one mockup HTML in its scratch directory, which the conductor publishes |
 | `janitor` | Haiku | archive moves, generated files, issue state |
 
 Nothing writes `openspec/specs/` except `/opsx:archive`, and **`grill.md` is the conductor's** —
@@ -201,8 +202,15 @@ at the end of Stage 6, posts the pictures to the PR with `gh pr comment --attach
 test; `reviewer` reads the pictures at G7 and the human sees them from the G7 stop. It fails only
 when a step cannot be driven and asserts nothing about what is shown — the seam tests say what,
 the walk shows it. A line marked `phone:` is a step no simulator can prove, and the human walks
-that one on the phone. `docs/running-the-app.md` § *The walk* has the commands. The rest of the
-vocabulary is in `CONTEXT.md`.
+that one on the phone. `docs/running-the-app.md` § *The walk* has the commands.
+**Mockup** — the drawing a Story's screen is chosen from before it is built (ADR-1057): two or
+three options as phone screens, light and dark, on the seam's real strings, drawn by `designer`
+from `grill.md` and published by the conductor as an artifact. It is asked as the **layout
+round**, the last round of any Story grill whose diff reaches `src/DayByDay/`; the option chosen
+lands in `grill.md` § *Layout* with its wireframe, `spec-author` carries the wireframe into
+`design.md` § *What the shell draws*, the implementer builds to it, and the reviewer reads the
+walk against it. A decision aid, never a requirement: nothing in it is a rule, and a later Story
+may change the layout without a delta. The rest of the vocabulary is in `CONTEXT.md`.
 
 ## Context discipline
 

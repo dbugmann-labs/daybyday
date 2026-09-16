@@ -131,6 +131,14 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
    lines sit outside the 80-line budget, one per screenshot like a scenario. A Story that does
    not reach the shell carries no walk section, and says nothing about it. ADR-1053.
 
+   **The same Story carries `### What the shell draws` in `design.md`, under Decisions**: one
+   line naming the option chosen at the grill's layout round and its artifact, then the
+   wireframe from `grill.md` § *Layout*, verbatim, in one fenced block. It is the layout the
+   implementer builds to and the reviewer reads the walk pictures against, so do not redraw
+   it, tidy it or improve it; the fenced lines sit outside `design.md`'s 150. A `grill.md`
+   with no `## Layout` — the designer said there was no layout question — means no section,
+   and nothing said about it. ADR-1057.
+
 8. **Validate.** `openspec validate <change-id> --strict` must exit 0 before you hand back.
 9. **Open the draft PR.** G4 is read as a diff, so leave one behind. Commit the change folder
    as `docs(<capability>): propose <change-id>` — `grill.md` and `.openspec.yaml` are both
@@ -157,7 +165,8 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
 
 **Every artifact has a budget, and the budgets are ADR-1047's.** `openspec/config.yaml` puts
 them in front of you at each `openspec instructions` call: `proposal.md` at most 60 lines;
-`design.md` at most 150; `tasks.md` one line per scenario and one per walk screenshot plus at
+`design.md` at most 150, the wireframe under `### What the shell draws` not counted; `tasks.md`
+one line per scenario and one per walk screenshot plus at
 most 80 for setup, shell, gates and the archive handover; every requirement's prose 40–150 normative words, with every rule a
 scenario tests written as a SHALL/MUST sentence and never only as a "so that" or a "therefore".
 No measurement chronologies, no test counts derived by arithmetic, no pasted source or logs, no
