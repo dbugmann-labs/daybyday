@@ -2272,10 +2272,10 @@ SHALL then hold nothing. Nothing else SHALL end it, and time passing in particul
 being shown again SHALL end it, whether or not the roster can then be read. A change reaching a place
 SHALL end it, whichever kind it was and whichever change was refused before it — a commitment defined
 and taken on, a stop kept, a take-up-again kept, a removal kept, a move kept, a group move kept, a
-change of a commitment kept — and a change that writes nothing but a category SHALL be one of the last
-of those rather than a kind of its own. A change of a commitment reaches the record place as well as
-the roster place, and SHALL end what is held once it has been kept: one act, one outcome, however many
-places it touched.
+change of a commitment kept, a copy restored — and a change that writes nothing but a category SHALL
+be one of the last of those rather than a kind of its own. A change of a commitment reaches the record
+place as well as the roster place, and a restore reaches all three, and each SHALL end what is held
+once it has been kept: one act, one outcome, however many places it touched.
 
 A call that reaches the place with no change to make SHALL NOT end it: a move dropping a commitment
 where it already is, a group move leaving a group where it is drawn, a change naming what a commitment
@@ -2283,7 +2283,8 @@ already is — the category it is already under among the fields it names — an
 about a commitment on neither of the screen's lists. Nor SHALL putting a stop or a removal up for
 confirmation, typing a name back, or cancelling either end it: none reaches the roster place. Nor
 SHALL a copy made end it: the file a copy is written at is not a place this screen keeps a change
-at.
+at. Nor SHALL asking to restore from a file that reads as a copy, or cancelling that restore, end it:
+neither reaches a place.
 
 #### Scenario: what a commitments screen holds about a refused change ends when the app is shown again
 
@@ -2502,6 +2503,25 @@ at.
   directory of its own
 - **THEN** the copy is not refused
 - **AND** the screen still holds a name that says nothing, against defining a commitment
+
+#### Scenario: what a commitments screen holds about a refused change ends when a copy is restored
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place, a record
+  place and a one-off place where nothing has been kept; a copy is made through it as of that day at
+  14:32; a commitment named "   " on a weekday-set rhythm of all seven weekdays, kept from that same
+  day, is defined through it and refused; and it is asked to restore from that copy and the restore
+  is confirmed
+- **THEN** the restore is not refused
+- **AND** the screen holds no refused change
+
+#### Scenario: what a commitments screen holds about a refused change stands when a restore is asked for and cancelled
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place, a record
+  place and a one-off place where nothing has been kept; a copy is made through it as of that day at
+  14:32; a commitment named "   " on a weekday-set rhythm of all seven weekdays, kept from that same
+  day, is defined through it and refused; and it is asked to restore from that copy and the restore
+  is cancelled
+- **THEN** the screen still holds a name that says nothing, against defining a commitment
 
 ### Requirement: A roster removes a commitment it holds, and never lets it go
 
@@ -4963,12 +4983,13 @@ refused as a roster that could not be written, leaving both lists as they were.
 
 Where a change asked of a commitments screen is refused, the screen SHALL hold which change was
 asked for and why it was refused, as well as answering the refusal to the caller. The change held
-SHALL be one of the nine a person can ask for — defining a commitment, stopping keeping one, taking
+SHALL be one of the ten a person can ask for — defining a commitment, stopping keeping one, taking
 a stopped one up again, removing one, moving one, moving a whole group, changing one, restarting
-one, making a copy — and for the six asked about a commitment already on one of its lists it SHALL
-name that commitment: the one it was asked about, not the one the change would have produced. A
-refused group move SHALL name the category instead, and a refused copy SHALL name the store that
-could not be read, or no store at all where the copy could not be written. The nine are counted here
+one, making a copy, restoring a copy — and for the six asked about a commitment already on one of
+its lists it SHALL name that commitment: the one it was asked about, not the one the change would
+have produced. A refused group move SHALL name the category instead, a refused copy SHALL name the
+store that could not be read, or no store at all where the copy could not be written, and a refused
+restore SHALL name neither a commitment nor a store. The ten are counted here
 and numbered nowhere else: a requirement that introduces one SHALL name it, and SHALL NOT identify
 it by its position among them.
 
@@ -4982,7 +5003,8 @@ removal confirmed with nothing awaiting removal; a removal confirmed while the n
 not match; a move of one it does not keep; a move into a group it draws none of, or to an offset
 that group does not have; a group move of a group it draws none of, those under no category among
 them, or to an offset its category groups do not have; a change asked about a commitment on neither
-list; and a change that names what a commitment already is. A name typed back that does not match is
+list; a change that names what a commitment already is; and a restore confirmed with none awaiting
+confirmation. A name typed back that does not match is
 not a refusal.
 
 #### Scenario: a commitments screen holds a refused definition against defining a commitment
@@ -5272,6 +5294,27 @@ not a refusal.
 - **AND** the screen holds that refusal, against making a copy, naming the record
 - **AND** a copy asked for at a readable record place but written into a directory that cannot be
   written to is held against making a copy naming no store, as a place that could not be written
+
+#### Scenario: a commitments screen holds a refused restore against restoring a copy, naming no store
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster
+  place, a record place and a one-off place where nothing has been kept as of Monday 31 August 2026;
+  and it is asked to restore from a file holding a run of bytes that is not a copy
+- **THEN** the screen holds that refusal, as not a copy, against restoring a copy and naming no store
+- **AND** a restore of a copy confirmed where the one-off place cannot be written is held against
+  restoring a copy, naming no store, as a place that could not be written
+
+#### Scenario: what a commitments screen holds about a refused change stands when a restore is confirmed with none awaiting confirmation
+
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place, a record
+  place and a one-off place where nothing has been kept; a commitment named "   " on a weekday-set
+  rhythm of all seven weekdays, kept from that same day, is defined through it and refused; and a
+  restore is then confirmed through it with none awaiting confirmation
+- **THEN** that call refuses nothing
+- **AND** the screen still holds a name that says nothing, against defining a commitment, and holds
+  no copy restored
+- **AND** nothing is written at any of the three places
 
 ### Requirement: A commitments screen moves a commitment among the ones it is keeping
 
