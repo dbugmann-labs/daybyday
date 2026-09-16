@@ -86,7 +86,7 @@ public struct LookBack: Hashable, Sendable {
         var line: Line? {
             guard hasQuotaDay else { return nil }
             return .week(
-                inWords: LookBackWords.week(from: monday, through: monday.adding(days: 6)!),
+                inWords: LookBackWords.week(from: monday, through: LookBack.sunday(of: monday)),
                 fraction: LookBackWords.fraction(kept: kept, due: quota))
         }
     }
@@ -187,6 +187,17 @@ public struct LookBack: Hashable, Sendable {
         return current
     }
 
+    /// The Sunday six days after `monday`, walked forward one day at a time so every step stays
+    /// at the ±1 `adding(days:)` documents as safe — the same discipline `monday(of:)` above
+    /// walks backward with, rather than the single six-day step that discipline forbids.
+    private static func sunday(of monday: CalendarDate) -> CalendarDate {
+        var current = monday
+        for _ in 0..<6 {
+            current = current.adding(days: 1)!
+        }
+        return current
+    }
+
     /// Whether `a` falls on or before `b` — the ordering `days(until:)` answers signed, spelled
     /// out here for the "lower of the two lines" comparison, `design.md` § *The change line sits
     /// above the lower of the two lines holding the day*.
@@ -199,8 +210,9 @@ public struct LookBack: Hashable, Sendable {
     /// daily path. Buckets each day into the calendar month or the calendar week it falls in,
     /// according to whether the era holding it runs on a weekly quota, and returns every line
     /// this look-back says, newest first, together with the whole's numerator and denominator —
-    /// the sum of every line's own, month due days and week quotas alike, `design.md` § *A
-    /// look-back says one whole across everything since the day the commitment is kept from*.
+    /// the sum of every line's own, month due days and week quotas alike,
+    /// `openspec/changes/look-back-at-a-quota/specs/look-back/spec.md` § *A look-back says one
+    /// whole across everything since the day the commitment is kept from*.
     private static func walkDays(
         from start: CalendarDate, through end: CalendarDate, eras: [Era], history: History
     ) -> (lines: [Line], totalDue: Int, totalKept: Int) {

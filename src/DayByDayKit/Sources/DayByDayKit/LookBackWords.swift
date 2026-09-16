@@ -21,7 +21,8 @@ enum LookBackWords {
     ]
 
     /// The three-letter month names a week's span is said in — the one place a look-back says a
-    /// month short, `openspec/changes/look-back-at-a-quota/design.md` § *The words*.
+    /// month short, `openspec/changes/look-back-at-a-quota/specs/look-back/spec.md` § *A look-back
+    /// says a week as the span of its days, in short month names*.
     static let shortMonthNames: [Int: String] = [
         1: "Jan",
         2: "Feb",
@@ -53,8 +54,8 @@ enum LookBackWords {
     /// name and the year; across two months in one year, each end as its day and short month
     /// name, an en dash with a single space on either side between them, and the year once after
     /// the second end; across two years, each end's own day, short month and year. See
-    /// `openspec/changes/look-back-at-a-quota/spec.md` § *A look-back says a week as the span of
-    /// its days, in short month names*.
+    /// `openspec/changes/look-back-at-a-quota/specs/look-back/spec.md` § *A look-back says a week
+    /// as the span of its days, in short month names*.
     static func week(from start: CalendarDate, through end: CalendarDate) -> String {
         if start.year == end.year && start.month == end.month {
             return "\(start.day)–\(end.day) \(shortMonthNames[start.month]!) \(start.year)"

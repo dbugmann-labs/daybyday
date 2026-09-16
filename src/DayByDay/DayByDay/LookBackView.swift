@@ -42,7 +42,7 @@ struct LookBackView: View {
                 if let lookBack {
                     head(lookBack)
                     cards(lookBack)
-                    months(lookBack)
+                    linesSection(lookBack)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -121,16 +121,16 @@ struct LookBackView: View {
     }
 
     @ViewBuilder
-    private func months(_ lookBack: LookBack) -> some View {
+    private func linesSection(_ lookBack: LookBack) -> some View {
         if lookBack.lines.isEmpty {
             Text("Nothing is counted here yet.")
         } else {
             // The extra `.padding(.horizontal)` below matches the cards' own inner padding, so
-            // the month names and the rhythm-change line align with the cards' text rather than
+            // the line labels and the rhythm-change line align with the cards' text rather than
             // the page's own edge. The heading names the unit the lines below it are said in —
             // "Weeks" where every line is a week, "Months" where every line is a month, "Months
             // and weeks" where the chain mixes — read off the cases `lookBack.lines` holds,
-            // deciding nothing else. `design.md` § *Layout*.
+            // deciding nothing else. `design.md` § *What the shell draws*.
             Text(heading(for: lookBack.lines))
                 .font(.headline)
                 .padding(.horizontal)
@@ -150,7 +150,12 @@ struct LookBackView: View {
         case (true, true): return "Months and weeks"
         case (true, false): return "Months"
         case (false, true): return "Weeks"
-        case (false, false): return ""
+        case (false, false):
+            // Unreached: `linesSection(_:)` only calls this where `lookBack.lines` is non-empty,
+            // and a `.rhythmChanged` line is only ever appended immediately above a month or a
+            // week line, never on its own — so a non-empty `lines` always holds at least one of
+            // the two this switch tests for.
+            return ""
         }
     }
 
