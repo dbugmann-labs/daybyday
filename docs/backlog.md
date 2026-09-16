@@ -226,6 +226,27 @@ it as a gap rather than saying it unprompted.*
 - **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
+### B-055 — see what goes in the note sheet while the note is empty
+
+*Captured 2026-09-16, at the layout audit (`docs/agents/layout-audit.md`). The wording is the
+audit's finding 12; the owner approved it as a want rather than saying it unprompted.*
+
+> "A placeholder in the note sheet. The pair to chore 7: the editor drawn as a field, plus a line
+> saying what goes there."
+
+- **Trigger** — tapping a note row on the day screen for the first time. The sheet opened as a
+  blank white page in the audit's walk (picture 11); the chore that draws the editor as a field
+  gives it an edge, and an empty field still says nothing about what belongs in it.
+- **Touches** — `day-screen`, the note entry, which today *says the whole note the day already
+  holds, and says nothing else*. A hint drawn while the field is empty is a new thing the sheet
+  says, which is why it is a want and not part of the chore. It is the shell's hint and never a
+  note: `record` already forbids the kit substituting a placeholder for a blank.
+- **Principle** — tested against *entered where you stand*: passes. It adds no screen to the daily
+  visit and shortens the pause inside the one sheet that visit already opens. Nothing here
+  congratulates anyone.
+- **Open** — what the line says, given the commitment's name is already the sheet's title. And
+  whether it is one rule for every entry surface: the one-off entry already says "New one-off" and
+  the number alert already shows its range, so the note sheet is the one entry without a hint.
 
 ## Decided
 
