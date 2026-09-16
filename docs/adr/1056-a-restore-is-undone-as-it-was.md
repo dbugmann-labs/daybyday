@@ -1,6 +1,6 @@
 # 1056. A restore is whole or nothing, and one stopped partway is undone as it was
 
-- Status: proposed — written while the delta of `restore-from-a-copy` (#267) was being written, on
+- Status: accepted — written while the delta of `restore-from-a-copy` (#267) was being written, on
   the grill's settled answer 4; approved at that Story's G4
 - Date: 2026-09-15
 - Deciders: Diego Bugmann
