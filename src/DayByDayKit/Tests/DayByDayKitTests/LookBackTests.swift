@@ -660,19 +660,12 @@ func anEraTheRosterHasTakenUpAgainIsKeptRatherThanRemovedAndEndsAChain() throws 
     let gymKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
     let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
     let oldKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let stoppedKeptFrom = CalendarDate(year: 2025, month: 12, day: 1)!
     let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: gymKeptFrom)!
     let oldGym = Commitment(name: "Gym", schedule: everyDay, keptFrom: oldKeptFrom)!
-    // Stopped, not removed, of the same name and kind, kept until the day the chain would ask
-    // for — the state `entry.isRemoved` alone tells apart from a removed era: it answers the
-    // guard's `keptUntil` and `name`/`kind` clauses but must fail on `isRemoved`.
-    let stoppedGym = Commitment(name: "Gym", schedule: everyDay, keptFrom: stoppedKeptFrom)!
     let today = CalendarDate(year: 2026, month: 3, day: 31)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(gym)
-    try rosterStore.add(stoppedGym)
-    try rosterStore.retire(stoppedGym, keptUntil: boundary)
     try rosterStore.add(oldGym)
     try rosterStore.remove(oldGym, keptUntil: boundary)
     try rosterStore.add(oldGym)
@@ -689,6 +682,41 @@ func anEraTheRosterHasTakenUpAgainIsKeptRatherThanRemovedAndEndsAChain() throws 
             if case .month(let inWords, _) = line { return inWords == "March 2026" }
             return false
         } == true)
+}
+
+// Not a scenario in the delta: scenario 6.7's own fixture only re-offers an era the chain search
+// would otherwise find, which never reaches the `entry.isRemoved` clause of `chain`'s guard at
+// all — this isolates the clause that tells a stopped era apart from a removed one. G7 finding
+// 3, second pass, on #272.
+@MainActor
+@Test("a stopped era of the same name and kind, kept until the chain's target day, does not end it")
+func aStoppedEraOfTheSameNameAndKindKeptUntilTheChainsTargetDayDoesNotEndIt() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gymKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let stoppedKeptFrom = CalendarDate(year: 2025, month: 12, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: gymKeptFrom)!
+    // Stopped, not removed, of the same name and kind, kept until the day the chain would ask
+    // for — the state `entry.isRemoved` alone tells apart from a removed era: it answers the
+    // guard's `keptUntil` and `name`/`kind` clauses but must fail on `isRemoved`.
+    let stoppedGym = Commitment(name: "Gym", schedule: everyDay, keptFrom: stoppedKeptFrom)!
+    let today = CalendarDate(year: 2026, month: 3, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    try rosterStore.add(stoppedGym)
+    try rosterStore.retire(stoppedGym, keptUntil: boundary)
+    _ = try RecordStore(at: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: gym)
+
+    #expect(lookBack?.keptFromInWords == "4 March 2026")
+    #expect(lookBack?.lines.count == 1)
 }
 
 @MainActor
