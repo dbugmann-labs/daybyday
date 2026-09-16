@@ -188,6 +188,16 @@ Things that are built, or deliberately not built, in a state someone will trip o
   stale in a G4-signed folder, and re-approving the folder for one label was judged not worth it.
   A mockup is a decision aid and never a requirement (ADR-1057), which is why this is a gap and
   not a defect. The next Story that touches the look-back's `design.md` corrects the line.
+- **`CalendarDate.adding(days:)`'s comment names two callers and has eleven.** Found at #273's
+  fix-round verification, 2026-09-16. `CalendarDate.swift` documents the method's nil-on-out-of-range
+  behaviour as holding "at the ±1 steps this method is actually called with
+  (`DayView.previousDay`/`nextDay`), the only callers today". The claim that matters is true —
+  every caller in the kit steps by one — but the list is not: `History.standing`, `LookBack.chain`,
+  `LookBack.walkDays`, `LookBack.monday(of:)` and `sunday(of:)`, four sites in `DayScreen.swift` and
+  one in `CommitmentsScreen.swift` all call it. #273 amended the sentence and then withdrew the
+  edit, because it put a file outside the Story's `tasks.md` boundary into the diff for one comment;
+  the sentence predates the Story. Strike "the only callers today" or say "every caller in the
+  kit" the next time that file is open for a reason of its own.
 - **`LookBack.walkDays` does five jobs.** Found at #273's G7, 2026-09-16. It grew from about
   forty-five lines to about a hundred and thirty-five when the quota's weeks landed: the day walk,
   the nil-line filter, two key-to-last-day dictionaries written in the same shape twice, the
