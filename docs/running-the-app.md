@@ -438,7 +438,10 @@ why the walk is run on this machine and not by CI.
 the finger, a long press: synthetic touch does not drive the first at all (B-042) and a picture
 shows nothing of the other two. Those lines are marked `phone:` in the walk list, the walk test
 skips them, and the G7 stop lists them for the owner to walk with `pnpm run phone` before
-replying. Everything else is a picture.
+replying — printed there as a runnable line, `cd <the Story's worktree> && pnpm run phone`,
+because the command builds the tree it is run in and the same words typed in the clone install
+`main`: a build with none of the Story in it, walked against a `phone:` line it cannot satisfy.
+Everything else is a picture.
 
 ## What CI does with all this
 
