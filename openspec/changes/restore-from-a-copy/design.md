@@ -51,9 +51,12 @@ atomic file. It holds the bytes that stood at the three places and at the save-i
 that nothing stood there. The restore then takes away the save in progress, writes the record, the
 roster and the one-offs, and takes the file away. If a write fails, it puts the bytes back and takes
 the file away, and if that fails too the file stays. Every reader calls `undoTornRestore` before
-`undoTornSave`. A restore in progress that cannot be read or undone answers every store as
-unreadable and writes nothing. It rolls back, as a torn save does (ADR-1049); `stoppingAfter` is the
-test seam that stops it partway, as `SaveInProgress.keep` is for a torn save.
+`undoTornSave`. A restore in progress that cannot be read or undone writes nothing, and answers every
+store as unreadable except where a day screen is returned to from a commitments screen that restored
+nothing: that screen keeps what it had already read, opens nothing and is left exactly as it was,
+which is what `day-screen` asks of the state that stands across being returned to. It rolls back, as
+a torn save does (ADR-1049); `stoppingAfter` is the test seam that stops it partway, as
+`SaveInProgress.keep` is for a torn save.
 
 - Rejected: rolling forward (restores a copy told as refused); three staged renames (still three acts).
 

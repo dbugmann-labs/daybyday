@@ -584,7 +584,8 @@ places are next opened means a restore was stopped before it was whole, and it i
 the phone goes back to what it held before the restore began, and nothing is said, because a restore
 is said only once it is whole. It is looked for before a **save in progress** is. One that cannot be
 read or undone withholds all three places, so nothing is read from them and nothing is written over
-them. Deliberately not a **copy**: it is the phone's own bytes, kept for as long as one restore lasts,
+them; a **day screen** returned to from a **commitments screen** that restored nothing keeps what it
+had already read and is left exactly as it was. Deliberately not a **copy**: it is the phone's own bytes, kept for as long as one restore lasts,
 and nothing but undoing that restore ever reads it. Agreed 2026-09-15 while writing the delta of
 `restore-from-a-copy` (#267); ADR-1056.
 

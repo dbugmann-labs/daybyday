@@ -28,7 +28,9 @@ the three stores and takes that file away.
 - **Undone means rolled back, never forward.** The phone is left exactly as it was before the restore
   began, as a torn save is.
 - **One that cannot be read or undone withholds all three places**: nothing is read from them and
-  nothing is written over them.
+  nothing is written over them. A day screen returned to from a commitments screen that restored
+  nothing keeps what it had already read and is left exactly as it was — it reads and writes nothing
+  either, and what it was already holding stands, as being returned to always leaves it.
 
 ## Consequences
 
