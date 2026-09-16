@@ -394,12 +394,15 @@ SHALL try again, and a copy made SHALL end the stop and become the last copy.
   place and a one-off place where nothing has been kept, keeping its copy place at a place of its own
   and asking a clock that answers a later minute each time it is asked, from that day at 14:32; a
   commitment alike in every way to one named "Gym" on a schedule listing all seven weekdays, kept
-  from 1 January 2026, is defined through it twice, the second refused as already kept; a directory
-  that cannot be written to is given to it as its copy place; and a commitment named "Journaling" on
-  that rhythm is then defined through it
-- **THEN** "Journaling" is not refused, and it still holds the refused definition against defining a
-  commitment
+  from 1 January 2026, is defined through it twice, the second refused as already kept; and a
+  directory that cannot be written to is given to it as its copy place
+- **THEN** the copy that could not be made there is not held as a refused change: the screen holds
+  the refused definition against defining a commitment exactly as it did
 - **AND** the stop is the folder that cannot be written
+- **AND** a commitment named "Journaling" on that rhythm then defined through it is not refused and
+  leaves the screen holding no refused change — neither the definition refused before, which keeping
+  "Journaling" ended, nor the copy that again could not be made — with the stop still the folder that
+  cannot be written
 
 ### Requirement: A commitments screen says its copy place, the last copy made there and a stop
 
