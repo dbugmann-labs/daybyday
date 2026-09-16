@@ -180,6 +180,24 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **`look-back-at-a-quota`'s wireframe says "nav bar: back only" and the app says the name there.**
+  Found at #273's G7, 2026-09-16. The designer drew the mockup without the `look-back-name-twice`
+  chore, which put the name back in the navigation bar as well as in the body at the owner's
+  request, and the wireframe went verbatim from `grill.md` § *Layout* into `design.md` § *What the
+  shell draws* with that annotation. The code and the walk pictures are right; the annotation is
+  stale in a G4-signed folder, and re-approving the folder for one label was judged not worth it.
+  A mockup is a decision aid and never a requirement (ADR-1057), which is why this is a gap and
+  not a defect. The next Story that touches the look-back's `design.md` corrects the line.
+- **`LookBack.walkDays` does five jobs.** Found at #273's G7, 2026-09-16. It grew from about
+  forty-five lines to about a hundred and thirty-five when the quota's weeks landed: the day walk,
+  the nil-line filter, two key-to-last-day dictionaries written in the same shape twice, the
+  rhythm-change placement moved down out of `form`, the sort by last counted day, and the totals,
+  returned as `(lines:totalDue:totalKept:)`, which the name does not say. The reviewer traced the
+  logic through the three-era chain and both mixed-boundary directions and mutation-tested the
+  sort, the placement and the newer-quota rule; it is right, and the split it wants — a tally pass
+  and a `lines(from:)` pass, since the placement needs each line's last day — is a refactor left
+  out of the Story's fix round rather than done at its end. Owed by the next Story that changes
+  how a look-back counts, which is #274 or #275 if either reaches this function.
 - **A quota's look-back scrolls its whole out of sight.** Flagged by the designer at #273's
   layout round, 2026-09-16. A weekly quota's page says one line per week, about fifty-two a year,
   where a tick's twelve month lines kept the whole card in view; nothing on the page is pinned, so
