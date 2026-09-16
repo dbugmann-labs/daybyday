@@ -77,13 +77,13 @@ edited here (rule 2).
 
 ## 11. The walk (ADR-1053; `docs/running-the-app.md` § *The walk* has the commands)
 
-- [ ] 11.1 the commitments screen scrolled to its foot on the day-one roster: the copy section with *Make a copy* and *Restore from a copy*
-- [ ] 11.2 the confirmation sheet, after a copy saved to On My iPhone earlier in the run is picked and one commitment stopped since: the moment and the counts on both sides
-- [ ] 11.3 the commitments screen after *Restore* is tapped: the lists as the copy held them and the line naming the copy restored
-- [ ] 11.4 the day screen returned to: the rows the copy holds, the stopped commitment drawn again
-- [ ] 11.5 a damaged copy picked, one placed in On My iPhone by the run: the refusal drawn in the copy section
+- [x] 11.1 the commitments screen scrolled to its foot on the day-one roster: the copy section with *Make a copy* and *Restore from a copy*
+- [x] 11.2 the confirmation sheet, after a copy saved to On My iPhone earlier in the run is picked and one commitment stopped since: the moment and the counts on both sides
+- [x] 11.3 the commitments screen after *Restore* is tapped: the lists as the copy held them and the line naming the copy restored
+- [x] 11.4 the day screen returned to: the rows the copy holds, the stopped commitment drawn again
+- [x] 11.5 a damaged copy picked, one placed in On My iPhone by the run: the refusal drawn in the copy section
 - [ ] 11.6 phone: make a copy and save it to Files, change something, pick that copy, check the counts, restore, and see both screens come back as they were
-- [ ] 11.7 **The walk handover** — the implementer posts the pictures to the PR as one comment with `gh pr comment --attach`, one per box, before hand-back, and ticks this box on that comment's URL; the throwaway test is deleted, and `src/DayByDay/DayByDayUITests/` merges unchanged
+- [x] 11.7 **The walk handover** — the implementer posts the pictures to the PR as one comment with `gh pr comment --attach`, one per box, before hand-back, and ticks this box on that comment's URL; the throwaway test is deleted, and `src/DayByDay/DayByDayUITests/` merges unchanged
 
 ## 12. The gates
 
