@@ -156,6 +156,26 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   left out of that Story deliberately: it is not #267's defect and the delta was signed without it.
   Recorded 2026-09-16, at #267's G7.
 
+- **"Writes nothing" over-claims, in the requirement as much as in the design.** `restore-from-a-copy`
+  (#267) says of a restore in progress that cannot be read or undone, at
+  `openspec/specs/restore/spec.md` and in that Story's `design.md` alike, that it "writes nothing".
+  The *cannot be read* half is exact: `RestoreInProgress.undoTornRestore` returns on the decode
+  failure before any write. The *cannot be undone* half is not. That path puts back the record, then
+  the roster, then the one-offs, then the save in progress, and returns false on the first throw — so
+  a rollback that fails at the roster has already written the record place. Reachable with a valid
+  restore in progress standing, the record place writable and the roster place's directory read-only;
+  no test reaches it, both torn-restore tests exercising the decode branch instead. **The behaviour
+  is right and is not what is in question**: the restore-in-progress file still stands, so the next
+  open retries the whole rollback, which is what ADR-1056 means by a restore being said only once it
+  is whole. What over-claims is the sentence, and it over-claims in a shipped requirement, which is
+  why it was not fixed at #267's G7: correcting it there would have been a requirement edit and a
+  third signature on a Story whose behaviour nobody disputed. The candidate answers are to reword the
+  requirement in an editorial Story (ADR-1047), which is what this costs if it is ever worth paying;
+  to add a scenario pinning what a half-finished rollback leaves, which would make the wording's
+  falsity visible in a test rather than in prose; or to leave it, on the ground that a reader who
+  reaches this case is reading `RestoreInProgress` anyway. Raised at #267's fifth G7 read and left
+  deliberately. Recorded 2026-09-16.
+
 ## Known gaps
 
 Things that are built, or deliberately not built, in a state someone will trip over.
