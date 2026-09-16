@@ -246,6 +246,36 @@ struct CommitmentsView: View {
     @State private var isPickingRestoreFile = false
     @Environment(\.editMode) private var editMode
 
+    /// Which of the four refusals against something already kept — a stop, a kept-side removal,
+    /// a single commitment's move or a whole group's move — belongs in `group`'s own section
+    /// footer: the group holding what was refused, or the roster's last kept group where none is
+    /// known. `chore/commitments-layout`, #261: every refusal still sits with the thing it names.
+    private func keptGroupRefusal(for group: Roster.Group) -> CommitmentsScreen.Refusal? {
+        let owningGroup: Roster.Group?
+        let refusal: CommitmentsScreen.Refusal?
+
+        switch screen.refusedChange {
+        case .stopping(let commitment, let stopRefusal):
+            owningGroup = screen.keptGroups.first { $0.commitments.contains(commitment) }
+            refusal = stopRefusal
+        case .removing(let removed, let removingRefusal) where screen.kept.contains(removed):
+            owningGroup = screen.keptGroups.first { $0.commitments.contains(removed) }
+            refusal = removingRefusal
+        case .moving(let commitment, let movingRefusal):
+            owningGroup = screen.keptGroups.first { $0.commitments.contains(commitment) }
+            refusal = movingRefusal
+        case .movingGroup(let category, let movingGroupRefusal):
+            owningGroup = screen.keptGroups.first { $0.category == category }
+            refusal = movingGroupRefusal
+        default:
+            owningGroup = nil
+            refusal = nil
+        }
+
+        guard let refusal else { return nil }
+        return (owningGroup ?? screen.keptGroups.last) == group ? refusal : nil
+    }
+
     var body: some View {
         List {
             if screen.keptGroups.isEmpty {
@@ -341,6 +371,10 @@ struct CommitmentsView: View {
                         Text(category)
                             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                     }
+                } footer: {
+                    if let refusal = keptGroupRefusal(for: group) {
+                        refusalText(refusal)
+                    }
                 }
                 .sectionActions {
                     if editMode?.wrappedValue.isEditing == true, let category = group.category {
@@ -387,25 +421,7 @@ struct CommitmentsView: View {
                 }
             }
 
-            if case .stopping(_, let stopRefusal) = screen.refusedChange {
-                refusalText(stopRefusal)
-            }
-
-            if case .removing(let removed, let removingRefusal) = screen.refusedChange,
-                screen.kept.contains(removed)
-            {
-                refusalText(removingRefusal)
-            }
-
-            if case .moving(_, let movingRefusal) = screen.refusedChange {
-                refusalText(movingRefusal)
-            }
-
-            if case .movingGroup(_, let movingGroupRefusal) = screen.refusedChange {
-                refusalText(movingGroupRefusal)
-            }
-
-            Section("Stopped") {
+            Section {
                 if screen.stopped.isEmpty {
                     Text("Nothing has been stopped.")
                 }
@@ -443,16 +459,18 @@ struct CommitmentsView: View {
                         .accessibilityLabel("Remove")
                     }
                 }
-            }
+            } header: {
+                Text("Stopped")
+            } footer: {
+                if case .keepingAgain(_, let keepAgainRefusal) = screen.refusedChange {
+                    refusalText(keepAgainRefusal)
+                }
 
-            if case .keepingAgain(_, let keepAgainRefusal) = screen.refusedChange {
-                refusalText(keepAgainRefusal)
-            }
-
-            if case .removing(let removed, let removingRefusal) = screen.refusedChange,
-                screen.stopped.contains(removed)
-            {
-                refusalText(removingRefusal)
+                if case .removing(let removed, let removingRefusal) = screen.refusedChange,
+                    screen.stopped.contains(removed)
+                {
+                    refusalText(removingRefusal)
+                }
             }
 
             switch screen.rosterState {
@@ -846,6 +864,40 @@ private struct CommitmentSheet: View {
                         }
                     }
 
+                    // The category control, drawn as a row matching `Kind` above rather than the
+                    // accent-blue link it used to render as below `Kept from` —
+                    // `chore/commitments-layout`. Same `Menu`, same items, same "New…" swap into
+                    // the text field; only where it sits and how its label reads changed.
+                    if enteringNewCategory {
+                        TextField("New category", text: $category)
+                    } else {
+                        Menu {
+                            ForEach(screen.categoriesInUse, id: \.self) { existing in
+                                Button(existing) {
+                                    category = existing
+                                }
+                            }
+                            Button("New…") {
+                                category = ""
+                                enteringNewCategory = true
+                            }
+                        } label: {
+                            HStack {
+                                Text(category.isEmpty ? "Category (optional)" : category)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+
+                // What a commitment runs on, together: the rhythm, the control it selects, and
+                // the day it is kept from — `chore/commitments-layout`. A second `Section` says
+                // so without a word; every refusal still sits directly under the field it names
+                // (#261), and the foot refusal closes this card.
+                Section {
                     Picker("Rhythm", selection: $rhythmKind) {
                         ForEach(RhythmKind.allCases) { kind in
                             Text(kind.rawValue).tag(kind)
@@ -899,12 +951,16 @@ private struct CommitmentSheet: View {
                         .onChange(of: dayOfMonth) { _, _ in screen.sheetFieldEdited(.rhythm) }
                     case .everyNDays:
                         LabeledContent("Every") {
-                            TextField("Days", value: $intervalDays, format: .number)
-                                .keyboardType(.numberPad)
-                                .multilineTextAlignment(.trailing)
-                                .frame(width: 44)
-                                .onChange(of: intervalDays) { _, _ in screen.sheetFieldEdited(.rhythm) }
-                            Text("day(s)")
+                            HStack {
+                                TextField("Days", value: $intervalDays, format: .number)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(width: 44)
+                                    .onChange(of: intervalDays) { _, _ in
+                                        screen.sheetFieldEdited(.rhythm)
+                                    }
+                                Text("day(s)")
+                            }
                         }
                         .disabled(!canChangeRhythmAndKeptFrom)
                     case .weeklyQuota:
@@ -923,22 +979,6 @@ private struct CommitmentSheet: View {
 
                     if let keptFromRefusal = sheetRefusal(under: .keptFrom) {
                         refusalText(keptFromRefusal)
-                    }
-
-                    if enteringNewCategory {
-                        TextField("New category", text: $category)
-                    } else {
-                        Menu(category.isEmpty ? "Category (optional)" : category) {
-                            ForEach(screen.categoriesInUse, id: \.self) { existing in
-                                Button(existing) {
-                                    category = existing
-                                }
-                            }
-                            Button("New…") {
-                                category = ""
-                                enteringNewCategory = true
-                            }
-                        }
                     }
 
                     if let footRefusal = sheetRefusal(under: nil) {
