@@ -6,6 +6,18 @@ extension Commitment {
         case number(range: Range?)
         case note
         case total(target: Target)
+
+        /// Whether `self` and `other` are the same one of the four kinds — tick, number, note or
+        /// total — whatever range or target either carries. `openspec/changes/
+        /// change-range-and-target/design.md` § *Resemblance on the kind's sort*.
+        func isOfTheSameSort(as other: Kind) -> Bool {
+            switch (self, other) {
+            case (.tick, .tick), (.number, .number), (.note, .note), (.total, .total):
+                return true
+            default:
+                return false
+            }
+        }
     }
 
     public struct Range: Hashable, Sendable {

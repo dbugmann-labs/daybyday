@@ -216,6 +216,21 @@ Things that are built, or deliberately not built, in a state someone will trip o
   of the record, both of which ADR-1045 and `CONTEXT.md` § *Look-back* argue against. A later
   layout question, once the page exists and has been read on a phone; `design.md` § *Risks* of
   `look-back-at-a-quota` books it too.
+- **`canChangeMoreThanNameAndCategory` answers for four things, and the kind is a fifth it does
+  not cover.** Left at #262's G7, 2026-09-16. The flag `change-range-and-target` renamed is `true`
+  on a kept commitment, yet the kind still cannot be changed — the sheet freezes that picker on
+  `changing != nil`, never on this flag — and the delta's rewrite of *A commitments screen says what
+  a commitment it is asked to change is made of* dropped the shipped sentence "nothing SHALL be
+  said about whether it can be changed", which was the rule that kept the broad reading out. A
+  narrower name, or that sentence restored, is an edit to a signed change folder — a second G4 —
+  so it was left as approved, for the next Story that touches what a commitment is made of.
+- **One SHALL in `commitment` has no scenario: a range or a target named for a kind with no room
+  for it is ignored.** Left at #262's G7, 2026-09-16. The implementation honours it — the change
+  path returns the commitment's own kind for a tick and a note before reading either string — but
+  nothing in the suite goes red if a later refactor moves the reading above the kind switch and a
+  tick change starts refusing. A scenario under *A commitments screen works out which act a change
+  on either of its lists needs* closes it, and adding one to a signed folder is a second G4, so it
+  waits for the next `commitment` Story or an editorial one (ADR-1047).
 - **A schedule's payload cannot be read back out.** Surfaced at #9's review, 2026-08-31.
   `DayOfMonth` and `Schedule.dayOfMonth(_)` are public but `DayOfMonth.day` is internal, so an
   app target can build a rule on the 25th and never recover the `25` to render "the 25th" in a

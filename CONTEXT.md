@@ -1781,3 +1781,12 @@ same again, the nearest in the roster's own order winning where more than one an
 recorded, deliberately — ADR-1055 has why, and the two readings it gets wrong. An era the roster has
 taken up again is kept rather than removed, and ends a chain there. Agreed 2026-09-15 at the grill of
 `look-back-at-a-tick` (#272).
+
+**Amended 2026-09-16**, at the grill of `change-range-and-target` (#262). A **range** or a **target**
+changed on the sheet ends an era too, by **superseding** as the ninth grooming pass decided, so an era
+is one commitment's span on one rhythm *and* one range or target. To a person it is still one
+commitment, and the chain follows it: resemblance is on the name and the kind's **sort** — a number
+behind a number, a total behind a total — and never on the range or the target the kind carries,
+because a page saying Mood began on the day its range was narrowed is the commitment started over
+in the one place anyone would look. What each kind's page draws across such a boundary is that
+page's own Story.

@@ -4020,20 +4020,20 @@ rosters differing only in a supersession SHALL be different rosters.
 
 ### Requirement: A commitments screen says what a commitment it is asked to change is made of
 
-A commitments screen SHALL say, for a commitment on either of its lists, the four things a change is
-asked with: the name it has, the rhythm it runs on, the day it is kept from and the category it is
-under. For a commitment on neither list it SHALL say nothing at all. The rhythm SHALL be the one of
-the four that names that commitment's schedule, carrying the number that schedule carries; an
-interval rhythm carries no start date, so an interval schedule's own start date SHALL NOT be part of
-what is said.
+A commitments screen SHALL say, for a commitment on either of its lists, the things a change is asked
+with: the name it has, the rhythm it runs on, the day it is kept from, the category it is under and
+the range or the target its kind carries. For a commitment on neither list it SHALL say nothing at
+all. The rhythm SHALL be the one of the four that names that commitment's schedule, carrying the
+number that schedule carries; an interval rhythm carries no start date, so an interval schedule's own
+start date SHALL NOT be part of what is said.
 
-It SHALL say whether the rhythm and the day kept from can be changed at all: they can for a
-commitment its roster is keeping, and they cannot for one it has stopped keeping. It SHALL say the
-kind that commitment's days take, with the range or the target that kind carries — the number kind's
-range, or that it carries none; the total kind's target; nothing beside a tick or a note. The kind
-is not one of the four, so it SHALL be shown, SHALL never be asked about, and nothing SHALL be said
-about whether it can be changed. A control for each of the things above SHALL be drawn, and the ones
-that cannot be changed SHALL NOT let a thumb in.
+It SHALL say whether anything beyond the name and the category can be changed at all: the rhythm, the
+day it is kept from and the range or the target alike can be changed for a commitment its roster is
+keeping, and none of them can for one it has stopped keeping. It SHALL say the kind that commitment's
+days take, with the range or the target that kind carries — the number kind's range, or that it
+carries none; the total kind's target; nothing beside a tick or a note. Which of the four kinds it is
+SHALL be shown and SHALL never be asked about. A control for each of the things above SHALL be drawn,
+and the ones that cannot be changed SHALL NOT let a thumb in.
 
 #### Scenario: a commitments screen says what a commitment it keeps is made of, on each of the four rhythms
 
@@ -4064,6 +4064,17 @@ that cannot be changed SHALL NOT let a thumb in.
   31 August 2026
 - **THEN** what it says "Gym" is made of says its rhythm and the day it is kept from cannot be changed
 - **AND** what it says "Journaling" is made of says they can
+
+#### Scenario: a commitments screen says a stopped commitment's range and target cannot be changed either
+
+- **WHEN** a commitment named "Mood" of the number kind with a range of 1 to 10, one named "Protein"
+  of the total kind with a target of 120, and one named "Weight" of the number kind with a range of
+  40 to 150, all on a schedule listing all seven weekdays and kept from 1 January 2026, are taken on
+  at a roster place; "Mood" and "Protein" are stopped there as of Sunday 30 August 2026; and a
+  commitments screen is opened at that roster place as of Monday 31 August 2026
+- **THEN** what it says "Mood" is made of says its range cannot be changed, and what it says
+  "Protein" is made of says its target cannot be changed
+- **AND** what it says "Weight" is made of says its range can be changed
 
 #### Scenario: a commitments screen says nothing about a commitment on neither of its lists
 
@@ -4193,18 +4204,19 @@ as typed and become a group of its own.
 
 ### Requirement: A commitments screen works out which act a change on either of its lists needs
 
-A commitments screen SHALL change a commitment on either of its lists from four things and no others
-— a name, a rhythm, the day it is kept from, and the category, which may be none — and SHALL work
-out from them which of two acts the change needs. On a different name, a different day kept from, or
-both, on the rhythm it already runs on, it SHALL carry every record of the commitment over at the
-record place and then change it for the changed one at the roster place, in the place the roster
-holds it; every past day afterwards answers about the changed commitment as it did about the one it
-replaced. On a different rhythm it SHALL supersede: the commitment is kept until the day before the
-day the screen was handed and held removed, and the one the four name, kept from the day the screen
-was handed, takes its place; no record SHALL move and no past day SHALL change its answer. On both
-in one save it SHALL carry over first and supersede second, so the superseded commitment carries the
-new name and the corrected day it was kept from, and the commitment taken on the new name, the new
-rhythm and the day the screen was handed.
+A commitments screen SHALL change a commitment on either of its lists from five things and no others
+— a name, a rhythm, the day it is kept from, the category, which may be none, and the range or the
+target its kind has room for — and SHALL work out from them which of two acts the change needs. On a
+different name, a different day kept from, or both, on the rhythm, range and target it already has,
+it SHALL carry every record of the commitment over at the record place and then change it for the
+changed one at the roster place, in the place the roster holds it; every past day afterwards answers
+about the changed commitment as it did about the one it replaced. On a different rhythm, a different
+range or a different target it SHALL supersede: the commitment is kept until the day before the day
+the screen was handed and held removed, and the one the five name, kept from the day the screen was
+handed, takes its place; no record SHALL move and no past day SHALL change its answer. On both in
+one save it SHALL carry over first and supersede second, so the superseded commitment carries the new
+name, the corrected day it was kept from and the range or target it already had, and the commitment
+taken on the new name, the new rhythm, the new range or target and the day the screen was handed.
 
 On an interval rhythm the day kept from is also the rhythm's start date, so a change naming a
 different day SHALL form the changed commitment's schedule from that day and the days it was due on
@@ -4213,14 +4225,17 @@ so moving it earlier only widens the window and every day already recorded on SH
 record place SHALL be written before the roster place, and where nothing is carried over nothing
 SHALL be written at the record place at all.
 
-The kind its days take is not one of the four and SHALL NOT change: the changed commitment SHALL be
-of the kind the one it replaces is of and SHALL carry whatever that kind carries unchanged, a number
-kind's range and a total kind's target alike. A change SHALL write the category it is given, and a
-category of nothing but blank space SHALL take it off. A commitment its roster has stopped keeping
-SHALL be changed in name and category only, and SHALL stay stopped on the day it was kept until.
-Where the four things name the commitment that is already there, and the category it is already
-under, the screen SHALL change nothing, SHALL write nothing at either place and SHALL refuse
-nothing.
+Which of the four kinds its days take is not one of the five and SHALL NOT change: the changed
+commitment SHALL be of the kind the one it replaces is of. The range a number kind carries and the
+target a total kind carries SHALL be what the change names, a range named where the commitment
+carried none and none named where it carried one alike; a commitment carried over SHALL carry the
+range or target it already has, and only the commitment taken on in a supersession SHALL carry the
+new one. A range or a target named for a kind that has no room for it SHALL be ignored. A change
+SHALL write the category it is given, and a category of nothing but blank space SHALL take it off. A
+commitment its roster has stopped keeping SHALL be changed in name and category only, and SHALL stay
+stopped on the day it was kept until. Where the five things name the commitment that is already
+there, and the category it is already under, the screen SHALL change nothing, SHALL write nothing at
+either place and SHALL refuse nothing.
 
 #### Scenario: a commitment renamed through a commitments screen is drawn under its new name, in the place it held
 
@@ -4318,6 +4333,9 @@ nothing.
 - **AND** what it keeps is one group, "Sport", holding one entry named "Gym"
 - **AND** the content at both places is byte-for-byte what it was immediately after the screen was
   opened
+- **AND** a screen alike in every way keeping "Mood" of the number kind with a range of 1 to 10,
+  asked to change it to exactly the range it already carries beside everything else it already has,
+  refuses nothing and leaves the content at both places byte-for-byte as it was
 
 #### Scenario: a stopped commitment renamed through a commitments screen stays stopped, on the day it was kept until
 
@@ -4338,10 +4356,12 @@ nothing.
 - **WHEN** a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule
   listing all seven weekdays, kept from 1 January 2026, is taken on at a roster place; a commitments
   screen is opened at that roster place as of Monday 31 August 2026; and "Weight" is changed through
-  it to the name "Bodyweight", under no category
+  it to the name "Bodyweight", on the rhythm, the day kept from and the range it already has, under
+  no category
 - **THEN** nothing is refused
 - **AND** the commitment a roster store opened afterwards at that place holds is of the number kind
   with a range of 40 to 150
+- **AND** what it keeps is one entry, named "Bodyweight"
 
 #### Scenario: a rhythm changed on the first date the calendar supports supersedes as of that day itself
 
@@ -4381,7 +4401,8 @@ nothing.
   listing Monday, Wednesday and Saturday, kept from 1 January 2026, is taken on at a roster place; a
   commitments screen is opened at that roster place and at a record place where nothing has been
   kept as of Monday 31 August 2026; and "Protein" is changed through it to a weekday-set rhythm of
-  Tuesday and Thursday, on the name and the day kept from it already has, under no category
+  Tuesday and Thursday, on the name, the day kept from and the target it already has, under no
+  category
 - **THEN** nothing is refused
 - **AND** the commitment a roster store opened afterwards at that place is keeping is of the total
   kind with a target of 120
@@ -4455,19 +4476,81 @@ nothing.
 - **AND** what it keeps is one group, "Morning", holding one entry named "Gym 🏋️", saying "Tue,
   Thu"
 
+#### Scenario: a commitment whose range is changed through a commitments screen is kept until yesterday and the new one is taken on today
+
+- **WHEN** a commitment named "Mood" of the number kind with a range of 1 to 10, on a schedule
+  listing all seven weekdays, kept from 1 January 2026, is taken on at a roster place; a commitments
+  screen is opened at that roster place and at a record place where nothing has been kept as of
+  Monday 31 August 2026; and "Mood" is changed through it to a range of 1 to 5, on the name, the
+  rhythm and the day kept from it already has, under no category
+- **THEN** nothing is refused
+- **AND** what it keeps is one entry, named "Mood"
+- **AND** a roster store opened afterwards at that place answers about Sunday 30 August 2026 with the
+  commitment ranging 1 to 5 kept from Monday 31 August 2026 and then the one ranging 1 to 10 kept
+  from 1 January 2026, and about Monday 31 August 2026 with the one ranging 1 to 5 alone
+- **AND** what it has stopped is nothing
+
+#### Scenario: a target changed through a commitments screen supersedes and leaves every record already made standing
+
+- **WHEN** a commitment named "Protein" of the total kind with a target of 120, on a schedule listing
+  all seven weekdays, kept from 1 January 2026, is taken on at a roster place; additions summing to
+  120 for it on Monday 3 August 2026 are kept at a record place; a commitments screen is opened at
+  that roster place and that record place as of Monday 31 August 2026; the content at that record
+  place is read; and "Protein" is changed through it to a target of 100, on the name, the rhythm and
+  the day kept from it already has, under no category
+- **THEN** nothing is refused
+- **AND** the commitment a roster store opened afterwards at that place is keeping is of the total
+  kind with a target of 100
+- **AND** a store opened afterwards at that record place answers 120 added for the commitment with a
+  target of 120 on Monday 3 August 2026, and nothing added for the one with a target of 100
+- **AND** the content at that record place is byte-for-byte what was read before the change
+
+#### Scenario: a range added to a number commitment carrying none, and one taken off, each supersede
+
+- **WHEN** a commitment named "Weight" of the number kind carrying no range and one named "Mood" of
+  the number kind with a range of 1 to 10, both on a schedule listing all seven weekdays and kept
+  from 1 January 2026, are taken on at a roster place; a commitments screen is opened at that roster
+  place and at a record place where nothing has been kept as of Monday 31 August 2026; "Weight" is
+  changed through it to a range of 40 to 150 and "Mood" to no range at all, each on the name, rhythm
+  and day kept from it already has, under no category
+- **THEN** neither is refused
+- **AND** a roster store opened afterwards at that place answers about Monday 31 August 2026 with
+  "Weight" ranging 40 to 150 and "Mood" carrying no range, both kept from that day
+- **AND** it answers about Sunday 30 August 2026 with "Weight" carrying no range and "Mood" ranging
+  1 to 10, both kept from 1 January 2026, among them
+
+#### Scenario: a name and a range changed in one save put the new name on the superseded commitment and the new range on the one taken on
+
+- **WHEN** a commitment named "Mood" of the number kind with a range of 1 to 10, on a schedule
+  listing all seven weekdays, kept from 1 January 2026, is taken on at a roster place; a number of 7
+  for it on Monday 3 August 2026 is kept at a record place; a commitments screen is opened at that
+  roster place and that record place as of Monday 31 August 2026; and "Mood" is changed through it to
+  the name "Mood 🙂" with a range of 1 to 5, on the rhythm and the day kept from it already has,
+  under no category
+- **THEN** nothing is refused
+- **AND** a roster store opened afterwards at that place answers about Sunday 30 August 2026 with
+  "Mood 🙂" ranging 1 to 5, kept from 31 August 2026, and then "Mood 🙂" ranging 1 to 10, kept from
+  1 January 2026
+- **AND** a store opened afterwards at that record place answers 7 for "Mood 🙂" ranging 1 to 10 on
+  Monday 3 August 2026, and nothing for "Mood" ranging 1 to 10
+
 ### Requirement: A commitments screen refuses a change it cannot make
 
 A commitments screen SHALL refuse a change in the words it already uses: a name that says nothing, a
 weekday set with no days in it, a rhythm number the calendar will not take, a commitment the roster
 already holds, and a place that could not be written. A change whose result the roster already holds
 SHALL be refused, kept, stopped or removed alike. A place that could not be written SHALL cover the
-record place as well as the roster place, and the two SHALL be told the same way.
+record place as well as the roster place, and the two SHALL be told the same way. A change naming a
+range that is not a range, or a target that is not a target, SHALL be refused as that, on the grounds
+*A commitments screen refuses to define a commitment whose range is not a range, or whose target is
+not a target* gives.
 
-Two refusals are this change's own, and each SHALL be told apart from the other five and from each
-other. A change asking for a different rhythm or a different day kept from on a commitment its
-roster has stopped keeping SHALL be refused as **a change a stopped commitment does not take**. A
-change SHALL be refused as **a day already recorded on that the change would leave not due** where
-any day the commitment has a record on is a day the changed commitment is not due on, and no record
+Two refusals are this change's own, and each SHALL be told apart from the other seven and from each
+other. A change asking for a different rhythm, a different day kept from, a different range or a
+different target on a commitment its roster has stopped keeping SHALL be refused as **a change a
+stopped commitment does not take**. A change SHALL be refused as **a day already recorded on that
+the change would leave not due** where any day the commitment has a record on is a day the changed
+commitment is not due on, and no record
 SHALL be carried over to a day it could not have been made on; moving the day an interval commitment
 is kept from earlier by a whole number of intervals leaves every day already recorded on due and
 SHALL NOT be refused.
@@ -4655,6 +4738,45 @@ refused change, and neither of the screen's lists SHALL move.
 - **AND** what it keeps is one entry, named "Gym", saying "Mon, Wed, Sat", and what it has stopped
   is nothing
 - **AND** the screen holds that refusal, against changing "Gym"
+
+#### Scenario: a change refuses a range that is not a range and a target that is not a target
+
+- **WHEN** a commitment named "Mood" of the number kind with a range of 1 to 10 and one named
+  "Protein" of the total kind with a target of 120, both on a schedule listing all seven weekdays and
+  kept from 1 January 2026, are taken on at a roster place; a commitments screen is opened at that
+  roster place and at a record place where nothing has been kept as of Monday 31 August 2026; "Mood"
+  is changed through it to a lowest of "10" and a highest of "1"; and "Protein" is changed through it
+  to a target of "0", each on the name, rhythm and day kept from it already has, under no category
+- **THEN** the first is refused as a range that is not a range and the second as a target that is not
+  a target, each told apart from the other and from a commitment already kept
+- **AND** what it keeps is two entries, named "Mood" and then "Protein", and the content at that
+  roster place is byte-for-byte what it was immediately after the screen was opened
+- **AND** a change of "Mood" to a lowest of "40" and a highest left blank is refused as a range that
+  is not a range too
+
+#### Scenario: changing the range or the target of a stopped commitment is refused
+
+- **WHEN** a commitment named "Mood" of the number kind with a range of 1 to 10 and one named
+  "Protein" of the total kind with a target of 120, both on a schedule listing all seven weekdays and
+  kept from 1 January 2026, are taken on at a roster place; both are stopped there as of Sunday
+  30 August 2026; a commitments screen is opened at that roster place and at a record place where
+  nothing has been kept as of Monday 31 August 2026; and "Mood" is changed through it to a range of
+  1 to 5, on the name, rhythm and day kept from it already has, under no category
+- **THEN** it is refused as a change a stopped commitment does not take, told apart from a range that
+  is not a range and from a place that could not be written
+- **AND** a change of "Protein" to a target of 100, alike in every other way, is refused the same way
+- **AND** what it has stopped is two entries, named "Mood" and then "Protein"
+
+#### Scenario: a change of range whose result the roster already holds is refused as a commitment already kept
+
+- **WHEN** a commitment named "Mood" of the number kind with a range of 1 to 10, kept from 1 January
+  2026, and one named "Mood" of the number kind with a range of 1 to 5, kept from Monday
+  31 August 2026, both on a schedule listing all seven weekdays, are taken on at a roster place; a
+  commitments screen is opened at that roster place and at a record place where nothing has been kept
+  as of Monday 31 August 2026; and the first "Mood" is changed through it to a range of 1 to 5, on
+  the name, rhythm and day kept from it already has, under no category
+- **THEN** it is refused as a commitment already kept
+- **AND** what it keeps is two entries, both named "Mood"
 
 ### Requirement: A commitment's kind is exactly one of a tick, a number, a note or a total
 
@@ -6526,56 +6648,6 @@ change and no field.
 - **THEN** it is refused as a place that could not be written, about the whole change and about no
   field of its sheet
 
-### Requirement: A commitments screen says whether a refusal about a rhythm or a day kept from is about one of them or the whole change
-
-A day already recorded on that a change would leave not due, and a change a stopped commitment does
-not take, SHALL be about the rhythm field of the screen's sheet where the rhythm asked for differs
-from the one the commitment runs on and the day kept from asked for does not, SHALL be about the
-day-kept-from field where that day differs and the rhythm does not, and SHALL be about the whole
-change and no field where both differ. What the commitment is made of, and not what any earlier ask
-carried, SHALL decide which of the two differs.
-
-#### Scenario: a day recorded on that a change would leave not due is about the day-kept-from field
-
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 June 2026,
-  is taken on at a roster place; ticks for it on Monday 3 August 2026 and Wednesday 5 August 2026
-  are kept at a record place; a commitments screen is opened at that roster place and that record
-  place as of Monday 31 August 2026; and "Gym" is changed through it to the day kept from Tuesday
-  4 August 2026, on the name and the rhythm it already has, under no category
-- **THEN** it is refused as a day already recorded on that the change would leave not due, about the
-  day-kept-from field of its sheet
-
-#### Scenario: a change a stopped commitment does not take is about the rhythm field where only the rhythm differs
-
-- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, is taken on at a roster place and stopped there as of Sunday 30 August 2026; a
-  commitments screen is opened at that roster place and at a record place where nothing has been
-  kept as of Monday 31 August 2026; and "Gym" is changed through it to a weekday-set rhythm of
-  Tuesday and Thursday, on the name and the day kept from it already has, under no category
-- **THEN** it is refused as a change a stopped commitment does not take, about the rhythm field of
-  its sheet
-
-#### Scenario: a change a stopped commitment does not take is about the day-kept-from field where only that day differs
-
-- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, is taken on at a roster place and stopped there as of Sunday 30 August 2026; a
-  commitments screen is opened at that roster place and at a record place where nothing has been
-  kept as of Monday 31 August 2026; and "Gym" is changed through it to the day kept from Monday
-  5 January 2026, on the name and the rhythm it already has, under no category
-- **THEN** it is refused as a change a stopped commitment does not take, about the day-kept-from
-  field of its sheet
-
-#### Scenario: a refusal is about the whole change where both the rhythm and the day kept from differ
-
-- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
-  1 January 2026, is taken on at a roster place and stopped there as of Sunday 30 August 2026; a
-  commitments screen is opened at that roster place and at a record place where nothing has been
-  kept as of Monday 31 August 2026; and "Gym" is changed through it to a weekday-set rhythm of
-  Tuesday and Thursday, kept from Monday 5 January 2026, on the name it already has, under no
-  category
-- **THEN** it is refused as a change a stopped commitment does not take, about the whole change and
-  about no field of its sheet
-
 ### Requirement: What a commitments screen tells on its sheet lasts until that field is edited, the next ask, the sheet closing or the app being shown again
 
 What a commitments screen holds about a refusal on its sheet SHALL stand until the field it is about
@@ -6679,3 +6751,80 @@ own chips start from.
 - **THEN** the weekdays it offers for a form's chips are all seven
 - **AND** a screen opened at a place keeping a commitment on a schedule listing Monday alone offers
   all seven too, and says that commitment is made of Monday alone
+
+### Requirement: A commitments screen says whether a refusal about a rhythm, a day kept from, a range or a target is about one of them or the whole change
+
+A day already recorded on that a change would leave not due, and a change a stopped commitment does
+not take, SHALL be about the field of whichever one of the four things a change is asked with beyond
+its name and its category — the rhythm, the day kept from, the range and the target — differs from
+what the commitment is made of: the rhythm field, the day-kept-from field, the range field or the
+target field. Where more than one of the four differs, each SHALL be about the whole change and no
+field. What the commitment is made of, and not what any earlier ask carried, SHALL decide which of
+the four differ.
+
+#### Scenario: a day recorded on that a change would leave not due is about the day-kept-from field
+
+- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 June 2026,
+  is taken on at a roster place; ticks for it on Monday 3 August 2026 and Wednesday 5 August 2026
+  are kept at a record place; a commitments screen is opened at that roster place and that record
+  place as of Monday 31 August 2026; and "Gym" is changed through it to the day kept from Tuesday
+  4 August 2026, on the name and the rhythm it already has, under no category
+- **THEN** it is refused as a day already recorded on that the change would leave not due, about the
+  day-kept-from field of its sheet
+
+#### Scenario: a change a stopped commitment does not take is about the rhythm field where only the rhythm differs
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on at a roster place and stopped there as of Sunday 30 August 2026; a
+  commitments screen is opened at that roster place and at a record place where nothing has been
+  kept as of Monday 31 August 2026; and "Gym" is changed through it to a weekday-set rhythm of
+  Tuesday and Thursday, on the name and the day kept from it already has, under no category
+- **THEN** it is refused as a change a stopped commitment does not take, about the rhythm field of
+  its sheet
+
+#### Scenario: a change a stopped commitment does not take is about the day-kept-from field where only that day differs
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on at a roster place and stopped there as of Sunday 30 August 2026; a
+  commitments screen is opened at that roster place and at a record place where nothing has been
+  kept as of Monday 31 August 2026; and "Gym" is changed through it to the day kept from Monday
+  5 January 2026, on the name and the rhythm it already has, under no category
+- **THEN** it is refused as a change a stopped commitment does not take, about the day-kept-from
+  field of its sheet
+
+#### Scenario: a refusal is about the whole change where both the rhythm and the day kept from differ
+
+- **WHEN** a commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from
+  1 January 2026, is taken on at a roster place and stopped there as of Sunday 30 August 2026; a
+  commitments screen is opened at that roster place and at a record place where nothing has been
+  kept as of Monday 31 August 2026; and "Gym" is changed through it to a weekday-set rhythm of
+  Tuesday and Thursday, kept from Monday 5 January 2026, on the name it already has, under no
+  category
+- **THEN** it is refused as a change a stopped commitment does not take, about the whole change and
+  about no field of its sheet
+
+#### Scenario: a change a stopped commitment does not take is about the range field where only the range differs
+
+- **WHEN** a commitment named "Mood" of the number kind with a range of 1 to 10 and one named
+  "Protein" of the total kind with a target of 120, both on a schedule listing all seven weekdays and
+  kept from 1 January 2026, are taken on at a roster place and stopped there as of Sunday
+  30 August 2026; a commitments screen is opened at that roster place and at a record place where
+  nothing has been kept as of Monday 31 August 2026; and "Mood" is changed through it to a range of
+  1 to 5, on the name, rhythm and day kept from it already has, under no category
+- **THEN** it is refused as a change a stopped commitment does not take, about the range field of its
+  sheet
+- **AND** a change of "Protein" to a target of 100, alike in every other way, is about the target
+  field of its sheet
+
+#### Scenario: a refusal is about the whole change where a range and another of the four differ
+
+- **WHEN** a commitment named "Mood" of the number kind with a range of 1 to 10, on a schedule
+  listing all seven weekdays, kept from 1 January 2026, is taken on at a roster place and stopped
+  there as of Sunday 30 August 2026; a commitments screen is opened at that roster place and at a
+  record place where nothing has been kept as of Monday 31 August 2026; and "Mood" is changed through
+  it to a range of 1 to 5 on a weekday-set rhythm of Tuesday and Thursday, on the name and the day
+  kept from it already has, under no category
+- **THEN** it is refused as a change a stopped commitment does not take, about the whole change and
+  about no field of its sheet
+- **AND** a change of "Mood" to a range of 1 to 5 kept from Monday 5 January 2026, on the name and
+  rhythm it already has, is about the whole change and no field too
