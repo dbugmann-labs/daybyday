@@ -103,14 +103,14 @@ split between it and `DayScreenTests.swift` where the box names a day screen, an
 
 ## 15. The walk (ADR-1053; `docs/running-the-app.md` § *The walk* has the commands)
 
-- [ ] 15.1 the commitments screen scrolled to its foot with no copy place picked: the *Copy place* row reading *Pick a folder*, and the footer offering one
-- [ ] 15.2 the same screen just after a folder in On My iPhone is picked: the row naming that folder and the footer reading the last copy at this minute
-- [ ] 15.3 the commitments screen after a tick on the day screen: the footer's last copy moved to the tick's minute
-- [ ] 15.4 the restore-first sheet, after a folder holding a copy placed there earlier in the run is picked: the moment, both sides' counts, and *Replace it with this phone's*
-- [ ] 15.5 the commitments screen after the picked folder is deleted and a commitment is defined: the footer's stopped half in red, naming the folder that cannot be reached
+- [x] 15.1 the commitments screen scrolled to its foot with no copy place picked: the *Copy place* row reading *Pick a folder*, and the footer offering one
+- [x] 15.2 the same screen just after a folder in On My iPhone is picked: the row naming that folder and the footer reading the last copy at this minute
+- [x] 15.3 the commitments screen after a tick on the day screen: the footer's last copy moved to the tick's minute
+- [x] 15.4 the restore-first sheet, after a folder holding a copy placed there earlier in the run is picked: the moment, both sides' counts, and *Replace it with this phone's*
+- [x] 15.5 the commitments screen after the picked folder is deleted and a commitment is defined: the footer's stopped half in red, naming the folder that cannot be reached
 - [ ] 15.6 phone: pick a folder in iCloud Drive, tick on the day screen, and see the file change on another device
 - [ ] 15.7 phone: delete the picked folder in Files, tick, see the stop and its reason, then forget the copy place and see the row offer picking one again
-- [ ] 15.8 **The walk handover** — the implementer posts the pictures to the PR as one comment with `gh pr comment --attach`, one per box, before hand-back, and ticks this box on that comment's URL; the throwaway test is deleted, and `src/DayByDay/DayByDayUITests/` merges unchanged
+- [x] 15.8 **The walk handover** — the implementer posts the pictures to the PR as one comment with `gh pr comment --attach`, one per box, before hand-back, and ticks this box on that comment's URL; the throwaway test is deleted, and `src/DayByDay/DayByDayUITests/` merges unchanged — https://github.com/dbugmann-labs/daybyday/pull/291#issuecomment-5704394854
 
 ## 16. The gates
 
