@@ -320,9 +320,11 @@ public final class CommitmentsScreen {
         /// The roster could not be written, the record place could not be written, or this
         /// screen is not keeping either.
         case notKept
-        /// A change a stopped commitment does not take: its rhythm and its kept-from day have no
-        /// days left to decide about. The act is to take the commitment up again first.
-        case stoppedCommitmentCannotChangeRhythm
+        /// A change a stopped commitment does not take: its rhythm, its kept-from day, its range
+        /// and its target have no days left to decide about. The act is to take the commitment
+        /// up again first. `openspec/changes/change-range-and-target/design.md` § *Two members
+        /// renamed*.
+        case stoppedCommitmentDoesNotTakeThisChange
         /// A day already recorded on that the change would leave not due — moving the kept-from
         /// day later on any rhythm, or moving an interval rhythm's kept-from day off a whole
         /// number of intervals in either direction. `design.md` § *An interval rhythm's grid
@@ -427,8 +429,10 @@ public final class CommitmentsScreen {
         public let keptFrom: CalendarDate
         public let category: String?
         /// `false` for a commitment its roster has stopped keeping: it has no days left for a
-        /// rhythm to decide about, so the only change it takes is a rename.
-        public let canChangeRhythmAndKeptFrom: Bool
+        /// rhythm, a kept-from day, a range or a target to decide about, so the only change it
+        /// takes is to its name and its category. `openspec/changes/change-range-and-target
+        /// /design.md` § *Two members renamed*.
+        public let canChangeMoreThanNameAndCategory: Bool
         /// The kind this commitment's days take, with the range or the target that kind
         /// carries. Shown, and not one of the four a change is asked with: a kind is set when a
         /// commitment is defined and never changes. `design.md` § *The seam*.
@@ -556,6 +560,43 @@ public final class CommitmentsScreen {
         return .success(target)
     }
 
+    /// The kind `commitment` should carry after a change asking for `lowest`, `highest` and
+    /// `target` — read exactly as `define` reads them, and only for the kind that has room for
+    /// them: a range for the number kind, a target for the total kind, nothing for a tick or a
+    /// note. `lowest` and `highest` both `nil`, or `target` `nil`, is the range or the target
+    /// `commitment` already carries — a value the seam already allows and never a fourth state,
+    /// exactly what the sheet prefills and hands straight back on a change it asks nothing new
+    /// of. `openspec/changes/change-range-and-target/design.md` § *Three more strings, and `nil`
+    /// is the value it already carries*.
+    private static func changedKind(
+        of commitment: Commitment, lowest: String?, highest: String?, target: String?
+    ) -> Reading<Commitment.Kind> {
+        switch commitment.kind {
+        case .tick, .note:
+            return .success(commitment.kind)
+        case .number:
+            guard lowest != nil || highest != nil else {
+                return .success(commitment.kind)
+            }
+            switch Self.range(lowest: lowest ?? "", highest: highest ?? "") {
+            case .success(let range):
+                return .success(.number(range: range))
+            case .failure(let refusal):
+                return .failure(refusal)
+            }
+        case .total:
+            guard let target else {
+                return .success(commitment.kind)
+            }
+            switch Self.target(target) {
+            case .success(let target):
+                return .success(.total(target: target))
+            case .failure(let refusal):
+                return .failure(refusal)
+            }
+        }
+    }
+
     /// What `commitment` is made of, so a form opened to change it starts from what that
     /// commitment is rather than from what a new one would be. `nil` for a commitment on neither
     /// of this screen's lists — kept or stopped are the only two a change can reach.
@@ -569,7 +610,7 @@ public final class CommitmentsScreen {
 
         return Change(
             name: commitment.name, rhythm: Rhythm(commitment.schedule), keptFrom: commitment.keptFrom,
-            category: entry.category, canChangeRhythmAndKeptFrom: entry.keptUntil == nil,
+            category: entry.category, canChangeMoreThanNameAndCategory: entry.keptUntil == nil,
             kind: commitment.kind,
             canRestart: entry.keptUntil == nil && Self.isIntervalSchedule(commitment.schedule))
     }
@@ -591,24 +632,36 @@ public final class CommitmentsScreen {
         category.flatMap { Blank.saysNothing($0) ? nil : $0 }
     }
 
-    /// Which field a refusal that could be about either the rhythm or the day kept from is
-    /// about: whichever of the two `commitment` is actually made of differs from what was asked,
-    /// and `nil` — the whole change — where both differ. `openspec/specs/commitment/spec.md` §
-    /// *A commitments screen says whether a refusal about a rhythm or a day kept from is about
-    /// one of them or the whole change*, `design.md` § *The screen decides which field, not the
-    /// sheet*.
+    /// Which field a refusal that could be about the rhythm, the day kept from, the range or the
+    /// target is about: whichever one of the four `commitment` is actually made of differs from
+    /// what was asked, and `nil` — the whole change — where more than one differs.
+    /// `openspec/specs/commitment/spec.md` § *A commitments screen says whether a refusal about a
+    /// rhythm, a day kept from, a range or a target is about one of them or the whole change*,
+    /// `design.md` § *The screen decides which field, not the sheet* and `openspec/changes/
+    /// change-range-and-target/design.md` § *One comparison over four things, not two*.
     private static func ambiguousField(
-        askedRhythm: Rhythm, askedKeptFrom: CalendarDate, from commitment: Commitment
+        askedRhythm: Rhythm, askedKeptFrom: CalendarDate, askedKind: Commitment.Kind,
+        from commitment: Commitment
     ) -> SheetField? {
         let rhythmDiffers = Rhythm(commitment.schedule) != askedRhythm
         let keptFromDiffers = commitment.keptFrom != askedKeptFrom
-        if rhythmDiffers, !keptFromDiffers {
+        let kindDiffers = askedKind != commitment.kind
+
+        guard [rhythmDiffers, keptFromDiffers, kindDiffers].filter({ $0 }).count == 1 else {
+            return nil
+        }
+
+        if rhythmDiffers {
             return .rhythm
         }
-        if keptFromDiffers, !rhythmDiffers {
+        if keptFromDiffers {
             return .keptFrom
         }
-        return nil
+        switch askedKind {
+        case .number: return .range
+        case .total: return .target
+        case .tick, .note: return nil
+        }
     }
 
     /// Why carrying every record of `commitment` over to `target` would be refused, reading
@@ -687,14 +740,19 @@ public final class CommitmentsScreen {
     }
 
     /// Changes `commitment`, on either of this screen's lists, for the commitment `name`,
-    /// `rhythm` and `keptFrom` name, under `category`. Works out from those which of two acts —
-    /// carrying every record over to the changed commitment, or superseding — the change needs,
-    /// performing both in one order where it needs both: the carry-over first, then the
-    /// supersession. See `openspec/specs/commitment/spec.md` § *A commitments screen works out
-    /// which act a change on either of its lists needs* and `design.md` § *Two acts, not one*.
+    /// `rhythm`, `keptFrom` and, where its kind has room for one, `lowest`/`highest` or `target`
+    /// name, under `category`. Works out from those which of two acts — carrying every record
+    /// over to the changed commitment, or superseding — the change needs, performing both in one
+    /// order where it needs both: the carry-over first, then the supersession. `lowest`,
+    /// `highest` and `target` are read exactly as `define` reads them; `nil` for a range or a
+    /// target is the one `commitment` already carries, `design.md` § *Three more strings, and
+    /// `nil` is the value it already carries*. See `openspec/specs/commitment/spec.md` § *A
+    /// commitments screen works out which act a change on either of its lists needs* and
+    /// `design.md` § *Two acts, not one* and `openspec/changes/change-range-and-target/design.md`
+    /// § *Supersede is decided on the whole kind, carry-over keeps the old one*.
     public func change(
         _ commitment: Commitment, toName name: String, on rhythm: Rhythm, keptFrom: CalendarDate,
-        under category: String?
+        under category: String?, lowest: String? = nil, highest: String? = nil, target: String? = nil
     ) -> Refusal? {
         guard kept.contains(commitment) || stopped.contains(commitment) else {
             return nil
@@ -710,11 +768,26 @@ public final class CommitmentsScreen {
         let isStopped = stopped.contains(commitment)
         let sameRhythm = Rhythm(commitment.schedule) == rhythm
 
-        guard !isStopped || (sameRhythm && keptFrom == commitment.keptFrom) else {
+        // The reading comes before the stopped guard: what was asked cannot be compared with
+        // what the commitment is made of until it has been read. `design.md` § *The reading
+        // comes before the stopped guard*.
+        let newKind: Commitment.Kind
+        switch Self.changedKind(of: commitment, lowest: lowest, highest: highest, target: target) {
+        case .success(let kind):
+            newKind = kind
+        case .failure(let refusal):
+            let field: SheetField = refusal == .rangeIsNotARange ? .range : .target
+            refuse(.changing(commitment, refusal), on: field)
+            return refusal
+        }
+        let sameKind = newKind == commitment.kind
+
+        guard !isStopped || (sameRhythm && keptFrom == commitment.keptFrom && sameKind) else {
             refuse(
-                .changing(commitment, .stoppedCommitmentCannotChangeRhythm),
-                on: Self.ambiguousField(askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment))
-            return .stoppedCommitmentCannotChangeRhythm
+                .changing(commitment, .stoppedCommitmentDoesNotTakeThisChange),
+                on: Self.ambiguousField(
+                    askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind, from: commitment))
+            return .stoppedCommitmentDoesNotTakeThisChange
         }
 
         guard !Blank.saysNothing(name) else {
@@ -734,7 +807,7 @@ public final class CommitmentsScreen {
 
         let normalizedCategory = Self.normalizedCategory(category)
 
-        if sameRhythm {
+        if sameRhythm, sameKind {
             // A different name, a different day kept from, or both, on the rhythm the
             // commitment already runs on — every record of it is carried over to the changed
             // one, and the roster then changes the commitment for it, in the place it holds it.
@@ -771,7 +844,8 @@ public final class CommitmentsScreen {
                 {
                     let field: SheetField? =
                         refusal == .wouldLeaveARecordedDayNotDue
-                        ? Self.ambiguousField(askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment)
+                        ? Self.ambiguousField(
+                            askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind, from: commitment)
                         : nil
                     refuse(.changing(commitment, refusal), on: field)
                     return refusal
@@ -797,7 +871,8 @@ public final class CommitmentsScreen {
                         refuse(
                             .changing(commitment, .wouldLeaveARecordedDayNotDue),
                             on: Self.ambiguousField(
-                                askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment))
+                                askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind,
+                                from: commitment))
                         return .wouldLeaveARecordedDayNotDue
                     }
                 } catch {
@@ -837,13 +912,15 @@ public final class CommitmentsScreen {
             return nil
         }
 
-        // A different rhythm: the roster supersedes. `commitment` is kept until the day before
-        // the day this screen was handed and held removed; the commitment the four things name
-        // — kept from the day this screen was handed — is taken on in its place.
+        // A different rhythm or a different kind: the roster supersedes. `commitment` is kept
+        // until the day before the day this screen was handed and held removed; the commitment
+        // the six things name — the new range or target included, kept from the day this screen
+        // was handed — is taken on in its place. `openspec/changes/change-range-and-target
+        // /design.md` § *Supersede is decided on the whole kind, carry-over keeps the old one*.
         let nameOrKeptFromChanged = name != commitment.name || keptFrom != commitment.keptFrom
         let supersedeKeptUntil = Self.dayBefore(dayToKeepFrom)
         let finalNewCommitment = Commitment(
-            name: name, schedule: newSchedule, keptFrom: dayToKeepFrom, kind: commitment.kind)!
+            name: name, schedule: newSchedule, keptFrom: dayToKeepFrom, kind: newKind)!
 
         guard !nameOrKeptFromChanged else {
             // Both, in one save: the carry-over first — the superseded commitment carries the
@@ -880,7 +957,8 @@ public final class CommitmentsScreen {
             {
                 let field: SheetField? =
                     refusal == .wouldLeaveARecordedDayNotDue
-                    ? Self.ambiguousField(askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment)
+                    ? Self.ambiguousField(
+                        askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind, from: commitment)
                     : nil
                 refuse(.changing(commitment, refusal), on: field)
                 return refusal
@@ -902,7 +980,8 @@ public final class CommitmentsScreen {
                     refuse(
                         .changing(commitment, .wouldLeaveARecordedDayNotDue),
                         on: Self.ambiguousField(
-                            askedRhythm: rhythm, askedKeptFrom: keptFrom, from: commitment))
+                            askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind,
+                            from: commitment))
                     return .wouldLeaveARecordedDayNotDue
                 }
             } catch {

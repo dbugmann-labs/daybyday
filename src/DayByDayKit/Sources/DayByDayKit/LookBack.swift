@@ -124,12 +124,13 @@ public struct LookBack: Hashable, Sendable {
     }
 
     /// The chain of eras behind `commitment`, newest first: `commitment` itself, ending on `end`,
-    /// then every removed commitment the roster holds by resemblance behind it — same name, same
-    /// kind, kept until the day before the era in front of it is kept from — walking `entries` in
-    /// its own order, outward from the era in front, so that where more than one answers the
-    /// nearest one wins. `design.md` § *A look-back reads a commitment's earlier eras off the
-    /// roster by resemblance* and § *Two removed commitments that both answer: the nearest one
-    /// wins*.
+    /// then every removed commitment the roster holds by resemblance behind it — same name, the
+    /// same kind's sort, kept until the day before the era in front of it is kept from — walking
+    /// `entries` in its own order, outward from the era in front, so that where more than one
+    /// answers the nearest one wins. `design.md` § *A look-back reads a commitment's earlier eras
+    /// off the roster by resemblance*, § *Two removed commitments that both answer: the nearest
+    /// one wins* and `openspec/changes/change-range-and-target/design.md` § *Resemblance on the
+    /// kind's sort*.
     private static func chain(from commitment: Commitment, end: CalendarDate, entries: [Roster.Entry])
         -> [Era]
     {
@@ -160,7 +161,7 @@ public struct LookBack: Hashable, Sendable {
                 let foundIndex = entries[searchFrom...].firstIndex(where: { entry in
                     entry.isRemoved && entry.keptUntil == targetKeptUntil
                         && entry.commitment.name == current.commitment.name
-                        && entry.commitment.kind == current.commitment.kind
+                        && entry.commitment.kind.isOfTheSameSort(as: current.commitment.kind)
                 })
             else {
                 break

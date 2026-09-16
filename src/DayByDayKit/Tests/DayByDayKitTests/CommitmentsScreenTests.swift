@@ -4745,8 +4745,42 @@ func aCommitmentsScreenSaysAStoppedCommitmentsRhythmAndDayKeptFromCannotBeChange
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
 
-    #expect(screen.whatItIsMadeOf(gym)?.canChangeRhythmAndKeptFrom == false)
-    #expect(screen.whatItIsMadeOf(journaling)?.canChangeRhythmAndKeptFrom == true)
+    #expect(screen.whatItIsMadeOf(gym)?.canChangeMoreThanNameAndCategory == false)
+    #expect(screen.whatItIsMadeOf(journaling)?.canChangeMoreThanNameAndCategory == true)
+}
+
+@MainActor
+@Test("a commitments screen says a stopped commitment's range and target cannot be changed either")
+func aCommitmentsScreenSaysAStoppedCommitmentsRangeAndTargetCannotBeChangedEither() throws {
+    let rosterPlace = freshRosterPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 40, highest: 150)))!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(mood)
+    try rosterStore.add(protein)
+    try rosterStore.add(weight)
+    try rosterStore.retire(mood, keptUntil: sunday)
+    try rosterStore.retire(protein, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.whatItIsMadeOf(mood)?.canChangeMoreThanNameAndCategory == false)
+    #expect(screen.whatItIsMadeOf(protein)?.canChangeMoreThanNameAndCategory == false)
+    #expect(screen.whatItIsMadeOf(weight)?.canChangeMoreThanNameAndCategory == true)
 }
 
 @MainActor
@@ -4830,7 +4864,7 @@ func aCommitmentsScreenSaysANumberCommitmentCarryingNoRangeTakesTheNumberKindAnd
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
 
     #expect(screen.whatItIsMadeOf(weight)?.kind == .number(range: nil))
-    #expect(screen.whatItIsMadeOf(weight)?.canChangeRhythmAndKeptFrom == false)
+    #expect(screen.whatItIsMadeOf(weight)?.canChangeMoreThanNameAndCategory == false)
 }
 
 @MainActor
@@ -4944,6 +4978,183 @@ func aCommitmentWhoseRhythmIsChangedThroughACommitmentsScreenIsKeptUntilYesterda
         name: "Gym", schedule: .weekdays([.tuesday, .thursday]), keptFrom: monday)!
     #expect(laterRosterStore.roster.commitments(on: sunday) == [newGym, oldGym])
     #expect(laterRosterStore.roster.commitments(on: monday) == [newGym])
+}
+
+@MainActor
+@Test("a commitment whose range is changed through a commitments screen is kept until yesterday and the new one is taken on today")
+func aCommitmentWhoseRangeIsChangedThroughACommitmentsScreenIsKeptUntilYesterdayAndTheNewOneIsTakenOnToday()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let originalRange = Commitment.Range(lowest: 1, highest: 10)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: originalRange))!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(mood)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        mood, toName: "Mood", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, under: nil, lowest: "1", highest: "5")
+
+    #expect(refusal == nil)
+    #expect(screen.kept.count == 1)
+    #expect(screen.kept.first?.name == "Mood")
+    #expect(screen.stopped.isEmpty)
+
+    let laterRosterStore = try RosterStore(at: places.roster)
+    let oldMood = Commitment(name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: originalRange))!
+    let newMood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: monday,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 5)))!
+    #expect(laterRosterStore.roster.commitments(on: sunday) == [newMood, oldMood])
+    #expect(laterRosterStore.roster.commitments(on: monday) == [newMood])
+}
+
+@MainActor
+@Test("a target changed through a commitments screen supersedes and leaves every record already made standing")
+func aTargetChangedThroughACommitmentsScreenSupersedesAndLeavesEveryRecordAlreadyMadeStanding()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let originalTarget = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: originalTarget))!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(protein)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(120, for: protein, on: august3rd)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let recordBytes = try Data(contentsOf: places.record)
+
+    let refusal = screen.change(
+        protein, toName: "Protein", on: Rhythm(schedule), keptFrom: keptFrom, under: nil,
+        target: "100")
+
+    #expect(refusal == nil)
+
+    let laterRosterStore = try RosterStore(at: places.roster)
+    #expect(
+        laterRosterStore.roster.commitments.first?.kind
+            == .total(target: Commitment.Target(100)!))
+
+    let laterRecordStore = try RecordStore(at: places.record)
+    #expect(laterRecordStore.history.total(for: protein, on: august3rd) == 120)
+    let newProtein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: monday,
+        kind: .total(target: Commitment.Target(100)!))!
+    #expect(laterRecordStore.history.total(for: newProtein, on: august3rd) == 0)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+
+@MainActor
+@Test("a range added to a number commitment carrying none, and one taken off, each supersede")
+func aRangeAddedToANumberCommitmentCarryingNoneAndOneTakenOffEachSupersede() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    try rosterStore.add(mood)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let weightRefusal = screen.change(
+        weight, toName: "Weight", on: Rhythm(schedule), keptFrom: keptFrom, under: nil,
+        lowest: "40", highest: "150")
+    let moodRefusal = screen.change(
+        mood, toName: "Mood", on: Rhythm(schedule), keptFrom: keptFrom, under: nil, lowest: "",
+        highest: "")
+
+    #expect(weightRefusal == nil)
+    #expect(moodRefusal == nil)
+
+    let laterRosterStore = try RosterStore(at: places.roster)
+    let newWeight = Commitment(
+        name: "Weight", schedule: schedule, keptFrom: monday,
+        kind: .number(range: Commitment.Range(lowest: 40, highest: 150)))!
+    let newMood = Commitment(name: "Mood", schedule: schedule, keptFrom: monday, kind: .number(range: nil))!
+    let commitmentsOnMonday = laterRosterStore.roster.commitments(on: monday)
+    #expect(commitmentsOnMonday.contains(newWeight))
+    #expect(commitmentsOnMonday.contains(newMood))
+
+    let commitmentsOnSunday = laterRosterStore.roster.commitments(on: sunday)
+    #expect(commitmentsOnSunday.contains(weight))
+    #expect(commitmentsOnSunday.contains(mood))
+}
+
+@MainActor
+@Test("a name and a range changed in one save put the new name on the superseded commitment and the new range on the one taken on")
+func aNameAndARangeChangedInOneSavePutTheNewNameOnTheSupersededCommitmentAndTheNewRangeOnTheOneTakenOn()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let originalRange = Commitment.Range(lowest: 1, highest: 10)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: originalRange))!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(mood)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(7, for: mood, on: august3rd)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let refusal = screen.change(
+        mood, toName: "Mood 🙂", on: Rhythm(schedule), keptFrom: keptFrom, under: nil, lowest: "1",
+        highest: "5")
+
+    #expect(refusal == nil)
+
+    let laterRosterStore = try RosterStore(at: places.roster)
+    let newRange = Commitment.Range(lowest: 1, highest: 5)!
+    let newMoodEmoji = Commitment(
+        name: "Mood 🙂", schedule: schedule, keptFrom: monday, kind: .number(range: newRange))!
+    let carriedMoodEmoji = Commitment(
+        name: "Mood 🙂", schedule: schedule, keptFrom: keptFrom, kind: .number(range: originalRange))!
+    #expect(laterRosterStore.roster.commitments(on: sunday) == [newMoodEmoji, carriedMoodEmoji])
+
+    let laterRecordStore = try RecordStore(at: places.record)
+    #expect(laterRecordStore.history.number(for: carriedMoodEmoji, on: august3rd) == 7)
+    #expect(laterRecordStore.history.number(for: mood, on: august3rd) == nil)
 }
 
 @MainActor
@@ -5265,6 +5476,29 @@ func aChangeThatNamesWhatIsAlreadyThereChangesNothingAndRefusesNothing() throws 
     #expect(screen.keptGroups == [Roster.Group(category: "Sport", commitments: [gym])])
     #expect(try Data(contentsOf: places.roster) == rosterBytes)
     #expect(try Data(contentsOf: places.record) == recordBytes)
+
+    let moodPlaces = freshRosterAndRecordPlaces()
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let moodRosterStore = try RosterStore(at: moodPlaces.roster)
+    try moodRosterStore.add(mood)
+    let moodRecordStore = try RecordStore(at: moodPlaces.record)
+    try moodRecordStore.add(Number(7, for: mood, on: august3rd)!)
+    let moodRosterBytes = try Data(contentsOf: moodPlaces.roster)
+    let moodRecordBytes = try Data(contentsOf: moodPlaces.record)
+
+    let moodScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: moodPlaces.roster, keepingRecordAt: moodPlaces.record)
+
+    let moodRefusal = moodScreen.change(
+        mood, toName: "Mood", on: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom, under: nil, lowest: "1", highest: "10")
+
+    #expect(moodRefusal == nil)
+    #expect(try Data(contentsOf: moodPlaces.roster) == moodRosterBytes)
+    #expect(try Data(contentsOf: moodPlaces.record) == moodRecordBytes)
 }
 
 @MainActor
@@ -5326,15 +5560,55 @@ func changingTheRhythmOrTheDayKeptFromOfAStoppedCommitmentIsRefused() throws {
     let rhythmRefusal = screen.change(
         gym, toName: "Gym", on: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom, under: nil)
 
-    #expect(rhythmRefusal == .stoppedCommitmentCannotChangeRhythm)
+    #expect(rhythmRefusal == .stoppedCommitmentDoesNotTakeThisChange)
 
     let keptFromRefusal = screen.change(
         gym, toName: "Gym", on: .weekdays([
             .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
         ]), keptFrom: june1st, under: nil)
 
-    #expect(keptFromRefusal == .stoppedCommitmentCannotChangeRhythm)
+    #expect(keptFromRefusal == .stoppedCommitmentDoesNotTakeThisChange)
     #expect(screen.stopped.map(\.name) == ["Gym"])
+}
+
+@MainActor
+@Test("changing the range or the target of a stopped commitment is refused")
+func changingTheRangeOrTheTargetOfAStoppedCommitmentIsRefused() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(mood)
+    try rosterStore.add(protein)
+    try rosterStore.retire(mood, keptUntil: sunday)
+    try rosterStore.retire(protein, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let rangeRefusal = screen.change(
+        mood, toName: "Mood", on: Rhythm(schedule), keptFrom: keptFrom, under: nil, lowest: "1",
+        highest: "5")
+
+    #expect(rangeRefusal == .stoppedCommitmentDoesNotTakeThisChange)
+
+    let targetRefusal = screen.change(
+        protein, toName: "Protein", on: Rhythm(schedule), keptFrom: keptFrom, under: nil,
+        target: "100")
+
+    #expect(targetRefusal == .stoppedCommitmentDoesNotTakeThisChange)
+    #expect(screen.stopped.map(\.name) == ["Mood", "Protein"])
 }
 
 @MainActor
@@ -5437,6 +5711,49 @@ func aChangeRefusesANameThatSaysNothingARhythmDueOnNoDayAndARhythmNumberTheCalen
 }
 
 @MainActor
+@Test("a change refuses a range that is not a range and a target that is not a target")
+func aChangeRefusesARangeThatIsNotARangeAndATargetThatIsNotATarget() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(mood)
+    try rosterStore.add(protein)
+    let rosterBytes = try Data(contentsOf: places.roster)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let rangeRefusal = screen.change(
+        mood, toName: "Mood", on: Rhythm(schedule), keptFrom: keptFrom, under: nil, lowest: "10",
+        highest: "1")
+    let targetRefusal = screen.change(
+        protein, toName: "Protein", on: Rhythm(schedule), keptFrom: keptFrom, under: nil,
+        target: "0")
+
+    #expect(rangeRefusal == .rangeIsNotARange)
+    #expect(targetRefusal == .targetIsNotATarget)
+    #expect(screen.kept.map(\.name) == ["Mood", "Protein"])
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+
+    let blankHighestRefusal = screen.change(
+        mood, toName: "Mood", on: Rhythm(schedule), keptFrom: keptFrom, under: nil, lowest: "40",
+        highest: "")
+
+    #expect(blankHighestRefusal == .rangeIsNotARange)
+}
+
+@MainActor
 @Test("a commitment of the number kind changed through a commitments screen keeps the kind its days take")
 func aCommitmentOfTheNumberKindChangedThroughACommitmentsScreenKeepsTheKindItsDaysTake() throws {
     let places = freshRosterAndRecordPlaces()
@@ -5458,12 +5775,13 @@ func aCommitmentOfTheNumberKindChangedThroughACommitmentsScreenKeepsTheKindItsDa
     let refusal = screen.change(
         weight, toName: "Bodyweight", on: .weekdays([
             .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-        ]), keptFrom: keptFrom, under: nil)
+        ]), keptFrom: keptFrom, under: nil, lowest: "40", highest: "150")
 
     #expect(refusal == nil)
 
     let laterRosterStore = try RosterStore(at: places.roster)
     #expect(laterRosterStore.roster.commitments.first?.kind == .number(range: range))
+    #expect(laterRosterStore.roster.commitments.first?.name == "Bodyweight")
 }
 
 @MainActor
@@ -6189,7 +6507,7 @@ func aCommitmentsScreenSaysWhatACommitmentItHasStoppedIsMadeOf() throws {
             ]))
     #expect(madeOf?.keptFrom == keptFrom)
     #expect(madeOf?.category == "Supplements")
-    #expect(madeOf?.canChangeRhythmAndKeptFrom == false)
+    #expect(madeOf?.canChangeMoreThanNameAndCategory == false)
 }
 
 @MainActor
@@ -6279,7 +6597,7 @@ func aCommitmentOfTheTotalKindWhoseRhythmIsChangedThroughACommitmentsScreenKeeps
 
     let refusal = screen.change(
         protein, toName: "Protein", on: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom,
-        under: nil)
+        under: nil, target: "120")
 
     #expect(refusal == nil)
 
@@ -6694,6 +7012,36 @@ func aChangeOfRhythmWhoseResultTheRosterAlreadyHoldsIsRefusedAsACommitmentAlread
     #expect(refusal == .alreadyKept)
     #expect(screen.kept.map(\.name) == ["Gym", "Gym"])
     #expect(screen.kept.map(\.rhythmInWords) == ["Mon, Wed, Sat", "Tue, Thu"])
+}
+
+@MainActor
+@Test("a change of range whose result the roster already holds is refused as a commitment already kept")
+func aChangeOfRangeWhoseResultTheRosterAlreadyHoldsIsRefusedAsACommitmentAlreadyKept() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let twin = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: monday,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 5)))!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(mood)
+    try rosterStore.add(twin)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let refusal = screen.change(
+        mood, toName: "Mood", on: Rhythm(schedule), keptFrom: keptFrom, under: nil, lowest: "1",
+        highest: "5")
+
+    #expect(refusal == .alreadyKept)
+    #expect(screen.kept.map(\.name) == ["Mood", "Mood"])
 }
 
 @MainActor
@@ -9109,11 +9457,11 @@ func aChangeAStoppedCommitmentDoesNotTakeIsAboutTheRhythmFieldWhereOnlyTheRhythm
     let refusal = screen.change(
         gym, toName: "Gym", on: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom, under: nil)
 
-    #expect(refusal == .stoppedCommitmentCannotChangeRhythm)
+    #expect(refusal == .stoppedCommitmentDoesNotTakeThisChange)
     #expect(
         screen.sheetRefusal
             == CommitmentsScreen.SheetRefusal(
-                field: .rhythm, refusal: .stoppedCommitmentCannotChangeRhythm))
+                field: .rhythm, refusal: .stoppedCommitmentDoesNotTakeThisChange))
 }
 
 @MainActor
@@ -9139,11 +9487,11 @@ func aChangeAStoppedCommitmentDoesNotTakeIsAboutTheDayKeptFromFieldWhereOnlyThat
     let refusal = screen.change(
         gym, toName: "Gym", on: Rhythm(schedule), keptFrom: january5th, under: nil)
 
-    #expect(refusal == .stoppedCommitmentCannotChangeRhythm)
+    #expect(refusal == .stoppedCommitmentDoesNotTakeThisChange)
     #expect(
         screen.sheetRefusal
             == CommitmentsScreen.SheetRefusal(
-                field: .keptFrom, refusal: .stoppedCommitmentCannotChangeRhythm))
+                field: .keptFrom, refusal: .stoppedCommitmentDoesNotTakeThisChange))
 }
 
 @MainActor
@@ -9167,11 +9515,101 @@ func aRefusalIsAboutTheWholeChangeWhereBothTheRhythmAndTheDayKeptFromDiffer() th
     let refusal = screen.change(
         gym, toName: "Gym", on: .weekdays([.tuesday, .thursday]), keptFrom: january5th, under: nil)
 
-    #expect(refusal == .stoppedCommitmentCannotChangeRhythm)
+    #expect(refusal == .stoppedCommitmentDoesNotTakeThisChange)
     #expect(
         screen.sheetRefusal
             == CommitmentsScreen.SheetRefusal(
-                field: nil, refusal: .stoppedCommitmentCannotChangeRhythm))
+                field: nil, refusal: .stoppedCommitmentDoesNotTakeThisChange))
+}
+
+@MainActor
+@Test("a change a stopped commitment does not take is about the range field where only the range differs")
+func aChangeAStoppedCommitmentDoesNotTakeIsAboutTheRangeFieldWhereOnlyTheRangeDiffers() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(mood)
+    try rosterStore.add(protein)
+    try rosterStore.retire(mood, keptUntil: sunday)
+    try rosterStore.retire(protein, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let moodRefusal = screen.change(
+        mood, toName: "Mood", on: Rhythm(schedule), keptFrom: keptFrom, under: nil, lowest: "1",
+        highest: "5")
+
+    #expect(moodRefusal == .stoppedCommitmentDoesNotTakeThisChange)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(
+                field: .range, refusal: .stoppedCommitmentDoesNotTakeThisChange))
+
+    let proteinRefusal = screen.change(
+        protein, toName: "Protein", on: Rhythm(schedule), keptFrom: keptFrom, under: nil,
+        target: "100")
+
+    #expect(proteinRefusal == .stoppedCommitmentDoesNotTakeThisChange)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(
+                field: .target, refusal: .stoppedCommitmentDoesNotTakeThisChange))
+}
+
+@MainActor
+@Test("a refusal is about the whole change where a range and another of the four differ")
+func aRefusalIsAboutTheWholeChangeWhereARangeAndAnotherOfTheFourDiffer() throws {
+    let places = freshRosterAndRecordPlaces()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let january5th = CalendarDate(year: 2026, month: 1, day: 5)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(mood)
+    try rosterStore.retire(mood, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let rangeAndRhythmRefusal = screen.change(
+        mood, toName: "Mood", on: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom, under: nil,
+        lowest: "1", highest: "5")
+
+    #expect(rangeAndRhythmRefusal == .stoppedCommitmentDoesNotTakeThisChange)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(
+                field: nil, refusal: .stoppedCommitmentDoesNotTakeThisChange))
+
+    let rangeAndKeptFromRefusal = screen.change(
+        mood, toName: "Mood", on: Rhythm(schedule), keptFrom: january5th, under: nil, lowest: "1",
+        highest: "5")
+
+    #expect(rangeAndKeptFromRefusal == .stoppedCommitmentDoesNotTakeThisChange)
+    #expect(
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(
+                field: nil, refusal: .stoppedCommitmentDoesNotTakeThisChange))
 }
 
 @MainActor

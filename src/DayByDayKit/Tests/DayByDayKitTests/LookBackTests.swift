@@ -570,6 +570,68 @@ func aRemovedCommitmentOfAnotherNameOrAnotherKindIsNotAnEarlierEra() throws {
 }
 
 @MainActor
+@Test("a look-back chains an era whose range or target differs behind the one it was asked about")
+func aLookBackChainsAnEraWhoseRangeOrTargetDiffersBehindTheOneItWasAskedAbout() throws {
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let olderKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let today = CalendarDate(year: 2026, month: 3, day: 31)!
+
+    let moodPlaces = freshRosterAndRecordPlaces()
+    let newerMood = Commitment(
+        name: "Mood", schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 5)))!
+    let olderMood = Commitment(
+        name: "Mood", schedule: everyDay, keptFrom: olderKeptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let moodRosterStore = try RosterStore(at: moodPlaces.roster)
+    try moodRosterStore.add(newerMood)
+    try moodRosterStore.add(olderMood)
+    try moodRosterStore.remove(olderMood, keptUntil: boundary)
+    _ = try RecordStore(at: moodPlaces.record)
+    let moodScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: moodPlaces.roster, keepingRecordAt: moodPlaces.record)
+
+    #expect(moodScreen.lookBack(at: newerMood)?.keptFromInWords == "1 January 2026")
+
+    let proteinPlaces = freshRosterAndRecordPlaces()
+    let newerProtein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .total(target: Commitment.Target(100)!))!
+    let olderProtein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: olderKeptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let proteinRosterStore = try RosterStore(at: proteinPlaces.roster)
+    try proteinRosterStore.add(newerProtein)
+    try proteinRosterStore.add(olderProtein)
+    try proteinRosterStore.remove(olderProtein, keptUntil: boundary)
+    _ = try RecordStore(at: proteinPlaces.record)
+    let proteinScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: proteinPlaces.roster, keepingRecordAt: proteinPlaces.record)
+
+    #expect(proteinScreen.lookBack(at: newerProtein)?.keptFromInWords == "1 January 2026")
+
+    let weightPlaces = freshRosterAndRecordPlaces()
+    let newerWeight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: newerKeptFrom, kind: .number(range: nil))!
+    let olderWeight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: olderKeptFrom,
+        kind: .number(range: Commitment.Range(lowest: 40, highest: 150)))!
+    let weightRosterStore = try RosterStore(at: weightPlaces.roster)
+    try weightRosterStore.add(newerWeight)
+    try weightRosterStore.add(olderWeight)
+    try weightRosterStore.remove(olderWeight, keptUntil: boundary)
+    _ = try RecordStore(at: weightPlaces.record)
+    let weightScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: weightPlaces.roster, keepingRecordAt: weightPlaces.record)
+
+    #expect(weightScreen.lookBack(at: newerWeight)?.keptFromInWords == "1 January 2026")
+}
+
+@MainActor
 @Test("a removed commitment kept until any day but the day before is not an earlier era")
 func aRemovedCommitmentKeptUntilAnyDayButTheDayBeforeIsNotAnEarlierEra() throws {
     let everyDay: Schedule = .weekdays([
