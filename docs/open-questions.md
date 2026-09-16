@@ -136,6 +136,22 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   a fourth store, which `copy-on-every-change` (#268) does not add but a later capability might.
   Recorded 2026-09-16, at #267's G7.
 
+- **A copy can be formed two ways, and only one of them checks.** `CopyDocument.formCopy()`
+  (`CopyDocument.swift:37-70`) forms the three stores through `formTicks()`, `formRoster()` and
+  `formOneOffs()`, with no version bound and no shape-versus-form check; `CopyDocument.read(_:)`
+  (`:113-119`) forms the same three through `RecordStore.formed`, `RosterStore.formed` and
+  `OneOffStore.formed`, which carry both. `formCopy()` has seven call sites, all in `CopyTests.swift`
+  and none in `Sources/`, and it pre-dates `restore-from-a-copy` (#267) — `CopyDocument.swift` is
+  +75/−0 on that branch. What #267 changed is that the two paths' checks now differ: its G7 fix round
+  added the missing lower-bound guard to the three `formed` statics, so a later caller reaching for
+  `formCopy()` gets back exactly the defect that fix closed — a copy holding a store at form 0
+  forming rather than being refused as damaged. The candidate answers are to make `formCopy()` call
+  the same three statics; to delete it and have the tests read through `read(_:)`; or to leave it,
+  on the ground that it is test-only and the compiler will not let a `Sources/` caller appear without
+  review noticing. Raised as a judgement call rather than a finding at #267's second G7 read, and
+  left out of that Story deliberately: it is not #267's defect and the delta was signed without it.
+  Recorded 2026-09-16, at #267's G7.
+
 ## Known gaps
 
 Things that are built, or deliberately not built, in a state someone will trip over.
