@@ -180,20 +180,14 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
-- **A look-back's line is two strings, and the shell decides how they sit.** `LookBack.Line`
-  hands the shell two strings per line — `.month(inWords:fraction:)` and
-  `.rhythmChanged(inWords:from:)` — while `design.md` § *A look-back says English, not numbers*
-  says every field is "a string the shell draws unaltered" and requirement 7 fixes the separators
-  so the words are testable. Since the layout chosen at #272's G7, `LookBackView` draws a month and
-  its fraction in two grid columns, so nothing joins them; it still composes the rhythm-change
-  line as the rhythm, a middle dot and the day, and it draws an em dash of its own where a kept
-  commitment has no kept-until. Neither the join nor the placeholder is covered by any
-  requirement. Closing it means either one string per line at the seam or a `design.md` sentence
-  saying what the shell may add, and both are edits to a signed change folder — a second G4 — so
-  it was left at #272's G7, 2026-09-15, for `look-back-at-a-quota` (#273) to settle, since that
-  Story adds the first non-month line and will meet the same join. Beside it, `MonthTally` carries
-  `year` and `month` as loose integers next to a `YearMonth` type two declarations below; a tidy
-  for the same Story.
+- **A quota's look-back scrolls its whole out of sight.** Flagged by the designer at #273's
+  layout round, 2026-09-16. A weekly quota's page says one line per week, about fifty-two a year,
+  where a tick's twelve month lines kept the whole card in view; nothing on the page is pinned, so
+  on a quota kept for a year the one summary figure the page has is a screen above the rows. No
+  layout in the mockup fixes it: a pinned card duplicates a figure and a collapsed run hides part
+  of the record, both of which ADR-1045 and `CONTEXT.md` § *Look-back* argue against. A later
+  layout question, once the page exists and has been read on a phone; `design.md` § *Risks* of
+  `look-back-at-a-quota` books it too.
 - **A schedule's payload cannot be read back out.** Surfaced at #9's review, 2026-08-31.
   `DayOfMonth` and `Schedule.dayOfMonth(_)` are public but `DayOfMonth.day` is internal, so an
   app target can build a rule on the 25th and never recover the `25` to render "the 25th" in a
@@ -672,6 +666,16 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
 
 ## Settled
+
+- 2026-09-16 — **a look-back's line stays two strings, and the shell may compose exactly one of
+  them.** Closed at #273's grill, which #272's G7 had left it to. `LookBack.Line` keeps two strings
+  per line, because one string would make the shell split a week or a month from its fraction to
+  draw its two columns; `look-back-at-a-quota`'s `design.md` § *What the shell may compose* says
+  the shell may compose the rhythm-change line — the rhythm, a space, a middle dot, a space, the
+  day — and nothing else, and that the heading over the lines and the sentence where a look-back
+  says no line are the shell's own words. The em dash the entry named is already gone: since the
+  `look-back-layout` chore a kept commitment draws only the "Kept from" row. The `MonthTally` tidy
+  the same entry named is `tasks.md` 2.3 of that Story.
 
 - 2026-09-16 — **every worktree walks on a simulator of its own.** `pnpm run walk` used to pick
   whatever iPhone was booted, so with three Stories walking in parallel on 2026-09-15 every
