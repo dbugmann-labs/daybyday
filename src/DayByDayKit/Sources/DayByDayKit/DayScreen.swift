@@ -822,14 +822,15 @@ public final class DayScreen {
 
     /// The person has come back to this screen from somewhere else in the app: the roster, and
     /// where this screen is keeping a record, the record, are read again, and the day view is
-    /// formed again for the day being shown. Takes no today, moves no day, and tells nothing it
-    /// was telling. Where `commitmentsScreen` has restored a copy since it was opened, this
-    /// instead opens all three places afresh, whether or not each was already kept, and takes on
-    /// the commitments this screen was handed where the roster it reads holds nothing at all —
-    /// `openspec/specs/day-screen/spec.md` § *A day screen returned to from a commitments screen
-    /// that has restored a copy draws what the copy holds*. Returned to from a commitments screen
-    /// that has restored no copy, or from none at all, this is returned to exactly as being
-    /// returned to always was.
+    /// formed again for the day being shown. Takes no today, moves no day, and goes on telling
+    /// what it was telling. Where `commitmentsScreen` has restored a copy since it was opened,
+    /// this instead opens all three places afresh, whether or not each was already kept, takes
+    /// on the commitments this screen was handed where the roster it reads holds nothing at
+    /// all, and tells nothing on any row nor under any one-off name field —
+    /// `openspec/specs/day-screen/spec.md` § *A day screen returned to from a commitments
+    /// screen that has restored a copy draws what the copy holds*. Returned to from a
+    /// commitments screen that has restored no copy, or from none at all, this is returned to
+    /// exactly as being returned to always was.
     public func returnedTo(from commitmentsScreen: CommitmentsScreen? = nil) {
         guard commitmentsScreen?.hasRestoredACopy == true else {
             returnedToOrdinarily()
@@ -919,15 +920,17 @@ public final class DayScreen {
     /// one-off place as of the today it was handed" says "at no other moment" than being opened
     /// and the app being shown again.
     private func returnedToOrdinarily() {
-        // A restore in progress that cannot be undone: unlike `readRecordAndRoster` and
-        // `returnedToAfterARestore()`, this call has read nothing of its own yet to withhold, so
-        // there is nothing here for `design.md` § *Whole or nothing, across a stop*'s "nothing
-        // SHALL be read from those places nor written over them" to bear on — and it does not: the
-        // guard below returns before either happens. What governs instead is
-        // `openspec/specs/day-screen/spec.md` § *A day screen reads its roster again whenever it
-        // is returned to*: "that state, with anything else that lasts until the app is shown
-        // again, SHALL stand across being returned to." So the screen is left exactly as it
-        // already was.
+        // A restore in progress that cannot be undone: `readRecordAndRoster` and
+        // `returnedToAfterARestore()` both answer as reading nothing here, each bound to a
+        // requirement that opens the three places afresh — the former by `init` and
+        // `shown(asOf:)`'s own read, the latter by
+        // `openspec/changes/restore-from-a-copy/specs/restore/spec.md` § *A day screen returned
+        // to from a commitments screen that restored a copy draws what the copy holds*'s "SHALL
+        // open its record place, its roster place and its one-off place afresh". This call is
+        // bound instead to `openspec/specs/day-screen/spec.md` § *A day screen reads its roster
+        // again whenever it is returned to*: "that state, with anything else that lasts until
+        // the app is shown again, SHALL stand across being returned to." So the screen is left
+        // exactly as it already was.
         guard
             RestoreInProgress.undoTornRestore(
                 recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace)
