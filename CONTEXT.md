@@ -577,6 +577,19 @@ whole. Where the roster holds the commitment it names the records carried to, th
 and the save in progress is simply taken away. Deliberately not called a note, which is a record.
 Agreed 2026-09-14 while writing the delta of `save-change-whole` (#249).
 
+**Restore in progress** — what a **restore** keeps beside the **record place** before it writes
+anything: what stood at the three places, and at the place a save in progress is kept, or that
+nothing stood there. It is taken away once all three stores are written. One still standing when the
+places are next opened means a restore was stopped before it was whole, and it is undone as it was:
+the phone goes back to what it held before the restore began, and nothing is said, because a restore
+is said only once it is whole. It is looked for before a **save in progress** is. One that cannot be
+read or undone withholds all three places, so nothing is read from them and nothing is written over
+them; a **day screen** returned to from a **commitments screen** that restored nothing, or from no
+screen at all, keeps what it had already read and is left exactly as it was. Deliberately not a
+**copy**: it is the phone's own bytes, kept for as long as one restore lasts, and nothing but
+undoing that restore ever reads it. Agreed 2026-09-15 while writing the delta of
+`restore-from-a-copy` (#267); ADR-1056.
+
 **Untick** — to take a tick back, leaving the history as though that tick had never been: the
 commitment is not kept on that day, every other tick stands, and nothing remembers that the tick was
 ever there — an untick is not a record of its own. Taking back a tick that was never there is
@@ -1451,6 +1464,19 @@ means a copy leaves it, because "left for a person to recover" is empty when no 
 it. Agreed 2026-09-15 at the grill of B-009, `FEAT: restore`, under `EPIC: Restore` — opened rather
 than `EPIC: Daily commitments` (#1) amended, the owner's decision: #1's exclusion of restore was a
 scope statement that still reads true.
+
+**Amended 2026-09-15**, at the grill of `restore-from-a-copy` (#267). What is said first is the
+copy's **moment**, and what the phone keeps, has stopped and holds as one-offs against what the copy
+does — or, where a store here cannot be read, that what is there goes unread; one tap then puts it
+back. A restore is offered whatever the phone's stores hold, readable or not, and a copy of nothing
+empties the phone. A copy written in earlier forms is put back in the forms the app writes now. A
+restore is whole or nothing: a phone is never left holding part of a copy, and the app makes no copy
+of what goes, since saying it first is the safeguard. A restore that cannot be made leaves the phone
+as it was and is a **refused change**, for one of four reasons told apart: a file that is **not a
+copy** — it does not read as a copy's form and moment at all; a **damaged copy** — it does, and
+something inside it does not read; a copy **from a later version** of the app, its own form or any
+store's within it; or a store that could not be written. Once it is made, both screens show what the
+copy holds at once, and the commitments screen says which copy was put back.
 
 **Shown** — the moment the app comes in front of a person: opened from nothing, or brought back from
 behind whatever was in front of it. It is the only moment a day screen is handed a **today**, and so

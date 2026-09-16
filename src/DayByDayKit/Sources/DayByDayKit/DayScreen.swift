@@ -83,45 +83,75 @@ public final class DayScreen {
         self.oneOffPlace = oneOffPlace
 
         let read = Self.readRecordAndRoster(
-            recordAt: recordPlace, rosterAt: rosterPlace, takingOnIfEmpty: dayOne)
+            recordAt: recordPlace, rosterAt: rosterPlace, oneOffAt: oneOffPlace,
+            takingOnIfEmpty: dayOne)
         self.recordStore = read.recordStore
         self.recordState = read.recordState
         self.rosterState = read.rosterState
         self.roster = read.roster
-
-        let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
-        self.oneOffStore = openedOneOffs.store
-        self.oneOffState = openedOneOffs.state
+        self.oneOffStore = read.oneOffStore
+        self.oneOffState = read.oneOffState
 
         // `today` here is the parameter above, not `self.today`: `self` is not yet fully
         // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
         // back. The parameter holds the same value `shownDay` was just set to, two lines up.
         self.dayView = Self.formDayView(
-            of: read.roster.groups(on: today), oneOffs: openedOneOffs.store, asOf: today,
+            of: read.roster.groups(on: today), oneOffs: read.oneOffStore, asOf: today,
             on: today, in: read.recordStore?.history ?? History())
     }
 
-    /// What reading the record and roster places produces: a save in progress undone first —
-    /// `openspec/specs/commitment/spec.md` § *Reading the places undoes a torn save as it was* —
-    /// then the roster opened, taking on `dayOne` where it holds nothing, the record opened, and
-    /// any orphaned record carried back to its one possible source. Shared by `init` and
-    /// `shown(asOf:)`, which always read both; `returnedTo()` reads its record place only where
-    /// it is already keeping one, so it calls `SaveInProgress` directly rather than through this.
-    /// Where the save in progress cannot be undone, the record answers as one that could not be
-    /// read without opening it for real — `design.md` § *A torn save that cannot be undone reuses
-    /// two existing states* — and the roster is opened read-only: taking `dayOne` on writes the
-    /// roster place, which the same requirement's "write nothing at either place" forbids while a
-    /// torn save stands unresolved, so the check runs first and day one is offered only once it
-    /// has cleared. `openspec/specs/commitment/spec.md` § *A torn save that cannot be undone keeps
-    /// nothing from the record place*.
+    /// What reading the record, the roster and the one-off places produces: a restore in
+    /// progress undone first, then a save in progress — `openspec/changes/restore-from-a-copy
+    /// /design.md` § *Whole or nothing, across a stop* (ADR-1056) and `openspec/specs/commitment
+    /// /spec.md` § *Reading the places undoes a torn save as it was* — then the roster opened,
+    /// taking on `dayOne` where it holds nothing, the record opened, any orphaned record carried
+    /// back to its one possible source, and the one-offs opened. Shared by `init` and
+    /// `shown(asOf:)`, which always read all three; `returnedTo()` undoes a restore in progress
+    /// the same way this does, before either of its own two paths, but does not share this
+    /// function for what follows — `returnedToAfterARestore()` then reopens all three
+    /// unconditionally, and `returnedToOrdinarily()` reads its record place, and calls
+    /// `SaveInProgress`, only where it is already keeping one — so both call `RestoreInProgress`
+    /// and `SaveInProgress` directly rather than through this. Where the restore in progress
+    /// cannot be undone, nothing is read at all, from any of the three, for `init` and
+    /// `shown(asOf:)` — `openspec/changes/restore-from-a-copy/specs/restore/spec.md` § *A restore
+    /// that cannot be made whole leaves the three places as they were*: "nothing SHALL be read
+    /// from those places nor written over them." The one exception is a day screen returned to
+    /// ordinarily from a commitments screen that restored no copy: it keeps what it had already
+    /// read instead, which is `returnedToOrdinarily()`'s own case, not this function's.
+    /// Where only the save in progress cannot be undone, the record answers as one that could not
+    /// be read without opening it for real — `openspec/changes/save-change-whole/design.md` §
+    /// *A torn save that cannot be undone reuses two existing states* — and the roster is opened
+    /// read-only: taking `dayOne` on
+    /// writes the roster place, which the same requirement's "write nothing at either place"
+    /// forbids while a torn save stands unresolved, so the check runs first and day one is
+    /// offered only once it has cleared. `openspec/specs/commitment/spec.md` § *A torn save that
+    /// cannot be undone keeps nothing from the record place*. The one-offs, unlike the record,
+    /// are unaffected by a torn save — that condition is specific to the record and the roster —
+    /// so they are still opened in that branch.
     private static func readRecordAndRoster(
-        recordAt recordPlace: URL, rosterAt rosterPlace: URL, takingOnIfEmpty dayOne: [Commitment]
+        recordAt recordPlace: URL, rosterAt rosterPlace: URL, oneOffAt oneOffPlace: URL,
+        takingOnIfEmpty dayOne: [Commitment]
     ) -> (
-        recordStore: RecordStore?, recordState: RecordState, roster: Roster, rosterState: RosterState
+        recordStore: RecordStore?, recordState: RecordState, roster: Roster, rosterState: RosterState,
+        oneOffStore: OneOffStore?, oneOffState: OneOffState
     ) {
+        // A restore in progress that cannot be undone: nothing is read from the three places nor
+        // written over them — `openspec/changes/restore-from-a-copy/design.md` § *Whole or
+        // nothing, across a stop* (ADR-1056), a stricter rule than a torn save's own read-only
+        // fallback just below, which still reads a roster this condition never reaches for.
+        guard
+            RestoreInProgress.undoTornRestore(
+                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace)
+        else {
+            return (nil, .unreadable, Roster(), .notKept, nil, .unreadable)
+        }
         guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) else {
             let readOnly = Self.openRoster(at: rosterPlace, takingOnIfEmpty: [])
-            return (nil, .unreadable, readOnly.roster, readOnly.state)
+            let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
+            return (
+                nil, .unreadable, readOnly.roster, readOnly.state, openedOneOffs.store,
+                openedOneOffs.state
+            )
         }
 
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: dayOne)
@@ -131,7 +161,12 @@ public final class DayScreen {
             SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
         }
 
-        return (opened.store, opened.state, openedRoster.roster, openedRoster.state)
+        let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
+
+        return (
+            opened.store, opened.state, openedRoster.roster, openedRoster.state,
+            openedOneOffs.store, openedOneOffs.state
+        )
     }
 
     /// Opens the record at `place`, telling apart the one refusal a person can act on
@@ -776,44 +811,152 @@ public final class DayScreen {
         self.today = today
 
         let read = Self.readRecordAndRoster(
-            recordAt: recordPlace, rosterAt: rosterPlace, takingOnIfEmpty: commitments)
+            recordAt: recordPlace, rosterAt: rosterPlace, oneOffAt: oneOffPlace,
+            takingOnIfEmpty: commitments)
         self.recordStore = read.recordStore
         self.recordState = read.recordState
         self.rosterState = read.rosterState
         self.roster = read.roster
+        self.oneOffStore = read.oneOffStore
+        self.oneOffState = read.oneOffState
+
+        self.dayView = Self.formDayView(
+            of: read.roster.groups(on: shownDay), oneOffs: read.oneOffStore,
+            asOf: self.today, on: shownDay, in: read.recordStore?.history ?? History())
+    }
+
+    /// The person has come back to this screen from somewhere else in the app: the roster, and
+    /// where this screen is keeping a record, the record, are read again, and the day view is
+    /// formed again for the day being shown. Takes no today, moves no day, and goes on telling
+    /// what it was telling. Where `commitmentsScreen` has restored a copy since it was opened,
+    /// this instead opens all three places afresh, whether or not each was already kept, takes
+    /// on the commitments this screen was handed where the roster it reads holds nothing at
+    /// all, and tells nothing on any row nor under any one-off name field —
+    /// `openspec/changes/restore-from-a-copy/specs/restore/spec.md` § *A day screen returned to
+    /// from a commitments screen that restored a copy draws what the copy holds*. Returned to
+    /// from a commitments screen that has restored no copy, or from none at all, this is
+    /// returned to exactly as being returned to always was.
+    public func returnedTo(from commitmentsScreen: CommitmentsScreen? = nil) {
+        guard commitmentsScreen?.hasRestoredACopy == true else {
+            returnedToOrdinarily()
+            return
+        }
+        returnedToAfterARestore()
+    }
+
+    /// Being returned to after a restore: opens the record, the roster and the one-off places
+    /// afresh, whether or not each was already kept, taking on the commitments this screen was
+    /// handed where the roster reads nothing at all. Where a restore in progress cannot itself be
+    /// undone, all three answer as reading nothing, exactly as `readRecordAndRoster` answers the
+    /// same condition at `init` and `shown(asOf:)`. Where only a save in progress stands and
+    /// cannot be undone, the record answers as unreadable and the roster is opened read-only,
+    /// exactly as `readRecordAndRoster` answers that condition too — but the one-offs are
+    /// unaffected by a torn save, so they are still opened afresh here, same as everywhere else
+    /// in this function.
+    private func returnedToAfterARestore() {
+        notice = nil
+        nameRefusal = nil
+
+        // A restore in progress that cannot be undone: nothing is read, exactly as
+        // `readRecordAndRoster` answers the same condition at `init` and `shown(asOf:)` — a
+        // stricter rule than a torn save's own read-only fallback just below.
+        guard
+            RestoreInProgress.undoTornRestore(
+                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace)
+        else {
+            self.rosterState = .notKept
+            self.roster = Roster()
+            self.recordStore = nil
+            self.recordState = .unreadable
+            self.oneOffStore = nil
+            self.oneOffState = .unreadable
+            self.dayView = Self.formDayView(of: [], oneOffs: nil, asOf: today, on: shownDay, in: History())
+            return
+        }
+        guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) else {
+            let readOnly = Self.openRoster(at: rosterPlace, takingOnIfEmpty: [])
+            self.rosterState = readOnly.state
+            self.roster = readOnly.roster
+            self.recordStore = nil
+            self.recordState = .unreadable
+            let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
+            self.oneOffStore = openedOneOffs.store
+            self.oneOffState = openedOneOffs.state
+            self.dayView = Self.formDayView(
+                of: readOnly.roster.groups(on: shownDay), oneOffs: openedOneOffs.store, asOf: today,
+                on: shownDay, in: History())
+            return
+        }
+
+        let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
+        self.rosterState = openedRoster.state
+        self.roster = openedRoster.roster
+
+        let openedRecord = Self.open(at: recordPlace)
+        self.recordStore = openedRecord.store
+        self.recordState = openedRecord.state
+
+        if let recordStore = openedRecord.store, openedRoster.state == .kept {
+            SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
+        }
 
         let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
         self.oneOffStore = openedOneOffs.store
         self.oneOffState = openedOneOffs.state
 
         self.dayView = Self.formDayView(
-            of: read.roster.groups(on: shownDay), oneOffs: openedOneOffs.store,
-            asOf: self.today, on: shownDay, in: read.recordStore?.history ?? History())
+            of: openedRoster.roster.groups(on: shownDay), oneOffs: openedOneOffs.store, asOf: today,
+            on: shownDay, in: recordStore?.history ?? History())
     }
 
-    /// The person has come back to this screen from somewhere else in the app: the roster is read
-    /// again and the day view is formed again for the day being shown. Takes no today, moves no
-    /// day. Where this screen is keeping a record, that is read again too — a rename or a
-    /// rhythm change made elsewhere reaches every row this screen draws. A screen not keeping a
-    /// record does not start keeping one by being returned to: `design.md` § *A day screen
-    /// returned to now reads its record place again where it is keeping one*. The one-offs are
-    /// not read again — the spec requirement "A day screen draws the one-offs at its one-off
-    /// place as of the today it was handed" says "at no other moment" than being opened and the
-    /// app being shown again.
-    public func returnedTo() {
+    /// Being returned to where no copy has been restored: a restore in progress is undone first,
+    /// exactly as `returnedToAfterARestore()` undoes one before its own read — one of five readers
+    /// of the three places in all: `readRecordAndRoster` (shared by `init` and `shown(asOf:)`),
+    /// `returnedToAfterARestore()`, this one, and `CommitmentsScreen`'s own `readPlaces` (shared
+    /// by its `init`, `shown(asOf:)` and `confirmRestoring`) and `readStoresForCopy`. None of the
+    /// five is carved out by `openspec/changes/restore-from-a-copy/specs/restore/spec.md`'s own
+    /// wording, "a commitments screen or a day screen next opens those places".
+    /// Then the roster is read again and the day view is formed again for the day being shown.
+    /// Takes no today, moves no day. Where this screen is keeping a record, that is read again
+    /// too — a rename or a rhythm change made elsewhere reaches every row this screen draws. A
+    /// screen not keeping a record does not start keeping one by being returned to:
+    /// `openspec/specs/day-screen/spec.md` § *A day screen reads its roster again whenever it is
+    /// returned to*. The one-offs are not read again — the spec requirement "A day screen draws
+    /// the one-offs at its one-off place as of the today it was handed" says "at no other moment"
+    /// than being opened and the app being shown again.
+    private func returnedToOrdinarily() {
+        // A restore in progress that cannot be undone: `readRecordAndRoster` and
+        // `returnedToAfterARestore()` both answer as reading nothing here, each bound to a
+        // requirement that opens the three places afresh — the former by `init` and
+        // `shown(asOf:)`'s own read, the latter by
+        // `openspec/changes/restore-from-a-copy/specs/restore/spec.md` § *A day screen returned
+        // to from a commitments screen that restored a copy draws what the copy holds*'s "SHALL
+        // open its record place, its roster place and its one-off place afresh". This call is
+        // bound instead to `openspec/specs/day-screen/spec.md` § *A day screen reads its roster
+        // again whenever it is returned to*: "that state, with anything else that lasts until
+        // the app is shown again, SHALL stand across being returned to." So the screen is left
+        // exactly as it already was.
+        guard
+            RestoreInProgress.undoTornRestore(
+                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace)
+        else {
+            return
+        }
+
         let openedRoster: (state: RosterState, roster: Roster)
 
         if recordState == .kept {
             // The save in progress is read here, before the roster is ever handed day one to
-            // take on — `design.md` § *Reading the places undoes a torn save as it was* — and
-            // only on this path: a screen not keeping a record does not start reading its places
-            // for one by being returned to, exactly as it does not start keeping one. Where the
-            // undo cannot be completed, the roster is opened read-only, exactly as
-            // `readRecordAndRoster` opens it for the same condition at `init` and
-            // `shown(asOf:)` — `openspec/specs/commitment/spec.md` § *A torn save that cannot be
-            // undone keeps nothing from the record place*: "a screen reading its places SHALL
-            // write nothing at either place". Taking on day one unconditionally, before this
-            // check, would write it to an empty roster place while the torn save still stood.
+            // take on — `openspec/specs/commitment/spec.md` § *Reading the places undoes a torn
+            // save as it was* — and only on this path: a screen not keeping a record does not
+            // start reading its places for one by being returned to, exactly as it does not
+            // start keeping one. Where the undo cannot be completed, the roster is opened
+            // read-only, exactly as `readRecordAndRoster` opens it for the same condition at
+            // `init` and `shown(asOf:)` — `openspec/specs/commitment/spec.md` § *A torn save
+            // that cannot be undone keeps nothing from the record place*: "a screen reading its
+            // places SHALL write nothing at either place". Taking on day one unconditionally,
+            // before this check, would write it to an empty roster place while the torn save
+            // still stood.
             if SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) {
                 openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
 

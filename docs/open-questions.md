@@ -122,6 +122,60 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   2026-09-11, at #199's close-out; surfaced at #201's G7 (2026-09-10) and repeated at #208's close-out
   (2026-09-11).
 
+- **The three places travel as a trio of parameters, and want to be one type.** `recordAt:`,
+  `rosterAt:` and `oneOffsAt:` — the labels `RestoreInProgress.restore` and `undoTornRestore` give
+  them, where `readPlaces` says `place:`/`recordPlace:`/`oneOffPlace:`, `readRecordAndRoster` says
+  `oneOffAt:` and `readStoresForCopy` says `recordPlace:`/`rosterPlace:`/`oneOffPlace:` — now pass
+  together through those five functions, differing in name and not in kind — a data clump,
+  and the shape of a "three places" type nobody has written. `restore-from-a-copy` (#267) did not
+  introduce it: `make-a-copy` (#266) already read all three together, and this Story widened the
+  trio to the writing side, which is the first time the same three paths are both read and written
+  in one operation. Left alone deliberately at #267's G7, where the reviewer raised it as a
+  judgement call rather than a finding: a Story fixing three correctness defects is the wrong place
+  to move five call sites, and the delta was signed without it. The candidate answers are a value
+  type holding the three URLs, passed everywhere the trio goes; or leaving it, on the ground that
+  the trio is stable at three and every call site names its members. What would force the first is
+  a fourth store, which `copy-on-every-change` (#268) does not add but a later capability might.
+  Recorded 2026-09-16, at #267's G7.
+
+- **A copy can be formed two ways, and only one of them checks.** `CopyDocument.formCopy()`
+  (`CopyDocument.swift:37-70`) forms the three stores through `formTicks()`, `formRoster()` and
+  `formOneOffs()`, with no version bound and no shape-versus-form check; `CopyDocument.read(_:)`
+  (`:113-119`) forms the same three through `RecordStore.formed`, `RosterStore.formed` and
+  `OneOffStore.formed`, which guard the version bound, and — for the record and the roster — the
+  shape against the form it declares; `OneOffStore.formed` guards the bound alone, there being no
+  form-specific field to check. `formCopy()` has seven call sites, all in `CopyTests.swift`
+  and none in `Sources/`, and it pre-dates `restore-from-a-copy` (#267) — `CopyDocument.swift` is
+  +75/−0 on that branch. What #267 changed is that the two paths' checks now differ: its G7 fix round
+  added the missing lower-bound guard to the three `formed` statics, so a later caller reaching for
+  `formCopy()` gets back exactly the defect that fix closed — a copy holding a store at form 0
+  forming rather than being refused as damaged. The candidate answers are to make `formCopy()` call
+  the same three statics; to delete it and have the tests read through `read(_:)`; or to leave it,
+  on the ground that it is test-only and the compiler will not let a `Sources/` caller appear without
+  review noticing. Raised as a judgement call rather than a finding at #267's second G7 read, and
+  left out of that Story deliberately: it is not #267's defect and the delta was signed without it.
+  Recorded 2026-09-16, at #267's G7.
+
+- **"Writes nothing" over-claims, in the requirement as much as in the design.** `restore-from-a-copy`
+  (#267) says of a restore in progress that cannot be read or undone, at
+  `openspec/specs/restore/spec.md` and in that Story's `design.md` alike, that it "writes nothing".
+  The *cannot be read* half is exact: `RestoreInProgress.undoTornRestore` returns on the decode
+  failure before any write. The *cannot be undone* half is not. That path puts back the record, then
+  the roster, then the one-offs, then the save in progress, and returns false on the first throw — so
+  a rollback that fails at the roster has already written the record place. Reachable with a valid
+  restore in progress standing, the record place writable and the roster place's directory read-only;
+  no test reaches it, both torn-restore tests exercising the decode branch instead. **The behaviour
+  is right and is not what is in question**: the restore-in-progress file still stands, so the next
+  open retries the whole rollback, which is what ADR-1056 means by a restore being said only once it
+  is whole. What over-claims is the sentence, and it over-claims in a shipped requirement, which is
+  why it was not fixed at #267's G7: correcting it there would have been a requirement edit and a
+  third signature on a Story whose behaviour nobody disputed. The candidate answers are to reword the
+  requirement in an editorial Story (ADR-1047), which is what this costs if it is ever worth paying;
+  to add a scenario pinning what a half-finished rollback leaves, which would make the wording's
+  falsity visible in a test rather than in prose; or to leave it, on the ground that a reader who
+  reaches this case is reading `RestoreInProgress` anyway. Raised at #267's fifth G7 read and left
+  deliberately. Recorded 2026-09-16.
+
 ## Known gaps
 
 Things that are built, or deliberately not built, in a state someone will trip over.

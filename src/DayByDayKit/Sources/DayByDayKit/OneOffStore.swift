@@ -28,14 +28,24 @@ public final class OneOffStore {
             }
             throw OneOffStoreError.notAStore(at: place)
         }
-        guard let document = try? JSONDecoder().decode(OneOffDocument.self, from: data) else {
-            throw OneOffStoreError.notAStore(at: place)
-        }
-        guard let oneOffs = document.formOneOffs() else {
+        guard let document = try? JSONDecoder().decode(OneOffDocument.self, from: data),
+            let oneOffs = Self.formed(from: document)
+        else {
             throw OneOffStoreError.notAStore(at: place)
         }
 
         self.oneOffs = oneOffs
+    }
+
+    /// Forms the one-offs `document` holds — `nil` where they fail to form. The one place
+    /// `init(at:)` reads a decoded document into this store's own shape, shared with
+    /// `CopyDocument.read`'s own per-store reading — `openspec/changes/restore-from-a-copy
+    /// /design.md` § *Reading a copy: the envelope decides, and a later version outranks damage*.
+    static func formed(from document: OneOffDocument) -> OneOffs? {
+        guard document.version >= 1 else {
+            return nil
+        }
+        return document.formOneOffs()
     }
 
     /// Exactly what is kept at `place`.

@@ -3519,7 +3519,9 @@ record.
 A day screen SHALL go on telling it, on the same row, until one of exactly three things happens, and
 SHALL then tell nothing on any row. Nothing else SHALL end it, time passing included. The app being
 shown again SHALL end it, whether or not the record can then be read. A change reaching the record's
-place or the one-off place SHALL end it, on whichever row it was made, whatever the change. The day
+place or the one-off place SHALL end it, on whichever row it was made, whatever the change; a copy
+restored through a commitments screen is such a change, and SHALL end it once the day screen is
+returned to from that commitments screen. The day
 being shown changing SHALL end it — the day changing and never the gesture made — so a move with
 nowhere to go, and today sent back to today, SHALL leave it standing.
 
@@ -3900,7 +3902,8 @@ screen not keeping one does not start by being returned to, and that state, with
 lasts until the app is shown again, SHALL stand across being returned to. What a day screen tells on
 a row ends on exactly three things, of which being returned to is not one; it SHALL go on telling
 it. Where the roster it then reads holds nothing at all, it SHALL take on the commitments it was
-handed; where that place cannot be read, it SHALL say so and draw no rows.
+handed; where that place cannot be read, it SHALL say so and draw no rows. A day screen returned to
+from a commitments screen that has restored a copy SHALL instead be returned to as `restore` says.
 
 #### Scenario: a commitment taken on at a day screen's roster place is drawn when the screen is returned to
 
@@ -4811,7 +4814,8 @@ A day screen SHALL form its day view, and the day views either side of it, from 
 its one-off place as of the today it was last handed, and never as of the day it is showing. It
 SHALL open that place when it is opened and when the app is shown again, and at no other moment:
 being moved, being sent back to today, a day being picked, being returned to and saying the day
-either side SHALL NOT open it. Opening it SHALL write nothing there and take nothing on. A day
+either side SHALL NOT open it, save being returned to from a commitments screen that has restored a
+copy, which SHALL. Opening it SHALL write nothing there and take nothing on. A day
 screen that could read its one-offs SHALL say it is keeping them. The one-offs it holds MUST NOT
 move the reach of its day picker.
 
@@ -5194,7 +5198,8 @@ until the text in that field is edited, a commit from that field is kept, the da
 changes, or the app is shown again, and SHALL then be told no longer. The day changing, and never
 the gesture made, SHALL end it, so a screen on its today sent back to today SHALL leave it standing.
 Nothing else SHALL end it: a change kept on a row or from another field, a refusal told on a row,
-and being returned to SHALL NOT. A day screen SHALL tell under at most one one-off name field at a
+and being returned to SHALL NOT, save being returned to from a commitments screen that has restored
+a copy, which SHALL. A day screen SHALL tell under at most one one-off name field at a
 time, and a refusal in another field SHALL replace what it was telling. What is told under a row's
 name field SHALL also end when the day view no longer holds that row.
 
