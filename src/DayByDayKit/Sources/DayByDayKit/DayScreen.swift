@@ -904,10 +904,12 @@ public final class DayScreen {
     }
 
     /// Being returned to where no copy has been restored: a restore in progress is undone first,
-    /// exactly as `returnedToAfterARestore()` undoes one before its own read — this is the one
-    /// other reader of the three places, alongside `init`, `shown(asOf:)` and
-    /// `returnedToAfterARestore()`, and `openspec/specs/restore/spec.md`'s own wording, "a
-    /// commitments screen or a day screen next opens those places", does not carve this call out.
+    /// exactly as `returnedToAfterARestore()` undoes one before its own read — one of five readers
+    /// of the three places in all: `readRecordAndRoster` (shared by `init` and `shown(asOf:)`),
+    /// `returnedToAfterARestore()`, this one, and `CommitmentsScreen`'s own `readPlaces` (shared
+    /// by its `init`, `shown(asOf:)` and `confirmRestoring`) and `readStoresForCopy`. None of the
+    /// five is carved out by `openspec/specs/restore/spec.md`'s own wording, "a commitments screen
+    /// or a day screen next opens those places".
     /// Then the roster is read again and the day view is formed again for the day being shown.
     /// Takes no today, moves no day. Where this screen is keeping a record, that is read again
     /// too — a rename or a rhythm change made elsewhere reaches every row this screen draws. A
@@ -917,19 +919,19 @@ public final class DayScreen {
     /// one-off place as of the today it was handed" says "at no other moment" than being opened
     /// and the app being shown again.
     private func returnedToOrdinarily() {
-        // A restore in progress that cannot be undone: nothing is read, exactly as
-        // `readRecordAndRoster` and `returnedToAfterARestore()` answer the same condition.
+        // A restore in progress that cannot be undone: unlike `readRecordAndRoster` and
+        // `returnedToAfterARestore()`, this call has read nothing of its own yet to withhold, so
+        // there is nothing here for `design.md` § *Whole or nothing, across a stop*'s "nothing
+        // SHALL be read from those places nor written over them" to bear on — and it does not: the
+        // guard below returns before either happens. What governs instead is
+        // `openspec/specs/day-screen/spec.md` § *A day screen reads its roster again whenever it
+        // is returned to*: "that state, with anything else that lasts until the app is shown
+        // again, SHALL stand across being returned to." So the screen is left exactly as it
+        // already was.
         guard
             RestoreInProgress.undoTornRestore(
                 recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace)
         else {
-            self.rosterState = .notKept
-            self.roster = Roster()
-            self.recordStore = nil
-            self.recordState = .unreadable
-            self.oneOffStore = nil
-            self.oneOffState = .unreadable
-            self.dayView = Self.formDayView(of: [], oneOffs: nil, asOf: today, on: shownDay, in: History())
             return
         }
 

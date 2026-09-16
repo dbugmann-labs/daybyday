@@ -1206,4 +1206,59 @@ func aRestoreInProgressThatCannotBeUndoneLeavesAScreenReadingNothingFromTheThree
     #expect(try Data(contentsOf: places.roster) == rosterBytesBefore)
     #expect(!FileManager.default.fileExists(atPath: places.record.path))
     #expect(!FileManager.default.fileExists(atPath: places.oneOffs.path))
+
+    // The same condition reached through `DayScreen.returnedTo()` on its ordinary path, rather
+    // than a fresh `init`: the screen has already read all three places once, cleanly, before the
+    // restore in progress is torn. Unlike `readRecordAndRoster` above, `returnedToOrdinarily()`
+    // has read nothing of its own on this call to withhold — `openspec/specs/day-screen/spec.md`
+    // § *A day screen reads its roster again whenever it is returned to*: "that state, with
+    // anything else that lasts until the app is shown again, SHALL stand across being returned
+    // to". So the screen stands exactly as it already did, and neither reads from the three
+    // places nor writes over them, same as the guard above.
+    do {
+        let places = freshThreePlaces()
+        let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+        let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+        let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+
+        let rosterStore = try RosterStore(at: places.roster)
+        try rosterStore.add(gym)
+        let recordStore = try RecordStore(at: places.record)
+        try recordStore.add(Tick(gym, on: monday)!)
+        let oneOffStore = try OneOffStore(at: places.oneOffs)
+        try oneOffStore.add(OneOff(name: "Book dentist", date: monday)!)
+
+        let rosterBytesBefore = try Data(contentsOf: places.roster)
+        let recordBytesBefore = try Data(contentsOf: places.record)
+        let oneOffBytesBefore = try Data(contentsOf: places.oneOffs)
+
+        let dayScreen = DayScreen(
+            startingFrom: [], asOf: monday, keepingRecordAt: places.record,
+            keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
+        #expect(dayScreen.recordState == .kept)
+        #expect(dayScreen.rosterState == .kept)
+        #expect(dayScreen.oneOffState == .kept)
+        #expect(dayScreen.dayView.rows.map(\.name) == ["Gym"])
+        #expect(dayScreen.dayView.oneOffGroup?.rows.map(\.name) == ["Book dentist"])
+
+        let commitmentsScreen = CommitmentsScreen(
+            asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+            keepingOneOffsAt: places.oneOffs)
+        #expect(commitmentsScreen.hasRestoredACopy == false)
+
+        let restoreInProgressPlace = RestoreInProgress.place(besideRecordAt: places.record)
+        try Data("not what a restore in progress is written as".utf8).write(to: restoreInProgressPlace)
+
+        dayScreen.returnedTo(from: commitmentsScreen)
+
+        #expect(dayScreen.recordState == .kept)
+        #expect(dayScreen.rosterState == .kept)
+        #expect(dayScreen.oneOffState == .kept)
+        #expect(dayScreen.dayView.rows.map(\.name) == ["Gym"])
+        #expect(dayScreen.dayView.oneOffGroup?.rows.map(\.name) == ["Book dentist"])
+        #expect(try Data(contentsOf: places.roster) == rosterBytesBefore)
+        #expect(try Data(contentsOf: places.record) == recordBytesBefore)
+        #expect(try Data(contentsOf: places.oneOffs) == oneOffBytesBefore)
+        #expect(FileManager.default.fileExists(atPath: restoreInProgressPlace.path))
+    }
 }
