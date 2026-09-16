@@ -12,20 +12,20 @@ make it pass, then the next. Every test in §§ 3–6 goes in
 
 ## 2. The seam
 
-- [ ] 2.1 `LookBack.Line` gains the week case and `.month`'s fraction stops being optional, both as `design.md` § *The seam* writes them, and 3.1 is red before either counts anything
-- [ ] 2.2 `Roster`, `Commitment`, `CalendarDate`, `History` and `Schedule` are unchanged, and `openspec/specs/` is untouched (rule 2)
-- [ ] 2.3 The tidy `docs/open-questions.md` names: `LookBack`'s month tally holds one `YearMonth` rather than a loose year and month, and no test changes
+- [x] 2.1 `LookBack.Line` gains the week case and `.month`'s fraction stops being optional, both as `design.md` § *The seam* writes them, and 3.1 is red before either counts anything
+- [x] 2.2 `Roster`, `Commitment`, `CalendarDate`, `History` and `Schedule` are unchanged, and `openspec/specs/` is untouched (rule 2)
+- [x] 2.3 The tidy `docs/open-questions.md` names: `LookBack`'s month tally holds one `YearMonth` rather than a loose year and month, and no test changes
 
 ## 3. The weeks — one test each
 
-- [ ] 3.1 a look-back says a week's kept days out of its quota — catches a week counted from the day kept from rather than from its Monday
-- [ ] 3.2 a look-back says its weeks newest first, and leaves none between out — catches oldest first, or a week emitted only where a day was kept
-- [ ] 3.3 a look-back counts the week in progress against the whole quota — catches a quota scaled to the days of the week counted
-- [ ] 3.4 a look-back counts the week a commitment is kept from against the whole quota — catches a part week dropped, or its quota scaled
-- [ ] 3.5 a look-back says a week kept past its quota as the days kept, uncapped — catches a numerator capped at the quota
-- [ ] 3.6 a stopped quota commitment's look-back counts its last week through the day it was kept until — catches a record after the day kept until counted into the week that holds it
-- [ ] 3.7 a look-back says a weekday era's months and a quota era's weeks, each in its own unit — catches a month line counting a quota era's days, or one unit chosen for the whole chain
-- [ ] 3.8 a week two quota eras share says its kept days out of the newer era's quota — catches two quotas summed, or the week said twice
+- [x] 3.1 a look-back says a week's kept days out of its quota — catches a week counted from the day kept from rather than from its Monday
+- [x] 3.2 a look-back says its weeks newest first, and leaves none between out — catches oldest first, or a week emitted only where a day was kept
+- [x] 3.3 a look-back counts the week in progress against the whole quota — catches a quota scaled to the days of the week counted
+- [x] 3.4 a look-back counts the week a commitment is kept from against the whole quota — catches a part week dropped, or its quota scaled
+- [x] 3.5 a look-back says a week kept past its quota as the days kept, uncapped — catches a numerator capped at the quota
+- [x] 3.6 a stopped quota commitment's look-back counts its last week through the day it was kept until — catches a record after the day kept until counted into the week that holds it
+- [x] 3.7 a look-back says a weekday era's months and a quota era's weeks, each in its own unit — catches a month line counting a quota era's days, or one unit chosen for the whole chain
+- [x] 3.8 a week two quota eras share says its kept days out of the newer era's quota — catches two quotas summed, or the week said twice
 
 ## 4. The whole — one test each
 
@@ -46,7 +46,7 @@ make it pass, then the next. Every test in §§ 3–6 goes in
 ## 7. What the delta carries unchanged
 
 - [ ] 7.1 The sixteen scenarios this delta carries verbatim under the month, the whole, the rhythm-changed and the number-note-total requirements still pass, with their tests untouched
-- [ ] 7.2 The two tests named for the scenarios this delta removes — "a look-back at a weekly quota says its months with no fraction and no whole" and "a look-back says no fraction on a month a weekly-quota era counts a day of" — are deleted, and no other test is
+- [x] 7.2 The two tests named for the scenarios this delta removes — "a look-back at a weekly quota says its months with no fraction and no whole" and "a look-back says no fraction on a month a weekly-quota era counts a day of" — are deleted, and no other test is
 
 ## 8. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
