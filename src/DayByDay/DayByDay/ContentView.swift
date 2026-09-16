@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UIKit
 import DayByDayKit
 
 /// The owner's week, as stated on 2026-09-04:
@@ -74,6 +75,13 @@ private func date(from calendarDate: CalendarDate) -> Date {
     return Calendar.current.date(from: components)!
 }
 
+/// The one-off entry's `.id` inside `dayList(for:isShown:)`'s `ScrollViewReader` — a constant
+/// because there is exactly one entry per list. `oneOffEntryView(isShown:)` tags its `VStack`
+/// with this, and `dayList(for:isShown:)` scrolls to it, so the entry field and the refusal
+/// line under it both clear the keyboard rather than landing beneath it (2026-09-16 audit,
+/// finding 6).
+private let oneOffEntryScrollID = "oneOffEntry"
+
 struct ContentView: View {
     @State private var screen = DayScreen(startingFrom: dayOneCommitments, asOf: today())
     @Environment(\.scenePhase) private var scenePhase
@@ -98,6 +106,14 @@ struct ContentView: View {
         case row(DayView.OneOffRow)
     }
     @FocusState private var oneOffFocus: OneOffFocus?
+    // The on-screen keyboard's own height, tracked so `dayList(for:isShown:)` can pad a day
+    // list's scrollable content by exactly that much while a one-off field is focused. Needed
+    // because `List`'s own keyboard avoidance does not shrink its visible area on this SDK —
+    // `dayList(for:isShown:)`'s own doc comment has the measurement — so without this, scrolling
+    // the focused field to the bottom of the list's *unshrunk* area still lands it under the
+    // keyboard, because that field is already the list's last row and there is nothing below it
+    // left to reveal.
+    @State private var oneOffKeyboardHeight: CGFloat = 0
     // The entry's own typed text, and the text typed into whichever row is being renamed. Each is
     // emptied on every commit `commitOneOffEntry()` or `commitRename(of:to:)` makes, kept or
     // refused alike (`design.md` § *A refusal under a name field is its own value*: "the shell
@@ -148,6 +164,22 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 dayControls
                 pagedDayContent
+            }
+            // Keeps `oneOffKeyboardHeight` current for `dayList(for:isShown:)`'s own bottom
+            // padding — `keyboardWillChangeFrameNotification` covers both the show and the hide,
+            // and a rotation, in one publisher. Hidden reads as the keyboard's frame starting at
+            // or past the bottom of the screen, not as a zero-height frame.
+            .onReceive(
+                NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)
+            ) { notification in
+                guard
+                    let frame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?
+                        .cgRectValue
+                else {
+                    return
+                }
+                let screenHeight = UIScreen.main.bounds.height
+                oneOffKeyboardHeight = frame.origin.y >= screenHeight ? 0 : frame.height
             }
             .navigationDestination(isPresented: $showingCommitments) {
                 if let commitmentsScreen {
@@ -670,69 +702,110 @@ struct ContentView: View {
     /// commitment row's tap already is, so the rows themselves need no `isShown` distinction.
     @ViewBuilder
     private func dayList(for dayView: DayView?, isShown: Bool) -> some View {
-        List {
-            if let dayView {
-                // A `Section` per group, the category as its header and none where there is no
-                // category — the same arrangement `CommitmentsView`'s kept list takes.
-                // `design.md` § *The shell rides this Story*.
-                ForEach(dayView.groups, id: \.category) { group in
-                    Section {
-                        // `Row` carries no identity of its own beyond `isKept` and `name`
-                        // (`DayView.swift` keeps `commitment` and `date` internal to the kit),
-                        // and `isKept` is exactly what a tap flips — keying `ForEach` on the
-                        // row's value would make SwiftUI see a tap as one row removed and
-                        // another inserted. The offset within this group's own `ForEach` is
-                        // stable across a tap, exactly as the flat offset was, so it stands in
-                        // as the identity instead.
-                        ForEach(Array(group.rows.enumerated()), id: \.offset) { _, row in
-                            rowView(row)
+        // Wrapped in a `ScrollViewReader` so a refusal appearing under the entry, or the entry
+        // gaining focus, can scroll the entry (and the cause line under it) to the bottom of
+        // the list's own visible area — both `.onChange`s below, guarded on `isShown` because
+        // only the centre list ever carries a live entry field or a refusal under it. Measured
+        // on the unmodified code (2026-09-16 audit, finding 6): keyboard frame y 583 to 816,
+        // entry field y 600 to 622, refusal label y 627 to 641 — under the keyboard's top edge
+        // and unreadable.
+        //
+        // **The scroll alone does nothing on this SDK, and `.contentMargins` below is why.**
+        // `List`'s own keyboard avoidance does not shrink its visible area here — measured
+        // 2026-09-16, the entry and the refusal land at the exact same y whether or not the
+        // scroll runs, because the entry is already the list's last row: there is nothing below
+        // it left for `scrollTo(anchor: .bottom)` to reveal. `.contentMargins(.bottom:)` pads
+        // the list's own scrollable content by the keyboard's tracked height
+        // (`oneOffKeyboardHeight`) while a one-off field is focused, so there *is* room below
+        // the entry, and the scroll then has somewhere to carry it to. `.contentMargins` over
+        // `.safeAreaPadding` because this is padding for the scrollable content specifically,
+        // not a claim on the view's own layout frame — a plain `List` reads it the same way a
+        // `ScrollView` does.
+        ScrollViewReader { proxy in
+            List {
+                if let dayView {
+                    // A `Section` per group, the category as its header and none where there is no
+                    // category — the same arrangement `CommitmentsView`'s kept list takes.
+                    // `design.md` § *The shell rides this Story*.
+                    ForEach(dayView.groups, id: \.category) { group in
+                        Section {
+                            // `Row` carries no identity of its own beyond `isKept` and `name`
+                            // (`DayView.swift` keeps `commitment` and `date` internal to the kit),
+                            // and `isKept` is exactly what a tap flips — keying `ForEach` on the
+                            // row's value would make SwiftUI see a tap as one row removed and
+                            // another inserted. The offset within this group's own `ForEach` is
+                            // stable across a tap, exactly as the flat offset was, so it stands in
+                            // as the identity instead.
+                            ForEach(Array(group.rows.enumerated()), id: \.offset) { _, row in
+                                rowView(row)
+                            }
+                        } header: {
+                            if let category = group.category {
+                                // The platform's own padding around a category heading, dropped.
+                                // Measured on this SDK (iPhone 17 simulator, iOS 26.5) rather than
+                                // assumed, the way `.listSectionSpacing(12)` below was: the gap
+                                // between the card above and the card this heading belongs to read
+                                // 52.33pt untouched and reads 40.00pt with these insets, and the
+                                // heading itself has not moved sideways — the 16pt leading and
+                                // trailing are the platform's own, restated because
+                                // `listRowInsets` replaces all four.
+                                //
+                                // **40.00pt is the floor, and it is not these insets that set it.**
+                                // The heading's row will not lay out under 28pt however small they
+                                // go — negative values only slide the words inside it — so what is
+                                // left is that 28 plus the 12 below. Anything tighter has to come
+                                // out of `.listSectionSpacing`, and that is the gap before the
+                                // ungrouped rows, which is the one the owner asked to keep.
+                                Text(category)
+                                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
+                            }
                         }
-                    } header: {
-                        if let category = group.category {
-                            // The platform's own padding around a category heading, dropped.
-                            // Measured on this SDK (iPhone 17 simulator, iOS 26.5) rather than
-                            // assumed, the way `.listSectionSpacing(12)` below was: the gap
-                            // between the card above and the card this heading belongs to read
-                            // 52.33pt untouched and reads 40.00pt with these insets, and the
-                            // heading itself has not moved sideways — the 16pt leading and
-                            // trailing are the platform's own, restated because
-                            // `listRowInsets` replaces all four.
-                            //
-                            // **40.00pt is the floor, and it is not these insets that set it.**
-                            // The heading's row will not lay out under 28pt however small they
-                            // go — negative values only slide the words inside it — so what is
-                            // left is that 28 plus the 12 below. Anything tighter has to come
-                            // out of `.listSectionSpacing`, and that is the gap before the
-                            // ungrouped rows, which is the one the owner asked to keep.
-                            Text(category)
+                    }
+                    // The One-offs group, after every group of commitments — `openspec/specs/
+                    // day-screen/spec.md`'s *A day view draws the one-offs standing on its date as
+                    // one group headed One-offs*. `dayView.oneOffGroup` is `nil` only where this
+                    // screen is not keeping one-offs at all; it is still drawn, holding no rows but
+                    // the entry, on a day none stand on (`design.md` § *The empty group is the
+                    // offer*). One-off rows are keyed by value, not by offset — a tick or a rename
+                    // re-keys a row by its new value on purpose (grill answer 19), unlike a
+                    // commitment row's tap, which the offset above still keys through.
+                    if let oneOffGroup = dayView.oneOffGroup {
+                        Section {
+                            ForEach(oneOffGroup.rows, id: \.self) { row in
+                                oneOffRowView(row)
+                            }
+                            oneOffEntryView(isShown: isShown)
+                        } header: {
+                            Text(oneOffGroup.heading)
                                 .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                         }
                     }
                 }
-                // The One-offs group, after every group of commitments — `openspec/specs/
-                // day-screen/spec.md`'s *A day view draws the one-offs standing on its date as
-                // one group headed One-offs*. `dayView.oneOffGroup` is `nil` only where this
-                // screen is not keeping one-offs at all; it is still drawn, holding no rows but
-                // the entry, on a day none stand on (`design.md` § *The empty group is the
-                // offer*). One-off rows are keyed by value, not by offset — a tick or a rename
-                // re-keys a row by its new value on purpose (grill answer 19), unlike a
-                // commitment row's tap, which the offset above still keys through.
-                if let oneOffGroup = dayView.oneOffGroup {
-                    Section {
-                        ForEach(oneOffGroup.rows, id: \.self) { row in
-                            oneOffRowView(row)
-                        }
-                        oneOffEntryView(isShown: isShown)
-                    } header: {
-                        Text(oneOffGroup.heading)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
-                    }
+            }
+            // Same measured value as `CommitmentsView`'s kept list — see the comment there for
+            // how it was determined.
+            .listSectionSpacing(12)
+            // See this function's own doc comment for why: room below the entry for the scroll
+            // below to carry it into, on an SDK where keyboard avoidance alone does not make any.
+            .contentMargins(
+                .bottom, isShown && oneOffFocus != nil ? oneOffKeyboardHeight : 0, for: .scrollContent)
+            .onChange(of: screen.nameRefusal) { _, newValue in
+                guard isShown, let newValue, newValue.row == nil else {
+                    return
+                }
+                withAnimation {
+                    proxy.scrollTo(oneOffEntryScrollID, anchor: .bottom)
+                }
+            }
+            .onChange(of: oneOffFocus) { _, newValue in
+                guard isShown, newValue == .entry else {
+                    return
+                }
+                withAnimation {
+                    proxy.scrollTo(oneOffEntryScrollID, anchor: .bottom)
                 }
             }
         }
-        // Same measured value as `CommitmentsView`'s kept list — see the comment there for how
-        // it was determined.
-        .listSectionSpacing(12)
     }
 
     /// One row's content and the tap that acts on it — pulled out of `dayList(for:)` so the same
@@ -1019,6 +1092,10 @@ struct ContentView: View {
                         .foregroundStyle(.red)
                 }
             }
+            // Tagged for `dayList(for:isShown:)`'s `ScrollViewReader`, which scrolls to this id
+            // on focus and on a refusal so the field and the cause line under it both clear the
+            // keyboard.
+            .id(oneOffEntryScrollID)
         } else {
             Text("New one-off")
                 .foregroundStyle(.secondary)
