@@ -126,17 +126,20 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
-- **A look-back's line is two strings the shell joins.** `LookBack.Line.month(inWords:fraction:)`
-  and `.rhythmChanged(inWords:from:)` hand the shell two strings each, and `LookBackView` joins
-  them — a space between a month and its fraction, an em dash between a rhythm and its day —
-  while `design.md` § *A look-back says English, not numbers* says every field is "a string the
-  shell draws unaltered" and requirement 7 fixes the separators so the words are testable. The
-  joining rule the shell invents is covered by nothing. Closing it means either one string per
-  line at the seam or a `design.md` sentence saying the join is the shell's, and both are edits
-  to a signed change folder — a second G4 — so it was left at #272's G7, 2026-09-15, for
-  `look-back-at-a-quota` (#273) to settle, since that Story adds the first non-month line and will
-  meet the same join. Beside it, `MonthTally` carries `year` and `month` as loose integers next to
-  a `YearMonth` type two declarations below; a tidy for the same Story.
+- **A look-back's line is two strings, and the shell decides how they sit.** `LookBack.Line`
+  hands the shell two strings per line — `.month(inWords:fraction:)` and
+  `.rhythmChanged(inWords:from:)` — while `design.md` § *A look-back says English, not numbers*
+  says every field is "a string the shell draws unaltered" and requirement 7 fixes the separators
+  so the words are testable. Since the layout chosen at #272's G7, `LookBackView` draws a month and
+  its fraction in two grid columns, so nothing joins them; it still composes the rhythm-change
+  line as the rhythm, a middle dot and the day, and it draws an em dash of its own where a kept
+  commitment has no kept-until. Neither the join nor the placeholder is covered by any
+  requirement. Closing it means either one string per line at the seam or a `design.md` sentence
+  saying what the shell may add, and both are edits to a signed change folder — a second G4 — so
+  it was left at #272's G7, 2026-09-15, for `look-back-at-a-quota` (#273) to settle, since that
+  Story adds the first non-month line and will meet the same join. Beside it, `MonthTally` carries
+  `year` and `month` as loose integers next to a `YearMonth` type two declarations below; a tidy
+  for the same Story.
 - **A schedule's payload cannot be read back out.** Surfaced at #9's review, 2026-08-31.
   `DayOfMonth` and `Schedule.dayOfMonth(_)` are public but `DayOfMonth.day` is internal, so an
   app target can build a rule on the 25th and never recover the `25` to render "the 25th" in a
