@@ -883,11 +883,18 @@ private struct CommitmentSheet: View {
                             }
                         } label: {
                             HStack {
+                                // `Color.primary`/`Color.secondary`, not the hierarchical
+                                // `.primary`/`.secondary` shape styles: a `Menu`'s label sits in
+                                // an ambient tint (accentColor) context, so the hierarchical
+                                // styles resolve relative to *that* — solid and faded blue,
+                                // measured on device — rather than to the system's actual label
+                                // colours. The absolute `Color` values are what `Kind` and
+                                // `Rhythm` above draw in.
                                 Text(category.isEmpty ? "Category (optional)" : category)
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(Color.primary)
                                 Spacer()
                                 Image(systemName: "chevron.up.chevron.down")
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.secondary)
                             }
                         }
                     }
