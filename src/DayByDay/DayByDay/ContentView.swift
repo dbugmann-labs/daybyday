@@ -242,7 +242,10 @@ struct ContentView: View {
                             TextEditor(text: $enteringNoteText)
                                 .scrollContentBackground(.hidden)
                                 .padding(8)
-                                .background(.background, in: RoundedRectangle(cornerRadius: 12))
+                                .background(
+                                    Color(.secondarySystemGroupedBackground),
+                                    in: RoundedRectangle(cornerRadius: 12)
+                                )
                                 .padding()
                         }
                         .navigationTitle(row.name)
