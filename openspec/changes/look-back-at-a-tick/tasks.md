@@ -96,4 +96,4 @@ implementation.** These boxes confirm rather than write.
 - [x] W.3 The stopped tick commitment's look-back — the picture shows the day kept until in the head, and no month after it
 - [x] W.4 The number commitment's look-back — the picture shows the head and no month and no whole under it
 - [x] W.5 A tick commitment's look-back whose roster holds its earlier era removed — the picture shows the line where the rhythm changed between the months
-- [x] W.6 **The handover** — https://github.com/dbugmann-labs/daybyday/pull/280#issuecomment-5685926808
+- [x] W.6 **The handover** — https://github.com/dbugmann-labs/daybyday/pull/280#issuecomment-5693693144
