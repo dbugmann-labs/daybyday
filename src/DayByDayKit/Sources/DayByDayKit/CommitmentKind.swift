@@ -10,7 +10,7 @@ extension Commitment {
         /// Whether `self` and `other` are the same one of the four kinds — tick, number, note or
         /// total — whatever range or target either carries. `openspec/changes/
         /// change-range-and-target/design.md` § *Resemblance on the kind's sort*.
-        public func isOfTheSameSort(as other: Kind) -> Bool {
+        func isOfTheSameSort(as other: Kind) -> Bool {
             switch (self, other) {
             case (.tick, .tick), (.number, .number), (.note, .note), (.total, .total):
                 return true

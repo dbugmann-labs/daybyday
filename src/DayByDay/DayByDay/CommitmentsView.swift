@@ -850,6 +850,11 @@ private struct CommitmentSheet: View {
                                 .onChange(of: highest) { _, _ in screen.sheetFieldEdited(.range) }
                         }
                         .disabled(!canChangeMoreThanNameAndCategory)
+                        // `TextField`, unlike `Picker`/`Toggle`/`Stepper`/`DatePicker` above and
+                        // below, does not grey its own text on `.disabled` — say so explicitly,
+                        // matching the `Color.primary`/`Color.secondary` pair the category label
+                        // already draws in.
+                        .foregroundStyle(canChangeMoreThanNameAndCategory ? Color.primary : Color.secondary)
 
                         if let rangeRefusal = sheetRefusal(under: .range) {
                             refusalText(rangeRefusal)
@@ -858,6 +863,7 @@ private struct CommitmentSheet: View {
                         TextField("Target", text: $target)
                             .onChange(of: target) { _, _ in screen.sheetFieldEdited(.target) }
                             .disabled(!canChangeMoreThanNameAndCategory)
+                            .foregroundStyle(canChangeMoreThanNameAndCategory ? Color.primary : Color.secondary)
 
                         if let targetRefusal = sheetRefusal(under: .target) {
                             refusalText(targetRefusal)

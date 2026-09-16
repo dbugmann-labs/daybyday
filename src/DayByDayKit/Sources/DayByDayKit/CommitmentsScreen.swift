@@ -768,28 +768,6 @@ public final class CommitmentsScreen {
         let isStopped = stopped.contains(commitment)
         let sameRhythm = Rhythm(commitment.schedule) == rhythm
 
-        // The reading comes before the stopped guard: what was asked cannot be compared with
-        // what the commitment is made of until it has been read. `design.md` § *The reading
-        // comes before the stopped guard*.
-        let newKind: Commitment.Kind
-        switch Self.changedKind(of: commitment, lowest: lowest, highest: highest, target: target) {
-        case .success(let kind):
-            newKind = kind
-        case .failure(let refusal):
-            let field: SheetField = refusal == .rangeIsNotARange ? .range : .target
-            refuse(.changing(commitment, refusal), on: field)
-            return refusal
-        }
-        let sameKind = newKind == commitment.kind
-
-        guard !isStopped || (sameRhythm && keptFrom == commitment.keptFrom && sameKind) else {
-            refuse(
-                .changing(commitment, .stoppedCommitmentDoesNotTakeThisChange),
-                on: Self.ambiguousField(
-                    askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind, from: commitment))
-            return .stoppedCommitmentDoesNotTakeThisChange
-        }
-
         guard !Blank.saysNothing(name) else {
             refuse(.changing(commitment, .namesNothing), on: .name)
             return .namesNothing
@@ -803,6 +781,28 @@ public final class CommitmentsScreen {
         guard let newSchedule = rhythm.schedule(keptFrom: keptFrom) else {
             refuse(.changing(commitment, .rhythmOutOfRange), on: .rhythm)
             return .rhythmOutOfRange
+        }
+
+        // The reading comes before the stopped guard: what was asked cannot be compared with
+        // what the commitment is made of until it has been read. `design.md` § *The reading
+        // comes before the stopped guard*.
+        let newKind: Commitment.Kind
+        switch Self.changedKind(of: commitment, lowest: lowest, highest: highest, target: target) {
+        case .success(let kind):
+            newKind = kind
+        case .failure(let refusal):
+            let field: SheetField = refusal == .rangeIsNotARange ? .range : .target
+            refuse(.changing(commitment, refusal), on: field)
+            return refusal
+        }
+        let sameKind = newKind == commitment.kind
+        let ambiguousField = Self.ambiguousField(
+            askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind, from: commitment)
+
+        guard !isStopped || (sameRhythm && keptFrom == commitment.keptFrom && sameKind) else {
+            refuse(
+                .changing(commitment, .stoppedCommitmentDoesNotTakeThisChange), on: ambiguousField)
+            return .stoppedCommitmentDoesNotTakeThisChange
         }
 
         let normalizedCategory = Self.normalizedCategory(category)
@@ -843,10 +843,7 @@ public final class CommitmentsScreen {
                     from: commitment, to: changedCommitment, in: recordStore.history)
                 {
                     let field: SheetField? =
-                        refusal == .wouldLeaveARecordedDayNotDue
-                        ? Self.ambiguousField(
-                            askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind, from: commitment)
-                        : nil
+                        refusal == .wouldLeaveARecordedDayNotDue ? ambiguousField : nil
                     refuse(.changing(commitment, refusal), on: field)
                     return refusal
                 }
@@ -869,10 +866,7 @@ public final class CommitmentsScreen {
                     // could not have been made on".
                     guard try recordStore.carryOver(commitment, to: changedCommitment) else {
                         refuse(
-                            .changing(commitment, .wouldLeaveARecordedDayNotDue),
-                            on: Self.ambiguousField(
-                                askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind,
-                                from: commitment))
+                            .changing(commitment, .wouldLeaveARecordedDayNotDue), on: ambiguousField)
                         return .wouldLeaveARecordedDayNotDue
                     }
                 } catch {
@@ -956,10 +950,7 @@ public final class CommitmentsScreen {
                 from: commitment, to: carryTarget, in: recordStore.history)
             {
                 let field: SheetField? =
-                    refusal == .wouldLeaveARecordedDayNotDue
-                    ? Self.ambiguousField(
-                        askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind, from: commitment)
-                    : nil
+                    refusal == .wouldLeaveARecordedDayNotDue ? ambiguousField : nil
                 refuse(.changing(commitment, refusal), on: field)
                 return refusal
             }
@@ -977,11 +968,7 @@ public final class CommitmentsScreen {
                 // both causes `carryOver` refuses for, so a `false` here can only be a formation
                 // rule beyond `isDue` that they do not yet cover.
                 guard try recordStore.carryOver(commitment, to: carryTarget) else {
-                    refuse(
-                        .changing(commitment, .wouldLeaveARecordedDayNotDue),
-                        on: Self.ambiguousField(
-                            askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind,
-                            from: commitment))
+                    refuse(.changing(commitment, .wouldLeaveARecordedDayNotDue), on: ambiguousField)
                     return .wouldLeaveARecordedDayNotDue
                 }
             } catch {
