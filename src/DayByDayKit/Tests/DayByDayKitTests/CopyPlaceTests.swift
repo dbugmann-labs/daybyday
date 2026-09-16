@@ -254,8 +254,8 @@ func aFolderGivenAsTheCopyPlaceThatCannotBeWrittenBecomesTheCopyPlaceWithAStopAn
 }
 
 @MainActor
-@Test("a folder given in another's stead leaves the file at the folder it replaces exactly as it was")
-func aFolderGivenInAnothersSteadLeavesTheFileAtTheFolderItReplacesExactlyAsItWas() throws {
+@Test("a folder given in another's stead leaves the file at the folder it replaces as it was")
+func aFolderGivenInAnothersSteadLeavesTheFileAtTheFolderItReplacesAsItWas() throws {
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let places = freshThreePlaces()
     let clock = laterMinuteEachTime(from: Moment(on: monday, hour: 14, minute: 32)!)
