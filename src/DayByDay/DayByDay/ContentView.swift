@@ -155,6 +155,17 @@ struct ContentView: View {
                 }
             }
             .toolbar {
+                // The way back to today: a plain text button on the toolbar's left, where
+                // nothing is drawn today. Still gated on `screen.offersGoingBackToToday` and
+                // still calls exactly what the button under the day row used to.
+                if screen.offersGoingBackToToday {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Today") {
+                            commitFocusedOneOffField(forDeparture: true)
+                            screen.showToday()
+                        }
+                    }
+                }
                 ToolbarItem {
                     Button("Commitments") {
                         commitmentsScreen = CommitmentsScreen(asOf: today())
@@ -225,23 +236,30 @@ struct ContentView: View {
             ) {
                 if let row = enteringNoteRow {
                     NavigationStack {
-                        TextEditor(text: $enteringNoteText)
-                            .padding()
-                            .navigationTitle(row.name)
-                            .navigationBarTitleDisplayMode(.inline)
-                            .toolbar {
-                                ToolbarItem(placement: .cancellationAction) {
-                                    Button("Cancel") {
-                                        enteringNoteRow = nil
-                                    }
-                                }
-                                ToolbarItem(placement: .confirmationAction) {
-                                    Button("Save") {
-                                        try? screen.enter(enteringNoteText, on: row)
-                                        enteringNoteRow = nil
-                                    }
+                        ZStack {
+                            Color(.systemGroupedBackground)
+                                .ignoresSafeArea()
+                            TextEditor(text: $enteringNoteText)
+                                .scrollContentBackground(.hidden)
+                                .padding(8)
+                                .background(.background, in: RoundedRectangle(cornerRadius: 12))
+                                .padding()
+                        }
+                        .navigationTitle(row.name)
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Cancel") {
+                                    enteringNoteRow = nil
                                 }
                             }
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Save") {
+                                    try? screen.enter(enteringNoteText, on: row)
+                                    enteringNoteRow = nil
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -473,12 +491,14 @@ struct ContentView: View {
     }
 
     /// The controls that stay put while the day's rows page beneath them: the chevrons and the
-    /// day picker, the conditional `Today` button, and the two store messages — facts about the
+    /// day picker, and the two store messages — facts about the
     /// screen rather than about a day. `design.md` § *What the shell draws*: "the icons travel,
     /// the dock stays." Drawn outside the paged `List`s entirely, on purpose — ADR-1019's amended
     /// guard is that nothing here decides anything a test cannot already see decided behind the
     /// seam; this view only reads what `screen` already computed and calls the two moves the
-    /// chevrons already called before this Story.
+    /// chevrons already called before this Story. `Today` itself is no longer drawn here — it
+    /// moved into the toolbar's leading item, gated on the same `offersGoingBackToToday` and
+    /// calling the same two moves (`body`'s `.toolbar`).
     private var dayControls: some View {
         VStack(spacing: 8) {
             HStack {
@@ -526,24 +546,17 @@ struct ContentView: View {
                 }
                 .buttonStyle(.borderless)
             }
-            if screen.offersGoingBackToToday {
-                Button {
-                    commitFocusedOneOffField(forDeparture: true)
-                    screen.showToday()
-                } label: {
-                    Text("Today")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-            }
-
             switch screen.recordState {
             case .kept:
                 EmptyView()
             case .unreadable:
                 Text("The record could not be read.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
             case .writtenByALaterVersion:
                 Text("The record was written by a newer version of DayByDay and must not be deleted.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
             }
 
             switch screen.rosterState {
@@ -551,8 +564,12 @@ struct ContentView: View {
                 EmptyView()
             case .notKept:
                 Text("The roster could not be read or could not be written.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
             case .writtenByALaterVersion:
                 Text("The roster was written by a newer version of DayByDay and must not be deleted.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
             }
 
             switch screen.oneOffState {
@@ -560,8 +577,12 @@ struct ContentView: View {
                 EmptyView()
             case .unreadable:
                 Text("The one-offs could not be read.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
             case .writtenByALaterVersion:
                 Text("The one-offs were written by a newer version of DayByDay and must not be deleted.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
             }
         }
         .padding(.horizontal)
