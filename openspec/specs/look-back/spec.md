@@ -178,13 +178,14 @@ SHALL say a whole of nothing out of nothing.
 ### Requirement: A look-back reads a commitment's earlier eras off the roster by resemblance
 
 A look-back SHALL read a commitment's **chain** of **eras**. Behind a commitment stands the removed
-commitment of the same name and the same kind whose day kept until is the day before that
-commitment's day kept from; behind that one stands the same again, until none answers. Where more
-than one removed commitment answers, the look-back SHALL take the one the roster holds nearest after
-the era in front of it. A commitment the roster has not removed SHALL NOT be an earlier era, and a
-look-back SHALL never reach one. A look-back SHALL count each day it counts against the era that
-holds that day, SHALL say the newest era's rhythm in words, and SHALL say the earliest era's day
-kept from as the day the commitment is kept from.
+commitment of the same name and a kind of the same sort — a number behind a number, a total behind
+a total, whatever it carries — whose day kept until is the day before that commitment's day kept
+from; behind that one stands the same again, until none answers. Where more than one removed
+commitment answers, the look-back SHALL take the one the roster holds nearest after the era in front
+of it. A commitment the roster has not removed SHALL NOT be an earlier era, and a look-back SHALL
+never reach one. A look-back SHALL count each day it counts against the era that holds that day,
+SHALL say the newest era's rhythm in words, and SHALL say the earliest era's day kept from as the
+day the commitment is kept from.
 
 #### Scenario: a look-back counts the era behind the one it was asked about
 
@@ -246,6 +247,21 @@ kept from as the day the commitment is kept from.
   take a tick, on a roster keeping a commitment named "Gym" kept from 1 January 2026 whose days
   take a tick, which it had held removed and kept until 3 March 2026 before it was offered again
 - **THEN** it says the day kept from "4 March 2026" and its one line is the month March 2026
+
+#### Scenario: a look-back chains an era whose range or target differs behind the one it was asked about
+
+- **WHEN** a look-back is asked for at a commitment named "Mood" kept from 4 March 2026 whose days
+  take a number with a range of 1 to 5, on a roster also holding removed a commitment named "Mood"
+  kept from 1 January 2026 and kept until 3 March 2026 whose days take a number with a range of 1 to
+  10, as of 31 March 2026
+- **THEN** it says the day kept from "1 January 2026"
+- **AND** a look-back at a commitment named "Protein" kept from 4 March 2026 whose days take a total
+  with a target of 100, on a roster also holding removed one named "Protein" kept from 1 January 2026
+  and kept until 3 March 2026 whose days take a total with a target of 120, says the day kept from
+  "1 January 2026" too
+- **AND** a look-back at a commitment named "Weight" kept from 4 March 2026 whose days take a number
+  carrying no range, on a roster also holding removed one named "Weight" kept from 1 January 2026 and
+  kept until 3 March 2026 whose days take a number with a range of 40 to 150, says the same
 
 ### Requirement: A look-back says its months, its days and its fractions in the app's own words
 
