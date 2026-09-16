@@ -29,23 +29,23 @@ make it pass, then the next. Every test in §§ 3–6 goes in
 
 ## 4. The whole — one test each
 
-- [ ] 4.1 a look-back's whole is the sum of the weeks it says — catches a whole still saying nothing where an era runs on a quota
-- [ ] 4.2 a mixed chain's whole sums its months' due days and its weeks' quotas alike — catches a whole counted over the days walked rather than over the lines said
+- [x] 4.1 a look-back's whole is the sum of the weeks it says — catches a whole still saying nothing where an era runs on a quota
+- [x] 4.2 a mixed chain's whole sums its months' due days and its weeks' quotas alike — catches a whole counted over the days walked rather than over the lines said
 
 ## 5. Where the rhythm changed — one test each
 
-- [ ] 5.1 a look-back says where the rhythm changed, above the week the newer era is kept from — catches a line placed by the month a week falls in
-- [ ] 5.2 a look-back says where the rhythm changed between a quota era's weeks and a weekday era's months — catches the higher of the two lines holding that day, which puts the line above everything
+- [x] 5.1 a look-back says where the rhythm changed, above the week the newer era is kept from — catches a line placed by the month a week falls in
+- [x] 5.2 a look-back says where the rhythm changed between a quota era's weeks and a weekday era's months — catches the higher of the two lines holding that day, which puts the line above everything
 
 ## 6. The words — one test each
 
-- [ ] 6.1 a look-back says a week inside one month as its two days, that month's short name and the year — catches a full month name, or the month said at both ends
-- [ ] 6.2 a look-back says a week across two months as each end's day and short month, and the year once — catches the year said twice, or the one-month form used across two
-- [ ] 6.3 a look-back says a week across two years as each end's day, short month and year — catches the later year said for both ends
+- [x] 6.1 a look-back says a week inside one month as its two days, that month's short name and the year — catches a full month name, or the month said at both ends
+- [x] 6.2 a look-back says a week across two months as each end's day and short month, and the year once — catches the year said twice, or the one-month form used across two
+- [x] 6.3 a look-back says a week across two years as each end's day, short month and year — catches the later year said for both ends
 
 ## 7. What the delta carries unchanged
 
-- [ ] 7.1 The sixteen scenarios this delta carries verbatim under the month, the whole, the rhythm-changed and the number-note-total requirements still pass, with their tests untouched
+- [x] 7.1 The sixteen scenarios this delta carries verbatim under the month, the whole, the rhythm-changed and the number-note-total requirements still pass, with their tests untouched
 - [x] 7.2 The two tests named for the scenarios this delta removes — "a look-back at a weekly quota says its months with no fraction and no whole" and "a look-back says no fraction on a month a weekly-quota era counts a day of" — are deleted, and no other test is
 
 ## 8. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
