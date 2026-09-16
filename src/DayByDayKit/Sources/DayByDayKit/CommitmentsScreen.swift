@@ -24,21 +24,33 @@ public final class CommitmentsScreen {
     private var rosterStore: RosterStore?
     private var recordStore: RecordStore?
 
+    /// The copy place this screen writes to after every change it keeps — `nil` where none was
+    /// handed in, which is the whole of "no copying": every call site that reaches a place
+    /// compiles and behaves unchanged. `design.md` § *One copy place, handed to both screens*.
+    private let _copyPlace: CopyPlace?
+
+    /// The copy place this screen writes to, or `nil` where none was handed in.
+    public var copyPlace: CopyPlace? { _copyPlace }
+
     /// Opens on `today`, reading the roster kept at `place` and, for the record place a change
     /// carries over at, the record kept at `keepingRecordAt`. Defaults to exactly the place a day
     /// screen keeps its record, `design.md` § *The seam*: `CommitmentsScreen.init` gains this
     /// parameter and nothing else changes shape, so every existing call site compiles unchanged.
     /// `keepingOneOffsAt` defaults to the place a day screen keeps its one-offs, on the same
-    /// footing — `openspec/changes/make-a-copy/design.md` § *The seam*.
+    /// footing — `openspec/changes/make-a-copy/design.md` § *The seam*. `copyingTo` is the copy
+    /// place a kept change writes to, `nil` by default so every existing call site still compiles
+    /// unchanged — `openspec/changes/copy-on-every-change/design.md` § *The seam*.
     public init(
         asOf today: CalendarDate, keepingRosterAt place: URL = CommitmentsScreen.rosterPlace,
         keepingRecordAt recordPlace: URL = DayScreen.recordPlace,
-        keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace
+        keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace,
+        copyingTo copyPlace: CopyPlace? = nil
     ) {
         self.place = place
         self.recordPlace = recordPlace
         self.oneOffPlace = oneOffPlace
         self.dayToKeepFrom = today
+        self._copyPlace = copyPlace
 
         let opened = Self.readPlaces(place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace)
         self.rosterStore = opened.rosterStore
@@ -202,6 +214,12 @@ public final class CommitmentsScreen {
     /// said first, read once*.
     private var pendingRestore: Copy?
 
+    /// The folder `awaitingRestore` was asked for through `givenAsCopyPlace`, so confirming or
+    /// replacing it also makes that folder the copy place — `nil` for a restore asked through
+    /// `askToRestore(from:)`, which never touches the copy place.
+    /// `openspec/changes/copy-on-every-change/design.md` § *The seam*.
+    private var pendingCopyPlaceFolder: URL?
+
     /// The moment of the copy this screen last restored, until the app is shown again or a
     /// change reaches a place. `nil` where this screen has restored no copy since it was opened,
     /// or once one of those two things has happened.
@@ -249,6 +267,13 @@ public final class CommitmentsScreen {
         return nameTypedBack.trimmingCharacters(in: .whitespacesAndNewlines)
             == awaitingRemoval.name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
+    /// A folder given as the copy place that does not hold a readable copy — refused for its own
+    /// reason, held apart from `refusedChange` and from the change it holds refused rather than
+    /// inside it. At most one at a time; ends when the app is shown again or another folder is
+    /// given. `openspec/specs/restore/spec.md` § *A folder holding a copy that cannot be read is
+    /// refused as a copy place*.
+    public private(set) var refusedCopyPlace: Refusal?
 
     /// The change asked for last that was refused, and why — at most one at a time, `nil` when the
     /// last change asked for was kept and when none has been asked for. Cleared by `shown(asOf:)`.
@@ -512,6 +537,7 @@ public final class CommitmentsScreen {
         endedByAChangeOrByBeingShown()
         sheetRefusal = nil
         refreshLists(from: rosterStore)
+        _copyPlace?.keptAChange()
         return nil
     }
 
@@ -896,6 +922,7 @@ public final class CommitmentsScreen {
                 guard undoTornSaveMadeDuringThisChange() else {
                     endedByAChangeOrByBeingShown()
                     sheetRefusal = nil
+                    _copyPlace?.keptAChange()
                     return nil
                 }
             }
@@ -903,6 +930,7 @@ public final class CommitmentsScreen {
             endedByAChangeOrByBeingShown()
             sheetRefusal = nil
             refreshLists(from: rosterStore)
+            _copyPlace?.keptAChange()
             return nil
         }
 
@@ -1003,12 +1031,14 @@ public final class CommitmentsScreen {
             guard undoTornSaveMadeDuringThisChange() else {
                 endedByAChangeOrByBeingShown()
                 sheetRefusal = nil
+                _copyPlace?.keptAChange()
                 return nil
             }
 
             endedByAChangeOrByBeingShown()
             sheetRefusal = nil
             refreshLists(from: rosterStore)
+            _copyPlace?.keptAChange()
             return nil
         }
 
@@ -1029,6 +1059,7 @@ public final class CommitmentsScreen {
         endedByAChangeOrByBeingShown()
         sheetRefusal = nil
         refreshLists(from: rosterStore)
+        _copyPlace?.keptAChange()
         return nil
     }
 
@@ -1155,12 +1186,14 @@ public final class CommitmentsScreen {
         guard undoTornSaveMadeDuringThisChange() else {
             endedByAChangeOrByBeingShown()
             sheetRefusal = nil
+            _copyPlace?.keptAChange()
             return nil
         }
 
         endedByAChangeOrByBeingShown()
         sheetRefusal = nil
         refreshLists(from: rosterStore)
+        _copyPlace?.keptAChange()
         return nil
     }
 
@@ -1207,6 +1240,7 @@ public final class CommitmentsScreen {
 
         endedByAChangeOrByBeingShown()
         refreshLists(from: rosterStore)
+        _copyPlace?.keptAChange()
         return nil
     }
 
@@ -1267,6 +1301,7 @@ public final class CommitmentsScreen {
 
         endedByAChangeOrByBeingShown()
         refreshLists(from: rosterStore)
+        _copyPlace?.keptAChange()
         return nil
     }
 
@@ -1290,6 +1325,7 @@ public final class CommitmentsScreen {
 
         endedByAChangeOrByBeingShown()
         refreshLists(from: rosterStore)
+        _copyPlace?.keptAChange()
         return nil
     }
 
@@ -1369,6 +1405,7 @@ public final class CommitmentsScreen {
         // why the comparison is against the roster itself rather than the boolean `move` answers.
         if rosterStore.roster != rosterBeforeMove {
             endedByAChangeOrByBeingShown()
+            _copyPlace?.keptAChange()
         }
         refreshLists(from: rosterStore)
         return nil
@@ -1406,6 +1443,7 @@ public final class CommitmentsScreen {
         // place with no change to make does not end a standing refused-change notice.
         if rosterStore.roster != rosterBeforeMove {
             endedByAChangeOrByBeingShown()
+            _copyPlace?.keptAChange()
         }
         refreshLists(from: rosterStore)
         return nil
@@ -1551,6 +1589,8 @@ public final class CommitmentsScreen {
     /// screen says what a restore takes away and brings before anything is restored*.
     @discardableResult
     public func askToRestore(from file: URL) -> Refusal? {
+        pendingCopyPlaceFolder = nil
+
         guard let data = try? Data(contentsOf: file) else {
             awaitingRestore = nil
             pendingRestore = nil
@@ -1565,26 +1605,94 @@ public final class CommitmentsScreen {
             refusedChange = .restoring(refusal)
             return refusal
         case .success(let copy):
-            let phoneRead = Self.readStoresForCopy(
-                recordPlace: recordPlace, rosterPlace: place, oneOffPlace: oneOffPlace)
-            let phoneCounts = Counts(
-                kept: phoneRead.roster.map { $0.roster.commitments.count },
-                stopped: phoneRead.roster.map { Self.stopped(in: $0.roster).count },
-                oneOffs: phoneRead.oneOffs.map { $0.oneOffs.entries.count })
-
             pendingRestore = copy
-            awaitingRestore = AwaitingRestore(
-                moment: copy.moment, copy: Self.counts(roster: copy.roster, oneOffs: copy.oneOffs),
-                phone: phoneCounts, unreadable: phoneRead.unreadable)
+            awaitingRestore = formAwaitingRestore(for: copy)
             return nil
         }
     }
 
+    /// What a restore awaiting confirmation for `copy` says: the copy's own moment and counts,
+    /// and what the phone itself currently keeps, has stopped and holds as one-offs — shared by
+    /// `askToRestore(from:)` and `givenAsCopyPlace`, which read a file the same way whether it was
+    /// picked directly or found already standing in a folder given as the copy place.
+    private func formAwaitingRestore(for copy: Copy) -> AwaitingRestore {
+        let phoneRead = Self.readStoresForCopy(
+            recordPlace: recordPlace, rosterPlace: place, oneOffPlace: oneOffPlace)
+        let phoneCounts = Counts(
+            kept: phoneRead.roster.map { $0.roster.commitments.count },
+            stopped: phoneRead.roster.map { Self.stopped(in: $0.roster).count },
+            oneOffs: phoneRead.oneOffs.map { $0.oneOffs.entries.count })
+
+        return AwaitingRestore(
+            moment: copy.moment, copy: Self.counts(roster: copy.roster, oneOffs: copy.oneOffs),
+            phone: phoneCounts, unreadable: phoneRead.unreadable)
+    }
+
+    /// Gives `folder` to this screen as its copy place — `openspec/specs/restore/spec.md` §§ *A
+    /// folder given to a commitments screen becomes the copy place, and a copy is written there
+    /// at once*, *A folder that already holds a copy asks to restore it before it becomes the
+    /// copy place* and *A folder holding a copy that cannot be read is refused as a copy place*.
+    /// Where `folder` holds no file named `DayByDay.daybyday`, it becomes the copy place at once.
+    /// Where it holds one that reads as a copy, this instead holds a restore awaiting
+    /// confirmation for it, exactly as one asked for from any file, and sets no copy place until
+    /// that restore is confirmed or `replaceTheCopyAtTheFolderGiven` is called. Where it holds
+    /// one that does not read as a copy, `folder` is refused into `refusedCopyPlace` and nothing
+    /// is written. Does nothing, answering `nil`, where this screen has no copy place to give one
+    /// to.
+    @discardableResult
+    public func givenAsCopyPlace(_ folder: URL) -> Refusal? {
+        guard let copyPlace = _copyPlace else {
+            return nil
+        }
+        refusedCopyPlace = nil
+        pendingCopyPlaceFolder = nil
+
+        switch copyPlace.copyHeldIn(folder) {
+        case nil:
+            copyPlace.set(to: folder)
+            return nil
+        case .success(let copy):
+            pendingRestore = copy
+            pendingCopyPlaceFolder = folder
+            awaitingRestore = formAwaitingRestore(for: copy)
+            return nil
+        case .failure(let refusal):
+            refusedCopyPlace = refusal
+            return refusal
+        }
+    }
+
+    /// Replaces the copy standing at the folder `givenAsCopyPlace` most recently held a restore
+    /// awaiting confirmation for with this phone's: restores nothing, leaves nothing awaiting a
+    /// restore, and makes that folder the copy place, as any folder given becomes one.
+    /// `openspec/specs/restore/spec.md` § *A folder that already holds a copy asks to restore it
+    /// before it becomes the copy place*. Does nothing where nothing is awaiting a restore from a
+    /// folder given as the copy place.
+    public func replaceTheCopyAtTheFolderGiven() {
+        guard let copyPlace = _copyPlace, let folder = pendingCopyPlaceFolder else {
+            return
+        }
+        awaitingRestore = nil
+        pendingRestore = nil
+        pendingCopyPlaceFolder = nil
+        copyPlace.set(to: folder)
+    }
+
+    /// Forgets this screen's copy place. Does nothing where this screen has none.
+    /// `openspec/specs/restore/spec.md` § *A commitments screen forgets its copy place*.
+    public func forgetTheCopyPlace() {
+        _copyPlace?.forget()
+    }
+
     /// Leaves nothing awaiting a restore and changes nothing else — the picked file and the
-    /// three places are left exactly as they were, and whatever `refusedChange` held stands.
+    /// three places are left exactly as they were, and whatever `refusedChange` held stands. A
+    /// restore awaiting confirmation from a folder given as the copy place sets no copy place —
+    /// `openspec/specs/restore/spec.md` § *A folder given as the copy place whose restore is
+    /// cancelled becomes no copy place and is left as it was*.
     public func cancelRestoring() {
         awaitingRestore = nil
         pendingRestore = nil
+        pendingCopyPlaceFolder = nil
     }
 
     /// Writes the copy `askToRestore` read at the record, the roster and the one-off places,
@@ -1604,6 +1712,8 @@ public final class CommitmentsScreen {
         }
         awaitingRestore = nil
         pendingRestore = nil
+        let copyPlaceFolder = pendingCopyPlaceFolder
+        pendingCopyPlaceFolder = nil
 
         do {
             try RestoreInProgress.restore(
@@ -1627,6 +1737,20 @@ public final class CommitmentsScreen {
         nameTypedBack = ""
         copyRestored = copy.moment
         hasRestoredACopy = true
+
+        // A restore confirmed from a folder given as the copy place makes that folder the copy
+        // place, which writes the one copy this change owes on its own — `keptAChange()` would
+        // write a second, redundant copy at whatever place already stood. Every other confirmed
+        // restore, from a plain file or from the copy place already set, writes through
+        // `keptAChange()` as any other kept change does.
+        // `openspec/specs/restore/spec.md` §§ *A folder that already holds a copy asks to restore
+        // it before it becomes the copy place* and *A copy is written at the copy place after
+        // every change a person keeps*.
+        if let copyPlaceFolder {
+            _copyPlace?.set(to: copyPlaceFolder)
+        } else {
+            _copyPlace?.keptAChange()
+        }
 
         return nil
     }
@@ -1657,6 +1781,7 @@ public final class CommitmentsScreen {
         sheetRefusal = nil
         awaitingRemoval = nil
         nameTypedBack = ""
+        refusedCopyPlace = nil
 
         let opened = Self.readPlaces(place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace)
         rosterStore = opened.rosterStore

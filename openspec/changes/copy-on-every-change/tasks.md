@@ -13,93 +13,93 @@ split between it and `DayScreenTests.swift` where the box names a day screen, an
 
 ## 2. The seam
 
-- [ ] 2.1 Every member in `design.md` § *The seam* exists with that signature, `CopyPlace` reads and writes its file, and 3.1 is red before any of them does anything but compile
+- [x] 2.1 Every member in `design.md` § *The seam* exists with that signature, `CopyPlace` reads and writes its file, and 3.1 is red before any of them does anything but compile
 
 ## 3. `restore`: what a copy place is — one test each
 
-- [ ] 3.1 a copy place is read back as it was left by one opened again at the same place — catches state held only in memory
-- [ ] 3.2 a copy place where nothing has been kept holds no folder, no last copy and no stop — catches a missing file throwing
-- [ ] 3.3 a restore confirmed leaves the folder that is the copy place as it was — catches the copy place written by a restore
+- [x] 3.1 a copy place is read back as it was left by one opened again at the same place — catches state held only in memory
+- [x] 3.2 a copy place where nothing has been kept holds no folder, no last copy and no stop — catches a missing file throwing
+- [x] 3.3 a restore confirmed leaves the folder that is the copy place as it was — catches the copy place written by a restore
 
 ## 4. `restore`: a folder given as the copy place — one test each
 
-- [ ] 4.1 a folder given as the copy place holds a copy of the three places at once — catches the place set and the copy left to the next change
-- [ ] 4.2 a copy written at the copy place replaces the file of that name already standing there — catches a dated name or a second file
-- [ ] 4.3 a folder given as the copy place that cannot be written becomes the copy place with a stop and no last copy — catches the pick refused instead
-- [ ] 4.4 a folder given in another's stead leaves the file at the folder it replaces as it was — catches the old folder's file deleted
+- [x] 4.1 a folder given as the copy place holds a copy of the three places at once — catches the place set and the copy left to the next change
+- [x] 4.2 a copy written at the copy place replaces the file of that name already standing there — catches a dated name or a second file
+- [x] 4.3 a folder given as the copy place that cannot be written becomes the copy place with a stop and no last copy — catches the pick refused instead
+- [x] 4.4 a folder given in another's stead leaves the file at the folder it replaces as it was — catches the old folder's file deleted
 
 ## 5. `restore`: a folder that already holds a copy — one test each
 
-- [ ] 5.1 a folder holding a copy asks to restore that copy and sets no copy place — catches the old phone's copy overwritten on one tap
-- [ ] 5.2 a restore confirmed from a folder given as the copy place makes that folder the copy place — catches the place left unset after the restore
-- [ ] 5.3 a copy at a folder given as the copy place replaced with this phone's makes that folder the copy place — catches replace restoring first
-- [ ] 5.4 a folder given as the copy place whose restore is cancelled becomes no copy place and is left as it was — catches cancel setting the place anyway
+- [x] 5.1 a folder holding a copy asks to restore that copy and sets no copy place — catches the old phone's copy overwritten on one tap
+- [x] 5.2 a restore confirmed from a folder given as the copy place makes that folder the copy place — catches the place left unset after the restore
+- [x] 5.3 a copy at a folder given as the copy place replaced with this phone's makes that folder the copy place — catches replace restoring first
+- [x] 5.4 a folder given as the copy place whose restore is cancelled becomes no copy place and is left as it was — catches cancel setting the place anyway
 
 ## 6. `restore`: a folder whose copy cannot be read — one test each
 
-- [ ] 6.1 a folder holding a file of a copy's name that is not a copy is refused, and no copy place is set — catches an unreadable file overwritten
-- [ ] 6.2 a folder holding a damaged copy and one holding a copy from a later version are each refused for their own reason — catches all three told alike
-- [ ] 6.3 a folder refused leaves the copy place already set, its last copy and its stop as they were — catches a refused pick clearing the place
-- [ ] 6.4 a folder refused is held apart from a refused change, and ends when the app is shown again — catches `refusedChange` overwritten by it
+- [x] 6.1 a folder holding a file of a copy's name that is not a copy is refused, and no copy place is set — catches an unreadable file overwritten
+- [x] 6.2 a folder holding a damaged copy and one holding a copy from a later version are each refused for their own reason — catches all three told alike
+- [x] 6.3 a folder refused leaves the copy place already set, its last copy and its stop as they were — catches a refused pick clearing the place
+- [x] 6.4 a folder refused is held apart from a refused change, and ends when the app is shown again — catches `refusedChange` overwritten by it
 
 ## 7. `restore`: the copy after a kept change — one test each
 
-- [ ] 7.1 a tick kept on a day screen writes a copy at the copy place holding that tick — catches the day screen left out
-- [ ] 7.2 a one-off added, renamed and removed on a day screen each write a copy at the copy place — catches the one-off place left out
-- [ ] 7.3 a number, a note and a total entered on a day screen each write a copy at the copy place — catches only the tick path carrying the call
-- [ ] 7.4 a commitment defined, stopped, taken up again and removed through a commitments screen each write a copy at the copy place — catches one of the four sites missed
-- [ ] 7.5 a change reaching the record place and the roster place writes exactly one copy holding both — catches a copy per place written
-- [ ] 7.6 a restore confirmed writes a copy at the copy place holding what was restored — catches the restore path bypassing the copy
-- [ ] 7.7 a call that keeps nothing writes no copy at the copy place — catches the call made before the write is known to have happened
+- [x] 7.1 a tick kept on a day screen writes a copy at the copy place holding that tick — catches the day screen left out
+- [x] 7.2 a one-off added, renamed and removed on a day screen each write a copy at the copy place — catches the one-off place left out
+- [x] 7.3 a number, a note and a total entered on a day screen each write a copy at the copy place — catches only the tick path carrying the call
+- [x] 7.4 a commitment defined, stopped, taken up again and removed through a commitments screen each write a copy at the copy place — catches one of the four sites missed
+- [x] 7.5 a change reaching the record place and the roster place writes exactly one copy holding both — catches a copy per place written
+- [x] 7.6 a restore confirmed writes a copy at the copy place holding what was restored — catches the restore path bypassing the copy
+- [x] 7.7 a call that keeps nothing writes no copy at the copy place — catches the call made before the write is known to have happened
 
 ## 8. `restore`: a copy that cannot be made — one test each
 
-- [ ] 8.1 a tick kept where the copy place cannot be written is kept and is not refused — catches the copy made a condition of the change
-- [ ] 8.2 a folder that cannot be reached is told apart from one that cannot be written — catches both answered as one cause
-- [ ] 8.3 a change kept where a store cannot be read is kept, and the stop names that store — catches the store unnamed
-- [ ] 8.4 a stop keeps the moment it began over later changes that also fail — catches the moment reset on every attempt
-- [ ] 8.5 a change kept after a stop, where the folder can be written again, ends the stop and becomes the last copy — catches a stop that never clears
+- [x] 8.1 a tick kept where the copy place cannot be written is kept and is not refused — catches the copy made a condition of the change
+- [x] 8.2 a folder that cannot be reached is told apart from one that cannot be written — catches both answered as one cause
+- [x] 8.3 a change kept where a store cannot be read is kept, and the stop names that store — catches the store unnamed
+- [x] 8.4 a stop keeps the moment it began over later changes that also fail — catches the moment reset on every attempt
+- [x] 8.5 a change kept after a stop, where the folder can be written again, ends the stop and becomes the last copy — catches a stop that never clears
 - [ ] 8.6 a copy that could not be made is not held as a refused change — catches the failure pushed into `refusedChange`
 
 ## 9. `restore`: what the commitments screen says — one test each
 
-- [ ] 9.1 a commitments screen says the name of the folder that is its copy place and the last copy made there — catches a path drawn instead of a name
-- [ ] 9.2 a commitments screen says the stop and the moment it began beside the last copy made — catches the last copy dropped when a stop stands
-- [ ] 9.3 a commitments screen with no copy place says no folder, no last copy and no stop — catches a screen that needs a place to open
-- [ ] 9.4 a copy asked for and made is not the last copy a commitments screen says — catches the share-sheet copy counted
-- [ ] 9.5 a commitments screen shown again with its folder gone says what the last attempt left — catches the folder probed on being drawn
+- [x] 9.1 a commitments screen says the name of the folder that is its copy place and the last copy made there — catches a path drawn instead of a name
+- [x] 9.2 a commitments screen says the stop and the moment it began beside the last copy made — catches the last copy dropped when a stop stands
+- [x] 9.3 a commitments screen with no copy place says no folder, no last copy and no stop — catches a screen that needs a place to open
+- [x] 9.4 a copy asked for and made is not the last copy a commitments screen says — catches the share-sheet copy counted
+- [x] 9.5 a commitments screen shown again with its folder gone says what the last attempt left — catches the folder probed on being drawn
 
 ## 10. `restore`: forgetting the copy place — one test each
 
-- [ ] 10.1 a copy place forgotten leaves no folder, no last copy and no stop — catches the stop kept after the place is gone
-- [ ] 10.2 a copy place forgotten leaves the file at the folder it forgot as it was — catches the file deleted
-- [ ] 10.3 a change kept after the copy place is forgotten writes no copy and is not refused — catches a stale folder still written to
-- [ ] 10.4 forgetting where no copy place is set changes nothing — catches a no-op forget writing the file
+- [x] 10.1 a copy place forgotten leaves no folder, no last copy and no stop — catches the stop kept after the place is gone
+- [x] 10.2 a copy place forgotten leaves the file at the folder it forgot as it was — catches the file deleted
+- [x] 10.3 a change kept after the copy place is forgotten writes no copy and is not refused — catches a stale folder still written to
+- [x] 10.4 forgetting where no copy place is set changes nothing — catches a no-op forget writing the file
 
 ## 11. `restore`: the writes the app makes on its own — one test each
 
-- [ ] 11.1 a torn save undone when a screen is opened writes no copy at the copy place — catches the copy hung off the store's writer
-- [ ] 11.2 a torn restore undone when a screen is opened writes no copy at the copy place — catches the undo counted as a restore
-- [ ] 11.3 an orphaned record carried back writes no copy at the copy place — catches a repair mirrored
-- [ ] 11.4 the commitments a day screen takes on where its roster place holds nothing write no copy — catches day one counted as a change
+- [x] 11.1 a torn save undone when a screen is opened writes no copy at the copy place — catches the copy hung off the store's writer
+- [x] 11.2 a torn restore undone when a screen is opened writes no copy at the copy place — catches the undo counted as a restore
+- [x] 11.3 an orphaned record carried back writes no copy at the copy place — catches a repair mirrored
+- [x] 11.4 the commitments a day screen takes on where its roster place holds nothing write no copy — catches day one counted as a change
 
 ## 12. `day-screen`: the take-back requirement
 
-- [ ] 12.1 the take-back requirement's prose reaches the copy place as well as the record place, and its nine acceptance tests stand unchanged — no scenario of it changes, so no test is added here
+- [x] 12.1 the take-back requirement's prose reaches the copy place as well as the record place, and its nine acceptance tests stand unchanged — no scenario of it changes, so no test is added here
 
 ## 13. The shell (ADR-1019: no behaviour the kit does not specify)
 
-- [ ] 13.1 `ContentView.swift` holds one `CopyPlace`, built with the `momentNow` conversion already beside `today()`, and hands the same instance to both screens
-- [ ] 13.2 `CommitmentsView.swift` draws the copy place row at the top of the *Copy* section with the folder's name or *Pick a folder*, presents `UIDocumentPickerViewController(forOpeningContentTypes: [.folder])` wrapped as `ShareSheet` wraps its controller, and offers forgetting as a swipe on that row
-- [ ] 13.3 `CommitmentsView.swift` draws the line as the section's footer — the last copy, and the stop with its reason and since when in the caption red the refusals use — and draws `refusedCopyPlace` in the section
-- [ ] 13.4 the restore sheet gains *Replace it with this phone's* as a row, under a footer saying what it does, drawn only where the ask came from a folder given as the copy place
-- [ ] 13.5 `pnpm run verify` passes and the app target builds
+- [x] 13.1 `ContentView.swift` holds one `CopyPlace`, built with the `momentNow` conversion already beside `today()`, and hands the same instance to both screens
+- [x] 13.2 `CommitmentsView.swift` draws the copy place row at the top of the *Copy* section with the folder's name or *Pick a folder*, presents `UIDocumentPickerViewController(forOpeningContentTypes: [.folder])` wrapped as `ShareSheet` wraps its controller, and offers forgetting as a swipe on that row
+- [x] 13.3 `CommitmentsView.swift` draws the line as the section's footer — the last copy, and the stop with its reason and since when in the caption red the refusals use — and draws `refusedCopyPlace` in the section
+- [x] 13.4 the restore sheet gains *Replace it with this phone's* as a row, under a footer saying what it does, drawn only where the ask came from a folder given as the copy place
+- [x] 13.5 `pnpm run verify` passes and the app target builds
 
 ## 14. The records
 
-- [ ] 14.1 `docs/adr/1058-*.md` stands as `design.md` cites it, with its row in `docs/adr/README.md`; its status reads accepted once G4 is signed
-- [ ] 14.2 `CONTEXT.md` §§ *Copy place* and *Copy* still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
-- [ ] 14.3 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
+- [x] 14.1 `docs/adr/1058-*.md` stands as `design.md` cites it, with its row in `docs/adr/README.md`; its status reads accepted once G4 is signed
+- [x] 14.2 `CONTEXT.md` §§ *Copy place* and *Copy* still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
+- [x] 14.3 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## 15. The walk (ADR-1053; `docs/running-the-app.md` § *The walk* has the commands)
 

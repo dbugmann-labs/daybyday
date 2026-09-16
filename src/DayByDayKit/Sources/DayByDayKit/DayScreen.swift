@@ -39,6 +39,12 @@ public final class DayScreen {
     private var roster: Roster
     private var oneOffStore: OneOffStore?
 
+    /// The copy place this screen writes to after every change it keeps — `nil` where none was
+    /// handed in, which is the whole of "no copying": every call site that reaches a place
+    /// compiles and behaves unchanged. `openspec/changes/copy-on-every-change/design.md` § *One
+    /// copy place, handed to both screens*.
+    private let copyPlace: CopyPlace?
+
     /// The place a day screen keeps its record when it is not told another: one file, in a
     /// directory of this app's own, under the platform's application-support directory.
     public static var recordPlace: URL {
@@ -67,13 +73,16 @@ public final class DayScreen {
             .appendingPathComponent(fileName)
     }
 
-    /// Opens on `today`, reading the record kept at `recordPlace`.
+    /// Opens on `today`, reading the record kept at `recordPlace`. `copyingTo` is the copy place
+    /// a kept change writes to, `nil` by default so every existing call site still compiles
+    /// unchanged — `openspec/changes/copy-on-every-change/design.md` § *The seam*.
     public init(
         startingFrom dayOne: [Commitment],
         asOf today: CalendarDate,
         keepingRecordAt recordPlace: URL = DayScreen.recordPlace,
         keepingRosterAt rosterPlace: URL = DayScreen.rosterPlace,
-        keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace
+        keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace,
+        copyingTo copyPlace: CopyPlace? = nil
     ) {
         self.commitments = dayOne
         self.today = today
@@ -81,6 +90,7 @@ public final class DayScreen {
         self.recordPlace = recordPlace
         self.rosterPlace = rosterPlace
         self.oneOffPlace = oneOffPlace
+        self.copyPlace = copyPlace
 
         let read = Self.readRecordAndRoster(
             recordAt: recordPlace, rosterAt: rosterPlace, oneOffAt: oneOffPlace,
@@ -475,6 +485,7 @@ public final class DayScreen {
 
         dayView = dayViewOfShownDay()
         endNameRefusalIfItsRowIsGone()
+        copyPlace?.keptAChange()
     }
 
     /// The person has started editing a one-off name field — the entry or a row's. Ends whatever
@@ -517,6 +528,7 @@ public final class DayScreen {
         endNameRefusal(forRow: row)
         dayView = dayViewOfShownDay()
         endNameRefusalIfItsRowIsGone()
+        copyPlace?.keptAChange()
     }
 
     /// Makes the tick `row` offers, or takes it back where `row` says its commitment is kept, and
@@ -547,6 +559,7 @@ public final class DayScreen {
         notice = nil
 
         dayView = dayViewOfShownDay()
+        copyPlace?.keptAChange()
     }
 
     /// Makes the tick `row` offers, or takes it back where `row` says its one-off is done, and
@@ -578,6 +591,7 @@ public final class DayScreen {
 
         dayView = dayViewOfShownDay()
         endNameRefusalIfItsRowIsGone()
+        copyPlace?.keptAChange()
     }
 
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
@@ -677,6 +691,7 @@ public final class DayScreen {
         notice = nil
 
         dayView = dayViewOfShownDay()
+        copyPlace?.keptAChange()
     }
 
     /// Takes back the last addition `row`'s day holds, and keeps the change before `dayView`
@@ -703,6 +718,7 @@ public final class DayScreen {
         notice = nil
 
         dayView = dayViewOfShownDay()
+        copyPlace?.keptAChange()
     }
 
     /// The day view of `day`, drawn from `roster`, `recordStore`'s history and `oneOffStore`'s
