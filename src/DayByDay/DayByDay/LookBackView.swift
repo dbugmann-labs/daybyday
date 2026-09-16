@@ -7,20 +7,20 @@ import DayByDayKit
 /// shell rides this Story*: the kit already answered every rule a page shows.
 ///
 /// **Layout is Option B of the G7 proposal** (PR #280), amended by the `look-back-layout` shell
-/// chore: the name had been said twice, once in the navigation bar and again as a `.largeTitle`
-/// in the body, and the two half-width "Kept from"/"Kept until" cards wrapped a date like
-/// "15 September 2026" onto a second line (walk W.3 on PR #280). The bar now carries the name
-/// alone, as a large title that collapses to the inline title as the months scroll
-/// (`.navigationBarTitleDisplayMode(.large)`), and the body's first line is the rhythm. The two
-/// dates read as two rows of one card instead, label left and value right, wide enough that no
-/// date wraps; a commitment still kept draws only the "Kept from" row rather than a "—" that
-/// would say nothing. The "Months" heading and the `Grid` now carry the same horizontal inset as
-/// the cards' own inner padding, so the month names and the card labels share a left edge and
-/// the fractions share the cards' right edge. Still a hand-drawn `ScrollView` and `Grid` rather
-/// than the platform `List` the rest of the shell is built from, so the whole — the one summary
-/// figure this screen has — can read as a scoreboard rather than another row. The rhythm-change
-/// line is the one composition among these seam strings: it joins the rhythm and its day with a
-/// middle dot. Every other card and row draws exactly what `LookBack` hands it.
+/// chore and again by `look-back-name-twice`. The first had the bar carry the name alone; the
+/// owner preferred it said twice, so the name is back both in the navigation bar and as a
+/// `.largeTitle` in the body, with the rhythm beneath it. What the first chore did to the dates
+/// stands: the two half-width "Kept from"/"Kept until" cards wrapped a date like
+/// "15 September 2026" onto a second line (walk W.3 on PR #280), so they read as two rows of one
+/// card, label left and value right, wide enough that no date wraps; a commitment still kept
+/// draws only the "Kept from" row rather than a "—" that would say nothing. The "Months" heading
+/// and the `Grid` carry the same horizontal inset as the cards' own inner padding, so the month
+/// names and the card labels share a left edge and the fractions share the cards' right edge.
+/// Still a hand-drawn `ScrollView` and `Grid` rather than the platform `List` the rest of the
+/// shell is built from, so the whole — the one summary figure this screen has — can read as a
+/// scoreboard rather than another row. The rhythm-change line is the one composition among these
+/// seam strings: it joins the rhythm and its day with a middle dot. Every other card and row
+/// draws exactly what `LookBack` hands it.
 ///
 /// Holds `screen` and `commitment` rather than an already-formed `LookBack`, so the day-by-day
 /// walk `screen.lookBack(at:)` sits behind `body` and runs once per body pass — read into a
@@ -48,14 +48,17 @@ struct LookBackView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle(lookBack?.name ?? "")
-        .navigationBarTitleDisplayMode(.large)
     }
 
     @ViewBuilder
     private func head(_ lookBack: LookBack) -> some View {
-        Text(lookBack.rhythmInWords)
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 4) {
+            Text(lookBack.name)
+                .font(.largeTitle.bold())
+            Text(lookBack.rhythmInWords)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
     }
 
     @ViewBuilder
