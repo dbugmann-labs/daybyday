@@ -356,8 +356,8 @@ pnpm run walk -- --post 261        # both at once
 ```
 
 Run it **in the background with its output to a file**, never in the foreground of an agent
-session. It refuses to start while anything but the walk test is uncommitted, discovers the
-simulator the way CI's `ui-smoke` does, boots it, uninstalls the app so the walk starts on the
+session. It refuses to start while anything but the walk test is uncommitted, boots a simulator
+of this worktree's own (below), uninstalls the app so the walk starts on the
 day-one roster, builds, runs only `WalkUITests`, exports every PNG the run attached, names each
 for its box in `walk/`, and posts them with one `--attach` per picture captioned with the box's
 line, three to a row with the line under each, every picture shown 300 pixels wide and full
@@ -372,6 +372,23 @@ could not be driven, prints the runner's own error, and exits 1 — that is a ru
 retry. The eighteen-picture walk of `main` ran in 100 seconds here on a warm simulator, 92 of
 them the test itself — a typed field, a scrolled form and a sheet each cost a few seconds.
 
+**Every worktree walks on a simulator of its own, since 2026-09-16.** The script used to pick
+whatever iPhone was booted, and two Stories walking at once each uninstalled the other's build
+from under its test: on 2026-09-15, with three worktrees walking in parallel sessions, every
+overlapping run died about twenty-three seconds after its last step with `Restarting after
+unexpected exit, crash, or test timeout` and no crash report — once at `app.launch()` before a
+step ran, twice mid-test on a tap that then read as a control that would not open — and the
+pictures a run did capture could have been of another Story's build. So the walk runs on
+`DayByDay walk <worktree directory>` — `DayByDay walk daybyday-add-version-command` for a Story
+in `../daybyday-add-version-command` — created on its first run from the newest runtime's stock
+iPhone (26 seconds for that first boot here, measured 2026-09-16), kept booted between runs so a
+fix round reruns warm, and never shared. The stock devices are not touched: `iPhone 17` stays the
+one the top of this file runs the app on by hand, and CI's `ui-smoke` still discovers its own on
+the runner. The device goes with the worktree — the janitor deletes it at Stage 9
+(`docs/story-mechanics.md` § *After the merge*), and every walk begins by deleting any
+`DayByDay walk` device whose worktree no longer exists, so one left behind is gone by the next run
+anywhere. `xcrun simctl list devices | grep 'DayByDay walk'` is who has walked lately.
+
 **The ten-minute silence was a sysdiagnose, and the script turns it off.** Every earlier stall
 on this bundle was a *failing* test: `xcodebuild` then collects Xcode's default failure
 diagnostics, which is a sysdiagnose, and sits silent for about ten minutes doing it — long enough
@@ -383,8 +400,12 @@ for 605 seconds without it. A passing test has always returned in seconds.
 **Written out longhand**, for when the script is what is broken:
 
 ```bash
+name="DayByDay walk $(basename "$(git rev-parse --show-toplevel)")"   # this worktree's own device
 device=$(xcrun simctl list devices available --json \
-  | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; ps=[d for rt in sorted(ds, reverse=True) for d in ds[rt] if d['name'].startswith('iPhone')]; b=[d for d in ps if d['state']=='Booted']; print((b or ps)[0]['udid'])")
+  | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next((d['udid'] for rt in ds for d in ds[rt] if d['name']=='$name'), ''))")
+[ -n "$device" ] || device=$(xcrun simctl create "$name" \
+  com.apple.CoreSimulator.SimDeviceType.iPhone-17 com.apple.CoreSimulator.SimRuntime.iOS-26-5)
+  # the identifiers this machine has; `xcrun simctl list devicetypes` and `list runtimes` print them
 xcrun simctl bootstatus "$device" -b
 xcrun simctl uninstall "$device" com.dbugmann.daybyday
 

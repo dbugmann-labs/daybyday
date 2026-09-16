@@ -17,6 +17,17 @@
  * **From a fresh install, every time.** The app is uninstalled from the simulator before the
  * run so the walk starts on the day-one roster and the same steps give the same pictures.
  *
+ * **On a simulator of this worktree's own.** Two Stories walking at once used to share whatever
+ * iPhone was booted, and each run uninstalled the other's build from under its test: on
+ * 2026-09-15, with three worktrees walking, every overlapping run died about twenty-three
+ * seconds after its last step with `Restarting after unexpected exit, crash, or test timeout`
+ * and no crash report. So the walk creates `DayByDay walk <worktree directory>` on first use,
+ * from the newest runtime's stock iPhone, keeps it booted between runs, and never touches a
+ * stock device — `iPhone 17` stays the one `docs/running-the-app.md` runs the app on by hand.
+ * The device goes with the worktree: the janitor deletes it at Stage 9, and every walk begins
+ * by deleting any walk device whose worktree no longer exists, so a forgotten one is gone by
+ * the next run anywhere.
+ *
  * **Posting needs `gh` 2.99.0 or later** for `--attach`, which is `~/.local/bin/gh` on this
  * machine (`AGENTS.md` § *This machine*); the Actions token is refused by that flag, which is
  * why the walk is run here and not in CI.
@@ -38,6 +49,9 @@ const SCHEME = 'DayByDay'
 const BUNDLE_ID = 'com.dbugmann.daybyday'
 const WALK_TEST = 'src/DayByDay/DayByDayUITests/WalkUITests.swift'
 const OUT_DIR = 'walk'
+// Every walk device is named `DayByDay walk <worktree directory>`; the prefix is how a walk
+// tells its own devices from the stock ones when it prunes.
+const DEVICE_PREFIX = 'DayByDay walk '
 // How wide a posted picture is shown, in pixels, and how many share a row. Three at 300 fit a
 // PR comment's column; the owner chose the size on 2026-09-15 after seeing 402 two to a row.
 // Change both together.
@@ -126,16 +140,37 @@ if (dirty.length > 0) {
 const started = Date.now()
 const seconds = () => `${Math.round((Date.now() - started) / 1000)}s`
 
-// Discovered, not named: the same choice CI's ui-smoke job makes, newest runtime first, an
-// already-booted iPhone preferred.
-type Device = { name: string; udid: string; state: string }
-const devices = JSON.parse(run('xcrun', ['simctl', 'list', 'devices', 'available', '--json'])).devices as Record<string, Device[]>
-const iphones = Object.keys(devices)
+// This worktree's own device, made on first use and pruned once a worktree is gone. Runtimes
+// newest first, as CI's ui-smoke chooses; the device is modelled on that runtime's first stock
+// iPhone.
+type Device = { name: string; udid: string; state: string; deviceTypeIdentifier: string }
+const listed = JSON.parse(run('xcrun', ['simctl', 'list', 'devices', 'available', '--json'])).devices as Record<string, Device[]>
+const simulators = Object.keys(listed)
   .sort()
   .reverse()
-  .flatMap((runtime) => (devices[runtime] ?? []).filter((d) => d.name.startsWith('iPhone')))
-const device = iphones.find((d) => d.state === 'Booted') ?? iphones[0]
-if (!device) fail('no iPhone simulator is available — docs/running-the-app.md § Once, before the first run')
+  .flatMap((runtime) => (listed[runtime] ?? []).map((device) => ({ runtime, device })))
+
+const worktrees = new Set(
+  run('git', ['worktree', 'list', '--porcelain'])
+    .split('\n')
+    .filter((line) => line.startsWith('worktree '))
+    .map((line) => path.basename(line.slice('worktree '.length))),
+)
+for (const { device: stale } of simulators) {
+  if (!stale.name.startsWith(DEVICE_PREFIX) || worktrees.has(stale.name.slice(DEVICE_PREFIX.length))) continue
+  spawnSync('xcrun', ['simctl', 'delete', stale.udid], { stdio: 'ignore' })
+  console.log(`walk: deleted ${stale.name} — its worktree is gone`)
+}
+
+const deviceName = `${DEVICE_PREFIX}${path.basename(run('git', ['rev-parse', '--show-toplevel']).trim())}`
+let device = simulators.find(({ device: d }) => d.name === deviceName)?.device
+if (!device) {
+  const stock = simulators.find(({ device: d }) => d.name.startsWith('iPhone'))
+  if (!stock) fail('no iPhone simulator to model this worktree\'s on — docs/running-the-app.md § Once, before the first run')
+  const udid = run('xcrun', ['simctl', 'create', deviceName, stock.device.deviceTypeIdentifier, stock.runtime]).trim()
+  device = { ...stock.device, name: deviceName, udid, state: 'Shutdown' }
+  console.log(`walk: created ${deviceName}, an ${stock.device.name} on ${stock.runtime.replace(/^.*SimRuntime\./, '')}`)
+}
 console.log(`walk: ${device.name} (${device.udid})`)
 
 run('xcrun', ['simctl', 'bootstatus', device.udid, '-b'])

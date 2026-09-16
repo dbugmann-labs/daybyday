@@ -601,20 +601,19 @@ Things that are built, or deliberately not built, in a state someone will trip o
   roster. It follows the approved delta, so it was left as built. It is the concern of
   `take-out-an-unreadable-store` (#270), whose grill decides whether a refused copy says *from a
   later version* as the roster line does. Surfaced 2026-09-15 at #266's review, finding 1.
-- **Two walks on one simulator kill each other.** `pnpm run walk` picks whatever iPhone is
-  booted, uninstalls the app there and runs the throwaway test against it; it takes no lock and
-  never asks whether another worktree is doing the same. With three Stories walking in parallel
-  sessions on 2026-09-15, every run of #261's walk overlapped a run from #267's or #272's worktree
-  on the same device, and each died about twenty-three seconds after its last step with
-  `Restarting after unexpected exit, crash, or test timeout` and no crash report — once at
-  `app.launch()` before a single step ran, twice mid-test on a tap that then read as a control that
-  would not open. The pictures a run did capture may be of another Story's build. The gap is the
-  script's: it needs either a distinct device per worktree or a lock on the one it uses, and until
-  then walks are serialised by the owner. A chore on `scripts/walk.ts`. Surfaced 2026-09-15 at
-  #261's walk, from the runner logs of all three worktrees.
 
 
 ## Settled
+
+- 2026-09-16 — **every worktree walks on a simulator of its own.** `pnpm run walk` used to pick
+  whatever iPhone was booted, so with three Stories walking in parallel on 2026-09-15 every
+  overlapping run of #261's walk was killed by #267's or #272's uninstalling the app from under it,
+  about twenty-three seconds after its last step with `Restarting after unexpected exit, crash, or
+  test timeout` and no crash report. A device per worktree rather than a lock, because a lock
+  serialises the walks and parallel Stories are the point: `DayByDay walk <worktree directory>`,
+  created on first use, kept booted between runs, deleted by the janitor with the worktree and
+  pruned by any later walk whose worktree list no longer names it. The stock devices are never
+  touched. `docs/running-the-app.md` § *The walk*; the chore is PR #283.
 
 - 2026-09-14 — **a week begins on Monday for everyone, and an unmet weekly quota leaves nothing
   behind when the week turns.** Decided at the eighth grooming pass's grill of B-025, the want
