@@ -8,9 +8,9 @@ import DayByDayKit
 ///
 /// **Layout is Option B of the G7 proposal** (PR #280): a hand-drawn `ScrollView` and `Grid`
 /// rather than the platform `List` the rest of the shell is built from, so the whole — the one
-/// summary figure this screen has — can read as a scoreboard rather than another row. No seam
-/// string here is composed, split or reworded; every card and row draws exactly what `LookBack`
-/// hands it.
+/// summary figure this screen has — can read as a scoreboard rather than another row. The
+/// rhythm-change line is the one composition among these seam strings: it joins the rhythm and
+/// its day with a middle dot. Every other card and row draws exactly what `LookBack` hands it.
 ///
 /// Holds `screen` and `commitment` rather than an already-formed `LookBack`, so the day-by-day
 /// walk `screen.lookBack(at:)` sits behind `body` and runs once per body pass — read into a
