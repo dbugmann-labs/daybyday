@@ -123,8 +123,10 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   (2026-09-11).
 
 - **The three places travel as a trio of parameters, and want to be one type.** `recordAt:`,
-  `rosterAt:` and `oneOffsAt:` now pass together through `RestoreInProgress.restore`,
-  `undoTornRestore`, `readPlaces`, `readRecordAndRoster` and `readStoresForCopy` — a data clump,
+  `rosterAt:` and `oneOffsAt:` — the labels `RestoreInProgress.restore` and `undoTornRestore` give
+  them, where `readPlaces` says `place:`/`recordPlace:`/`oneOffPlace:`, `readRecordAndRoster` says
+  `oneOffAt:` and `readStoresForCopy` says `recordPlace:`/`rosterPlace:`/`oneOffPlace:` — now pass
+  together through those five functions, differing in name and not in kind — a data clump,
   and the shape of a "three places" type nobody has written. `restore-from-a-copy` (#267) did not
   introduce it: `make-a-copy` (#266) already read all three together, and this Story widened the
   trio to the writing side, which is the first time the same three paths are both read and written
@@ -140,7 +142,9 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   (`CopyDocument.swift:37-70`) forms the three stores through `formTicks()`, `formRoster()` and
   `formOneOffs()`, with no version bound and no shape-versus-form check; `CopyDocument.read(_:)`
   (`:113-119`) forms the same three through `RecordStore.formed`, `RosterStore.formed` and
-  `OneOffStore.formed`, which carry both. `formCopy()` has seven call sites, all in `CopyTests.swift`
+  `OneOffStore.formed`, which guard the version bound, and — for the record and the roster — the
+  shape against the form it declares; `OneOffStore.formed` guards the bound alone, there being no
+  form-specific field to check. `formCopy()` has seven call sites, all in `CopyTests.swift`
   and none in `Sources/`, and it pre-dates `restore-from-a-copy` (#267) — `CopyDocument.swift` is
   +75/−0 on that branch. What #267 changed is that the two paths' checks now differ: its G7 fix round
   added the missing lower-bound guard to the three `formed` statics, so a later caller reaching for
