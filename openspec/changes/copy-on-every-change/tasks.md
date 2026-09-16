@@ -59,7 +59,7 @@ split between it and `DayScreenTests.swift` where the box names a day screen, an
 - [x] 8.3 a change kept where a store cannot be read is kept, and the stop names that store — catches the store unnamed
 - [x] 8.4 a stop keeps the moment it began over later changes that also fail — catches the moment reset on every attempt
 - [x] 8.5 a change kept after a stop, where the folder can be written again, ends the stop and becomes the last copy — catches a stop that never clears
-- [ ] 8.6 a copy that could not be made is not held as a refused change — catches the failure pushed into `refusedChange`
+- [x] 8.6 a copy that could not be made is not held as a refused change — catches the failure pushed into `refusedChange`
 
 ## 9. `restore`: what the commitments screen says — one test each
 
@@ -117,5 +117,5 @@ split between it and `DayScreenTests.swift` where the box names a day screen, an
 - [x] 16.1 `openspec validate copy-on-every-change --strict` exits 0 and `pnpm run check:scenarios` exits 0
 - [x] 16.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, the kit sources and tests, `CommitmentsView.swift` and `ContentView.swift`
 - [x] 16.3 `pnpm run check:budgets` warns about this folder only for the one MODIFIED requirement `day-screen` carries whole
-- [ ] 16.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is forty-one more than a run on `main` reports, both read off runs
+- [x] 16.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is forty-one more than a run on `main` reports, both read off runs
 - [ ] 16.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–16.4 are ticked, 15.6 and 15.7 included once the owner has walked them, and that this instruction is written here for the janitor. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints. It then reads the spec diff that produced: `openspec/specs/restore/spec.md` gains nine requirements; `day-screen/spec.md` changes one requirement by one clause and gains no scenario. Nothing else in any spec may move. `pnpm run checks` runs after the archive commit exists. **Any other drift is a stop and a report, never a hand-edit**: rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.

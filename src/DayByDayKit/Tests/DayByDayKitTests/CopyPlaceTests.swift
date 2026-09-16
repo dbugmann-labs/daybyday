@@ -912,16 +912,54 @@ func aChangeKeptAfterAStopWhereTheFolderCanBeWrittenAgainEndsTheStopAndBecomesTh
     #expect(copy.roster.entries.first?.keptUntil != nil)
 }
 
-// Scenario "a copy that could not be made is not held as a refused change" (tasks.md 8.6) is not
-// implemented here — see the hand-back: its second THEN clause ("it still holds the refused
-// definition against defining a commitment", checked after "Journaling" is *successfully*
-// defined) contradicts the shipped, unmodified `commitment` requirement "What a commitments
-// screen holds about a refused change lasts until the app is shown again or a change is kept",
-// proven by the already-passing test
-// `whatACommitmentsScreenHoldsAboutARefusedChangeEndsWhenACommitmentIsDefinedAndKept` in
-// `CommitmentsScreenTests.swift`, which defines "Journaling" the same way and asserts
-// `refusedChange == nil` afterwards. Implementing 8.6 literally would require breaking that
-// shipped test; implementing the shipped rule instead would make 8.6's own assertion false.
+@MainActor
+@Test("a copy that could not be made is not held as a refused change")
+func aCopyThatCouldNotBeMadeIsNotHeldAsARefusedChange() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let places = freshThreePlaces()
+    let clock = laterMinuteEachTime(from: Moment(on: monday, hour: 14, minute: 32)!)
+    let copyPlace = CopyPlace(
+        at: freshCopyPlaceState(), keepingRecordAt: places.record, keepingRosterAt: places.roster,
+        keepingOneOffsAt: places.oneOffs, asking: clock)
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs, copyingTo: copyPlace)
+
+    #expect(
+        screen.define(
+            name: "Gym",
+            on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
+            keptFrom: keptFrom, under: nil) == nil)
+    #expect(
+        screen.define(
+            name: "Gym",
+            on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
+            keptFrom: keptFrom, under: nil) == .alreadyKept)
+    #expect(screen.refusedChange == .defining(.alreadyKept))
+
+    let directory = freshCopyPlaceDirectory()
+    try makeCopyPlaceDirectoryUnwritable(directory)
+    defer {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    }
+    screen.givenAsCopyPlace(directory)
+
+    // The copy that could not be made there is not held as a refused change: the screen holds
+    // the refused definition against defining a commitment exactly as it did.
+    #expect(screen.refusedChange == .defining(.alreadyKept))
+    #expect(copyPlace.stopped?.stop == .folderCannotBeWritten)
+
+    let journalingRefusal = screen.define(
+        name: "Journaling",
+        on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
+        keptFrom: keptFrom, under: nil)
+
+    #expect(journalingRefusal == nil)
+    #expect(screen.refusedChange == nil)
+    #expect(copyPlace.stopped?.stop == .folderCannotBeWritten)
+}
 
 @MainActor
 @Test(
