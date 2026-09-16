@@ -71,8 +71,8 @@ edited here (rule 2).
 
 ## 10. The records
 
-- [ ] 10.1 `docs/adr/1056-*.md` stands as `design.md` cites it, with its row in `docs/adr/README.md`; its status reads accepted once G4 is signed
-- [ ] 10.2 `CONTEXT.md` § *Restore in progress* and § *Restore* still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
+- [x] 10.1 `docs/adr/1056-*.md` stands as `design.md` cites it, with its row in `docs/adr/README.md`; its status reads accepted once G4 is signed
+- [x] 10.2 `CONTEXT.md` § *Restore in progress* and § *Restore* still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
 - [x] 10.3 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## 11. The walk (ADR-1053; `docs/running-the-app.md` § *The walk* has the commands)
