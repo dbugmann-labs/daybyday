@@ -7,9 +7,10 @@ import DayByDayKit
 /// shell rides this Story*: the kit already answered every rule a page shows.
 ///
 /// Holds `screen` and `commitment` rather than an already-formed `LookBack`, so the day-by-day
-/// walk `screen.lookBack(at:)` runs sits behind `body` and only runs once this page is actually
-/// drawn — never while `CommitmentsView`'s row is merely constructed, eagerly, on every redraw of
-/// every row on both its lists. G7 finding 2 on #272.
+/// walk `screen.lookBack(at:)` sits behind `body` and runs once per body pass — read into a
+/// local at the top of `body` rather than through the computed property at every use — never
+/// while `CommitmentsView`'s row is merely constructed, eagerly, on every redraw of every row on
+/// both its lists. G7 finding 2 on #272.
 struct LookBackView: View {
     let screen: CommitmentsScreen
     let commitment: Commitment
@@ -17,6 +18,7 @@ struct LookBackView: View {
     private var lookBack: LookBack? { screen.lookBack(at: commitment) }
 
     var body: some View {
+        let lookBack = lookBack
         List {
             if let lookBack {
                 Section {
