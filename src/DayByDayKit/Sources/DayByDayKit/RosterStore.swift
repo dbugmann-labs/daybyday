@@ -48,6 +48,9 @@ public final class RosterStore {
     /// own per-store reading — `openspec/changes/restore-from-a-copy/design.md` § *Reading a
     /// copy: the envelope decides, and a later version outranks damage*.
     static func formed(from document: RosterDocument) -> Roster? {
+        guard document.version >= 1 else {
+            return nil
+        }
         guard
             document.commitments.allSatisfy({
                 ($0.removed != nil) == (document.version >= RosterDocument.removalIntroducedInVersion)

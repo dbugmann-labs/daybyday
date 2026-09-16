@@ -42,7 +42,10 @@ public final class OneOffStore {
     /// `CopyDocument.read`'s own per-store reading — `openspec/changes/restore-from-a-copy
     /// /design.md` § *Reading a copy: the envelope decides, and a later version outranks damage*.
     static func formed(from document: OneOffDocument) -> OneOffs? {
-        document.formOneOffs()
+        guard document.version >= 1 else {
+            return nil
+        }
+        return document.formOneOffs()
     }
 
     /// Exactly what is kept at `place`.

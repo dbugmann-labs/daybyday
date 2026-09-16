@@ -8987,6 +8987,24 @@ func aDayScreenReturnedToAfterARestoreDrawsTheCopysCommitmentsRecordsAndOneOffs(
     #expect(dayScreen.dayView.rows.map(\.name) == ["Gym"])
     #expect(dayScreen.dayView.rows[0].isKept == false)
     #expect(dayScreen.dayView.oneOffGroup?.rows.map(\.name) == ["Book dentist"])
+
+    // A torn save left standing beside the record place since that first return, which cannot
+    // be undone because the directory holding the record and the save-in-progress file is
+    // read-only. The one-offs are unaffected by a torn save (`design.md` § *Context*), so a day
+    // screen returned to after a restore SHALL still open its one-off place afresh here, exactly
+    // as `readRecordAndRoster` opens it for the same condition at `init` and `shown(asOf:)`.
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: gym.schedule, keptFrom: keptFrom)!
+    try SaveInProgress(carriedFrom: gym, to: gymEmoji).keep(
+        at: SaveInProgress.place(besideRecordAt: recordPlace))
+    let recordDirectory = recordPlace.deletingLastPathComponent()
+    try makeReadOnly(recordDirectory)
+    defer { try? makeWritable(recordDirectory) }
+
+    dayScreen.returnedTo(from: commitmentsScreen)
+
+    #expect(dayScreen.recordState == .unreadable)
+    #expect(dayScreen.oneOffState == .kept)
+    #expect(dayScreen.dayView.oneOffGroup?.rows.map(\.name) == ["Book dentist"])
 }
 
 @MainActor

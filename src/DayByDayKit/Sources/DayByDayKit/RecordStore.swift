@@ -77,7 +77,7 @@ public final class RecordStore {
         ticks: Set<Tick>, numbers: [RecordedDay: Decimal], notes: [RecordedDay: String],
         additions: [RecordedDay: [Decimal]], history: History
     )? {
-        guard shapeMatchesItsForm(document), let ticks = document.formTicks(),
+        guard document.version >= 1, shapeMatchesItsForm(document), let ticks = document.formTicks(),
             let formedNumbers = document.formNumbers(), let formedNotes = document.formNotes(),
             let formedAdditions = document.formAdditions()
         else {

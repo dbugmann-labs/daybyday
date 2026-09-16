@@ -163,6 +163,68 @@ func aCopyHoldingAStoreThatDoesNotReadIsRefusedAsADamagedCopy() throws {
 
     // The record carries a field its form has no place for: `numbers` at form 1.
     try expectDamaged(copyJSON(record: "{\"version\":1,\"ticks\":[],\"numbers\":[]}"))
+
+    let shapelyRosterAtForm = { (version: Int) in
+        """
+        {
+          "version": \(version),
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": {
+                  "weekdays": [
+                    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+        """
+    }
+    let shapelyRecordAtForm = { (version: Int) in
+        """
+        {
+          "version": \(version),
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": {
+                  "weekdays": [
+                    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+                  ]
+                }
+              },
+              "date": { "year": 2026, "month": 8, "day": 30 }
+            }
+          ]
+        }
+        """
+    }
+    let shapelyOneOffsAtForm = { (version: Int) in
+        """
+        {"version": \(version), "oneOffs": [{"name": "Book dentist", "date": {"year": 2026, "month": 9, "day": 25}}]}
+        """
+    }
+
+    // A roster whose declared form is below the earliest form a roster store reads — no form
+    // this app has ever written, not merely one it cannot read yet.
+    try expectDamaged(copyJSON(roster: shapelyRosterAtForm(0)))
+
+    // A roster whose declared form is negative.
+    try expectDamaged(copyJSON(roster: shapelyRosterAtForm(-1)))
+
+    // A record whose declared form is below the earliest form a record store reads.
+    try expectDamaged(copyJSON(record: shapelyRecordAtForm(0)))
+
+    // A one-off holder whose declared form is below the earliest form a one-off store reads —
+    // `formOneOffs` never inspects a version at all, so nothing but the envelope guarded it.
+    try expectDamaged(copyJSON(oneOffs: shapelyOneOffsAtForm(0)))
+    try expectDamaged(copyJSON(oneOffs: shapelyOneOffsAtForm(-1)))
 }
 
 @MainActor
@@ -830,6 +892,19 @@ private func blockedPlace(named name: String) throws -> URL {
     return blocker.appendingPathComponent(name)
 }
 
+/// Makes `directory` read-only, so a place already holding something can be made unwritable
+/// without disturbing what is there — unlike `blockedPlace(named:)`, which only ever names a
+/// place that has never held anything. Mirrors `DayScreenTests.swift`'s own `makeReadOnly(_:)`.
+/// Every caller must pair this with `makeWritable(_:)`, including on its failure path.
+private func makeReadOnly(_ directory: URL) throws {
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+}
+
+/// Undoes `makeReadOnly(_:)`, restoring `directory` to a place that can be written to again.
+private func makeWritable(_ directory: URL) throws {
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+}
+
 @MainActor
 @Test(
     "a restore refused where the one-off place cannot be written leaves the record and the roster places as they were"
@@ -917,6 +992,43 @@ func aRestoreRefusedWhereTheOneOffPlaceCannotBeWrittenLeavesTheRecordAndTheRoste
 
         #expect(refusal == .notKept)
         #expect(try Data(contentsOf: recordPlace) == recordBytesBefore)
+    }
+
+    // A copy already stands restored when a second restore is confirmed and cannot be made
+    // whole: `copyRestored` from that first restore must not stand alongside the refusal —
+    // specs/restore/spec.md § *A restore that cannot be made whole leaves the three places as
+    // they were*: "with no copy restored". The two blocks above pass whether or not this is
+    // cleared, because the screen in each never restored a first copy.
+    do {
+        let base = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let places = (
+            roster: base.appendingPathComponent("roster.json"),
+            record: base.appendingPathComponent("record.json"),
+            oneOffs: base.appendingPathComponent("one-offs.json")
+        )
+        let rosterStore = try RosterStore(at: places.roster)
+        try rosterStore.add(gym)
+
+        let screen = CommitmentsScreen(
+            asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+            keepingOneOffsAt: places.oneOffs)
+
+        let firstCopyURL = try makeCopyOfJournalingAndBookDentist()
+        #expect(screen.askToRestore(from: firstCopyURL) == nil)
+        #expect(screen.confirmRestoring() == nil)
+        #expect(screen.copyRestored != nil)
+
+        let secondCopyURL = try makeCopyOfJournalingAndBookDentist()
+        #expect(screen.askToRestore(from: secondCopyURL) == nil)
+
+        try makeReadOnly(base)
+        defer { try? makeWritable(base) }
+
+        let refusal = screen.confirmRestoring()
+
+        #expect(refusal == .notKept)
+        #expect(screen.copyRestored == nil)
     }
 }
 

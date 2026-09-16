@@ -837,9 +837,13 @@ public final class DayScreen {
 
     /// Being returned to after a restore: opens the record, the roster and the one-off places
     /// afresh, whether or not each was already kept, taking on the commitments this screen was
-    /// handed where the roster reads nothing at all. Where a restore in progress or a save in
-    /// progress stands and cannot itself be undone, all three answer as reading nothing, exactly
-    /// as `readRecordAndRoster` answers the same condition at `init` and `shown(asOf:)`.
+    /// handed where the roster reads nothing at all. Where a restore in progress cannot itself be
+    /// undone, all three answer as reading nothing, exactly as `readRecordAndRoster` answers the
+    /// same condition at `init` and `shown(asOf:)`. Where only a save in progress stands and
+    /// cannot be undone, the record answers as unreadable and the roster is opened read-only,
+    /// exactly as `readRecordAndRoster` answers that condition too — but the one-offs are
+    /// unaffected by a torn save, so they are still opened afresh here, same as everywhere else
+    /// in this function.
     private func returnedToAfterARestore() {
         notice = nil
         nameRefusal = nil
@@ -866,11 +870,12 @@ public final class DayScreen {
             self.roster = readOnly.roster
             self.recordStore = nil
             self.recordState = .unreadable
-            self.oneOffStore = nil
-            self.oneOffState = .unreadable
+            let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
+            self.oneOffStore = openedOneOffs.store
+            self.oneOffState = openedOneOffs.state
             self.dayView = Self.formDayView(
-                of: readOnly.roster.groups(on: shownDay), oneOffs: nil, asOf: today, on: shownDay,
-                in: History())
+                of: readOnly.roster.groups(on: shownDay), oneOffs: openedOneOffs.store, asOf: today,
+                on: shownDay, in: History())
             return
         }
 

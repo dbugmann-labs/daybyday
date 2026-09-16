@@ -1524,9 +1524,9 @@ public final class CommitmentsScreen {
     /// places back exactly as they are read when the app is shown, holds no restore, commitment
     /// or removal awaiting confirmation and no name typed back, holds the copy's moment until the
     /// app is shown again or a change is kept, and marks that this screen has restored a copy.
-    /// On failure, the three places are exactly as they were, and this screen's lists, its
-    /// `refusedChange` and its `copyRestored` are all left untouched here and then explicitly
-    /// cleared of the restore that was attempted.
+    /// On failure, the three places are exactly as they were, this screen's lists are left
+    /// untouched, `refusedChange` names the failure, and `copyRestored` is cleared — a copy
+    /// restored earlier SHALL NOT stand alongside a later restore's refusal.
     @discardableResult
     public func confirmRestoring() -> Refusal? {
         guard let copy = pendingRestore else {
@@ -1540,6 +1540,7 @@ public final class CommitmentsScreen {
                 copy, recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace)
         } catch {
             refusedChange = .restoring(.notKept)
+            copyRestored = nil
             return .notKept
         }
 
