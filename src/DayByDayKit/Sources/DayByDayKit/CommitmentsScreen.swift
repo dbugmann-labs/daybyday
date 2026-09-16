@@ -56,8 +56,8 @@ public final class CommitmentsScreen {
     /// Shared by `init`, `shown(asOf:)` and `confirmRestoring`, which all read both places
     /// afresh. Where the restore in progress or the save in progress cannot be undone, this
     /// answers as a roster that cannot be read and a record that is not kept, without opening
-    /// either place for real — `design.md` § *A torn save that cannot be undone reuses two
-    /// existing states*.
+    /// either place for real — `openspec/changes/save-change-whole/design.md` § *A torn save
+    /// that cannot be undone reuses two existing states*.
     private static func readPlaces(
         place: URL, recordPlace: URL, oneOffPlace: URL
     ) -> (
@@ -128,8 +128,9 @@ public final class CommitmentsScreen {
     /// Ends both `refusedChange` and `copyRestored`, which last alike: until the app is shown
     /// again or a change reaches a place — `openspec/specs/commitment/spec.md` § *What a
     /// commitments screen holds about a refused change lasts until the app is shown again or a
-    /// change is kept* and `openspec/specs/restore/spec.md` § *A restore confirmed makes the
-    /// three places what the copy holds, and nothing of what was there* — "hold the moment of
+    /// change is kept* and `openspec/changes/restore-from-a-copy/specs/restore/spec.md` § *A
+    /// restore confirmed makes the three places what the copy holds, and nothing of what was
+    /// there* — "hold the moment of
     /// the copy it restored until the app is shown again or a change is kept." Every call site
     /// that used to clear `refusedChange` alone calls this instead; every one already sits
     /// exactly where a change reached a place or the app was shown, guarded against a no-op the
@@ -265,7 +266,8 @@ public final class CommitmentsScreen {
         case moving(Commitment, Refusal)
         case movingGroup(String, Refusal)
         /// A change asked for, refused, and held against the commitment it was asked to change
-        /// rather than the one it would have produced — `design.md` § *The two new refusals*.
+        /// rather than the one it would have produced —
+        /// `openspec/changes/add-commitment-editing/design.md` § *The two new refusals*.
         case changing(Commitment, Refusal)
         /// A restart asked for and refused, held against the commitment it was asked about — the
         /// eighth kind of refused change. `openspec/changes/add-interval-restart/design.md` §
@@ -688,8 +690,8 @@ public final class CommitmentsScreen {
     /// `rhythm` and `keptFrom` name, under `category`. Works out from those which of two acts —
     /// carrying every record over to the changed commitment, or superseding — the change needs,
     /// performing both in one order where it needs both: the carry-over first, then the
-    /// supersession. See `openspec/specs/commitment/spec.md` § *A commitments screen changes a
-    /// commitment on either of its lists* and `design.md` § *Two acts, not one*.
+    /// supersession. See `openspec/specs/commitment/spec.md` § *A commitments screen works out
+    /// which act a change on either of its lists needs* and `design.md` § *Two acts, not one*.
     public func change(
         _ commitment: Commitment, toName name: String, on rhythm: Rhythm, keptFrom: CalendarDate,
         under category: String?
@@ -846,7 +848,7 @@ public final class CommitmentsScreen {
         guard !nameOrKeptFromChanged else {
             // Both, in one save: the carry-over first — the superseded commitment carries the
             // new name and the corrected day it was kept from — then the supersession, which
-            // starts today. `design.md` § *Both in one save*.
+            // starts today. `design.md` § *Two acts, not one*.
             // The commitment carried to before a supersession follows the same rule as the
             // same-rhythm path: an unchanged day kept from keeps the schedule `commitment`
             // already has, on the rhythm it already runs on. `design.md` § *An unchanged day
@@ -1462,8 +1464,9 @@ public final class CommitmentsScreen {
     }
 
     /// Counts what `roster` keeps and has stopped, and how many one-offs `oneOffs` holds —
-    /// `design.md` § *What is said first, read once*: "Kept and stopped apart... *one-offs*
-    /// counts all." A removed commitment is counted as neither kept nor stopped, matching
+    /// `design.md` § *What is said first, read once*: "*Kept* and *stopped* count the screen's
+    /// two lists, a removed commitment in neither; *one-offs* counts all (settled 12)." A
+    /// removed commitment is counted as neither kept nor stopped, matching
     /// `stopped(in:)` and `Roster.commitments` above.
     private static func counts(roster: Roster, oneOffs: OneOffs) -> Counts {
         Counts(
@@ -1477,8 +1480,9 @@ public final class CommitmentsScreen {
     /// refused, held against restoring a copy and naming no store, and leaves no restore
     /// awaiting confirmation; it does **not** touch `refusedChange` on success, and does not
     /// touch `copyRestored` either way — neither asking nor being refused reaches a place.
-    /// `openspec/specs/restore/spec.md` §§ *A copy is read whole...* and *A commitments screen
-    /// says what a restore takes away and brings before anything is restored*.
+    /// `openspec/changes/restore-from-a-copy/specs/restore/spec.md` §§ *A copy is read whole,
+    /// and a file that cannot be restored is refused for its own reason* and *A commitments
+    /// screen says what a restore takes away and brings before anything is restored*.
     @discardableResult
     public func askToRestore(from file: URL) -> Refusal? {
         guard let data = try? Data(contentsOf: file) else {

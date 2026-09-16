@@ -112,11 +112,16 @@ public final class DayScreen {
     /// unconditionally, and `returnedToOrdinarily()` reads its record place, and calls
     /// `SaveInProgress`, only where it is already keeping one — so both call `RestoreInProgress`
     /// and `SaveInProgress` directly rather than through this. Where the restore in progress
-    /// cannot be undone, nothing is read at all, from any of the three — `design.md` § *Whole or
-    /// nothing, across a stop*: "nothing SHALL be read from those places nor written over them."
+    /// cannot be undone, nothing is read at all, from any of the three, for `init` and
+    /// `shown(asOf:)` — `openspec/changes/restore-from-a-copy/specs/restore/spec.md` § *A restore
+    /// that cannot be made whole leaves the three places as they were*: "nothing SHALL be read
+    /// from those places nor written over them." The one exception is a day screen returned to
+    /// ordinarily from a commitments screen that restored no copy: it keeps what it had already
+    /// read instead, which is `returnedToOrdinarily()`'s own case, not this function's.
     /// Where only the save in progress cannot be undone, the record answers as one that could not
-    /// be read without opening it for real — `design.md` § *A torn save that cannot be undone
-    /// reuses two existing states* — and the roster is opened read-only: taking `dayOne` on
+    /// be read without opening it for real — `openspec/changes/save-change-whole/design.md` §
+    /// *A torn save that cannot be undone reuses two existing states* — and the roster is opened
+    /// read-only: taking `dayOne` on
     /// writes the roster place, which the same requirement's "write nothing at either place"
     /// forbids while a torn save stands unresolved, so the check runs first and day one is
     /// offered only once it has cleared. `openspec/specs/commitment/spec.md` § *A torn save that
@@ -909,16 +914,16 @@ public final class DayScreen {
     /// of the three places in all: `readRecordAndRoster` (shared by `init` and `shown(asOf:)`),
     /// `returnedToAfterARestore()`, this one, and `CommitmentsScreen`'s own `readPlaces` (shared
     /// by its `init`, `shown(asOf:)` and `confirmRestoring`) and `readStoresForCopy`. None of the
-    /// five is carved out by `openspec/specs/restore/spec.md`'s own wording, "a commitments screen
-    /// or a day screen next opens those places".
+    /// five is carved out by `openspec/changes/restore-from-a-copy/specs/restore/spec.md`'s own
+    /// wording, "a commitments screen or a day screen next opens those places".
     /// Then the roster is read again and the day view is formed again for the day being shown.
     /// Takes no today, moves no day. Where this screen is keeping a record, that is read again
     /// too — a rename or a rhythm change made elsewhere reaches every row this screen draws. A
-    /// screen not keeping a record does not start keeping one by being returned to: `design.md`
-    /// § *A day screen returned to now reads its record place again where it is keeping one*. The
-    /// one-offs are not read again — the spec requirement "A day screen draws the one-offs at its
-    /// one-off place as of the today it was handed" says "at no other moment" than being opened
-    /// and the app being shown again.
+    /// screen not keeping a record does not start keeping one by being returned to:
+    /// `openspec/specs/day-screen/spec.md` § *A day screen reads its roster again whenever it is
+    /// returned to*. The one-offs are not read again — the spec requirement "A day screen draws
+    /// the one-offs at its one-off place as of the today it was handed" says "at no other moment"
+    /// than being opened and the app being shown again.
     private func returnedToOrdinarily() {
         // A restore in progress that cannot be undone: `readRecordAndRoster` and
         // `returnedToAfterARestore()` both answer as reading nothing here, each bound to a
@@ -942,15 +947,16 @@ public final class DayScreen {
 
         if recordState == .kept {
             // The save in progress is read here, before the roster is ever handed day one to
-            // take on — `design.md` § *Reading the places undoes a torn save as it was* — and
-            // only on this path: a screen not keeping a record does not start reading its places
-            // for one by being returned to, exactly as it does not start keeping one. Where the
-            // undo cannot be completed, the roster is opened read-only, exactly as
-            // `readRecordAndRoster` opens it for the same condition at `init` and
-            // `shown(asOf:)` — `openspec/specs/commitment/spec.md` § *A torn save that cannot be
-            // undone keeps nothing from the record place*: "a screen reading its places SHALL
-            // write nothing at either place". Taking on day one unconditionally, before this
-            // check, would write it to an empty roster place while the torn save still stood.
+            // take on — `openspec/specs/commitment/spec.md` § *Reading the places undoes a torn
+            // save as it was* — and only on this path: a screen not keeping a record does not
+            // start reading its places for one by being returned to, exactly as it does not
+            // start keeping one. Where the undo cannot be completed, the roster is opened
+            // read-only, exactly as `readRecordAndRoster` opens it for the same condition at
+            // `init` and `shown(asOf:)` — `openspec/specs/commitment/spec.md` § *A torn save
+            // that cannot be undone keeps nothing from the record place*: "a screen reading its
+            // places SHALL write nothing at either place". Taking on day one unconditionally,
+            // before this check, would write it to an empty roster place while the torn save
+            // still stood.
             if SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) {
                 openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
 
