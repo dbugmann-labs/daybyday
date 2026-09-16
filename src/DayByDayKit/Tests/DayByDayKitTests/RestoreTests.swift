@@ -1086,6 +1086,87 @@ func aRestoreStoppedBeforeItWasWholeIsUndoneWhenThePlacesAreNextOpened() throws 
         startingFrom: [], asOf: monday, keepingRecordAt: places.record,
         keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
     #expect(dayScreen.dayView.rows.map(\.name) == ["Gym"])
+
+    // The same undo, reached through `DayScreen.returnedTo()` rather than a fresh `init` or a
+    // fresh `CommitmentsScreen`. `returnedToOrdinarily()` inlines its own read of the three
+    // places instead of sharing `readRecordAndRoster`, and — unlike every other reader of the
+    // three places — never called `RestoreInProgress.undoTornRestore` at all, on the branch it
+    // takes here: `dayScreen` above is already keeping a record (`recordState == .kept`), so
+    // `returnedTo(from:)`'s ordinary path reopens the record place too. A second restore is
+    // stopped mid-flight behind that already-open screen's back, and `returnedTo(from:)` is
+    // called with a commitments screen that has not itself restored anything —
+    // `specs/restore/spec.md`'s own wording, "a commitments screen or a day screen next opens
+    // those places", covers this call exactly as it covers a fresh `init`.
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs)
+    #expect(commitmentsScreen.hasRestoredACopy == false)
+
+    var journalingAgain = Roster()
+    _ = journalingAgain.add(
+        Commitment(name: "Journaling", schedule: allWeekdays, keptFrom: keptFrom)!)
+    let secondCopy = Copy(
+        moment: Moment(on: monday, hour: 9, minute: 7)!, history: History(),
+        roster: journalingAgain, oneOffs: OneOffs())
+    try RestoreInProgress.restore(
+        secondCopy, recordAt: places.record, rosterAt: places.roster, oneOffsAt: places.oneOffs,
+        stoppingAfter: 2)
+
+    #expect(
+        FileManager.default.fileExists(
+            atPath: RestoreInProgress.place(besideRecordAt: places.record).path))
+
+    dayScreen.returnedTo(from: commitmentsScreen)
+
+    #expect(dayScreen.dayView.rows.map(\.name) == ["Gym"])
+    #expect(try Data(contentsOf: places.roster) == rosterBytesBefore)
+    #expect(try Data(contentsOf: places.record) == recordBytesBefore)
+    #expect(try Data(contentsOf: places.oneOffs) == oneOffBytesBefore)
+    #expect(
+        !FileManager.default.fileExists(
+            atPath: RestoreInProgress.place(besideRecordAt: places.record).path))
+
+    // The same undo, reached through the branch `returnedToOrdinarily()` takes when it is not
+    // keeping a record — the branch the block above never touches. The record place holds bytes
+    // that were never a record before anything else happens to it, so `recordState` reads
+    // `.unreadable` from `init` onward and `returnedTo()` always takes this branch here. The
+    // roster place is emptied again after `init` takes day one on there — deleting what `init`
+    // had already written, not merely never writing it, the same as the block above and
+    // `DayScreenTests.swift`'s own analogous save-in-progress test — and a restore is stopped
+    // after writing only the record place, leaving a restore in progress that holds what stood
+    // at the record place a moment ago: the same unreadable bytes.
+    let elsePlaces = freshThreePlaces()
+    let garbageRecordBytes = Data("not what a record is written as".utf8)
+    try FileManager.default.createDirectory(
+        at: elsePlaces.record.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try garbageRecordBytes.write(to: elsePlaces.record)
+
+    let elseScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: elsePlaces.record,
+        keepingRosterAt: elsePlaces.roster, keepingOneOffsAt: elsePlaces.oneOffs)
+    let elseCommitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: elsePlaces.roster, keepingRecordAt: elsePlaces.record,
+        keepingOneOffsAt: elsePlaces.oneOffs)
+    #expect(elseScreen.recordState == .unreadable)
+    #expect(elseScreen.dayView.rows.map(\.name) == ["Gym"])
+    #expect(elseCommitmentsScreen.hasRestoredACopy == false)
+
+    try FileManager.default.removeItem(at: elsePlaces.roster)
+
+    try RestoreInProgress.restore(
+        secondCopy, recordAt: elsePlaces.record, rosterAt: elsePlaces.roster,
+        oneOffsAt: elsePlaces.oneOffs, stoppingAfter: 1)
+
+    #expect(
+        FileManager.default.fileExists(
+            atPath: RestoreInProgress.place(besideRecordAt: elsePlaces.record).path))
+
+    elseScreen.returnedTo(from: elseCommitmentsScreen)
+
+    #expect(try Data(contentsOf: elsePlaces.record) == garbageRecordBytes)
+    #expect(
+        !FileManager.default.fileExists(
+            atPath: RestoreInProgress.place(besideRecordAt: elsePlaces.record).path))
 }
 
 @MainActor
