@@ -108,7 +108,11 @@ Read `AGENTS.md` first. It is binding.
    ```bash
    cd ../daybyday && git worktree remove ../daybyday-<change-id>
    git branch -D story/<issue#>-<change-id>
+   xcrun simctl delete "DayByDay walk daybyday-<change-id>"   # the walk's simulator, if it had one
    ```
+
+   The last line fails with `Invalid device` on a Story that never walked, and that is the
+   whole of what it means: nothing to delete. Any other output is a stop.
 
    `-D`, not `-d`: a squash merge leaves the local branch behind with commits that never landed
    as themselves, and `-d` refuses it. If the removal refuses with `contains modified or

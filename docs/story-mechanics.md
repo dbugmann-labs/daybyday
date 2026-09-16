@@ -113,6 +113,8 @@ cd ../daybyday                             # the main clone — a sibling of eve
 git worktree remove ../daybyday-<change-id>
 git branch -D story/<issue#>-<change-id>   # a squash merge leaves the local ref behind, and
                                            # `-d` refuses it: the commits themselves never landed
+xcrun simctl delete "DayByDay walk daybyday-<change-id>"   # the walk's own simulator; `Invalid
+                                           # device` means the Story never walked, nothing more
 ```
 
 `git worktree remove .` from *inside* the tree also works — and leaves your shell in a directory

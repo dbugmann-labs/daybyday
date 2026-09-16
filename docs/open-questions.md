@@ -605,6 +605,16 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
 ## Settled
 
+- 2026-09-16 — **every worktree walks on a simulator of its own.** `pnpm run walk` used to pick
+  whatever iPhone was booted, so with three Stories walking in parallel on 2026-09-15 every
+  overlapping run of #261's walk was killed by #267's or #272's uninstalling the app from under it,
+  about twenty-three seconds after its last step with `Restarting after unexpected exit, crash, or
+  test timeout` and no crash report. A device per worktree rather than a lock, because a lock
+  serialises the walks and parallel Stories are the point: `DayByDay walk <worktree directory>`,
+  created on first use, kept booted between runs, deleted by the janitor with the worktree and
+  pruned by any later walk whose worktree list no longer names it. The stock devices are never
+  touched. `docs/running-the-app.md` § *The walk*; the chore is PR #283.
+
 - 2026-09-14 — **a week begins on Monday for everyone, and an unmet weekly quota leaves nothing
   behind when the week turns.** Decided at the eighth grooming pass's grill of B-025, the want
   *Week turnover* had named as the one that would force it: the unfinished third night is neither

@@ -106,7 +106,9 @@ are `docs/running-the-app.md` § *The walk*, and you run them as written:
 1. **Commit first.** A failing run returns only after Xcode has finished its failure diagnostics,
    which is minutes, and a session killed while it waits loses whatever was uncommitted.
 2. **Uninstall the app from the simulator**, so the walk starts from a fresh install and the
-   day-one roster; the walk list says what to define or tick before each picture.
+   day-one roster; the walk list says what to define or tick before each picture. The script
+   does this on a simulator of this worktree's own, so another Story's walk is never on the
+   device you are driving and yours is never on its.
 3. **Write a throwaway `WalkUITests.swift`** in `src/DayByDay/DayByDayUITests/`: one XCUITest
    method that drives the steps in order and attaches a screenshot named for each box. It waits
    for the control it taps and fails only when a step cannot be driven; it asserts nothing
