@@ -7,6 +7,7 @@ import Foundation
 /// themselves — only where the copy place is, the moment of the last copy written there and, where
 /// the last attempt failed, why and since when.
 @MainActor
+@Observable
 public final class CopyPlace {
     /// The place a copy place keeps its own state when it is not told another: a file of its own
     /// under the platform's application-support directory, beside the record, the roster and the
