@@ -1650,6 +1650,13 @@ turns: an unmet quota leaves no record behind and is carried into nothing, the n
 zero, and the week that turned stays readable by looking back at its days. Agreed 2026-09-14 at the
 eighth grooming pass, for B-025.
 
+**Amended 2026-09-16**, at the grill of `look-back-at-a-quota` (#273). A week is now said as well as
+counted over: a **look-back** says one as the span of its seven days, "9–15 Mar 2026", "30 Mar – 5
+Apr 2026" across a month and "29 Dec 2025 – 4 Jan 2026" across a year. That span is the one place in
+the app a month's name is short, three letters where everything else says the month in full, because
+two dates on one line is what the room buys. What a week *is* has not moved: Monday through Sunday,
+whatever the phone's calendar setting says.
+
 **Standing** — how many days of its **week** a commitment has been kept, counted through a date.
 The **history** answers it for every commitment whatever its schedule, and consults none; it is a
 **weekly quota**'s **row** that shows it, where "1/3x a week" is a standing of one against a quota
@@ -1750,6 +1757,18 @@ recommendation twice and reaffirmed, and which ADR-1045 is amended for. It reads
 **eras** as one chain, and says a line in words wherever one gives way to the next. A weekly quota's
 months, and a whole over a chain holding one, say nothing yet: a quota is due every day, so the
 day's fraction is the wrong answer and the week's is #273's.
+
+**Amended 2026-09-16**, at the grill of `look-back-at-a-quota` (#273), which answers that last
+sentence and replaces it. A **weekly quota** era's page lists its **weeks**, newest first, each
+saying its span and the days of it that were kept out of the quota, "2/3" — the week's **standing**,
+and never capped, so "4/3" is a count and not a defect. A part week counts against the whole quota:
+the week kept from, the week in progress and the week a stopped commitment was kept until are each
+owed the same three, because the week is the unit the quota is owed in and nothing is scaled when
+one turns. A chain that mixes kinds of **era** lists each in its own unit, a weekday set's months
+beside a quota's weeks, with the line where the rhythm changed between them; a week two quota eras
+share is said once and judged by the newer, since two quotas do not sum. And the **whole** sums
+every line the page says, a month's due days and a week's quota alike, so a chain holding a quota
+says one again.
 
 **Era** — one commitment's span of being kept on one rhythm: from the day it is kept from through
 the day it was kept until, or through today while it is still kept. A **rhythm change** or an

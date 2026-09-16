@@ -180,20 +180,42 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
-- **A look-back's line is two strings, and the shell decides how they sit.** `LookBack.Line`
-  hands the shell two strings per line — `.month(inWords:fraction:)` and
-  `.rhythmChanged(inWords:from:)` — while `design.md` § *A look-back says English, not numbers*
-  says every field is "a string the shell draws unaltered" and requirement 7 fixes the separators
-  so the words are testable. Since the layout chosen at #272's G7, `LookBackView` draws a month and
-  its fraction in two grid columns, so nothing joins them; it still composes the rhythm-change
-  line as the rhythm, a middle dot and the day, and it draws an em dash of its own where a kept
-  commitment has no kept-until. Neither the join nor the placeholder is covered by any
-  requirement. Closing it means either one string per line at the seam or a `design.md` sentence
-  saying what the shell may add, and both are edits to a signed change folder — a second G4 — so
-  it was left at #272's G7, 2026-09-15, for `look-back-at-a-quota` (#273) to settle, since that
-  Story adds the first non-month line and will meet the same join. Beside it, `MonthTally` carries
-  `year` and `month` as loose integers next to a `YearMonth` type two declarations below; a tidy
-  for the same Story.
+- **`look-back-at-a-quota`'s wireframe says "nav bar: back only" and the app says the name there.**
+  Found at #273's G7, 2026-09-16. The designer drew the mockup without the `look-back-name-twice`
+  chore, which put the name back in the navigation bar as well as in the body at the owner's
+  request, and the wireframe went verbatim from `grill.md` § *Layout* into `design.md` § *What the
+  shell draws* with that annotation. The code and the walk pictures are right; the annotation is
+  stale in a G4-signed folder, and re-approving the folder for one label was judged not worth it.
+  A mockup is a decision aid and never a requirement (ADR-1057), which is why this is a gap and
+  not a defect. The next Story that touches the look-back's `design.md` corrects the line.
+- **`CalendarDate.adding(days:)`'s comment names two callers and has eleven.** Found at #273's
+  fix-round verification, 2026-09-16. `CalendarDate.swift` documents the method's nil-on-out-of-range
+  behaviour as holding "at the ±1 steps this method is actually called with
+  (`DayView.previousDay`/`nextDay`), the only callers today". The claim that matters is true —
+  every caller in the kit steps by one — but the list is not: `History.standing`, `LookBack.chain`,
+  `LookBack.walkDays`, `LookBack.monday(of:)` and `sunday(of:)`, four sites in `DayScreen.swift` and
+  one in `CommitmentsScreen.swift` all call it. #273 amended the sentence and then withdrew the
+  edit, because it put a file outside the Story's `tasks.md` boundary into the diff for one comment;
+  the sentence predates the Story. Strike "the only callers today" or say "every caller in the
+  kit" the next time that file is open for a reason of its own.
+- **`LookBack.walkDays` does five jobs.** Found at #273's G7, 2026-09-16. It grew from about
+  forty-five lines to about a hundred and thirty-five when the quota's weeks landed: the day walk,
+  the nil-line filter, two key-to-last-day dictionaries written in the same shape twice, the
+  rhythm-change placement moved down out of `form`, the sort by last counted day, and the totals,
+  returned as `(lines:totalDue:totalKept:)`, which the name does not say. The reviewer traced the
+  logic through the three-era chain and both mixed-boundary directions and mutation-tested the
+  sort, the placement and the newer-quota rule; it is right, and the split it wants — a tally pass
+  and a `lines(from:)` pass, since the placement needs each line's last day — is a refactor left
+  out of the Story's fix round rather than done at its end. Owed by the next Story that changes
+  how a look-back counts, which is #274 or #275 if either reaches this function.
+- **A quota's look-back scrolls its whole out of sight.** Flagged by the designer at #273's
+  layout round, 2026-09-16. A weekly quota's page says one line per week, about fifty-two a year,
+  where a tick's twelve month lines kept the whole card in view; nothing on the page is pinned, so
+  on a quota kept for a year the one summary figure the page has is a screen above the rows. No
+  layout in the mockup fixes it: a pinned card duplicates a figure and a collapsed run hides part
+  of the record, both of which ADR-1045 and `CONTEXT.md` § *Look-back* argue against. A later
+  layout question, once the page exists and has been read on a phone; `design.md` § *Risks* of
+  `look-back-at-a-quota` books it too.
 - **A schedule's payload cannot be read back out.** Surfaced at #9's review, 2026-08-31.
   `DayOfMonth` and `Schedule.dayOfMonth(_)` are public but `DayOfMonth.day` is internal, so an
   app target can build a rule on the 25th and never recover the `25` to render "the 25th" in a
@@ -672,6 +694,16 @@ Things that are built, or deliberately not built, in a state someone will trip o
 
 
 ## Settled
+
+- 2026-09-16 — **a look-back's line stays two strings, and the shell may compose exactly one of
+  them.** Closed at #273's grill, which #272's G7 had left it to. `LookBack.Line` keeps two strings
+  per line, because one string would make the shell split a week or a month from its fraction to
+  draw its two columns; `look-back-at-a-quota`'s `design.md` § *What the shell may compose* says
+  the shell may compose the rhythm-change line — the rhythm, a space, a middle dot, a space, the
+  day — and nothing else, and that the heading over the lines and the sentence where a look-back
+  says no line are the shell's own words. The em dash the entry named is already gone: since the
+  `look-back-layout` chore a kept commitment draws only the "Kept from" row. The `MonthTally` tidy
+  the same entry named is `tasks.md` 2.3 of that Story.
 
 - 2026-09-16 — **every worktree walks on a simulator of its own.** `pnpm run walk` used to pick
   whatever iPhone was booted, so with three Stories walking in parallel on 2026-09-15 every

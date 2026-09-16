@@ -4,6 +4,14 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-16 — a look-back says a **whole** for a weekly quota too, and the closing sentence
+  of the amendment below — that it says nothing at all where any era of the chain runs on a weekly
+  quota — is replaced rather than narrowed. A quota era's page counts per **week** against its
+  quota, "2/3", which the second amendment below already put on the record's side of this line, so
+  the whole is the sum of what its lines say: a month line's due days and a week line's quota,
+  counted alike. What makes it a count of days and not a run is unchanged again — it is counted by
+  the rule its lines are counted by, it is never rendered as a percentage, it is on a page visited
+  deliberately, and the day screen shows none of it. Written by `look-back-at-a-quota` (#273).
 - Amended: 2026-09-15 — a look-back also says a **whole**: one fraction across everything since the
   day the commitment was kept from, "120/140", beside the per-month ones. The amendment below says
   the fraction stands "per month or per week", and this goes further than that wording allowed, so

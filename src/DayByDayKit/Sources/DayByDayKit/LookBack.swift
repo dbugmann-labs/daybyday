@@ -10,7 +10,8 @@ public struct LookBack: Hashable, Sendable {
     public let lines: [Line]
 
     public enum Line: Hashable, Sendable {
-        case month(inWords: String, fraction: String?)
+        case month(inWords: String, fraction: String)
+        case week(inWords: String, fraction: String)
         case rhythmChanged(inWords: String, from: String)
     }
 
@@ -25,29 +26,69 @@ public struct LookBack: Hashable, Sendable {
         var start: CalendarDate { commitment.keptFrom }
     }
 
-    /// A month this look-back has walked: the calendar month, whether any era running on a
-    /// weekly quota counted a day inside it, and the days it counted kept out of the days it
-    /// counted due — ignored where `touchedByQuota` is `true`, `design.md` § *A month any quota
-    /// era touches says no fraction*.
-    private struct MonthTally {
-        let year: Int
-        let month: Int
-        var due: Int = 0
-        var kept: Int = 0
-        var touchedByQuota: Bool = false
-
-        var line: Line {
-            .month(
-                inWords: LookBackWords.month(year: year, month: month),
-                fraction: touchedByQuota ? nil : LookBackWords.fraction(kept: kept, due: due))
-        }
-    }
-
     /// A key naming a calendar month, so a **rhythm changed** line can be looked up by the
     /// calendar month it sits above.
     private struct YearMonth: Hashable {
         let year: Int
         let month: Int
+    }
+
+    /// A key naming a calendar week by its Monday, so a **rhythm changed** line can be looked up
+    /// by the calendar week it sits above.
+    private struct WeekKey: Hashable {
+        let monday: CalendarDate
+    }
+
+    /// The unit a line is said over — a calendar month or a calendar week — so a **rhythm
+    /// changed** line between two eras can target whichever of the two holds the boundary day,
+    /// `design.md` § *The change line sits above the lower of the two lines holding the day*.
+    private enum Unit: Hashable {
+        case month(YearMonth)
+        case week(WeekKey)
+    }
+
+    /// A month this look-back has walked: the calendar month, and the days it counted kept out
+    /// of the days it counted due across every day of it held by an era not running on a weekly
+    /// quota. `hasNonQuotaDay` is false, and no line is said, where every day of the month the
+    /// chain covers is held by an era running on a weekly quota — those days are said by a
+    /// `WeekTally`'s line instead. `lastDay` is the last day of the month actually counted this
+    /// way, used to order this line among the others and to find the "lower" of two lines a
+    /// rhythm-change boundary falls between.
+    private struct MonthTally {
+        let yearMonth: YearMonth
+        var due: Int = 0
+        var kept: Int = 0
+        var hasNonQuotaDay: Bool = false
+        var lastDay: CalendarDate
+
+        var line: Line? {
+            guard hasNonQuotaDay else { return nil }
+            return .month(
+                inWords: LookBackWords.month(year: yearMonth.year, month: yearMonth.month),
+                fraction: LookBackWords.fraction(kept: kept, due: due))
+        }
+    }
+
+    /// A calendar week — Monday through the following Sunday — this look-back has walked: the
+    /// days it counted kept, out of the quota of the newest weekly-quota era holding a day of it
+    /// — the last one processed wins, and days are walked oldest first, so a week two quota eras
+    /// share ends up judged by the newer, `design.md` § *A week two quota eras share is judged
+    /// by the newer*. `hasQuotaDay` is false, and no line is said, where no day of this week is
+    /// held by an era running on a weekly quota. `lastDay` is the last day of the week actually
+    /// counted this way.
+    private struct WeekTally {
+        let monday: CalendarDate
+        var kept: Int = 0
+        var quota: Int = 0
+        var hasQuotaDay: Bool = false
+        var lastDay: CalendarDate
+
+        var line: Line? {
+            guard hasQuotaDay else { return nil }
+            return .week(
+                inWords: LookBackWords.week(from: monday, through: LookBack.sunday(of: monday)),
+                fraction: LookBackWords.fraction(kept: kept, due: quota))
+        }
     }
 
     /// Forms the look-back at `commitment`, on either of a commitments screen's lists —
@@ -71,43 +112,14 @@ public struct LookBack: Hashable, Sendable {
                 keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [])
         }
 
-        let hasQuotaEra = eras.contains {
-            if case .weeklyQuota = $0.commitment.schedule { return true }
-            return false
-        }
-
-        let (monthTallies, totalDue, totalKept) = Self.walkDays(
+        let (lines, totalDue, totalKept) = Self.walkDays(
             from: earliestEra.start, through: frontEnd, eras: eras, history: history)
-
-        // Keyed on the calendar month a boundary's newer era is kept from, so two boundaries
-        // landing in the same month say two lines rather than the second overwriting the first
-        // — `design.md` § *The change line sits above the month the newer era is kept from* and
-        // `spec.md` § *A look-back says where the rhythm changed, between its months*: "one such
-        // line for each boundary ... in the same newest-first order its months are in". The loop
-        // below already visits `eras` newest-first, so appending rather than assigning keeps that
-        // order inside one month's list too.
-        var changedLinesFor: [YearMonth: [Line]] = [:]
-        for index in 0..<max(eras.count - 1, 0) {
-            let newer = eras[index]
-            let ym = YearMonth(year: newer.start.year, month: newer.start.month)
-            changedLinesFor[ym, default: []].append(
-                .rhythmChanged(
-                    inWords: newer.commitment.rhythmInWords, from: LookBackWords.day(newer.start)))
-        }
-
-        var lines: [Line] = []
-        for tally in monthTallies {
-            if let changedLines = changedLinesFor[YearMonth(year: tally.year, month: tally.month)] {
-                lines.append(contentsOf: changedLines)
-            }
-            lines.append(tally.line)
-        }
 
         return LookBack(
             name: commitment.name, rhythmInWords: commitment.rhythmInWords,
             keptFromInWords: LookBackWords.day(earliestEra.start),
             keptUntilInWords: keptUntil.map(LookBackWords.day),
-            whole: hasQuotaEra ? nil : LookBackWords.fraction(kept: totalKept, due: totalDue),
+            whole: LookBackWords.fraction(kept: totalKept, due: totalDue),
             lines: lines)
     }
 
@@ -164,39 +176,89 @@ public struct LookBack: Hashable, Sendable {
         return eras
     }
 
+    /// The Monday of `date`'s calendar week, walked back one day at a time so every step stays
+    /// at the ±1 `adding(days:)` documents as safe — the same technique
+    /// `History.standing(for:through:)` uses to find a week's start.
+    private static func monday(of date: CalendarDate) -> CalendarDate {
+        var current = date
+        while current.weekday != .monday, let previous = current.adding(days: -1) {
+            current = previous
+        }
+        return current
+    }
+
+    /// The Sunday six days after `monday`, walked forward one day at a time so every step stays
+    /// at the ±1 `adding(days:)` documents as safe — the same discipline `monday(of:)` above
+    /// walks backward with, rather than the single six-day step that discipline forbids.
+    private static func sunday(of monday: CalendarDate) -> CalendarDate {
+        var current = monday
+        for _ in 0..<6 {
+            current = current.adding(days: 1)!
+        }
+        return current
+    }
+
+    /// Whether `a` falls on or before `b` — the ordering `days(until:)` answers signed, spelled
+    /// out here for the "lower of the two lines" comparison, `design.md` § *The change line sits
+    /// above the lower of the two lines holding the day*.
+    private static func isOnOrBefore(_ a: CalendarDate, _ b: CalendarDate) -> Bool {
+        a.days(until: b) >= 0
+    }
+
     /// Walks every day from `start` through `end` inclusive, one calendar day at a time —
     /// `design.md` § *Risks / Trade-offs*: opened deliberately, once, on a phone, not on the
-    /// daily path. Answers the months walked, oldest first, and the total days kept and due
-    /// across every day walked whose era does not run on a weekly quota.
+    /// daily path. Buckets each day into the calendar month or the calendar week it falls in,
+    /// according to whether the era holding it runs on a weekly quota, and returns every line
+    /// this look-back says, newest first, together with the whole's numerator and denominator —
+    /// the sum of every line's own, month due days and week quotas alike,
+    /// `openspec/changes/look-back-at-a-quota/specs/look-back/spec.md` § *A look-back says one
+    /// whole across everything since the day the commitment is kept from*.
     private static func walkDays(
         from start: CalendarDate, through end: CalendarDate, eras: [Era], history: History
-    ) -> (months: [MonthTally], totalDue: Int, totalKept: Int) {
+    ) -> (lines: [Line], totalDue: Int, totalKept: Int) {
         guard start.days(until: end) >= 0 else {
             return ([], 0, 0)
         }
 
         var months: [MonthTally] = []
-        var current = MonthTally(year: start.year, month: start.month)
-        var totalDue = 0
-        var totalKept = 0
+        var weeks: [WeekTally] = []
+        var currentMonth = MonthTally(
+            yearMonth: YearMonth(year: start.year, month: start.month), lastDay: start)
+        var currentWeekMonday = Self.monday(of: start)
+        var currentWeek = WeekTally(monday: currentWeekMonday, lastDay: start)
         var day = start
 
         while true {
-            if day.year != current.year || day.month != current.month {
-                months.append(current)
-                current = MonthTally(year: day.year, month: day.month)
+            if day.year != currentMonth.yearMonth.year || day.month != currentMonth.yearMonth.month {
+                months.append(currentMonth)
+                currentMonth = MonthTally(
+                    yearMonth: YearMonth(year: day.year, month: day.month), lastDay: day)
+            }
+
+            let dayMonday = Self.monday(of: day)
+            if dayMonday != currentWeekMonday {
+                weeks.append(currentWeek)
+                currentWeekMonday = dayMonday
+                currentWeek = WeekTally(monday: dayMonday, lastDay: day)
             }
 
             if let era = eras.first(where: { $0.start.days(until: day) >= 0 && day.days(until: $0.end) >= 0 })
             {
-                if case .weeklyQuota = era.commitment.schedule {
-                    current.touchedByQuota = true
-                } else if era.commitment.isDue(on: day) {
-                    current.due += 1
-                    totalDue += 1
+                if case .weeklyQuota(let quota) = era.commitment.schedule {
+                    currentWeek.hasQuotaDay = true
+                    currentWeek.quota = quota.timesPerWeek
+                    currentWeek.lastDay = day
                     if history.isKept(era.commitment, on: day) {
-                        current.kept += 1
-                        totalKept += 1
+                        currentWeek.kept += 1
+                    }
+                } else {
+                    currentMonth.hasNonQuotaDay = true
+                    currentMonth.lastDay = day
+                    if era.commitment.isDue(on: day) {
+                        currentMonth.due += 1
+                        if history.isKept(era.commitment, on: day) {
+                            currentMonth.kept += 1
+                        }
                     }
                 }
             }
@@ -207,7 +269,86 @@ public struct LookBack: Hashable, Sendable {
             day = next
         }
 
-        months.append(current)
-        return (months.reversed(), totalDue, totalKept)
+        months.append(currentMonth)
+        weeks.append(currentWeek)
+
+        // Only the months and weeks that actually hold a day of the right kind say a line —
+        // `spec.md` § *A tick commitment's look-back counts each calendar month's kept days out
+        // of its due days* and § *A weekly quota era's look-back counts each week's kept days
+        // out of its quota*.
+        let monthEntries: [(key: YearMonth, line: Line, lastDay: CalendarDate)] = months.compactMap {
+            tally in
+            guard let line = tally.line else { return nil }
+            return (tally.yearMonth, line, tally.lastDay)
+        }
+        let weekEntries: [(key: WeekKey, line: Line, lastDay: CalendarDate)] = weeks.compactMap {
+            tally in
+            guard let line = tally.line else { return nil }
+            return (WeekKey(monday: tally.monday), line, tally.lastDay)
+        }
+
+        let monthLastDayByKey = Dictionary(
+            uniqueKeysWithValues: monthEntries.map { ($0.key, $0.lastDay) })
+        let weekLastDayByKey = Dictionary(
+            uniqueKeysWithValues: weekEntries.map { ($0.key, $0.lastDay) })
+
+        // Keyed on the unit — a calendar month or a calendar week — the newer era of a boundary
+        // is kept from, so two boundaries landing in the same unit say two lines rather than the
+        // second overwriting the first — `design.md` § *The change line sits above the lower of
+        // the two lines holding the day* and `spec.md` § *A look-back says where the rhythm
+        // changed, between its lines*. The loop below already visits `eras` newest-first, so
+        // appending rather than assigning keeps that order inside one unit's list too.
+        var changedLinesFor: [Unit: [Line]] = [:]
+        for index in 0..<max(eras.count - 1, 0) {
+            let newer = eras[index]
+            let monthKey = YearMonth(year: newer.start.year, month: newer.start.month)
+            let weekKey = WeekKey(monday: Self.monday(of: newer.start))
+
+            let monthLastDay = monthLastDayByKey[monthKey]
+            let weekLastDay = weekLastDayByKey[weekKey]
+
+            let target: Unit
+            switch (monthLastDay, weekLastDay) {
+            case (let m?, let w?):
+                target = Self.isOnOrBefore(m, w) ? .month(monthKey) : .week(weekKey)
+            case (_?, nil):
+                target = .month(monthKey)
+            case (nil, _?):
+                target = .week(weekKey)
+            case (nil, nil):
+                continue
+            }
+
+            changedLinesFor[target, default: []].append(
+                .rhythmChanged(
+                    inWords: newer.commitment.rhythmInWords, from: LookBackWords.day(newer.start)))
+        }
+
+        struct SortableLine {
+            let unit: Unit
+            let line: Line
+            let lastDay: CalendarDate
+        }
+        var sortableLines: [SortableLine] = monthEntries.map {
+            SortableLine(unit: .month($0.key), line: $0.line, lastDay: $0.lastDay)
+        }
+        sortableLines.append(
+            contentsOf: weekEntries.map {
+                SortableLine(unit: .week($0.key), line: $0.line, lastDay: $0.lastDay)
+            })
+        sortableLines.sort { !Self.isOnOrBefore($0.lastDay, $1.lastDay) }
+
+        var lines: [Line] = []
+        for sortable in sortableLines {
+            if let changedLines = changedLinesFor[sortable.unit] {
+                lines.append(contentsOf: changedLines)
+            }
+            lines.append(sortable.line)
+        }
+
+        let totalDue = months.reduce(0) { $0 + $1.due } + weeks.reduce(0) { $0 + $1.quota }
+        let totalKept = months.reduce(0) { $0 + $1.kept } + weeks.reduce(0) { $0 + $1.kept }
+
+        return (lines, totalDue, totalKept)
     }
 }
