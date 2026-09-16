@@ -380,8 +380,9 @@ unexpected exit, crash, or test timeout` and no crash report — once at `app.la
 step ran, twice mid-test on a tap that then read as a control that would not open — and the
 pictures a run did capture could have been of another Story's build. So the walk runs on
 `DayByDay walk <worktree directory>` — `DayByDay walk daybyday-add-version-command` for a Story
-in `../daybyday-add-version-command` — created on its first run from the newest runtime's stock
-iPhone (26 seconds for that first boot here, measured 2026-09-16), kept booted between runs so a
+in `../daybyday-add-version-command` — created on its first run as the newest runtime's first
+stock iPhone, the same `iPhone 17 Pro` CI's discovery lands on (26 seconds for that first boot
+here, measured 2026-09-16), kept booted between runs so a
 fix round reruns warm, and never shared. The stock devices are not touched: `iPhone 17` stays the
 one the top of this file runs the app on by hand, and CI's `ui-smoke` still discovers its own on
 the runner. The device goes with the worktree — the janitor deletes it at Stage 9
@@ -404,7 +405,7 @@ name="DayByDay walk $(basename "$(git rev-parse --show-toplevel)")"   # this wor
 device=$(xcrun simctl list devices available --json \
   | python3 -c "import json,sys; ds=json.load(sys.stdin)['devices']; print(next((d['udid'] for rt in ds for d in ds[rt] if d['name']=='$name'), ''))")
 [ -n "$device" ] || device=$(xcrun simctl create "$name" \
-  com.apple.CoreSimulator.SimDeviceType.iPhone-17 com.apple.CoreSimulator.SimRuntime.iOS-26-5)
+  com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro com.apple.CoreSimulator.SimRuntime.iOS-26-5)
   # the identifiers this machine has; `xcrun simctl list devicetypes` and `list runtimes` print them
 xcrun simctl bootstatus "$device" -b
 xcrun simctl uninstall "$device" com.dbugmann.daybyday
