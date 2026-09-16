@@ -4,6 +4,9 @@
   recommendation put to them; accepted by the chore PR that carries it
 - Date: 2026-09-15
 - Deciders: Diego Bugmann
+- Amended: 2026-09-16 — decision 5 also reads each picture against the wireframe `design.md`
+  § *What the shell draws* carries, the layout the owner chose at the grill from a mockup
+  (ADR-1057); a picture of a different layout is a finding by box like the ones named there.
 
 ## Context
 

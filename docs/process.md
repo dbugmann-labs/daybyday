@@ -223,7 +223,7 @@ than spawns is the grill, which produces decisions — never a delta, never a te
 | 0 | Epic intake | **you** | `orchestrator` / Opus | Epic issue | — |
 | 1 | Feature definition | **you** | the conductor grills via `grill`, **in rounds**; `orchestrator` / Opus writes the issue | Feature issue, sub-issue of Epic, plus any new `CONTEXT.md` terms | **G1 (H)** |
 | 2 | Story decomposition | **you** accept; **you** type `to-tickets`, which proposes | `orchestrator` / Opus writes what you accepted | Story issues, sub-issues of Feature, blocking edges declared | **G2 (H)** |
-| 4 | Propose | **you** grill, then the agent writes and you approve | the conductor grills via `grill`; then `spec-author` / Opus via `/opsx:propose` | the grill first — `grill.md`, plus any new `CONTEXT.md` terms — then the change folder written on those answers: proposal, delta specs, design, tasks, with `design.md` **Open Questions** filled in and a `## Questions for you` residual round only if writing the delta turned one up. The worktree is cut before the grill; commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
+| 4 | Propose | **you** grill, then the agent writes and you approve | the conductor grills via `grill`; then `spec-author` / Opus via `/opsx:propose` | the grill first — `grill.md`, plus any new `CONTEXT.md` terms, and on a Story that reaches the shell its **layout round**: `designer` / Opus draws the options, you choose from the artifact, `grill.md` § *Layout* keeps the wireframe (ADR-1057) — then the change folder written on those answers, `design.md` § *What the shell draws* carrying that wireframe: proposal, delta specs, design, tasks, with `design.md` **Open Questions** filled in and a `## Questions for you` residual round only if writing the delta turned one up. The worktree is cut before the grill; commit as `docs(<capability>): propose <change-id>`, push, and open the **draft PR** | **G4 (H+CI)** ← the hard gate |
 | 5 | Red | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` | one failing acceptance test | A |
 | 6 | Green + next | agent | `implementer` / Sonnet, via `mattpocock-skills:tdd` and `/opsx:apply` | one scenario per cycle until the delta is satisfied, pushed to the same PR as it goes; then, on a Story that reaches the shell, the **walk** — the simulator driven through `tasks.md` § *The walk*, one screenshot per box posted to the PR as a comment (ADR-1053) | A |
 | 7 | Review | agent reports; **you** judge | `reviewer` / Opus, via `mattpocock-skills:code-review` | the PR rebased onto current `main`; findings, two-axis: standards + spec fidelity, the walk's pictures read on the second; the G7 stop links the walk comment and carries any `phone:` lines for you to walk | **G7 (H)** |
@@ -295,7 +295,9 @@ which is the horizontal slicing §8 exists to prevent.
 
 **The Story grill ends in `grill.md`**, written into the change folder when the frontier is empty:
 `## Settled`, which is answers with a clause of why each rather than requirements; any terms it
-landed in `CONTEXT.md`; and a `## Left open` section, where `None.` with the reason is valid and
+landed in `CONTEXT.md`; on a Story that reaches the shell, `## Layout`, the option the human
+chose from `designer`'s mockup with its wireframe, asked as the grill's last round (ADR-1057);
+and a `## Left open` section, where `None.` with the reason is valid and
 required. `spec-author` is then spawned with the issue number and nothing else, reads that file,
 and writes the delta on those answers. The answers travel in a file rather than in a prompt for
 two reasons: a conversation is not a durable file (§6), and pasting requirements into a prompt is
