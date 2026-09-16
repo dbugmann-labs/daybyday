@@ -227,12 +227,28 @@ durable files, applied to the gate. Omit the line when nothing ran, never pad it
 one artifact that must reach the human unmediated, and that outranks the budget. Everything else
 obeys it.
 
-**A G7 stop on a Story with a walk carries two more lines in `Detail`, and no more than two.**
+**A G7 stop on a Story with a walk carries three more lines in `Detail`, and no more than three.**
 The link to the walk comment on the PR — the pictures are read there, never pasted — and, where
 `tasks.md` has lines marked `phone:`, those lines verbatim under *walk on the phone:*, because
 they are the steps no simulator could show and the human's G7 reply is the only place they get
 answered. The reply vocabulary does not change: `approved` says the pictures and the phone were
 looked at, and `changes: <what>` names the box that showed the wrong thing. ADR-1053.
+
+**The third line is the command that puts the build on the phone**, and it appears only where
+there are `phone:` lines to walk:
+
+```
+    on the phone:  cd <this Story's worktree> && pnpm run phone
+```
+
+**Print the worktree's real path, never `../daybyday-<change-id>`.** `pnpm run phone` builds the
+tree it is run in, so the same command typed in the clone installs `main` — a build without the
+Story in it, walked against a `phone:` line it cannot satisfy, which reads as the feature being
+broken rather than as the wrong directory. Take the path from the worktree you are conducting in
+(`git rev-parse --show-toplevel`), which is the path `pnpm run status` prints for a Story whose
+worktree exists (`scripts/status.ts`); the conventional directory is a default the cut may not
+have used. The human asked for this line on #267, having walked that Story from a command typed
+out by hand in the conversation rather than from the gate.
 
 **The pair is *If you take the recommendation* against *If you don't*** — not yes against no.
 The two read identically at a binary gate and, unlike yes/no, they fit a stop whose reply is a
