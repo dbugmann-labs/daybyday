@@ -827,10 +827,10 @@ public final class DayScreen {
     /// this instead opens all three places afresh, whether or not each was already kept, takes
     /// on the commitments this screen was handed where the roster it reads holds nothing at
     /// all, and tells nothing on any row nor under any one-off name field —
-    /// `openspec/specs/day-screen/spec.md` § *A day screen returned to from a commitments
-    /// screen that has restored a copy draws what the copy holds*. Returned to from a
-    /// commitments screen that has restored no copy, or from none at all, this is returned to
-    /// exactly as being returned to always was.
+    /// `openspec/changes/restore-from-a-copy/specs/restore/spec.md` § *A day screen returned to
+    /// from a commitments screen that restored a copy draws what the copy holds*. Returned to
+    /// from a commitments screen that has restored no copy, or from none at all, this is
+    /// returned to exactly as being returned to always was.
     public func returnedTo(from commitmentsScreen: CommitmentsScreen? = nil) {
         guard commitmentsScreen?.hasRestoredACopy == true else {
             returnedToOrdinarily()
