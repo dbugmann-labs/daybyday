@@ -58,15 +58,15 @@ make it pass, then the next. Every test in §§ 3–6 goes in
 **The ADR amendment and the `CONTEXT.md` edits are written by this Story's proposal commit, not by
 the implementation.** These boxes confirm rather than write.
 
-- [ ] 9.1 Confirm `CONTEXT.md` § *Look-back* and § *Week* still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
-- [ ] 9.2 Confirm ADR-1045's newest amendment still describes what shipped, and that `git diff --stat origin/main... -- openspec/specs/` reports nothing
+- [x] 9.1 Confirm `CONTEXT.md` § *Look-back* and § *Week* still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
+- [x] 9.2 Confirm ADR-1045's newest amendment still describes what shipped, and that `git diff --stat origin/main... -- openspec/specs/` reports nothing
 
 ## 10. The gates
 
-- [ ] 10.1 `openspec validate look-back-at-a-quota --strict` exits 0 and `pnpm run check:scenarios` exits 0
-- [ ] 10.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, `docs/open-questions.md`, the two kit sources, the kit test file and `LookBackView.swift`
-- [ ] 10.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
-- [ ] 10.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is thirteen more than a run on `main` reports — the fifteen written in §§ 3–6 less the two deleted in 7.2, both read off runs and neither derived
+- [x] 10.1 `openspec validate look-back-at-a-quota --strict` exits 0 and `pnpm run check:scenarios` exits 0
+- [x] 10.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, `docs/open-questions.md`, the two kit sources, the kit test file and `LookBackView.swift`
+- [x] 10.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
+- [x] 10.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is thirteen more than a run on `main` reports — the fifteen written in §§ 3–6 less the two deleted in 7.2, both read off runs and neither derived
 - [ ] 10.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–10.4 and the walk below are ticked and that the instruction here is written for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/look-back/spec.md` holds nine requirements, the two this delta removes gone and the four it adds in their place, and no other spec moves. `pnpm run checks` runs after the archive commit exists, and the archive commit is pushed. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
