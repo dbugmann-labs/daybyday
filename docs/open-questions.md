@@ -122,6 +122,20 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   2026-09-11, at #199's close-out; surfaced at #201's G7 (2026-09-10) and repeated at #208's close-out
   (2026-09-11).
 
+- **The three places travel as a trio of parameters, and want to be one type.** `recordAt:`,
+  `rosterAt:` and `oneOffsAt:` now pass together through `RestoreInProgress.restore`,
+  `undoTornRestore`, `readPlaces`, `readRecordAndRoster` and `readStoresForCopy` — a data clump,
+  and the shape of a "three places" type nobody has written. `restore-from-a-copy` (#267) did not
+  introduce it: `make-a-copy` (#266) already read all three together, and this Story widened the
+  trio to the writing side, which is the first time the same three paths are both read and written
+  in one operation. Left alone deliberately at #267's G7, where the reviewer raised it as a
+  judgement call rather than a finding: a Story fixing three correctness defects is the wrong place
+  to move five call sites, and the delta was signed without it. The candidate answers are a value
+  type holding the three URLs, passed everywhere the trio goes; or leaving it, on the ground that
+  the trio is stable at three and every call site names its members. What would force the first is
+  a fourth store, which `copy-on-every-change` (#268) does not add but a later capability might.
+  Recorded 2026-09-16, at #267's G7.
+
 ## Known gaps
 
 Things that are built, or deliberately not built, in a state someone will trip over.
