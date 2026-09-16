@@ -50,8 +50,8 @@ make it pass, then the next. Every test in §§ 3–6 goes in
 
 ## 8. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
-- [ ] 8.1 `LookBackView` draws a week line as the row it draws a month as, and names the heading over them "Weeks", "Months" or "Months and weeks" from the cases its lines hold, deciding nothing else; the app target builds
-- [ ] 8.2 Both cards on the page take the secondary grouped background, so they are visible against the page in the dark; the app target builds again after it
+- [x] 8.1 `LookBackView` draws a week line as the row it draws a month as, and names the heading over them "Weeks", "Months" or "Months and weeks" from the cases its lines hold, deciding nothing else; the app target builds
+- [x] 8.2 Both cards on the page take the secondary grouped background, so they are visible against the page in the dark; the app target builds again after it
 
 ## 9. The records
 

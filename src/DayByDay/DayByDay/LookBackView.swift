@@ -7,20 +7,22 @@ import DayByDayKit
 /// shell rides this Story*: the kit already answered every rule a page shows.
 ///
 /// **Layout is Option B of the G7 proposal** (PR #280), amended by the `look-back-layout` shell
-/// chore and again by `look-back-name-twice`. The first had the bar carry the name alone; the
-/// owner preferred it said twice, so the name is back both in the navigation bar and as a
-/// `.largeTitle` in the body, with the rhythm beneath it. What the first chore did to the dates
-/// stands: the two half-width "Kept from"/"Kept until" cards wrapped a date like
-/// "15 September 2026" onto a second line (walk W.3 on PR #280), so they read as two rows of one
-/// card, label left and value right, wide enough that no date wraps; a commitment still kept
-/// draws only the "Kept from" row rather than a "—" that would say nothing. The "Months" heading
-/// and the `Grid` carry the same horizontal inset as the cards' own inner padding, so the month
-/// names and the card labels share a left edge and the fractions share the cards' right edge.
-/// Still a hand-drawn `ScrollView` and `Grid` rather than the platform `List` the rest of the
-/// shell is built from, so the whole — the one summary figure this screen has — can read as a
-/// scoreboard rather than another row. The rhythm-change line is the one composition among these
-/// seam strings: it joins the rhythm and its day with a middle dot. Every other card and row
-/// draws exactly what `LookBack` hands it.
+/// chore, again by `look-back-name-twice`, and again by `look-back-at-a-quota`'s Option A (the
+/// same table, with week rows added — `design.md` § *What the shell draws*). The name-twice
+/// chore had the bar carry the name alone; the owner preferred it said twice, so the name is back
+/// both in the navigation bar and as a `.largeTitle` in the body, with the rhythm beneath it. What
+/// the first chore did to the dates stands: the two half-width "Kept from"/"Kept until" cards
+/// wrapped a date like "15 September 2026" onto a second line (walk W.3 on PR #280), so they read
+/// as two rows of one card, label left and value right, wide enough that no date wraps; a
+/// commitment still kept draws only the "Kept from" row rather than a "—" that would say nothing.
+/// The heading over the lines — "Weeks", "Months" or "Months and weeks" — and the `Grid` carry the
+/// same horizontal inset as the cards' own inner padding, so the line labels and the card labels
+/// share a left edge and the fractions share the cards' right edge. Still a hand-drawn
+/// `ScrollView` and `Grid` rather than the platform `List` the rest of the shell is built from, so
+/// the whole — the one summary figure this screen has — can read as a scoreboard rather than
+/// another row. The rhythm-change line is the one composition among these seam strings: it joins
+/// the rhythm and its day with a middle dot. Every other card and row draws exactly what
+/// `LookBack` hands it.
 ///
 /// Holds `screen` and `commitment` rather than an already-formed `LookBack`, so the day-by-day
 /// walk `screen.lookBack(at:)` sits behind `body` and runs once per body pass — read into a
@@ -86,7 +88,7 @@ struct LookBackView: View {
             }
         }
         .padding()
-        .background(.background, in: RoundedRectangle(cornerRadius: 12))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
     @ViewBuilder
@@ -115,7 +117,7 @@ struct LookBackView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(.background, in: RoundedRectangle(cornerRadius: 12))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
     @ViewBuilder
@@ -125,8 +127,11 @@ struct LookBackView: View {
         } else {
             // The extra `.padding(.horizontal)` below matches the cards' own inner padding, so
             // the month names and the rhythm-change line align with the cards' text rather than
-            // the page's own edge.
-            Text("Months")
+            // the page's own edge. The heading names the unit the lines below it are said in —
+            // "Weeks" where every line is a week, "Months" where every line is a month, "Months
+            // and weeks" where the chain mixes — read off the cases `lookBack.lines` holds,
+            // deciding nothing else. `design.md` § *Layout*.
+            Text(heading(for: lookBack.lines))
                 .font(.headline)
                 .padding(.horizontal)
             Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 6) {
@@ -138,13 +143,24 @@ struct LookBackView: View {
         }
     }
 
+    private func heading(for lines: [LookBack.Line]) -> String {
+        let hasMonth = lines.contains { if case .month = $0 { return true }; return false }
+        let hasWeek = lines.contains { if case .week = $0 { return true }; return false }
+        switch (hasMonth, hasWeek) {
+        case (true, true): return "Months and weeks"
+        case (true, false): return "Months"
+        case (false, true): return "Weeks"
+        case (false, false): return ""
+        }
+    }
+
     @ViewBuilder
     private func lookBackLine(_ line: LookBack.Line) -> some View {
         switch line {
-        case .month(let inWords, let fraction):
+        case .month(let inWords, let fraction), .week(let inWords, let fraction):
             GridRow {
                 Text(inWords)
-                Text(fraction ?? "")
+                Text(fraction)
                     .monospacedDigit()
                     .gridColumnAlignment(.trailing)
             }
