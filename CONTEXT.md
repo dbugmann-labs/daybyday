@@ -1437,6 +1437,13 @@ is `take-out-an-unreadable-store` (#270) — and a copy of nothing is still a co
 back empties the phone and says so. The one a person asks for leaves through the share sheet under a
 name that says when it was made, as a file of its own kind, and leaves no trace behind on the phone.
 
+**Amended 2026-09-16**, at the grill of `copy-on-every-change` (#268). The copy written on the app's
+own follows a change the person kept, from either screen, a restore included — never a repair the
+app makes on opening, which puts back what the copy already mirrors. It is a consequence of the
+change and never a condition of it: a copy that cannot be made refuses no change, and the next kept
+change tries again. A copy the person asks for is not the last copy the **commitments screen** speaks
+of; that line is about the **copy place** alone.
+
 **Moment** — when something happened, said to the minute: a **calendar date**, an hour of that day
 and a minute of that hour, in the reckoning of the phone it was formed on. It is the only thing here
 that knows a time of day, and it exists because a **copy** carries one; no **store** holds a moment
@@ -1453,6 +1460,25 @@ when asked. When it can no longer be written at — the folder gone, the write r
 on the **commitments screen**, next to when the last copy was made, and nowhere else: the **day
 screen** stays quiet, because a stopped copy is looked after where things are looked after and not
 nagged about where days are entered. Agreed 2026-09-15 at the grill of B-009, `FEAT: restore`.
+
+**Amended 2026-09-16**, at the grill of `copy-on-every-change` (#268). The copy the app writes there
+is one file of a fixed name, and a copy is written the moment the folder is picked, so the line has
+something to say at once. A folder picked that already holds a copy — the old phone's, on a new
+phone — asks to **restore** it first, and only then becomes the copy place, or is replaced by this
+phone's on the person's say; one holding a copy that cannot be read is refused as the copy place
+until it is moved. The line names the folder, and says what the last attempt did and when — the
+last copy made, or stopped since when and why: the folder cannot be reached, cannot be written, or
+a store cannot be read — and only an attempt finds out, never the screen being shown. A person can
+forget the copy place, after which the app copies only when asked again; a place picked in another's
+stead leaves the old folder's file as it is. A folder on the phone itself is allowed, and nothing is
+said about it.
+
+**Amended 2026-09-16**, while the delta of `copy-on-every-change` (#268) was being written. The copy
+place is the app's first **setting**: something the app keeps for itself, at a place of its own,
+beside the three places rather than among them. The folder, the last copy made there and any stop
+are all of it, and they last across the app being closed. No **copy** holds any of it and a
+**restore** replaces none of it, because it says where this phone copies to and not what this phone
+keeps.
 
 **Restore** — putting a **copy** back: the record, the roster and the one-offs the phone holds become
 what the copy holds, whole, and what was there goes — said before it does, and never merged, since a
