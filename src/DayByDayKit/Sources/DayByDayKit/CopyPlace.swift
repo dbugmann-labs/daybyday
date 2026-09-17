@@ -136,23 +136,54 @@ public final class CopyPlace {
         guard let moment = momentNow() else {
             return
         }
-        attemptCopy(into: folder, asOf: moment)
+        Self.withSecurityScopedAccess(to: folder) {
+            writeCopy(into: folder, asOf: moment)
+        }
     }
 
     /// A change has been kept at the record place, the roster place or the one-off place. Writes
-    /// a copy at the copy place where one is set; does nothing where none is.
+    /// a copy at the copy place where one is set; does nothing where none is. Tries the bookmark
+    /// first, falling back to the plain path — `design.md` § *The folder is bookmark data beside
+    /// its path* — holding one security-scoped bracket per candidate from the existence check
+    /// through the write, never released in between: a probe made without access answers `false`
+    /// for a folder that is there, which once left every copy after a relaunch reporting the
+    /// folder unreachable for good.
     func keptAChange() {
-        guard folder != nil else {
+        guard let folder else {
             return
         }
         guard let moment = momentNow() else {
             return
         }
-        guard let resolved = resolvedFolder() else {
-            stop(.folderCannotBeReached, asOf: moment)
+
+        if let bookmark = folder.bookmark {
+            var isStale = false
+            if let url = try? URL(resolvingBookmarkData: bookmark, bookmarkDataIsStale: &isStale),
+                !isStale,
+                Self.withSecurityScopedAccess(to: url, { attemptCopyWhereDirectory(url, asOf: moment) })
+            {
+                return
+            }
+        }
+
+        let url = URL(fileURLWithPath: folder.path, isDirectory: true)
+        if Self.withSecurityScopedAccess(to: url, { attemptCopyWhereDirectory(url, asOf: moment) }) {
             return
         }
-        attemptCopy(into: resolved, asOf: moment)
+
+        stop(.folderCannotBeReached, asOf: moment)
+    }
+
+    /// Tried from inside a security-scoped bracket `keptAChange()` already holds on `url`: `false`
+    /// where `url` is not a directory at all, so the caller falls back to another candidate or
+    /// reports the folder unreachable; `true` once a copy has been attempted there — written, or
+    /// stopped for its own reason — either way because `url` was the right folder to try.
+    private func attemptCopyWhereDirectory(_ url: URL, asOf moment: Moment) -> Bool {
+        guard Self.isDirectory(url) else {
+            return false
+        }
+        writeCopy(into: url, asOf: moment)
+        return true
     }
 
     /// Reads the file named `Self.fileName` in `folder`, answering `nil` where there is none,
@@ -171,19 +202,26 @@ public final class CopyPlace {
     /// Forms a copy of the record, the roster and the one-offs kept at `recordAt`, `rosterAt` and
     /// `oneOffsAt`, as of `moment` — reading the three places fresh, undoing a torn restore and
     /// then a torn save first. The one copy-forming path `CommitmentsScreen.makeACopy` and this
-    /// copy place's own `attemptCopy` both call, per `proposal.md`'s own "the copy forming shared
-    /// out of the commitments screen": neither keeps a second reading of the same three stores.
-    /// `openspec/specs/restore/spec.md` § *A copy is what the three places hold, read when it is
-    /// asked for*.
+    /// copy place's own `writeCopy` both call, per `proposal.md`'s own "the copy forming shared
+    /// out of the commitments screen". Answers `unreadable` alongside the result rather than
+    /// leaving a caller that needs to name which store failed to call `readStores` a second
+    /// time — `readStores` is not pure, undoing a torn restore and a torn save as it goes, so a
+    /// second call redid that rather than merely re-reading. `openspec/specs/restore/spec.md` §
+    /// *A copy is what the three places hold, read when it is asked for*.
     static func form(
         recordAt: URL, rosterAt: URL, oneOffsAt: URL, asOf moment: Moment
-    ) -> Result<Copy, CommitmentsScreen.Refusal> {
+    ) -> (result: Result<Copy, CommitmentsScreen.Refusal>, unreadable: [Copy.Store]) {
         let read = readStores(recordAt: recordAt, rosterAt: rosterAt, oneOffsAt: oneOffsAt)
         guard let record = read.record, let roster = read.roster, let oneOffs = read.oneOffs else {
-            return .failure(.storeCouldNotBeRead)
+            return (.failure(.storeCouldNotBeRead), read.unreadable)
         }
-        return .success(
-            Copy(moment: moment, history: record.history, roster: roster.roster, oneOffs: oneOffs.oneOffs))
+        return (
+            .success(
+                Copy(
+                    moment: moment, history: record.history, roster: roster.roster,
+                    oneOffs: oneOffs.oneOffs)),
+            []
+        )
     }
 
     /// What reading the three stores comes back as, each opened independently, `nil` in its own
@@ -232,7 +270,7 @@ public final class CopyPlace {
     /// does not yet exist, and answers where it was written. Replaces a file of that name already
     /// standing there. Throws where the directory could not be created or the file could not be
     /// written. The one write path `CommitmentsScreen.makeACopy` — which names a file for the
-    /// minute the copy was made — and this copy place's own `attemptCopy` — which always writes
+    /// minute the copy was made — and this copy place's own `writeCopy` — which always writes
     /// under `Self.fileName` — both call.
     static func write(_ copy: Copy, into directory: URL, named fileName: String) throws -> URL {
         let document = CopyDocument(copy)
@@ -262,35 +300,25 @@ public final class CopyPlace {
     }
 
     /// Forms a copy of this copy place's own three places as of `moment`, and writes it into
-    /// `folder`, updating `lastCopy` and `stopped` from the result. A store that cannot be read
-    /// stops as `.storeCouldNotBeRead`, naming the first store `readStores` found unreadable; a
-    /// folder that cannot be written stops as `.folderCannotBeWritten`. Either way this screen's
-    /// change is already kept — this never throws and never refuses anything to a caller.
-    private func attemptCopy(into folder: URL, asOf moment: Moment) {
-        switch Self.form(
+    /// `url`, updating `lastCopy` and `stopped` from the result. Called from inside a
+    /// security-scoped bracket the caller already holds on `url` — `set(to:)`'s own, or one of
+    /// `keptAChange()`'s two candidates. A store that cannot be read stops as
+    /// `.storeCouldNotBeRead`, naming the first store `readStores` found unreadable; a folder that
+    /// cannot be written stops as `.folderCannotBeWritten`. Either way this screen's change is
+    /// already kept — this never throws and never refuses anything to a caller.
+    private func writeCopy(into url: URL, asOf moment: Moment) {
+        let formed = Self.form(
             recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace, asOf: moment)
-        {
+        switch formed.result {
         case .failure:
-            let unreadable = Self.readStores(
-                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace
-            ).unreadable
-            stop(.storeCouldNotBeRead(unreadable.first ?? .record), asOf: moment)
+            stop(.storeCouldNotBeRead(formed.unreadable.first ?? .record), asOf: moment)
         case .success(let copy):
-            let written: Bool
             do {
-                _ = try Self.withSecurityScopedAccess(to: folder) {
-                    try Self.write(copy, into: folder, named: Self.fileName)
-                }
-                written = true
-            } catch {
-                written = false
-            }
-
-            if written {
+                _ = try Self.write(copy, into: url, named: Self.fileName)
                 lastCopy = moment
                 stopped = nil
                 persist()
-            } else {
+            } catch {
                 stop(.folderCannotBeWritten, asOf: moment)
             }
         }
@@ -306,31 +334,10 @@ public final class CopyPlace {
         persist()
     }
 
-    /// The folder this copy place is kept at, resolved from what was last persisted — the
-    /// bookmark first, falling back to the plain path, `design.md` § *The folder is bookmark data
-    /// beside its path*. `nil` where no folder is set, or the one set cannot be found: gone,
-    /// moved, or access to it taken away.
-    private func resolvedFolder() -> URL? {
-        guard let folder else {
-            return nil
-        }
-
-        if let bookmark = folder.bookmark {
-            var isStale = false
-            if let url = try? URL(resolvingBookmarkData: bookmark, bookmarkDataIsStale: &isStale),
-                !isStale, Self.isDirectory(url)
-            {
-                return url
-            }
-        }
-
-        let url = URL(fileURLWithPath: folder.path, isDirectory: true)
-        guard Self.isDirectory(url) else {
-            return nil
-        }
-        return url
-    }
-
+    /// Whether `url` is a directory that is actually there — called only from inside a
+    /// security-scoped bracket already held on `url`, since `fileExists` without that access
+    /// answers `false` for a folder that is there. `design.md` § *The folder is bookmark data
+    /// beside its path, and every write is bracketed*.
     private static func isDirectory(_ url: URL) -> Bool {
         var isDirectory: ObjCBool = false
         guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) else {

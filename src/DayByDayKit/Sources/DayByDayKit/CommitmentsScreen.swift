@@ -1496,14 +1496,11 @@ public final class CommitmentsScreen {
     public func makeACopy(
         asOf moment: Moment, writingInto directory: URL = CommitmentsScreen.copyDirectory
     ) -> Result<URL, Refusal> {
-        switch CopyPlace.form(
+        let formed = CopyPlace.form(
             recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace, asOf: moment)
-        {
+        switch formed.result {
         case .failure(let refusal):
-            let unreadable = CopyPlace.readStores(
-                recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace
-            ).unreadable
-            refusedChange = .makingACopy(unreadable.first, refusal)
+            refusedChange = .makingACopy(formed.unreadable.first, refusal)
             return .failure(refusal)
         case .success(let copy):
             do {
