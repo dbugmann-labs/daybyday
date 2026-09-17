@@ -781,11 +781,16 @@ delta on answers rather than on its own recommendations. ADR-1006, amended.
 
 5. **Ask the layout round, if the Story reaches the shell.** Spawn `designer` with the issue
    number and nothing else. It reads `grill.md` and returns one HTML file in its scratch
-   directory — two or three options as phone mockups, light and dark, with a wireframe of each
-   and a recommendation — or the one line *no layout question here*, for a change confined to
-   one control, which ends the step. Load `artifact-design`, publish the file with the Artifact
-   tool, and ask **one round**: which option, the designer's recommendation first, the link in
-   the question body so the human reads the mockup before answering. Then append `## Layout` to
+   directory — two or three options as phone mockups in one row, light and dark on a toggle,
+   their differences numbered on the pictures — and, **in its report and not on the page**, a
+   recommendation with its reasoning and a wireframe of each option. Or it returns the one line
+   *no layout question here*, for a change confined to one control, which ends the step. Load
+   `artifact-design`, publish the file with the Artifact tool, and ask **one round**: which
+   option, the designer's recommendation first with its reasoning carried into the question from
+   the report, the link in the question body so the human reads the mockup before answering.
+   **A page whose options are stacked, or that reads as prose around pictures, goes back to the
+   designer before it is published** — the human comparing without scrolling is what the page is
+   for. Then append `## Layout` to
    `grill.md`: the option chosen, the artifact URL, and that option's wireframe verbatim.
    `spec-author` carries the wireframe into `design.md` § *What the shell draws*, the
    implementer builds the view to it, and the reviewer reads the walk pictures against it. The

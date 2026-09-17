@@ -38,18 +38,43 @@ a fraction, a date, a rhythm in words — the mockup uses it verbatim.
 ## What you write
 
 One file, `<change-id>-layout.html`, in your scratch directory. It shows **two or three
-options**, each as a phone screen in light and dark, drawn from the seam's real strings where
-they exist and from example figures otherwise, plainly marked as examples. Under each option,
-one sentence on what it is and one on what it costs — a second layout system, a hand-maintained
-table, a figure that reads like a score. Then **your recommendation**, one paragraph, and a short
-**ASCII wireframe of every option**, because the wireframe of the chosen one is what lands in
-`grill.md` and `design.md` and what the reviewer reads the walk pictures against.
+options** as phone screens, drawn from the seam's real strings where they exist and from example
+figures otherwise, plainly marked as examples. **The page is pictures to compare, not a document
+to read**: the human chooses by looking across the options, and every sentence on the page is one
+more thing between them and the difference. Five rules make it comparable.
+
+1. **The first screen is the comparison.** Every option sits in one row: phones of the same
+   size, in the same state, on the same example data, each under a letter and a name of at most
+   three words. Nothing sits between the phones. Where the row is wider than the viewport it
+   scrolls sideways in its own `overflow-x: auto` container; the phones never stack one below
+   another, because a stacked option cannot be compared with the one above it.
+2. **One theme at a time, switched together.** A light/dark toggle at the top flips every phone
+   at once; it opens on the viewer's own theme. Draw the phones with fixed light and dark
+   palettes of their own, so the toggle and not the viewer's setting decides what they show.
+   Never draw both themes side by side — it doubles the phones and halves the comparison.
+3. **The differences are marked on the pictures.** Number the regions where the options depart
+   from each other, with the same number on the same region in every phone. Under the row goes
+   one **difference table**: a row per numbered region, a column per option, a few words per
+   cell. A region the options share gets no number and no row.
+4. **The text lives elsewhere.** What an option costs — a second layout system, a
+   hand-maintained table, a figure that reads like a score — is the table's last row, one line
+   per option. The recommendation is a badge on the recommended phone and nothing more; its
+   reasoning goes in your report, where the conductor puts it into the question. The **ASCII
+   wireframes are not on the page**: they go in the report, because the wireframe of the chosen
+   option is what lands in `grill.md` and `design.md` and what the reviewer reads the walk
+   pictures against, and none of those readers is the page's.
+5. **A second state is a second row.** Where a state beyond the first is worth drawing — empty
+   beside filled, a refusal showing — it is its own row under the first, with the same option
+   columns in the same order, so a column is always one option. Draw a state only if the options
+   differ in it.
+
+Anything that is not a phone, a callout, the toggle, the table or a state's label does not belong
+on the page. If you catch yourself writing a paragraph, it belongs in the report.
 
 The mockup follows the `artifact-design` contract the conductor publishes under: HTML with its
 own `<title>` and `<style>`, tokens on `:root` redefined for dark, an explicit body background,
-no external resources but Google Fonts, and it must read at phone width. Draw the phones with
-fixed light and dark palettes of their own, so both themes are visible at once whatever the
-viewer's setting.
+no external resources but Google Fonts, and a page body that never scrolls sideways at phone
+width — only the row of phones and the table do, each in its own container.
 
 A change confined to one control — a button that moves, a row that gains a word — needs no
 mockup. Say so in one line, *no layout question here*, with the reason, and write nothing. The
@@ -69,6 +94,8 @@ conductor then asks no layout question.
 
 ## What you report
 
-The path of the file; the option you recommend and why in two lines; the wireframes; any
-question drawing turned up; or the one line saying there is no layout question. Nothing else —
-the conductor publishes the file and asks the round from it.
+The path of the file; the option you recommend and why, in one short paragraph — it appears
+nowhere on the page, so this is the only place the conductor can take it from; the ASCII
+wireframe of every option, which is likewise only here; any question drawing turned up; or the
+one line saying there is no layout question. Nothing else — the conductor publishes the file and
+asks the round from the page and this report together.

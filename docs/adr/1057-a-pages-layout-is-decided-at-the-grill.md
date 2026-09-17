@@ -4,6 +4,13 @@
   recommendation put to them; accepted by the chore PR that carries it
 - Date: 2026-09-16
 - Deciders: Diego Bugmann
+- Amended: 2026-09-17 — the mockup page is pictures to compare, by the owner's word after the
+  first few layout rounds: "way too much text, and I always had to scroll down to try and figure
+  out where the differences between the options are". Decision 2's options now sit in one row,
+  in one theme at a time behind a toggle rather than both at once, with their differences
+  numbered on the pictures over one difference table; the recommendation's reasoning and the
+  ASCII wireframes move off the page into the designer's report. What lands in `grill.md` and
+  `design.md` is unchanged. `.claude/agents/designer.md` § *What you write* holds the rules.
 
 ## Context
 
