@@ -263,23 +263,15 @@ struct LookBackView: View {
         // newest end and leave blank space before the first real day.
         let domainStart = min(openingPosition, 0)
         let domainEnd = Double(max(graph.days.count - 1, 0))
-        // Three day labels spread evenly across the real days actually in view — never the
-        // whole fixed-length window, which is wider than the history early on and would either
-        // crowd two labels together or land one on blank space before the first real day.
-        // `design.md` § *What the shell draws*'s designer note: "about three across the width".
-        let visibleRealStart = max(0, Int(openingPosition.rounded()))
-        let visibleRealEnd = min(
-            graph.days.count - 1, Int((openingPosition + visibleLength).rounded()) - 1)
-        let dayTickValues: [Int] = {
-            guard visibleRealEnd > visibleRealStart else {
-                return visibleRealEnd == visibleRealStart ? [visibleRealStart] : []
-            }
-            return (0..<3).map { step in
-                visibleRealStart
-                    + Int(
-                        (Double(visibleRealEnd - visibleRealStart) * Double(step) / 2).rounded())
-            }
-        }()
+        // Three day labels spread evenly across the fixed-length window itself, keeping only
+        // the ones landing on a real day — a history shorter than the window leaves the rest as
+        // blank space, so early on this says one day or two rather than crowding three dates
+        // that would otherwise overlap. `design.md` § *What the shell draws*'s designer note:
+        // "about three across the width", true once the window is full.
+        let dayTickValues: [Int] = (0..<3).compactMap { step in
+            let day = Int((openingPosition + (visibleLength - 1) * Double(step) / 2).rounded())
+            return graph.days.indices.contains(day) ? day : nil
+        }
 
         Chart {
             ForEach(graph.points, id: \.day) { point in
