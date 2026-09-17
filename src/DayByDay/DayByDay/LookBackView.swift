@@ -258,6 +258,11 @@ struct LookBackView: View {
         let visibleLength = Double(span.lengthInDays ?? graph.days.count)
         let openingPosition = Double(graph.days.count) - visibleLength
         let showsMonths = span == .year || span == .all
+        // A history shorter than the span's own length has nowhere to scroll to, so the domain
+        // is widened to the span's own length — otherwise a chart cannot open flush at the
+        // newest end and leave blank space before the first real day.
+        let domainStart = min(openingPosition, 0)
+        let domainEnd = Double(max(graph.days.count - 1, 0))
 
         Chart {
             ForEach(graph.points, id: \.day) { point in
@@ -304,6 +309,7 @@ struct LookBackView: View {
                 }
             }
         }
+        .chartXScale(domain: domainStart...domainEnd)
         .chartScrollableAxes(.horizontal)
         .chartXVisibleDomain(length: visibleLength)
         .chartScrollPosition(initialX: openingPosition)
