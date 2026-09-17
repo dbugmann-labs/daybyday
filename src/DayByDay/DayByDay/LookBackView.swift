@@ -305,6 +305,7 @@ struct LookBackView: View {
                         AxisGridLine()
                         AxisValueLabel {
                             Text(graph.months.first { $0.day == Int(raw.rounded()) }!.inWords)
+                                .fixedSize()
                         }
                     }
                 }
@@ -315,6 +316,7 @@ struct LookBackView: View {
                         AxisGridLine()
                         AxisValueLabel {
                             Text(graph.days[day])
+                                .fixedSize()
                         }
                     }
                 }
