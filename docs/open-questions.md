@@ -180,14 +180,16 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
-- **`look-back-at-a-quota`'s wireframe says "nav bar: back only" and the app says the name there.**
-  Found at #273's G7, 2026-09-16. The designer drew the mockup without the `look-back-name-twice`
-  chore, which put the name back in the navigation bar as well as in the body at the owner's
-  request, and the wireframe went verbatim from `grill.md` § *Layout* into `design.md` § *What the
-  shell draws* with that annotation. The code and the walk pictures are right; the annotation is
-  stale in a G4-signed folder, and re-approving the folder for one label was judged not worth it.
-  A mockup is a decision aid and never a requirement (ADR-1057), which is why this is a gap and
-  not a defect. The next Story that touches the look-back's `design.md` corrects the line.
+- **ADR-1055 says "the same name and the same kind" where the shipped chain rule says "a kind of
+  the same sort".** Found at #274's Stage 4, 2026-09-17. `change-range-and-target` (#262, merged
+  2026-09-16 as `d281584`) made a changed range or target supersede and widened the look-back's
+  resemblance rule so a chain runs across it — a number behind a number, a total behind a total,
+  whatever it carries — and `LookBack.chain` calls `Kind.isOfTheSameSort(as:)`. The ADR's
+  Decision still reads the old rule, and its § *The price is named, not hidden* does not list the
+  range change its own first paragraph says supersedes. The spec is right and the code follows
+  it; the ADR is the stale one. #274's `spec-author` drafted the amendment and withdrew it rather
+  than book another Story's decision under its own; the next Story or chore that opens ADR-1055
+  amends the Decision and the price list, dated, per `docs/adr/README.md`'s amendment rule.
 - **`CalendarDate.adding(days:)`'s comment names two callers and has eleven.** Found at #273's
   fix-round verification, 2026-09-16. `CalendarDate.swift` documents the method's nil-on-out-of-range
   behaviour as holding "at the ±1 steps this method is actually called with
@@ -731,6 +733,13 @@ Things that are built, or deliberately not built, in a state someone will trip o
   place and picking again worked as walked.
 
 ## Settled
+
+- 2026-09-17 — **`look-back-at-a-quota`'s wireframe said "nav bar: back only"; #274's `design.md`
+  says back and the name.** Closed at #274's Stage 4, the next Story to touch the look-back's
+  `design.md`, as the entry asked. Its § *What the shell draws* carries the wireframe with the
+  navigation bar saying back and the name, which is what the shipped page does since the
+  `look-back-name-twice` chore. The G4-signed #273 folder keeps its stale annotation, archived;
+  a mockup is a decision aid and never a requirement (ADR-1057).
 
 - 2026-09-16 — **a look-back's line stays two strings, and the shell may compose exactly one of
   them.** Closed at #273's grill, which #272's G7 had left it to. `LookBack.Line` keeps two strings

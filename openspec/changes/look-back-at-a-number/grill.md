@@ -72,6 +72,19 @@ what it inherits.
     The roster already holds two number commitments differing only by range, so the scenario is
     constructible at the seam today. *Mood narrowed from 1–10 to 1–5 is still one graph to the
     person who narrowed it.* Whether a total's chain ignores its target is #275's question.
+
+    *Found stale by `spec-author`, 2026-09-17.* #262 `change-range-and-target` merged as
+    `d281584` after this worktree was cut and before this question was asked, and its delta
+    already reads eras by "the same name and a kind of the same sort — a number behind a number,
+    a total behind a total, whatever it carries", total included, with `LookBack.chain` calling
+    `Kind.isOfTheSameSort(as:)`. The answer above stands and is shipped; the MODIFIED requirement
+    it asked for is not in this delta, because as written it would have reverted #262's wording
+    at archive. The behaviour is covered by the scenario that chains two eras of different
+    ranges under one graph. **A finding about this grill:** the fact agent read the spec at the
+    cut and nobody re-fetched before the round; a `git fetch` and a read of `origin/main`'s spec
+    would have caught it. ADR-1055 still says "the same kind" where the shipped spec says "a kind
+    of the same sort" — #262 left it so, and that is a known gap in `docs/open-questions.md`, not
+    this Story's.
 12. **The rule at a range-only boundary says what every rule says: rhythm and day.** After #262,
     a range change with the rhythm unchanged reads "Every day · 4 March 2026" at the rule — that
     something changed, not what. One label shape for one kind of mark; the range is said nowhere
