@@ -256,7 +256,7 @@ struct LookBackView: View {
         let lowest = (graph.lowest as NSDecimalNumber).doubleValue
         let highest = (graph.highest as NSDecimalNumber).doubleValue
         let visibleLength = Double(span.lengthInDays ?? graph.days.count)
-        let openingPosition = Double(max(graph.days.count - (span.lengthInDays ?? graph.days.count), 0))
+        let openingPosition = Double(graph.days.count) - visibleLength
         let showsMonths = span == .year || span == .all
 
         Chart {
@@ -271,16 +271,11 @@ struct LookBackView: View {
                 RuleMark(x: .value("Boundary", rule.day))
                     .foregroundStyle(.secondary)
                     .lineStyle(StrokeStyle(dash: [4, 4]))
-                    .annotation(position: .bottom, alignment: .leading, spacing: 4) {
-                        Text("\(rule.rhythmInWords) · \(rule.fromInWords)")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
             }
         }
         .chartYScale(domain: lowest...highest)
         .chartYAxis {
-            AxisMarks(values: [lowest, highest]) { value in
+            AxisMarks(position: .leading, values: [lowest, highest]) { value in
                 AxisValueLabel {
                     if let raw = value.as(Double.self) {
                         Text(raw == lowest ? graph.lowestInWords : graph.highestInWords)
@@ -291,21 +286,19 @@ struct LookBackView: View {
         .chartXAxis {
             if showsMonths {
                 AxisMarks(values: graph.months.map(\.day)) { value in
-                    AxisGridLine()
-                    AxisValueLabel {
-                        if let day = value.as(Int.self),
-                            let month = graph.months.first(where: { $0.day == day })
-                        {
-                            Text(month.inWords)
+                    if let raw = value.as(Double.self), graph.months.contains(where: { $0.day == Int(raw.rounded()) }) {
+                        AxisGridLine()
+                        AxisValueLabel {
+                            Text(graph.months.first { $0.day == Int(raw.rounded()) }!.inWords)
                         }
                     }
                 }
             } else {
                 AxisMarks(values: .automatic(desiredCount: 3)) { value in
-                    AxisGridLine()
-                    AxisValueLabel {
-                        if let day = value.as(Int.self), graph.days.indices.contains(day) {
-                            Text(graph.days[day])
+                    if let raw = value.as(Double.self), graph.days.indices.contains(Int(raw.rounded())) {
+                        AxisGridLine()
+                        AxisValueLabel {
+                            Text(graph.days[Int(raw.rounded())])
                         }
                     }
                 }
@@ -314,8 +307,27 @@ struct LookBackView: View {
         .chartScrollableAxes(.horizontal)
         .chartXVisibleDomain(length: visibleLength)
         .chartScrollPosition(initialX: openingPosition)
+        // The era label lane: an overlay rather than each `RuleMark`'s own `.annotation`, which
+        // was measured to distort the chart's own x-scale when the label text ran wide.
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                if let plotFrame = proxy.plotFrame {
+                    let frame = geometry[plotFrame]
+                    ForEach(graph.rules, id: \.day) { rule in
+                        if let x = proxy.position(forX: rule.day) {
+                            Text("\(rule.rhythmInWords) · \(rule.fromInWords)")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .fixedSize()
+                                .position(x: frame.minX + x, y: frame.maxY + 12)
+                        }
+                    }
+                }
+            }
+        }
         .frame(height: 220)
         .padding()
+        .padding(.bottom, 16)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 }
