@@ -1,3 +1,5 @@
+import Foundation
+
 /// The package's own fixed English a look-back is said in — the same shape `DayTitle.swift` and
 /// `ScheduleWords.swift` hold. Nothing here is public: `LookBack.form(...)` is the only caller,
 /// and it exposes no member of this table. See
@@ -72,5 +74,15 @@ enum LookBackWords {
     /// of days due.
     static func fraction(kept: Int, due: Int) -> String {
         "\(kept)/\(due)"
+    }
+
+    /// A number as its own digits and nothing else — `TypedNumber.swift`'s own reading run in
+    /// reverse: `"\(decimal)"` says a `Decimal`'s whole part with no leading zero and no
+    /// thousands separator, a full stop before its fraction where it has one with no trailing
+    /// zero, a leading minus where it is below zero, and no exponent — the one spelling every
+    /// number recorded through `TypedNumber.read(_:)` already carries. `design.md` § *A number is
+    /// said as `Decimal`'s own digits*.
+    static func number(_ decimal: Decimal) -> String {
+        "\(decimal)"
     }
 }

@@ -1,3 +1,5 @@
+import Foundation
+
 /// One commitment seen on its own, over everything since the day it was kept from —
 /// `openspec/changes/look-back-at-a-tick/design.md` § *The seam*. A value: asking twice for the
 /// same commitment answers the same look-back, and nothing about it is read again once formed.
@@ -8,11 +10,45 @@ public struct LookBack: Hashable, Sendable {
     public let keptUntilInWords: String?
     public let whole: String?
     public let lines: [Line]
+    public let graph: Graph?
 
     public enum Line: Hashable, Sendable {
         case month(inWords: String, fraction: String)
         case week(inWords: String, fraction: String)
         case rhythmChanged(inWords: String, from: String)
+    }
+
+    /// A number commitment's numbers over its dates axis — `nil` for every other kind, and for a
+    /// number holding none. `design.md` § *The seam*: `day` on a point, a month and a rule is a
+    /// place in `days`, which says every calendar day of the span in words, so the shell can plot
+    /// and scroll on plain integers and label any position without composing a date itself
+    /// (ADR-1022).
+    public struct Graph: Hashable, Sendable {
+        public let days: [String]
+        public let months: [Month]
+        public let points: [Point]
+        public let rules: [Rule]
+        public let lowest: Decimal
+        public let lowestInWords: String
+        public let highest: Decimal
+        public let highestInWords: String
+
+        public struct Month: Hashable, Sendable {
+            public let inWords: String
+            public let day: Int
+        }
+
+        public struct Point: Hashable, Sendable {
+            public let day: Int
+            public let value: Decimal
+            public let inWords: String
+        }
+
+        public struct Rule: Hashable, Sendable {
+            public let day: Int
+            public let rhythmInWords: String
+            public let fromInWords: String
+        }
     }
 
     /// One era of a look-back's **chain**: a commitment, and the last day it counts through —
@@ -105,11 +141,21 @@ public struct LookBack: Hashable, Sendable {
         let eras = chain(from: commitment, end: frontEnd, entries: entries)
         let earliestEra = eras.last!
 
+        if case .number = commitment.kind {
+            let graph = Self.graph(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
+            return LookBack(
+                name: commitment.name, rhythmInWords: commitment.rhythmInWords,
+                keptFromInWords: LookBackWords.day(earliestEra.start),
+                keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
+                graph: graph)
+        }
+
         guard case .tick = commitment.kind else {
             return LookBack(
                 name: commitment.name, rhythmInWords: commitment.rhythmInWords,
                 keptFromInWords: LookBackWords.day(earliestEra.start),
-                keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [])
+                keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
+                graph: nil)
         }
 
         let (lines, totalDue, totalKept) = Self.walkDays(
@@ -120,7 +166,7 @@ public struct LookBack: Hashable, Sendable {
             keptFromInWords: LookBackWords.day(earliestEra.start),
             keptUntilInWords: keptUntil.map(LookBackWords.day),
             whole: LookBackWords.fraction(kept: totalKept, due: totalDue),
-            lines: lines)
+            lines: lines, graph: nil)
     }
 
     /// The chain of eras behind `commitment`, newest first: `commitment` itself, ending on `end`,
@@ -206,6 +252,14 @@ public struct LookBack: Hashable, Sendable {
         a.days(until: b) >= 0
     }
 
+    /// The era of `eras` that holds `day` — the one whose span runs from its own day kept from
+    /// through its own end inclusive — or `nil` where none does. Shared by `walkDays` and
+    /// `graph`, so a day is read against the same era's commitment wherever it is walked.
+    /// `design.md` § *A second walk, not a wider `walkDays`*.
+    private static func era(holding day: CalendarDate, in eras: [Era]) -> Era? {
+        eras.first { $0.start.days(until: day) >= 0 && day.days(until: $0.end) >= 0 }
+    }
+
     /// Walks every day from `start` through `end` inclusive, one calendar day at a time —
     /// `design.md` § *Risks / Trade-offs*: opened deliberately, once, on a phone, not on the
     /// daily path. Buckets each day into the calendar month or the calendar week it falls in,
@@ -243,8 +297,7 @@ public struct LookBack: Hashable, Sendable {
                 currentWeek = WeekTally(monday: dayMonday, lastDay: day)
             }
 
-            if let era = eras.first(where: { $0.start.days(until: day) >= 0 && day.days(until: $0.end) >= 0 })
-            {
+            if let era = Self.era(holding: day, in: eras) {
                 if case .weeklyQuota(let quota) = era.commitment.schedule {
                     currentWeek.hasQuotaDay = true
                     currentWeek.quota = quota.timesPerWeek
@@ -351,5 +404,86 @@ public struct LookBack: Hashable, Sendable {
         let totalKept = months.reduce(0) { $0 + $1.kept } + weeks.reduce(0) { $0 + $1.kept }
 
         return (lines, totalDue, totalKept)
+    }
+
+    /// A number commitment's graph: a walk of `start` through `end` inclusive of its own, sharing
+    /// `era(holding:in:)` with `walkDays` rather than widening it — `design.md` § *A second walk,
+    /// not a wider `walkDays`*. `nil` where no day it counts holds a number.
+    private static func graph(
+        from start: CalendarDate, through end: CalendarDate, eras: [Era], history: History
+    ) -> LookBack.Graph? {
+        guard start.days(until: end) >= 0 else {
+            return nil
+        }
+
+        var days: [String] = []
+        var months: [LookBack.Graph.Month] = []
+        var points: [LookBack.Graph.Point] = []
+        var currentYearMonth: YearMonth?
+        var day = start
+        var index = 0
+
+        while true {
+            days.append(LookBackWords.day(day))
+
+            let yearMonth = YearMonth(year: day.year, month: day.month)
+            if yearMonth != currentYearMonth {
+                months.append(
+                    LookBack.Graph.Month(
+                        inWords: LookBackWords.month(year: day.year, month: day.month), day: index))
+                currentYearMonth = yearMonth
+            }
+
+            if let era = Self.era(holding: day, in: eras),
+                let value = history.number(for: era.commitment, on: day)
+            {
+                points.append(
+                    LookBack.Graph.Point(
+                        day: index, value: value, inWords: LookBackWords.number(value)))
+            }
+
+            guard day != end, let next = day.adding(days: 1) else {
+                break
+            }
+            day = next
+            index += 1
+        }
+
+        guard !points.isEmpty else {
+            return nil
+        }
+
+        // The newest era's own range where it declares one, the points themselves where it
+        // declares none, each widened to hold a value the range does not — `design.md` § *The
+        // values axis says its two bounds and nothing between*.
+        var lowest: Decimal
+        var highest: Decimal
+        if case .number(let range) = eras.first!.commitment.kind, let range {
+            lowest = range.lowest
+            highest = range.highest
+        } else {
+            lowest = points[0].value
+            highest = points[0].value
+        }
+        for point in points {
+            if point.value < lowest { lowest = point.value }
+            if point.value > highest { highest = point.value }
+        }
+
+        // One rule per boundary between two eras, newest first — the same order `eras` is
+        // already read in — each naming the newer era's own day kept from, `design.md` § *The
+        // shell rides this Story* and `spec.md` § *A number commitment's graph says a rule where
+        // one era gives way to the next*.
+        let rules: [LookBack.Graph.Rule] = (0..<max(eras.count - 1, 0)).map { index in
+            let newer = eras[index]
+            return LookBack.Graph.Rule(
+                day: start.days(until: newer.start), rhythmInWords: newer.commitment.rhythmInWords,
+                fromInWords: LookBackWords.day(newer.start))
+        }
+
+        return LookBack.Graph(
+            days: days, months: months, points: points, rules: rules,
+            lowest: lowest, lowestInWords: LookBackWords.number(lowest),
+            highest: highest, highestInWords: LookBackWords.number(highest))
     }
 }
