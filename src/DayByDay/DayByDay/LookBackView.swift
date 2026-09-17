@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 import DayByDayKit
 
 /// One commitment seen on its own, over everything since the day it is kept from. Reached by a
@@ -29,11 +30,40 @@ import DayByDayKit
 /// local at the top of `body` rather than through the computed property at every use — never
 /// while `CommitmentsView`'s row is merely constructed, eagerly, on every redraw of every row on
 /// both its lists. G7 finding 2 on #272.
+///
+/// **A number's graph is Option A of the #274 grill** (`design.md` § *What the shell draws*): a
+/// segmented picker of four spans above a graph card of the dates card's own fill and radius,
+/// drawn with Swift Charts — `design.md` § *The shell rides this Story*. `span` is the shell's own
+/// drawing state, crossing no seam: it decides which fixed length of days is in view and where the
+/// plot opens, never what the graph says. A page whose look-back says no graph, for a number
+/// commitment specifically, says "No number yet." in place of the shell's sentence for a page of
+/// fractions, which every other kind keeps.
 struct LookBackView: View {
     let screen: CommitmentsScreen
     let commitment: Commitment
 
+    @State private var span: Span = .month
+
     private var lookBack: LookBack? { screen.lookBack(at: commitment) }
+
+    /// The four spans the picker offers, grill decision 7 — each the longest calendar month,
+    /// quarter and year, so "Month" covers a month whichever month it is, and "All" the whole span
+    /// in the width. Shell drawing state, not a rule: `design.md` § *The shell rides this Story*.
+    private enum Span: String, CaseIterable, Hashable {
+        case month = "Month"
+        case threeMonths = "3 months"
+        case year = "Year"
+        case all = "All"
+
+        var lengthInDays: Int? {
+            switch self {
+            case .month: return 31
+            case .threeMonths: return 92
+            case .year: return 366
+            case .all: return nil
+            }
+        }
+    }
 
     var body: some View {
         let lookBack = lookBack
@@ -42,7 +72,13 @@ struct LookBackView: View {
                 if let lookBack {
                     head(lookBack)
                     cards(lookBack)
-                    linesSection(lookBack)
+                    if let graph = lookBack.graph {
+                        graphSection(graph)
+                    } else if case .number = commitment.kind {
+                        Text("No number yet.")
+                    } else {
+                        linesSection(lookBack)
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -193,5 +229,93 @@ struct LookBackView: View {
             Divider()
             Divider()
         }
+    }
+
+    /// The picker of spans above the graph card — grill decisions 6 and 7. "Month" is selected on
+    /// opening (`span`'s default), and every span keeps the plot scrollable sideways.
+    @ViewBuilder
+    private func graphSection(_ graph: LookBack.Graph) -> some View {
+        Picker("Span", selection: $span) {
+            ForEach(Span.allCases, id: \.self) { span in
+                Text(span.rawValue).tag(span)
+            }
+        }
+        .pickerStyle(.segmented)
+
+        graphCard(graph)
+    }
+
+    /// The graph card: the trace through `graph.points` in the label colour (never the accent,
+    /// ADR-1045), the two bounds on a values axis pinned at the left, a dates axis off `graph.days`
+    /// and `graph.months`, and an era-boundary rule for each of `graph.rules` — `design.md` § *What
+    /// the shell draws*. `chartXVisibleDomain(length:)` holds `span`'s fixed length of days in the
+    /// width; `chartScrollPosition(initialX:)` opens the plot at the newest end, so the trace runs
+    /// off the left edge and stops flush at the right (grill decision 8).
+    @ViewBuilder
+    private func graphCard(_ graph: LookBack.Graph) -> some View {
+        let lowest = (graph.lowest as NSDecimalNumber).doubleValue
+        let highest = (graph.highest as NSDecimalNumber).doubleValue
+        let visibleLength = Double(span.lengthInDays ?? graph.days.count)
+        let openingPosition = Double(max(graph.days.count - (span.lengthInDays ?? graph.days.count), 0))
+        let showsMonths = span == .year || span == .all
+
+        Chart {
+            ForEach(graph.points, id: \.day) { point in
+                LineMark(
+                    x: .value("Day", point.day),
+                    y: .value("Value", (point.value as NSDecimalNumber).doubleValue)
+                )
+                .foregroundStyle(.secondary)
+            }
+            ForEach(graph.rules, id: \.day) { rule in
+                RuleMark(x: .value("Boundary", rule.day))
+                    .foregroundStyle(.secondary)
+                    .lineStyle(StrokeStyle(dash: [4, 4]))
+                    .annotation(position: .bottom, alignment: .leading, spacing: 4) {
+                        Text("\(rule.rhythmInWords) · \(rule.fromInWords)")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+            }
+        }
+        .chartYScale(domain: lowest...highest)
+        .chartYAxis {
+            AxisMarks(values: [lowest, highest]) { value in
+                AxisValueLabel {
+                    if let raw = value.as(Double.self) {
+                        Text(raw == lowest ? graph.lowestInWords : graph.highestInWords)
+                    }
+                }
+            }
+        }
+        .chartXAxis {
+            if showsMonths {
+                AxisMarks(values: graph.months.map(\.day)) { value in
+                    AxisGridLine()
+                    AxisValueLabel {
+                        if let day = value.as(Int.self),
+                            let month = graph.months.first(where: { $0.day == day })
+                        {
+                            Text(month.inWords)
+                        }
+                    }
+                }
+            } else {
+                AxisMarks(values: .automatic(desiredCount: 3)) { value in
+                    AxisGridLine()
+                    AxisValueLabel {
+                        if let day = value.as(Int.self), graph.days.indices.contains(day) {
+                            Text(graph.days[day])
+                        }
+                    }
+                }
+            }
+        }
+        .chartScrollableAxes(.horizontal)
+        .chartXVisibleDomain(length: visibleLength)
+        .chartScrollPosition(initialX: openingPosition)
+        .frame(height: 220)
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 }

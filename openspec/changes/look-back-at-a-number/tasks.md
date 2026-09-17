@@ -57,24 +57,24 @@ make it pass, then the next. Every test in §§ 3–8 goes in
 
 ## 9. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
-- [ ] 9.1 `LookBackView` draws the graph card from `lookBack.graph` — the trace through its points in the label colour, the two bounds on a pinned values axis, the dates axis off `days` and `months`, and the era labels in one lane — and the app target builds
-- [ ] 9.2 The picker above the card offers the four spans of `design.md` § *The shell rides this Story*, "Month" selected on opening, and the plot opens at the newest end and scrolls sideways under every span
-- [ ] 9.3 A page whose look-back says no graph draws neither the graph card nor the picker and says "No number yet." in place of "Nothing is counted here yet.", and the tick and quota pages keep the sentence they have
+- [x] 9.1 `LookBackView` draws the graph card from `lookBack.graph` — the trace through its points in the label colour, the two bounds on a pinned values axis, the dates axis off `days` and `months`, and the era labels in one lane — and the app target builds
+- [x] 9.2 The picker above the card offers the four spans of `design.md` § *The shell rides this Story*, "Month" selected on opening, and the plot opens at the newest end and scrolls sideways under every span
+- [x] 9.3 A page whose look-back says no graph draws neither the graph card nor the picker and says "No number yet." in place of "Nothing is counted here yet.", and the tick and quota pages keep the sentence they have
 
 ## 10. The records
 
 **The ADR amendment and the `CONTEXT.md` edits are written by this Story's proposal commit, not by
 the implementation.** These boxes confirm rather than write.
 
-- [ ] 10.1 Confirm `CONTEXT.md` § *Graph* and § *Look-back*'s newest amendment still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
-- [ ] 10.2 Confirm ADR-1045's newest amendment still describes what shipped, and that `git diff --stat origin/main... -- openspec/specs/` reports nothing
+- [x] 10.1 Confirm `CONTEXT.md` § *Graph* and § *Look-back*'s newest amendment still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
+- [x] 10.2 Confirm ADR-1045's newest amendment still describes what shipped, and that `git diff --stat origin/main... -- openspec/specs/` reports nothing
 
 ## 11. The gates
 
-- [ ] 11.1 `openspec validate look-back-at-a-number --strict` exits 0 and `pnpm run check:scenarios` exits 0
-- [ ] 11.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, the two kit sources, the kit test file and `LookBackView.swift`
-- [ ] 11.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
-- [ ] 11.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is eighteen more than a run on `main` reports — the nineteen written in §§ 3–8 less the one deleted in 8.1, each count read off a run and neither derived
+- [x] 11.1 `openspec validate look-back-at-a-number --strict` exits 0 and `pnpm run check:scenarios` exits 0
+- [x] 11.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, the two kit sources, the kit test file and `LookBackView.swift`
+- [x] 11.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
+- [x] 11.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is eighteen more than a run on `main` reports — the nineteen written in §§ 3–8 less the one deleted in 8.1, each count read off a run and neither derived
 - [ ] 11.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–11.4 and the walk below are ticked and that the instruction here is written for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/look-back/spec.md` holds fourteen requirements, the one this delta removes gone and the six it adds in their place, every other requirement including the resemblance one byte for byte as it was, and no other spec moved. `pnpm run checks` runs after the archive commit exists, and the archive commit is pushed. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
