@@ -299,50 +299,58 @@ struct LookBackView: View {
             }
         }
         .chartXAxis {
-            if showsMonths {
-                AxisMarks(values: graph.months.map(\.day)) { value in
-                    if let raw = value.as(Double.self), graph.months.contains(where: { $0.day == Int(raw.rounded()) }) {
-                        AxisGridLine()
-                        AxisValueLabel {
-                            Text(graph.months.first { $0.day == Int(raw.rounded()) }!.inWords)
-                                .fixedSize()
-                        }
-                    }
-                }
-            } else {
-                AxisMarks(values: dayTickValues) { value in
-                    if let raw = value.as(Double.self), graph.days.indices.contains(Int(raw.rounded())) {
-                        let day = Int(raw.rounded())
-                        AxisGridLine()
-                        AxisValueLabel {
-                            Text(graph.days[day])
-                                .fixedSize()
-                        }
-                    }
-                }
+            AxisMarks(values: showsMonths ? graph.months.map(\.day) : dayTickValues) { _ in
+                AxisGridLine()
             }
         }
         .chartXScale(domain: domainStart...domainEnd)
-        // Room for a day-axis label to overhang the plot's own right edge without the card
-        // clipping it, since the newest day's tick sits flush at that edge by design (grill
-        // decision 8).
-        .chartPlotStyle { plot in plot.padding(.trailing, 56) }
         .chartScrollableAxes(.horizontal)
         .chartXVisibleDomain(length: visibleLength)
         .chartScrollPosition(initialX: openingPosition)
-        // The era label lane: an overlay rather than each `RuleMark`'s own `.annotation`, which
-        // was measured to distort the chart's own x-scale when the label text ran wide.
+        // The dates-axis labels and the era label lane are drawn here rather than as each
+        // `AxisMark`'s own `AxisValueLabel` or a `RuleMark`'s `.annotation`: both were measured
+        // to either clip a label the card's own edge sits under, or to distort the chart's own
+        // x-scale when a label ran wide. `Self.clampedX(...)` keeps every label's own bounds
+        // inside the plot's, since nothing here otherwise stops one sliding past the card.
         .chartOverlay { proxy in
             GeometryReader { geometry in
                 if let plotFrame = proxy.plotFrame {
                     let frame = geometry[plotFrame]
+                    if showsMonths {
+                        ForEach(graph.months, id: \.day) { month in
+                            if let x = proxy.position(forX: month.day) {
+                                Text(month.inWords)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize()
+                                    .position(
+                                        x: Self.clampedX(frame.minX + x, in: frame, textLength: month.inWords.count),
+                                        y: frame.maxY + 14)
+                            }
+                        }
+                    } else {
+                        ForEach(dayTickValues, id: \.self) { day in
+                            if let x = proxy.position(forX: day) {
+                                Text(graph.days[day])
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize()
+                                    .position(
+                                        x: Self.clampedX(frame.minX + x, in: frame, textLength: graph.days[day].count),
+                                        y: frame.maxY + 14)
+                            }
+                        }
+                    }
                     ForEach(graph.rules, id: \.day) { rule in
                         if let x = proxy.position(forX: rule.day) {
-                            Text("\(rule.rhythmInWords) · \(rule.fromInWords)")
+                            let label = "\(rule.rhythmInWords) · \(rule.fromInWords)"
+                            Text(label)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .fixedSize()
-                                .position(x: frame.minX + x, y: frame.maxY + 12)
+                                .position(
+                                    x: Self.clampedX(frame.minX + x, in: frame, textLength: label.count),
+                                    y: frame.maxY + 30)
                         }
                     }
                 }
@@ -350,7 +358,16 @@ struct LookBackView: View {
         }
         .frame(height: 220)
         .padding()
-        .padding(.bottom, 16)
+        .padding(.bottom, 32)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    /// `x` pulled inward from `frame`'s own edges by roughly half of what a `.caption2` label
+    /// `textLength` characters long is wide, so a label positioned near either end of the plot
+    /// stays inside the card instead of overhanging it — `graphCard(_:)`'s overlay labels draw
+    /// with no layout system reserving room for them, unlike a native `AxisValueLabel`.
+    private static func clampedX(_ x: CGFloat, in frame: CGRect, textLength: Int) -> CGFloat {
+        let halfWidth = CGFloat(textLength) * 3.2
+        return min(max(x, frame.minX + halfWidth), frame.maxX - halfWidth)
     }
 }
