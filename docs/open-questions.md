@@ -707,6 +707,15 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `take-out-an-unreadable-store` (#270), whose grill decides whether a refused copy says *from a
   later version* as the roster line does. Surfaced 2026-09-15 at #266's review, finding 1.
 
+- **Four copy-place test helpers live twice, once per test file.** `DayScreenTests.swift` carries
+  `freshCopyPlaceDirectoryForDayScreenTests` and three siblings copy-pasted from `CopyPlaceTests.swift`
+  (`freshCopyPlaceDirectory`, its two neighbours and `makeCopyPlaceDirectoryUnwritable`) with a suffix to
+  dodge the file-private clash, because the package has no shared test-support file and every test file
+  is file-private by default. The candidate answers are a `TestSupport/` target or one internal helper
+  file in the test target, carrying them once; or leaving it, on the ground that four helpers is not yet
+  a pattern. Left out of `copy-on-every-change` (#268) deliberately at its G7: the fix round there took
+  the six behavioural findings and this one changes no behaviour. Surfaced 2026-09-17 at #268's review,
+  finding 7.
 
 ## Settled
 
