@@ -1796,6 +1796,31 @@ share is said once and judged by the newer, since two quotas do not sum. And the
 every line the page says, a month's due days and a week's quota alike, so a chain holding a quota
 says one again.
 
+**Amended 2026-09-17**, at the grill of `look-back-at-a-number` (#274), which answers what a
+number's page draws. It draws a **graph** and no fraction of any kind: no line, no whole and no
+figure beside it, because a kept-out-of-due fraction answers the tick page's question and the latest
+number is the day screen's. The newest month is in view when the page opens, at a fixed scale that
+scrolls sideways, with a picker offering a month, three months, a year and all; nothing is
+remembered between visits, so every opening starts the same. An **era** boundary is a vertical rule
+on the graph rather than a row between rows, saying exactly what the rhythm-changed line says — the
+newer era's rhythm in words and its day — and the trace runs unbroken across it. A page with no
+number yet draws its head and says so. What a total's page draws is #275's and what a note's page
+draws is #276's; until then each says nothing at all.
+
+**Graph** — what a number commitment's **look-back** draws: one unbroken trace through its
+**points**, a point for each day that holds a number, over a dates axis running from the day it is
+**kept from** through today or through the day it was **kept until**. The days between two points
+are joined across, and a day holding no number is nothing at all on the graph — no gap, no break
+and no mark. That is deliberate: a number stands only on a due day, so a day with no number is
+either a day the rhythm never named or a due day nothing was entered on, and nothing tells those
+apart; a trace that broke at each one would be the gap-punishing mark ADR-1045 forbids, and a weight
+logged three times a week is still one trend. Its values axis is the **range** the newest era
+declares, widened where an older era's number falls outside it, and the numbers themselves where no
+range is declared — fitting the numbers instead would turn 6, 7, 7, 6 into a mountain range. It is
+one axis for the whole graph and not for the days in view, so the trace does not reshape under the
+thumb. Deliberately not a **line**, which on this page is a row of text: a month line, a week line,
+the rhythm-changed line. Agreed 2026-09-17 at the grill of `look-back-at-a-number` (#274).
+
 **Era** — one commitment's span of being kept on one rhythm: from the day it is kept from through
 the day it was kept until, or through today while it is still kept. A **rhythm change** or an
 **interval restart** ends one era and begins the next by **superseding** — the old commitment held
