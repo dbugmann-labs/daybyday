@@ -263,6 +263,23 @@ struct LookBackView: View {
         // newest end and leave blank space before the first real day.
         let domainStart = min(openingPosition, 0)
         let domainEnd = Double(max(graph.days.count - 1, 0))
+        // Three day labels spread evenly across the real days actually in view — never the
+        // whole fixed-length window, which is wider than the history early on and would either
+        // crowd two labels together or land one on blank space before the first real day.
+        // `design.md` § *What the shell draws*'s designer note: "about three across the width".
+        let visibleRealStart = max(0, Int(openingPosition.rounded()))
+        let visibleRealEnd = min(
+            graph.days.count - 1, Int((openingPosition + visibleLength).rounded()) - 1)
+        let dayTickValues: [Int] = {
+            guard visibleRealEnd > visibleRealStart else {
+                return visibleRealEnd == visibleRealStart ? [visibleRealStart] : []
+            }
+            return (0..<3).map { step in
+                visibleRealStart
+                    + Int(
+                        (Double(visibleRealEnd - visibleRealStart) * Double(step) / 2).rounded())
+            }
+        }()
 
         Chart {
             ForEach(graph.points, id: \.day) { point in
@@ -299,11 +316,11 @@ struct LookBackView: View {
                     }
                 }
             } else {
-                AxisMarks(values: .automatic(desiredCount: 3)) { value in
-                    if let raw = value.as(Double.self), graph.days.indices.contains(Int(raw.rounded())) {
+                AxisMarks(values: dayTickValues) { value in
+                    if let day = value.as(Int.self), graph.days.indices.contains(day) {
                         AxisGridLine()
                         AxisValueLabel {
-                            Text(graph.days[Int(raw.rounded())])
+                            Text(graph.days[day])
                         }
                     }
                 }
