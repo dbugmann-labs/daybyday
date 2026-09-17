@@ -323,6 +323,10 @@ struct LookBackView: View {
             }
         }
         .chartXScale(domain: domainStart...domainEnd)
+        // Room for a day-axis label to overhang the plot's own right edge without the card
+        // clipping it, since the newest day's tick sits flush at that edge by design (grill
+        // decision 8).
+        .chartPlotStyle { plot in plot.padding(.trailing, 56) }
         .chartScrollableAxes(.horizontal)
         .chartXVisibleDomain(length: visibleLength)
         .chartScrollPosition(initialX: openingPosition)
