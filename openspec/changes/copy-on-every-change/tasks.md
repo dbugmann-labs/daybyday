@@ -110,7 +110,7 @@ split between it and `DayScreenTests.swift` where the box names a day screen, an
 - [x] 15.5 the commitments screen after the picked folder is deleted and a commitment is defined: the footer's stopped half in red, naming the folder that cannot be reached
 - [ ] 15.6 phone: pick a folder in iCloud Drive, tick on the day screen, and see the file change on another device
 - [ ] 15.7 phone: delete the picked folder in Files, tick, see the stop and its reason, then forget the copy place and see the row offer picking one again
-- [x] 15.8 **The walk handover** — the implementer posts the pictures to the PR as one comment with `gh pr comment --attach`, one per box, before hand-back, and ticks this box on that comment's URL; the throwaway test is deleted, and `src/DayByDay/DayByDayUITests/` merges unchanged — https://github.com/dbugmann-labs/daybyday/pull/291#issuecomment-5710161459 (15.3 re-shot at G7 finding 2, superseding the picture posted at https://github.com/dbugmann-labs/daybyday/pull/291#issuecomment-5704394854)
+- [x] 15.8 **The walk handover** — the implementer posts the pictures to the PR as one comment with `gh pr comment --attach`, one per box, before hand-back, and ticks this box on that comment's URL; the throwaway test is deleted, and `src/DayByDay/DayByDayUITests/` merges unchanged — https://github.com/dbugmann-labs/daybyday/pull/291#issuecomment-5710496120 (15.2 and 15.3 re-shot together at G7 round 3, item 4, so the footer's minute moving is visible on the PR; superseding the 15.3-only picture posted at https://github.com/dbugmann-labs/daybyday/pull/291#issuecomment-5710161459, which itself superseded https://github.com/dbugmann-labs/daybyday/pull/291#issuecomment-5704394854)
 
 ## 16. The gates
 
