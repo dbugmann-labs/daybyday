@@ -716,6 +716,19 @@ Things that are built, or deliberately not built, in a state someone will trip o
   a pattern. Left out of `copy-on-every-change` (#268) deliberately at its G7: the fix round there took
   the six behavioural findings and this one changes no behaviour. Surfaced 2026-09-17 at #268's review,
   finding 7.
+- **Deleting the copy place in Files does not stop the copy; it follows the folder into Recently
+  Deleted.** Walked on the phone at #268's G7, 2026-09-17, line 15.7: after the picked folder was
+  deleted in Files and a commitment ticked, the commitments screen still said the last copy was made
+  there, and the folder in Recently Deleted held the fresh copy. The same held for a folder in iCloud
+  Drive and one On My iPhone. iOS moves a deleted folder to Recently Deleted rather than removing it,
+  and a bookmark resolves across a move by Apple's own documentation, so *the folder cannot be
+  reached* is not reachable by deleting in Files; it needs the folder gone for good (emptied from
+  Recently Deleted, or its access taken away in Settings › Privacy › Files and Folders), neither of
+  which the walk tried. The copy is safe throughout, which is why the owner closed the Story as it
+  stands. Left open: whether a folder in Recently Deleted should count as unreachable, which would
+  mean the app telling a trashed folder from a live one (`URLResourceKey` gives no such flag; the
+  path contains `.Trash` on iCloud Drive) — a want if anyone wants it, not a defect. Forgetting the
+  place and picking again worked as walked.
 
 ## Settled
 
