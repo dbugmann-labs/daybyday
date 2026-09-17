@@ -534,11 +534,13 @@ func aFolderHoldingADamagedCopyAndOneHoldingACopyFromALaterVersionAreEachRefused
     let damagedDirectory = freshCopyPlaceDirectory()
     try writeUnreadableFile(copyJSON(roster: "{\"version\":1}"), into: damagedDirectory)
     #expect(screen.givenAsCopyPlace(damagedDirectory) == .damagedCopy)
+    #expect(copyPlace.folderName == nil)
 
     let laterDirectory = freshCopyPlaceDirectory()
     try writeUnreadableFile(
         copyJSON(version: CopyDocument.currentVersion + 1), into: laterDirectory)
     #expect(screen.givenAsCopyPlace(laterDirectory) == .copyFromALaterVersion)
+    #expect(copyPlace.folderName == nil)
 }
 
 @MainActor
@@ -1380,4 +1382,52 @@ func theCommitmentsADayScreenTakesOnWhereItsRosterPlaceHoldsNothingWriteNoCopy()
     #expect(copyPlace.lastCopy == nineOhSeven)
     #expect(copyPlace.stopped == nil)
     #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path).isEmpty)
+}
+
+/// Finding 1 (#268 G7): the bookmark was taken with no options before the folder existed, so
+/// `bookmarkData()` threw in every test that reopened a `CopyPlace` and the bookmark branch of
+/// `resolvedFolder()` was exercised by nothing — every test instead passed on the plain-path
+/// fallback alone. Seeds the state file directly with a real bookmark of a real folder beside a
+/// deliberately wrong plain path, so only a bookmark that actually resolves — never the path,
+/// which points nowhere — can find the folder again. A *moved* folder is not this test's own:
+/// `design.md` § *The folder is bookmark data beside its path* reads a bookmark that resolves
+/// stale, which a move produces, the same as one that does not resolve at all.
+@MainActor
+@Test("a copy place resolves its folder from the bookmark once the plain path no longer points there")
+func aCopyPlaceResolvesItsFolderFromTheBookmarkOnceThePlainPathNoLongerPointsThere() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let places = freshThreePlaces()
+    let statePlace = freshCopyPlaceState()
+
+    let folder = freshCopyPlaceDirectory()
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let bookmark = try folder.bookmarkData(options: .minimalBookmark)
+    let wrongPath = freshCopyPlaceDirectory().path
+    let json = """
+        {"version":1,"path":"\(wrongPath)","name":"Backups",\
+        "bookmark":"\(bookmark.base64EncodedString())"}
+        """
+    try FileManager.default.createDirectory(
+        at: statePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(json.utf8).write(to: statePlace)
+    #expect(!FileManager.default.fileExists(atPath: wrongPath))
+
+    let copyPlace = CopyPlace(
+        at: statePlace, keepingRecordAt: places.record, keepingRosterAt: places.roster,
+        keepingOneOffsAt: places.oneOffs, asking: fixedClock(Moment(on: monday, hour: 14, minute: 32)!))
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs, copyingTo: copyPlace)
+
+    let refusal = screen.define(
+        name: "Gym",
+        on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
+        keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == nil)
+    #expect(copyPlace.stopped == nil)
+    #expect(
+        FileManager.default.fileExists(
+            atPath: folder.appendingPathComponent("DayByDay.daybyday").path))
 }

@@ -565,7 +565,17 @@ struct CommitmentsView: View {
                 Button {
                     isPickingCopyPlaceFolder = true
                 } label: {
-                    LabeledContent("Copy place", value: screen.copyPlace?.folderName ?? "Pick a folder")
+                    HStack {
+                        LabeledContent(
+                            "Copy place", value: screen.copyPlace?.folderName ?? "Pick a folder")
+                        // Every row above this one in the walk shows a disclosure chevron —
+                        // `design.md` § *What the shell draws* draws one here too. A plain
+                        // `Button`, not a `NavigationLink`, so it is drawn by hand the way a day
+                        // screen row that opens a sheet already draws its own.
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .swipeActions(edge: .trailing) {
                     if screen.copyPlace?.folderName != nil {
@@ -612,10 +622,12 @@ struct CommitmentsView: View {
             } footer: {
                 if let copyPlace = screen.copyPlace, copyPlace.folderName != nil {
                     VStack(alignment: .leading, spacing: 2) {
+                        // `copyPlace.set(to:)` always attempts a copy the moment a folder is
+                        // given (`design.md` § *A copy the moment the folder is picked*), so by
+                        // the time a folder name stands here, either a last copy or a stop does
+                        // too — never neither. `lastCopy == nil` here is unreachable.
                         if let lastCopy = copyPlace.lastCopy {
                             Text("Last copy \(momentText(lastCopy))")
-                        } else {
-                            Text("No copy has been made there yet.")
                         }
                         if let stopped = copyPlace.stopped {
                             Text(
