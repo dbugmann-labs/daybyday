@@ -1385,8 +1385,8 @@ func theCommitmentsADayScreenTakesOnWhereItsRosterPlaceHoldsNothingWriteNoCopy()
 }
 
 /// Finding 1 (#268 G7): the bookmark was taken with no options before the folder existed, so
-/// `bookmarkData()` threw in every test that reopened a `CopyPlace` and the bookmark branch of
-/// `resolvedFolder()` was exercised by nothing — every test instead passed on the plain-path
+/// `bookmarkData()` threw in every test that reopened a `CopyPlace` and `keptAChange()`'s
+/// bookmark candidate was exercised by nothing — every test instead passed on the plain-path
 /// fallback alone. Seeds the state file directly with a real bookmark of a real folder beside a
 /// deliberately wrong plain path, so only a bookmark that actually resolves — never the path,
 /// which points nowhere — can find the folder again. A *moved* folder is not this test's own:
