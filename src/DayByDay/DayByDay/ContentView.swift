@@ -62,6 +62,23 @@ private func today() -> CalendarDate {
     return CalendarDate(year: components.year!, month: components.month!, day: components.day!)!
 }
 
+/// The clock a copy's moment is stamped from, beside `today()`'s own conversion — `today()`
+/// widened to the hour and the minute, read from `Calendar.current` at the same edge, per
+/// ADR-1004. `nil` only where the day itself cannot form, which `today()` never answers either.
+/// `openspec/changes/copy-on-every-change/design.md` § *The moment is a clock handed in, as
+/// ADR-1004 has it*.
+private func momentNow() -> Moment? {
+    let components = Calendar.current.dateComponents(
+        [.year, .month, .day, .hour, .minute], from: Date())
+    guard let year = components.year, let month = components.month, let day = components.day,
+        let hour = components.hour, let minute = components.minute,
+        let date = CalendarDate(year: year, month: month, day: day)
+    else {
+        return nil
+    }
+    return Moment(on: date, hour: hour, minute: minute)
+}
+
 /// Turns a calendar date the day picker's `screen.dayPickerReach` hands back into the instant a
 /// SwiftUI `DatePicker` needs — the reverse of `today()` above, and, like it, edge code per
 /// ADR-1004: both read `Calendar.current`, the device's own calendar, so the two conversions
@@ -165,7 +182,14 @@ private struct ScrollListToBottom: UIViewRepresentable {
 }
 
 struct ContentView: View {
-    @State private var screen = DayScreen(startingFrom: dayOneCommitments, asOf: today())
+    // One copy place, built with `momentNow` and handed to both screens — a day screen opened
+    // here and a commitments screen opened by the toolbar button below —
+    // `openspec/changes/copy-on-every-change/design.md` § *One copy place, handed to both
+    // screens*. `@State` rather than a `let`: `CopyPlace` is a reference type this view never
+    // reassigns, but `@State` is what SwiftUI's own convention already uses for `screen` below,
+    // and keeps this view's every stored property on the same footing.
+    @State private var copyPlace: CopyPlace
+    @State private var screen: DayScreen
     @Environment(\.scenePhase) private var scenePhase
     // `openspec/changes/add-adjacent-day-views/design.md` § *What the shell draws*: the settle
     // at release and a chevron tap are animated, and Reduce Motion turns that half off — the
@@ -248,6 +272,16 @@ struct ContentView: View {
     // only in `onEnded`'s `defer` would.
     @GestureState private var isDraggingDay = false
 
+    /// Builds the one `CopyPlace` this view holds before the day screen it hands it to, so the
+    /// same instance backs both — `design.md` § *One copy place, handed to both screens*.
+    init() {
+        let copyPlace = CopyPlace(asking: momentNow)
+        _copyPlace = State(initialValue: copyPlace)
+        _screen = State(
+            initialValue: DayScreen(
+                startingFrom: dayOneCommitments, asOf: today(), copyingTo: copyPlace))
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -289,7 +323,7 @@ struct ContentView: View {
                 }
                 ToolbarItem {
                     Button("Commitments") {
-                        commitmentsScreen = CommitmentsScreen(asOf: today())
+                        commitmentsScreen = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
                         showingCommitments = true
                     }
                 }

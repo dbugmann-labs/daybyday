@@ -200,6 +200,59 @@ private struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
+/// Wraps `UIDocumentPickerViewController(forOpeningContentTypes: [.folder])` around picking a
+/// folder for the copy place, the way `ShareSheet` above wraps `UIActivityViewController` —
+/// `design.md` § *The folder is bookmark data beside its path*: Apple documents this grants read
+/// and write to the folder and what is later added to it, unlike `.fileImporter` with `.folder`.
+private struct FolderPicker: UIViewControllerRepresentable {
+    let onPick: (URL) -> Void
+
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        let controller = UIDocumentPickerViewController(forOpeningContentTypes: [.folder])
+        controller.delegate = context.coordinator
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onPick: onPick)
+    }
+
+    final class Coordinator: NSObject, UIDocumentPickerDelegate {
+        let onPick: (URL) -> Void
+
+        init(onPick: @escaping (URL) -> Void) {
+            self.onPick = onPick
+        }
+
+        func documentPicker(
+            _ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]
+        ) {
+            guard let url = urls.first else { return }
+            onPick(url)
+        }
+    }
+}
+
+/// The words a person reads for why a copy place has stopped — `design.md` § *What the shell
+/// draws*: the stopped half of the *Copy* section's footer, drawn in the caption red the
+/// screen's other refusals use.
+private func copyPlaceStopText(_ stop: CopyPlace.Stop) -> String {
+    switch stop {
+    case .folderCannotBeReached:
+        "the folder cannot be reached"
+    case .folderCannotBeWritten:
+        "the folder cannot be written"
+    case .storeCouldNotBeRead(.record):
+        "your record could not be read"
+    case .storeCouldNotBeRead(.roster):
+        "your roster could not be read"
+    case .storeCouldNotBeRead(.oneOffs):
+        "your one-offs could not be read"
+    }
+}
+
 /// Which commitment `CommitmentSheet` is open for — nothing, for a sheet that defines a new one,
 /// or the one it is open to change. `Identifiable` so `.sheet(item:)` can drive it directly, and
 /// so opening a second commitment while one sheet is already open (unreachable from this view
@@ -244,6 +297,19 @@ struct CommitmentsView: View {
     /// shell*: `.fileImporter` for the exported type, with `askToRestore` bracketed in
     /// security-scoped access around the URL it hands back.
     @State private var isPickingRestoreFile = false
+    /// Whether the folder picker for the copy place is presented.
+    @State private var isPickingCopyPlaceFolder = false
+    /// Whether the restore awaiting confirmation on `screen.awaitingRestore` was asked through
+    /// `givenAsCopyPlace` — shell-local state mirroring which picker was tapped, so the restore
+    /// sheet's *Replace it with this phone's* row is drawn only where the ask came from a folder
+    /// given as the copy place, `openspec/specs/restore/spec.md` § *A folder that already holds
+    /// a copy asks to restore it before it becomes the copy place*. Cleared whenever the sheet
+    /// closes, by a cancel, a restore or a replace, and by an ordinary restore asked from a file.
+    @State private var awaitingRestoreFromCopyPlacePick = false
+    /// The name of the folder `awaitingRestoreFromCopyPlacePick` names, for the *Replace* row's
+    /// footer — `screen.copyPlace?.folderName` still names the *old* copy place until a replace
+    /// or a confirmed restore actually makes this one it.
+    @State private var pendingCopyPlaceFolderName: String?
     @Environment(\.editMode) private var editMode
 
     /// Which of the four refusals against something already kept — a stop, a kept-side removal,
@@ -492,8 +558,40 @@ struct CommitmentsView: View {
             // The one section this screen offers a copy through, below *Stopped* —
             // `design.md` § *The shell*. The tap forms a `Moment` beside `today()` and hands it
             // to `makeACopy`; a `Moment` refused only where the clock itself cannot form one,
-            // which never happens on a real clock, so nothing is drawn for that case.
-            Section("Copy") {
+            // which never happens on a real clock, so nothing is drawn for that case. The copy
+            // place row sits at the top of this section — `openspec/changes/copy-on-every-change
+            // /design.md` § *What the shell draws*, Option A.
+            Section {
+                Button {
+                    isPickingCopyPlaceFolder = true
+                } label: {
+                    HStack {
+                        LabeledContent(
+                            "Copy place", value: screen.copyPlace?.folderName ?? "Pick a folder")
+                        // Every row above this one in the walk shows a disclosure chevron —
+                        // `design.md` § *What the shell draws* draws one here too. A plain
+                        // `Button`, not a `NavigationLink`, so it is drawn by hand the way a day
+                        // screen row that opens a sheet already draws its own.
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .swipeActions(edge: .trailing) {
+                    if screen.copyPlace?.folderName != nil {
+                        Button(role: .destructive) {
+                            screen.forgetTheCopyPlace()
+                        } label: {
+                            Image(systemName: "xmark.circle")
+                        }
+                        .accessibilityLabel("Forget")
+                    }
+                }
+
+                if let refusedCopyPlace = screen.refusedCopyPlace {
+                    refusalText(refusedCopyPlace)
+                }
+
                 Button("Make a copy") {
                     guard let moment = momentNow() else {
                         return
@@ -518,6 +616,29 @@ struct CommitmentsView: View {
                 if let copyRestored = screen.copyRestored {
                     Text("Restored the copy from \(momentText(copyRestored))")
                         .font(.caption)
+                }
+            } header: {
+                Text("Copy")
+            } footer: {
+                if let copyPlace = screen.copyPlace, copyPlace.folderName != nil {
+                    VStack(alignment: .leading, spacing: 2) {
+                        // `copyPlace.set(to:)` always attempts a copy the moment a folder is
+                        // given (`design.md` § *A copy the moment the folder is picked*), so by
+                        // the time a folder name stands here, either a last copy or a stop does
+                        // too — never neither. `lastCopy == nil` here is unreachable.
+                        if let lastCopy = copyPlace.lastCopy {
+                            Text("Last copy \(momentText(lastCopy))")
+                        }
+                        if let stopped = copyPlace.stopped {
+                            Text(
+                                "Stopped since \(momentText(stopped.since)): \(copyPlaceStopText(stopped.stop))"
+                            )
+                            .foregroundStyle(.red)
+                        }
+                    }
+                    .font(.caption)
+                } else {
+                    Text("Pick a folder to keep a copy there.")
                 }
             }
         }
@@ -630,7 +751,23 @@ struct CommitmentsView: View {
                 return
             }
             defer { url.stopAccessingSecurityScopedResource() }
+            awaitingRestoreFromCopyPlacePick = false
+            pendingCopyPlaceFolderName = nil
             screen.askToRestore(from: url)
+        }
+        .sheet(isPresented: $isPickingCopyPlaceFolder) {
+            FolderPicker { url in
+                guard url.startAccessingSecurityScopedResource() else {
+                    return
+                }
+                defer { url.stopAccessingSecurityScopedResource() }
+                pendingCopyPlaceFolderName = url.lastPathComponent
+                let refusal = screen.givenAsCopyPlace(url)
+                awaitingRestoreFromCopyPlacePick = refusal == nil && screen.awaitingRestore != nil
+                if !awaitingRestoreFromCopyPlacePick {
+                    pendingCopyPlaceFolderName = nil
+                }
+            }
         }
         .sheet(
             isPresented: Binding(
@@ -638,6 +775,8 @@ struct CommitmentsView: View {
                 set: { isPresented in
                     if !isPresented {
                         screen.cancelRestoring()
+                        awaitingRestoreFromCopyPlacePick = false
+                        pendingCopyPlaceFolderName = nil
                     }
                 }
             )
@@ -655,17 +794,39 @@ struct CommitmentsView: View {
                             restoreCountsText(
                                 awaitingRestore.phone, unreadable: awaitingRestore.unreadable)
                         }
+                        // Offered only where this restore was asked through the copy place's own
+                        // folder picker — `openspec/specs/restore/spec.md` § *A folder that
+                        // already holds a copy asks to restore it before it becomes the copy
+                        // place*: replacing restores nothing and makes that folder the copy
+                        // place instead.
+                        if awaitingRestoreFromCopyPlacePick {
+                            Section {
+                                Button("Replace it with this phone's", role: .destructive) {
+                                    screen.replaceTheCopyAtTheFolderGiven()
+                                    awaitingRestoreFromCopyPlacePick = false
+                                    pendingCopyPlaceFolderName = nil
+                                }
+                            } footer: {
+                                Text(
+                                    "The copy in \(pendingCopyPlaceFolderName ?? "the folder") is overwritten now, and \(pendingCopyPlaceFolderName ?? "the folder") becomes the copy place."
+                                )
+                            }
+                        }
                     }
                     .navigationTitle("Restore this copy?")
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("Cancel") {
                                 screen.cancelRestoring()
+                                awaitingRestoreFromCopyPlacePick = false
+                                pendingCopyPlaceFolderName = nil
                             }
                         }
                         ToolbarItem(placement: .confirmationAction) {
                             Button("Restore", role: .destructive) {
                                 screen.confirmRestoring()
+                                awaitingRestoreFromCopyPlacePick = false
+                                pendingCopyPlaceFolderName = nil
                             }
                         }
                     }

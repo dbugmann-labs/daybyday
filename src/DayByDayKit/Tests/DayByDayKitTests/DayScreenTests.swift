@@ -9299,3 +9299,264 @@ func aDayScreenReturnedToAfterACopyOfNothingWasRestoredTakesOnTheCommitmentsItWa
     #expect(try RosterStore(at: rosterPlace).roster.entries.map(\.commitment.name) == ["Journaling"])
     #expect(dayScreen.dayView.rows.map(\.name) == ["Journaling"])
 }
+
+/// A fresh place for a copy place to keep its own state at — distinct from a directory a copy
+/// is written into, and from the record, the roster and the one-off places. Mirrors
+/// `CopyPlaceTests.swift`'s own `freshCopyPlaceState()`.
+private func freshCopyPlaceStateForDayScreenTests() -> URL {
+    FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        .appendingPathComponent("copy-place.json")
+}
+
+/// A fresh directory of its own to be given as a copy place. Mirrors `CopyPlaceTests.swift`'s own
+/// `freshCopyPlaceDirectory()`.
+private func freshCopyPlaceDirectoryForDayScreenTests() -> URL {
+    FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+}
+
+/// A clock that answers a later minute each time it is asked, starting from `first`. Mirrors
+/// `CopyPlaceTests.swift`'s own `laterMinuteEachTime(from:)`.
+@MainActor
+private func laterMinuteEachTimeForDayScreenTests(from first: Moment) -> @Sendable () -> Moment? {
+    final class Counter: @unchecked Sendable {
+        var minutesAsked = 0
+    }
+    let counter = Counter()
+    return {
+        let moment = Moment(
+            on: first.day, hour: first.hour, minute: first.minute + counter.minutesAsked)!
+        counter.minutesAsked += 1
+        return moment
+    }
+}
+
+@MainActor
+@Test("a tick kept on a day screen writes a copy at the copy place holding that tick")
+func aTickKeptOnADayScreenWritesACopyAtTheCopyPlaceHoldingThatTick() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    try RosterStore(at: rosterPlace).add(gym)
+
+    let clock = laterMinuteEachTimeForDayScreenTests(
+        from: Moment(on: monday, hour: 14, minute: 32)!)
+    let copyPlace = CopyPlace(
+        at: freshCopyPlaceStateForDayScreenTests(), keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace, asking: clock)
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace, copyingTo: copyPlace)
+    let directory = freshCopyPlaceDirectoryForDayScreenTests()
+    commitmentsScreen.givenAsCopyPlace(directory)
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace, copyingTo: copyPlace)
+
+    let row = dayScreen.dayView.rows.first { $0.name == "Gym" }!
+    try dayScreen.tick(row)
+
+    #expect(dayScreen.dayView.rows.first { $0.name == "Gym" }!.isKept)
+
+    let file = directory.appendingPathComponent("DayByDay.daybyday")
+    let firstCopy = try #require(
+        JSONDecoder().decode(CopyDocument.self, from: Data(contentsOf: file)).formCopy())
+    #expect(firstCopy.moment == Moment(on: monday, hour: 14, minute: 33)!)
+    #expect(firstCopy.history.isKept(gym, on: monday))
+
+    try dayScreen.tick(dayScreen.dayView.rows.first { $0.name == "Gym" }!)
+
+    let secondCopy = try #require(
+        JSONDecoder().decode(CopyDocument.self, from: Data(contentsOf: file)).formCopy())
+    #expect(secondCopy.moment == Moment(on: monday, hour: 14, minute: 34)!)
+    #expect(!secondCopy.history.isKept(gym, on: monday))
+}
+
+@MainActor
+@Test("a one-off added, renamed and removed on a day screen each write a copy at the copy place")
+func aOneOffAddedRenamedAndRemovedOnADayScreenEachWriteACopyAtTheCopyPlace() throws {
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+
+    let clock = laterMinuteEachTimeForDayScreenTests(
+        from: Moment(on: monday, hour: 14, minute: 32)!)
+    let copyPlace = CopyPlace(
+        at: freshCopyPlaceStateForDayScreenTests(), keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace, asking: clock)
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace, copyingTo: copyPlace)
+    let directory = freshCopyPlaceDirectoryForDayScreenTests()
+    commitmentsScreen.givenAsCopyPlace(directory)
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace, copyingTo: copyPlace)
+
+    let file = directory.appendingPathComponent("DayByDay.daybyday")
+
+    try dayScreen.addOneOff(named: "Book dentist")
+    var copy = try #require(
+        JSONDecoder().decode(CopyDocument.self, from: Data(contentsOf: file)).formCopy())
+    #expect(copy.oneOffs.entries.map(\.oneOff.name) == ["Book dentist"])
+
+    let row = dayScreen.dayView.oneOffGroup!.rows.first { $0.name == "Book dentist" }!
+    try dayScreen.rename(row, to: "Book the dentist")
+    copy = try #require(
+        JSONDecoder().decode(CopyDocument.self, from: Data(contentsOf: file)).formCopy())
+    #expect(copy.oneOffs.entries.map(\.oneOff.name) == ["Book the dentist"])
+
+    let renamedRow = dayScreen.dayView.oneOffGroup!.rows.first { $0.name == "Book the dentist" }!
+    try dayScreen.remove(renamedRow)
+    copy = try #require(
+        JSONDecoder().decode(CopyDocument.self, from: Data(contentsOf: file)).formCopy())
+    #expect(copy.oneOffs.entries.isEmpty)
+    #expect(copy.moment == Moment(on: monday, hour: 14, minute: 35)!)
+}
+
+@MainActor
+@Test("a number, a note and a total entered on a day screen each write a copy at the copy place")
+func aNumberANoteAndATotalEnteredOnADayScreenEachWriteACopyAtTheCopyPlace() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let weightRange = Commitment.Range(lowest: 40, highest: 150)!
+    let weight = Commitment(
+        name: "Weight", schedule: allWeekdays, keptFrom: keptFrom, kind: .number(range: weightRange))!
+    let journal = Commitment(name: "Journal", schedule: allWeekdays, keptFrom: keptFrom, kind: .note)!
+    let protein = Commitment(
+        name: "Protein", schedule: allWeekdays, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(weight)
+    try rosterStore.add(journal)
+    try rosterStore.add(protein)
+
+    let clock = laterMinuteEachTimeForDayScreenTests(
+        from: Moment(on: monday, hour: 14, minute: 32)!)
+    let copyPlace = CopyPlace(
+        at: freshCopyPlaceStateForDayScreenTests(), keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace, asking: clock)
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace, copyingTo: copyPlace)
+    let directory = freshCopyPlaceDirectoryForDayScreenTests()
+    commitmentsScreen.givenAsCopyPlace(directory)
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace, copyingTo: copyPlace)
+
+    try dayScreen.enter("82.5", on: dayScreen.dayView.rows.first { $0.name == "Weight" }!)
+    try dayScreen.enter("Ran far.", on: dayScreen.dayView.rows.first { $0.name == "Journal" }!)
+    try dayScreen.enter("30", on: dayScreen.dayView.rows.first { $0.name == "Protein" }!)
+
+    let file = directory.appendingPathComponent("DayByDay.daybyday")
+    let copy = try #require(
+        JSONDecoder().decode(CopyDocument.self, from: Data(contentsOf: file)).formCopy())
+
+    #expect(copy.history.number(for: weight, on: monday) == 82.5)
+    #expect(copy.history.note(for: journal, on: monday) == "Ran far.")
+    #expect(copy.history.total(for: protein, on: monday) == 30)
+    #expect(copy.moment == Moment(on: monday, hour: 14, minute: 35)!)
+}
+
+/// Makes `directory` read-only, so a place already holding something can be made unwritable
+/// without disturbing what is there. Mirrors `CopyPlaceTests.swift`'s own approach.
+private func makeCopyPlaceDirectoryUnwritable(_ directory: URL) throws {
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+}
+
+@MainActor
+@Test("a tick kept where the copy place cannot be written is kept and is not refused")
+func aTickKeptWhereTheCopyPlaceCannotBeWrittenIsKeptAndIsNotRefused() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    try RosterStore(at: rosterPlace).add(gym)
+
+    let moment = Moment(on: monday, hour: 14, minute: 32)!
+    let copyPlace = CopyPlace(
+        at: freshCopyPlaceStateForDayScreenTests(), keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace, asking: { moment })
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace, copyingTo: copyPlace)
+    let directory = freshCopyPlaceDirectoryForDayScreenTests()
+    try makeCopyPlaceDirectoryUnwritable(directory)
+    defer {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    }
+    commitmentsScreen.givenAsCopyPlace(directory)
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace, copyingTo: copyPlace)
+
+    try dayScreen.tick(dayScreen.dayView.rows.first { $0.name == "Gym" }!)
+
+    #expect(dayScreen.notice == nil)
+    #expect(dayScreen.dayView.rows.first { $0.name == "Gym" }!.isKept)
+    #expect(try RecordStore(at: recordPlace).history.isKept(gym, on: monday))
+    #expect(copyPlace.stopped == CopyPlace.Stopped(stop: .folderCannotBeWritten, since: moment))
+}
+
+@MainActor
+@Test("a change kept where a store cannot be read is kept, and the stop names that store")
+func aChangeKeptWhereAStoreCannotBeReadIsKeptAndTheStopNamesThatStore() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    try RosterStore(at: rosterPlace).add(gym)
+
+    let clock = laterMinuteEachTimeForDayScreenTests(
+        from: Moment(on: monday, hour: 14, minute: 32)!)
+    let copyPlace = CopyPlace(
+        at: freshCopyPlaceStateForDayScreenTests(), keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace, asking: clock)
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace, copyingTo: copyPlace)
+    let directory = freshCopyPlaceDirectoryForDayScreenTests()
+    commitmentsScreen.givenAsCopyPlace(directory)
+
+    try FileManager.default.createDirectory(
+        at: oneOffPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not a one-off holder".utf8).write(to: oneOffPlace)
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace, copyingTo: copyPlace)
+
+    try dayScreen.tick(dayScreen.dayView.rows.first { $0.name == "Gym" }!)
+
+    #expect(dayScreen.notice == nil)
+    #expect(try RecordStore(at: recordPlace).history.isKept(gym, on: monday))
+    #expect(
+        copyPlace.stopped
+            == CopyPlace.Stopped(
+                stop: .storeCouldNotBeRead(.oneOffs), since: Moment(on: monday, hour: 14, minute: 33)!))
+}

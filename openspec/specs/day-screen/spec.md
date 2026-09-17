@@ -1678,7 +1678,7 @@ act that clears a day. It SHALL change nothing — nothing kept, nothing shown, 
 row the screen's day view does not hold, on a row that offers no take-back, or on a screen that is
 not keeping a record. The day view SHALL then be formed again. A change that could not be kept SHALL
 be refused, reported to the caller, told on the row naming no cause, and SHALL leave the day view as
-it was. A take-back SHALL reach the record's place and nothing else.
+it was. A take-back SHALL reach the record's place and the copy place, and nothing else.
 
 #### Scenario: taking back the last addition on a row leaves the day short by exactly that amount
 
