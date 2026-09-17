@@ -13,47 +13,47 @@ make it pass, then the next. Every test in §§ 3–8 goes in
 
 ## 2. The seam
 
-- [ ] 2.1 `LookBack.graph` and `LookBack.Graph` with its days, months, points, rules and bounds exist as `design.md` § *The seam* writes them, and 3.1 is red before anything fills them
-- [ ] 2.2 `Roster`, `Commitment`, `CalendarDate`, `History` and `Schedule` are unchanged, and `openspec/specs/` is untouched (rule 2)
-- [ ] 2.3 `LookBackWords.number(_:)` is the one place a number is said, and `LookBack` says one nowhere else
+- [x] 2.1 `LookBack.graph` and `LookBack.Graph` with its days, months, points, rules and bounds exist as `design.md` § *The seam* writes them, and 3.1 is red before anything fills them
+- [x] 2.2 `Roster`, `Commitment`, `CalendarDate`, `History` and `Schedule` are unchanged, and `openspec/specs/` is untouched (rule 2)
+- [x] 2.3 `LookBackWords.number(_:)` is the one place a number is said, and `LookBack` says one nowhere else
 
 ## 3. The points — one test each
 
-- [ ] 3.1 a number commitment's look-back says a point for each day that holds a number — catches a point per day walked rather than per day holding a number
-- [ ] 3.2 a number commitment's look-back says no graph where no day holds a number — catches an empty graph answered in place of none, which the shell would draw as an empty card
-- [ ] 3.3 a number commitment's look-back says one point where one day holds a number — catches a graph refused below two points
-- [ ] 3.4 a number commitment's look-back says the number the era holding a day kept — catches every day's number read against the newest era's commitment value, which finds none behind a boundary
+- [x] 3.1 a number commitment's look-back says a point for each day that holds a number — catches a point per day walked rather than per day holding a number
+- [x] 3.2 a number commitment's look-back says no graph where no day holds a number — catches an empty graph answered in place of none, which the shell would draw as an empty card
+- [x] 3.3 a number commitment's look-back says one point where one day holds a number — catches a graph refused below two points
+- [x] 3.4 a number commitment's look-back says the number the era holding a day kept — catches every day's number read against the newest era's commitment value, which finds none behind a boundary
 
 ## 4. The days and the months — one test each
 
-- [ ] 4.1 a number commitment's graph says a day for every day from the day it is kept from through today — catches a span fitted to the days holding a number
-- [ ] 4.2 a number commitment's graph says a month for each calendar month its days run through — catches a month named at the wrong place, or one per day walked
-- [ ] 4.3 a stopped number commitment's graph runs through the day it was kept until — catches a span run through today for a commitment no longer kept
-- [ ] 4.4 a number commitment's graph says no point for a number kept after the day it was kept until — catches a point read off the record rather than off the days walked
+- [x] 4.1 a number commitment's graph says a day for every day from the day it is kept from through today — catches a span fitted to the days holding a number
+- [x] 4.2 a number commitment's graph says a month for each calendar month its days run through — catches a month named at the wrong place, or one per day walked
+- [x] 4.3 a stopped number commitment's graph runs through the day it was kept until — catches a span run through today for a commitment no longer kept
+- [x] 4.4 a number commitment's graph says no point for a number kept after the day it was kept until — catches a point read off the record rather than off the days walked
 
 ## 5. The lowest and the highest — one test each
 
-- [ ] 5.1 a number commitment's graph runs between the range its newest era declares — catches an axis fitted to the numbers where a range is declared, which draws a flat week as a mountain range
-- [ ] 5.2 a number commitment's graph with no range runs between the values its points say — catches a bound left at zero, or taken from the first point rather than the least
-- [ ] 5.3 a number commitment's graph with one point says that value as its lowest and its highest — catches a crash or a widened guess where the two bounds are equal
-- [ ] 5.4 a number commitment's graph widens to hold a value outside its newest era's range — catches a point clamped to the range, or drawn off the top of the axis
+- [x] 5.1 a number commitment's graph runs between the range its newest era declares — catches an axis fitted to the numbers where a range is declared, which draws a flat week as a mountain range
+- [x] 5.2 a number commitment's graph with no range runs between the values its points say — catches a bound left at zero, or taken from the first point rather than the least
+- [x] 5.3 a number commitment's graph with one point says that value as its lowest and its highest — catches a crash or a widened guess where the two bounds are equal
+- [x] 5.4 a number commitment's graph widens to hold a value outside its newest era's range — catches a point clamped to the range, or drawn off the top of the axis
 
 ## 6. The rules — one test each
 
-- [ ] 6.1 a number commitment's graph says a rule where the rhythm changed — catches a rule at the older era's last day rather than the newer era's first
-- [ ] 6.2 a number commitment's graph of one era says no rule — catches a rule said for the chain's own head
-- [ ] 6.3 a number commitment's graph of three eras says one rule for each boundary — catches one boundary said for a chain of three, or the rules in oldest-first order
+- [x] 6.1 a number commitment's graph says a rule where the rhythm changed — catches a rule at the older era's last day rather than the newer era's first
+- [x] 6.2 a number commitment's graph of one era says no rule — catches a rule said for the chain's own head
+- [x] 6.3 a number commitment's graph of three eras says one rule for each boundary — catches one boundary said for a chain of three, or the rules in oldest-first order
 
 ## 7. The words a number is said in — one test each
 
-- [ ] 7.1 a look-back says a number with a fraction as its digits either side of a full stop — catches a device decimal separator, or a fraction rounded away
-- [ ] 7.2 a look-back says a whole number with no separator between thousands — catches a grouped "100,000"
-- [ ] 7.3 a look-back says a number below zero with a leading minus — catches a minus sign the locale chose, or an absolute value
+- [x] 7.1 a look-back says a number with a fraction as its digits either side of a full stop — catches a device decimal separator, or a fraction rounded away
+- [x] 7.2 a look-back says a whole number with no separator between thousands — catches a grouped "100,000"
+- [x] 7.3 a look-back says a number below zero with a leading minus — catches a minus sign the locale chose, or an absolute value
 
 ## 8. What the other kinds still say
 
-- [ ] 8.1 a look-back at a commitment whose days take a note or a total says no line, no whole and no graph — written here, and the test named for the scenario this delta removes, "a look-back at a commitment whose days take a number, a note or a total says no line and no whole", is deleted; no other test is
-- [ ] 8.2 `LookBack.chain` is untouched: it already resembles eras by the kind's sort (#262), so the test named "a look-back chains an era whose range or target differs behind the one it was asked about" passes unchanged
+- [x] 8.1 a look-back at a commitment whose days take a note or a total says no line, no whole and no graph — written here, and the test named for the scenario this delta removes, "a look-back at a commitment whose days take a number, a note or a total says no line and no whole", is deleted; no other test is
+- [x] 8.2 `LookBack.chain` is untouched: it already resembles eras by the kind's sort (#262), so the test named "a look-back chains an era whose range or target differs behind the one it was asked about" passes unchanged
 
 ## 9. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
