@@ -4,6 +4,15 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-17 — a number commitment's look-back draws a **graph** of its numbers, and that
+  is on the record's side of the line this record draws. What the Decision forbids is the *run* — a
+  chain that snaps back to zero, a percentage that punishes the first gap. A graph charts the values
+  a person entered, not a run of days: it marks no day kept and no day missed, it joins across a gap
+  rather than breaking at one, it says no figure of any kind beside itself, and it is on a page
+  visited deliberately that the day screen shows none of. The gap is the point — nothing tells a
+  missed due day from a day the rhythm never named, so a trace that broke at each one would be the
+  wall of squares this record's principle exists to refuse. Written by `look-back-at-a-number`
+  (#274).
 - Amended: 2026-09-16 — a look-back says a **whole** for a weekly quota too, and the closing sentence
   of the amendment below — that it says nothing at all where any era of the chain runs on a weekly
   quota — is replaced rather than narrowed. A quota era's page counts per **week** against its
