@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import UIKit
 import DayByDayKit
 
 /// One commitment seen on its own, over everything since the day it is kept from. Reached by a
@@ -253,16 +254,30 @@ struct LookBackView: View {
     /// off the left edge and stops flush at the right (grill decision 8).
     @ViewBuilder
     private func graphCard(_ graph: LookBack.Graph) -> some View {
-        let lowest = (graph.lowest as NSDecimalNumber).doubleValue
-        let highest = (graph.highest as NSDecimalNumber).doubleValue
+        let rawLowest = (graph.lowest as NSDecimalNumber).doubleValue
+        let rawHighest = (graph.highest as NSDecimalNumber).doubleValue
+        // A graph of one point, or a range the kit declares with equal ends, answers the same
+        // value for both bounds — a zero-width `chartYScale` domain, which draws nothing and
+        // stacks the two axis labels on each other. Widened here only for the plotted scale and
+        // the axis ticks' own positions; `graph.lowestInWords`/`highestInWords`, what each label
+        // says, are untouched.
+        let isDegenerate = rawHighest == rawLowest
+        let yPadding = isDegenerate ? max(abs(rawLowest), 1) * 0.1 : 0
+        let lowest = rawLowest - yPadding
+        let highest = rawHighest + yPadding
         let visibleLength = Double(span.lengthInDays ?? graph.days.count)
-        let openingPosition = Double(graph.days.count) - visibleLength
         let showsMonths = span == .year || span == .all
-        // A history shorter than the span's own length has nowhere to scroll to, so the domain
-        // is widened to the span's own length — otherwise a chart cannot open flush at the
-        // newest end and leave blank space before the first real day.
-        let domainStart = min(openingPosition, 0)
+        // The last real day sits at `domainEnd`; for it to draw flush at the plot's own right
+        // edge on opening, the visible window's own right edge must land exactly there too —
+        // `openingPosition + visibleLength == domainEnd`, not one unit past it. The one unit past
+        // is `chartXScale`'s domain has no mapping for, which is why it drew as blank space
+        // trailing the last point rather than the point sitting at the edge. A history shorter
+        // than the span's own length has nowhere to scroll to, so the domain's start is widened
+        // to the span's own length the same way, rather than leaving the trace anchored at the
+        // oldest day.
         let domainEnd = Double(max(graph.days.count - 1, 0))
+        let openingPosition = domainEnd - visibleLength
+        let domainStart = min(openingPosition, 0)
         // Three day labels at the sixths of the fixed-length window (so a label centred on the
         // window's own first or last day is not half clipped by the chart's own edge), keeping
         // only the ones landing on a real day — a history shorter than the window leaves the
@@ -276,15 +291,20 @@ struct LookBackView: View {
 
         Chart {
             ForEach(graph.points, id: \.day) { point in
+                // `.symbol(.circle)` marks every point along the trace — without it a `LineMark`
+                // draws only the segments between points, so a graph of exactly one point, with
+                // no segment to stroke, drew nothing at all.
                 LineMark(
                     x: .value("Day", point.day),
                     y: .value("Value", (point.value as NSDecimalNumber).doubleValue)
                 )
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.secondary)
+                .symbol(.circle)
+                .symbolSize(20)
             }
             ForEach(graph.rules, id: \.day) { rule in
                 RuleMark(x: .value("Boundary", rule.day))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.secondary)
                     .lineStyle(StrokeStyle(dash: [4, 4]))
             }
         }
@@ -310,8 +330,9 @@ struct LookBackView: View {
         // The dates-axis labels and the era label lane are drawn here rather than as each
         // `AxisMark`'s own `AxisValueLabel` or a `RuleMark`'s `.annotation`: both were measured
         // to either clip a label the card's own edge sits under, or to distort the chart's own
-        // x-scale when a label ran wide. `Self.clampedX(...)` keeps every label's own bounds
-        // inside the plot's, since nothing here otherwise stops one sliding past the card.
+        // x-scale when a label ran wide. `Self.measuredWidth(...)` reads each label's own
+        // rendered size rather than estimating it from its character count, since nothing here
+        // otherwise stops one sliding past the card.
         .chartOverlay { proxy in
             GeometryReader { geometry in
                 if let plotFrame = proxy.plotFrame {
@@ -324,7 +345,9 @@ struct LookBackView: View {
                                     .foregroundStyle(.secondary)
                                     .fixedSize()
                                     .position(
-                                        x: Self.clampedX(frame.minX + x, in: frame, textLength: month.inWords.count),
+                                        x: Self.clampedCenterX(
+                                            frame.minX + x, in: frame,
+                                            width: Self.measuredWidth(month.inWords)),
                                         y: frame.maxY + 14)
                             }
                         }
@@ -336,11 +359,17 @@ struct LookBackView: View {
                                     .foregroundStyle(.secondary)
                                     .fixedSize()
                                     .position(
-                                        x: Self.clampedX(frame.minX + x, in: frame, textLength: graph.days[day].count),
+                                        x: Self.clampedCenterX(
+                                            frame.minX + x, in: frame,
+                                            width: Self.measuredWidth(graph.days[day])),
                                         y: frame.maxY + 14)
                             }
                         }
                     }
+                    // Left-aligned to its own rule, `design.md` § *What the shell draws*, rather
+                    // than centred on it like the dates-axis labels above — shunted left only
+                    // where the rule sits close enough to the plot's trailing edge that the label
+                    // would otherwise overhang the card.
                     ForEach(graph.rules, id: \.day) { rule in
                         if let x = proxy.position(forX: rule.day) {
                             let label = "\(rule.rhythmInWords) · \(rule.fromInWords)"
@@ -349,7 +378,8 @@ struct LookBackView: View {
                                 .foregroundStyle(.secondary)
                                 .fixedSize()
                                 .position(
-                                    x: Self.clampedX(frame.minX + x, in: frame, textLength: label.count),
+                                    x: Self.leftAlignedCenterX(
+                                        frame.minX + x, in: frame, width: Self.measuredWidth(label)),
                                     y: frame.maxY + 30)
                         }
                     }
@@ -362,12 +392,28 @@ struct LookBackView: View {
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
-    /// `x` pulled inward from `frame`'s own edges by roughly half of what a `.caption2` label
-    /// `textLength` characters long is wide, so a label positioned near either end of the plot
-    /// stays inside the card instead of overhanging it — `graphCard(_:)`'s overlay labels draw
-    /// with no layout system reserving room for them, unlike a native `AxisValueLabel`.
-    private static func clampedX(_ x: CGFloat, in frame: CGRect, textLength: Int) -> CGFloat {
-        let halfWidth = CGFloat(textLength) * 3.2
+    /// `text`'s own rendered width at the `.caption2` size every overlay label in `graphCard(_:)`
+    /// draws at — measured rather than estimated from its character count, which a proportional
+    /// font makes an unreliable guide to how wide a label actually is.
+    private static func measuredWidth(_ text: String) -> CGFloat {
+        (text as NSString).size(withAttributes: [.font: UIFont.preferredFont(forTextStyle: .caption2)])
+            .width
+    }
+
+    /// `x`, the centre a label of `width` would need to sit fully inside `frame` — pulled inward
+    /// from either edge only enough that the label does not overhang the card, which nothing else
+    /// stops since these labels draw with no layout system reserving room for them, unlike a
+    /// native `AxisValueLabel`.
+    private static func clampedCenterX(_ x: CGFloat, in frame: CGRect, width: CGFloat) -> CGFloat {
+        let halfWidth = width / 2
         return min(max(x, frame.minX + halfWidth), frame.maxX - halfWidth)
+    }
+
+    /// The centre a label of `width` needs to sit with its own leading edge at `x` — left-aligned
+    /// to the rule it names, `design.md` § *What the shell draws* — shunted left only where that
+    /// would run the label past `frame`'s trailing edge.
+    private static func leftAlignedCenterX(_ x: CGFloat, in frame: CGRect, width: CGFloat) -> CGFloat {
+        let leadingX = min(x, frame.maxX - width)
+        return max(leadingX, frame.minX) + width / 2
     }
 }

@@ -72,7 +72,7 @@ the implementation.** These boxes confirm rather than write.
 ## 11. The gates
 
 - [x] 11.1 `openspec validate look-back-at-a-number --strict` exits 0 and `pnpm run check:scenarios` exits 0
-- [x] 11.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, the two kit sources, the kit test file and `LookBackView.swift`
+- [x] 11.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/`, `docs/open-questions.md` (the conductor's Stage-4 edit, commit de9ae92, not the implementer's), the two kit sources, the kit test file and `LookBackView.swift`
 - [x] 11.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
 - [x] 11.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is eighteen more than a run on `main` reports — the nineteen written in §§ 3–8 less the one deleted in 8.1, each count read off a run and neither derived
 - [x] 11.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–11.4 and the walk below are ticked and that the instruction here is written for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/look-back/spec.md` holds fourteen requirements, the one this delta removes gone and the six it adds in their place, every other requirement including the resemblance one byte for byte as it was, and no other spec moved. `pnpm run checks` runs after the archive commit exists, and the archive commit is pushed. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
@@ -84,5 +84,6 @@ the implementation.** These boxes confirm rather than write.
 - [x] W.3 The same page after tapping "All" — the picture shows the whole span in the width, its dates axis saying months rather than days
 - [x] W.4 A number commitment whose rhythm was changed through the edit sheet, with a number either side of the change — the picture shows the rule on the graph at the newer era's first day, its label under the dates axis, and the trace unbroken across it
 - [x] W.5 A number commitment holding no number yet — the picture shows the head, the dates card and "No number yet." with no graph and no picker
-- [ ] W.6 phone: scroll the graph sideways under the month span and confirm the trace and the dates axis move together while the values axis stays put
-- [x] W.7 **The handover** — the five pictures are posted to the PR with `gh pr comment --attach` before hand-back, and this box is ticked on that comment's URL — https://github.com/dbugmann-labs/daybyday/pull/296#issuecomment-5721595517
+- [ ] W.6 A number commitment holding exactly one number — the picture shows its single point mark on the graph and both values-axis labels readable, not stacked on each other
+- [ ] W.7 phone: scroll the graph sideways under the month span and confirm the trace and the dates axis move together while the values axis stays put
+- [ ] W.8 **The handover** — the six pictures are posted to the PR with `gh pr comment --attach` before hand-back, and this box is ticked on that comment's URL
