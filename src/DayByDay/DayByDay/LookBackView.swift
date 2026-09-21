@@ -270,8 +270,11 @@ struct LookBackView: View {
         // span one unit narrower than the count itself (day 0 through day 30 is 31 points over a
         // span of 30). `chartXVisibleDomain(length:)` takes that span, not the count — passing
         // the count left the window one unit wider than its own content, which is what the
-        // trailing gap after the newest day actually was.
-        let visibleSpan = Double(max(visibleDayCount - 1, 0))
+        // trailing gap after the newest day actually was. Floored at 1, not 0: "All" derives
+        // `visibleDayCount` from the history itself, and a history of exactly one real day would
+        // otherwise hand both `chartXVisibleDomain` and `chartXScale` a zero-width span — the
+        // same defect the values axis has just been widened against, on the other axis.
+        let visibleSpan = Double(max(visibleDayCount - 1, 1))
         let showsMonths = span == .year || span == .all
         // The last real day sits at `domainEnd`; for it to draw flush at the plot's own right
         // edge on opening, the visible window's own right edge must land exactly there too —
@@ -287,10 +290,20 @@ struct LookBackView: View {
         // rest as blank space, so early on this says one day or two rather than crowding three
         // dates that would otherwise overlap. `design.md` § *What the shell draws*'s designer
         // note: "about three across the width", true once the window is full.
-        let dayTickValues: [Int] = (0..<3).compactMap { step in
-            let day = Int((openingPosition + visibleSpan * (Double(step) + 0.5) / 3).rounded())
-            return graph.days.indices.contains(day) ? day : nil
-        }
+        let dayTickValues: [Int] = {
+            let sampled = (0..<3).compactMap { step -> Int? in
+                let day = Int((openingPosition + visibleSpan * (Double(step) + 0.5) / 3).rounded())
+                return graph.days.indices.contains(day) ? day : nil
+            }
+            // A history short enough against the window's own length can miss all three sixths
+            // — a one-day history under "Month" always does — leaving the page saying no day at
+            // all. The newest real day is the fallback: it is what the trace's own rightmost
+            // point already sits on.
+            guard sampled.isEmpty, let newestRealDay = graph.days.indices.last else {
+                return sampled
+            }
+            return [newestRealDay]
+        }()
 
         Chart {
             ForEach(graph.points, id: \.day) { point in
@@ -313,12 +326,13 @@ struct LookBackView: View {
         }
         .chartYScale(domain: lowest...highest)
         .chartYAxis {
-            AxisMarks(position: .leading, values: [lowest, highest]) { value in
-                AxisValueLabel {
-                    if let raw = value.as(Double.self) {
-                        Text(raw == lowest ? graph.lowestInWords : graph.highestInWords)
-                    }
-                }
+            // Gridlines only — the values themselves draw in the overlay below, inset from the
+            // card's own edge the way the dates card's labels are, which `chartPlotStyle` also
+            // achieves but was measured to clip a lone point's own symbol on a one-day history:
+            // narrowing the plot area changed how a mark with no line to anchor it to the visible
+            // region was clipped, even though the plot's own trailing edge was untouched.
+            AxisMarks(position: .leading, values: [lowest, highest]) { _ in
+                AxisGridLine()
             }
         }
         .chartXAxis {
@@ -337,16 +351,39 @@ struct LookBackView: View {
         .chartScrollableAxes(.horizontal)
         .chartXVisibleDomain(length: visibleSpan)
         .chartScrollPosition(initialX: openingPosition)
-        // The dates-axis labels and the era label lane are drawn here rather than as each
-        // `AxisMark`'s own `AxisValueLabel` or a `RuleMark`'s `.annotation`: both were measured
-        // to either clip a label the card's own edge sits under, or to distort the chart's own
-        // x-scale when a label ran wide. `Self.measuredWidth(...)` reads each label's own
-        // rendered size rather than estimating it from its character count, since nothing here
-        // otherwise stops one sliding past the card.
+        // The values-axis labels, the dates-axis labels and the era label lane are drawn here
+        // rather than as each `AxisMark`'s own `AxisValueLabel` or a `RuleMark`'s `.annotation`:
+        // all three were measured to either clip a label the card's own edge sits under, distort
+        // the chart's own x-scale when a label ran wide, or (the values axis specifically) clip a
+        // lone point's own symbol on a one-day history. `Self.measuredWidth(...)` reads each
+        // label's own rendered size rather than estimating it from its character count, since
+        // nothing here otherwise stops one sliding past the card. The dates-axis labels'
+        // `trailingInset` matches the values-axis label's own fixed 16pt leading inset and the
+        // dates card's own inset, so a label sitting near the newest day — which the trace itself
+        // still runs flush to, finding 5 — reads inset from the card's edge rather than touching
+        // it.
         .chartOverlay { proxy in
             GeometryReader { geometry in
                 if let plotFrame = proxy.plotFrame {
                     let frame = geometry[plotFrame]
+                    if let lowestY = proxy.position(forY: lowest) {
+                        Text(graph.lowestInWords)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .fixedSize()
+                            .position(
+                                x: frame.minX + 16 + Self.measuredWidth(graph.lowestInWords) / 2,
+                                y: frame.minY + lowestY)
+                    }
+                    if let highestY = proxy.position(forY: highest) {
+                        Text(graph.highestInWords)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .fixedSize()
+                            .position(
+                                x: frame.minX + 16 + Self.measuredWidth(graph.highestInWords) / 2,
+                                y: frame.minY + highestY)
+                    }
                     if showsMonths {
                         ForEach(graph.months, id: \.day) { month in
                             if let x = proxy.position(forX: month.day) {
@@ -357,7 +394,7 @@ struct LookBackView: View {
                                     .position(
                                         x: Self.clampedCenterX(
                                             frame.minX + x, in: frame,
-                                            width: Self.measuredWidth(month.inWords)),
+                                            width: Self.measuredWidth(month.inWords), trailingInset: 16),
                                         y: frame.maxY + 14)
                             }
                         }
@@ -371,7 +408,7 @@ struct LookBackView: View {
                                     .position(
                                         x: Self.clampedCenterX(
                                             frame.minX + x, in: frame,
-                                            width: Self.measuredWidth(graph.days[day])),
+                                            width: Self.measuredWidth(graph.days[day]), trailingInset: 16),
                                         y: frame.maxY + 14)
                             }
                         }
@@ -389,7 +426,8 @@ struct LookBackView: View {
                                 .fixedSize()
                                 .position(
                                     x: Self.leftAlignedCenterX(
-                                        frame.minX + x, in: frame, width: Self.measuredWidth(label)),
+                                        frame.minX + x, in: frame, width: Self.measuredWidth(label),
+                                        trailingInset: 16),
                                     y: frame.maxY + 30)
                         }
                     }
@@ -417,17 +455,23 @@ struct LookBackView: View {
     /// `x`, the centre a label of `width` would need to sit fully inside `frame` — pulled inward
     /// from either edge only enough that the label does not overhang the card, which nothing else
     /// stops since these labels draw with no layout system reserving room for them, unlike a
-    /// native `AxisValueLabel`.
-    private static func clampedCenterX(_ x: CGFloat, in frame: CGRect, width: CGFloat) -> CGFloat {
+    /// native `AxisValueLabel`. `trailingInset` widens the trailing bound only, so a label near
+    /// the newest day reads inset from the card's edge the way the dates card's own labels are,
+    /// without moving the trace or the rule themselves off the flush edge finding 5 puts them at.
+    private static func clampedCenterX(
+        _ x: CGFloat, in frame: CGRect, width: CGFloat, trailingInset: CGFloat = 0
+    ) -> CGFloat {
         let halfWidth = width / 2
-        return min(max(x, frame.minX + halfWidth), frame.maxX - halfWidth)
+        return min(max(x, frame.minX + halfWidth), frame.maxX - trailingInset - halfWidth)
     }
 
     /// The centre a label of `width` needs to sit with its own leading edge at `x` — left-aligned
     /// to the rule it names, `design.md` § *What the shell draws* — shunted left only where that
-    /// would run the label past `frame`'s trailing edge.
-    private static func leftAlignedCenterX(_ x: CGFloat, in frame: CGRect, width: CGFloat) -> CGFloat {
-        let leadingX = min(x, frame.maxX - width)
+    /// would run the label past `frame`'s trailing edge, `trailingInset` inward.
+    private static func leftAlignedCenterX(
+        _ x: CGFloat, in frame: CGRect, width: CGFloat, trailingInset: CGFloat = 0
+    ) -> CGFloat {
+        let leadingX = min(x, frame.maxX - trailingInset - width)
         return max(leadingX, frame.minX) + width / 2
     }
 }
