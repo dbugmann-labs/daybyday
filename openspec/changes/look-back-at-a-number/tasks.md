@@ -86,4 +86,4 @@ the implementation.** These boxes confirm rather than write.
 - [x] W.5 A number commitment holding no number yet — the picture shows the head, the dates card and "No number yet." with no graph and no picker
 - [x] W.6 A number commitment holding exactly one number — the picture shows its single point mark on the graph and both values-axis labels readable, not stacked on each other
 - [ ] W.7 phone: scroll the graph sideways under the month span and confirm the trace and the dates axis move together while the values axis stays put
-- [x] W.8 **The handover** — the six pictures are posted to the PR with `gh pr comment --attach` before hand-back, and this box is ticked on that comment's URL — https://github.com/dbugmann-labs/daybyday/pull/296#issuecomment-5756243696
+- [x] W.8 **The handover** — the six pictures are posted to the PR with `gh pr comment --attach` before hand-back, and this box is ticked on that comment's URL — https://github.com/dbugmann-labs/daybyday/pull/296#issuecomment-5757378531
