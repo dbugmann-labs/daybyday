@@ -226,39 +226,6 @@ it as a gap rather than saying it unprompted.*
 - **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
-### B-056 — read a look-back without seeing where its rhythm changed
-
-*Captured 2026-09-21.*
-
-> "In the look back screens, I don't want to have rhytm changes visible.. (in the tick, the quota
-> and the number screen)"
-
-- **Trigger** — opening a look-back at a commitment whose rhythm was changed at some point, which
-  is most of them after a few months: the page says a line between its months or weeks, and the
-  number graph a rule across it, wherever one era gave way to the next.
-- **Touches** — `look-back`, and only it. The line is a requirement there today, *A look-back
-  says where the rhythm changed, between its lines*, six scenarios, and so is the graph's rule,
-  *A number commitment's graph says a rule where one era gives way to the next*, two scenarios.
-  Both were written at #272, #273 and #274 and shipped; the eras underneath, the chain a look-back
-  reads them as and the per-era count stay as they are, since the want is about the marker and
-  not about the reading. `FEAT: look-back` (#271) is open with #275 and #276 in flight against the
-  same spec.
-- **Principle** — tested against *five percent of seven things*: **passes**, in the direction the
-  principle rarely sees — it takes depth out of a shipped page rather than putting more in. What
-  it actually tests is B-007's own G1 line, "everything since the day kept from, no window": that
-  still holds with the marker gone, because the chain is still read whole, so nothing the ninth
-  pass decided has to move.
-- **Open** — nothing between eras, or something quieter than a line? The owner said not visible;
-  whether a month that straddles two eras should still read as one month, or as two halves, is
-  the one place the answer shows.
-- **Open** — the head of the page says the rhythm in words and the day kept from. With the marker
-  gone that head is the only place a rhythm is said; is it the newest era's, as today, and does
-  that still read right for a commitment that has been three things?
-- **Open** — remove, or hide? A REMOVED requirement is the cheap shape; a toggle is a Story with
-  a control in it, and nothing said asks for one.
-- **Open** — order against #275 and #276: both touch the same capability spec and the same kit
-  file, so this either waits for them or cuts ahead and makes them rebase.
-
 
 ## Decided
 
@@ -266,6 +233,14 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-21 — read a look-back without seeing where its rhythm changed (B-056) → Story #300
+  `say-nothing-where-the-rhythm-changed` under `FEAT: look-back` (#271), ahead of #275 and #276,
+  which are now behind it. Captured and groomed in one session, four questions over one round,
+  two fact agents. Remove, not hide: the line between eras and the graph's rule leave as REMOVED
+  requirements, nine scenarios with them; nothing stands between two eras, the head's newest
+  rhythm and earliest kept-from day being the only place a rhythm is said; the reason is clutter.
+  The marker had been the designer's recommendation at #272, accepted at that grill and never
+  the owner's ask. No new term; `era` and `chain` stay as they are.
 - 2026-09-15 — look at one commitment on its own, deliberately and rarely (B-007) →
   `FEAT: look-back` (#271) under `EPIC: Looking back` (#269), a new Epic because #1 excludes
   "graphs and per-area detail pages" by name and is closed. Grilled at the ninth pass in its own
@@ -1087,3 +1062,14 @@ found nothing.
     dependency endpoints beside the body field; and `feature.yml` has no G2 box for the G2 that
     `docs/process.md` §4 says the orchestrator ticks, so G2 is a comment on #271 as it was on #26.
   - **Not re-judged** — the other nine wants; this session held one cluster by design.
+- 2026-09-21 — targeted pass over B-056 (`/atlas backlog B-056`), groomed on `chore/backlog` in
+  the session that captured it, `origin/main` at 90fa752.
+  - **Sweep** — day-one week: every line has a shipped spec, B-039 and B-054 the only live threads.
+    Lifecycle verbs: every create, change and retire shipped or declined on the record, except
+    `restore`, which has no way to delete an old copy and no Decided line saying so; put to the
+    owner, answered `none` — a copy is a file in Files and deleting it is Files' verb, which the
+    known-gaps list already says. `docs/open-questions.md`: nothing that has quietly become a want.
+  - **Promoted** — B-056 → #300 `say-nothing-where-the-rhythm-changed` under #271, blocking #275
+    and #276; the Decided line above has what the grill settled. Presented at G2 by the conductor
+    without `/to-tickets`, one Story under an existing Feature as B-025 was.
+  - **Not re-judged** — B-032, B-034, B-039, B-041, B-054; a targeted pass holds one entry.
