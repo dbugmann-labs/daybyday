@@ -255,6 +255,52 @@ it as a gap rather than saying it unprompted.*
   outright, are the precedent.
 - **Open** — is it reached only from a removed commitment, or from a kept one directly?
 
+### B-058 — change a commitment and still have one commitment, with one day it is kept from
+
+*Captured 2026-09-21, after a conversation that traced the behaviour to the code; the owner asked
+for it to be captured.*
+
+> "Currently, it behaves very weirdly when I make changes to a commitment.. Example scenario:
+> I have a commitment called "Test", kind "Tick", Rhythm 3x a week, kept from 14 sept. When I make
+> changes to e.g. having it 4x a week, the kept from changes (when next edit is opened) to today.
+> When I open the history, however, it says still 14 Sept. I then made some changes to the rhythm
+> and the "kept from" date, and it sometimes wouldn't let me save ("Already being kept"). What
+> would be the logical behavior, and what would be a fix so that it's not so messy anymore? I think
+> I now have lots of commitments with the same name and different rhythms / kept-from, and I'm not
+> sure which of them are treated as the "same" commitment"
+
+- **Trigger** — any second edit to a commitment whose rhythm, range or target was changed before:
+  toggling a rhythm back on the same day, putting the kept-from day back to the one it started on,
+  or renaming it later.
+- **Touches** — `commitment` and `look-back`, with `record` behind them. Four symptoms, one cause:
+  a commitment has no identity but its value, a rhythm change **supersedes** it, and only the
+  look-back's resemblance chain (ADR-1055) says two values are one commitment. (1) The sheet's
+  *Kept from* is the newest era's start; the look-back's is the earliest era's. (2) A second
+  rhythm change on one day leaves a removed era kept on no date; changing back to that rhythm the
+  same day equals it and is refused *Already being kept*, and so is restoring the original
+  rhythm and day, which equals the original era. (3) Moving the newest era's kept-from earlier, on
+  another rhythm, is accepted: two values answer for the overlapping past days, and the chain
+  breaks because no era is kept until the day before — the earlier era's records leave the
+  look-back unseen. (4) A rename reaches only the newest era (and the one superseded in the same
+  save), and the chain matches by name, so renaming a commitment with rhythm history drops that
+  history from its look-back. Traced through `CommitmentsScreen.change` and the specs' *A
+  commitments screen works out which act a change on either of its lists needs* and *A look-back
+  reads a commitment's earlier eras off the roster by resemblance*; not reproduced in a test.
+- **Principle** — tested against *five percent of seven things*: **passes** — it thins nothing
+  and deepens nothing, it makes an existing verb do what a person expects it to. It also serves
+  the reason the product exists, a history kept whole; today a normal edit can hide part of one.
+- **Open** — a stable identity for a commitment, with its eras as its own list, or patch the
+  resemblance rules (collapse a same-day supersede, point the sheet's kept-from at the earliest
+  era, rename the whole chain)? ADR-1030 names identity as the one thing that would reopen it and
+  ADR-1023 goes with it. The conversation leaned identity: three patches around one cause, and the
+  next edit path breaks the chain the same way.
+- **Open** — what the sheet says: one *Kept from* for the commitment, and the current rhythm's
+  start as a read-only line, or nothing?
+- **Open** — the owner's roster already holds tangled entries of this shape; a migration that
+  rebuilds chains by resemblance once, or a hand repair from a restore copy, as B-052's record was.
+- **Open** — defect or want: is this a Story against `FEAT: commitment` (#26), or a new Feature
+  because it changes a commitment's identity?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
