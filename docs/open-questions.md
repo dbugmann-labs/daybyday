@@ -207,6 +207,22 @@ Things that are built, or deliberately not built, in a state someone will trip o
   it; the ADR is the stale one. #274's `spec-author` drafted the amendment and withdrew it rather
   than book another Story's decision under its own; the next Story or chore that opens ADR-1055
   amends the Decision and the price list, dated, per `docs/adr/README.md`'s amendment rule.
+- **A number graph's month labels on the year and "All" spans are chosen oldest-first, and the
+  leftmost can name a month that is not at its position.** Found at #274's G7, 2026-09-21, fourth
+  fix round. `LookBackView`'s dates-axis candidates are every month in the whole domain, months
+  scrolled out of view included; the trailing and leading clamps pull the out-of-view ones onto
+  the plot's edges, and the `degapped` pass then keeps the first of a colliding run and drops the
+  rest — so the label at the left edge can sit where its month does not, and the newest month can
+  be dropped for colliding with an older one. The clamping is older than the round that added the
+  drop. No walk picture exercises it; the owner left it at G7 as a later shell tidy, not a Story:
+  the seam says every month and its position, and nothing in the delta is contradicted.
+- **A values-axis bound wider than 30% of the graph card is drawn truncated.** Found at the same
+  G7. The lane beside the chart is clamped to 30% of the card so a long bound cannot squeeze the
+  plot to a sliver, and a label that does not fit truncates with an ellipsis, so the axis can read
+  "1234567…" for a bound the graph holds. It crosses no requirement — what a look-back *says* is
+  the kit's `lowestInWords` and `highestInWords`, untouched — and the case is a thirty-eight-digit
+  whole that the delta names as reachable rather than one anybody has typed. Left at G7 as a later
+  shell decision: a smaller font for a long bound, or a lane that may grow to half the card.
 - **`CalendarDate.adding(days:)`'s comment names two callers and has eleven.** Found at #273's
   fix-round verification, 2026-09-16. `CalendarDate.swift` documents the method's nil-on-out-of-range
   behaviour as holding "at the ±1 steps this method is actually called with
