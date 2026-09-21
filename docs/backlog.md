@@ -226,13 +226,40 @@ it as a gap rather than saying it unprompted.*
 - **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-21 — change a commitment and still have one commitment, with one day it is kept from
+  (B-058) → `FEAT: commitment` (#26), reopened a fourth time under Epic #1, with B-057 in the same
+  cluster. Grilled at the tenth pass, fourteen questions over three rounds, three fact agents, no
+  fact sent to the owner. **A commitment gets an identity of its own**, and its eras and every
+  record against it hang off that rather than off its value — the first of the four ADRs this
+  reverses in place is ADR-1023, with 1030, 1035 and 1055 behind it. Settled: a rename reaches the
+  whole commitment, every era and every past day; the sheet shows one *Kept from*, the earliest
+  era's, and says nowhere when the current rhythm began; a rhythm changed twice on one day leaves
+  one era, because an era nobody kept a day on is not one; the roster refuses a name already in use
+  by a kept or stopped commitment, and no longer a value; **the removed state goes** — a commitment
+  is kept, stopped or gone, so stopping and resuming is the way to pause one and there is no way
+  back from a deletion; a stop ends an era and a resume begins one from the day of the resume, so
+  the days between owe nothing and draw no row. The roster on the phone is folded once at the
+  upgrade: adjacent eras by name, kind-sort and day fold under one commitment; a removed entry that
+  nothing kept or stopped resembles by name and kind is erased with its records (the owner's call,
+  against the recommendation to make them stopped); a removed entry that resembles a live one but
+  does not chain survives as its own stopped commitment, tidied by hand. First Story: the identity
+  and the fold. Left behind by id: B-054, B-041, B-032, B-034, B-039.
+- 2026-09-21 — delete a commitment for good, with everything it ever recorded (B-057) →
+  `FEAT: commitment` (#26), in one cluster with B-058 above, whose identity it needs before
+  "everything related" is a thing the app can name. Settled at the same grill: **delete takes
+  remove's place** — the trash swipe on either list, the name typed back, the word *delete* — and
+  erases the commitment, every era, its roster place and category, and every tick, number, note
+  and total against any era, from the phone's stores; the sheet says that the copy in Files follows
+  every kept change, so after this nothing is the way back. A roster emptied by deletion stays
+  empty: day one is not written back, which costs a marker the roster carries and amends ADR-1027's
+  letter. One-offs, which already remove outright, are the precedent. Term **Deleted** in
+  `CONTEXT.md`; **Removed** amended to say the state is retired.
 - 2026-09-21 — read a look-back without seeing where its rhythm changed (B-056) → Story #300
   `say-nothing-where-the-rhythm-changed` under `FEAT: look-back` (#271), ahead of #275 and #276,
   which are now behind it. Captured and groomed in one session, four questions over one round,
@@ -1073,3 +1100,27 @@ found nothing.
     and #276; the Decided line above has what the grill settled. Presented at G2 by the conductor
     without `/to-tickets`, one Story under an existing Feature as B-025 was.
   - **Not re-judged** — B-032, B-034, B-039, B-041, B-054; a targeted pass holds one entry.
+- 2026-09-21 — pass over 7 wants, the tenth, on `chore/backlog` (PR #301, holding B-057 and B-058
+  unmerged), `origin/main` at 1cd589b.
+  - **Sweep** — no silence. Main had moved from the same-day targeted pass only by #299 and the B-056
+    capture; day-one week every line shipped; lifecycle verbs: the one retire verb the sixth pass
+    declined for "nothing asks for it" — deleting a commitment with its history — now has its ask in
+    B-057; `docs/open-questions.md` and the specs unchanged since 90fa752.
+  - **Taken forward** — **G**, a commitment's identity and its end: B-058, B-057 → `FEAT: commitment`
+    (#26) reopened a fourth time under Epic #1; the two Decided lines above hold what the grill
+    settled. Recommended because B-058 is the defect the owner hit that day and its answer decides
+    B-057's shape. §7: the identity Story's delta reaches `look-back` for the chain, so it serialises
+    behind #300 (Stage 4), #275 and #276, all of which delta `look-back`; it also reaches `record`
+    and `restore`, which no open Story touches. Suggested G2 shape: the identity and the fold first,
+    delete second, then rename-reaches-everything and the name refusal if they did not fall out of
+    the first, the same-day collapse, and stop and resume as era boundaries.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **C**, kept on a day not due: B-054. Unchanged since the ninth pass; Stories against `record`
+      and `day-screen`, or "gym is a quota" at its grill. Not this Feature's, though its Stories
+      touch `record`.
+    - **E**, entry affordances: B-032, B-034. Epic #1 excludes prefill by name and nothing in the
+      week is blocked on either; B-032's blocker (#139) has shipped, so it is buildable now.
+    - **F**, a reminder: B-039. Unclaimed, and the one want that asks whether this app may nag; it
+      needs a sitting of its own.
+    - **Singleton**: B-041, leave until the SDK carries `reorderable(collectionID:)`, as 2026-09-15
+      decided.

@@ -217,6 +217,14 @@ record stands and the row returns if the commitment is taken up again. A commitm
 stopped on the same day is one kept on no day at all, which the roster already accepts. ADR-1023 is
 amended in place.
 
+**Amended 2026-09-21**, at the G1 of the tenth grooming pass, which reopened `FEAT: commitment` (#26)
+for B-058 and B-057. **A commitment is to have an identity of its own.** Two commitments are two
+however alike their parts, one commitment stays itself through a rename or a rhythm change, and
+its **eras** and every record against it hang off that identity rather than off its value. What a
+roster refuses is then a **name** already in use by a commitment it keeps or has stopped, not a
+value it already holds. The paragraph above says what shipped; the Stories under #26 say when each
+sentence of it turns, and ADR-1023, 1030, 1035 and 1055 are amended in place as they do.
+
 **Removed** — a commitment a person has got rid of for good: the roster still holds it, in the place
 it was taken on in and with the day it was **kept until**, but it is shown in neither of the
 **commitments screen**'s lists and is owed on no day after that one. It is the third state a roster
@@ -244,6 +252,28 @@ and why the app shell says nothing about removal when someone changes a commitme
 superseded commitment again exactly still takes it up again, in its old place and with its history —
 the shipped way back, applied unchanged, and the honest answer to a person who has decided their old
 rhythm was the right one.
+
+**Amended 2026-09-21**, at the G1 that reopened `FEAT: commitment` (#26) for B-058 and B-057: **the
+state is retired.** A roster is to hold a commitment in two states, kept and stopped, and a
+commitment a person is done with is **deleted** rather than removed. Eras no longer need this
+state either, because under an identity they are the one commitment's own history and not
+removed commitments the roster happens to hold. Pausing is stopping and then resuming, and the
+way back that this entry describes — defining the commitment again exactly — goes with the state.
+The roster on the phone is folded once at the upgrade: entries this state holds that are eras of
+something fold under it; those nothing kept or stopped resembles are erased with their records;
+the rest become stopped. Until the Stories land, everything above is still what the app does.
+
+**Deleted** — a commitment taken out for good, with everything it ever recorded: every era, its
+place and category on the roster, and every tick, number, note and total against any of its eras,
+all gone from the phone's stores in one act. Nothing holds it afterwards — no list, no past day,
+no **look-back** — and nothing is the way back: the copy in Files follows every kept change, so
+the next copy no longer holds it either. It is the one act in the product that makes a record
+unrecoverable on the phone, which is why it is confirmed the way removal was, by typing the name
+back, and why the sheet says the copy follows. It is a person's choice to lose a history, not the
+app losing one, so *restore, not sync* is not failed. A roster emptied by deletion stays empty:
+**day one** is not written back over a deliberate act. Distinct from **stopped**, which keeps
+every day and is the way to pause; the **one-off**, removed outright since it shipped, is the
+precedent. Agreed 2026-09-21 at the G1 that reopened `FEAT: commitment` (#26) for B-057.
 
 **Changing a commitment** — giving one a different name, a different rhythm, or a different day it
 is **kept from**, without losing what has been recorded against it. It is the person's verb, and it
