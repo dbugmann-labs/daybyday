@@ -448,15 +448,20 @@ struct LookBackView: View {
                         // lane (finding 3) narrowed the plot enough that the three-sixths day
                         // sampling's own labels could abut. `Self.degapped` drops whichever
                         // candidate would touch the last one already kept, reading left to right,
-                        // so the month-span page still says two dates where two do fit.
+                        // so the month-span page still says two dates where two do fit — off each
+                        // candidate's own `naturalX`, fifth round, so the trailing clamp below
+                        // cannot manufacture a collision between two labels that do not touch at
+                        // their own positions.
                         if showsMonths {
                             let candidates = graph.months.compactMap { month -> XAxisTick? in
                                 guard let x = proxy.position(forX: month.day) else { return nil }
                                 let width = Self.measuredWidth(month.inWords)
+                                let naturalX = frame.minX + x
                                 return XAxisTick(
                                     day: month.day, text: month.inWords,
+                                    naturalX: naturalX,
                                     x: Self.clampedCenterX(
-                                        frame.minX + x, in: frame, width: width, trailingInset: 16),
+                                        naturalX, in: frame, width: width, trailingInset: 16),
                                     width: width)
                             }
                             ForEach(Self.degapped(candidates), id: \.day) { tick in
@@ -471,10 +476,12 @@ struct LookBackView: View {
                                 guard let x = proxy.position(forX: day) else { return nil }
                                 let text = graph.days[day]
                                 let width = Self.measuredWidth(text)
+                                let naturalX = frame.minX + x
                                 return XAxisTick(
                                     day: day, text: text,
+                                    naturalX: naturalX,
                                     x: Self.clampedCenterX(
-                                        frame.minX + x, in: frame, width: width, trailingInset: 16),
+                                        naturalX, in: frame, width: width, trailingInset: 16),
                                     width: width)
                             }
                             ForEach(Self.degapped(candidates), id: \.day) { tick in
@@ -572,14 +579,19 @@ struct LookBackView: View {
         return max(leadingX, frame.minX) + width / 2
     }
 
-    /// A candidate dates-axis label already placed at its own clamped centre — `Self.degapped`
-    /// reads left to right off `x`, so this carries nothing the width and the position it was
-    /// resolved at do not already say. `day` is either a real day index or a month's own, and is
-    /// unique either way, so it doubles as `ForEach`'s `id`.
+    /// A candidate dates-axis label at both its own natural centre (`naturalX`, before the
+    /// trailing clamp) and where it actually draws (`x`, after it) — fifth G7 round: the newest
+    /// candidate's natural centre can sit close enough to the plot's trailing edge that
+    /// `Self.clampedCenterX` pulls it back toward its neighbour, and comparing *clamped* centres
+    /// in `Self.degapped` then reads that clamp-induced closeness as a real collision between two
+    /// labels that do not in fact touch at their own positions. `Self.degapped` reads `naturalX`;
+    /// only the rendered `Text` reads `x`. `day` is either a real day index or a month's own, and
+    /// is unique either way, so it doubles as `ForEach`'s `id`.
     private struct XAxisTick: Identifiable {
         var id: Int { day }
         let day: Int
         let text: String
+        let naturalX: CGFloat
         let x: CGFloat
         let width: CGFloat
     }
@@ -587,17 +599,24 @@ struct LookBackView: View {
     /// Keeps a candidate only where it would not touch the last one already kept, reading left to
     /// right — finding B, fourth G7 round: `Self.clampedCenterX` alone only keeps a label inside
     /// the card's own edges, not clear of its neighbour, and the values-axis lane (finding 3)
-    /// narrowed the plot enough that the three-sixths day sampling's own labels could abut. Drops
-    /// whichever candidate collides rather than let two overlap, which — since `candidates`
-    /// already runs oldest to newest — keeps the first and the last where those two alone do fit,
-    /// rather than always favouring one end.
+    /// narrowed the plot enough that the three-sixths day sampling's own labels could abut.
+    /// Compares `naturalX`, each candidate's own unclamped position, rather than `x` — fifth G7
+    /// round: comparing the clamped `x` instead let the trailing clamp manufacture a collision
+    /// between the newest candidate and its neighbour that was not there at their own positions,
+    /// dropping the newest day's label under exactly the month spans this exists to serve. On a
+    /// genuine collision the *older* of the pair is dropped, replacing it in `kept` rather than
+    /// skipping the newer one, so a chain of near candidates still settles on the newest — the
+    /// newest real day is always the last candidate `candidates` hands this, and never loses a
+    /// collision to an older one.
     private static func degapped(_ candidates: [XAxisTick], minimumGap: CGFloat = 8) -> [XAxisTick]
     {
         var kept: [XAxisTick] = []
         for candidate in candidates {
             if let last = kept.last,
-                candidate.x - candidate.width / 2 < last.x + last.width / 2 + minimumGap
+                candidate.naturalX - candidate.width / 2
+                    < last.naturalX + last.width / 2 + minimumGap
             {
+                kept[kept.count - 1] = candidate
                 continue
             }
             kept.append(candidate)
