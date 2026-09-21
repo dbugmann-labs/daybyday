@@ -74,11 +74,11 @@ make it pass, then take the next. §§ 3–6 go in a new `TakeOutTests.swift`, �
 
 ## 11. The walk (ADR-1053; `docs/running-the-app.md` § *The walk* has the commands)
 
-- [ ] 11.1 the day screen with the record at its place swapped for a run of bytes: the red *could not be read* line and the grey restore line under it
-- [ ] 11.2 the commitments screen's *Copy* section in that state, after *Make a copy* is tapped: the refused copy in red — the shipped line was black, and this Story draws it red so that it and the take-out caption under it, which say the same words, read as one colour — and *Take out the files* under it with its caption
-- [ ] 11.3 the share sheet open from that row, offering *Save to Files* — the sheet summarises two files as "2 Documents" and names none, which is the platform's; the names are the seam test's to prove
-- [ ] 11.4 the *Copy* section with the roster swapped for one written in a later form, after *Make a copy* is tapped: the refusal and the caption each saying *a newer version* rather than *could not be read*
-- [ ] 11.5 **The walk handover** — the implementer posts the pictures to the PR as one comment with `gh pr comment --attach`, one per box, before hand-back, and ticks this box on that comment's URL; the throwaway test is deleted, and `src/DayByDay/DayByDayUITests/` merges unchanged
+- [x] 11.1 the day screen with the record at its place swapped for a run of bytes: the red *could not be read* line and the grey restore line under it
+- [x] 11.2 the commitments screen's *Copy* section in that state, after *Make a copy* is tapped: the refused copy in red — the shipped line was black, and this Story draws it red so that it and the take-out caption under it, which say the same words, read as one colour — and *Take out the files* under it with its caption
+- [x] 11.3 the share sheet open from that row, offering *Save to Files* — the sheet summarises two files as "2 Documents" and names none, which is the platform's; the names are the seam test's to prove
+- [x] 11.4 the *Copy* section with the roster swapped for one written in a later form, after *Make a copy* is tapped: the refusal and the caption each saying *a newer version* rather than *could not be read*
+- [x] 11.5 **The walk handover** — the implementer posts the pictures to the PR as one comment with `gh pr comment --attach`, one per box, before hand-back, and ticks this box on that comment's URL; the throwaway test is deleted, and `src/DayByDay/DayByDayUITests/` merges unchanged
 
 ## 12. The gates
 
@@ -86,4 +86,4 @@ make it pass, then take the next. §§ 3–6 go in a new `TakeOutTests.swift`, �
 - [x] 12.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/open-questions.md`, the kit sources and tests, `CommitmentsView.swift` and `ContentView.swift`
 - [x] 12.3 `pnpm run check:budgets` reports no warning about this folder
 - [x] 12.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is twenty-four more than a run on `main` reports, both read off runs
-- [ ] 12.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–12.4 are ticked and that this instruction is written here for the janitor. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints. It then reads the spec diff that produced: `openspec/specs/restore/spec.md` gains five requirements and changes two, each by one sentence and one scenario. Nothing else in any spec may move. `pnpm run checks` runs after the archive commit exists. **Any other drift is a stop and a report, never a hand-edit**: rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
+- [x] 12.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–12.4 are ticked and that this instruction is written here for the janitor. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints. It then reads the spec diff that produced: `openspec/specs/restore/spec.md` gains five requirements and changes two, each by one sentence and one scenario. Nothing else in any spec may move. `pnpm run checks` runs after the archive commit exists. **Any other drift is a stop and a report, never a hand-edit**: rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
