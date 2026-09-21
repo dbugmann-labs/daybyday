@@ -98,6 +98,11 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             // itself rather than off this case. Names no store, so it stays honest whichever one
             // this case ever names.
             Text("That could not be read.")
+        case .storeWrittenByALaterVersion:
+            // Never drawn on its own, for the same reason `.storeCouldNotBeRead` above is not —
+            // a refused copy is always drawn through `copySectionRefusalText`, which reads the
+            // store off the `RefusedChange` itself.
+            Text("That was written by a newer version of DayByDay.")
         case .notACopy:
             Text("That's not a copy.")
         case .damagedCopy:
@@ -113,21 +118,84 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
 /// The words a person reads for a refused copy, naming the store `store` says where one is
 /// given, and the shipped words for a place that could not be written otherwise — `design.md` §
 /// *The shell*: "Your record could not be read.", the roster's and the one-offs' likewise, and
-/// the shipped words for a place that could not be written.
+/// the shipped words for a place that could not be written. The caption red the section's other
+/// refusals use — `design.md` § *What the shell draws* — so this and the take-out caption under
+/// it, which say the same words over the same cause, read as one colour.
 @ViewBuilder
 private func copySectionRefusalText(_ store: Copy.Store?, _ refusal: CommitmentsScreen.Refusal)
     -> some View
 {
-    switch store {
-    case .record:
-        Text("Your record could not be read.")
-    case .roster:
-        Text("Your roster could not be read.")
-    case .oneOffs:
-        Text("Your one-offs could not be read.")
-    case nil:
-        refusalText(refusal)
+    Group {
+        switch (store, refusal) {
+        case (.record, .storeWrittenByALaterVersion):
+            Text("Your record was written by a newer version of DayByDay.")
+        case (.roster, .storeWrittenByALaterVersion):
+            Text("Your roster was written by a newer version of DayByDay.")
+        case (.oneOffs, .storeWrittenByALaterVersion):
+            Text("Your one-offs were written by a newer version of DayByDay.")
+        case (.record, _):
+            Text("Your record could not be read.")
+        case (.roster, _):
+            Text("Your roster could not be read.")
+        case (.oneOffs, _):
+            Text("Your one-offs could not be read.")
+        case (nil, _):
+            refusalText(refusal)
+        }
     }
+    .font(.caption)
+    .foregroundStyle(.red)
+}
+
+/// The words a person reads naming each store a take-out offer names, and why — `design.md` §
+/// *What the shell draws*, settled 13: whenever *Take out the files* is drawn, a caption with it
+/// names the store or stores that cannot be read, or that are from a newer version. The caption
+/// red the section's other causes use, one line per store in the fixed order `storesNotRead`
+/// already carries.
+@ViewBuilder
+private func takeOutCausesText(_ storesNotRead: [CommitmentsScreen.StoreNotRead]) -> some View {
+    VStack(alignment: .leading, spacing: 2) {
+        ForEach(storesNotRead, id: \.store) { storeNotRead in
+            switch (storeNotRead.store, storeNotRead.cause) {
+            case (.record, .couldNotBeRead):
+                Text("Your record could not be read.")
+            case (.record, .writtenByALaterVersion):
+                Text("Your record was written by a newer version of DayByDay.")
+            case (.roster, .couldNotBeRead):
+                Text("Your roster could not be read.")
+            case (.roster, .writtenByALaterVersion):
+                Text("Your roster was written by a newer version of DayByDay.")
+            case (.oneOffs, .couldNotBeRead):
+                Text("Your one-offs could not be read.")
+            case (.oneOffs, .writtenByALaterVersion):
+                Text("Your one-offs were written by a newer version of DayByDay.")
+            }
+        }
+    }
+    .font(.caption)
+    .foregroundStyle(.red)
+}
+
+/// The words a person reads for a refused take-out — the same caption red the section's other
+/// refusals use, naming the store that could not be taken out, or that the folder it was to be
+/// written into could not be written where `store` is `nil`. `design.md` § *A refused take-out
+/// reuses the refused change, with a case of its own*.
+@ViewBuilder
+private func takeOutRefusalText(_ store: Copy.Store?) -> some View {
+    Group {
+        switch store {
+        case .record:
+            Text("The record could not be taken out.")
+        case .roster:
+            Text("The roster could not be taken out.")
+        case .oneOffs:
+            Text("The one-offs could not be taken out.")
+        case nil:
+            Text("That folder could not be written.")
+        }
+    }
+    .font(.caption)
+    .foregroundStyle(.red)
 }
 
 /// The words a person reads for one side of a restore's counts — a copy's own, or the phone's —
@@ -187,14 +255,16 @@ private func momentNow() -> Moment? {
     return moment
 }
 
-/// Wraps `UIActivityViewController` around the one URL a copy answers, so `CommitmentsView` can
-/// hand it to the platform's share sheet. `design.md` § *The shell*: `ShareLink` needs its item
-/// before the tap, and the copy does not exist until then.
+/// Wraps `UIActivityViewController` around the URLs a copy or a take-out answers, so
+/// `CommitmentsView` can hand them to the platform's share sheet. `design.md` § *The shell*:
+/// `ShareLink` needs its items before the tap, and neither a copy nor a take-out exists until
+/// then. A copy hands over one URL; a take-out, several — `openspec/specs/restore/spec.md` § *The
+/// shape*.
 private struct ShareSheet: UIViewControllerRepresentable {
-    let url: URL
+    let urls: [URL]
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        UIActivityViewController(activityItems: urls, applicationActivities: nil)
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
@@ -250,6 +320,12 @@ private func copyPlaceStopText(_ stop: CopyPlace.Stop) -> String {
         "your roster could not be read"
     case .storeCouldNotBeRead(.oneOffs):
         "your one-offs could not be read"
+    case .storeWrittenByALaterVersion(.record):
+        "your record was written by a newer version of DayByDay"
+    case .storeWrittenByALaterVersion(.roster):
+        "your roster was written by a newer version of DayByDay"
+    case .storeWrittenByALaterVersion(.oneOffs):
+        "your one-offs were written by a newer version of DayByDay"
     }
 }
 
@@ -281,6 +357,14 @@ private struct CopyShare: Identifiable {
     var id: URL { url }
 }
 
+/// The URLs a take-out answers, wrapped so `.sheet(item:)` can drive the share sheet directly —
+/// the same idiom `CopyShare` above drives it with. A take-out answers several URLs at once, so
+/// this carries a fresh `UUID` rather than one of them.
+private struct TakeOutShare: Identifiable {
+    let id = UUID()
+    let urls: [URL]
+}
+
 /// The roster's own management surface: what it keeps, what it has stopped, and the sheet — B-037
 /// — that defines a new commitment on one of the four rhythms `CommitmentsScreen` offers, or
 /// changes one already on either list.
@@ -293,6 +377,9 @@ struct CommitmentsView: View {
     /// needs its item before the tap, so the URL is put here on success rather than offered
     /// ahead of one.
     @State private var copyShare: CopyShare?
+    /// The URLs the last take-out made answered, wrapped so `.sheet(item:)` can drive the share
+    /// sheet directly — `nil` until a take-out is made. `design.md` § *The shell*.
+    @State private var takeOutShare: TakeOutShare?
     /// Whether the system file picker for restoring a copy is presented. `design.md` § *The
     /// shell*: `.fileImporter` for the exported type, with `askToRestore` bracketed in
     /// security-scoped access around the URL it hands back.
@@ -605,6 +692,22 @@ struct CommitmentsView: View {
                     copySectionRefusalText(store, copyRefusal)
                 }
 
+                // Drawn only while a store cannot be read or is from a newer version —
+                // `design.md` § *What the shell draws*, Option B.
+                if screen.offersATakeOut {
+                    Button("Take out the files") {
+                        if case .success(let urls) = screen.takeOut(), !urls.isEmpty {
+                            takeOutShare = TakeOutShare(urls: urls)
+                        }
+                    }
+
+                    takeOutCausesText(screen.storesNotRead)
+
+                    if case .takingOut(let store, _) = screen.refusedChange {
+                        takeOutRefusalText(store)
+                    }
+                }
+
                 Button("Restore from a copy") {
                     isPickingRestoreFile = true
                 }
@@ -738,7 +841,10 @@ struct CommitmentsView: View {
             CommitmentSheet(screen: screen, changing: target.commitment)
         }
         .sheet(item: $copyShare) { share in
-            ShareSheet(url: share.url)
+            ShareSheet(urls: [share.url])
+        }
+        .sheet(item: $takeOutShare) { share in
+            ShareSheet(urls: share.urls)
         }
         .fileImporter(
             isPresented: $isPickingRestoreFile,

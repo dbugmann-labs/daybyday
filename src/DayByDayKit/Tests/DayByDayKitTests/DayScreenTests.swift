@@ -9560,3 +9560,172 @@ func aChangeKeptWhereAStoreCannotBeReadIsKeptAndTheStopNamesThatStore() throws {
             == CopyPlace.Stopped(
                 stop: .storeCouldNotBeRead(.oneOffs), since: Moment(on: monday, hour: 14, minute: 33)!))
 }
+
+@MainActor
+@Test("a day screen that cannot read its record says a copy can be restored and where")
+func aDayScreenThatCannotReadItsRecordSaysACopyCanBeRestoredAndWhere() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+
+    let (recordPlace, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: recordPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: recordPlace)
+
+    let screen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    #expect(screen.saysACopyCanBeRestored)
+
+    // A day screen not keeping its roster says the same.
+    let (recordPlace2, rosterPlace2) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: rosterPlace2.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a roster is written as".utf8).write(to: rosterPlace2)
+    let rosterScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace2,
+        keepingRosterAt: rosterPlace2, keepingOneOffsAt: freshOneOffPlace())
+    #expect(rosterScreen.saysACopyCanBeRestored)
+
+    // One that cannot read its one-offs says the same.
+    let (recordPlace3, rosterPlace3) = freshPlaces()
+    let oneOffPlace3 = freshOneOffPlace()
+    try FileManager.default.createDirectory(
+        at: oneOffPlace3.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a one-off holder is written as".utf8).write(to: oneOffPlace3)
+    let oneOffScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace3,
+        keepingRosterAt: rosterPlace3, keepingOneOffsAt: oneOffPlace3)
+    #expect(oneOffScreen.saysACopyCanBeRestored)
+
+    // A day screen that cannot read its record beside a roster written by a later version of
+    // DayByDay says the same.
+    let (recordPlace4, rosterPlace4) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: recordPlace4.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: recordPlace4)
+    try Data(
+        "{\"version\":\(RosterDocument.currentVersion + 1),\"commitments\":[]}".utf8
+    ).write(to: rosterPlace4)
+    let laterRosterScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace4,
+        keepingRosterAt: rosterPlace4, keepingOneOffsAt: freshOneOffPlace())
+    #expect(laterRosterScreen.saysACopyCanBeRestored)
+}
+
+@MainActor
+@Test("a day screen not keeping any of its three stores says a copy can be restored once")
+func aDayScreenNotKeepingAnyOfItsThreeStoresSaysACopyCanBeRestoredOnce() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    try FileManager.default.createDirectory(
+        at: recordPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: recordPlace)
+    try Data("not what a roster is written as".utf8).write(to: rosterPlace)
+    try FileManager.default.createDirectory(
+        at: oneOffPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a one-off holder is written as".utf8).write(to: oneOffPlace)
+
+    let screen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+
+    #expect(screen.saysACopyCanBeRestored)
+}
+
+@MainActor
+@Test(
+    "a day screen whose only store not kept was written by a later version says nothing about restoring a copy"
+)
+func aDayScreenWhoseOnlyStoreNotKeptWasWrittenByALaterVersionSaysNothingAboutRestoringACopy() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+
+    let (recordPlace, rosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: recordPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(
+        "{\"version\":\(RecordDocument.currentVersion + 1),\"ticks\":[]}".utf8
+    ).write(to: recordPlace)
+
+    let screen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    #expect(!screen.saysACopyCanBeRestored)
+
+    // A day screen whose roster alone was written in a later form says nothing either.
+    let (recordPlace2, rosterPlace2) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: rosterPlace2.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(
+        "{\"version\":\(RosterDocument.currentVersion + 1),\"commitments\":[]}".utf8
+    ).write(to: rosterPlace2)
+    let rosterScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace2,
+        keepingRosterAt: rosterPlace2, keepingOneOffsAt: freshOneOffPlace())
+    #expect(!rosterScreen.saysACopyCanBeRestored)
+
+    // A day screen whose one-offs alone were written in a later form says nothing either.
+    let (recordPlace3, rosterPlace3) = freshPlaces()
+    let oneOffPlace3 = freshOneOffPlace()
+    try FileManager.default.createDirectory(
+        at: oneOffPlace3.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(
+        "{\"version\":\(OneOffDocument.currentVersion + 1),\"oneOffs\":[]}".utf8
+    ).write(to: oneOffPlace3)
+    let oneOffScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace3,
+        keepingRosterAt: rosterPlace3, keepingOneOffsAt: oneOffPlace3)
+    #expect(!oneOffScreen.saysACopyCanBeRestored)
+}
+
+@MainActor
+@Test("a day screen keeping all three of its stores says nothing about restoring a copy")
+func aDayScreenKeepingAllThreeOfItsStoresSaysNothingAboutRestoringACopy() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+
+    let (recordPlace, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+
+    let screen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: recordPlace,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: oneOffPlace)
+    #expect(!screen.saysACopyCanBeRestored)
+
+    // A day screen that could not read its record, once what is at that place is made readable
+    // and the app is shown again, says nothing about restoring a copy either.
+    let (readableRecordPlace, readableRosterPlace) = freshPlaces()
+    let readableOneOffPlace = freshOneOffPlace()
+    try FileManager.default.createDirectory(
+        at: readableRecordPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: readableRecordPlace)
+
+    let unreadableScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: readableRecordPlace,
+        keepingRosterAt: readableRosterPlace, keepingOneOffsAt: readableOneOffPlace)
+    #expect(unreadableScreen.saysACopyCanBeRestored)
+
+    try FileManager.default.removeItem(at: readableRecordPlace)
+    unreadableScreen.shown(asOf: monday)
+    #expect(!unreadableScreen.saysACopyCanBeRestored)
+}

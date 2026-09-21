@@ -180,6 +180,23 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **A take-out's write failure is refused as a place that could not be written, and no test can reach it.**
+  `CommitmentsScreen.takeOut` (#270) creates a directory named by a fresh UUID and writes each file
+  into it in the same call; a failing `createDirectory` is refused the same way and is tested, but a
+  write that fails after the directory exists cannot be staged from the seam — the test cannot know
+  the name, the process owns the directory, and there is no hook between creation and the first
+  write. Reviewed at #270's G7, 2026-09-21: the branch is right by reading and unprovable by test.
+- **A walk box's prose can be rewritten after G4 and nothing catches it.** At #270's walk,
+  2026-09-21, two boxes in `tasks.md` § 11 described pictures the shell could not produce — a
+  refused-copy line assumed red that had shipped black, and a share sheet assumed to list file names
+  where iOS summarises two items as "2 Documents". The conductor reworded both on the owner's `go`
+  at a rule-5 stop and committed (`7d5afd2`); `pnpm run check:g4` still passed because
+  `scripts/lib/g4.ts` excludes `tasks.md` whole from the digest, and the agent table allows the
+  implementer only that file's checkboxes, not its prose. The reviewer flagged it at G7 as a
+  rewrite that went through no gate. The substance was right — the walk asserts nothing about what
+  is shown, the seam tests do — but an acceptance line can be rewritten to describe the picture
+  taken, and only a reviewer reading the commit log sees it. Whether `tasks.md` § 11 belongs in the
+  digest, or a stop at the walk should be a second G4, is open.
 - **`look-back-at-a-quota`'s wireframe says "nav bar: back only" and the app says the name there.**
   Found at #273's G7, 2026-09-16. The designer drew the mockup without the `look-back-name-twice`
   chore, which put the name back in the navigation bar as well as in the body at the owner's
@@ -695,18 +712,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   endpoints for the blocking edge between Stories, and the orchestrator confirms their shape
   against a live edge each time because the file names only the sub-issue calls. Adding the four
   endpoints is a chore on that file. Surfaced 2026-09-15 at the ninth pass's G2.
-- **A roster from a later version is given two causes at once when a copy is asked for.** The
-  commitments screen already tells a roster written by a newer version of DayByDay apart from one
-  that is not a roster, and says of the first that it must not be deleted. `make-a-copy` (#266)
-  refuses a copy whenever a store cannot be read and names the store, and its delta names only two
-  causes — the store could not be read, or the file could not be written — so a copy asked for over
-  a later-form roster draws *must not be deleted* and, four rows below it in the Copy section, *could
-  not be read*: the same file, two causes, the second inviting what the first forbids. No scenario
-  covers a later-form store on this path; every one corrupts a store as bytes that are not a
-  roster. It follows the approved delta, so it was left as built. It is the concern of
-  `take-out-an-unreadable-store` (#270), whose grill decides whether a refused copy says *from a
-  later version* as the roster line does. Surfaced 2026-09-15 at #266's review, finding 1.
-
 - **Four copy-place test helpers live twice, once per test file.** `DayScreenTests.swift` carries
   `freshCopyPlaceDirectoryForDayScreenTests` and three siblings copy-pasted from `CopyPlaceTests.swift`
   (`freshCopyPlaceDirectory`, its two neighbours and `makeCopyPlaceDirectoryUnwritable`) with a suffix to
@@ -731,6 +736,15 @@ Things that are built, or deliberately not built, in a state someone will trip o
   place and picking again worked as walked.
 
 ## Settled
+
+- 2026-09-21 — **a copy that cannot be made over a store from a later version says so.** Closed at
+  #270's grill, which #266's review had left it to: a refused copy tells a later-form store apart —
+  *from a newer version*, as the roster line and the restore refusal already do — rather than
+  saying *could not be read* four rows under *must not be deleted*; and the residual round after
+  the grill extended it to the copy the app makes on its own, whose stop line at the copy place
+  named the same second cause about the same file. Both are MODIFIED requirements in
+  `take-out-an-unreadable-store`'s delta, and the take-out row that Story adds carries the same
+  cause as its caption, so one reading of the three places answers all three (its `design.md`).
 
 - 2026-09-16 — **a look-back's line stays two strings, and the shell may compose exactly one of
   them.** Closed at #273's grill, which #272's G7 had left it to. `LookBack.Line` keeps two strings

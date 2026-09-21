@@ -329,6 +329,17 @@ public final class DayScreen {
     /// Anything but `.kept` means this screen holds no One-offs group on any day.
     public private(set) var oneOffState: OneOffState
 
+    /// Whether this screen says a copy can be restored, and where: exactly while it could not
+    /// read its record, could not read its one-offs, or is not keeping its roster for a reason
+    /// that is not a later version of DayByDay — `.notKept` already bundles a roster that could
+    /// not be read with one that could not be written. `false` where every store it is not keeping
+    /// was written by a later version, and where it is keeping all three. Reads no clock and no
+    /// place; changes nothing. `openspec/specs/restore/spec.md` § *A day screen that is not
+    /// keeping a store says a copy can be restored and where*.
+    public var saysACopyCanBeRestored: Bool {
+        recordState == .unreadable || oneOffState == .unreadable || rosterState == .notKept
+    }
+
     /// What a person is told on a row, and nothing else: which row, and the cause where there is
     /// one a person can act on. `cause` is `nil` for a refusal by the place, which names nothing,
     /// and for a refused tick, which carries no cause at all. Exactly one of `row` and

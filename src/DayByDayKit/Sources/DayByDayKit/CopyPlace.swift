@@ -55,11 +55,15 @@ public final class CopyPlace {
     /// began — `nil` where the last attempt succeeded, or none has ever been made.
     public private(set) var stopped: Stopped?
 
-    /// The three reasons a copy cannot be made at the copy place — `design.md` § *The seam*.
+    /// The four reasons a copy cannot be made at the copy place — `design.md` § *The seam*.
     public enum Stop: Hashable, Sendable {
         case folderCannotBeReached
         case folderCannotBeWritten
         case storeCouldNotBeRead(Copy.Store)
+        /// A store was written by a later version of DayByDay while forming the copy the copy
+        /// place writes on its own — told apart from `storeCouldNotBeRead` rather than folded
+        /// into it. `design.md` § *The later-version cause is said wherever the store is named*.
+        case storeWrittenByALaterVersion(Copy.Store)
     }
 
     /// A stop standing at the copy place: which of the three it is, and the moment it began.
@@ -203,17 +207,23 @@ public final class CopyPlace {
     /// `oneOffsAt`, as of `moment` — reading the three places fresh, undoing a torn restore and
     /// then a torn save first. The one copy-forming path `CommitmentsScreen.makeACopy` and this
     /// copy place's own `writeCopy` both call, per `proposal.md`'s own "the copy forming shared
-    /// out of the commitments screen". Answers `unreadable` alongside the result rather than
-    /// leaving a caller that needs to name which store failed to call `readStores` a second
-    /// time — `readStores` is not pure, undoing a torn restore and a torn save as it goes, so a
-    /// second call redid that rather than merely re-reading. `openspec/specs/restore/spec.md` §
-    /// *A copy is what the three places hold, read when it is asked for*.
+    /// out of the commitments screen". Answers `notRead` alongside the result rather than leaving a
+    /// caller that needs to name which store failed to call `readStores` a second time —
+    /// `readStores` is not pure, undoing a torn restore and a torn save as it goes, so a second
+    /// call redid that rather than merely re-reading. The refusal names the *first* place `notRead`
+    /// holds, in the fixed order record, roster, one-offs: `.storeWrittenByALaterVersion` where
+    /// that place's own cause is a later version, `.storeCouldNotBeRead` otherwise — so a record
+    /// that cannot be read at all outranks a roster merely written by a later version, exactly as
+    /// `openspec/specs/restore/spec.md` § *A copy that cannot be made leaves nothing behind* asks.
     static func form(
         recordAt: URL, rosterAt: URL, oneOffsAt: URL, asOf moment: Moment
-    ) -> (result: Result<Copy, CommitmentsScreen.Refusal>, unreadable: [Copy.Store]) {
+    ) -> (result: Result<Copy, CommitmentsScreen.Refusal>, notRead: [CommitmentsScreen.StoreNotRead]) {
         let read = readStores(recordAt: recordAt, rosterAt: rosterAt, oneOffsAt: oneOffsAt)
         guard let record = read.record, let roster = read.roster, let oneOffs = read.oneOffs else {
-            return (.failure(.storeCouldNotBeRead), read.unreadable)
+            let refusal: CommitmentsScreen.Refusal =
+                read.notRead.first?.cause == .writtenByALaterVersion
+                ? .storeWrittenByALaterVersion : .storeCouldNotBeRead
+            return (.failure(refusal), read.notRead)
         }
         return (
             .success(
@@ -233,14 +243,55 @@ public final class CopyPlace {
         let record: RecordStore?
         let roster: RosterStore?
         let oneOffs: OneOffStore?
+        /// Which of the three could not be read, and why, in the fixed order record, roster,
+        /// one-offs. `design.md` § *One reading of the three places, carrying the cause*.
+        let notRead: [CommitmentsScreen.StoreNotRead]
 
-        /// Which of the three could not be read, in the fixed order record, roster, one-offs.
-        var unreadable: [Copy.Store] {
-            var result: [Copy.Store] = []
-            if record == nil { result.append(.record) }
-            if roster == nil { result.append(.roster) }
-            if oneOffs == nil { result.append(.oneOffs) }
-            return result
+        /// Which of the three could not be read, in the fixed order record, roster, one-offs —
+        /// `AwaitingRestore.unreadable` reads off this: the restore sheet says a count is missing,
+        /// not why.
+        var unreadable: [Copy.Store] { notRead.map(\.store) }
+    }
+
+    /// Opens the record at `place`, telling `.laterForm` apart from every other reason
+    /// `RecordStore` can refuse to open — mirrors `DayScreen`'s own `open(at:)`.
+    private static func openRecordTellingLaterVersionApart(
+        at place: URL
+    ) -> (store: RecordStore?, cause: CommitmentsScreen.StoreNotRead.Cause?) {
+        do {
+            return (try RecordStore(at: place), nil)
+        } catch RecordStoreError.laterForm {
+            return (nil, .writtenByALaterVersion)
+        } catch {
+            return (nil, .couldNotBeRead)
+        }
+    }
+
+    /// Opens the roster at `place`, telling `.laterForm` apart from every other reason
+    /// `RosterStore` can refuse to open — mirrors `CommitmentsScreen`'s own opener.
+    private static func openRosterTellingLaterVersionApart(
+        at place: URL
+    ) -> (store: RosterStore?, cause: CommitmentsScreen.StoreNotRead.Cause?) {
+        do {
+            return (try RosterStore(at: place), nil)
+        } catch RosterStoreError.laterForm {
+            return (nil, .writtenByALaterVersion)
+        } catch {
+            return (nil, .couldNotBeRead)
+        }
+    }
+
+    /// Opens the one-offs at `place`, telling `.laterForm` apart from every other reason
+    /// `OneOffStore` can refuse to open — mirrors `DayScreen`'s own `openOneOffs(at:)`.
+    private static func openOneOffsTellingLaterVersionApart(
+        at place: URL
+    ) -> (store: OneOffStore?, cause: CommitmentsScreen.StoreNotRead.Cause?) {
+        do {
+            return (try OneOffStore(at: place), nil)
+        } catch OneOffStoreError.laterForm {
+            return (nil, .writtenByALaterVersion)
+        } catch {
+            return (nil, .couldNotBeRead)
         }
     }
 
@@ -250,7 +301,9 @@ public final class CopyPlace {
     /// store yields a current-form copy. Never carries an orphaned record back: a copy SHALL leave
     /// the three places exactly as it found them, apart from a restore in progress or a save in
     /// progress undone. Where a restore in progress or a save in progress stands and cannot itself
-    /// be undone, all three answer unreadable, told as the record — the place both stand beside.
+    /// be undone, all three answer not read, each as a place that could not be read, told as the
+    /// record — the place both stand beside. `design.md` § *One reading of the three places,
+    /// carrying the cause*.
     static func readStores(
         recordAt recordPlace: URL, rosterAt rosterPlace: URL, oneOffsAt oneOffPlace: URL
     ) -> StoresRead {
@@ -259,11 +312,30 @@ public final class CopyPlace {
                 recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace),
             SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace)
         else {
-            return StoresRead(record: nil, roster: nil, oneOffs: nil)
+            return StoresRead(
+                record: nil, roster: nil, oneOffs: nil,
+                notRead: Copy.Store.allCases.map {
+                    CommitmentsScreen.StoreNotRead(store: $0, cause: .couldNotBeRead)
+                })
         }
+
+        let record = openRecordTellingLaterVersionApart(at: recordPlace)
+        let roster = openRosterTellingLaterVersionApart(at: rosterPlace)
+        let oneOffs = openOneOffsTellingLaterVersionApart(at: oneOffPlace)
+
+        var notRead: [CommitmentsScreen.StoreNotRead] = []
+        if let cause = record.cause {
+            notRead.append(CommitmentsScreen.StoreNotRead(store: .record, cause: cause))
+        }
+        if let cause = roster.cause {
+            notRead.append(CommitmentsScreen.StoreNotRead(store: .roster, cause: cause))
+        }
+        if let cause = oneOffs.cause {
+            notRead.append(CommitmentsScreen.StoreNotRead(store: .oneOffs, cause: cause))
+        }
+
         return StoresRead(
-            record: try? RecordStore(at: recordPlace), roster: try? RosterStore(at: rosterPlace),
-            oneOffs: try? OneOffStore(at: oneOffPlace))
+            record: record.store, roster: roster.store, oneOffs: oneOffs.store, notRead: notRead)
     }
 
     /// Writes `copy` into `directory` under `fileName`, creating the directory first where it
@@ -311,7 +383,13 @@ public final class CopyPlace {
             recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace, asOf: moment)
         switch formed.result {
         case .failure:
-            stop(.storeCouldNotBeRead(formed.unreadable.first ?? .record), asOf: moment)
+            let first = formed.notRead.first
+            let store = first?.store ?? .record
+            if first?.cause == .writtenByALaterVersion {
+                stop(.storeWrittenByALaterVersion(store), asOf: moment)
+            } else {
+                stop(.storeCouldNotBeRead(store), asOf: moment)
+            }
         case .success(let copy):
             do {
                 _ = try Self.write(copy, into: url, named: Self.fileName)
@@ -378,6 +456,13 @@ public final class CopyPlace {
                 case .roster: store = "roster"
                 case .oneOffs: store = "oneOffs"
                 }
+            case .storeWrittenByALaterVersion(let which):
+                reason = "storeWrittenByALaterVersion"
+                switch which {
+                case .record: store = "record"
+                case .roster: store = "roster"
+                case .oneOffs: store = "oneOffs"
+                }
             }
         }
 
@@ -398,6 +483,14 @@ public final class CopyPlace {
                 default: which = .record
                 }
                 return Stopped(stop: .storeCouldNotBeRead(which), since: moment)
+            case "storeWrittenByALaterVersion":
+                let which: Copy.Store
+                switch store {
+                case "roster": which = .roster
+                case "oneOffs": which = .oneOffs
+                default: which = .record
+                }
+                return Stopped(stop: .storeWrittenByALaterVersion(which), since: moment)
             default:
                 return nil
             }

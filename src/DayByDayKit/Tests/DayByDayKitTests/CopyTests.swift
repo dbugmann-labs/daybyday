@@ -744,3 +744,115 @@ func aCopyRefusedBecauseAStoreCouldNotBeReadLeavesTheThreePlacesAsTheyWere() thr
     #expect(try Data(contentsOf: places.oneOffs) == oneOffBytes)
     #expect(!FileManager.default.fileExists(atPath: places.record.path))
 }
+
+/// The minimal bytes a store written by a later version reads as: the envelope's `version` alone
+/// decides `.laterForm`, so the rest of the shape needs only to parse.
+private func laterFormBytes(for store: Copy.Store) -> Data {
+    switch store {
+    case .record:
+        return Data("{\"version\":\(RecordDocument.currentVersion + 1),\"ticks\":[]}".utf8)
+    case .roster:
+        return Data("{\"version\":\(RosterDocument.currentVersion + 1),\"commitments\":[]}".utf8)
+    case .oneOffs:
+        return Data("{\"version\":\(OneOffDocument.currentVersion + 1),\"oneOffs\":[]}".utf8)
+    }
+}
+
+@MainActor
+@Test(
+    "a copy refused over a store written by a later version says so rather than that it could not be read"
+)
+func aCopyRefusedOverAStoreWrittenByALaterVersionSaysSoRatherThanThatItCouldNotBeRead() throws {
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let moment = Moment(on: monday, hour: 14, minute: 32)!
+
+    // The roster place holds a roster written in a later form.
+    do {
+        let places = freshThreePlaces()
+        try FileManager.default.createDirectory(
+            at: places.roster.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try laterFormBytes(for: .roster).write(to: places.roster)
+
+        let screen = CommitmentsScreen(
+            asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+            keepingOneOffsAt: places.oneOffs)
+
+        let result = screen.makeACopy(asOf: moment, writingInto: freshCopyDirectory())
+
+        guard case .failure(let refusal) = result else {
+            Issue.record("expected a copy to be refused")
+            return
+        }
+        #expect(refusal == .storeWrittenByALaterVersion)
+        #expect(refusal != .storeCouldNotBeRead)
+        #expect(screen.refusedChange == .makingACopy(.roster, .storeWrittenByALaterVersion))
+    }
+
+    // The record place, rather than the roster place, holds a record written in a later form.
+    do {
+        let places = freshThreePlaces()
+        try FileManager.default.createDirectory(
+            at: places.record.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try laterFormBytes(for: .record).write(to: places.record)
+
+        let screen = CommitmentsScreen(
+            asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+            keepingOneOffsAt: places.oneOffs)
+
+        let result = screen.makeACopy(asOf: moment, writingInto: freshCopyDirectory())
+
+        guard case .failure(let refusal) = result else {
+            Issue.record("expected a copy to be refused")
+            return
+        }
+        #expect(refusal == .storeWrittenByALaterVersion)
+        #expect(screen.refusedChange == .makingACopy(.record, .storeWrittenByALaterVersion))
+    }
+
+    // The one-off place holds one-offs written in a later form.
+    do {
+        let places = freshThreePlaces()
+        try FileManager.default.createDirectory(
+            at: places.oneOffs.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try laterFormBytes(for: .oneOffs).write(to: places.oneOffs)
+
+        let screen = CommitmentsScreen(
+            asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+            keepingOneOffsAt: places.oneOffs)
+
+        let result = screen.makeACopy(asOf: moment, writingInto: freshCopyDirectory())
+
+        guard case .failure(let refusal) = result else {
+            Issue.record("expected a copy to be refused")
+            return
+        }
+        #expect(refusal == .storeWrittenByALaterVersion)
+        #expect(screen.refusedChange == .makingACopy(.oneOffs, .storeWrittenByALaterVersion))
+    }
+
+    // The record place holds a run of bytes that is not a record, and the roster place holds a
+    // roster written in a later form: refused as a store that could not be read, naming the
+    // record — the earlier place in the fixed order outranks the later version.
+    do {
+        let places = freshThreePlaces()
+        try FileManager.default.createDirectory(
+            at: places.record.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("not what a record is written as".utf8).write(to: places.record)
+        try FileManager.default.createDirectory(
+            at: places.roster.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try laterFormBytes(for: .roster).write(to: places.roster)
+
+        let screen = CommitmentsScreen(
+            asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+            keepingOneOffsAt: places.oneOffs)
+
+        let result = screen.makeACopy(asOf: moment, writingInto: freshCopyDirectory())
+
+        guard case .failure(let refusal) = result else {
+            Issue.record("expected a copy to be refused")
+            return
+        }
+        #expect(refusal == .storeCouldNotBeRead)
+        #expect(screen.refusedChange == .makingACopy(.record, .storeCouldNotBeRead))
+    }
+}
