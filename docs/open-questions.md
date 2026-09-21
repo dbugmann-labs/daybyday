@@ -180,6 +180,17 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **A walk box's prose can be rewritten after G4 and nothing catches it.** At #270's walk,
+  2026-09-21, two boxes in `tasks.md` § 11 described pictures the shell could not produce — a
+  refused-copy line assumed red that had shipped black, and a share sheet assumed to list file names
+  where iOS summarises two items as "2 Documents". The conductor reworded both on the owner's `go`
+  at a rule-5 stop and committed (`7d5afd2`); `pnpm run check:g4` still passed because
+  `scripts/lib/g4.ts` excludes `tasks.md` whole from the digest, and the agent table allows the
+  implementer only that file's checkboxes, not its prose. The reviewer flagged it at G7 as a
+  rewrite that went through no gate. The substance was right — the walk asserts nothing about what
+  is shown, the seam tests do — but an acceptance line can be rewritten to describe the picture
+  taken, and only a reviewer reading the commit log sees it. Whether `tasks.md` § 11 belongs in the
+  digest, or a stop at the walk should be a second G4, is open.
 - **`look-back-at-a-quota`'s wireframe says "nav bar: back only" and the app says the name there.**
   Found at #273's G7, 2026-09-16. The designer drew the mockup without the `look-back-name-twice`
   chore, which put the name back in the navigation bar as well as in the body at the owner's
