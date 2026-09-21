@@ -950,29 +950,13 @@ func aLookBackSaysWhereAnIntervalCommitmentsCountBeganAgain() throws {
 }
 
 @MainActor
-@Test("a look-back at a commitment whose days take a number, a note or a total says no line and no whole")
-func aLookBackAtACommitmentWhoseDaysTakeANumberANoteOrATotalSaysNoLineAndNoWhole() throws {
+@Test("a look-back at a commitment whose days take a note or a total says no line, no whole and no graph")
+func aLookBackAtACommitmentWhoseDaysTakeANoteOrATotalSaysNoLineNoWholeAndNoGraph() throws {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let today = CalendarDate(year: 2026, month: 3, day: 15)!
     let everyDay: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
-
-    let numberPlaces = freshRosterAndRecordPlaces()
-    let weight = Commitment(
-        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
-    let numberRosterStore = try RosterStore(at: numberPlaces.roster)
-    try numberRosterStore.add(weight)
-    _ = try RecordStore(at: numberPlaces.record)
-    let numberScreen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: numberPlaces.roster, keepingRecordAt: numberPlaces.record)
-    let numberLookBack = numberScreen.lookBack(at: weight)
-
-    #expect(numberLookBack?.name == "Weight")
-    #expect(numberLookBack?.rhythmInWords == "Every day")
-    #expect(numberLookBack?.keptFromInWords == "1 January 2026")
-    #expect(numberLookBack?.lines == [])
-    #expect(numberLookBack?.whole == nil)
 
     let notePlaces = freshRosterAndRecordPlaces()
     let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
@@ -983,8 +967,12 @@ func aLookBackAtACommitmentWhoseDaysTakeANumberANoteOrATotalSaysNoLineAndNoWhole
         asOf: today, keepingRosterAt: notePlaces.roster, keepingRecordAt: notePlaces.record)
     let noteLookBack = noteScreen.lookBack(at: journal)
 
+    #expect(noteLookBack?.name == "Journal")
+    #expect(noteLookBack?.rhythmInWords == "Every day")
+    #expect(noteLookBack?.keptFromInWords == "1 January 2026")
     #expect(noteLookBack?.lines == [])
     #expect(noteLookBack?.whole == nil)
+    #expect(noteLookBack?.graph == nil)
 
     let totalPlaces = freshRosterAndRecordPlaces()
     let saved = Commitment(
@@ -997,8 +985,12 @@ func aLookBackAtACommitmentWhoseDaysTakeANumberANoteOrATotalSaysNoLineAndNoWhole
         asOf: today, keepingRosterAt: totalPlaces.roster, keepingRecordAt: totalPlaces.record)
     let totalLookBack = totalScreen.lookBack(at: saved)
 
+    #expect(totalLookBack?.name == "Saved")
+    #expect(totalLookBack?.rhythmInWords == "Every day")
+    #expect(totalLookBack?.keptFromInWords == "1 January 2026")
     #expect(totalLookBack?.lines == [])
     #expect(totalLookBack?.whole == nil)
+    #expect(totalLookBack?.graph == nil)
 }
 
 @MainActor
@@ -1472,4 +1464,561 @@ func aLookBackSaysAWeekAcrossTwoYearsAsEachEndsDayShortMonthAndYear() throws {
     let lookBack = screen.lookBack(at: gym)
 
     #expect(lookBack?.lines == [.week(inWords: "29 Dec 2025 – 4 Jan 2026", fraction: "0/3")])
+}
+
+@MainActor
+@Test("a number commitment's look-back says a point for each day that holds a number")
+func aNumberCommitmentsLookBackSaysAPointForEachDayThatHoldsANumber() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let firstDay = CalendarDate(year: 2026, month: 3, day: 1)!
+    let thirdDay = CalendarDate(year: 2026, month: 3, day: 3)!
+    let fourthDay = CalendarDate(year: 2026, month: 3, day: 4)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: weight, on: firstDay)!)
+    try recordStore.add(Number(71, for: weight, on: thirdDay)!)
+    try recordStore.add(Number(70.8, for: weight, on: fourthDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(
+        lookBack?.graph?.points == [
+            LookBack.Graph.Point(day: 0, value: 72.5, inWords: "72.5"),
+            LookBack.Graph.Point(day: 2, value: 71, inWords: "71"),
+            LookBack.Graph.Point(day: 3, value: 70.8, inWords: "70.8"),
+        ])
+    #expect(lookBack?.lines == [])
+    #expect(lookBack?.whole == nil)
+}
+
+@MainActor
+@Test("a number commitment's look-back says no graph where no day holds a number")
+func aNumberCommitmentsLookBackSaysNoGraphWhereNoDayHoldsANumber() throws {
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let places = freshRosterAndRecordPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    _ = try RecordStore(at: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(lookBack?.graph == nil)
+    #expect(lookBack?.lines == [])
+    #expect(lookBack?.whole == nil)
+    #expect(lookBack?.name == "Weight")
+    #expect(lookBack?.rhythmInWords == "Every day")
+    #expect(lookBack?.keptFromInWords == "1 March 2026")
+
+    let laterPlaces = freshRosterAndRecordPlaces()
+    let laterKeptFrom = CalendarDate(year: 2026, month: 4, day: 1)!
+    let laterWeight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: laterKeptFrom, kind: .number(range: nil))!
+    let laterRosterStore = try RosterStore(at: laterPlaces.roster)
+    try laterRosterStore.add(laterWeight)
+    _ = try RecordStore(at: laterPlaces.record)
+
+    let laterScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: laterPlaces.roster, keepingRecordAt: laterPlaces.record)
+    #expect(laterScreen.lookBack(at: laterWeight)?.graph == nil)
+}
+
+@MainActor
+@Test("a number commitment's look-back says one point where one day holds a number")
+func aNumberCommitmentsLookBackSaysOnePointWhereOneDayHoldsANumber() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let thirdDay = CalendarDate(year: 2026, month: 3, day: 3)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: weight, on: thirdDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(
+        lookBack?.graph?.points == [
+            LookBack.Graph.Point(day: 2, value: 72.5, inWords: "72.5")
+        ])
+}
+
+@MainActor
+@Test("a number commitment's look-back says the number the era holding a day kept")
+func aNumberCommitmentsLookBackSaysTheNumberTheEraHoldingADayKept() throws {
+    let places = freshRosterAndRecordPlaces()
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 2)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerWeight = Commitment(
+        name: "Weight",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: newerKeptFrom, kind: .number(range: nil))!
+    let olderWeight = Commitment(
+        name: "Weight", schedule: .weekdays([.monday]), keptFrom: olderKeptFrom,
+        kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
+    let newerDay = CalendarDate(year: 2026, month: 3, day: 4)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(newerWeight)
+    try rosterStore.add(olderWeight)
+    try rosterStore.remove(olderWeight, keptUntil: boundary)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(80, for: olderWeight, on: olderDay)!)
+    try recordStore.add(Number(70, for: newerWeight, on: newerDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerWeight)
+
+    #expect(
+        lookBack?.graph?.points == [
+            LookBack.Graph.Point(day: 0, value: 80, inWords: "80"),
+            LookBack.Graph.Point(day: 2, value: 70, inWords: "70"),
+        ])
+}
+
+@MainActor
+@Test("a number commitment's graph says a day for every day from the day it is kept from through today")
+func aNumberCommitmentsGraphSaysADayForEveryDayFromTheDayItIsKeptFromThroughToday() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let firstDay = CalendarDate(year: 2026, month: 3, day: 1)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: weight, on: firstDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(lookBack?.graph?.days.count == 5)
+    #expect(lookBack?.graph?.days.first == "1 March 2026")
+    #expect(lookBack?.graph?.days.last == "5 March 2026")
+    #expect(lookBack?.graph?.points.first?.day == 0)
+}
+
+@MainActor
+@Test("a number commitment's graph says a month for each calendar month its days run through")
+func aNumberCommitmentsGraphSaysAMonthForEachCalendarMonthItsDaysRunThrough() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 2, day: 20)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 3)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: weight, on: keptFrom)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(
+        lookBack?.graph?.months == [
+            LookBack.Graph.Month(inWords: "February 2026", day: 0),
+            LookBack.Graph.Month(inWords: "March 2026", day: 9),
+        ])
+}
+
+@MainActor
+@Test("a stopped number commitment's graph runs through the day it was kept until")
+func aStoppedNumberCommitmentsGraphRunsThroughTheDayItWasKeptUntil() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 2, day: 25)!
+    let keptUntil = CalendarDate(year: 2026, month: 2, day: 28)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    try rosterStore.retire(weight, keptUntil: keptUntil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: weight, on: keptFrom)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(lookBack?.graph?.days.count == 4)
+    #expect(lookBack?.graph?.days.first == "25 February 2026")
+    #expect(lookBack?.graph?.days.last == "28 February 2026")
+}
+
+@MainActor
+@Test("a number commitment's graph says no point for a number kept after the day it was kept until")
+func aNumberCommitmentsGraphSaysNoPointForANumberKeptAfterTheDayItWasKeptUntil() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 2, day: 25)!
+    let keptUntil = CalendarDate(year: 2026, month: 2, day: 28)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let dayWithinSpan = CalendarDate(year: 2026, month: 2, day: 27)!
+    let dayAfterKeptUntil = CalendarDate(year: 2026, month: 3, day: 4)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    try rosterStore.retire(weight, keptUntil: keptUntil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: weight, on: dayWithinSpan)!)
+    try recordStore.add(Number(71, for: weight, on: dayAfterKeptUntil)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(
+        lookBack?.graph?.points == [
+            LookBack.Graph.Point(day: 2, value: 72.5, inWords: "72.5")
+        ])
+}
+
+@MainActor
+@Test("a number commitment's graph runs between the range its newest era declares")
+func aNumberCommitmentsGraphRunsBetweenTheRangeItsNewestEraDeclares() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let mood = Commitment(
+        name: "Mood", schedule: everyDay, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let today = CalendarDate(year: 2026, month: 3, day: 2)!
+    let secondDay = CalendarDate(year: 2026, month: 3, day: 2)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(mood)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(6, for: mood, on: keptFrom)!)
+    try recordStore.add(Number(7, for: mood, on: secondDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: mood)
+
+    #expect(lookBack?.graph?.lowest == 1)
+    #expect(lookBack?.graph?.lowestInWords == "1")
+    #expect(lookBack?.graph?.highest == 10)
+    #expect(lookBack?.graph?.highestInWords == "10")
+}
+
+@MainActor
+@Test("a number commitment's graph with no range runs between the values its points say")
+func aNumberCommitmentsGraphWithNoRangeRunsBetweenTheValuesItsPointsSay() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 3)!
+    let secondDay = CalendarDate(year: 2026, month: 3, day: 2)!
+    let thirdDay = CalendarDate(year: 2026, month: 3, day: 3)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: weight, on: keptFrom)!)
+    try recordStore.add(Number(70.8, for: weight, on: secondDay)!)
+    try recordStore.add(Number(71, for: weight, on: thirdDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(lookBack?.graph?.lowestInWords == "70.8")
+    #expect(lookBack?.graph?.highestInWords == "72.5")
+}
+
+@MainActor
+@Test("a number commitment's graph with one point says that value as its lowest and its highest")
+func aNumberCommitmentsGraphWithOnePointSaysThatValueAsItsLowestAndItsHighest() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 3)!
+    let secondDay = CalendarDate(year: 2026, month: 3, day: 2)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: weight, on: secondDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(lookBack?.graph?.lowestInWords == "72.5")
+    #expect(lookBack?.graph?.highestInWords == "72.5")
+}
+
+@MainActor
+@Test("a number commitment's graph widens to hold a value outside its newest era's range")
+func aNumberCommitmentsGraphWidensToHoldAValueOutsideItsNewestErasRange() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerMood = Commitment(
+        name: "Mood", schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 5)))!
+    let olderMood = Commitment(
+        name: "Mood", schedule: everyDay, keptFrom: olderKeptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let today = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(newerMood)
+    try rosterStore.add(olderMood)
+    try rosterStore.remove(olderMood, keptUntil: boundary)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(8, for: olderMood, on: olderDay)!)
+    try recordStore.add(Number(4, for: newerMood, on: newerKeptFrom)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerMood)
+
+    #expect(lookBack?.graph?.lowestInWords == "1")
+    #expect(lookBack?.graph?.highestInWords == "8")
+}
+
+@MainActor
+@Test("a number commitment's graph says a rule where the rhythm changed")
+func aNumberCommitmentsGraphSaysARuleWhereTheRhythmChanged() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerWeight = Commitment(
+        name: "Weight", schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom,
+        kind: .number(range: nil))!
+    let olderWeight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: olderKeptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 8)!
+    let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(newerWeight)
+    try rosterStore.add(olderWeight)
+    try rosterStore.remove(olderWeight, keptUntil: boundary)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: olderWeight, on: olderDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerWeight)
+
+    #expect(
+        lookBack?.graph?.rules == [
+            LookBack.Graph.Rule(day: 3, rhythmInWords: "Tue, Thu", fromInWords: "4 March 2026")
+        ])
+}
+
+@MainActor
+@Test("a number commitment's graph of one era says no rule")
+func aNumberCommitmentsGraphOfOneEraSaysNoRule() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let secondDay = CalendarDate(year: 2026, month: 3, day: 2)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: weight, on: secondDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(lookBack?.graph?.rules == [])
+}
+
+@MainActor
+@Test("a number commitment's graph of three eras says one rule for each boundary")
+func aNumberCommitmentsGraphOfThreeErasSaysOneRuleForEachBoundary() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let firstKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let firstKeptUntil = CalendarDate(year: 2026, month: 3, day: 2)!
+    let secondKeptFrom = CalendarDate(year: 2026, month: 3, day: 3)!
+    let secondKeptUntil = CalendarDate(year: 2026, month: 3, day: 4)!
+    let thirdKeptFrom = CalendarDate(year: 2026, month: 3, day: 5)!
+    let first = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: firstKeptFrom, kind: .number(range: nil))!
+    let second = Commitment(
+        name: "Weight", schedule: .weekdays([.tuesday]), keptFrom: secondKeptFrom,
+        kind: .number(range: nil))!
+    let third = Commitment(
+        name: "Weight", schedule: .weekdays([.wednesday]), keptFrom: thirdKeptFrom,
+        kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 8)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(first)
+    try rosterStore.supersede(first, with: second, keptUntil: firstKeptUntil, under: nil)
+    try rosterStore.supersede(second, with: third, keptUntil: secondKeptUntil, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: first, on: firstKeptFrom)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: third)
+
+    #expect(
+        lookBack?.graph?.rules == [
+            LookBack.Graph.Rule(day: 4, rhythmInWords: "Wed", fromInWords: "5 March 2026"),
+            LookBack.Graph.Rule(day: 2, rhythmInWords: "Tue", fromInWords: "3 March 2026"),
+        ])
+}
+
+@MainActor
+@Test("a look-back says a number with a fraction as its digits either side of a full stop")
+func aLookBackSaysANumberWithAFractionAsItsDigitsEitherSideOfAFullStop() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 2)!
+    let secondDay = CalendarDate(year: 2026, month: 3, day: 2)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(weight)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: weight, on: keptFrom)!)
+    try recordStore.add(Number(0.08, for: weight, on: secondDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: weight)
+
+    #expect(lookBack?.graph?.points.map(\.inWords) == ["72.5", "0.08"])
+    #expect(lookBack?.graph?.lowestInWords == "0.08")
+    #expect(lookBack?.graph?.highestInWords == "72.5")
+}
+
+@MainActor
+@Test("a look-back says a whole number with no separator between thousands")
+func aLookBackSaysAWholeNumberWithNoSeparatorBetweenThousands() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let steps = Commitment(
+        name: "Steps", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 1)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(steps)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(100000, for: steps, on: keptFrom)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: steps)
+
+    #expect(lookBack?.graph?.points.map(\.inWords) == ["100000"])
+}
+
+@MainActor
+@Test("a look-back says a number below zero with a leading minus")
+func aLookBackSaysANumberBelowZeroWithALeadingMinus() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let balance = Commitment(
+        name: "Balance", schedule: everyDay, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: -10, highest: 10)))!
+    let today = CalendarDate(year: 2026, month: 3, day: 1)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(balance)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(-3, for: balance, on: keptFrom)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: balance)
+
+    #expect(lookBack?.graph?.points.map(\.inWords) == ["-3"])
+    #expect(lookBack?.graph?.lowestInWords == "-10")
+    #expect(lookBack?.graph?.highestInWords == "10")
 }

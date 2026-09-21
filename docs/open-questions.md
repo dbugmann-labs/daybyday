@@ -197,14 +197,55 @@ Things that are built, or deliberately not built, in a state someone will trip o
   is shown, the seam tests do — but an acceptance line can be rewritten to describe the picture
   taken, and only a reviewer reading the commit log sees it. Whether `tasks.md` § 11 belongs in the
   digest, or a stop at the walk should be a second G4, is open.
-- **`look-back-at-a-quota`'s wireframe says "nav bar: back only" and the app says the name there.**
-  Found at #273's G7, 2026-09-16. The designer drew the mockup without the `look-back-name-twice`
-  chore, which put the name back in the navigation bar as well as in the body at the owner's
-  request, and the wireframe went verbatim from `grill.md` § *Layout* into `design.md` § *What the
-  shell draws* with that annotation. The code and the walk pictures are right; the annotation is
-  stale in a G4-signed folder, and re-approving the folder for one label was judged not worth it.
-  A mockup is a decision aid and never a requirement (ADR-1057), which is why this is a gap and
-  not a defect. The next Story that touches the look-back's `design.md` corrects the line.
+- **ADR-1055 says "the same name and the same kind" where the shipped chain rule says "a kind of
+  the same sort".** Found at #274's Stage 4, 2026-09-17. `change-range-and-target` (#262, merged
+  2026-09-16 as `d281584`) made a changed range or target supersede and widened the look-back's
+  resemblance rule so a chain runs across it — a number behind a number, a total behind a total,
+  whatever it carries — and `LookBack.chain` calls `Kind.isOfTheSameSort(as:)`. The ADR's
+  Decision still reads the old rule, and its § *The price is named, not hidden* does not list the
+  range change its own first paragraph says supersedes. The spec is right and the code follows
+  it; the ADR is the stale one. #274's `spec-author` drafted the amendment and withdrew it rather
+  than book another Story's decision under its own; the next Story or chore that opens ADR-1055
+  amends the Decision and the price list, dated, per `docs/adr/README.md`'s amendment rule.
+- **A number graph's year and "All" spans say one month label, and a wide label can overlap the
+  one kept before it.** Found at #274's G7, 2026-09-21, and reshaped by its fifth fix round.
+  `LookBackView`'s dates-axis candidates are every month in the whole domain; where two would
+  touch, the newer replaces the older, so under "Year" on a long history — months about 27pt
+  apart against a ~90pt label — the chain collapses to one label, the newest month at its own
+  position. That replaced the earlier symptom, an oldest-first subset whose leftmost label could
+  name a month not at its position. Two residuals: a replacement is compared only against the
+  entry it replaces, never the one before, so September replacing May can overlap March; and a
+  tick whose label was dropped still draws its gridline, so a month-span page can carry an
+  unlabelled dashed line. A third, seen by the owner on the phone after G7: the day ticks are
+  sampled at the sixths of the window and kept only where they land inside the history, so a
+  two-week history under the month span says one date five days back, and under the three-month
+  span says today by the newest-day fallback — positions, not the days that hold numbers, and
+  never the era rule's day. The owner left all three at G7 as a later shell tidy, not a Story: the
+  seam says every day, every month and every point with its position, and nothing in the delta is
+  contradicted.
+- **A values-axis bound wider than 30% of the graph card is drawn truncated.** Found at the same
+  G7. The lane beside the chart is clamped to 30% of the card so a long bound cannot squeeze the
+  plot to a sliver, and a label that does not fit truncates with an ellipsis, so the axis can read
+  "1234567…" for a bound the graph holds. It crosses no requirement — what a look-back *says* is
+  the kit's `lowestInWords` and `highestInWords`, untouched — and the case is a thirty-eight-digit
+  whole that the delta names as reachable rather than one anybody has typed. Left at G7 as a later
+  shell decision: a smaller font for a long bound, or a lane that may grow to half the card.
+- **The app died once during #274's walk with "Fatal error: Range requires lowerBound <=
+  upperBound", and the explanation on record is wrong.** Seen 2026-09-21 by the implementer
+  driving the simulator: a Mon, Wed, Sat number commitment, a number entered on its kept-from
+  day, then a second entry a day later on a re-run. The implementer attributed it to its own
+  test's navigation order and reordered the test; a UI test drives taps and cannot make correct
+  app code trap, so that is not a mechanism. The reviewer audited every variable-bound range in
+  both targets — `chartYScale`'s `lowest...highest` and `chartXScale`'s domain in
+  `LookBackView`, the restart bounds in `CommitmentsView` (already guarded, after an earlier
+  trap), the day picker's one-sided range, and the two slices in `LookBack` — and none can
+  invert on the paths a number entry or the look-back page touches. What survives: a trap inside
+  SwiftUI or Charts on inputs shown to be ordered, or a trap in the throwaway test process
+  itself (`1..<count` on an empty query is the usual one), which reads almost identically in
+  the log and is the only way "my test caused it" is literally true. Unverifiable now: the walk
+  test is deleted by ADR-1053 and no log was kept. Not this Story's — nothing in its delta or
+  diff is implicated — but a real crash of a real build. If it recurs, keep the log before the
+  test is thrown away; a walk that dies should do that as a rule.
 - **`CalendarDate.adding(days:)`'s comment names two callers and has eleven.** Found at #273's
   fix-round verification, 2026-09-16. `CalendarDate.swift` documents the method's nil-on-out-of-range
   behaviour as holding "at the ±1 steps this method is actually called with
@@ -745,6 +786,13 @@ Things that are built, or deliberately not built, in a state someone will trip o
   named the same second cause about the same file. Both are MODIFIED requirements in
   `take-out-an-unreadable-store`'s delta, and the take-out row that Story adds carries the same
   cause as its caption, so one reading of the three places answers all three (its `design.md`).
+
+- 2026-09-17 — **`look-back-at-a-quota`'s wireframe said "nav bar: back only"; #274's `design.md`
+  says back and the name.** Closed at #274's Stage 4, the next Story to touch the look-back's
+  `design.md`, as the entry asked. Its § *What the shell draws* carries the wireframe with the
+  navigation bar saying back and the name, which is what the shipped page does since the
+  `look-back-name-twice` chore. The G4-signed #273 folder keeps its stale annotation, archived;
+  a mockup is a decision aid and never a requirement (ADR-1057).
 
 - 2026-09-16 — **a look-back's line stays two strings, and the shell may compose exactly one of
   them.** Closed at #273's grill, which #272's G7 had left it to. `LookBack.Line` keeps two strings
