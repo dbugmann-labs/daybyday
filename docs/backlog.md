@@ -226,87 +226,40 @@ it as a gap rather than saying it unprompted.*
 - **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
-
-### B-057 — delete a commitment for good, with everything it ever recorded
-
-*Captured 2026-09-21.*
-
-> "I want to have the option to delete a commitment for good, including the entire history
-> (everything related to that commitment)"
-
-- **Trigger** — a commitment that should never have been kept — a test entry, a duplicate, one
-  started and abandoned in a week — whose ticks and values still sit in the store after removal.
-- **Touches** — `commitment` and `record`. Removal shipped with #145 as *A roster removes a
-  commitment it holds, and never lets it go*: it keeps the commitment with a kept-until day, leaves
-  every tick where it was, and offering it again is the way back. This want is the verb that
-  requirement rules out, and the sixth pass's sweep (2026-09-08), finding `record` has no retire verb,
-  declined it with "nothing in the week asking for it" — this is the ask. Probably `look-back` too,
-  whose history would lose the commitment, and `restore` only in that a copy already in Files still
-  holds it.
-- **Principle** — tested against *restore, not sync*, the one that says the record is what the
-  product exists to keep: it **does not fail it** — the person is choosing to lose a history, not
-  the app losing one — but it is the first verb that makes a record unrecoverable on the phone,
-  so the confirmation carries more weight than removal's typed-back name.
-- **Open** — a second verb beside removal, or does removal become this for a commitment with
-  nothing recorded, and this for one with a history? ADR-1027's test for a place nothing was ever
-  taken on at is where #145 left that question.
-- **Open** — "everything related": ticks, numbers, moods, sentences of every kind, its roster
-  place, its category, any superseded rhythms — and whether one-offs, which already remove
-  outright, are the precedent.
-- **Open** — is it reached only from a removed commitment, or from a kept one directly?
-
-### B-058 — change a commitment and still have one commitment, with one day it is kept from
-
-*Captured 2026-09-21, after a conversation that traced the behaviour to the code; the owner asked
-for it to be captured.*
-
-> "Currently, it behaves very weirdly when I make changes to a commitment.. Example scenario:
-> I have a commitment called "Test", kind "Tick", Rhythm 3x a week, kept from 14 sept. When I make
-> changes to e.g. having it 4x a week, the kept from changes (when next edit is opened) to today.
-> When I open the history, however, it says still 14 Sept. I then made some changes to the rhythm
-> and the "kept from" date, and it sometimes wouldn't let me save ("Already being kept"). What
-> would be the logical behavior, and what would be a fix so that it's not so messy anymore? I think
-> I now have lots of commitments with the same name and different rhythms / kept-from, and I'm not
-> sure which of them are treated as the "same" commitment"
-
-- **Trigger** — any second edit to a commitment whose rhythm, range or target was changed before:
-  toggling a rhythm back on the same day, putting the kept-from day back to the one it started on,
-  or renaming it later.
-- **Touches** — `commitment` and `look-back`, with `record` behind them. Four symptoms, one cause:
-  a commitment has no identity but its value, a rhythm change **supersedes** it, and only the
-  look-back's resemblance chain (ADR-1055) says two values are one commitment. (1) The sheet's
-  *Kept from* is the newest era's start; the look-back's is the earliest era's. (2) A second
-  rhythm change on one day leaves a removed era kept on no date; changing back to that rhythm the
-  same day equals it and is refused *Already being kept*, and so is restoring the original
-  rhythm and day, which equals the original era. (3) Moving the newest era's kept-from earlier, on
-  another rhythm, is accepted: two values answer for the overlapping past days, and the chain
-  breaks because no era is kept until the day before — the earlier era's records leave the
-  look-back unseen. (4) A rename reaches only the newest era (and the one superseded in the same
-  save), and the chain matches by name, so renaming a commitment with rhythm history drops that
-  history from its look-back. Traced through `CommitmentsScreen.change` and the specs' *A
-  commitments screen works out which act a change on either of its lists needs* and *A look-back
-  reads a commitment's earlier eras off the roster by resemblance*; not reproduced in a test.
-- **Principle** — tested against *five percent of seven things*: **passes** — it thins nothing
-  and deepens nothing, it makes an existing verb do what a person expects it to. It also serves
-  the reason the product exists, a history kept whole; today a normal edit can hide part of one.
-- **Open** — a stable identity for a commitment, with its eras as its own list, or patch the
-  resemblance rules (collapse a same-day supersede, point the sheet's kept-from at the earliest
-  era, rename the whole chain)? ADR-1030 names identity as the one thing that would reopen it and
-  ADR-1023 goes with it. The conversation leaned identity: three patches around one cause, and the
-  next edit path breaks the chain the same way.
-- **Open** — what the sheet says: one *Kept from* for the commitment, and the current rhythm's
-  start as a read-only line, or nothing?
-- **Open** — the owner's roster already holds tangled entries of this shape; a migration that
-  rebuilds chains by resemblance once, or a hand repair from a restore copy, as B-052's record was.
-- **Open** — defect or want: is this a Story against `FEAT: commitment` (#26), or a new Feature
-  because it changes a commitment's identity?
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-21 — change a commitment and still have one commitment, with one day it is kept from
+  (B-058) → `FEAT: commitment` (#26), reopened a fourth time under Epic #1, with B-057 in the same
+  cluster. Grilled at the tenth pass, fourteen questions over three rounds, three fact agents, no
+  fact sent to the owner. **A commitment gets an identity of its own**, and its eras and every
+  record against it hang off that rather than off its value — the first of the four ADRs this
+  reverses in place is ADR-1023, with 1030, 1035 and 1055 behind it. Settled: a rename reaches the
+  whole commitment, every era and every past day; the sheet shows one *Kept from*, the earliest
+  era's, and says nowhere when the current rhythm began; a rhythm changed twice on one day leaves
+  one era, because an era nobody kept a day on is not one; the roster refuses a name already in use
+  by a kept or stopped commitment, and no longer a value; **the removed state goes** — a commitment
+  is kept, stopped or gone, so stopping and resuming is the way to pause one and there is no way
+  back from a deletion; a stop ends an era and a resume begins one from the day of the resume, so
+  the days between owe nothing and draw no row. The roster on the phone is folded once at the
+  upgrade: adjacent eras by name, kind-sort and day fold under one commitment; a removed entry that
+  nothing kept or stopped resembles by name and kind is erased with its records (the owner's call,
+  against the recommendation to make them stopped); a removed entry that resembles a live one but
+  does not chain survives as its own stopped commitment, tidied by hand. First Story: the identity
+  and the fold. Left behind by id: B-054, B-041, B-032, B-034, B-039.
+- 2026-09-21 — delete a commitment for good, with everything it ever recorded (B-057) →
+  `FEAT: commitment` (#26), in one cluster with B-058 above, whose identity it needs before
+  "everything related" is a thing the app can name. Settled at the same grill: **delete takes
+  remove's place** — the trash swipe on either list, the name typed back, the word *delete* — and
+  erases the commitment, every era, its roster place and category, and every tick, number, note
+  and total against any era, from the phone's stores; the sheet says that the copy in Files follows
+  every kept change, so after this nothing is the way back. A roster emptied by deletion stays
+  empty: day one is not written back, which costs a marker the roster carries and amends ADR-1027's
+  letter. One-offs, which already remove outright, are the precedent. Term **Deleted** in
+  `CONTEXT.md`; **Removed** amended to say the state is retired.
 - 2026-09-21 — read a look-back without seeing where its rhythm changed (B-056) → Story #300
   `say-nothing-where-the-rhythm-changed` under `FEAT: look-back` (#271), ahead of #275 and #276,
   which are now behind it. Captured and groomed in one session, four questions over one round,
@@ -1147,3 +1100,27 @@ found nothing.
     and #276; the Decided line above has what the grill settled. Presented at G2 by the conductor
     without `/to-tickets`, one Story under an existing Feature as B-025 was.
   - **Not re-judged** — B-032, B-034, B-039, B-041, B-054; a targeted pass holds one entry.
+- 2026-09-21 — pass over 7 wants, the tenth, on `chore/backlog` (PR #301, holding B-057 and B-058
+  unmerged), `origin/main` at 1cd589b.
+  - **Sweep** — no silence. Main had moved from the same-day targeted pass only by #299 and the B-056
+    capture; day-one week every line shipped; lifecycle verbs: the one retire verb the sixth pass
+    declined for "nothing asks for it" — deleting a commitment with its history — now has its ask in
+    B-057; `docs/open-questions.md` and the specs unchanged since 90fa752.
+  - **Taken forward** — **G**, a commitment's identity and its end: B-058, B-057 → `FEAT: commitment`
+    (#26) reopened a fourth time under Epic #1; the two Decided lines above hold what the grill
+    settled. Recommended because B-058 is the defect the owner hit that day and its answer decides
+    B-057's shape. §7: the identity Story's delta reaches `look-back` for the chain, so it serialises
+    behind #300 (Stage 4), #275 and #276, all of which delta `look-back`; it also reaches `record`
+    and `restore`, which no open Story touches. Suggested G2 shape: the identity and the fold first,
+    delete second, then rename-reaches-everything and the name refusal if they did not fall out of
+    the first, the same-day collapse, and stop and resume as era boundaries.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **C**, kept on a day not due: B-054. Unchanged since the ninth pass; Stories against `record`
+      and `day-screen`, or "gym is a quota" at its grill. Not this Feature's, though its Stories
+      touch `record`.
+    - **E**, entry affordances: B-032, B-034. Epic #1 excludes prefill by name and nothing in the
+      week is blocked on either; B-032's blocker (#139) has shipped, so it is buildable now.
+    - **F**, a reminder: B-039. Unclaimed, and the one want that asks whether this app may nag; it
+      needs a sitting of its own.
+    - **Singleton**: B-041, leave until the SDK carries `reorderable(collectionID:)`, as 2026-09-15
+      decided.
