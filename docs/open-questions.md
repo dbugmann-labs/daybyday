@@ -180,6 +180,12 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **A take-out's write failure is refused as a place that could not be written, and no test can reach it.**
+  `CommitmentsScreen.takeOut` (#270) creates a directory named by a fresh UUID and writes each file
+  into it in the same call; a failing `createDirectory` is refused the same way and is tested, but a
+  write that fails after the directory exists cannot be staged from the seam — the test cannot know
+  the name, the process owns the directory, and there is no hook between creation and the first
+  write. Reviewed at #270's G7, 2026-09-21: the branch is right by reading and unprovable by test.
 - **A walk box's prose can be rewritten after G4 and nothing catches it.** At #270's walk,
   2026-09-21, two boxes in `tasks.md` § 11 described pictures the shell could not produce — a
   refused-copy line assumed red that had shipped black, and a share sheet assumed to list file names
