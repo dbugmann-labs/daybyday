@@ -31,16 +31,16 @@ make it pass, then the next. Both tests go in
 
 ## 5. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
-- [ ] 5.1 `LookBackView` draws nothing at a boundary — the `.rhythmChanged` case, `doubleRule` and both passes over the graph's rules are gone — and the app target builds
+- [x] 5.1 `LookBackView` draws nothing at a boundary — the `.rhythmChanged` case, `doubleRule` and both passes over the graph's rules are gone — and the app target builds
 - [ ] 5.2 The graph card's bottom padding is what the dates lane alone needs, read off walk picture three rather than guessed, so no blank band stands under the axis
-- [ ] 5.3 The four doc comments that describe the mark — the view's own header, `linesSection`, `heading(for:)`'s unreachable case and `graphCard` — say what is drawn now, and none cites a requirement this delta removes
+- [x] 5.3 The four doc comments that describe the mark — the view's own header, `linesSection`, `heading(for:)`'s unreachable case and `graphCard` — say what is drawn now, and none cites a requirement this delta removes
 
 ## 6. The records
 
 **The `CONTEXT.md` amendments are written by this Story's proposal commit, not by the
 implementation.** This box confirms rather than writes.
 
-- [ ] 6.1 Confirm `CONTEXT.md` § *Look-back*'s and § *Graph*'s newest amendments still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
+- [x] 6.1 Confirm `CONTEXT.md` § *Look-back*'s and § *Graph*'s newest amendments still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
 
 ## 7. The gates
 

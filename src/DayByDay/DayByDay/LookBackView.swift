@@ -22,9 +22,9 @@ import DayByDayKit
 /// share a left edge and the fractions share the cards' right edge. Still a hand-drawn
 /// `ScrollView` and `Grid` rather than the platform `List` the rest of the shell is built from, so
 /// the whole — the one summary figure this screen has — can read as a scoreboard rather than
-/// another row. The rhythm-change line is the one composition among these seam strings: it joins
-/// the rhythm and its day with a middle dot. Every other card and row draws exactly what
-/// `LookBack` hands it.
+/// another row. Every card and row draws exactly what `LookBack` hands it — nothing here composes
+/// a string of its own, `say-nothing-where-the-rhythm-changed` (#300) having taken the one line
+/// that did.
 ///
 /// Holds `screen` and `commitment` rather than an already-formed `LookBack`, so the day-by-day
 /// walk `screen.lookBack(at:)` sits behind `body` and runs once per body pass — read into a
@@ -172,8 +172,8 @@ struct LookBackView: View {
             Text("Nothing is counted here yet.")
         } else {
             // The extra `.padding(.horizontal)` below matches the cards' own inner padding, so
-            // the line labels and the rhythm-change line align with the cards' text rather than
-            // the page's own edge. The heading names the unit the lines below it are said in —
+            // the line labels align with the cards' text rather than the page's own edge. The
+            // heading names the unit the lines below it are said in —
             // "Weeks" where every line is a week, "Months" where every line is a month, "Months
             // and weeks" where the chain mixes — read off the cases `lookBack.lines` holds,
             // deciding nothing else. `design.md` § *What the shell draws*.
@@ -198,9 +198,8 @@ struct LookBackView: View {
         case (false, true): return "Weeks"
         case (false, false):
             // Unreached: `linesSection(_:)` only calls this where `lookBack.lines` is non-empty,
-            // and a `.rhythmChanged` line is only ever appended immediately above a month or a
-            // week line, never on its own — so a non-empty `lines` always holds at least one of
-            // the two this switch tests for.
+            // and a non-empty `lines` is only ever a month line or a week line, never anything
+            // else — so it always holds at least one of the two this switch tests for.
             return ""
         }
     }
@@ -219,25 +218,6 @@ struct LookBackView: View {
                 Divider()
                     .gridCellColumns(2)
             }
-        case .rhythmChanged(let inWords, let from):
-            GridRow {
-                VStack(spacing: 6) {
-                    doubleRule
-                    Text("\(inWords) · \(from)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    doubleRule
-                }
-                .frame(maxWidth: .infinity)
-                .gridCellColumns(2)
-            }
-        }
-    }
-
-    private var doubleRule: some View {
-        VStack(spacing: 2) {
-            Divider()
-            Divider()
         }
     }
 
@@ -256,11 +236,11 @@ struct LookBackView: View {
     }
 
     /// The graph card: the trace through `graph.points` in the label colour (never the accent,
-    /// ADR-1045), the two bounds on a values axis pinned in a lane at the left, a dates axis off
-    /// `graph.days` and `graph.months`, and an era-boundary rule for each of `graph.rules` —
-    /// `design.md` § *What the shell draws*. `chartXVisibleDomain(length:)` holds `span`'s fixed
-    /// length of days in the width; `chartScrollPosition(initialX:)` opens the plot at the newest
-    /// end, so the trace runs off the left edge and stops flush at the right (grill decision 8).
+    /// ADR-1045), the two bounds on a values axis pinned in a lane at the left, and a dates axis
+    /// off `graph.days` and `graph.months` — `design.md` § *What the shell draws*.
+    /// `chartXVisibleDomain(length:)` holds `span`'s fixed length of days in the width;
+    /// `chartScrollPosition(initialX:)` opens the plot at the newest end, so the trace runs off
+    /// the left edge and stops flush at the right (grill decision 8).
     @ViewBuilder
     private func graphCard(_ graph: LookBack.Graph) -> some View {
         let rawLowest = (graph.lowest as NSDecimalNumber).doubleValue
@@ -379,11 +359,6 @@ struct LookBackView: View {
                     .symbol(.circle)
                     .symbolSize(20)
                 }
-                ForEach(graph.rules, id: \.day) { rule in
-                    RuleMark(x: .value("Boundary", rule.day))
-                        .foregroundStyle(Color.secondary)
-                        .lineStyle(StrokeStyle(dash: [4, 4]))
-                }
             }
             .chartYScale(domain: lowest...highest)
             .chartYAxis {
@@ -492,24 +467,6 @@ struct LookBackView: View {
                                     .position(x: tick.x, y: frame.maxY + 14)
                             }
                         }
-                        // Left-aligned to its own rule, `design.md` § *What the shell draws*,
-                        // rather than centred on it like the dates-axis labels above — shunted
-                        // left only where the rule sits close enough to the plot's trailing edge
-                        // that the label would otherwise overhang the card.
-                        ForEach(graph.rules, id: \.day) { rule in
-                            if let x = proxy.position(forX: rule.day) {
-                                let label = "\(rule.rhythmInWords) · \(rule.fromInWords)"
-                                Text(label)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .fixedSize()
-                                    .position(
-                                        x: Self.leftAlignedCenterX(
-                                            frame.minX + x, in: frame, width: Self.measuredWidth(label),
-                                            trailingInset: 16),
-                                        y: frame.maxY + 30)
-                            }
-                        }
                     }
                 }
             }
@@ -567,16 +524,6 @@ struct LookBackView: View {
     ) -> CGFloat {
         let halfWidth = width / 2
         return min(max(x, frame.minX + halfWidth), frame.maxX - trailingInset - halfWidth)
-    }
-
-    /// The centre a label of `width` needs to sit with its own leading edge at `x` — left-aligned
-    /// to the rule it names, `design.md` § *What the shell draws* — shunted left only where that
-    /// would run the label past `frame`'s trailing edge, `trailingInset` inward.
-    private static func leftAlignedCenterX(
-        _ x: CGFloat, in frame: CGRect, width: CGFloat, trailingInset: CGFloat = 0
-    ) -> CGFloat {
-        let leadingX = min(x, frame.maxX - trailingInset - width)
-        return max(leadingX, frame.minX) + width / 2
     }
 
     /// A candidate dates-axis label at both its own natural centre (`naturalX`, before the
