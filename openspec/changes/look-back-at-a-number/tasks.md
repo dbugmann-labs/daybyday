@@ -84,6 +84,6 @@ the implementation.** These boxes confirm rather than write.
 - [x] W.3 The same page after tapping "All" — the picture shows the whole span in the width, its dates axis saying months rather than days
 - [x] W.4 A number commitment whose rhythm was changed through the edit sheet, with a number either side of the change — the picture shows the rule on the graph at the newer era's first day, its label under the dates axis, and the trace unbroken across it
 - [x] W.5 A number commitment holding no number yet — the picture shows the head, the dates card and "No number yet." with no graph and no picker
-- [ ] W.6 A number commitment holding exactly one number — the picture shows its single point mark on the graph and both values-axis labels readable, not stacked on each other
+- [x] W.6 A number commitment holding exactly one number — the picture shows its single point mark on the graph and both values-axis labels readable, not stacked on each other
 - [ ] W.7 phone: scroll the graph sideways under the month span and confirm the trace and the dates axis move together while the values axis stays put
-- [ ] W.8 **The handover** — the six pictures are posted to the PR with `gh pr comment --attach` before hand-back, and this box is ticked on that comment's URL
+- [x] W.8 **The handover** — the six pictures are posted to the PR with `gh pr comment --attach` before hand-back, and this box is ticked on that comment's URL — https://github.com/dbugmann-labs/daybyday/pull/296#issuecomment-5756243696
