@@ -227,6 +227,34 @@ it as a gap rather than saying it unprompted.*
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
 
+### B-057 — delete a commitment for good, with everything it ever recorded
+
+*Captured 2026-09-21.*
+
+> "I want to have the option to delete a commitment for good, including the entire history
+> (everything related to that commitment)"
+
+- **Trigger** — a commitment that should never have been kept — a test entry, a duplicate, one
+  started and abandoned in a week — whose ticks and values still sit in the store after removal.
+- **Touches** — `commitment` and `record`. Removal shipped with #145 as *A roster removes a
+  commitment it holds, and never lets it go*: it keeps the commitment with a kept-until day, leaves
+  every tick where it was, and offering it again is the way back. This want is the verb that
+  requirement rules out, and the sixth pass's sweep (2026-09-08), finding `record` has no retire verb,
+  declined it with "nothing in the week asking for it" — this is the ask. Probably `look-back` too,
+  whose history would lose the commitment, and `restore` only in that a copy already in Files still
+  holds it.
+- **Principle** — tested against *restore, not sync*, the one that says the record is what the
+  product exists to keep: it **does not fail it** — the person is choosing to lose a history, not
+  the app losing one — but it is the first verb that makes a record unrecoverable on the phone,
+  so the confirmation carries more weight than removal's typed-back name.
+- **Open** — a second verb beside removal, or does removal become this for a commitment with
+  nothing recorded, and this for one with a history? ADR-1027's test for a place nothing was ever
+  taken on at is where #145 left that question.
+- **Open** — "everything related": ticks, numbers, moods, sentences of every kind, its roster
+  place, its category, any superseded rhythms — and whether one-offs, which already remove
+  outright, are the precedent.
+- **Open** — is it reached only from a removed commitment, or from a kept one directly?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
