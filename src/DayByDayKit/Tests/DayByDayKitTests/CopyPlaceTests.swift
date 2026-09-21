@@ -1431,3 +1431,43 @@ func aCopyPlaceResolvesItsFolderFromTheBookmarkOnceThePlainPathNoLongerPointsThe
         FileManager.default.fileExists(
             atPath: folder.appendingPathComponent("DayByDay.daybyday").path))
 }
+
+@MainActor
+@Test(
+    "a change kept where a store was written by a later version stops with that cause rather than a store that could not be read"
+)
+func aChangeKeptWhereAStoreWasWrittenByALaterVersionStopsWithThatCauseRatherThanAStoreThatCouldNotBeRead()
+    throws
+{
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let places = freshThreePlaces()
+    let clock = laterMinuteEachTime(from: Moment(on: monday, hour: 14, minute: 32)!)
+    let copyPlace = CopyPlace(
+        at: freshCopyPlaceState(), keepingRecordAt: places.record, keepingRosterAt: places.roster,
+        keepingOneOffsAt: places.oneOffs, asking: clock)
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs, copyingTo: copyPlace)
+    let directory = freshCopyPlaceDirectory()
+    screen.givenAsCopyPlace(directory)
+
+    try FileManager.default.createDirectory(
+        at: places.oneOffs.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(
+        "{\"version\":\(OneOffDocument.currentVersion + 1),\"oneOffs\":[]}".utf8
+    ).write(to: places.oneOffs)
+
+    let refusal = screen.define(
+        name: "Gym",
+        on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
+        keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == nil)
+    #expect(
+        copyPlace.stopped
+            == CopyPlace.Stopped(
+                stop: .storeWrittenByALaterVersion(.oneOffs),
+                since: Moment(on: monday, hour: 14, minute: 33)!))
+    #expect(copyPlace.stopped?.stop != .storeCouldNotBeRead(.oneOffs))
+}

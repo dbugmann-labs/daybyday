@@ -751,6 +751,15 @@ struct ContentView: View {
                     .font(.caption)
                     .foregroundStyle(.red)
             }
+
+            // The one line pointing at the way out — `design.md` § *What the shell draws*: the
+            // secondary grey, not the red the causes above take, so the way out does not read as a
+            // third thing wrong.
+            if screen.saysACopyCanBeRestored {
+                Text("A copy can be restored from Commitments")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(.horizontal)
         .padding(.top, 24)

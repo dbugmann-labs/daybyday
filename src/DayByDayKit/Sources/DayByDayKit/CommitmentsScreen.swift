@@ -57,59 +57,46 @@ public final class CommitmentsScreen {
         self.rosterState = opened.rosterState
         self.recordStore = opened.recordStore
         self.recordsBelongToNoCommitment = opened.recordsBelongToNoCommitment
+        self.storesNotRead = opened.storesNotRead
         refreshLists(from: opened.rosterStore)
     }
 
     /// What reading the places produces: a restore in progress undone first, then a save in
     /// progress — `openspec/changes/restore-from-a-copy/design.md` § *Whole or nothing, across a
     /// stop* (ADR-1056) and `openspec/specs/commitment/spec.md` § *Reading the places undoes a
-    /// torn save as it was* — then the roster and the record opened, and any orphaned record
-    /// carried back to its one possible source before this screen says whether any remain.
-    /// Shared by `init`, `shown(asOf:)` and `confirmRestoring`, which all read both places
-    /// afresh. Where the restore in progress or the save in progress cannot be undone, this
-    /// answers as a roster that cannot be read and a record that is not kept, without opening
-    /// either place for real — `openspec/changes/save-change-whole/design.md` § *A torn save
-    /// that cannot be undone reuses two existing states*.
+    /// torn save as it was* — then the roster, the record and the one-offs opened, and any
+    /// orphaned record carried back to its one possible source before this screen says whether any
+    /// remain. Shared by `init`, `shown(asOf:)` and `confirmRestoring`, which all read all three
+    /// places afresh. Runs through `CopyPlace.readStores`, the one place the cause per store is
+    /// told apart, so the offer, a refused copy and the copy place's own stop all read off the
+    /// same answer — `design.md` § *One reading of the three places, carrying the cause*. Where
+    /// the restore in progress or the save in progress cannot be undone, this answers as a roster
+    /// that cannot be read and a record that is not kept, without opening any of the three for
+    /// real — `openspec/changes/save-change-whole/design.md` § *A torn save that cannot be undone
+    /// reuses two existing states*.
     private static func readPlaces(
         place: URL, recordPlace: URL, oneOffPlace: URL
     ) -> (
         rosterStore: RosterStore?, rosterState: RosterState, recordStore: RecordStore?,
-        recordsBelongToNoCommitment: Bool
+        recordsBelongToNoCommitment: Bool, storesNotRead: [StoreNotRead]
     ) {
-        guard
-            RestoreInProgress.undoTornRestore(
-                recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace),
-            SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place)
-        else {
-            return (nil, .notKept, nil, false)
+        let read = CopyPlace.readStores(
+            recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace)
+
+        let rosterState: RosterState
+        switch read.notRead.first(where: { $0.store == .roster })?.cause {
+        case .writtenByALaterVersion: rosterState = .writtenByALaterVersion
+        case .couldNotBeRead: rosterState = .notKept
+        case nil: rosterState = .kept
         }
 
-        let opened = Self.open(at: place)
-        let recordStore = Self.openRecord(at: recordPlace)
-
-        guard let rosterStore = opened.store, let recordStore else {
-            return (opened.store, opened.state, recordStore, false)
+        guard let rosterStore = read.roster, let recordStore = read.record else {
+            return (read.roster, rosterState, read.record, false, read.notRead)
         }
 
         let recordsBelongToNoCommitment = SaveInProgress.carryBackOrphanedRecords(
             in: recordStore, against: rosterStore.roster)
-        return (rosterStore, opened.state, recordStore, recordsBelongToNoCommitment)
-    }
-
-    /// Opens the roster at `place`. A place written by a later version of DayByDay is told apart
-    /// as `.writtenByALaterVersion`; every other reason the store can refuse to open is answered
-    /// as `.notKept`, exactly as `DayScreen`'s own opening answers the roster's refusals. This
-    /// screen never takes anything on when the roster it opens holds nothing — day one belongs to
-    /// the day screen alone.
-    private static func open(at place: URL) -> (store: RosterStore?, state: RosterState) {
-        do {
-            let store = try RosterStore(at: place)
-            return (store, .kept)
-        } catch RosterStoreError.laterForm {
-            return (nil, .writtenByALaterVersion)
-        } catch {
-            return (nil, .notKept)
-        }
+        return (rosterStore, rosterState, recordStore, recordsBelongToNoCommitment, read.notRead)
     }
 
     /// Opens the record at `place`. Every reason the store can refuse to open — a run of bytes
@@ -182,6 +169,17 @@ public final class CommitmentsScreen {
     /// torn save it cannot undo.
     public private(set) var recordsBelongToNoCommitment: Bool = false
 
+    /// Which of the record place, the roster place and the one-off place cannot be read, in the
+    /// order record, roster, one-offs, and why — read when this screen is opened, when the app is
+    /// shown again and when a restore is confirmed, and never because this screen is drawn.
+    /// `openspec/specs/restore/spec.md` § *A commitments screen offers a take-out only while a
+    /// store cannot be read, and says which*.
+    public private(set) var storesNotRead: [StoreNotRead] = []
+
+    /// Whether a take-out may be asked for: exactly while `storesNotRead` names at least one
+    /// place.
+    public var offersATakeOut: Bool { !storesNotRead.isEmpty }
+
     /// The day to offer as the day a commitment is kept from: the day this screen was handed.
     public private(set) var dayToKeepFrom: CalendarDate
 
@@ -192,6 +190,24 @@ public final class CommitmentsScreen {
         public let kept: Int?
         public let stopped: Int?
         public let oneOffs: Int?
+    }
+
+    /// Which of the three places cannot be read, and which of the two things is so — `design.md`
+    /// § *One reading of the three places, carrying the cause*: the one answer the offer, a
+    /// refused copy and the copy place's own stop all read off.
+    public struct StoreNotRead: Hashable, Sendable {
+        public let store: Copy.Store
+        public let cause: Cause
+
+        public enum Cause: Hashable, Sendable {
+            case couldNotBeRead
+            case writtenByALaterVersion
+        }
+
+        public init(store: Copy.Store, cause: Cause) {
+            self.store = store
+            self.cause = cause
+        }
     }
 
     /// A restore asked for and not yet confirmed, cancelled or replaced by another ask: the
@@ -307,6 +323,12 @@ public final class CommitmentsScreen {
         /// neither a commitment nor a store: a refused restore is refused whole.
         /// `openspec/changes/restore-from-a-copy/design.md` § *The seam*.
         case restoring(Refusal)
+        /// A take-out asked for and refused — the eleventh kind of refused change. Names which
+        /// store could not be taken out — a save in progress or a restore in progress named as the
+        /// record, the place it stands beside — or `nil` where the directory it was to be written
+        /// into could not be written instead. `design.md` § *A refused take-out reuses the refused
+        /// change, with a case of its own*.
+        case takingOut(Copy.Store?, Refusal)
 
         /// The `Refusal` every case above carries — always the last value alongside whatever the
         /// case names about what was refused. Internal rather than `public`: `refuse(_:on:)` is
@@ -324,6 +346,7 @@ public final class CommitmentsScreen {
             case .restarting(_, let refusal): return refusal
             case .makingACopy(_, let refusal): return refusal
             case .restoring(let refusal): return refusal
+            case .takingOut(_, let refusal): return refusal
             }
         }
     }
@@ -377,6 +400,12 @@ public final class CommitmentsScreen {
         /// same whichever store it was. `openspec/changes/make-a-copy/design.md` § *The refusal
         /// is the screen's existing one, with one new cause*.
         case storeCouldNotBeRead
+        /// A store that was written by a later version of DayByDay while forming a copy — told
+        /// apart from `storeCouldNotBeRead` rather than folded into it, so a refused copy and a
+        /// stopped copy each say so rather than that the store could not be read. Which store is
+        /// named on the `RefusedChange` this leaves, not here — `design.md` § *The later-version
+        /// cause is said wherever the store is named*.
+        case storeWrittenByALaterVersion
         /// A file that could not be read at all, or whose content does not read as a copy's own
         /// form and a moment. `openspec/changes/restore-from-a-copy/design.md` § *Reading a
         /// copy: the envelope decides, and a later version outranks damage*.
@@ -1500,7 +1529,7 @@ public final class CommitmentsScreen {
             recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace, asOf: moment)
         switch formed.result {
         case .failure(let refusal):
-            refusedChange = .makingACopy(formed.unreadable.first, refusal)
+            refusedChange = .makingACopy(formed.notRead.first?.store, refusal)
             return .failure(refusal)
         case .success(let copy):
             do {
@@ -1511,6 +1540,91 @@ public final class CommitmentsScreen {
                 return .failure(.notKept)
             }
         }
+    }
+
+    /// The place a save in progress and a restore in progress each stand at, beside the record
+    /// place — the two files a take-out hands out beside the three stores where they stand.
+    private static func saveInProgressPlace(besideRecordAt recordPlace: URL) -> URL {
+        SaveInProgress.place(besideRecordAt: recordPlace)
+    }
+
+    private static func restoreInProgressPlace(besideRecordAt recordPlace: URL) -> URL {
+        RestoreInProgress.place(besideRecordAt: recordPlace)
+    }
+
+    /// One file a take-out reaches for: where it lies today, and which store it is named as on a
+    /// refusal — a save in progress and a restore in progress are each named as the record, the
+    /// place they stand beside. `design.md` § *A refused take-out reuses the refused change, with
+    /// a case of its own*.
+    private struct TakeOutCandidate {
+        let source: URL
+        let namedAs: Copy.Store?
+    }
+
+    /// The five files a take-out reaches for, in the fixed order this screen answers a take-out in:
+    /// the record, the roster, the one-offs, a save in progress and a restore in progress, the last
+    /// two each named as the record. `openspec/specs/restore/spec.md` § *A take-out is the files at
+    /// the three places exactly as they lie*.
+    private var takeOutCandidates: [TakeOutCandidate] {
+        [
+            TakeOutCandidate(source: recordPlace, namedAs: .record),
+            TakeOutCandidate(source: place, namedAs: .roster),
+            TakeOutCandidate(source: oneOffPlace, namedAs: .oneOffs),
+            TakeOutCandidate(
+                source: Self.saveInProgressPlace(besideRecordAt: recordPlace), namedAs: .record),
+            TakeOutCandidate(
+                source: Self.restoreInProgressPlace(besideRecordAt: recordPlace), namedAs: .record),
+        ]
+    }
+
+    /// Hands out the file standing at the record place, the roster place, the one-off place, and a
+    /// save in progress and a restore in progress still standing beside them, each byte-for-byte
+    /// under the name it lies under, into a fresh directory of its own under `directory` — never
+    /// the same one twice, so a take-out asked for twice never collides. Reads no store as a value
+    /// and undoes no save in progress and no restore in progress: every file is copied exactly as
+    /// it lies. `design.md` § *The take-out copies bytes into a directory of its own, and never
+    /// reads a store*.
+    ///
+    /// Answers no place and writes nothing, without refusing, where this screen offers no
+    /// take-out. Where a file that stands cannot be handed over as it lies, or the directory it is
+    /// to be written into cannot be written, hands out no file at all: the store that could not be
+    /// taken out is refused as `.storeCouldNotBeRead`, naming it; the directory is refused as
+    /// `.notKept`, naming none. Either way this screen holds the refusal exactly as it holds every
+    /// other, and writes no file of its own where it was to write.
+    public func takeOut(writingInto directory: URL = CommitmentsScreen.copyDirectory) -> Result<
+        [URL], Refusal
+    > {
+        guard offersATakeOut else {
+            return .success([])
+        }
+
+        let destination = directory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(
+                at: destination, withIntermediateDirectories: true)
+        } catch {
+            refuse(.takingOut(nil, .notKept), on: nil)
+            return .failure(.notKept)
+        }
+
+        var written: [URL] = []
+        for candidate in takeOutCandidates {
+            guard FileManager.default.fileExists(atPath: candidate.source.path) else {
+                continue
+            }
+            let destinationURL = destination.appendingPathComponent(candidate.source.lastPathComponent)
+            do {
+                let data = try Data(contentsOf: candidate.source)
+                try data.write(to: destinationURL, options: .atomic)
+                written.append(destinationURL)
+            } catch {
+                try? FileManager.default.removeItem(at: destination)
+                refuse(.takingOut(candidate.namedAs, .storeCouldNotBeRead), on: nil)
+                return .failure(.storeCouldNotBeRead)
+            }
+        }
+
+        return .success(written)
     }
 
     /// Counts what `roster` keeps and has stopped, and how many one-offs `oneOffs` holds —
@@ -1675,6 +1789,7 @@ public final class CommitmentsScreen {
         rosterState = opened.rosterState
         recordStore = opened.recordStore
         recordsBelongToNoCommitment = opened.recordsBelongToNoCommitment
+        storesNotRead = opened.storesNotRead
         refreshLists(from: opened.rosterStore)
 
         refusedChange = nil
@@ -1734,6 +1849,7 @@ public final class CommitmentsScreen {
         rosterState = opened.rosterState
         recordStore = opened.recordStore
         recordsBelongToNoCommitment = opened.recordsBelongToNoCommitment
+        storesNotRead = opened.storesNotRead
         refreshLists(from: opened.rosterStore)
     }
 }
