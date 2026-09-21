@@ -44,10 +44,10 @@ implementation.** This box confirms rather than writes.
 
 ## 7. The gates
 
-- [ ] 7.1 `openspec validate say-nothing-where-the-rhythm-changed --strict` exits 0 and `pnpm run check:scenarios` exits 0
-- [ ] 7.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, the kit source, the kit test file and `LookBackView.swift`
-- [ ] 7.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
-- [ ] 7.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is eight fewer than a run on `main` reports — the ten deleted in § 4 less the two written in § 3 — each count read off a run and neither derived
+- [x] 7.1 `openspec validate say-nothing-where-the-rhythm-changed --strict` exits 0 and `pnpm run check:scenarios` exits 0
+- [x] 7.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, the kit source, the kit test file and `LookBackView.swift`
+- [x] 7.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
+- [x] 7.4 `swift test` in `src/DayByDayKit` passes, and the count it reports is eight fewer than a run on `main` reports — the ten deleted in § 4 less the two written in § 3 — each count read off a run and neither derived
 - [ ] 7.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–7.4 and the walk below are ticked and that the instruction here is written for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/look-back/spec.md` holds thirteen requirements, the two this delta removes gone and the one it adds in their place, the two it modifies differing only in the sentence and the scenario line the delta changes, every other requirement byte for byte as it was, and no other spec moved. `pnpm run checks` runs after the archive commit exists, and the archive commit is pushed. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
