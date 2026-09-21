@@ -265,18 +265,21 @@ struct LookBackView: View {
         let yPadding = isDegenerate ? max(abs(rawLowest), 1) * 0.1 : 0
         let lowest = rawLowest - yPadding
         let highest = rawHighest + yPadding
-        let visibleLength = Double(span.lengthInDays ?? graph.days.count)
+        let visibleDayCount = span.lengthInDays ?? graph.days.count
+        // A day is a point, not a bar: showing `visibleDayCount` of them is a continuous domain
+        // span one unit narrower than the count itself (day 0 through day 30 is 31 points over a
+        // span of 30). `chartXVisibleDomain(length:)` takes that span, not the count — passing
+        // the count left the window one unit wider than its own content, which is what the
+        // trailing gap after the newest day actually was.
+        let visibleSpan = Double(max(visibleDayCount - 1, 0))
         let showsMonths = span == .year || span == .all
         // The last real day sits at `domainEnd`; for it to draw flush at the plot's own right
         // edge on opening, the visible window's own right edge must land exactly there too —
-        // `openingPosition + visibleLength == domainEnd`, not one unit past it. The one unit past
-        // is `chartXScale`'s domain has no mapping for, which is why it drew as blank space
-        // trailing the last point rather than the point sitting at the edge. A history shorter
-        // than the span's own length has nowhere to scroll to, so the domain's start is widened
-        // to the span's own length the same way, rather than leaving the trace anchored at the
-        // oldest day.
+        // `openingPosition + visibleSpan == domainEnd`. A history shorter than the span's own
+        // length has nowhere to scroll to, so the domain's start is widened to the span's own
+        // length the same way, rather than leaving the trace anchored at the oldest day.
         let domainEnd = Double(max(graph.days.count - 1, 0))
-        let openingPosition = domainEnd - visibleLength
+        let openingPosition = domainEnd - visibleSpan
         let domainStart = min(openingPosition, 0)
         // Three day labels at the sixths of the fixed-length window (so a label centred on the
         // window's own first or last day is not half clipped by the chart's own edge), keeping
@@ -285,7 +288,7 @@ struct LookBackView: View {
         // dates that would otherwise overlap. `design.md` § *What the shell draws*'s designer
         // note: "about three across the width", true once the window is full.
         let dayTickValues: [Int] = (0..<3).compactMap { step in
-            let day = Int((openingPosition + visibleLength * (Double(step) + 0.5) / 3).rounded())
+            let day = Int((openingPosition + visibleSpan * (Double(step) + 0.5) / 3).rounded())
             return graph.days.indices.contains(day) ? day : nil
         }
 
@@ -323,9 +326,16 @@ struct LookBackView: View {
                 AxisGridLine()
             }
         }
-        .chartXScale(domain: domainStart...domainEnd)
+        // `range: .plotDimension(padding:)` — Swift Charts otherwise reserves a percentage of the
+        // plot's own width as padding around whatever domain is given, on both ends, which is
+        // what kept the newest real day short of the plot's own right edge. Zero padding in turn
+        // clips a point's own symbol in half where it sits exactly on the domain's edge, which the
+        // newest real day always does — 4pt is enough to hold the whole symbol
+        // (`.symbolSize(20)`'s own diameter is about 5pt) clear of that edge without reading as a
+        // gap the way the default percentage-based padding did.
+        .chartXScale(domain: domainStart...domainEnd, range: .plotDimension(padding: 4))
         .chartScrollableAxes(.horizontal)
-        .chartXVisibleDomain(length: visibleLength)
+        .chartXVisibleDomain(length: visibleSpan)
         .chartScrollPosition(initialX: openingPosition)
         // The dates-axis labels and the era label lane are drawn here rather than as each
         // `AxisMark`'s own `AxisValueLabel` or a `RuleMark`'s `.annotation`: both were measured
@@ -387,8 +397,12 @@ struct LookBackView: View {
             }
         }
         .frame(height: 220)
-        .padding()
-        .padding(.bottom, 32)
+        // No horizontal padding: the trace runs off the left edge and stops flush at the right,
+        // `design.md` § *What the shell draws* — a leading or trailing inset here is exactly the
+        // gap after the newest day the reviewer measured, the outer padding rather than anything
+        // left unused by the domain itself.
+        .padding(.top)
+        .padding(.bottom, 48)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
