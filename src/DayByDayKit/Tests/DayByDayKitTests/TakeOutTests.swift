@@ -144,9 +144,10 @@ func aTakeOutWhereNothingHasBeenKeptAtAPlaceHandsOutOnlyTheFilesThatStand() thro
     }
     #expect(urls.map(\.lastPathComponent) == ["roster.json"])
     #expect(try Data(contentsOf: urls[0]) == Data(contentsOf: places.roster))
-    let parent = urls[0].deletingLastPathComponent()
-    #expect(!FileManager.default.fileExists(atPath: parent.appendingPathComponent("record.json").path))
-    #expect(!FileManager.default.fileExists(atPath: parent.appendingPathComponent("one-offs.json").path))
+    // Nothing is written at the record place or the one-off place — the places themselves,
+    // never asked for anything, not merely the directory the take-out wrote into.
+    #expect(!FileManager.default.fileExists(atPath: places.record.path))
+    #expect(!FileManager.default.fileExists(atPath: places.oneOffs.path))
 }
 
 @MainActor
@@ -562,6 +563,8 @@ func aTakeOutRefusedNamesTheStoreThatCouldNotBeTakenOutAndHandsOutNoneOfTheOther
     }
     #expect(refusal == .storeCouldNotBeRead)
     #expect(screen.refusedChange == .takingOut(.record, .storeCouldNotBeRead))
+    // A refused take-out is never asked through the sheet, so it leaves no refusal at its foot.
+    #expect(screen.sheetRefusal == nil)
     // No file stands in `directory`: the fresh subdirectory `takeOut` wrote the roster into is
     // removed whole on the refusal, so at most an empty `directory` is left where nothing stood
     // before this call.
@@ -588,6 +591,7 @@ func aTakeOutRefusedNamesTheStoreThatCouldNotBeTakenOutAndHandsOutNoneOfTheOther
     }
     #expect(refusal2 == .storeCouldNotBeRead)
     #expect(screen2.refusedChange == .takingOut(.record, .storeCouldNotBeRead))
+    #expect(screen2.sheetRefusal == nil)
 }
 
 @MainActor
@@ -617,6 +621,7 @@ func aTakeOutThatCannotBeWrittenWhereItIsToBeWrittenIsRefusedAsAPlaceThatCouldNo
     #expect(refusal == .notKept)
     #expect(refusal != .storeCouldNotBeRead)
     #expect(screen.refusedChange == .takingOut(nil, .notKept))
+    #expect(screen.sheetRefusal == nil)
     #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path).isEmpty)
 }
 
@@ -633,6 +638,8 @@ func aTakeOutRefusedReplacesTheRefusedChangeACommitmentsScreenHeld() throws {
     let defineRefusal = screen.define(name: "Gym", on: allWeekdaysRhythm, keptFrom: keptFrom, under: nil)
     #expect(defineRefusal == .alreadyKept)
     #expect(screen.refusedChange == .defining(.alreadyKept))
+    let sheetRefusalBeforeTakeOut = screen.sheetRefusal
+    #expect(sheetRefusalBeforeTakeOut != nil)
 
     let directory = freshDirectory()
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -649,4 +656,62 @@ func aTakeOutRefusedReplacesTheRefusedChangeACommitmentsScreenHeld() throws {
     }
 
     #expect(screen.refusedChange == .takingOut(nil, .notKept))
+    // The refusal replaces `refusedChange` but is never asked through the sheet, so
+    // `sheetRefusal` is left exactly as the definition's own refusal set it.
+    #expect(screen.sheetRefusal == sheetRefusalBeforeTakeOut)
+}
+
+// MARK: - A save torn during a change that cannot itself be undone
+
+/// Sets the user-immutable flag on the file at `place`: it still reads, but a rename or removal
+/// of it fails with `NSCocoaErrorDomain 513` — mirrors `CommitmentsScreenTests.swift`'s own
+/// `makeImmutable(_:)`. Every caller must pair this with `makeMutable(_:)` before returning,
+/// including on its failure path, or the file is left impossible to remove behind it.
+private func makeImmutable(_ place: URL) throws {
+    try FileManager.default.setAttributes([.immutable: true], ofItemAtPath: place.path)
+}
+
+/// Undoes `makeImmutable(_:)`, restoring `place` to a file that can be renamed or removed again.
+private func makeMutable(_ place: URL) throws {
+    try FileManager.default.setAttributes([.immutable: false], ofItemAtPath: place.path)
+}
+
+/// Reproduces `undoTornSaveMadeDuringThisChange()`'s guard-failure branch leaving `storesNotRead`
+/// stale: `gym` carries no record, so `change`'s own `keepSaveInProgressIfCarrying` never touches
+/// the save-in-progress place, leaving it free to plant one directly, naming the very commitment
+/// the roster write below is about to carry `gym` to — mirrors
+/// `CommitmentsScreenTests.swift`'s `aChangeKeptAtTheRosterPlaceHoldsATornSaveItCannotUndoWhereTakingItAwayFails`.
+/// Once the roster write lands, `SaveInProgress.undoTornSave` finds the roster already holding
+/// what the file names and only the removal fails, so this screen goes on to hold a torn save it
+/// cannot undo without ever calling `readPlaces` again — `offersATakeOut` must already answer as
+/// it would once the app is next shown, not stay `false` until then.
+@MainActor
+@Test("a save torn by a change that cannot itself be undone leaves offersATakeOut true, naming all three")
+func aSaveTornByAChangeThatCannotItselfBeUndoneLeavesOffersATakeOutTrueNamingAllThree() throws {
+    let places = freshThreePlaces()
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: allWeekdays, keptFrom: keptFrom)!
+    try RosterStore(at: places.roster).add(gym)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs)
+    #expect(!screen.offersATakeOut)
+
+    let saveInProgressPlace = SaveInProgress.place(besideRecordAt: places.record)
+    try SaveInProgress(carriedFrom: gym, to: gymEmoji).keep(at: saveInProgressPlace)
+    try makeImmutable(saveInProgressPlace)
+    defer { try? makeMutable(saveInProgressPlace) }
+
+    let refusal = screen.change(
+        gym, toName: "Gym 🏋️", on: allWeekdaysRhythm, keptFrom: keptFrom, under: nil)
+
+    #expect(refusal == nil)
+    #expect(screen.rosterState == .notKept)
+    #expect(screen.offersATakeOut)
+    #expect(
+        screen.storesNotRead == [
+            CommitmentsScreen.StoreNotRead(store: .record, cause: .couldNotBeRead),
+            CommitmentsScreen.StoreNotRead(store: .roster, cause: .couldNotBeRead),
+            CommitmentsScreen.StoreNotRead(store: .oneOffs, cause: .couldNotBeRead),
+        ])
 }

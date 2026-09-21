@@ -1441,16 +1441,22 @@ func aChangeKeptWhereAStoreWasWrittenByALaterVersionStopsWithThatCauseRatherThan
 {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(
+        name: "Gym",
+        schedule: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
+        keptFrom: keptFrom)!
     let places = freshThreePlaces()
+    try RosterStore(at: places.roster).add(gym)
+
     let clock = laterMinuteEachTime(from: Moment(on: monday, hour: 14, minute: 32)!)
     let copyPlace = CopyPlace(
         at: freshCopyPlaceState(), keepingRecordAt: places.record, keepingRosterAt: places.roster,
         keepingOneOffsAt: places.oneOffs, asking: clock)
-    let screen = CommitmentsScreen(
+    let commitmentsScreen = CommitmentsScreen(
         asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
         keepingOneOffsAt: places.oneOffs, copyingTo: copyPlace)
     let directory = freshCopyPlaceDirectory()
-    screen.givenAsCopyPlace(directory)
+    commitmentsScreen.givenAsCopyPlace(directory)
 
     try FileManager.default.createDirectory(
         at: places.oneOffs.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -1458,12 +1464,14 @@ func aChangeKeptWhereAStoreWasWrittenByALaterVersionStopsWithThatCauseRatherThan
         "{\"version\":\(OneOffDocument.currentVersion + 1),\"oneOffs\":[]}".utf8
     ).write(to: places.oneOffs)
 
-    let refusal = screen.define(
-        name: "Gym",
-        on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
-        keptFrom: keptFrom, under: nil)
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: places.record, keepingRosterAt: places.roster,
+        keepingOneOffsAt: places.oneOffs, copyingTo: copyPlace)
 
-    #expect(refusal == nil)
+    try dayScreen.tick(dayScreen.dayView.rows.first { $0.name == "Gym" }!)
+
+    #expect(dayScreen.notice == nil)
+    #expect(try RecordStore(at: places.record).history.isKept(gym, on: monday))
     #expect(
         copyPlace.stopped
             == CopyPlace.Stopped(

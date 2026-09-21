@@ -788,6 +788,10 @@ public final class CommitmentsScreen {
             recordStore = nil
             recordsBelongToNoCommitment = false
             refreshLists(from: nil)
+            // Answers exactly as `readPlaces` does for the same condition, so `offersATakeOut`
+            // and `storesNotRead` are consistent the moment a save torn during this very change
+            // cannot itself be undone, rather than lagging until the app is next shown.
+            storesNotRead = Copy.Store.allCases.map { StoreNotRead(store: $0, cause: .couldNotBeRead) }
             return false
         }
         recordStore = Self.openRecord(at: recordPlace)
@@ -1603,7 +1607,10 @@ public final class CommitmentsScreen {
             try FileManager.default.createDirectory(
                 at: destination, withIntermediateDirectories: true)
         } catch {
-            refuse(.takingOut(nil, .notKept), on: nil)
+            // A refused take-out is not asked through the sheet — `refusedChange` alone, never
+            // `refuse(_:on:)`, which would also leave `sheetRefusal` naming this refusal at the
+            // foot of whatever sheet is next opened.
+            refusedChange = .takingOut(nil, .notKept)
             return .failure(.notKept)
         }
 
@@ -1612,15 +1619,22 @@ public final class CommitmentsScreen {
             guard FileManager.default.fileExists(atPath: candidate.source.path) else {
                 continue
             }
+            let data: Data
+            do {
+                data = try Data(contentsOf: candidate.source)
+            } catch {
+                try? FileManager.default.removeItem(at: destination)
+                refusedChange = .takingOut(candidate.namedAs, .storeCouldNotBeRead)
+                return .failure(.storeCouldNotBeRead)
+            }
             let destinationURL = destination.appendingPathComponent(candidate.source.lastPathComponent)
             do {
-                let data = try Data(contentsOf: candidate.source)
                 try data.write(to: destinationURL, options: .atomic)
                 written.append(destinationURL)
             } catch {
                 try? FileManager.default.removeItem(at: destination)
-                refuse(.takingOut(candidate.namedAs, .storeCouldNotBeRead), on: nil)
-                return .failure(.storeCouldNotBeRead)
+                refusedChange = .takingOut(nil, .notKept)
+                return .failure(.notKept)
             }
         }
 
