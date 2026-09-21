@@ -1444,6 +1444,13 @@ change and never a condition of it: a copy that cannot be made refuses no change
 change tries again. A copy the person asks for is not the last copy the **commitments screen** speaks
 of; that line is about the **copy place** alone.
 
+**Amended 2026-09-21**, while the delta of `take-out-an-unreadable-store` (#270) was being written. A
+copy refused over a store, and a copy the app stopped making on its own, each say which of two things
+is so about the store they name: it could not be read, or it was written by a later version of the
+app. One file then carries one cause wherever it is spoken of, rather than *must not be deleted* on
+one screen and *could not be read* on another — the reading of a later-form store the **day screen**
+and the **roster** line have had all along.
+
 **Moment** — when something happened, said to the minute: a **calendar date**, an hour of that day
 and a minute of that hour, in the reckoning of the phone it was formed on. It is the only thing here
 that knows a time of day, and it exists because a **copy** carries one; no **store** holds a moment
@@ -1503,6 +1510,18 @@ copy** — it does not read as a copy's form and moment at all; a **damaged copy
 something inside it does not read; a copy **from a later version** of the app, its own form or any
 store's within it; or a store that could not be written. Once it is made, both screens show what the
 copy holds at once, and the commitments screen says which copy was put back.
+
+**Take-out** — the files of the three places leaving the phone exactly as they lie, bytes and
+names untouched, through the same share sheet a **copy** leaves by. It is offered on the
+**commitments screen** only while a store cannot be read — or was written by a later version of the
+app — because that is when a copy is refused and the readable files would otherwise be trapped
+behind it until a **restore** overwrote them all. It is not a copy: nothing is read, nothing is
+undone or brought to the current form, and a save or restore in progress goes out beside the stores,
+since the half-written file is what a person recovering the rest needs. It reads the files and
+changes nothing at the places, and it leaves nothing on the screen afterwards, for the same reason a
+copy does not. A file the phone will not hand over at all makes the take-out a **refused change**
+that names the store, and nothing finer. Agreed 2026-09-21 at the grill of
+`take-out-an-unreadable-store` (#270).
 
 **Shown** — the moment the app comes in front of a person: opened from nothing, or brought back from
 behind whatever was in front of it. It is the only moment a day screen is handed a **today**, and so
