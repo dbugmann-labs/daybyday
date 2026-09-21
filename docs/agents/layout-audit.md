@@ -53,7 +53,8 @@ of them as mockup artifacts. Read `AGENTS.md` first; it is binding. Work from th
    the view files, build with
    `xcodebuild -scheme DayByDay -destination 'generic/platform=iOS Simulator' build`, run
    `pnpm run verify` and `pnpm run checks`, walk the changed pages on a free simulator and post
-   the pictures to the PR with `gh pr comment --attach`, open the PR, and stop for the owner to
+   the pictures to the PR with `pnpm run walk -- --post-only <pr>` (never a bare
+   `gh pr comment --attach`, which posts at full width), open the PR, and stop for the owner to
    read the pictures. Commits and PRs never mention Claude, AI or any agent, and carry no
    attribution trailer (rule 7). A want: capture it with `/atlas idea <want>` in the owner's
    words, one entry per outcome. Do not open Stories, do not edit `openspec/`, and do not touch

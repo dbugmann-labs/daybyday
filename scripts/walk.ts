@@ -17,6 +17,15 @@
  * **From a fresh install, every time.** The app is uninstalled from the simulator before the
  * run so the walk starts on the day-one roster and the same steps give the same pictures.
  *
+ * **A retake keeps the pictures it does not retake, and every post goes through `post()`.**
+ * `walk/` is not wiped on a run: each exported picture overwrites the file of its name and the
+ * rest stay, so a fix round that re-walks two boxes leaves the other pictures in place and
+ * `--post-only` posts the whole set again, sized. Each caption says when its picture was taken,
+ * so a carried picture is visible on the comment. Before 2026-09-21 a run wiped `walk/`, a
+ * partial retake could not be re-posted through this script, and three fix rounds of #296 were
+ * posted by hand as Markdown images, which GitHub shows at full width — the size lives only in
+ * the `<img width>` this function writes, never in the files.
+ *
  * **On a simulator of this worktree's own.** Two Stories walking at once used to share whatever
  * iPhone was booted, and each run uninstalled the other's build from under its test: on
  * 2026-09-15, with three worktrees walking, every overlapping run died about twenty-three
@@ -40,7 +49,7 @@
  * size. `walk/` keeps the originals for the reviewer.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, copyFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, copyFileSync, statSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -81,6 +90,13 @@ const postOnly = postOnlyAt >= 0
 
 type Picture = { name: string; file: string }
 
+/** When a picture was taken, from its file's modification time — local time, to the minute. */
+function takenAt(file: string): string {
+  const t = statSync(file).mtime
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())} ${pad(t.getHours())}:${pad(t.getMinutes())}`
+}
+
 function post(pictures: Picture[], pr: string): void {
   // Two steps, because `gh` rewrites only a Markdown image reference to its uploaded asset and
   // a Markdown image cannot be given a width: post the full-size pictures as Markdown, read the
@@ -97,7 +113,7 @@ function post(pictures: Picture[], pr: string): void {
     return file
   })
   const sha = run('git', ['rev-parse', '--short', 'HEAD']).trim()
-  const heading = `**The walk** — ${pictures.length} pictures from a fresh install, at ${sha}. Click one for full size.`
+  const heading = `**The walk** — ${pictures.length} pictures from a fresh install, posted at ${sha}; each says when it was taken. Click one for full size.`
   const draft = [heading, '', ...pictures.map((picture, i) => `![${picture.name}](./${files[i]})`)].join('\n')
   const attachArgs = pictures.flatMap((picture, i) => ['--attach', `./${files[i]}#${picture.name}`])
   run(gh(), ['pr', 'comment', pr, '--body', draft, ...attachArgs])
@@ -109,7 +125,7 @@ function post(pictures: Picture[], pr: string): void {
   for (let i = 0; i < pictures.length; i += PER_ROW) {
     const cells = pictures.slice(i, i + PER_ROW).map(
       (picture, offset) =>
-        `<td width="${Math.floor(100 / PER_ROW)}%" align="center" valign="top"><img src="${urls[i + offset]}" width="${POSTED_WIDTH}" alt="${picture.name}"><br><sub>${picture.name}</sub></td>`,
+        `<td width="${Math.floor(100 / PER_ROW)}%" align="center" valign="top"><img src="${urls[i + offset]}" width="${POSTED_WIDTH}" alt="${picture.name}"><br><sub>${picture.name} · ${takenAt(picture.file)}</sub></td>`,
     )
     while (cells.length < PER_ROW) cells.push(`<td width="${Math.floor(100 / PER_ROW)}%"></td>`)
     rows.push(`<tr>${cells.join('')}</tr>`)
@@ -226,8 +242,10 @@ type Attachment = { exportedFileName: string; suggestedHumanReadableName: string
 const manifest = JSON.parse(readFileSync(path.join(exported, 'manifest.json'), 'utf8')) as { attachments: Attachment[] }[]
 const attachments = manifest.flatMap((test) => test.attachments).sort((a, b) => a.timestamp - b.timestamp)
 
-rmSync(OUT_DIR, { recursive: true, force: true })
-mkdirSync(OUT_DIR)
+// Not wiped: a retake overwrites the pictures of its own names and keeps the rest, so a fix
+// round that re-walks two boxes can post the whole set again through `post()`.
+mkdirSync(OUT_DIR, { recursive: true })
+const before = new Set(readdirSync(OUT_DIR).filter((f) => f.endsWith('.png')))
 const pictures = attachments.map((attachment) => {
   // `xcresulttool` appends `_0_<uuid>.png` to the attachment's own name.
   const name = attachment.suggestedHumanReadableName.replace(/_\d+_[0-9A-F-]+\.png$/i, '')
@@ -238,6 +256,11 @@ const pictures = attachments.map((attachment) => {
 })
 console.log(`walk: ${pictures.length} picture(s) in ${OUT_DIR}/, ${seconds()}`)
 for (const picture of pictures) console.log(`  ${picture.file}`)
+const kept = [...before].filter((f) => !pictures.some((p) => p.file === path.join(OUT_DIR, f))).sort()
+if (kept.length > 0) {
+  console.log(`walk: ${kept.length} earlier picture(s) kept in ${OUT_DIR}/ — --post-only posts them too; delete any that are not this Story's`)
+  for (const f of kept) console.log(`  ${path.join(OUT_DIR, f)}  taken ${takenAt(path.join(OUT_DIR, f))}`)
+}
 
 if (!passed) fail('a step could not be driven — the runner\'s own error is above; that is a stop, not a retry')
 if (pictures.length === 0) fail('the walk passed and attached nothing — no shot() call ran')
