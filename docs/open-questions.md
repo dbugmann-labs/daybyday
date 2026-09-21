@@ -216,8 +216,13 @@ Things that are built, or deliberately not built, in a state someone will trip o
   name a month not at its position. Two residuals: a replacement is compared only against the
   entry it replaces, never the one before, so September replacing May can overlap March; and a
   tick whose label was dropped still draws its gridline, so a month-span page can carry an
-  unlabelled dashed line. The owner left both at G7 as a later shell tidy, not a Story: the seam
-  says every month and its position, and nothing in the delta is contradicted.
+  unlabelled dashed line. A third, seen by the owner on the phone after G7: the day ticks are
+  sampled at the sixths of the window and kept only where they land inside the history, so a
+  two-week history under the month span says one date five days back, and under the three-month
+  span says today by the newest-day fallback — positions, not the days that hold numbers, and
+  never the era rule's day. The owner left all three at G7 as a later shell tidy, not a Story: the
+  seam says every day, every month and every point with its position, and nothing in the delta is
+  contradicted.
 - **A values-axis bound wider than 30% of the graph card is drawn truncated.** Found at the same
   G7. The lane beside the chart is clamped to 30% of the card so a long bound cannot squeeze the
   plot to a sliver, and a label that does not fit truncates with an ellipsis, so the axis can read
