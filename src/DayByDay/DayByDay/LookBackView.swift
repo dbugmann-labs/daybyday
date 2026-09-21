@@ -49,6 +49,10 @@ struct LookBackView: View {
     // sibling view of the `Chart` with no access to the proxy itself. Third G7 round, finding 3.
     @State private var lowestLabelY: CGFloat?
     @State private var highestLabelY: CGFloat?
+    // The card's own rendered width, read once the same way — fourth G7 round, finding E: the
+    // values-axis lane is clamped to a fraction of this rather than left free to swallow the
+    // plot down to a sliver on an extreme value.
+    @State private var cardWidth: CGFloat?
 
     private var lookBack: LookBack? { screen.lookBack(at: commitment) }
 
@@ -319,10 +323,27 @@ struct LookBackView: View {
         // tried first for this and reverted (finding 3, third G7 round): narrowing the plot area
         // from *inside* the chart, rather than giving the chart itself less width, clipped a lone
         // point's own symbol out entirely on a one-day history.
-        let valueLabelLaneWidth = max(
+        //
+        // Clamped to 30% of the card's own width, finding E, fourth round: `graph.lowestInWords`/
+        // `highestInWords` come from `TypedNumber.read`, which hands back a thirty-eight-digit
+        // whole plainly (`design.md` § *Context*) — unclamped, that reads as roughly two thirds of
+        // a phone-width card, leaving the plot a sliver. `cardWidth` is read the same way the
+        // label positions are, below, and stands unclamped for the one frame before it is known.
+        let unclampedLaneWidth = max(
             Self.measuredWidth(graph.lowestInWords),
             Self.measuredWidth(graph.highestInWords)
         ) + 16
+        let valueLabelLaneWidth =
+            cardWidth.map { min(unclampedLaneWidth, max($0 * 0.3, 60)) } ?? unclampedLaneWidth
+        // The space left for a label's own ink once the lane's fixed 16pt inset is spent — finding
+        // A, fourth round: centring each label in the lane split that inset 8/8, reading short of
+        // the dates card's own 16pt, and let the two bounds' ink land on different edges depending
+        // on which read wider. Trailing-aligned in this width instead, both labels' ink now meets
+        // the same edge — the axis, `design.md` § *What the shell draws* draws them against it —
+        // with the inset never less than 16pt regardless of which bound is the narrower string.
+        // `.lineLimit(1)` in place of `.fixedSize()` is what lets a label wider than the clamped
+        // lane truncate rather than overflow it.
+        let valueLabelContentWidth = max(valueLabelLaneWidth - 16, 0)
 
         HStack(alignment: .top, spacing: 8) {
             ZStack(alignment: .topLeading) {
@@ -330,15 +351,17 @@ struct LookBackView: View {
                     Text(graph.lowestInWords)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                        .fixedSize()
-                        .position(x: valueLabelLaneWidth / 2, y: lowestLabelY)
+                        .lineLimit(1)
+                        .frame(width: valueLabelContentWidth, alignment: .trailing)
+                        .position(x: 16 + valueLabelContentWidth / 2, y: lowestLabelY)
                 }
                 if let highestLabelY {
                     Text(graph.highestInWords)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                        .fixedSize()
-                        .position(x: valueLabelLaneWidth / 2, y: highestLabelY)
+                        .lineLimit(1)
+                        .frame(width: valueLabelContentWidth, alignment: .trailing)
+                        .position(x: 16 + valueLabelContentWidth / 2, y: highestLabelY)
                 }
             }
             .frame(width: valueLabelLaneWidth, height: 220)
@@ -407,37 +430,59 @@ struct LookBackView: View {
                             updateValueLabelPositions(
                                 proxy: proxy, geometry: geometry, lowest: lowest, highest: highest)
                         }
+                        // Finding D, fourth round: `proxy.plotFrame` read `nil` at `onAppear` on
+                        // occasion, and `geometry.size` never changing again afterwards left the
+                        // two values labels undrawn for good — neither event was ever going to
+                        // fire a retry. `plotFrame` resolving from `nil` to a real rect between
+                        // one render of this overlay and the next *is* a change this view goes
+                        // through, so it is what this retries on instead.
+                        .onChange(of: proxy.plotFrame != nil) { _, resolved in
+                            guard resolved else { return }
+                            updateValueLabelPositions(
+                                proxy: proxy, geometry: geometry, lowest: lowest, highest: highest)
+                        }
                     if let plotFrame = proxy.plotFrame {
                         let frame = geometry[plotFrame]
+                        // Finding B, fourth round: `Self.clampedCenterX` alone only keeps a label
+                        // inside the card's own edges, not clear of its neighbour — the values-axis
+                        // lane (finding 3) narrowed the plot enough that the three-sixths day
+                        // sampling's own labels could abut. `Self.degapped` drops whichever
+                        // candidate would touch the last one already kept, reading left to right,
+                        // so the month-span page still says two dates where two do fit.
                         if showsMonths {
-                            ForEach(graph.months, id: \.day) { month in
-                                if let x = proxy.position(forX: month.day) {
-                                    Text(month.inWords)
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                        .fixedSize()
-                                        .position(
-                                            x: Self.clampedCenterX(
-                                                frame.minX + x, in: frame,
-                                                width: Self.measuredWidth(month.inWords),
-                                                trailingInset: 16),
-                                            y: frame.maxY + 14)
-                                }
+                            let candidates = graph.months.compactMap { month -> XAxisTick? in
+                                guard let x = proxy.position(forX: month.day) else { return nil }
+                                let width = Self.measuredWidth(month.inWords)
+                                return XAxisTick(
+                                    day: month.day, text: month.inWords,
+                                    x: Self.clampedCenterX(
+                                        frame.minX + x, in: frame, width: width, trailingInset: 16),
+                                    width: width)
+                            }
+                            ForEach(Self.degapped(candidates), id: \.day) { tick in
+                                Text(tick.text)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize()
+                                    .position(x: tick.x, y: frame.maxY + 14)
                             }
                         } else {
-                            ForEach(dayTickValues, id: \.self) { day in
-                                if let x = proxy.position(forX: day) {
-                                    Text(graph.days[day])
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                        .fixedSize()
-                                        .position(
-                                            x: Self.clampedCenterX(
-                                                frame.minX + x, in: frame,
-                                                width: Self.measuredWidth(graph.days[day]),
-                                                trailingInset: 16),
-                                            y: frame.maxY + 14)
-                                }
+                            let candidates = dayTickValues.compactMap { day -> XAxisTick? in
+                                guard let x = proxy.position(forX: day) else { return nil }
+                                let text = graph.days[day]
+                                let width = Self.measuredWidth(text)
+                                return XAxisTick(
+                                    day: day, text: text,
+                                    x: Self.clampedCenterX(
+                                        frame.minX + x, in: frame, width: width, trailingInset: 16),
+                                    width: width)
+                            }
+                            ForEach(Self.degapped(candidates), id: \.day) { tick in
+                                Text(tick.text)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize()
+                                    .position(x: tick.x, y: frame.maxY + 14)
                             }
                         }
                         // Left-aligned to its own rule, `design.md` § *What the shell draws*,
@@ -463,6 +508,13 @@ struct LookBackView: View {
             }
             .frame(height: 220)
         }
+        .background(
+            GeometryReader { geometry in
+                Color.clear
+                    .onAppear { cardWidth = geometry.size.width }
+                    .onChange(of: geometry.size) { _, newSize in cardWidth = newSize.width }
+            }
+        )
         // No horizontal padding beyond the lane's own width: the trace runs off the left edge of
         // the plot and stops flush at the right, `design.md` § *What the shell draws* — a leading
         // or trailing inset on the chart itself here is exactly the gap after the newest day the
@@ -474,10 +526,12 @@ struct LookBackView: View {
     }
 
     /// Where the two values-axis labels sit in the lane beside the chart — read once from the
-    /// chart's own `ChartProxy`, since the lane is a sibling view of the `Chart` with no access
-    /// to the proxy itself. `lowest`/`highest` never move once the graph loads (`span` changes
-    /// only the x-domain), so an `onAppear` plus an `onChange` of the chart's own geometry size
-    /// (covering the one Dynamic Type or rotation case that would move them) is enough.
+    /// chart's own `ChartProxy`, since the lane is a sibling view of the `Chart` with no access to
+    /// the proxy itself. `lowest`/`highest` never move once the graph loads (`span` changes only
+    /// the x-domain), so `onAppear`, an `onChange` of the chart's own geometry size (covering the
+    /// one Dynamic Type or rotation case that would move them), and an `onChange` of whether
+    /// `proxy.plotFrame` has resolved yet (finding D, fourth G7 round) between them call this
+    /// however this state gets to the point where the two labels can draw at all.
     private func updateValueLabelPositions(
         proxy: ChartProxy, geometry: GeometryProxy, lowest: Double, highest: Double
     ) {
@@ -516,5 +570,38 @@ struct LookBackView: View {
     ) -> CGFloat {
         let leadingX = min(x, frame.maxX - trailingInset - width)
         return max(leadingX, frame.minX) + width / 2
+    }
+
+    /// A candidate dates-axis label already placed at its own clamped centre — `Self.degapped`
+    /// reads left to right off `x`, so this carries nothing the width and the position it was
+    /// resolved at do not already say. `day` is either a real day index or a month's own, and is
+    /// unique either way, so it doubles as `ForEach`'s `id`.
+    private struct XAxisTick: Identifiable {
+        var id: Int { day }
+        let day: Int
+        let text: String
+        let x: CGFloat
+        let width: CGFloat
+    }
+
+    /// Keeps a candidate only where it would not touch the last one already kept, reading left to
+    /// right — finding B, fourth G7 round: `Self.clampedCenterX` alone only keeps a label inside
+    /// the card's own edges, not clear of its neighbour, and the values-axis lane (finding 3)
+    /// narrowed the plot enough that the three-sixths day sampling's own labels could abut. Drops
+    /// whichever candidate collides rather than let two overlap, which — since `candidates`
+    /// already runs oldest to newest — keeps the first and the last where those two alone do fit,
+    /// rather than always favouring one end.
+    private static func degapped(_ candidates: [XAxisTick], minimumGap: CGFloat = 8) -> [XAxisTick]
+    {
+        var kept: [XAxisTick] = []
+        for candidate in candidates {
+            if let last = kept.last,
+                candidate.x - candidate.width / 2 < last.x + last.width / 2 + minimumGap
+            {
+                continue
+            }
+            kept.append(candidate)
+        }
+        return kept
     }
 }
