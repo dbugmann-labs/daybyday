@@ -44,6 +44,11 @@ struct LookBackView: View {
     let commitment: Commitment
 
     @State private var span: Span = .month
+    // Where the two values-axis labels sit in the lane beside the chart — read once from the
+    // chart's own `ChartProxy` inside `graphCard(_:)` and cached here, since the lane is a
+    // sibling view of the `Chart` with no access to the proxy itself. Third G7 round, finding 3.
+    @State private var lowestLabelY: CGFloat?
+    @State private var highestLabelY: CGFloat?
 
     private var lookBack: LookBack? { screen.lookBack(at: commitment) }
 
@@ -247,11 +252,11 @@ struct LookBackView: View {
     }
 
     /// The graph card: the trace through `graph.points` in the label colour (never the accent,
-    /// ADR-1045), the two bounds on a values axis pinned at the left, a dates axis off `graph.days`
-    /// and `graph.months`, and an era-boundary rule for each of `graph.rules` — `design.md` § *What
-    /// the shell draws*. `chartXVisibleDomain(length:)` holds `span`'s fixed length of days in the
-    /// width; `chartScrollPosition(initialX:)` opens the plot at the newest end, so the trace runs
-    /// off the left edge and stops flush at the right (grill decision 8).
+    /// ADR-1045), the two bounds on a values axis pinned in a lane at the left, a dates axis off
+    /// `graph.days` and `graph.months`, and an era-boundary rule for each of `graph.rules` —
+    /// `design.md` § *What the shell draws*. `chartXVisibleDomain(length:)` holds `span`'s fixed
+    /// length of days in the width; `chartScrollPosition(initialX:)` opens the plot at the newest
+    /// end, so the trace runs off the left edge and stops flush at the right (grill decision 8).
     @ViewBuilder
     private func graphCard(_ graph: LookBack.Graph) -> some View {
         let rawLowest = (graph.lowest as NSDecimalNumber).doubleValue
@@ -305,143 +310,181 @@ struct LookBackView: View {
             return [newestRealDay]
         }()
 
-        Chart {
-            ForEach(graph.points, id: \.day) { point in
-                // `.symbol(.circle)` marks every point along the trace — without it a `LineMark`
-                // draws only the segments between points, so a graph of exactly one point, with
-                // no segment to stroke, drew nothing at all.
-                LineMark(
-                    x: .value("Day", point.day),
-                    y: .value("Value", (point.value as NSDecimalNumber).doubleValue)
-                )
-                .foregroundStyle(Color.secondary)
-                .symbol(.circle)
-                .symbolSize(20)
+        // The values-axis lane's own fixed width: wide enough for whichever of the two bound
+        // labels measures wider, plus the same 16pt inset the dates card's own labels sit at — a
+        // column beside the chart rather than an inset *inside* it, so the chart's own plot
+        // begins only after this lane and nothing drawn on it — gridline, trace or a lone point's
+        // own symbol — can pass beneath a value label (`design.md` § *What the shell draws*:
+        // "pinned in a lane at the left; it does not scroll"). A `chartPlotStyle` leading pad was
+        // tried first for this and reverted (finding 3, third G7 round): narrowing the plot area
+        // from *inside* the chart, rather than giving the chart itself less width, clipped a lone
+        // point's own symbol out entirely on a one-day history.
+        let valueLabelLaneWidth = max(
+            Self.measuredWidth(graph.lowestInWords),
+            Self.measuredWidth(graph.highestInWords)
+        ) + 16
+
+        HStack(alignment: .top, spacing: 8) {
+            ZStack(alignment: .topLeading) {
+                if let lowestLabelY {
+                    Text(graph.lowestInWords)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .fixedSize()
+                        .position(x: valueLabelLaneWidth / 2, y: lowestLabelY)
+                }
+                if let highestLabelY {
+                    Text(graph.highestInWords)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .fixedSize()
+                        .position(x: valueLabelLaneWidth / 2, y: highestLabelY)
+                }
             }
-            ForEach(graph.rules, id: \.day) { rule in
-                RuleMark(x: .value("Boundary", rule.day))
+            .frame(width: valueLabelLaneWidth, height: 220)
+
+            Chart {
+                ForEach(graph.points, id: \.day) { point in
+                    // `.symbol(.circle)` marks every point along the trace — without it a
+                    // `LineMark` draws only the segments between points, so a graph of exactly
+                    // one point, with no segment to stroke, drew nothing at all.
+                    LineMark(
+                        x: .value("Day", point.day),
+                        y: .value("Value", (point.value as NSDecimalNumber).doubleValue)
+                    )
                     .foregroundStyle(Color.secondary)
-                    .lineStyle(StrokeStyle(dash: [4, 4]))
+                    .symbol(.circle)
+                    .symbolSize(20)
+                }
+                ForEach(graph.rules, id: \.day) { rule in
+                    RuleMark(x: .value("Boundary", rule.day))
+                        .foregroundStyle(Color.secondary)
+                        .lineStyle(StrokeStyle(dash: [4, 4]))
+                }
             }
-        }
-        .chartYScale(domain: lowest...highest)
-        .chartYAxis {
-            // Gridlines only — the values themselves draw in the overlay below, inset from the
-            // card's own edge the way the dates card's labels are, which `chartPlotStyle` also
-            // achieves but was measured to clip a lone point's own symbol on a one-day history:
-            // narrowing the plot area changed how a mark with no line to anchor it to the visible
-            // region was clipped, even though the plot's own trailing edge was untouched.
-            AxisMarks(position: .leading, values: [lowest, highest]) { _ in
-                AxisGridLine()
+            .chartYScale(domain: lowest...highest)
+            .chartYAxis {
+                // Gridlines only — the values themselves draw in the lane beside the chart.
+                AxisMarks(position: .leading, values: [lowest, highest]) { _ in
+                    AxisGridLine()
+                }
             }
-        }
-        .chartXAxis {
-            AxisMarks(values: showsMonths ? graph.months.map(\.day) : dayTickValues) { _ in
-                AxisGridLine()
+            .chartXAxis {
+                AxisMarks(values: showsMonths ? graph.months.map(\.day) : dayTickValues) { _ in
+                    AxisGridLine()
+                }
             }
-        }
-        // `range: .plotDimension(padding:)` — Swift Charts otherwise reserves a percentage of the
-        // plot's own width as padding around whatever domain is given, on both ends, which is
-        // what kept the newest real day short of the plot's own right edge. Zero padding in turn
-        // clips a point's own symbol in half where it sits exactly on the domain's edge, which the
-        // newest real day always does — 4pt is enough to hold the whole symbol
-        // (`.symbolSize(20)`'s own diameter is about 5pt) clear of that edge without reading as a
-        // gap the way the default percentage-based padding did.
-        .chartXScale(domain: domainStart...domainEnd, range: .plotDimension(padding: 4))
-        .chartScrollableAxes(.horizontal)
-        .chartXVisibleDomain(length: visibleSpan)
-        .chartScrollPosition(initialX: openingPosition)
-        // The values-axis labels, the dates-axis labels and the era label lane are drawn here
-        // rather than as each `AxisMark`'s own `AxisValueLabel` or a `RuleMark`'s `.annotation`:
-        // all three were measured to either clip a label the card's own edge sits under, distort
-        // the chart's own x-scale when a label ran wide, or (the values axis specifically) clip a
-        // lone point's own symbol on a one-day history. `Self.measuredWidth(...)` reads each
-        // label's own rendered size rather than estimating it from its character count, since
-        // nothing here otherwise stops one sliding past the card. The dates-axis labels'
-        // `trailingInset` matches the values-axis label's own fixed 16pt leading inset and the
-        // dates card's own inset, so a label sitting near the newest day — which the trace itself
-        // still runs flush to, finding 5 — reads inset from the card's edge rather than touching
-        // it.
-        .chartOverlay { proxy in
-            GeometryReader { geometry in
-                if let plotFrame = proxy.plotFrame {
-                    let frame = geometry[plotFrame]
-                    if let lowestY = proxy.position(forY: lowest) {
-                        Text(graph.lowestInWords)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fixedSize()
-                            .position(
-                                x: frame.minX + 16 + Self.measuredWidth(graph.lowestInWords) / 2,
-                                y: frame.minY + lowestY)
-                    }
-                    if let highestY = proxy.position(forY: highest) {
-                        Text(graph.highestInWords)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fixedSize()
-                            .position(
-                                x: frame.minX + 16 + Self.measuredWidth(graph.highestInWords) / 2,
-                                y: frame.minY + highestY)
-                    }
-                    if showsMonths {
-                        ForEach(graph.months, id: \.day) { month in
-                            if let x = proxy.position(forX: month.day) {
-                                Text(month.inWords)
+            // `range: .plotDimension(padding:)` — Swift Charts otherwise reserves a percentage of
+            // the plot's own width as padding around whatever domain is given, on both ends,
+            // which is what kept the newest real day short of the plot's own right edge. Zero
+            // padding in turn clips a point's own symbol in half where it sits exactly on the
+            // domain's edge, which the newest real day always does — 4pt is enough to hold the
+            // whole symbol (`.symbolSize(20)`'s own diameter is about 5pt) clear of that edge
+            // without reading as a gap the way the default percentage-based padding did.
+            .chartXScale(domain: domainStart...domainEnd, range: .plotDimension(padding: 4))
+            .chartScrollableAxes(.horizontal)
+            .chartXVisibleDomain(length: visibleSpan)
+            .chartScrollPosition(initialX: openingPosition)
+            // The dates-axis labels and the era label are drawn here rather than as each
+            // `AxisMark`'s own `AxisValueLabel` or a `RuleMark`'s `.annotation`: both were
+            // measured to either clip a label the card's own edge sits under or distort the
+            // chart's own x-scale when a label ran wide. `Self.measuredWidth(...)` reads each
+            // label's own rendered size rather than estimating it from its character count, since
+            // nothing here otherwise stops one sliding past the card. Their `trailingInset`
+            // matches the dates card's own inset, so a label sitting near the newest day — which
+            // the trace itself still runs flush to, finding 5 — reads inset from the card's edge
+            // rather than touching it. The values-axis labels draw in the lane beside the chart
+            // instead, since they have no x-position to read off this proxy — only their own
+            // fixed y-position, cached in state below and read by the lane.
+            .chartOverlay { proxy in
+                GeometryReader { geometry in
+                    Color.clear
+                        .onAppear {
+                            updateValueLabelPositions(
+                                proxy: proxy, geometry: geometry, lowest: lowest, highest: highest)
+                        }
+                        .onChange(of: geometry.size) { _, _ in
+                            updateValueLabelPositions(
+                                proxy: proxy, geometry: geometry, lowest: lowest, highest: highest)
+                        }
+                    if let plotFrame = proxy.plotFrame {
+                        let frame = geometry[plotFrame]
+                        if showsMonths {
+                            ForEach(graph.months, id: \.day) { month in
+                                if let x = proxy.position(forX: month.day) {
+                                    Text(month.inWords)
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                        .fixedSize()
+                                        .position(
+                                            x: Self.clampedCenterX(
+                                                frame.minX + x, in: frame,
+                                                width: Self.measuredWidth(month.inWords),
+                                                trailingInset: 16),
+                                            y: frame.maxY + 14)
+                                }
+                            }
+                        } else {
+                            ForEach(dayTickValues, id: \.self) { day in
+                                if let x = proxy.position(forX: day) {
+                                    Text(graph.days[day])
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                        .fixedSize()
+                                        .position(
+                                            x: Self.clampedCenterX(
+                                                frame.minX + x, in: frame,
+                                                width: Self.measuredWidth(graph.days[day]),
+                                                trailingInset: 16),
+                                            y: frame.maxY + 14)
+                                }
+                            }
+                        }
+                        // Left-aligned to its own rule, `design.md` § *What the shell draws*,
+                        // rather than centred on it like the dates-axis labels above — shunted
+                        // left only where the rule sits close enough to the plot's trailing edge
+                        // that the label would otherwise overhang the card.
+                        ForEach(graph.rules, id: \.day) { rule in
+                            if let x = proxy.position(forX: rule.day) {
+                                let label = "\(rule.rhythmInWords) · \(rule.fromInWords)"
+                                Text(label)
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .fixedSize()
                                     .position(
-                                        x: Self.clampedCenterX(
-                                            frame.minX + x, in: frame,
-                                            width: Self.measuredWidth(month.inWords), trailingInset: 16),
-                                        y: frame.maxY + 14)
+                                        x: Self.leftAlignedCenterX(
+                                            frame.minX + x, in: frame, width: Self.measuredWidth(label),
+                                            trailingInset: 16),
+                                        y: frame.maxY + 30)
                             }
-                        }
-                    } else {
-                        ForEach(dayTickValues, id: \.self) { day in
-                            if let x = proxy.position(forX: day) {
-                                Text(graph.days[day])
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .fixedSize()
-                                    .position(
-                                        x: Self.clampedCenterX(
-                                            frame.minX + x, in: frame,
-                                            width: Self.measuredWidth(graph.days[day]), trailingInset: 16),
-                                        y: frame.maxY + 14)
-                            }
-                        }
-                    }
-                    // Left-aligned to its own rule, `design.md` § *What the shell draws*, rather
-                    // than centred on it like the dates-axis labels above — shunted left only
-                    // where the rule sits close enough to the plot's trailing edge that the label
-                    // would otherwise overhang the card.
-                    ForEach(graph.rules, id: \.day) { rule in
-                        if let x = proxy.position(forX: rule.day) {
-                            let label = "\(rule.rhythmInWords) · \(rule.fromInWords)"
-                            Text(label)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .fixedSize()
-                                .position(
-                                    x: Self.leftAlignedCenterX(
-                                        frame.minX + x, in: frame, width: Self.measuredWidth(label),
-                                        trailingInset: 16),
-                                    y: frame.maxY + 30)
                         }
                     }
                 }
             }
+            .frame(height: 220)
         }
-        .frame(height: 220)
-        // No horizontal padding: the trace runs off the left edge and stops flush at the right,
-        // `design.md` § *What the shell draws* — a leading or trailing inset here is exactly the
-        // gap after the newest day the reviewer measured, the outer padding rather than anything
-        // left unused by the domain itself.
+        // No horizontal padding beyond the lane's own width: the trace runs off the left edge of
+        // the plot and stops flush at the right, `design.md` § *What the shell draws* — a leading
+        // or trailing inset on the chart itself here is exactly the gap after the newest day the
+        // reviewer measured, the outer padding rather than anything left unused by the domain
+        // itself.
         .padding(.top)
         .padding(.bottom, 48)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    /// Where the two values-axis labels sit in the lane beside the chart — read once from the
+    /// chart's own `ChartProxy`, since the lane is a sibling view of the `Chart` with no access
+    /// to the proxy itself. `lowest`/`highest` never move once the graph loads (`span` changes
+    /// only the x-domain), so an `onAppear` plus an `onChange` of the chart's own geometry size
+    /// (covering the one Dynamic Type or rotation case that would move them) is enough.
+    private func updateValueLabelPositions(
+        proxy: ChartProxy, geometry: GeometryProxy, lowest: Double, highest: Double
+    ) {
+        guard let plotFrame = proxy.plotFrame else { return }
+        let frame = geometry[plotFrame]
+        lowestLabelY = proxy.position(forY: lowest).map { frame.minY + $0 }
+        highestLabelY = proxy.position(forY: highest).map { frame.minY + $0 }
     }
 
     /// `text`'s own rendered width at the `.caption2` size every overlay label in `graphCard(_:)`
