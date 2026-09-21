@@ -118,27 +118,33 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
 /// The words a person reads for a refused copy, naming the store `store` says where one is
 /// given, and the shipped words for a place that could not be written otherwise — `design.md` §
 /// *The shell*: "Your record could not be read.", the roster's and the one-offs' likewise, and
-/// the shipped words for a place that could not be written.
+/// the shipped words for a place that could not be written. The caption red the section's other
+/// refusals use — `design.md` § *What the shell draws* — so this and the take-out caption under
+/// it, which say the same words over the same cause, read as one colour.
 @ViewBuilder
 private func copySectionRefusalText(_ store: Copy.Store?, _ refusal: CommitmentsScreen.Refusal)
     -> some View
 {
-    switch (store, refusal) {
-    case (.record, .storeWrittenByALaterVersion):
-        Text("Your record was written by a newer version of DayByDay.")
-    case (.roster, .storeWrittenByALaterVersion):
-        Text("Your roster was written by a newer version of DayByDay.")
-    case (.oneOffs, .storeWrittenByALaterVersion):
-        Text("Your one-offs were written by a newer version of DayByDay.")
-    case (.record, _):
-        Text("Your record could not be read.")
-    case (.roster, _):
-        Text("Your roster could not be read.")
-    case (.oneOffs, _):
-        Text("Your one-offs could not be read.")
-    case (nil, _):
-        refusalText(refusal)
+    Group {
+        switch (store, refusal) {
+        case (.record, .storeWrittenByALaterVersion):
+            Text("Your record was written by a newer version of DayByDay.")
+        case (.roster, .storeWrittenByALaterVersion):
+            Text("Your roster was written by a newer version of DayByDay.")
+        case (.oneOffs, .storeWrittenByALaterVersion):
+            Text("Your one-offs were written by a newer version of DayByDay.")
+        case (.record, _):
+            Text("Your record could not be read.")
+        case (.roster, _):
+            Text("Your roster could not be read.")
+        case (.oneOffs, _):
+            Text("Your one-offs could not be read.")
+        case (nil, _):
+            refusalText(refusal)
+        }
     }
+    .font(.caption)
+    .foregroundStyle(.red)
 }
 
 /// The words a person reads naming each store a take-out offer names, and why — `design.md` §
