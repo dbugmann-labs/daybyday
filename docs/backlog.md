@@ -233,6 +233,14 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-21 — read a look-back without seeing where its rhythm changed (B-056) → Story #300
+  `say-nothing-where-the-rhythm-changed` under `FEAT: look-back` (#271), ahead of #275 and #276,
+  which are now behind it. Captured and groomed in one session, four questions over one round,
+  two fact agents. Remove, not hide: the line between eras and the graph's rule leave as REMOVED
+  requirements, nine scenarios with them; nothing stands between two eras, the head's newest
+  rhythm and earliest kept-from day being the only place a rhythm is said; the reason is clutter.
+  The marker had been the designer's recommendation at #272, accepted at that grill and never
+  the owner's ask. No new term; `era` and `chain` stay as they are.
 - 2026-09-15 — look at one commitment on its own, deliberately and rarely (B-007) →
   `FEAT: look-back` (#271) under `EPIC: Looking back` (#269), a new Epic because #1 excludes
   "graphs and per-area detail pages" by name and is closed. Grilled at the ninth pass in its own
@@ -1054,3 +1062,14 @@ found nothing.
     dependency endpoints beside the body field; and `feature.yml` has no G2 box for the G2 that
     `docs/process.md` §4 says the orchestrator ticks, so G2 is a comment on #271 as it was on #26.
   - **Not re-judged** — the other nine wants; this session held one cluster by design.
+- 2026-09-21 — targeted pass over B-056 (`/atlas backlog B-056`), groomed on `chore/backlog` in
+  the session that captured it, `origin/main` at 90fa752.
+  - **Sweep** — day-one week: every line has a shipped spec, B-039 and B-054 the only live threads.
+    Lifecycle verbs: every create, change and retire shipped or declined on the record, except
+    `restore`, which has no way to delete an old copy and no Decided line saying so; put to the
+    owner, answered `none` — a copy is a file in Files and deleting it is Files' verb, which the
+    known-gaps list already says. `docs/open-questions.md`: nothing that has quietly become a want.
+  - **Promoted** — B-056 → #300 `say-nothing-where-the-rhythm-changed` under #271, blocking #275
+    and #276; the Decided line above has what the grill settled. Presented at G2 by the conductor
+    without `/to-tickets`, one Story under an existing Feature as B-025 was.
+  - **Not re-judged** — B-032, B-034, B-039, B-041, B-054; a targeted pass holds one entry.
