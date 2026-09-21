@@ -207,15 +207,17 @@ Things that are built, or deliberately not built, in a state someone will trip o
   it; the ADR is the stale one. #274's `spec-author` drafted the amendment and withdrew it rather
   than book another Story's decision under its own; the next Story or chore that opens ADR-1055
   amends the Decision and the price list, dated, per `docs/adr/README.md`'s amendment rule.
-- **A number graph's month labels on the year and "All" spans are chosen oldest-first, and the
-  leftmost can name a month that is not at its position.** Found at #274's G7, 2026-09-21, fourth
-  fix round. `LookBackView`'s dates-axis candidates are every month in the whole domain, months
-  scrolled out of view included; the trailing and leading clamps pull the out-of-view ones onto
-  the plot's edges, and the `degapped` pass then keeps the first of a colliding run and drops the
-  rest — so the label at the left edge can sit where its month does not, and the newest month can
-  be dropped for colliding with an older one. The clamping is older than the round that added the
-  drop. No walk picture exercises it; the owner left it at G7 as a later shell tidy, not a Story:
-  the seam says every month and its position, and nothing in the delta is contradicted.
+- **A number graph's year and "All" spans say one month label, and a wide label can overlap the
+  one kept before it.** Found at #274's G7, 2026-09-21, and reshaped by its fifth fix round.
+  `LookBackView`'s dates-axis candidates are every month in the whole domain; where two would
+  touch, the newer replaces the older, so under "Year" on a long history — months about 27pt
+  apart against a ~90pt label — the chain collapses to one label, the newest month at its own
+  position. That replaced the earlier symptom, an oldest-first subset whose leftmost label could
+  name a month not at its position. Two residuals: a replacement is compared only against the
+  entry it replaces, never the one before, so September replacing May can overlap March; and a
+  tick whose label was dropped still draws its gridline, so a month-span page can carry an
+  unlabelled dashed line. The owner left both at G7 as a later shell tidy, not a Story: the seam
+  says every month and its position, and nothing in the delta is contradicted.
 - **A values-axis bound wider than 30% of the graph card is drawn truncated.** Found at the same
   G7. The lane beside the chart is clamped to 30% of the card so a long bound cannot squeeze the
   plot to a sliver, and a label that does not fit truncates with an ellipsis, so the axis can read
@@ -223,6 +225,22 @@ Things that are built, or deliberately not built, in a state someone will trip o
   the kit's `lowestInWords` and `highestInWords`, untouched — and the case is a thirty-eight-digit
   whole that the delta names as reachable rather than one anybody has typed. Left at G7 as a later
   shell decision: a smaller font for a long bound, or a lane that may grow to half the card.
+- **The app died once during #274's walk with "Fatal error: Range requires lowerBound <=
+  upperBound", and the explanation on record is wrong.** Seen 2026-09-21 by the implementer
+  driving the simulator: a Mon, Wed, Sat number commitment, a number entered on its kept-from
+  day, then a second entry a day later on a re-run. The implementer attributed it to its own
+  test's navigation order and reordered the test; a UI test drives taps and cannot make correct
+  app code trap, so that is not a mechanism. The reviewer audited every variable-bound range in
+  both targets — `chartYScale`'s `lowest...highest` and `chartXScale`'s domain in
+  `LookBackView`, the restart bounds in `CommitmentsView` (already guarded, after an earlier
+  trap), the day picker's one-sided range, and the two slices in `LookBack` — and none can
+  invert on the paths a number entry or the look-back page touches. What survives: a trap inside
+  SwiftUI or Charts on inputs shown to be ordered, or a trap in the throwaway test process
+  itself (`1..<count` on an empty query is the usual one), which reads almost identically in
+  the log and is the only way "my test caused it" is literally true. Unverifiable now: the walk
+  test is deleted by ADR-1053 and no log was kept. Not this Story's — nothing in its delta or
+  diff is implicated — but a real crash of a real build. If it recurs, keep the log before the
+  test is thrown away; a walk that dies should do that as a rule.
 - **`CalendarDate.adding(days:)`'s comment names two callers and has eleven.** Found at #273's
   fix-round verification, 2026-09-16. `CalendarDate.swift` documents the method's nil-on-out-of-range
   behaviour as holding "at the ±1 steps this method is actually called with
