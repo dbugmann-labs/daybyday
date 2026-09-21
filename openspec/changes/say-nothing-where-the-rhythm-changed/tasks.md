@@ -14,20 +14,20 @@ make it pass, then the next. Both tests go in
 
 ## 2. The seam
 
-- [ ] 2.1 `LookBack.Line` loses `.rhythmChanged` and `LookBack.Graph` loses `rules` and `Rule`, exactly as `design.md` § *The seam* writes them, and no other member of either is added, renamed or reshaped
-- [ ] 2.2 `Roster`, `Commitment`, `CalendarDate`, `History`, `Schedule` and `LookBackWords` are unchanged, and `openspec/specs/` is untouched (rule 2)
+- [x] 2.1 `LookBack.Line` loses `.rhythmChanged` and `LookBack.Graph` loses `rules` and `Rule`, exactly as `design.md` § *The seam* writes them, and no other member of either is added, renamed or reshaped
+- [x] 2.2 `Roster`, `Commitment`, `CalendarDate`, `History`, `Schedule` and `LookBackWords` are unchanged, and `openspec/specs/` is untouched (rule 2)
 
 ## 3. The silence — one test each
 
-- [ ] 3.1 a look-back says nothing between the lines either side of a boundary — catches a blank row, a spacer or a heading left where the line was, and a mixed chain that still parts its months from its weeks
-- [ ] 3.2 a number commitment's graph says nothing where one era gives way to the next — catches a boundary kept as a day, a month or a point of its own, and a graph whose days or points shift because a chain has two eras
+- [x] 3.1 a look-back says nothing between the lines either side of a boundary — catches a blank row, a spacer or a heading left where the line was, and a mixed chain that still parts its months from its weeks
+- [x] 3.2 a number commitment's graph says nothing where one era gives way to the next — catches a boundary kept as a day, a month or a point of its own, and a graph whose days or points shift because a chain has two eras
 
 ## 4. What goes with the mark
 
-- [ ] 4.1 The nine tests named for the nine scenarios this delta removes are deleted, and so is the one named for no scenario — "a look-back says two lines where the rhythm changed inside the same month, newest first", added at #272's G7 and reaching the placement directly
-- [ ] 4.2 The test named "a look-back says a weekday era's months and a quota era's weeks, each in its own unit" keeps its title and expects the delta's lines, the marker entry gone from its expected list; no other test's title changes and no other test is deleted
-- [ ] 4.3 `walkDays` loses the placement pass, the two key-to-last-day dictionaries, the `Unit` key and the `WeekKey` only that key needed, and keeps the day walk, the nil-line filter, the sort by last counted day and the totals — the split `docs/open-questions.md` wants is not attempted here
-- [ ] 4.4 The graph loses the map that formed its rules, and forms its days, its months, its points and its two bounds exactly as it does now
+- [x] 4.1 The nine tests named for the nine scenarios this delta removes are deleted, and so is the one named for no scenario — "a look-back says two lines where the rhythm changed inside the same month, newest first", added at #272's G7 and reaching the placement directly
+- [x] 4.2 The test named "a look-back says a weekday era's months and a quota era's weeks, each in its own unit" keeps its title and expects the delta's lines, the marker entry gone from its expected list; no other test's title changes and no other test is deleted
+- [x] 4.3 `walkDays` loses the placement pass, the two key-to-last-day dictionaries, the `Unit` key and the `WeekKey` only that key needed, and keeps the day walk, the nil-line filter, the sort by last counted day and the totals — the split `docs/open-questions.md` wants is not attempted here
+- [x] 4.4 The graph loses the map that formed its rules, and forms its days, its months, its points and its two bounds exactly as it does now
 
 ## 5. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
