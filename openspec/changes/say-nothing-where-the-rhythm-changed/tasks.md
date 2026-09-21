@@ -32,7 +32,7 @@ make it pass, then the next. Both tests go in
 ## 5. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
 - [x] 5.1 `LookBackView` draws nothing at a boundary — the `.rhythmChanged` case, `doubleRule` and both passes over the graph's rules are gone — and the app target builds
-- [ ] 5.2 The graph card's bottom padding is what the dates lane alone needs, read off walk picture three rather than guessed, so no blank band stands under the axis
+- [x] 5.2 The graph card's bottom padding is what the dates lane alone needs, read off walk picture three rather than guessed, so no blank band stands under the axis
 - [x] 5.3 The four doc comments that describe the mark — the view's own header, `linesSection`, `heading(for:)`'s unreachable case and `graphCard` — say what is drawn now, and none cites a requirement this delta removes
 
 ## 6. The records

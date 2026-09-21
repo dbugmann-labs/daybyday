@@ -484,8 +484,13 @@ struct LookBackView: View {
         // or trailing inset on the chart itself here is exactly the gap after the newest day the
         // reviewer measured, the outer padding rather than anything left unused by the domain
         // itself.
+        //
+        // 28pt, not the 48 a second, lower label lane once needed: the dates-axis labels alone
+        // draw at `frame.maxY + 14`, and 14 more clears a `.caption2` line — `say-nothing-where-
+        // the-rhythm-changed` (#300), read off the walk's own third picture once the era lane's
+        // labels were gone, rather than guessed.
         .padding(.top)
-        .padding(.bottom, 48)
+        .padding(.bottom, 28)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
