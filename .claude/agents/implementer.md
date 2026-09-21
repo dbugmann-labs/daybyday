@@ -123,7 +123,10 @@ is the finding the reviewer sends back, so build to it and let the walk prove it
    the box comes from is green and the box is what is wrong, which you report the same way.
 6. **Post them to the PR** with `pnpm run walk -- --post-only <pr>`: one comment, the pictures
    shown small, three to a row with the box's line under each, full size on a click. Tick the walk boxes and the handover box
-   on the comment's URL.
+   on the comment's URL. **A retake in a fix round goes the same way**: the run keeps the
+   pictures it does not retake and `--post-only` posts the whole set again — never a comment
+   written by hand with `gh pr comment --attach` or a Markdown image, which is shown at full
+   width whatever the file is.
 7. **Delete `WalkUITests.swift`.** It is never committed, and the reviewer checks that
    `git diff --stat origin/main... -- src/DayByDay/DayByDayUITests/` is empty. The pictures
    in `walk/` stay for the reviewer.

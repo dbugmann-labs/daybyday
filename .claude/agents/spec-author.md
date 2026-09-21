@@ -127,7 +127,8 @@ settings as well as by rule 2, so an attempt will simply fail. Specs are written
    them. A step a simulator cannot prove — a drag between groups, paging under the finger, a
    long press — is one line marked `phone:` instead, and the conductor puts it to the human at
    G7. Close the section with the handover box: the implementer posts the pictures to the PR
-   with `gh pr comment --attach` before hand-back, and ticks it on the comment's URL. These
+   with `pnpm run walk -- --post-only <pr>` before hand-back, and ticks it on the comment's
+   URL — that command and never `gh pr comment --attach`, which posts at full width. These
    lines sit outside the 80-line budget, one per screenshot like a scenario. A Story that does
    not reach the shell carries no walk section, and says nothing about it. ADR-1053.
 

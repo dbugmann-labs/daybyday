@@ -372,6 +372,16 @@ could not be driven, prints the runner's own error, and exits 1 — that is a ru
 retry. The eighteen-picture walk of `main` ran in 100 seconds here on a warm simulator, 92 of
 them the test itself — a typed field, a scrolled form and a sheet each cost a few seconds.
 
+**A retake is posted through the script too, never by hand.** A fix round that re-walks some
+boxes runs the walk again with a test that attaches only those pictures; `walk/` is not wiped,
+so the retaken pictures overwrite the files of their names and the rest stay, and the run lists
+what it kept with the time each was taken. Then `pnpm run walk -- --post-only <pr>` posts the
+whole set again, sized, every caption saying when its picture was taken so a carried one is
+visible. A comment written by hand with `gh pr comment --attach` or a Markdown image is shown at
+full width whatever the file is — the width lives only in the `<img>` the script writes — and
+that is how three fix rounds of PR #296 came out too big on 2026-09-21. Delete from `walk/` any
+picture that is not this Story's before posting; the reviewer reads the times.
+
 **Every worktree walks on a simulator of its own, since 2026-09-16.** The script used to pick
 whatever iPhone was booted, and two Stories walking at once each uninstalled the other's build
 from under its test: on 2026-09-15, with three worktrees walking in parallel sessions, every
