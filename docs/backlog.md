@@ -248,8 +248,12 @@ months later.
   upgrade: adjacent eras by name, kind-sort and day fold under one commitment; a removed entry that
   nothing kept or stopped resembles by name and kind is erased with its records (the owner's call,
   against the recommendation to make them stopped); a removed entry that resembles a live one but
-  does not chain survives as its own stopped commitment, tidied by hand. First Story: the identity
-  and the fold. Left behind by id: B-054, B-041, B-032, B-034, B-039.
+  does not chain survives as its own stopped commitment, tidied by hand. Four Stories at G2, the
+  same day, from `/to-tickets 26` stopped after its quiz: #303 `give-a-commitment-an-identity`
+  first, behind #300; #304 `delete-a-commitment-for-good`, #305 `collapse-a-same-day-rhythm-change`
+  and #306 `stop-and-resume-as-eras` each behind #303; #275 and #276 moved behind #303 so the
+  total's and the note's look-backs build on eras rather than on the resemblance chain. Left behind
+  by id: B-054, B-041, B-032, B-034, B-039.
 - 2026-09-21 — delete a commitment for good, with everything it ever recorded (B-057) →
   `FEAT: commitment` (#26), in one cluster with B-058 above, whose identity it needs before
   "everything related" is a thing the app can name. Settled at the same grill: **delete takes
@@ -259,7 +263,8 @@ months later.
   every kept change, so after this nothing is the way back. A roster emptied by deletion stays
   empty: day one is not written back, which costs a marker the roster carries and amends ADR-1027's
   letter. One-offs, which already remove outright, are the precedent. Term **Deleted** in
-  `CONTEXT.md`; **Removed** amended to say the state is retired.
+  `CONTEXT.md`; **Removed** amended to say the state is retired. Story #304
+  `delete-a-commitment-for-good`, behind #303.
 - 2026-09-21 — read a look-back without seeing where its rhythm changed (B-056) → Story #300
   `say-nothing-where-the-rhythm-changed` under `FEAT: look-back` (#271), ahead of #275 and #276,
   which are now behind it. Captured and groomed in one session, four questions over one round,
@@ -1111,9 +1116,11 @@ found nothing.
     settled. Recommended because B-058 is the defect the owner hit that day and its answer decides
     B-057's shape. §7: the identity Story's delta reaches `look-back` for the chain, so it serialises
     behind #300 (Stage 4), #275 and #276, all of which delta `look-back`; it also reaches `record`
-    and `restore`, which no open Story touches. Suggested G2 shape: the identity and the fold first,
-    delete second, then rename-reaches-everything and the name refusal if they did not fall out of
-    the first, the same-day collapse, and stop and resume as era boundaries.
+    and `restore`, which no open Story touches. G2 accepted the same day: #303 `give-a-commitment-
+    an-identity` first, blocked by #300; #304 `delete-a-commitment-for-good`, #305
+    `collapse-a-same-day-rhythm-change` and #306 `stop-and-resume-as-eras` each blocked by #303; the
+    rename and the name refusal fall out of #303. #275 and #276 gained #303 as an upstream, the
+    owner's call at this G2. All four delta `commitment`, so one in flight at a time.
   - **Not taken**, each with the disposition this pass proposed:
     - **C**, kept on a day not due: B-054. Unchanged since the ninth pass; Stories against `record`
       and `day-screen`, or "gym is a quota" at its grill. Not this Feature's, though its Stories
