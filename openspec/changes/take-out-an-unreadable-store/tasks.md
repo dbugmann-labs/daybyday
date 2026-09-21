@@ -75,8 +75,8 @@ make it pass, then take the next. §§ 3–6 go in a new `TakeOutTests.swift`, �
 ## 11. The walk (ADR-1053; `docs/running-the-app.md` § *The walk* has the commands)
 
 - [ ] 11.1 the day screen with the record at its place swapped for a run of bytes: the red *could not be read* line and the grey restore line under it
-- [ ] 11.2 the commitments screen's *Copy* section in that state, after *Make a copy* is tapped: the refused copy in red and *Take out the files* under it with its caption
-- [ ] 11.3 the share sheet open from that row: the files listed under the names they lie under
+- [ ] 11.2 the commitments screen's *Copy* section in that state, after *Make a copy* is tapped: the refused copy in red — the shipped line was black, and this Story draws it red so that it and the take-out caption under it, which say the same words, read as one colour — and *Take out the files* under it with its caption
+- [ ] 11.3 the share sheet open from that row, offering *Save to Files* — the sheet summarises two files as "2 Documents" and names none, which is the platform's; the names are the seam test's to prove
 - [ ] 11.4 the *Copy* section with the roster swapped for one written in a later form, after *Make a copy* is tapped: the refusal and the caption each saying *a newer version* rather than *could not be read*
 - [ ] 11.5 **The walk handover** — the implementer posts the pictures to the PR as one comment with `gh pr comment --attach`, one per box, before hand-back, and ticks this box on that comment's URL; the throwaway test is deleted, and `src/DayByDay/DayByDayUITests/` merges unchanged
 
