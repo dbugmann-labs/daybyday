@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-09-07
 - Deciders: Diego Bugmann
+- Amended: 2026-09-22 — `give-a-commitment-an-identity` (#303) gives a commitment an identity, so
+  typing a matching name, rhythm, day kept from and kind no longer reproduces a removed one; only
+  its own identity does, and a matching name now takes on a new commitment instead. ADR-1059 is
+  the record.
 - Amended: 2026-09-10 — an unreadable roster store being refused rather than answered as an empty
   roster is added to the decision by `condense-commitment-spec` (#204), which deletes the requirement
   prose that carried the argument; it is this record's failure mode arriving from the store's side.

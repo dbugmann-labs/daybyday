@@ -12,15 +12,38 @@ func aCommitmentReadsBackTheNameItWasGiven() {
     #expect(commitment?.name == "Gym")
 }
 
-@Test("two commitments alike in name, schedule and kept-from day are the same commitment")
-func twoCommitmentsAlikeInNameScheduleAndKeptFromDayAreTheSameCommitment() {
+@Test("two commitments formed alike in every part are two different commitments")
+func twoCommitmentsFormedAlikeInEveryPartAreTwoDifferentCommitments() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
 
-    let first = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let second = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let first = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let second = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+
+    #expect(first != second)
+    #expect(first.identity != second.identity)
+}
+
+@Test("a commitment formed as a further era of another is the same commitment")
+func aCommitmentFormedAsAFurtherEraOfAnotherIsTheSameCommitment() {
+    let first = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]),
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+
+    let second = Commitment(
+        era: first, schedule: .weekdays([.tuesday, .thursday]),
+        keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!, kind: .tick)!
 
     #expect(first == second)
+    #expect(second.name == "Gym")
+    #expect(second.kind == .tick)
+
+    let third = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]),
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+
+    #expect(third != first)
+    #expect(third != second)
 }
 
 @Test("two commitments differing only in name are different commitments")
@@ -279,7 +302,7 @@ func aCommitmentFormedWithoutAKindIsOfThePlainKind() {
         name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)
 
     #expect(withoutKind?.kind == .tick)
-    #expect(withoutKind == withTickNamed)
+    #expect(withoutKind?.kind == withTickNamed?.kind)
 }
 
 @Test("a commitment's kind does not change whether it is due")

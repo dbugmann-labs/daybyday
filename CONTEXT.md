@@ -225,6 +225,33 @@ roster refuses is then a **name** already in use by a commitment it keeps or has
 value it already holds. The paragraph above says what shipped; the Stories under #26 say when each
 sentence of it turns, and ADR-1023, 1030, 1035 and 1055 are amended in place as they do.
 
+**Identity** — the part of a **commitment** that makes it that commitment and not another: given
+when it is first defined, never derived from its other parts, never changed and never shown to a
+person. Two commitments are the same commitment exactly when their identities are the same,
+however alike or unalike their names, rhythms, days kept from and kinds; two defined separately are
+two however alike every part is. A **roster** holds it, a **record** keys on it, and a **look-back**
+reads a chain off it. Written 2026-09-22, while writing the delta of `give-a-commitment-an-identity`
+(#303).
+
+**Era** — one stretch of a commitment's life, on one rhythm and with one range or target, running
+from a day it is **kept from** until the day before the next era begins. A commitment has one era
+when it is defined and another whenever its rhythm, its range, its target or an interval's count
+begins again; the roster holds each era as an entry carrying the commitment's **identity**, newest
+first. The day a commitment is kept from is its earliest era's, the rhythm it runs on is its
+newest era's, and its name and its kind reach every era alike. A **stop** and a **resume** are not
+era boundaries here; #306 is where that is decided. Written 2026-09-22, while writing the delta of
+`give-a-commitment-an-identity` (#303).
+
+**Fold** — the one-time reading of a roster kept in the form before identities into commitments
+with eras, done when the app first opens it after the upgrade and never again. What chains —
+a removed entry of the same name and kind-sort kept until the day before the next's day kept
+from, the nearest in the roster's order winning — folds as an era under the commitment in front
+of it; a removed entry that nothing kept or stopped resembles by name and kind-sort is erased
+with every record against it; one that resembles a kept or stopped commitment but does not
+chain becomes a stopped commitment of its own. It is silent, it invents no name, and two
+commitments it leaves with one name are the person's to tidy. Agreed 2026-09-22 at the grill of
+`give-a-commitment-an-identity` (#303), on the Feature grill's answers of the day before.
+
 **Removed** — a commitment a person has got rid of for good: the roster still holds it, in the place
 it was taken on in and with the day it was **kept until**, but it is shown in neither of the
 **commitments screen**'s lists and is owed on no day after that one. It is the third state a roster
@@ -262,6 +289,12 @@ way back that this entry describes — defining the commitment again exactly —
 The roster on the phone is folded once at the upgrade: entries this state holds that are eras of
 something fold under it; those nothing kept or stopped resembles are erased with their records;
 the rest become stopped. Until the Stories land, everything above is still what the app does.
+
+**Amended 2026-09-22**, while writing the delta of `give-a-commitment-an-identity` (#303). The
+state itself ships unchanged in that Story, but its **way back closes there**: defining a
+commitment again exactly mints an **identity** of its own and so never finds the removed one, which
+is unreachable from that Story until #304 replaces removal with deletion. The name a removed
+commitment carries also stops standing against anything, so it can be used again at once.
 
 **Deleted** — a commitment taken out for good, with everything it ever recorded: every era, its
 place and category on the roster, and every tick, number, note and total against any of its eras,
@@ -328,6 +361,11 @@ exist against both values that link cannot be reconstructed. The day the person 
 new commitment's first, not the old one's last — the same choice #145 made for stopping, and the
 same price: a record made that morning under the old rhythm is not drawn that day, though it stands.
 Agreed 2026-09-09 at the grill of `add-commitment-editing` (#148).
+
+**Corrected 2026-09-22**, while writing `give-a-commitment-an-identity` (#303)'s delta: an era now
+carries the same **identity** as the commitment in front of it, so the roster does hold a link
+after all, and a **look-back** reads the chain off it — "nothing reads one" no longer holds. The
+rest of this entry stands.
 
 **Restarting** — beginning an every-N-days commitment's count again from a day the person picks,
 because it was kept late: nails due on day 3 and done on day 4 run three days on from day 4. It

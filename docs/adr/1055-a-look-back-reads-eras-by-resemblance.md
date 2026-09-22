@@ -4,6 +4,10 @@
   2026-09-15, against the recommendation to accept the era boundary and capture chaining as a want
 - Date: 2026-09-15
 - Deciders: Diego Bugmann
+- Amended: 2026-09-22 — `give-a-commitment-an-identity` (#303) reverses this record's choice: an
+  era now carries the same identity as the commitment in front of it, the roster does hold a link,
+  and a look-back reads the chain off it rather than inferring it by name and kind. ADR-1059 is
+  the record.
 
 ## Context
 

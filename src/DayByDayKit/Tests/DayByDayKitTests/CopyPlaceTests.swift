@@ -592,14 +592,14 @@ func aFolderRefusedIsHeldApartFromARefusedChangeAndEndsWhenTheAppIsShownAgain() 
         on: .weekdays([
             .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
         ]), keptFrom: keptFrom, under: nil)
-    #expect(defineRefusal == .alreadyKept)
+    #expect(defineRefusal == .nameAlreadyInUse("Gym"))
 
     let directory = freshCopyPlaceDirectory()
     try writeUnreadableFile(Data("not what a copy is written as".utf8), into: directory)
 
     #expect(screen.givenAsCopyPlace(directory) == .notACopy)
     #expect(screen.refusedCopyPlace == .notACopy)
-    #expect(screen.refusedChange == .defining(.alreadyKept))
+    #expect(screen.refusedChange == .defining(.nameAlreadyInUse("Gym")))
 
     screen.shown(asOf: monday)
     #expect(screen.refusedCopyPlace == nil)
@@ -692,9 +692,9 @@ func aChangeReachingTheRecordPlaceAndTheRosterPlaceWritesExactlyOneCopyHoldingBo
     let copy = try #require(
         JSONDecoder().decode(CopyDocument.self, from: Data(contentsOf: file)).formCopy())
     #expect(copy.roster.entries.map(\.commitment.name) == ["Gym 🏋️"])
-    #expect(
-        copy.history.datesRecorded(for: Commitment(name: "Gym 🏋️", schedule: allWeekdays, keptFrom: keptFrom)!)
-            == [sunday])
+    let renamedGym = try #require(
+        copy.roster.entries.first { $0.commitment.name == "Gym 🏋️" }?.commitment)
+    #expect(copy.history.datesRecorded(for: renamedGym) == [sunday])
     #expect(copy.moment == Moment(on: monday, hour: 14, minute: 33)!)
     #expect(copyPlace.lastCopy == Moment(on: monday, hour: 14, minute: 33)!)
 }
@@ -770,7 +770,7 @@ func aCallThatKeepsNothingWritesNoCopyAtTheCopyPlace() throws {
         name: "Gym",
         on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
         keptFrom: keptFrom, under: nil)
-    #expect(refusal == .alreadyKept)
+    #expect(refusal == .nameAlreadyInUse("Gym"))
     #expect(copyPlace.lastCopy == momentAfterPick)
 
     // A stop asked for and cancelled keeps nothing.
@@ -937,8 +937,8 @@ func aCopyThatCouldNotBeMadeIsNotHeldAsARefusedChange() throws {
         screen.define(
             name: "Gym",
             on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
-            keptFrom: keptFrom, under: nil) == .alreadyKept)
-    #expect(screen.refusedChange == .defining(.alreadyKept))
+            keptFrom: keptFrom, under: nil) == .nameAlreadyInUse("Gym"))
+    #expect(screen.refusedChange == .defining(.nameAlreadyInUse("Gym")))
 
     let directory = freshCopyPlaceDirectory()
     try makeCopyPlaceDirectoryUnwritable(directory)
@@ -950,7 +950,7 @@ func aCopyThatCouldNotBeMadeIsNotHeldAsARefusedChange() throws {
 
     // The copy that could not be made there is not held as a refused change: the screen holds
     // the refused definition against defining a commitment exactly as it did.
-    #expect(screen.refusedChange == .defining(.alreadyKept))
+    #expect(screen.refusedChange == .defining(.nameAlreadyInUse("Gym")))
     #expect(copyPlace.stopped?.stop == .folderCannotBeWritten)
 
     let journalingRefusal = screen.define(

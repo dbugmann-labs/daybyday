@@ -12,7 +12,7 @@ import Foundation
 struct RecordDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 5
+    static let currentVersion = 6
 
     /// The form `numbers` was introduced at: forms at or after this one carry the key, forms
     /// before it never do. Kept apart from `currentVersion` on purpose — a fourth form would move
@@ -28,6 +28,13 @@ struct RecordDocument: Codable {
 
     /// The form `additions` was introduced at, on the same footing as the two constants above.
     static let additionsIntroducedInVersion = 5
+
+    /// The form a record's commitment first carried an `identity` key at, on the same footing as
+    /// the three constants above. A document before this form is read with every record carrying
+    /// no identity at all — `commitment()`'s own fallback already mints one — because settling a
+    /// folded roster's records onto the identities the fold gave their commitments is a screen's
+    /// job, not this store's; `design.md` § *Migration*.
+    static let identityIntroducedInVersion = 6
 
     var version: Int
     var ticks: [TickRecord]

@@ -140,6 +140,91 @@ public struct History: Hashable, Sendable {
         return dates
     }
 
+    /// Gives every record `fold` names an identity that identity, and drops every record it maps
+    /// to `nil`. A record whose commitment — name, schedule, day kept from and kind alone,
+    /// `CommitmentRecord.bare(_:)` — is not a key `fold` holds at all is left exactly as it was:
+    /// neither the fold nor this reads that as belonging to any commitment the roster once held,
+    /// so it is a record of a commitment the roster holds in no state, `SaveInProgress`'s orphan
+    /// carry-back to settle from there. Answers whether anything moved. Package-internal:
+    /// `RecordStore.settle(_:)` is the one caller. `design.md` § *The seam* and § *Migration*.
+    mutating func settle(_ fold: [CommitmentRecord: Commitment.Identity?]) -> Bool {
+        guard !fold.isEmpty else {
+            return false
+        }
+
+        var moved = false
+
+        /// Where `commitment`'s bare shape is a key in `fold`, answers the commitment settled onto
+        /// the identity it names — or `nil` where the fold dropped it, which this tells apart from
+        /// "leave it as it is" by way of the outer optional. `nil` outer means "not a key at all."
+        func settled(_ commitment: Commitment) -> Commitment?? {
+            guard let mapped = fold[CommitmentRecord.bare(commitment)] else {
+                return nil
+            }
+            guard let identity = mapped else {
+                return .some(nil)
+            }
+            return .some(
+                Commitment(
+                    identity: identity, name: commitment.name, schedule: commitment.schedule,
+                    keptFrom: commitment.keptFrom, kind: commitment.kind))
+        }
+
+        var newTicks: Set<Tick> = []
+        for tick in ticks {
+            guard let outcome = settled(tick.commitment) else {
+                newTicks.insert(tick)
+                continue
+            }
+            moved = true
+            if let settledCommitment = outcome, let newTick = Tick(settledCommitment, on: tick.date) {
+                newTicks.insert(newTick)
+            }
+        }
+        ticks = newTicks
+
+        var newNumbers: [RecordedDay: Decimal] = [:]
+        for (day, value) in numbers {
+            guard let outcome = settled(day.commitment) else {
+                newNumbers[day] = value
+                continue
+            }
+            moved = true
+            if let settledCommitment = outcome {
+                newNumbers[RecordedDay(commitment: settledCommitment, date: day.date)] = value
+            }
+        }
+        numbers = newNumbers
+
+        var newNotes: [RecordedDay: String] = [:]
+        for (day, text) in notes {
+            guard let outcome = settled(day.commitment) else {
+                newNotes[day] = text
+                continue
+            }
+            moved = true
+            if let settledCommitment = outcome {
+                newNotes[RecordedDay(commitment: settledCommitment, date: day.date)] = text
+            }
+        }
+        notes = newNotes
+
+        var newAdditions: [RecordedDay: [Decimal]] = [:]
+        for (day, amounts) in additions {
+            guard let outcome = settled(day.commitment) else {
+                newAdditions[day] = amounts
+                continue
+            }
+            moved = true
+            if let settledCommitment = outcome {
+                newAdditions[RecordedDay(commitment: settledCommitment, date: day.date)] = amounts
+            }
+        }
+        additions = newAdditions
+
+        return moved
+    }
+
     /// Carries every record held of `commitment` over to `changed`, on the same date each was
     /// made for. See `openspec/specs/record/spec.md` § *A history carries every record of one
     /// commitment over to another*.

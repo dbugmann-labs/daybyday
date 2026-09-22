@@ -180,6 +180,38 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **A shipped requirement is unreachable after #303, and stays on purpose for a phone upgrading
+  from an earlier form.** `openspec/specs/commitment/spec.md` § *A change that carries records
+  leaves a save in progress until its roster place is written* is untouched by
+  `give-a-commitment-an-identity`'s (#303) delta on purpose — `design.md`:86-88 says so, because a
+  phone upgrading from this app's earlier forms may still hold a torn save one of the three
+  save-in-progress requirements exists to undo. After this Story, no change or restart carries a
+  record to the record place at all — `keepSaveInProgressIfCarrying` is gone from source — so its
+  three scenarios each have a test again and pass vacuously: nothing is ever refused, and no save
+  in progress is ever kept. Found at #303's G7 fix round, 2026-09-22; two of the three scenarios'
+  tests, deleted by `5e3ee61`, were restored at #303's second G7 fix round the same day. That
+  commit also deleted six non-scenario-named torn-save tests — five in `CommitmentsScreenTests`,
+  one in `TakeOutTests` — that went with the helpers they drove. The next Story that deltas
+  `commitment` carries this requirement as REMOVED.
+- **`RosterDocument.folded()`'s tie-break for "the nearest such commitment" picks the farthest
+  chain, not the nearest.** `RosterDocument.swift:237` reads
+  `attachable.max(by: { $0.frontIndex < $1.frontIndex })` for what its own doc comment calls "the
+  nearest such commitment, by that front's own place" (`design.md` says "nearest in the roster's
+  order"). The two agree for every roster the old `supersede` ever wrote, where at most one
+  un-attached chain is ever attachable to a given removed entry at once — but not for a
+  hand-formed document holding two live entries of one name whose chains front at index 3 and
+  index 9 around a removed entry at index 5: the nearer of the two by roster position is the one
+  fronting at 3, and `max(by:)` picks the one fronting at 9 instead. Found at #303's G7 fix round,
+  2026-09-22.
+- **A `day-screen` scenario says a rename is "changed at both places" after #303 makes a rename write
+  the roster place only.** *a commitment renamed at a day screen's places is drawn under its new name
+  and still kept when the screen is returned to* (`openspec/specs/day-screen/spec.md`) keeps that
+  WHEN in a requirement `give-a-commitment-an-identity` (#303) does not modify — its THENs still hold,
+  its test is edited under that Story's `tasks.md` § 1.3, and `design.md` says `day-screen` needs no
+  requirement change, which is true of the rules and not of this sentence. Found by `spec-author` on
+  2026-09-22 while naming carried tests; booked here rather than reopening the G4-signed delta for
+  one clause of stale prose. The next Story that deltas `day-screen` carries the requirement as
+  MODIFIED and drops "at both places".
 - **A take-out's write failure is refused as a place that could not be written, and no test can reach it.**
   `CommitmentsScreen.takeOut` (#270) creates a directory named by a fresh UUID and writes each file
   into it in the same call; a failing `createDirectory` is refused the same way and is tested, but a
@@ -197,16 +229,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   is shown, the seam tests do — but an acceptance line can be rewritten to describe the picture
   taken, and only a reviewer reading the commit log sees it. Whether `tasks.md` § 11 belongs in the
   digest, or a stop at the walk should be a second G4, is open.
-- **ADR-1055 says "the same name and the same kind" where the shipped chain rule says "a kind of
-  the same sort".** Found at #274's Stage 4, 2026-09-17. `change-range-and-target` (#262, merged
-  2026-09-16 as `d281584`) made a changed range or target supersede and widened the look-back's
-  resemblance rule so a chain runs across it — a number behind a number, a total behind a total,
-  whatever it carries — and `LookBack.chain` calls `Kind.isOfTheSameSort(as:)`. The ADR's
-  Decision still reads the old rule, and its § *The price is named, not hidden* does not list the
-  range change its own first paragraph says supersedes. The spec is right and the code follows
-  it; the ADR is the stale one. #274's `spec-author` drafted the amendment and withdrew it rather
-  than book another Story's decision under its own; the next Story or chore that opens ADR-1055
-  amends the Decision and the price list, dated, per `docs/adr/README.md`'s amendment rule.
 - **A number graph's year and "All" spans say one month label, and a wide label can overlap the
   one kept before it.** Found at #274's G7, 2026-09-21, and reshaped by its fifth fix round.
   `LookBackView`'s dates-axis candidates are every month in the whole domain; where two would
@@ -486,6 +508,24 @@ Things that are built, or deliberately not built, in a state someone will trip o
   a public widening of `DayView.Row`, which is a delta against `openspec/specs/day-screen/spec.md`
   and a G4. It is the same widening the eighth face above describes, which is an argument for one
   Story covering both. Unowned: the tracker holds no open issue at all.
+
+  **A second screen hit a related shape, fixed 2026-09-22 by `give-a-commitment-an-identity`
+  (#303) at `tasks.md` § 14.4, but not by a stable row identity** — keying the commitments
+  screen's row `ForEach`s and `SheetTarget.id` on more than `Commitment` itself was tried and
+  found insufficient, since `CommitmentsView.body` was confirmed, at the pixel level, not to
+  re-run at all off a rename or a rhythm change kept through `CommitmentSheet` however a row was
+  keyed, while `screen.kept`/`keptGroups`/`stopped` already held the new value the instant the
+  sheet closed; the fix kept is a `listRevision` `@State` bumped in `.sheet(item:onDismiss:)`'s
+  `onDismiss` and read via `.id(listRevision)` on the `List`, forcing it to rebuild fresh
+  against those three properties whenever a sheet dismisses, and why Observation's own
+  invalidation does not reach this view across that presentation boundary on its own is not
+  understood, only worked around. The catch for this redraw is the walk's picture 3
+  (`tasks.md` § 16.3), not a committed test: ADR-1053 decision 3 keeps
+  `src/DayByDay/DayByDayUITests/` merging unchanged, and ADR-1029 restricts that bundle to
+  asserting only that the shell drew, never what it drew. `.id(listRevision)`'s cost is that the
+  whole `List` is rebuilt on every sheet dismissal, so a scroll offset, edit mode and an
+  in-flight swipe are all lost with it, and a long list jumps back to the top after editing a row
+  near the bottom. The day screen's own gap above is untouched.
 - **The Story issue template asks an agent to write the G4 marker string.** Surfaced writing
   #91..#93, 2026-09-03. `.github/ISSUE_TEMPLATE/story.yml`'s last Definition-of-ready checkbox
   quotes the marker line literally, so an agent rendering the template faithfully writes that
@@ -780,8 +820,41 @@ Things that are built, or deliberately not built, in a state someone will trip o
   mean the app telling a trashed folder from a live one (`URLResourceKey` gives no such flag; the
   path contains `.Trash` on iCloud Drive) — a want if anyone wants it, not a defect. Forgetting the
   place and picking again worked as walked.
+- **Carried tests were edited outside `give-a-commitment-an-identity`'s (#303) `tasks.md` § 1.3,
+  in more than one class of edit.** Fourteen are a store form moving: § 1.4 raises
+  `RosterDocument.currentVersion` from 4 to 5 and `RecordDocument.currentVersion` from 5 to 6; the
+  fixtures for *"a form one later than the one this app knows"* hand-write that number plus one,
+  so raising the constant forces the literal to move with it in every fixture that names one — ten
+  in `DayScreenTests.swift` (`:339`, `:423`, `:601`, `:990`, `:1176`, `:3367`, `:3540`, `:3562`,
+  `:4233`, `:6939`), one in `CommitmentsScreenTests.swift` (`:1962`), one in
+  `RecordStoreTests.swift` (`:256`) and two in `RosterStoreTests.swift` (`:319`, `:2263`). Three
+  more swap out a fixture's own second identity for the one already in hand — *a stopped
+  commitment renamed through a commitments screen stays stopped, on the day it was kept until*
+  (`CommitmentsScreenTests.swift:5845`), *what a commitments screen holds about a refused change
+  ends when a change kept at both places is kept* (`:6723`) and *an interval commitment restarted
+  from the day it is kept from is kept on no date before the restart* (`:7765`) each dropped a
+  second commitment formed alike to the one already asked about, reading the original's identity
+  back where the dropped one used to stand. One restores an assertion a rewrite of it dropped: *an
+  interval commitment restarted from today is kept until yesterday and runs on from today under
+  its name, interval and category* (`:7688`) lost, then regained (`b296f9a`), the assertion that
+  the restarted era's interval starts on the restart day. And two are this Story's own G7
+  fix-round repairs rather than the original implementation pass's — *a take-up-again a
+  commitments screen could not keep leaves both its lists as they were* (`:7151`) and *a change
+  refused at the roster place after carrying its records leaves no save in progress and a roster
+  still kept* (`:8091`) — which is a repair's business and not § 1.3's. Every edit named above is
+  correct and forced by the fact that drives it, and none is named in § 1.3 — § 1.2's own stop, "a
+  carried test that has to be edited and is not named in § 1.3 is the design being wrong: stop and
+  report it," was not taken for any of them. Found across #303's G7 fix rounds, 2026-09-22. The
+  next Story whose delta moves a store's form names that class of edit in its own § 1.3.
 
 ## Settled
+
+- 2026-09-22 — **ADR-1055 says "the same name and the same kind" where the shipped chain rule said
+  "a kind of the same sort".** Closed at `give-a-commitment-an-identity` (#303), the next Story to
+  open ADR-1055, as the entry asked. Resemblance chaining goes with it: a look-back now reads a
+  commitment's eras off the roster by **identity**, not by walking removed entries that resemble
+  the one in front, so the name-and-kind question the entry raised no longer has anything to
+  answer — ADR-1055 is amended in place with a dated line rather than a rewritten Decision.
 
 - 2026-09-21 — **a copy that cannot be made over a store from a later version says so.** Closed at
   #270's grill, which #266's review had left it to: a refused copy tells a later-form store apart —

@@ -819,10 +819,10 @@ it when the app is shown again or another folder is given.
 - **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
   1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place,
   a record place and a one-off place where nothing has been kept as of Monday 31 August 2026, keeping
-  its copy place at a place of its own and asking a clock that answers that day at 14:32; a
-  commitment alike in every way to "Gym" is defined through it and refused as already kept; and a
-  directory holding a file named `DayByDay.daybyday` that is a run of bytes that is not a copy is
-  then given to it as its copy place
+  its copy place at a place of its own and asking a clock that answers that day at 14:32; a second
+  commitment named "Gym" on that same rhythm and day is defined through it and refused for its name;
+  and a directory holding a file named `DayByDay.daybyday` that is a run of bytes that is not a copy
+  is then given to it as its copy place
 - **THEN** it holds the folder refused as not a copy, and still holds the refused definition against
   defining a commitment
 - **AND** once the app is shown again as of that same day it holds no folder refused
@@ -928,8 +928,8 @@ that keeps nothing anywhere SHALL write no copy and SHALL leave the last copy as
   asked, from that day at 14:32; a directory of its own is given to it as its copy place; and "Gym"
   is moved to the place it already holds
 - **THEN** the last copy made is still Monday 31 August 2026 at 14:32
-- **AND** a commitment alike in every way to "Gym" defined through it and refused as already kept
-  leaves the last copy made at that same moment
+- **AND** a second commitment named "Gym" on that same rhythm and day defined through it and refused
+  for its name leaves the last copy made at that same moment
 - **AND** a stop asked for and cancelled, and a restore asked for and cancelled, each leave it there
   too
 
@@ -1023,9 +1023,9 @@ SHALL try again, and a copy made SHALL end the stop and become the last copy.
 - **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place, a record
   place and a one-off place where nothing has been kept, keeping its copy place at a place of its own
   and asking a clock that answers a later minute each time it is asked, from that day at 14:32; a
-  commitment alike in every way to one named "Gym" on a schedule listing all seven weekdays, kept
-  from 1 January 2026, is defined through it twice, the second refused as already kept; and a
-  directory that cannot be written to is given to it as its copy place
+  commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January 2026, is
+  defined through it twice, the second refused for its name; and a directory that cannot be written
+  to is given to it as its copy place
 - **THEN** the copy that could not be made there is not held as a refused change: the screen holds
   the refused definition against defining a commitment exactly as it did
 - **AND** the stop is the folder that cannot be written
@@ -1358,8 +1358,8 @@ take-out it made.
 - **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
   1 January 2026, is taken on at a roster place; a one-off place beside it is made a run of bytes
   that is not a one-off holder; a commitments screen is opened at those places and at a record place
-  where nothing has been kept as of Monday 31 August 2026; a commitment alike in every way to "Gym"
-  is defined through it and refused as already kept; and a take-out is asked for
+  where nothing has been kept as of Monday 31 August 2026; a second commitment named "Gym" on that
+  same rhythm and day is defined through it and refused for its name; and a take-out is asked for
 - **THEN** the take-out is not refused, and the screen still holds that refused definition against
   defining a commitment
 - **AND** it says nothing of its own about the take-out it made
@@ -1422,9 +1422,9 @@ change it holds for every other change it would not make.
 - **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from
   1 January 2026, is taken on at a roster place; a commitments screen is opened at that roster place,
   a record place where nothing has been kept, and a one-off place holding a run of bytes that is not
-  a one-off holder as of Monday 31 August 2026; a commitment alike in every way to "Gym" is defined
-  through it and refused as already kept; and a take-out is asked for, written into a directory that
-  cannot be written to
+  a one-off holder as of Monday 31 August 2026; a second commitment named "Gym" on that same rhythm
+  and day is defined through it and refused for its name; and a take-out is asked for, written into
+  a directory that cannot be written to
 - **THEN** the screen holds the refused take-out, and no longer holds the refused definition
 
 ### Requirement: A day screen that is not keeping a store says a copy can be restored and where

@@ -345,7 +345,7 @@ func aRecordWrittenInALaterFormThanThisAppKnowsMakesADayScreenThatSaysTheRecordI
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 6, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 7, "ticks": []}"#.utf8).write(to: place)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -429,7 +429,7 @@ func tickingARowOnADayScreenHoldingARecordFromALaterVersionKeepsNothingAndLeaves
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 6, "ticks": []}"#.utf8)
+    let bytes = Data(#"{"version": 7, "ticks": []}"#.utf8)
     try bytes.write(to: place)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -609,7 +609,7 @@ func aDayScreenShownAgainWhereTheRecordIsFromALaterVersionSaysSo() throws {
     let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 6, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 7, "ticks": []}"#.utf8).write(to: place)
 
     screen.shown(asOf: monday)
 
@@ -992,7 +992,7 @@ func aDayScreenThatIsNotKeepingARosterMovesAndGoesOnSayingWhy() throws {
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let journaling = Commitment(
@@ -1202,7 +1202,7 @@ func goingBackToTodayDoesNotReadTheRosterAgain() throws {
     let (laterFormPlace, laterFormRosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: laterFormRosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: laterFormRosterPlace)
+    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: laterFormRosterPlace)
 
     let laterFormScreen = DayScreen(
         startingFrom: [], asOf: monday, keepingRecordAt: laterFormPlace,
@@ -3373,7 +3373,7 @@ func aRosterWrittenInALaterFormThanThisAppKnowsMakesADayScreenThatSaysTheRosterI
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -3550,7 +3550,7 @@ func aDayScreenThatWasKeepingARosterStopsWhenItIsShownAgainAndTheRosterCannotBeR
     let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     screen.shown(asOf: monday)
 
@@ -3564,10 +3564,10 @@ func aDayScreenShownAgainCarriesOverNoReasonItGaveForNotKeepingItsRecordOrItsRos
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 6, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 7, "ticks": []}"#.utf8).write(to: place)
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -3700,7 +3700,6 @@ func aCommitmentRenamedAtADayScreensPlacesIsDrawnUnderItsNewNameAndStillKeptWhen
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
     let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
-    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: daily, keptFrom: keptFrom)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let rosterStore = try RosterStore(at: rosterPlace)
@@ -3713,9 +3712,7 @@ func aCommitmentRenamedAtADayScreensPlacesIsDrawnUnderItsNewNameAndStillKeptWhen
     #expect(screen.recordState == .kept)
 
     let otherRoster = try RosterStore(at: rosterPlace)
-    try otherRoster.change(gym, to: gymEmoji, under: nil)
-    let otherRecord = try RecordStore(at: place)
-    try otherRecord.carryOver(gym, to: gymEmoji)
+    try otherRoster.rename(gym, to: "Gym 🏋️")
 
     screen.returnedTo()
 
@@ -4238,7 +4235,7 @@ func aTapOnADayScreenHoldingARecordFromALaterVersionIsToldNothingOnTheRow() thro
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 6, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 7, "ticks": []}"#.utf8).write(to: place)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -6944,7 +6941,7 @@ func aCommitOnADayScreenHoldingARecordFromALaterVersionIsToldNothingWhateverWasC
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 6, "ticks": []}"#.utf8).write(to: place)
+    try Data(#"{"version": 7, "ticks": []}"#.utf8).write(to: place)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -7039,22 +7036,21 @@ func aDayScreenDrawsARemovedCommitmentUnderACategoryExactlyAsItDrawsAStoppedOne(
     let daily: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
-    let stoppedCreatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
-    let removedCreatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
     let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let (stoppedPlace, stoppedRosterPlace) = freshPlaces()
     let stoppedRoster = try RosterStore(at: stoppedRosterPlace)
-    try stoppedRoster.add(stoppedCreatine)
-    try stoppedRoster.put(stoppedCreatine, under: "Supplements")
-    try stoppedRoster.retire(stoppedCreatine, keptUntil: sunday)
+    try stoppedRoster.add(creatine)
+    try stoppedRoster.put(creatine, under: "Supplements")
+    try stoppedRoster.retire(creatine, keptUntil: sunday)
 
     let (removedPlace, removedRosterPlace) = freshPlaces()
     let removedRoster = try RosterStore(at: removedRosterPlace)
-    try removedRoster.add(removedCreatine)
-    try removedRoster.put(removedCreatine, under: "Supplements")
-    try removedRoster.remove(removedCreatine, keptUntil: sunday)
+    try removedRoster.add(creatine)
+    try removedRoster.put(creatine, under: "Supplements")
+    try removedRoster.remove(creatine, keptUntil: sunday)
 
     let stoppedScreen = DayScreen(
         startingFrom: [], asOf: monday, keepingRecordAt: stoppedPlace,
@@ -9728,4 +9724,80 @@ func aDayScreenKeepingAllThreeOfItsStoresSaysNothingAboutRestoringACopy() throws
     try FileManager.default.removeItem(at: readableRecordPlace)
     unreadableScreen.shown(asOf: monday)
     #expect(!unreadableScreen.saysACopyCanBeRestored)
+}
+
+@MainActor
+@Test("a day screen opened on a folded roster carries the records too")
+func aDayScreenOpenedOnAFoldedRosterCarriesTheRecordsToo() throws {
+    let places = freshPlaces()
+    let allSevenDays =
+        #"["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]"#
+    try FileManager.default.createDirectory(
+        at: places.roster.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 3, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "keptUntil": { "year": 2026, "month": 2, "day": 28 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8
+        ).write(to: places.roster)
+    try Data(
+        """
+        {
+          "version": 5,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "date": { "year": 2026, "month": 2, "day": 15 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8
+        ).write(to: places.record)
+
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster)
+
+    let laterRecordStore = try RecordStore(at: places.record)
+    let settledCommitments = laterRecordStore.history.commitmentsWithRecords()
+    #expect(settledCommitments.count == 1)
+    let settled = try #require(settledCommitments.first)
+    #expect(settled.name == "Gym")
+    #expect(laterRecordStore.history.isKept(settled, on: CalendarDate(year: 2026, month: 2, day: 15)!))
+
+    screen.showDay(CalendarDate(year: 2026, month: 2, day: 15)!)
+
+    let row = try #require(screen.dayView.groups.flatMap(\.rows).first)
+    #expect(row.name == "Gym")
+    #expect(row.isKept)
 }

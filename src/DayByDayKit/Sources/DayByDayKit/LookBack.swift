@@ -44,9 +44,10 @@ public struct LookBack: Hashable, Sendable {
     }
 
     /// One era of a look-back's **chain**: a commitment, and the last day it counts through —
-    /// `today` or the day this screen was handed for the newest era, the day before the era in
-    /// front of it is kept from for every era behind it. `design.md` § *Two removed commitments
-    /// that both answer: the nearest one wins*.
+    /// `today` or the day this screen was handed for the newest era, the day it was kept until
+    /// for every era behind it, each carrying the same identity as the one in front of it.
+    /// `openspec/changes/give-a-commitment-an-identity/design.md` § *A look-back reads a
+    /// commitment's eras off the roster by its identity*.
     private struct Era {
         let commitment: Commitment
         let end: CalendarDate
@@ -107,9 +108,9 @@ public struct LookBack: Hashable, Sendable {
     /// Forms the look-back at `commitment`, on either of a commitments screen's lists —
     /// `keptUntil` is the day the roster stopped keeping it, `nil` where the roster is still
     /// keeping it. `entries` is the roster's own entries, in its own order, so the chain behind
-    /// `commitment` can be read by resemblance — `design.md` § *A look-back reads a commitment's
-    /// earlier eras off the roster by resemblance*. `today` is the day the screen was handed, and
-    /// `history` is the record this screen reads.
+    /// `commitment` can be read off every entry carrying its identity — `design.md` § *A
+    /// look-back reads a commitment's eras off the roster by its identity*. `today` is the day
+    /// the screen was handed, and `history` is the record this screen reads.
     static func form(
         for commitment: Commitment, keptUntil: CalendarDate?, entries: [Roster.Entry],
         today: CalendarDate, history: History
@@ -147,57 +148,25 @@ public struct LookBack: Hashable, Sendable {
     }
 
     /// The chain of eras behind `commitment`, newest first: `commitment` itself, ending on `end`,
-    /// then every removed commitment the roster holds by resemblance behind it — same name, the
-    /// same kind's sort, kept until the day before the era in front of it is kept from — walking
-    /// `entries` in its own order, outward from the era in front, so that where more than one
-    /// answers the nearest one wins. `design.md` § *A look-back reads a commitment's earlier eras
-    /// off the roster by resemblance*, § *Two removed commitments that both answer: the nearest
-    /// one wins* and `openspec/changes/change-range-and-target/design.md` § *Resemblance on the
-    /// kind's sort*.
+    /// then every entry `entries` holds carrying the same identity, each ending on the day it was
+    /// kept until — the order `entries` already holds a commitment's eras in, `Roster.eras(of:)`'s
+    /// own. Reaches no era of any other commitment, however alike it is in name, kind, rhythm or
+    /// day: what chains is the identity alone. `design.md` § *A look-back reads a commitment's
+    /// eras off the roster by its identity*.
     private static func chain(from commitment: Commitment, end: CalendarDate, entries: [Roster.Entry])
         -> [Era]
     {
-        var eras: [Era] = [Era(commitment: commitment, end: end)]
+        let matching = entries.filter { $0.commitment.identity == commitment.identity }
 
-        guard let frontIndex = entries.firstIndex(where: { $0.commitment == commitment }) else {
-            return eras
+        guard !matching.isEmpty else {
+            return [Era(commitment: commitment, end: end)]
         }
 
-        var searchFrom = frontIndex + 1
-        var current = eras[0]
-
-        while searchFrom < entries.count {
-            // Where the day before `current.start` cannot be formed at all — the earliest day
-            // this calendar can hold — there is no honest day to search for: falling back to
-            // `current.start` itself would search for an era kept until the same day the front
-            // era is kept from, which `spec.md` § *A removed commitment kept until any day but
-            // the day before is not an earlier era* rules out as one day too late. The chain
-            // ends here instead.
-            guard let targetKeptUntil = current.start.adding(days: -1) else {
-                break
-            }
-            // A slice's `firstIndex(where:)` answers an index into the base array `entries`
-            // already — an `ArraySlice` keeps the indices it was sliced from rather than
-            // rebasing them to zero — so this is the found entry's own index, not an offset
-            // still needing `searchFrom` added back in.
-            guard
-                let foundIndex = entries[searchFrom...].firstIndex(where: { entry in
-                    entry.isRemoved && entry.keptUntil == targetKeptUntil
-                        && entry.commitment.name == current.commitment.name
-                        && entry.commitment.kind.isOfTheSameSort(as: current.commitment.kind)
-                })
-            else {
-                break
-            }
-
-            let foundEntry = entries[foundIndex]
-            let era = Era(commitment: foundEntry.commitment, end: foundEntry.keptUntil!)
-            eras.append(era)
-            current = era
-            searchFrom = foundIndex + 1
+        return matching.enumerated().map { offset, entry in
+            offset == 0
+                ? Era(commitment: commitment, end: end)
+                : Era(commitment: entry.commitment, end: entry.keptUntil!)
         }
-
-        return eras
     }
 
     /// The Monday of `date`'s calendar week, walked back one day at a time so every step stays

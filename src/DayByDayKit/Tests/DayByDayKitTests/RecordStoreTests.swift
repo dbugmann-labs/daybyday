@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-import DayByDayKit
+@testable import DayByDayKit
 
 /// A fresh place under the temporary directory, one per test, so tests are independent and need
 /// no teardown: a UUID names the directory, and the store's file sits one level under it, so the
@@ -258,10 +258,10 @@ func aStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 6, "ticks": []}"#.utf8)
+    let bytes = Data(#"{"version": 7, "ticks": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RecordStoreError.laterForm(at: place, version: 6)) {
+    #expect(throws: RecordStoreError.laterForm(at: place, version: 7)) {
         try RecordStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -703,13 +703,12 @@ func aHistoryKeptBeforeACommitmentCarriedAKindIsReadWithEveryCommitmentOfThePlai
 
     let store = try RecordStore(at: place)
 
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let gym = store.history.commitmentsWithRecords().first!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     var expected = History()
     expected.add(Tick(gym, on: monday)!)
 
+    #expect(gym.kind == .tick)
     #expect(store.history == expected)
     #expect(store.history.isKept(gym, on: monday))
 }
@@ -742,7 +741,7 @@ func aHistoryKeptBeforeADayCouldHoldANumberIsReadAndNoDayInItHoldsANumber() thro
 
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let gym = store.history.commitmentsWithRecords().first!
     let weight = Commitment(
         name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
@@ -784,7 +783,7 @@ func aNumberAddedOverAHistoryKeptBeforeADayCouldHoldANumberIsReadBackBesideTheTi
     let store = try RecordStore(at: place)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let gym = store.history.commitmentsWithRecords().first { $0.name == "Gym" }!
     let range = Commitment.Range(lowest: 40, highest: 150)!
     let weight = Commitment(
         name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
@@ -854,9 +853,7 @@ func aTickAddedOverAHistoryKeptInAnEarlierFormIsReadBackBesideTheTicksAlreadyThe
     try bytes.write(to: place)
 
     let store = try RecordStore(at: place)
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let gym = store.history.commitmentsWithRecords().first!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
     try store.add(Tick(gym, on: wednesday)!)
@@ -1176,10 +1173,8 @@ func aHistoryKeptBeforeADayCouldHoldANoteIsReadAndNoDayInItHoldsANote() throws {
 
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
-    let range = Commitment.Range(lowest: 40, highest: 150)!
-    let weight = Commitment(
-        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let gym = store.history.commitmentsWithRecords().first { $0.name == "Gym" }!
+    let weight = store.history.commitmentsWithRecords().first { $0.name == "Weight" }!
     let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     var expected = History()
@@ -1234,10 +1229,8 @@ func aNoteAddedOverAHistoryKeptBeforeADayCouldHoldANoteIsReadBackBesideTheRecord
     let store = try RecordStore(at: place)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
-    let range = Commitment.Range(lowest: 40, highest: 150)!
-    let weight = Commitment(
-        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
+    let gym = store.history.commitmentsWithRecords().first { $0.name == "Gym" }!
+    let weight = store.history.commitmentsWithRecords().first { $0.name == "Weight" }!
     let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let note = Note("Ran 8k.", for: journal, on: monday)!
@@ -1641,11 +1634,9 @@ func aHistoryKeptBeforeADayCouldHoldAnAdditionIsReadAndNoDayInItHoldsOne() throw
 
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
-    let range = Commitment.Range(lowest: 40, highest: 150)!
-    let weight = Commitment(
-        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
-    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let gym = store.history.commitmentsWithRecords().first { $0.name == "Gym" }!
+    let weight = store.history.commitmentsWithRecords().first { $0.name == "Weight" }!
+    let journal = store.history.commitmentsWithRecords().first { $0.name == "Journal" }!
     let protein = Commitment(
         name: "Protein", schedule: schedule, keptFrom: keptFrom,
         kind: .total(target: Commitment.Target(120)!))!
@@ -1706,8 +1697,8 @@ func anAdditionMadeOverAHistoryKeptBeforeADayCouldHoldAnAdditionIsReadBackBeside
     let store = try RecordStore(at: place)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
-    let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom, kind: .note)!
+    let gym = store.history.commitmentsWithRecords().first { $0.name == "Gym" }!
+    let journal = store.history.commitmentsWithRecords().first { $0.name == "Journal" }!
     let protein = Commitment(
         name: "Protein", schedule: schedule, keptFrom: keptFrom,
         kind: .total(target: Commitment.Target(120)!))!
@@ -1988,7 +1979,7 @@ func aStoreHoldingADayWhoseAdditionsSumPastWhatCanBeKeptExactlyIsReadRatherThanR
     let bytes = Data(
         """
         {
-          "version": 5,
+          "version": 6,
           "ticks": [],
           "numbers": [],
           "notes": [],
@@ -1998,7 +1989,8 @@ func aStoreHoldingADayWhoseAdditionsSumPastWhatCanBeKeptExactlyIsReadRatherThanR
                 "name": "Protein",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
                 "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
-                "kind": { "total": { "target": 120 } }
+                "kind": { "total": { "target": 120 } },
+                "identity": "11111111-1111-1111-1111-111111111111"
               },
               "date": { "year": 2026, "month": 8, "day": 31 },
               "amounts": [99999999999999999999999999999999999999, 0.5]
@@ -2013,6 +2005,7 @@ func aStoreHoldingADayWhoseAdditionsSumPastWhatCanBeKeptExactlyIsReadRatherThanR
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let protein = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!,
         name: "Protein", schedule: schedule, keptFrom: keptFrom,
         kind: .total(target: Commitment.Target(120)!))!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
@@ -2199,4 +2192,150 @@ func aCarryOverThroughAStoreLeavesAtItsPlaceWhatAStoreGivenThoseRecordsUnderTheO
     try second.add(Tick(gymEmoji, on: monday)!)
 
     #expect(try Data(contentsOf: firstPlace) == Data(contentsOf: secondPlace))
+}
+
+@Test("a record is read back as a record of the same commitment rather than one alike to it")
+func aRecordIsReadBackAsARecordOfTheSameCommitmentRatherThanOneAlikeToIt() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let store = try RecordStore(at: place)
+    try store.add(Tick(gym, on: monday)!)
+
+    let later = try RecordStore(at: place)
+
+    let alikeGym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    #expect(later.history.isKept(gym, on: monday))
+    #expect(!later.history.isKept(alikeGym, on: monday))
+}
+
+@Test("a record of an era is read back under the commitment whose era it is")
+func aRecordOfAnEraIsReadBackUnderTheCommitmentWhoseEraItIs() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let newEra = Commitment(
+        era: gym, schedule: .weekdays([.tuesday, .thursday]),
+        keptFrom: CalendarDate(year: 2026, month: 8, day: 31)!, kind: .tick)!
+    let september1st = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let store = try RecordStore(at: place)
+    try store.add(Tick(gym, on: august3rd)!)
+    try store.add(Tick(newEra, on: september1st)!)
+
+    let later = try RecordStore(at: place)
+
+    #expect(later.history.isKept(gym, on: august3rd))
+    #expect(later.history.isKept(gym, on: september1st))
+    #expect(later.history.isKept(newEra, on: september1st))
+
+    var expected = History()
+    expected.add(Tick(gym, on: august3rd)!)
+    expected.add(Tick(newEra, on: september1st)!)
+    #expect(later.history == expected)
+}
+
+@Test("a store whose shape and declared form disagree about identities is refused")
+func aStoreWhoseShapeAndDeclaredFormDisagreeAboutIdentitiesIsRefused() throws {
+    let beforeIdentitiesPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: beforeIdentitiesPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let beforeIdentitiesBytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8)
+    try beforeIdentitiesBytes.write(to: beforeIdentitiesPlace)
+
+    let currentFormPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: currentFormPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let currentFormBytes = Data(
+        """
+        {
+          "version": 6,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8)
+    try currentFormBytes.write(to: currentFormPlace)
+
+    #expect(throws: RecordStoreError.notAStore(at: beforeIdentitiesPlace)) {
+        try RecordStore(at: beforeIdentitiesPlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: currentFormPlace)) {
+        try RecordStore(at: currentFormPlace)
+    }
+    #expect(try Data(contentsOf: beforeIdentitiesPlace) == beforeIdentitiesBytes)
+    #expect(try Data(contentsOf: currentFormPlace) == currentFormBytes)
+}
+
+@Test("a history kept before a record carried an identity is read with every record carrying none")
+func aHistoryKeptBeforeARecordCarriedAnIdentityIsReadWithEveryRecordCarryingNone() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RecordStore(at: place)
+
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let alikeGym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    #expect(!store.history.isKept(alikeGym, on: CalendarDate(year: 2026, month: 8, day: 31)!))
+    #expect(try Data(contentsOf: place) == bytes)
 }

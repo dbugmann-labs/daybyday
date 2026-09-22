@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-09-03
 - Deciders: Diego Bugmann
+- Amended: 2026-09-22 — a commitment gains the identity this record's own alternatives ruled out;
+  equality is the identity alone, a rename or a corrected kept-from day now put a new era on it
+  rather than forming a second commitment, and `give-a-commitment-an-identity` (#303) retires the
+  carry-over this record built for them. ADR-1059 is the record.
 - Amended: 2026-09-10 — carrying records over refuses rather than merges, and why refusing is the
   right half of that choice; `condense-record-spec` (#205) deletes the requirement prose that
   carried the argument

@@ -72,16 +72,12 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("Choose at least one weekday.")
         case .rhythmOutOfRange:
             Text("That number isn't one this rhythm accepts.")
-        case .alreadyKept:
-            Text("Already being kept.")
         case .notKept:
             Text("The roster could not be read or could not be written.")
         case .stoppedCommitmentDoesNotTakeThisChange:
             Text("Take it up again first to change anything but its name or category.")
         case .wouldLeaveARecordedDayNotDue:
             Text("Choose a day that leaves every recorded day due.")
-        case .recordsAlreadyExist:
-            Text("Records already exist under that.")
         case .rangeIsNotARange:
             Text("That's not a range.")
         case .targetIsNotATarget:
@@ -109,10 +105,33 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("That copy is damaged.")
         case .copyFromALaterVersion:
             Text("That copy is from a newer version of DayByDay.")
+        case .nameAlreadyInUse(let name):
+            // The sheet's own wording — a define and a rename alike, `grill.md` § *Settled* 6 —
+            // naming the collision and the field to fix, unlike the old foot-of-sheet caption it
+            // replaces. `name` is the collision exactly as the roster holds it.
+            Text("A commitment called \"\(name)\" already exists.")
         }
     }
     .font(.caption)
     .foregroundStyle(.red)
+}
+
+/// The words a person reads for a stopped row's own resume refusal — `grill.md` § *Settled* 9:
+/// the name a kept commitment already carries, said as "already kept" rather than the sheet's
+/// "already exists", because nothing offered from a stopped row is being defined.
+/// `CommitmentsScreen.keepAgain` sets `stoppedRefusal` to `.nameAlreadyInUse` for a name
+/// collision and to `.notKept` where the roster place could not be read or could not be
+/// written; the `else` branch below, reading through `refusalText`, is the live path for that
+/// second case.
+@ViewBuilder
+private func stoppedRowRefusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
+    if case .nameAlreadyInUse(let name) = refusal {
+        Text("A commitment called \"\(name)\" is already kept.")
+            .font(.caption)
+            .foregroundStyle(.red)
+    } else {
+        refusalText(refusal)
+    }
 }
 
 /// The words a person reads for a refused copy, naming the store `store` says where one is
@@ -372,6 +391,16 @@ struct CommitmentsView: View {
     let screen: CommitmentsScreen
 
     @State private var sheetTarget: SheetTarget?
+    /// Bumped in `.sheet(item:onDismiss:)`'s `onDismiss`, and read by `body` where the lists are
+    /// built, so a dismissed sheet always leaves this view's `List` re-evaluated against
+    /// `screen.kept`/`keptGroups`/`stopped` — `tasks.md` § 14.4. A rename or a rhythm change kept
+    /// through `CommitmentSheet` mutates those three stored, `@Observable`-tracked properties
+    /// correctly and immediately (confirmed: the roster place is written and `screen.kept` itself
+    /// already reads the new value the instant the sheet closes), but this view's own `body` was
+    /// not being re-run by that mutation alone — a fact about `.sheet(item:)` dismissal and
+    /// Observation invalidation across that presentation boundary this Story does not have an
+    /// explanation for, only a state change SwiftUI is documented to always honour.
+    @State private var listRevision = 0
     /// The last copy made, wrapped in `CopyShare` — `nil` until a copy is made, and drives the
     /// share sheet: presented exactly while this holds one. `design.md` § *The shell*: `ShareLink`
     /// needs its item before the tap, so the URL is put here on success rather than offered
@@ -467,7 +496,9 @@ struct CommitmentsView: View {
                     // Keyed on the commitment's own value, not its position — as the flat list
                     // was before this Story's group move started carrying whole blocks through
                     // this `ForEach`. `.onMove` still takes its offsets from the underlying
-                    // `group.commitments`, whatever the `id:` is keyed on.
+                    // `group.commitments`, whatever the `id:` is keyed on. Redrawing a row whose
+                    // commitment changed in value but not in identity — `tasks.md` § 14.4 — does
+                    // not turn on this key: see `listRevision` on `CommitmentsView`.
                     ForEach(group.commitments, id: \.self) { commitment in
                         // `LookBackView(screen:commitment:)` is cheap to construct — two
                         // references — so building it here, in the trailing closure this
@@ -615,8 +646,8 @@ struct CommitmentsView: View {
             } header: {
                 Text("Stopped")
             } footer: {
-                if case .keepingAgain(_, let keepAgainRefusal) = screen.refusedChange {
-                    refusalText(keepAgainRefusal)
+                if let stoppedRefusal = screen.stoppedRefusal {
+                    stoppedRowRefusalText(stoppedRefusal.refusal)
                 }
 
                 if case .removing(let removed, let removingRefusal) = screen.refusedChange,
@@ -837,7 +868,10 @@ struct CommitmentsView: View {
                 }
             }
         }
-        .sheet(item: $sheetTarget) { target in
+        // `listRevision`, above: forces this `List` to be rebuilt against
+        // `screen.kept`/`keptGroups`/`stopped` fresh whenever the sheet below dismisses.
+        .id(listRevision)
+        .sheet(item: $sheetTarget, onDismiss: { listRevision += 1 }) { target in
             CommitmentSheet(screen: screen, changing: target.commitment)
         }
         .sheet(item: $copyShare) { share in

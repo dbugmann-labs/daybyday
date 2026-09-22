@@ -6,21 +6,70 @@ import Foundation
 /// disk* fixes the shape below by hand, in the record's own words, rather than deriving `Codable`
 /// on the engine types: the file's shape is a contract independent of how `Schedule` and
 /// `Commitment` happen to be laid out in Swift.
-struct CommitmentRecord: Codable {
+/// `Hashable`, and `public`, so `RosterStore.fold` — `design.md` § *The seam* — can key a
+/// dictionary by it whole, wire shape and all, without asking `Commitment` or any engine type to
+/// carry the pre-identity form. Its own members stay unelevated: a caller outside this package
+/// reads one back only as an opaque, comparable key, never by field.
+public struct CommitmentRecord: Codable, Hashable {
     var name: String
     var keptFrom: DateRecord
     var schedule: ScheduleRecord
     var kind: KindRecord?
+    /// The identity this commitment was given, written as its UUID string — present exactly at
+    /// forms at or after `RosterDocument.identityIntroducedInVersion` and
+    /// `RecordDocument.identityIntroducedInVersion`, and absent entirely at every form before,
+    /// on the same footing as `RosterEntryRecord.category`. `identityKeyPresent` tells that apart
+    /// from a key that was present but empty, which this app never writes.
+    var identity: String?
+    var identityKeyPresent: Bool
+
+    private enum CodingKeys: String, CodingKey {
+        case name, keptFrom, schedule, kind, identity
+    }
 
     init(_ commitment: Commitment) {
         name = commitment.name
         keptFrom = DateRecord(commitment.keptFrom)
         schedule = ScheduleRecord(commitment.schedule)
         kind = KindRecord(commitment.kind)
+        identity = commitment.identity.uuidString
+        identityKeyPresent = true
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        keptFrom = try container.decode(DateRecord.self, forKey: .keptFrom)
+        schedule = try container.decode(ScheduleRecord.self, forKey: .schedule)
+        kind = try container.decodeIfPresent(KindRecord.self, forKey: .kind)
+        identityKeyPresent = container.contains(.identity)
+        identity = try container.decodeIfPresent(String.self, forKey: .identity)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(keptFrom, forKey: .keptFrom)
+        try container.encode(schedule, forKey: .schedule)
+        try container.encodeIfPresent(kind, forKey: .kind)
+        try container.encodeIfPresent(identity, forKey: .identity)
+    }
+
+    /// `commitment`'s name, schedule, day kept from and kind alone, carrying no identity at all —
+    /// exactly the shape a roster's pre-identity entries decode as. The one way `History.settle(_:)`
+    /// looks a record's commitment up in a fold, which is keyed by exactly that shape.
+    static func bare(_ commitment: Commitment) -> CommitmentRecord {
+        var record = CommitmentRecord(commitment)
+        record.identity = nil
+        record.identityKeyPresent = false
+        return record
     }
 
     /// `kind` decoded as `nil` — the form written before a commitment carried a kind — means the
-    /// tick kind, per `design.md` § *The form on disk*.
+    /// tick kind, per `design.md` § *The form on disk*. `identity` decoded as `nil` — the form
+    /// written before a commitment carried one — mints a fresh identity, exactly as forming a
+    /// commitment for the first time does; `identity` present but not a UUID refuses the whole
+    /// record, as an unreadable `schedule` or `keptFrom` already does.
     func commitment() -> Commitment? {
         guard let schedule = schedule.schedule(), let keptFrom = keptFrom.calendarDate() else {
             return nil
@@ -36,11 +85,19 @@ struct CommitmentRecord: Codable {
             resolvedKind = .tick
         }
 
-        return Commitment(name: name, schedule: schedule, keptFrom: keptFrom, kind: resolvedKind)
+        guard let identity else {
+            return Commitment(name: name, schedule: schedule, keptFrom: keptFrom, kind: resolvedKind)
+        }
+        guard let identity = Commitment.Identity(identity) else {
+            return nil
+        }
+        return Commitment(
+            identity: identity, name: name, schedule: schedule, keptFrom: keptFrom,
+            kind: resolvedKind)
     }
 }
 
-struct DateRecord: Codable, Equatable, Comparable {
+struct DateRecord: Codable, Equatable, Hashable, Comparable {
     var year: Int
     var month: Int
     var day: Int
@@ -69,7 +126,7 @@ struct DateRecord: Codable, Equatable, Comparable {
 /// One of the four shapes `Schedule` has. The conversion from `Schedule` is an exhaustive `switch`,
 /// so a fifth case is a compile error here rather than a silent gap — `design.md` § *A fifth
 /// schedule shape* names this on purpose.
-enum ScheduleRecord: Codable, Equatable, Comparable {
+enum ScheduleRecord: Codable, Equatable, Hashable, Comparable {
     case weekdays([String])
     case dayOfMonth(Int)
     case everyNDays(Int, from: DateRecord)
@@ -213,7 +270,7 @@ enum ScheduleRecord: Codable, Equatable, Comparable {
 /// sorts by kind as its final tiebreaker for two numbers alike in every earlier field, but reaches
 /// into these cases with its own `switch` (`kindSortKey(_:)`) rather than asking this type to
 /// compare itself.
-enum KindRecord: Codable {
+enum KindRecord: Codable, Hashable {
     case tick
     case number(range: RangeRecord?)
     case note
@@ -322,7 +379,7 @@ enum KindRecord: Codable {
 }
 
 /// The wire shape of a `Commitment.Range`: a lowest and a highest, both required when present.
-struct RangeRecord {
+struct RangeRecord: Equatable, Hashable {
     var lowest: Decimal
     var highest: Decimal
 

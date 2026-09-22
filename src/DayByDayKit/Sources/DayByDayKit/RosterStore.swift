@@ -7,12 +7,15 @@ public final class RosterStore {
     private let place: URL
 
     /// Opens the roster store kept at `place`, reading what is there. A place where nothing has
-    /// been kept opens holding nothing; a place holding something that cannot be read throws.
+    /// been kept opens holding nothing; a place holding something that cannot be read throws. A
+    /// document before `RosterDocument.identityIntroducedInVersion` is folded once, as
+    /// `design.md` § *Migration* describes; a later one is read as it stands.
     public init(at place: URL) throws {
         self.place = place
 
         guard FileManager.default.fileExists(atPath: place.path) else {
             self.roster = Roster()
+            self.fold = [:]
             return
         }
 
@@ -29,42 +32,70 @@ public final class RosterStore {
             throw RosterStoreError.notAStore(at: place)
         }
         guard let document = try? JSONDecoder().decode(RosterDocument.self, from: data),
-            let roster = Self.formed(from: document)
+            Self.shapeAgrees(with: document)
         else {
             throw RosterStoreError.notAStore(at: place)
         }
 
-        self.roster = roster
+        if document.version < RosterDocument.identityIntroducedInVersion {
+            guard let fold = document.folded() else {
+                throw RosterStoreError.notAStore(at: place)
+            }
+            self.roster = fold.roster
+            self.fold = fold.identities
+        } else {
+            guard let formed = document.formRoster() else {
+                throw RosterStoreError.notAStore(at: place)
+            }
+            self.roster = formed
+            self.fold = [:]
+        }
     }
 
-    /// Forms the roster `document` holds — `nil` where its shape disagrees with its own declared
-    /// form, per `design.md` § *The form on disk*: the `removed` field is present on every entry
-    /// at the form that introduced it and at every form since, so its presence must agree with
-    /// the declared version in both directions. Checked against `removalIntroducedInVersion`, not
-    /// `currentVersion` — the two agree today only because form 3 is both, and a later form
-    /// raising `currentVersion` alone must not move which forms this check accepts. `category` is
-    /// checked the same way, against `categoryIntroducedInVersion`. The one place `init(at:)`
-    /// reads a decoded document into this store's own shape, shared with `CopyDocument.read`'s
-    /// own per-store reading — `openspec/changes/restore-from-a-copy/design.md` § *Reading a
-    /// copy: the envelope decides, and a later version outranks damage*.
+    /// Forms the roster `document` holds — folded once where it predates
+    /// `identityIntroducedInVersion`, read as it stands otherwise, per `design.md` § *Migration* —
+    /// or `nil` where its shape disagrees with its own declared form or it could not be formed.
+    /// Shared with `CopyDocument.read`'s own per-store reading, which has no use for a fold's
+    /// identities and so is not the one place `init(at:)` needs them from.
     static func formed(from document: RosterDocument) -> Roster? {
-        guard document.version >= 1 else {
+        guard Self.shapeAgrees(with: document) else {
             return nil
         }
-        guard
-            document.commitments.allSatisfy({
-                ($0.removed != nil) == (document.version >= RosterDocument.removalIntroducedInVersion)
-                    && $0.categoryKeyPresent
-                        == (document.version >= RosterDocument.categoryIntroducedInVersion)
-            })
-        else {
-            return nil
+        if document.version < RosterDocument.identityIntroducedInVersion {
+            return document.folded()?.roster
         }
         return document.formRoster()
     }
 
+    /// Whether every entry's shape agrees with what `document.version` declares it should carry,
+    /// per `design.md` § *The form on disk*: `removed` present on every entry at the form that
+    /// introduced it and at every form since, and absent at every form before — checked against
+    /// `removalIntroducedInVersion`, not `currentVersion`, so a later form raising `currentVersion`
+    /// alone cannot silently move which forms this check accepts. `category` and `identity` are
+    /// each checked the same way, against their own introduced-at constant. The one place
+    /// `init(at:)` reads a decoded document into this store's own shape, shared with
+    /// `CopyDocument.read`'s own per-store reading — `openspec/changes/restore-from-a-copy/
+    /// design.md` § *Reading a copy: the envelope decides, and a later version outranks damage*.
+    private static func shapeAgrees(with document: RosterDocument) -> Bool {
+        guard document.version >= 1 else {
+            return false
+        }
+        return document.commitments.allSatisfy {
+            ($0.removed != nil) == (document.version >= RosterDocument.removalIntroducedInVersion)
+                && $0.categoryKeyPresent
+                    == (document.version >= RosterDocument.categoryIntroducedInVersion)
+                && $0.commitment.identityKeyPresent
+                    == (document.version >= RosterDocument.identityIntroducedInVersion)
+        }
+    }
+
     /// Exactly what is kept at `place`.
     public private(set) var roster: Roster
+
+    /// The mapping the fold made while opening this store — each stored commitment record's
+    /// identity, or `nil` where the fold dropped it — or empty where nothing at `place` needed
+    /// folding. `design.md` § *The seam* and § *Migration*.
+    public private(set) var fold: [CommitmentRecord: Commitment.Identity?]
 
     /// Kept at `place` before this returns. Answers what `Roster.add` answers — `false`, without
     /// throwing and without writing, when the roster is already keeping `commitment`.
@@ -202,10 +233,56 @@ public final class RosterStore {
         return true
     }
 
+    /// Kept at `place` before this returns, unless renaming `commitment` left the roster exactly
+    /// as it was. Answers what `Roster.rename` answers — `false`, without throwing and without
+    /// writing, when the roster does not hold `commitment` or `name` is already held by another.
+    /// Whether anything changed is judged by the name itself, not `nextRoster != roster`: equality
+    /// is the identity now, so two rosters differing in name alone compare equal, and `Roster.rename`
+    /// rebuilds every matching entry whether or not `name` is the one it already carries.
+    @discardableResult
+    public func rename(_ commitment: Commitment, to name: String) throws -> Bool {
+        var nextRoster = roster
+        guard nextRoster.rename(commitment, to: name) else {
+            return false
+        }
+        let alreadyNamed = roster.entries.contains {
+            $0.commitment.identity == commitment.identity && $0.commitment.name == name
+        }
+        if !alreadyNamed {
+            try write(nextRoster)
+        }
+
+        roster = nextRoster
+        return true
+    }
+
+    /// Kept at `place` before this returns. Answers what `Roster.put(era:on:keptUntil:under:)`
+    /// answers — `false`, without throwing and without writing, when the roster is not currently
+    /// keeping `commitment`, or when `era` does not carry its identity, its name or the sort of
+    /// its kind.
+    @discardableResult
+    public func put(
+        era: Commitment, on commitment: Commitment, keptUntil date: CalendarDate,
+        under category: String?
+    ) throws -> Bool {
+        var nextRoster = roster
+        guard nextRoster.put(era: era, on: commitment, keptUntil: date, under: category) else {
+            return false
+        }
+        try write(nextRoster)
+
+        roster = nextRoster
+        return true
+    }
+
     /// Kept at `place` before this returns, unless changing `commitment` for itself left the
     /// roster exactly as it was. Answers what `Roster.change` answers — `true` even where
     /// nothing changed, and `false`, without throwing and without writing, when the roster does
-    /// not hold `commitment`, or when `changed` is a commitment it already holds.
+    /// not hold `commitment`, or when `changed` is a commitment it already holds. Whether
+    /// anything changed is judged by `rostersMatchInEveryField`, not `nextRoster != roster`:
+    /// `Roster`'s equality is the identity alone, the same reason `rename`'s own doc comment
+    /// gives, and cannot be trusted to notice an era whose schedule, kept-from day or kind
+    /// changed while its identity did not.
     @discardableResult
     public func change(_ commitment: Commitment, to changed: Commitment, under category: String?)
         throws -> Bool
@@ -214,7 +291,7 @@ public final class RosterStore {
         guard nextRoster.change(commitment, to: changed, under: category) else {
             return false
         }
-        if nextRoster != roster {
+        if !rostersMatchInEveryField(nextRoster, roster) {
             try write(nextRoster)
         }
 
@@ -241,21 +318,38 @@ public final class RosterStore {
     }
 
     /// Kept at `place` in one write, replacing the whole roster with `nextRoster`. For a caller
-    /// that must apply more than one `Roster` mutation as a single act — a rename immediately
-    /// followed by a supersession, say — building the combined value first and handing it here
-    /// keeps the two from ever being kept as two separate writes, where a place that goes
-    /// unwritable between them could leave one half kept and the other refused. Answers `false`,
-    /// without throwing and without writing, when `nextRoster` is exactly the roster already
-    /// held.
+    /// that must apply more than one `Roster` mutation as a single act — a rename, a day-move and
+    /// a new era put on, say — building the combined value first and handing it here keeps them
+    /// from ever being kept as separate writes, where a place that goes unwritable partway
+    /// through could leave one half kept and the rest refused. Always writes: unlike `rename`'s
+    /// own "whether anything changed is judged by the name itself, not `nextRoster != roster`"
+    /// (`RosterStore.rename`'s own doc comment), a caller here has already judged for itself that
+    /// something changed, and `Roster`'s equality — identity alone — cannot be trusted to agree
+    /// when a rename or a day-move is the only thing that did, since neither touches an entry's
+    /// identity, its `keptUntil`, its `isRemoved` or its category, the only fields two `Roster`
+    /// values are compared on beyond an entry's very presence.
     @discardableResult
     func replace(with nextRoster: Roster) throws -> Bool {
-        guard nextRoster != roster else {
-            return false
-        }
         try write(nextRoster)
 
         roster = nextRoster
         return true
+    }
+
+    /// Whether `lhs` and `rhs` hold the same eras in the same places — every part of each entry,
+    /// not only its commitment's identity, which is all `Roster.==` compares. `change`'s own doc
+    /// comment is why: an era's schedule, kept-from day and kind can differ while its identity
+    /// does not, and `Roster`'s equality, inherited from `Commitment.==`, would call the two
+    /// rosters the same.
+    private func rostersMatchInEveryField(_ lhs: Roster, _ rhs: Roster) -> Bool {
+        guard lhs.entries.count == rhs.entries.count else { return false }
+        return zip(lhs.entries, rhs.entries).allSatisfy { a, b in
+            a.commitment.identity == b.commitment.identity && a.commitment.name == b.commitment.name
+                && a.commitment.schedule == b.commitment.schedule
+                && a.commitment.keptFrom == b.commitment.keptFrom
+                && a.commitment.kind == b.commitment.kind && a.keptUntil == b.keptUntil
+                && a.isRemoved == b.isRemoved && a.category == b.category
+        }
     }
 }
 

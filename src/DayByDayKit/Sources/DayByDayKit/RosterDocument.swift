@@ -10,7 +10,13 @@ import Foundation
 struct RosterDocument: Codable {
     /// The form this app writes. A document whose `version` is higher is a later form; `Envelope`
     /// below reads it before this whole shape is decoded, as `design.md` requires.
-    static let currentVersion = 4
+    static let currentVersion = 5
+
+    /// The form a commitment record first carried an `identity` key at: forms at or after this
+    /// one carry it on every entry's commitment, forms before it never do, on the same footing as
+    /// `removalIntroducedInVersion` and `categoryIntroducedInVersion`. A document before this form
+    /// is exactly what `folded()` reads; `formRoster()` is the path for one at or after it.
+    static let identityIntroducedInVersion = 5
 
     /// The form `removed` was introduced at: forms at or after this one carry it on every entry,
     /// forms before it never do. Kept apart from `currentVersion` on purpose, for the reason
@@ -40,49 +46,233 @@ struct RosterDocument: Codable {
         }
     }
 
-    /// Re-forms `roster` through `Roster.add`, `Roster.retire`, `Roster.remove` and `Roster.put`,
-    /// so every invariant the engine has applies to what comes off the disk and a document that
-    /// could not be a roster is refused rather than trusted. `nil` if any one entry in the
-    /// document could not be formed, if replaying it is refused by `Roster` itself, or if an
-    /// entry is held as removed with no day it was kept until — a state a roster has never been
-    /// in.
+    /// One era's shape, everything but its identity and its name — both fixed within one
+    /// identity's own adjacent run, the name by every era carrying what a rename last wrote
+    /// across all of them — so two eras of one run sharing this shape are the same era written
+    /// twice, `formRoster()`'s own duplicate guard.
+    private struct EraShape: Hashable {
+        let schedule: Schedule
+        let keptFrom: CalendarDate
+        let kind: Commitment.Kind
+    }
+
+    /// Re-forms `roster` by rebuilding its entries directly, in the document's own order, rather
+    /// than replaying through `Roster`'s mutating methods: a document at this form already carries
+    /// every invariant the engine enforces on the way in — an identity's eras adjacent and its
+    /// newest era first, a name refused twice over — so this only re-validates what this app could
+    /// not itself have written: a commitment that will not form, an entry held removed with no day
+    /// it was kept until, the same identity's eras split apart by another identity's, and the same
+    /// era — its schedule, its day kept from and its kind together — written twice within one
+    /// identity's own run. Two of one identity's eras may share a day kept from without being the
+    /// same era — `Roster.put(era:on:keptUntil:under:)` already accepts that, "any date is
+    /// accepted", `design.md` § *A roster puts a new era on a commitment it is keeping, from a
+    /// day* — so this checks the whole shape rather than the day alone. `nil` on any of those.
+    /// Used at or after `identityIntroducedInVersion`; `folded()` is the one path for a document
+    /// before it.
     func formRoster() -> Roster? {
-        var roster = Roster()
+        var entries: [Roster.Entry] = []
+        var closedIdentities: Set<Commitment.Identity> = []
+        var currentIdentity: Commitment.Identity?
+        var shapesInCurrentRun: Set<EraShape> = []
+
         for entry in commitments {
             guard let commitment = entry.commitment.commitment() else {
                 return nil
             }
-            guard !roster.entries.contains(where: { $0.commitment == commitment }) else {
-                return nil
-            }
-            guard roster.add(commitment) else {
-                return nil
-            }
-            if let category = entry.category {
-                guard roster.put(commitment, under: category) else {
+            if commitment.identity != currentIdentity {
+                guard !closedIdentities.contains(commitment.identity) else {
                     return nil
                 }
+                if let currentIdentity {
+                    closedIdentities.insert(currentIdentity)
+                }
+                currentIdentity = commitment.identity
+                shapesInCurrentRun = []
             }
-            guard let keptUntilRecord = entry.keptUntil else {
+            let shape = EraShape(
+                schedule: commitment.schedule, keptFrom: commitment.keptFrom, kind: commitment.kind)
+            guard shapesInCurrentRun.insert(shape).inserted else {
+                return nil
+            }
+
+            let keptUntil: CalendarDate?
+            if let keptUntilRecord = entry.keptUntil {
+                guard let date = keptUntilRecord.calendarDate() else {
+                    return nil
+                }
+                keptUntil = date
+            } else {
                 guard entry.removed != true else {
                     return nil
                 }
-                continue
+                keptUntil = nil
             }
-            guard let keptUntil = keptUntilRecord.calendarDate() else {
+
+            entries.append(
+                Roster.Entry(
+                    commitment: commitment, keptUntil: keptUntil, isRemoved: entry.removed == true,
+                    category: entry.category))
+        }
+
+        var roster = Roster()
+        roster.entries = entries
+        return roster
+    }
+
+    /// A roster folded from a document kept before a commitment had an identity, and the
+    /// identity — or `nil` where the fold dropped it — each stored commitment record ended up
+    /// under. Keyed by `CommitmentRecord.bare(_:)` of the commitment each entry formed, never by
+    /// the entry's own raw wire record: a record's `kind` key absent and one naming the tick kind
+    /// explicitly describe the same commitment, and `RecordStore.settle(_:)` looks a record's
+    /// commitment up the same normalized way, so the two sides of a fold can never disagree over
+    /// a kind the wire form leaves to be inferred. `design.md` § *The seam* and § *Migration*.
+    struct Fold {
+        let roster: Roster
+        let identities: [CommitmentRecord: Commitment.Identity?]
+    }
+
+    /// One commitment the fold is building — either an entry this document keeps or has stopped
+    /// keeping, or a removed entry that has since become its own stopped commitment — and the
+    /// mutable front of its chain: `front` is the day kept from of whichever era is currently the
+    /// frontmost unresolved end of it, and `frontIndex` that era's own place among `commitments`,
+    /// for *the nearest in the roster's order* tie-break. `representative` carries the identity
+    /// and the name every era of it shares; `Commitment(era of:)` reads nothing else from it.
+    private final class Chain {
+        let representative: Commitment
+        var front: CalendarDate
+        var frontIndex: Int
+
+        init(representative: Commitment, front: CalendarDate, frontIndex: Int) {
+            self.representative = representative
+            self.front = front
+            self.frontIndex = frontIndex
+        }
+    }
+
+    /// Folds this document once, as `design.md` § *Migration* and *A roster store folds a roster
+    /// kept before a commitment had an identity* describe — `nil` where any one entry could not be
+    /// formed, or where an entry is held removed with no day it was kept until, exactly as
+    /// `formRoster()` refuses those. Every entry this document keeps or has stopped keeping becomes
+    /// a commitment of its own, in the place, the state and the category it was held in. Every
+    /// removed entry is then judged in the document's own order: one whose name and kind sort match
+    /// a commitment already placed, and whose day kept until is the day before that commitment's
+    /// current frontmost era, becomes an earlier era of it — the nearest such commitment, by that
+    /// front's own place, where more than one answers. One that chains to nothing but whose name
+    /// and kind sort match a commitment this document itself keeps or has stopped becomes a stopped
+    /// commitment of its own. Every other removed entry is dropped.
+    func folded() -> Fold? {
+        struct Decoded {
+            let record: CommitmentRecord
+            let commitment: Commitment
+            let keptUntil: CalendarDate?
+            let isRemoved: Bool
+            let category: String?
+        }
+
+        var decoded: [Decoded] = []
+        for entry in commitments {
+            guard let commitment = entry.commitment.commitment() else {
                 return nil
             }
-            if entry.removed == true {
-                guard roster.remove(commitment, keptUntil: keptUntil) else {
+
+            let keptUntil: CalendarDate?
+            if let keptUntilRecord = entry.keptUntil {
+                guard let date = keptUntilRecord.calendarDate() else {
                     return nil
                 }
+                keptUntil = date
             } else {
-                guard roster.retire(commitment, keptUntil: keptUntil) else {
-                    return nil
-                }
+                keptUntil = nil
             }
+
+            let isRemoved = entry.removed == true
+            guard !isRemoved || keptUntil != nil else {
+                return nil
+            }
+
+            decoded.append(
+                Decoded(
+                    record: entry.commitment, commitment: commitment, keptUntil: keptUntil,
+                    isRemoved: isRemoved, category: entry.category))
         }
-        return roster
+
+        var identities: [CommitmentRecord: Commitment.Identity?] = [:]
+        var resultEntries: [Int: Roster.Entry] = [:]
+
+        // Every entry this document keeps or has stopped keeping becomes a commitment of its own
+        // straightaway — each a chain a removed entry may still attach to. Two such entries alike
+        // in every part would each mint their own identity and collide silently in `identities`,
+        // keyed by that one bare shape — which is exactly one identity kept from one day twice,
+        // `formRoster()`'s own guard for the form this app writes. `mintedBareShapes` is that same
+        // guard here, before any identity is minted rather than after.
+        var chains: [Chain] = []
+        var originallyKeptOrStopped: [(name: String, kind: Commitment.Kind)] = []
+        var mintedBareShapes: Set<CommitmentRecord> = []
+        for (index, item) in decoded.enumerated() where !item.isRemoved {
+            guard mintedBareShapes.insert(CommitmentRecord.bare(item.commitment)).inserted else {
+                return nil
+            }
+            chains.append(
+                Chain(representative: item.commitment, front: item.commitment.keptFrom, frontIndex: index))
+            originallyKeptOrStopped.append((item.commitment.name, item.commitment.kind))
+            identities.updateValue(item.commitment.identity, forKey: CommitmentRecord.bare(item.commitment))
+            resultEntries[index] = Roster.Entry(
+                commitment: item.commitment, keptUntil: item.keptUntil, isRemoved: false,
+                category: item.category)
+        }
+
+        // Removed entries are judged in the document's own order, so a chain's front has already
+        // moved past whatever attached to it earlier in the document by the time a later entry is
+        // judged against it — which is what makes "the nearest in the roster's order" fall out of
+        // this single pass rather than needing its own tie-break for the common case.
+        for (index, item) in decoded.enumerated() where item.isRemoved {
+            let keptUntil = item.keptUntil!
+
+            let matchingChains = chains.filter {
+                $0.representative.name == item.commitment.name
+                    && $0.representative.kind.isOfTheSameSort(as: item.commitment.kind)
+            }
+            let attachable = matchingChains.filter { keptUntil.days(until: $0.front) == 1 }
+
+            if let chain = attachable.max(by: { $0.frontIndex < $1.frontIndex }) {
+                // Never fails: `chain.representative.name` already formed once, and a blank name
+                // is the era initialiser's one refusal.
+                let era = Commitment(
+                    era: chain.representative, schedule: item.commitment.schedule,
+                    keptFrom: item.commitment.keptFrom, kind: item.commitment.kind)!
+                identities.updateValue(era.identity, forKey: CommitmentRecord.bare(item.commitment))
+                resultEntries[index] = Roster.Entry(
+                    commitment: era, keptUntil: keptUntil, isRemoved: false, category: item.category)
+                chain.front = item.commitment.keptFrom
+                chain.frontIndex = index
+                continue
+            }
+
+            let resemblesKeptOrStopped = originallyKeptOrStopped.contains {
+                $0.name == item.commitment.name && $0.kind.isOfTheSameSort(as: item.commitment.kind)
+            }
+            guard resemblesKeptOrStopped else {
+                identities.updateValue(nil, forKey: CommitmentRecord.bare(item.commitment))
+                continue
+            }
+
+            guard mintedBareShapes.insert(CommitmentRecord.bare(item.commitment)).inserted else {
+                return nil
+            }
+
+            chains.append(
+                Chain(
+                    representative: item.commitment, front: item.commitment.keptFrom,
+                    frontIndex: index))
+            identities.updateValue(item.commitment.identity, forKey: CommitmentRecord.bare(item.commitment))
+            resultEntries[index] = Roster.Entry(
+                commitment: item.commitment, keptUntil: keptUntil, isRemoved: false,
+                category: item.category)
+        }
+
+        var roster = Roster()
+        roster.entries = decoded.indices.compactMap { resultEntries[$0] }
+        return Fold(roster: roster, identities: identities)
     }
 }
 
