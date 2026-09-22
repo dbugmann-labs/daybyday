@@ -496,7 +496,13 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `onDismiss` and read via `.id(listRevision)` on the `List`, forcing it to rebuild fresh
   against those three properties whenever a sheet dismisses, and why Observation's own
   invalidation does not reach this view across that presentation boundary on its own is not
-  understood, only worked around. The day screen's own gap above is untouched.
+  understood, only worked around. The catch for this redraw is the walk's picture 3
+  (`tasks.md` § 16.3), not a committed test: ADR-1053 decision 3 keeps
+  `src/DayByDay/DayByDayUITests/` merging unchanged, and ADR-1029 restricts that bundle to
+  asserting only that the shell drew, never what it drew. `.id(listRevision)`'s cost is that the
+  whole `List` is rebuilt on every sheet dismissal, so a scroll offset, edit mode and an
+  in-flight swipe are all lost with it, and a long list jumps back to the top after editing a row
+  near the bottom. The day screen's own gap above is untouched.
 - **The Story issue template asks an agent to write the G4 marker string.** Surfaced writing
   #91..#93, 2026-09-03. `.github/ISSUE_TEMPLATE/story.yml`'s last Definition-of-ready checkbox
   quotes the marker line literally, so an agent rendering the template faithfully writes that
