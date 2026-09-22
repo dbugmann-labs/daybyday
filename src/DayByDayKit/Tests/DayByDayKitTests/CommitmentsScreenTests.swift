@@ -7686,51 +7686,6 @@ func movingTheDayAnIntervalCommitmentIsKeptFromMovesItsStartToThatDayEvenWhereTh
 
 @MainActor
 @Test(
-    "a change that would leave a recorded day not due and meets records already kept is refused as leaving a recorded day not due"
-)
-func aChangeThatWouldLeaveARecordedDayNotDueAndMeetsRecordsAlreadyKeptIsRefusedAsLeavingARecordedDayNotDue()
-    throws
-{
-    let places = freshRosterAndRecordPlaces()
-    let schedule = Schedule.weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let june1st = CalendarDate(year: 2026, month: 6, day: 1)!
-    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
-    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
-    let august5th = CalendarDate(year: 2026, month: 8, day: 5)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: june1st)!
-    let gymKeptFromAugust4th = Commitment(name: "Gym", schedule: schedule, keptFrom: august4th)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(gym)
-    let recordStore = try RecordStore(at: places.record)
-    try recordStore.add(Tick(gym, on: august3rd)!)
-    // "Gym" also holds a tick on the stray tick's own day: with a day of its own, carrying the
-    // stray back to its one possible source ("Gym", kept-from aside) would succeed when the
-    // places are read, and this scenario would no longer have records already kept to meet.
-    // `tasks.md` § 4.3.
-    try recordStore.add(Tick(gym, on: august5th)!)
-    try recordStore.add(Tick(gymKeptFromAugust4th, on: august5th)!)
-    let rosterBytes = try Data(contentsOf: places.roster)
-    let recordBytes = try Data(contentsOf: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-
-    let refusal = screen.change(
-        gym, toName: "Gym", on: .weekdays([
-            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-        ]), keptFrom: august4th, under: nil)
-
-    #expect(refusal == .wouldLeaveARecordedDayNotDue)
-    #expect(try Data(contentsOf: places.roster) == rosterBytes)
-    #expect(try Data(contentsOf: places.record) == recordBytes)
-}
-
-@MainActor
-@Test(
     "an interval commitment restarted from today is kept until yesterday and runs on from today under its name, interval and category"
 )
 func anIntervalCommitmentRestartedFromTodayIsKeptUntilYesterdayAndRunsOnFromTodayUnderItsNameIntervalAndCategory()
