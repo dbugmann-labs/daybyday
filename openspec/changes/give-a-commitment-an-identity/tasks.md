@@ -28,15 +28,47 @@ to it, one red-green cycle.
   refuses a range that is not a range and a target that is not a target*; *an interval commitment
   whose start differs from the day it is kept from is renamed and every day recorded on stays due*;
   *a refusal that a roster could not be written is about the whole change and no field*.
+  **And these carried tests, whose fixture or assertion this delta edits although their scenario
+  names do not change.** **Two rest on value equality between commitments formed on their own** —
+  *a commitment taken up again can be stopped again, on a new day* and *taking a commitment up
+  again puts it back in the answer for the dates between*: each fixture offers the roster the
+  original commitment again rather than forming a second one alike to it. **Three form an earlier
+  era on its own and supersede it in** — *a look-back counts the era behind the one it was asked
+  about*, *a look-back says the newest era's rhythm and the earliest era's day kept from* and *a
+  look-back chains an era whose range or target differs behind the one it was asked about*: each
+  fixture forms the newer era of the commitment it follows and puts that era on. **One asserts the
+  equality itself** — *a commitment formed without a kind is of the plain kind*: the assertion
+  compares the two kinds rather than the two commitments. **One reads the record place where the
+  delta now reads a look-back** — *a rhythm changed through a commitments screen leaves every record
+  already made standing*. **And eleven name `Refusal.alreadyKept`, which goes** — *a commitments
+  screen that could not keep a new commitment says the roster could not be written*, *a commitments
+  screen holds a refused change against the commitment it was asked to change*, *what a commitments
+  screen holds about a refused change ends when a change to a commitment is kept*, *what a
+  commitments screen holds about a refused change stands when a change names what is already there*,
+  *what a commitments screen tells at the foot of its sheet stands when a field is edited*, *what a
+  commitments screen tells on its sheet ends when the sheet is closed*, *a folder refused is held
+  apart from a refused change, and ends when the app is shown again*, *a call that keeps nothing
+  writes no copy at the copy place*, *a copy that could not be made is not held as a refused
+  change*, *a take-out made leaves a refused change standing and says nothing of its own* and *a
+  take-out refused replaces the refused change a commitments screen held*: each assertion names the
+  name refusal in its place, and the sheet one is about the name field where it was about no field.
 - [x] 1.4 Confirm the three facts `design.md` § *Context* rests on, and stop if any is false:
   `RosterDocument.currentVersion` is **4** and `RecordDocument.currentVersion` is **5**;
   `CopyDocument.currentVersion` is **1** and carries the other two by reference, so it does not
   move; and `RecordedDay(commitment:date:)` in `History.swift` keys numbers, notes and additions by
   the whole commitment, with `Set<Tick>` holding ticks — which is what makes equality-on-identity
   re-key every record with no change of its own.
-- [ ] 1.5 Take the seam from `design.md` § *The seam* whole before the first cycle, as empty
-  declarations that do not compile away: every box below is driven at one of those members, and a
-  box that needs a member not listed there is a stop and a report.
+- [ ] 1.5 Declare the seam whole before the next cycle. Every member `design.md` § *The seam* names
+  that `src/DayByDayKit` does not carry yet — as this is written, `Roster.rename`,
+  `Roster.put(era:on:keptUntil:under:)`, `RosterDocument.Fold`, `RosterDocument.folded()`,
+  `RosterStore.fold`, `RosterStore.rename`, `RosterStore.put`, `RecordStore.settle`,
+  `History.settle`, `CommitmentsScreen.Refusal.nameAlreadyInUse` and
+  `CommitmentsScreen.stoppedRefusal` — goes in with that section's signature and a body that only
+  traps, so the package builds and anything that reaches one fails loudly. **Declaring them is not
+  starting the sections that drive them**: no behaviour is written here, nothing is made to pass,
+  and every box below is still taken one at a time with its test red first. The **implementer**
+  ticks this once those declarations compile. A box that needs a member § *The seam* does not name
+  is a stop and a report.
 
 ## 2. `Commitment` — the identity, and equality on it alone
 
