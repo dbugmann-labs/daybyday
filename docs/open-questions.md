@@ -187,9 +187,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
   phone upgrading from this app's earlier forms may still hold a torn save one of the three
   save-in-progress requirements exists to undo. After this Story, no change or restart carries a
   record to the record place at all — `keepSaveInProgressIfCarrying` is gone from source — so its
-  three scenarios now pass vacuously: nothing is ever refused, and no save in progress is ever
-  kept. Found at #303's G7 fix round, 2026-09-22. The next Story that deltas `commitment` carries
-  this requirement as REMOVED.
+  three scenarios each have a test again and pass vacuously: nothing is ever refused, and no save
+  in progress is ever kept. Found at #303's G7 fix round, 2026-09-22; two of the three scenarios'
+  tests, deleted by `5e3ee61`, were restored at #303's second G7 fix round the same day. That
+  commit also deleted six non-scenario-named torn-save tests — five in `CommitmentsScreenTests`,
+  one in `TakeOutTests` — that went with the helpers they drove. The next Story that deltas
+  `commitment` carries this requirement as REMOVED.
 - **`RosterDocument.folded()`'s tie-break for "the nearest such commitment" picks the farthest
   chain, not the nearest.** `RosterDocument.swift:237` reads
   `attachable.max(by: { $0.frontIndex < $1.frontIndex })` for what its own doc comment calls "the
