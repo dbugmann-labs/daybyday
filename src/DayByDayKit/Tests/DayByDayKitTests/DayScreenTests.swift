@@ -3700,7 +3700,6 @@ func aCommitmentRenamedAtADayScreensPlacesIsDrawnUnderItsNewNameAndStillKeptWhen
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
     let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
-    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: daily, keptFrom: keptFrom)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let rosterStore = try RosterStore(at: rosterPlace)
@@ -3713,9 +3712,7 @@ func aCommitmentRenamedAtADayScreensPlacesIsDrawnUnderItsNewNameAndStillKeptWhen
     #expect(screen.recordState == .kept)
 
     let otherRoster = try RosterStore(at: rosterPlace)
-    try otherRoster.change(gym, to: gymEmoji, under: nil)
-    let otherRecord = try RecordStore(at: place)
-    try otherRecord.carryOver(gym, to: gymEmoji)
+    try otherRoster.rename(gym, to: "Gym 🏋️")
 
     screen.returnedTo()
 
@@ -7039,22 +7036,21 @@ func aDayScreenDrawsARemovedCommitmentUnderACategoryExactlyAsItDrawsAStoppedOne(
     let daily: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
-    let stoppedCreatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
-    let removedCreatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
+    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
     let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let (stoppedPlace, stoppedRosterPlace) = freshPlaces()
     let stoppedRoster = try RosterStore(at: stoppedRosterPlace)
-    try stoppedRoster.add(stoppedCreatine)
-    try stoppedRoster.put(stoppedCreatine, under: "Supplements")
-    try stoppedRoster.retire(stoppedCreatine, keptUntil: sunday)
+    try stoppedRoster.add(creatine)
+    try stoppedRoster.put(creatine, under: "Supplements")
+    try stoppedRoster.retire(creatine, keptUntil: sunday)
 
     let (removedPlace, removedRosterPlace) = freshPlaces()
     let removedRoster = try RosterStore(at: removedRosterPlace)
-    try removedRoster.add(removedCreatine)
-    try removedRoster.put(removedCreatine, under: "Supplements")
-    try removedRoster.remove(removedCreatine, keptUntil: sunday)
+    try removedRoster.add(creatine)
+    try removedRoster.put(creatine, under: "Supplements")
+    try removedRoster.remove(creatine, keptUntil: sunday)
 
     let stoppedScreen = DayScreen(
         startingFrom: [], asOf: monday, keepingRecordAt: stoppedPlace,

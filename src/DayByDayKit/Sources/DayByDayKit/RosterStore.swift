@@ -236,13 +236,19 @@ public final class RosterStore {
     /// Kept at `place` before this returns, unless renaming `commitment` left the roster exactly
     /// as it was. Answers what `Roster.rename` answers — `false`, without throwing and without
     /// writing, when the roster does not hold `commitment` or `name` is already held by another.
+    /// Whether anything changed is judged by the name itself, not `nextRoster != roster`: equality
+    /// is the identity now, so two rosters differing in name alone compare equal, and `Roster.rename`
+    /// rebuilds every matching entry whether or not `name` is the one it already carries.
     @discardableResult
     public func rename(_ commitment: Commitment, to name: String) throws -> Bool {
         var nextRoster = roster
         guard nextRoster.rename(commitment, to: name) else {
             return false
         }
-        if nextRoster != roster {
+        let alreadyNamed = roster.entries.contains {
+            $0.commitment.identity == commitment.identity && $0.commitment.name == name
+        }
+        if !alreadyNamed {
             try write(nextRoster)
         }
 
