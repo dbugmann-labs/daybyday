@@ -114,11 +114,11 @@ to it, one red-green cycle.
 ## 5. `Roster` — renaming through every era
 
 - [x] 5.1 *renaming a commitment writes the new name on every era of it*
-- [ ] 5.2 *a renamed commitment keeps its place, its category and its state*
-- [ ] 5.3 *renaming a commitment a roster does not hold is refused and leaves the roster as it was*
-- [ ] 5.4 *renaming a commitment to a name another commitment already has is refused*
-- [ ] 5.5 *renaming a commitment to the name it already has changes nothing and is not refused* — catches a commitment colliding with itself.
-- [ ] 5.6 *renaming a commitment on a copy of a roster leaves the roster it was copied from unchanged*
+- [x] 5.2 *a renamed commitment keeps its place, its category and its state*
+- [x] 5.3 *renaming a commitment a roster does not hold is refused and leaves the roster as it was*
+- [x] 5.4 *renaming a commitment to a name another commitment already has is refused*
+- [x] 5.5 *renaming a commitment to the name it already has changes nothing and is not refused* — catches a commitment colliding with itself.
+- [x] 5.6 *renaming a commitment on a copy of a roster leaves the roster it was copied from unchanged*
 
 ## 6. `Roster` — putting a new era on, and changing one
 

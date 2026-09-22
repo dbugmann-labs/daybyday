@@ -334,6 +334,130 @@ func renamingACommitmentWritesTheNewNameOnEveryEraOfIt() {
             == ["Tue, Thu"])
 }
 
+@Test("a renamed commitment keeps its place, its category and its state")
+func aRenamedCommitmentKeepsItsPlaceItsCategoryAndItsState() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym, under: "Sport")
+    _ = roster.add(journaling)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let renamed = roster.rename(gym, to: "Lifting")
+
+    #expect(renamed)
+    #expect(roster.commitments.map(\.name) == ["Water plants", "Journaling"])
+    #expect(roster.stopped.map(\.name) == ["Lifting"])
+
+    _ = roster.add(gym)
+
+    #expect(roster.commitments.map(\.name) == ["Water plants", "Lifting", "Journaling"])
+    let liftingGroup = roster.groups.first { $0.commitments.contains { $0.name == "Lifting" } }
+    #expect(liftingGroup?.category == "Sport")
+}
+
+@Test("renaming a commitment a roster does not hold is refused and leaves the roster as it was")
+func renamingACommitmentARosterDoesNotHoldIsRefusedAndLeavesTheRosterAsItWas() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+
+    let renamed = roster.rename(run, to: "Lifting")
+
+    #expect(!renamed)
+
+    var neverAsked = Roster()
+    _ = neverAsked.add(gym)
+    #expect(roster == neverAsked)
+}
+
+@Test("renaming a commitment to a name another commitment already has is refused")
+func renamingACommitmentToANameAnotherCommitmentAlreadyHasIsRefused() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.add(run)
+
+    let renamed = roster.rename(gym, to: "Run")
+
+    #expect(!renamed)
+
+    var neverAsked = Roster()
+    _ = neverAsked.add(gym)
+    _ = neverAsked.add(run)
+    #expect(roster == neverAsked)
+
+    var stoppedRun = Roster()
+    _ = stoppedRun.add(gym)
+    _ = stoppedRun.add(run)
+    _ = stoppedRun.retire(run, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    let stoppedRenamed = stoppedRun.rename(gym, to: "Run")
+    #expect(!stoppedRenamed)
+
+    var removedRun = Roster()
+    _ = removedRun.add(gym)
+    _ = removedRun.add(run)
+    _ = removedRun.remove(run, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    let removedRenamed = removedRun.rename(gym, to: "Run")
+    #expect(removedRenamed)
+}
+
+@Test("renaming a commitment to the name it already has changes nothing and is not refused")
+func renamingACommitmentToTheNameItAlreadyHasChangesNothingAndIsNotRefused() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+
+    let renamed = roster.rename(gym, to: "Gym")
+
+    #expect(renamed)
+
+    var neverAsked = Roster()
+    _ = neverAsked.add(gym)
+    #expect(roster == neverAsked)
+
+    var upperCased = Roster()
+    _ = upperCased.add(gym)
+    let upperCasedRenamed = upperCased.rename(gym, to: "GYM")
+    #expect(upperCasedRenamed)
+    #expect(upperCased.commitments.map(\.name) == ["GYM"])
+}
+
+@Test("renaming a commitment on a copy of a roster leaves the roster it was copied from unchanged")
+func renamingACommitmentOnACopyOfARosterLeavesTheRosterItWasCopiedFromUnchanged() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var original = Roster()
+    _ = original.add(gym)
+
+    var copy = original
+    _ = copy.rename(gym, to: "Lifting")
+
+    // `Roster ==` cannot tell these two apart — `Commitment: Hashable` compares identities
+    // alone, `design.md` § *Equality is the identity, and an era is an entry* — so what each
+    // reads back is the proof that the copy's rename never reached the original.
+    #expect(copy.commitments.map(\.name) == ["Lifting"])
+    #expect(original.commitments.map(\.name) == ["Gym"])
+}
+
 @Test("adding a commitment a roster does not hold places it after the ones already there and says it was added")
 func addingACommitmentARosterDoesNotHoldPlacesItAfterTheOnesAlreadyThereAndSaysItWasAdded() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
