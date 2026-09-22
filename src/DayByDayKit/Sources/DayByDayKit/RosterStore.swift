@@ -66,6 +66,16 @@ public final class RosterStore {
     /// Exactly what is kept at `place`.
     public private(set) var roster: Roster
 
+    /// The mapping a fold made while opening this store — each stored commitment record's
+    /// identity, or `nil` where the fold dropped it — or empty where nothing at `place` needed
+    /// folding. `design.md` § *The seam* and § *Migration*. Declared for § 1.5; § 8 gives it its
+    /// behaviour.
+    public var fold: [CommitmentRecord: Commitment.Identity?] {
+        fatalError(
+            "RosterStore.fold is declared, not implemented — openspec/changes/"
+                + "give-a-commitment-an-identity/tasks.md § 8")
+    }
+
     /// Kept at `place` before this returns. Answers what `Roster.add` answers — `false`, without
     /// throwing and without writing, when the roster is already keeping `commitment`.
     @discardableResult
@@ -200,6 +210,28 @@ public final class RosterStore {
 
         roster = nextRoster
         return true
+    }
+
+    /// Kept at `place` before this returns, unless renaming `commitment` left the roster exactly
+    /// as it was. Answers what `Roster.rename` answers. `design.md` § *The seam*. Declared for §
+    /// 1.5; § 5 gives it its behaviour.
+    @discardableResult
+    public func rename(_ commitment: Commitment, to name: String) throws -> Bool {
+        fatalError(
+            "RosterStore.rename is declared, not implemented — openspec/changes/"
+                + "give-a-commitment-an-identity/tasks.md § 5")
+    }
+
+    /// Kept at `place` before this returns. Answers what `Roster.put(era:on:keptUntil:under:)`
+    /// answers. `design.md` § *The seam*. Declared for § 1.5; § 7 gives it its behaviour.
+    @discardableResult
+    public func put(
+        era: Commitment, on commitment: Commitment, keptUntil date: CalendarDate,
+        under category: String?
+    ) throws -> Bool {
+        fatalError(
+            "RosterStore.put(era:on:keptUntil:under:) is declared, not implemented — "
+                + "openspec/changes/give-a-commitment-an-identity/tasks.md § 7")
     }
 
     /// Kept at `place` before this returns, unless changing `commitment` for itself left the

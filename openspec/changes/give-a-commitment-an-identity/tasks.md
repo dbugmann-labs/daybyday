@@ -71,7 +71,7 @@ to it, one red-green cycle.
   move; and `RecordedDay(commitment:date:)` in `History.swift` keys numbers, notes and additions by
   the whole commitment, with `Set<Tick>` holding ticks — which is what makes equality-on-identity
   re-key every record with no change of its own.
-- [ ] 1.5 Declare the seam whole before the next cycle. Every member `design.md` § *The seam* names
+- [x] 1.5 Declare the seam whole before the next cycle. Every member `design.md` § *The seam* names
   that `src/DayByDayKit` does not carry yet — as this is written, `Roster.rename`,
   `Roster.put(era:on:keptUntil:under:)`, `RosterDocument.Fold`, `RosterDocument.folded()`,
   `RosterStore.fold`, `RosterStore.rename`, `RosterStore.put`, `RecordStore.settle`,

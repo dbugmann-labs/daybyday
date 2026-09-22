@@ -219,6 +219,15 @@ public struct Roster: Hashable, Sendable {
         Blank.trimmed(lhs).lowercased() == Blank.trimmed(rhs).lowercased()
     }
 
+    /// Renames `commitment` to `name`, writing it on every era of it. `design.md` § *The seam*.
+    /// Declared for § 1.5; § 5 gives it its behaviour.
+    @discardableResult
+    public mutating func rename(_ commitment: Commitment, to name: String) -> Bool {
+        fatalError(
+            "Roster.rename is declared, not implemented — openspec/changes/"
+                + "give-a-commitment-an-identity/tasks.md § 5")
+    }
+
     /// Stops keeping `commitment` as of `date`, the last day it was kept, and answers `true`.
     /// Answers `false` and changes nothing when this roster does not hold it, or has already
     /// stopped keeping it.

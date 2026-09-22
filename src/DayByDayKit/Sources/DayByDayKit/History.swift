@@ -140,6 +140,15 @@ public struct History: Hashable, Sendable {
         return dates
     }
 
+    /// Gives every record `fold` names an identity that identity, and drops every record it maps
+    /// to `nil`. Package-internal: `RecordStore.settle(_:)` is the one caller. `design.md` § *The
+    /// seam* and § *Migration*. Declared for § 1.5; § 8 gives it its behaviour.
+    mutating func settle(_ fold: [CommitmentRecord: Commitment.Identity?]) -> Bool {
+        fatalError(
+            "History.settle is declared, not implemented — openspec/changes/"
+                + "give-a-commitment-an-identity/tasks.md § 8")
+    }
+
     /// Carries every record held of `commitment` over to `changed`, on the same date each was
     /// made for. See `openspec/specs/record/spec.md` § *A history carries every record of one
     /// commitment over to another*.

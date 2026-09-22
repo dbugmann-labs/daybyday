@@ -6,7 +6,11 @@ import Foundation
 /// disk* fixes the shape below by hand, in the record's own words, rather than deriving `Codable`
 /// on the engine types: the file's shape is a contract independent of how `Schedule` and
 /// `Commitment` happen to be laid out in Swift.
-struct CommitmentRecord: Codable {
+/// `Hashable`, and `public`, so `RosterStore.fold` — `design.md` § *The seam* — can key a
+/// dictionary by it whole, wire shape and all, without asking `Commitment` or any engine type to
+/// carry the pre-identity form. Its own members stay unelevated: a caller outside this package
+/// reads one back only as an opaque, comparable key, never by field.
+public struct CommitmentRecord: Codable, Hashable {
     var name: String
     var keptFrom: DateRecord
     var schedule: ScheduleRecord
@@ -40,7 +44,7 @@ struct CommitmentRecord: Codable {
     }
 }
 
-struct DateRecord: Codable, Equatable, Comparable {
+struct DateRecord: Codable, Equatable, Hashable, Comparable {
     var year: Int
     var month: Int
     var day: Int
@@ -69,7 +73,7 @@ struct DateRecord: Codable, Equatable, Comparable {
 /// One of the four shapes `Schedule` has. The conversion from `Schedule` is an exhaustive `switch`,
 /// so a fifth case is a compile error here rather than a silent gap — `design.md` § *A fifth
 /// schedule shape* names this on purpose.
-enum ScheduleRecord: Codable, Equatable, Comparable {
+enum ScheduleRecord: Codable, Equatable, Hashable, Comparable {
     case weekdays([String])
     case dayOfMonth(Int)
     case everyNDays(Int, from: DateRecord)
@@ -213,7 +217,7 @@ enum ScheduleRecord: Codable, Equatable, Comparable {
 /// sorts by kind as its final tiebreaker for two numbers alike in every earlier field, but reaches
 /// into these cases with its own `switch` (`kindSortKey(_:)`) rather than asking this type to
 /// compare itself.
-enum KindRecord: Codable {
+enum KindRecord: Codable, Hashable {
     case tick
     case number(range: RangeRecord?)
     case note
@@ -322,7 +326,7 @@ enum KindRecord: Codable {
 }
 
 /// The wire shape of a `Commitment.Range`: a lowest and a highest, both required when present.
-struct RangeRecord {
+struct RangeRecord: Equatable, Hashable {
     var lowest: Decimal
     var highest: Decimal
 

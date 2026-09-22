@@ -415,6 +415,10 @@ public final class CommitmentsScreen {
         case damagedCopy
         /// A file whose own form, or the form of a store it holds, is later than this app reads.
         case copyFromALaterVersion
+        /// A name a commitment this screen's roster keeps or has stopped keeping already has,
+        /// carrying that commitment's name exactly as the roster holds it. `design.md` § *The
+        /// seam*. Declared for § 1.5; § 10 gives it its behaviour.
+        case nameAlreadyInUse(String)
     }
 
     /// A field of the sheet a commitments screen draws — a define, a change or a restart form —
@@ -439,6 +443,11 @@ public final class CommitmentsScreen {
     /// What this screen tells on its sheet, or `nil` when there is nothing to tell. `design.md` §
     /// *The seam*.
     public private(set) var sheetRefusal: SheetRefusal?
+
+    /// A refusal told in a stopped row's footer — the resume refused for a name a commitment this
+    /// screen keeps already has — or `nil` when there is nothing to tell. `design.md` § *The
+    /// seam*. Declared for § 1.5; § 10 gives it its behaviour.
+    public private(set) var stoppedRefusal: SheetRefusal?
 
     /// The sheet's `field` has been edited. Ends `sheetRefusal` where it is about `field`, and
     /// leaves it standing otherwise — including where it is about the whole change, which no edit

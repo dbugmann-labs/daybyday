@@ -84,6 +84,24 @@ struct RosterDocument: Codable {
         }
         return roster
     }
+
+    /// A roster folded from a document kept before a commitment had an identity, and the
+    /// identity — or `nil` where the fold dropped it — each stored commitment record ended up
+    /// under. `design.md` § *The seam* and § *Migration*. Declared for § 1.5; § 8 gives it its
+    /// behaviour.
+    struct Fold {
+        let roster: Roster
+        let identities: [CommitmentRecord: Commitment.Identity?]
+    }
+
+    /// Folds this document once, as `design.md` § *Migration* describes — `nil` where this
+    /// document is not a form written before a commitment had an identity. Declared for § 1.5; §
+    /// 8 gives it its behaviour.
+    func folded() -> Fold? {
+        fatalError(
+            "RosterDocument.folded() is declared, not implemented — openspec/changes/"
+                + "give-a-commitment-an-identity/tasks.md § 8")
+    }
 }
 
 /// Reads only `version`, so a later form is told apart from the body before the body is ever

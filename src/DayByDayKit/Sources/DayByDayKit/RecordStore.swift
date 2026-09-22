@@ -214,6 +214,16 @@ public final class RecordStore {
         history.removeLastAddition(for: commitment, on: date)
     }
 
+    /// Gives every record `fold` names an identity that identity, drops every record it maps to
+    /// `nil`, and writes only where something moved. `design.md` § *The seam* and § *Migration*.
+    /// Declared for § 1.5; § 8 gives it its behaviour.
+    @discardableResult
+    public func settle(_ fold: [CommitmentRecord: Commitment.Identity?]) throws -> Bool {
+        fatalError(
+            "RecordStore.settle is declared, not implemented — openspec/changes/"
+                + "give-a-commitment-an-identity/tasks.md § 8")
+    }
+
     /// Carries every record held of `commitment` over to `changed`, kept at `place` before this
     /// returns. `false` is the history's own refusal, reported without an error and without a
     /// write; a place that could not be written throws, as every other change does. See
