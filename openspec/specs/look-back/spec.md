@@ -351,8 +351,8 @@ earlier.
   removed a commitment named "Gym" on a schedule of three times a week, kept from 23 February 2026
   and kept until 3 March 2026, whose days take a tick, kept on 23, 25 and 27 February 2026, on 2
   March 2026 and on 4, 7 and 9 March 2026, as of 15 March 2026
-- **THEN** its lines are, in order, the month "March 2026" saying "3/5", a line where the rhythm
-  changed, the week "2–8 Mar 2026" saying "1/3" and the week "23 Feb – 1 Mar 2026" saying "3/3"
+- **THEN** its lines are, in order, the month "March 2026" saying "3/5", the week "2–8 Mar 2026"
+  saying "1/3" and the week "23 Feb – 1 Mar 2026" saying "3/3"
 
 #### Scenario: a week two quota eras share says its kept days out of the newer era's quota
 
@@ -391,74 +391,6 @@ and SHALL NOT follow the device's language, region, locale or calendar preferenc
 - **WHEN** a look-back is asked for at a commitment on a schedule of three times a week, kept from
   29 December 2025, whose days take a tick, as of 4 January 2026
 - **THEN** its one line says the week "29 Dec 2025 – 4 Jan 2026"
-
-### Requirement: A look-back says where the rhythm changed, between its lines
-
-A look-back SHALL say one line wherever one era of its chain gives way to the next: immediately
-above the line of the month or the week the newer era is kept from, and where both a month line and
-a week line hold that day, immediately above the lower of those two. It SHALL say one such line for
-each boundary between two eras, in the same newest-first order its lines are in, and SHALL say none
-at all for a chain of one era. Such a line SHALL say the newer era's rhythm in words and the day
-that era is kept from, SHALL say nothing about the older era and SHALL say no fraction.
-
-#### Scenario: a look-back says where the rhythm changed, above the month the newer era is kept from
-
-- **WHEN** a look-back is asked for at a commitment named "Gym" on a schedule listing Tuesday and
-  Thursday, kept from 4 March 2026, whose days take a tick, on a roster also holding removed a
-  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
-  2026 and kept until 3 March 2026, whose days take a tick, as of 31 March 2026
-- **THEN** its lines are, in order, a line where the rhythm changed saying "Tue, Thu" and "4 March
-  2026", then the month March 2026, then February 2026, then January 2026
-
-#### Scenario: a look-back says where the rhythm changed, above the week the newer era is kept from
-
-- **WHEN** a look-back is asked for at a commitment named "Gym" on a schedule of five times a week,
-  kept from 4 March 2026, whose days take a tick, on a roster also holding removed a commitment
-  named "Gym" on a schedule of three times a week, kept from 23 February 2026 and kept until 3
-  March 2026, whose days take a tick, as of 8 March 2026
-- **THEN** its lines are, in order, a line where the rhythm changed saying "5x a week" and "4 March
-  2026", then the week "2–8 Mar 2026", then the week "23 Feb – 1 Mar 2026"
-
-#### Scenario: a look-back says where the rhythm changed between a quota era's weeks and a weekday era's months
-
-- **WHEN** a look-back is asked for at a commitment named "Gym" on a schedule of three times a
-  week, kept from 4 March 2026, whose days take a tick, on a roster also holding removed a
-  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
-  2026 and kept until 3 March 2026, whose days take a tick, kept on no day at all, as of 15 March
-  2026
-- **THEN** its lines are, in order, the week "9–15 Mar 2026", the week "2–8 Mar 2026", a line where
-  the rhythm changed saying "3x a week" and "4 March 2026", then the month March 2026, then
-  February 2026, then January 2026
-- **AND** the line for March 2026 says the fraction "0/1", counting only the one day through 3
-  March 2026 the older era was due
-
-#### Scenario: a look-back of one era says no line where the rhythm changed
-
-- **WHEN** a look-back is asked for at a commitment named "Gym" on a schedule listing Monday,
-  Wednesday and Saturday, kept from 1 January 2026, whose days take a tick, on a roster holding no
-  removed commitment at all, as of 15 March 2026
-- **THEN** every line it says is a month
-
-#### Scenario: a look-back of three eras says one line where the rhythm changed for each boundary
-
-- **WHEN** a look-back is asked for at the newest of three commitments named "Gym" whose days take
-  a tick, the first on a schedule listing Monday kept from 1 January 2026 and kept until 31 January
-  2026, the second on a schedule listing Tuesday kept from 1 February 2026 and kept until 28
-  February 2026, both held removed, and the third on a schedule listing Wednesday kept from 1 March
-  2026, as of 31 March 2026
-- **THEN** it says two lines where the rhythm changed, the one saying "Wed" and "1 March 2026"
-  above the month March 2026 and the one saying "Tue" and "1 February 2026" above the month
-  February 2026
-
-#### Scenario: a look-back says where an interval commitment's count began again
-
-- **WHEN** a look-back is asked for at a commitment named "Sharpen knives" on a schedule of every 5
-  days from 10 March 2026, kept from 10 March 2026, whose days take a tick, on a roster also
-  holding removed a commitment named "Sharpen knives" on a schedule of every 5 days from 1 January
-  2026, kept from 1 January 2026 and kept until 9 March 2026, whose days take a tick, as of 31
-  March 2026
-- **THEN** it says one line where the rhythm changed, saying "Every 5 days" and "10 March 2026",
-  above the month March 2026
 
 ### Requirement: A number commitment's look-back says a graph of the numbers its days hold
 
@@ -514,8 +446,8 @@ through the last day the look-back counts, oldest first, each said as a day; the
 SHALL be the day the commitment was kept until where the roster has stopped keeping it and today
 otherwise. A graph SHALL also say one month for each calendar month holding one of those days,
 oldest first, each saying that month and the place among those days of the first of its days. Every
-point and every rule a graph says SHALL name the place of its own day among those days. A graph
-SHALL say no point for a number the record holds on a day after the last day the look-back counts.
+point a graph says SHALL name the place of its own day among those days. A graph SHALL say no point
+for a number the record holds on a day after the last day the look-back counts.
 
 #### Scenario: a number commitment's graph says a day for every day from the day it is kept from through today
 
@@ -585,40 +517,6 @@ highest so taken, the highest SHALL be that value instead.
   the newer holding 4 on 4 March 2026, as of 4 March 2026
 - **THEN** its graph says the lowest "1" and the highest "8"
 
-### Requirement: A number commitment's graph says a rule where one era gives way to the next
-
-A graph SHALL say one **rule** for each boundary between two eras of the look-back's chain, in the
-same newest-first order the look-back's chain is read in, and SHALL say none at all for a chain of
-one era. Each rule SHALL name the place among the graph's days of the newer era's day kept from, and
-SHALL say the newer era's rhythm in words and the day that era is kept from. A rule SHALL say
-nothing about the older era and no value.
-
-#### Scenario: a number commitment's graph says a rule where the rhythm changed
-
-- **WHEN** a look-back is asked for at a commitment named "Weight" on a schedule listing Tuesday and
-  Thursday, kept from 4 March 2026, whose days take a number, on a roster also holding removed a
-  commitment named "Weight" on a schedule listing every day, kept from 1 March 2026 and kept until 3
-  March 2026, whose days take a number, holding 72.5 on 2 March 2026, as of 8 March 2026
-- **THEN** its graph says one rule, saying "Tue, Thu" and "4 March 2026" and naming the fourth of
-  its days
-
-#### Scenario: a number commitment's graph of one era says no rule
-
-- **WHEN** a look-back is asked for at a commitment named "Weight" on a schedule listing every day,
-  kept from 1 March 2026, whose days take a number, holding 72.5 on 2 March 2026, on a roster
-  holding no removed commitment at all, as of 5 March 2026
-- **THEN** its graph says no rule at all
-
-#### Scenario: a number commitment's graph of three eras says one rule for each boundary
-
-- **WHEN** a look-back is asked for at the newest of three commitments named "Weight" whose days take
-  a number, the first on a schedule listing every day kept from 1 March 2026 and kept until 2 March
-  2026, the second on a schedule listing Tuesday kept from 3 March 2026 and kept until 4 March 2026,
-  both held removed, and the third on a schedule listing Wednesday kept from 5 March 2026, holding
-  72.5 on 1 March 2026, as of 8 March 2026
-- **THEN** its graph says two rules, the first saying "Wed" and "5 March 2026" and naming the fifth
-  of its days, the second saying "Tue" and "3 March 2026" and naming the third
-
 ### Requirement: A look-back says a number as its digits, in the app's own words
 
 A look-back SHALL say a number as its digits and nothing else: the digits of its whole part, with no
@@ -663,3 +561,41 @@ until, as any other look-back does.
 - **THEN** it says the name, the rhythm and the day kept from, says no line at all, says no whole and
   says no graph
 - **AND** a look-back at a commitment whose days take a total says the same
+
+### Requirement: A look-back says nothing where one era gives way to the next
+
+A look-back SHALL say nothing at all wherever one era of its chain gives way to the next. Its lines
+SHALL be month lines and week lines only, running in their one newest-first order unbroken across
+every boundary, with no line and no mark of any kind between the line above a boundary and the line
+below it. A number commitment's graph SHALL say no rule and no mark at a boundary, and SHALL say the
+same days, the same months and the same points across one that it says where no era gives way. A
+boundary SHALL go unmarked whatever ended the older era, a rhythm changed, an interval's count begun
+again or a range or a target changed alike.
+
+#### Scenario: a look-back says nothing between the lines either side of a boundary
+
+- **WHEN** a look-back is asked for at a commitment named "Gym" on a schedule listing Tuesday and
+  Thursday, kept from 4 March 2026, whose days take a tick, on a roster also holding removed a
+  commitment named "Gym" on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
+  2026 and kept until 3 March 2026, whose days take a tick, as of 31 March 2026
+- **THEN** its lines are exactly the months March 2026, February 2026 and January 2026, in that
+  order, and it says no other line
+- **AND** a look-back at a commitment named "Gym" on a schedule of three times a week, kept from 4
+  March 2026, whose days take a tick, on a roster also holding removed a commitment named "Gym" on
+  a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026 and kept until 3
+  March 2026, whose days take a tick, kept on no day at all, as of 15 March 2026, says exactly the
+  weeks "9–15 Mar 2026" and "2–8 Mar 2026" and the months March 2026, February 2026 and January
+  2026, in that order
+
+#### Scenario: a number commitment's graph says nothing where one era gives way to the next
+
+- **WHEN** a look-back is asked for at a commitment named "Weight" on a schedule listing Tuesday and
+  Thursday, kept from 4 March 2026, whose days take a number, on a roster also holding removed a
+  commitment named "Weight" on a schedule listing every day, kept from 1 March 2026 and kept until 3
+  March 2026, whose days take a number, the older era holding 72.5 on 2 March 2026 and the newer
+  holding 71 on 5 March 2026, as of 8 March 2026
+- **THEN** its graph says eight days, "1 March 2026" first and "8 March 2026" last, one month
+  "March 2026" naming the first of them, and two points, "72.5" naming the second of those days and
+  "71" naming the fifth
+- **AND** it says nothing else naming a day, and nothing at all about 4 March 2026, the day the
+  newer era is kept from
