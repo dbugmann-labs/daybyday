@@ -7175,6 +7175,41 @@ func aTakeUpAgainACommitmentsScreenCouldNotKeepLeavesBothItsListsAsTheyWere() th
     #expect(refusal == .notKept)
     #expect(screen.kept.map(\.name) == ["Journaling"])
     #expect(screen.stopped.map(\.name) == ["Gym"])
+    #expect(screen.stoppedRefusal == CommitmentsScreen.SheetRefusal(field: nil, refusal: .notKept))
+}
+
+@MainActor
+@Test("a stopped row's refusal from a take-up-again a commitments screen could not keep ends when the app is shown again")
+func aStoppedRowsRefusalFromATakeUpAgainACommitmentsScreenCouldNotKeepEndsWhenTheAppIsShownAgain()
+    throws
+{
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(journaling)
+    try rosterStore.retire(gym, keptUntil: sunday)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    try FileManager.default.removeItem(at: rosterPlace)
+    try FileManager.default.createDirectory(at: rosterPlace, withIntermediateDirectories: true)
+
+    _ = screen.keepAgain(gym)
+    #expect(screen.stoppedRefusal != nil)
+
+    screen.shown(asOf: tuesday)
+
+    #expect(screen.stoppedRefusal == nil)
 }
 
 /// A commitments screen with a standing refused change (an empty-name define) and a roster

@@ -444,9 +444,10 @@ public final class CommitmentsScreen {
     /// *The seam*.
     public private(set) var sheetRefusal: SheetRefusal?
 
-    /// A refusal told in a stopped row's footer — the resume refused for a name a commitment this
-    /// screen keeps already has — or `nil` when there is nothing to tell. `design.md` § *The
-    /// seam*. Declared for § 1.5; § 10 gives it its behaviour.
+    /// A refusal told in a stopped row's footer — a resume refused for a name a commitment this
+    /// screen keeps already has, or for a roster place that could not be read or could not be
+    /// written — or `nil` when there is nothing to tell. `design.md` § *The seam*. Declared for
+    /// § 1.5; § 10 gives it its behaviour.
     public private(set) var stoppedRefusal: SheetRefusal?
 
     /// The sheet's `field` has been edited. Ends `sheetRefusal` where it is about `field`, and
@@ -1178,6 +1179,7 @@ public final class CommitmentsScreen {
             return nil
         }
         guard let rosterStore else {
+            stoppedRefusal = SheetRefusal(field: nil, refusal: .notKept)
             refusedChange = .keepingAgain(commitment, .notKept)
             return .notKept
         }
@@ -1190,6 +1192,7 @@ public final class CommitmentsScreen {
                 return refusal
             }
         } catch {
+            stoppedRefusal = SheetRefusal(field: nil, refusal: .notKept)
             refusedChange = .keepingAgain(commitment, .notKept)
             return .notKept
         }
