@@ -1684,6 +1684,28 @@ func aChangeOfACommitmentForItselfKeepsNothingAtARosterStoresPlace() throws {
     #expect(try Data(contentsOf: place) == bytes)
 }
 
+@Test(
+    "an era changed through a roster store is read back on its changed schedule by a store opened afterwards"
+)
+func anEraChangedThroughARosterStoreIsReadBackOnItsChangedScheduleByAStoreOpenedAfterwards() throws {
+    let place = freshPlace()
+    let originalSchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: originalSchedule, keptFrom: keptFrom)!
+    let changedGym = Commitment(era: gym, schedule: newSchedule, keptFrom: keptFrom, kind: .tick)!
+
+    let first = try RosterStore(at: place)
+    try first.add(gym)
+
+    let changed = try first.change(gym, to: changedGym, under: nil)
+
+    let later = try RosterStore(at: place)
+
+    #expect(changed)
+    #expect(later.roster.commitments == [changedGym])
+}
+
 @Test("a name of ten thousand characters is a commitment and is read back out of a roster store whole")
 func aNameOfTenThousandCharactersIsACommitmentAndIsReadBackOutOfARosterStoreWhole() throws {
     let place = freshPlace()

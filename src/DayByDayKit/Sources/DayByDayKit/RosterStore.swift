@@ -278,7 +278,11 @@ public final class RosterStore {
     /// Kept at `place` before this returns, unless changing `commitment` for itself left the
     /// roster exactly as it was. Answers what `Roster.change` answers — `true` even where
     /// nothing changed, and `false`, without throwing and without writing, when the roster does
-    /// not hold `commitment`, or when `changed` is a commitment it already holds.
+    /// not hold `commitment`, or when `changed` is a commitment it already holds. Whether
+    /// anything changed is judged by `rostersMatchInEveryField`, not `nextRoster != roster`:
+    /// `Roster`'s equality is the identity alone, the same reason `rename`'s own doc comment
+    /// gives, and cannot be trusted to notice an era whose schedule, kept-from day or kind
+    /// changed while its identity did not.
     @discardableResult
     public func change(_ commitment: Commitment, to changed: Commitment, under category: String?)
         throws -> Bool
@@ -287,7 +291,7 @@ public final class RosterStore {
         guard nextRoster.change(commitment, to: changed, under: category) else {
             return false
         }
-        if nextRoster != roster {
+        if !rostersMatchInEveryField(nextRoster, roster) {
             try write(nextRoster)
         }
 
@@ -330,6 +334,22 @@ public final class RosterStore {
 
         roster = nextRoster
         return true
+    }
+
+    /// Whether `lhs` and `rhs` hold the same eras in the same places — every part of each entry,
+    /// not only its commitment's identity, which is all `Roster.==` compares. `change`'s own doc
+    /// comment is why: an era's schedule, kept-from day and kind can differ while its identity
+    /// does not, and `Roster`'s equality, inherited from `Commitment.==`, would call the two
+    /// rosters the same.
+    private func rostersMatchInEveryField(_ lhs: Roster, _ rhs: Roster) -> Bool {
+        guard lhs.entries.count == rhs.entries.count else { return false }
+        return zip(lhs.entries, rhs.entries).allSatisfy { a, b in
+            a.commitment.identity == b.commitment.identity && a.commitment.name == b.commitment.name
+                && a.commitment.schedule == b.commitment.schedule
+                && a.commitment.keptFrom == b.commitment.keptFrom
+                && a.commitment.kind == b.commitment.kind && a.keptUntil == b.keptUntil
+                && a.isRemoved == b.isRemoved && a.category == b.category
+        }
     }
 }
 
