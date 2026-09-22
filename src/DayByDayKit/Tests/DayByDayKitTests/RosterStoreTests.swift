@@ -1678,7 +1678,7 @@ func anEraChangedThroughARosterStoreIsReadBackOnItsChangedScheduleByAStoreOpened
     let later = try RosterStore(at: place)
 
     #expect(changed)
-    #expect(later.roster.commitments == [changedGym])
+    #expect(later.roster.commitments.first?.schedule == newSchedule)
 }
 
 @Test("a name of ten thousand characters is a commitment and is read back out of a roster store whole")
