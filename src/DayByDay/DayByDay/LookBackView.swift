@@ -22,9 +22,9 @@ import DayByDayKit
 /// share a left edge and the fractions share the cards' right edge. Still a hand-drawn
 /// `ScrollView` and `Grid` rather than the platform `List` the rest of the shell is built from, so
 /// the whole — the one summary figure this screen has — can read as a scoreboard rather than
-/// another row. The rhythm-change line is the one composition among these seam strings: it joins
-/// the rhythm and its day with a middle dot. Every other card and row draws exactly what
-/// `LookBack` hands it.
+/// another row. Every card and row draws exactly what `LookBack` hands it — nothing here composes
+/// a string of its own, `say-nothing-where-the-rhythm-changed` (#300) having taken the one line
+/// that did.
 ///
 /// Holds `screen` and `commitment` rather than an already-formed `LookBack`, so the day-by-day
 /// walk `screen.lookBack(at:)` sits behind `body` and runs once per body pass — read into a
@@ -53,6 +53,20 @@ struct LookBackView: View {
     // values-axis lane is clamped to a fraction of this rather than left free to swallow the
     // plot down to a sliver on an extreme value.
     @State private var cardWidth: CGFloat?
+    // How far the plot's own bottom edge sits above the chart's fixed 220pt frame — 0 here,
+    // architecturally: neither axis draws a value label that would reserve room below the plot,
+    // so the chart's own frame and its plot area share one bottom edge. Read off the chart's own
+    // geometry in `updateValueLabelPositions(...)` rather than assumed, in case that ever stops
+    // holding, but — unlike the dates-axis label's own offset and rendered height, below — it
+    // does not depend on text size, so it alone is what the card's bottom padding caches. G7
+    // second fix round, finding 1a: caching the *whole* padding, offset and height included,
+    // left it stale through a Dynamic Type change made while this view stayed on screen, since
+    // neither of `updateValueLabelPositions`'s own triggers — the chart's geometry, and whether
+    // its plot frame has resolved — moves on that change; the label's own font does, immediately,
+    // because `.font(.caption2)` reads it inline on every redraw. The offset and the measured
+    // height join this at the padding's own call site instead, read inline the same way, so nothing
+    // needs a new trigger to keep them current.
+    @State private var plotBottomInset: CGFloat = 0
 
     private var lookBack: LookBack? { screen.lookBack(at: commitment) }
 
@@ -172,8 +186,8 @@ struct LookBackView: View {
             Text("Nothing is counted here yet.")
         } else {
             // The extra `.padding(.horizontal)` below matches the cards' own inner padding, so
-            // the line labels and the rhythm-change line align with the cards' text rather than
-            // the page's own edge. The heading names the unit the lines below it are said in —
+            // the line labels align with the cards' text rather than the page's own edge. The
+            // heading names the unit the lines below it are said in —
             // "Weeks" where every line is a week, "Months" where every line is a month, "Months
             // and weeks" where the chain mixes — read off the cases `lookBack.lines` holds,
             // deciding nothing else. `design.md` § *What the shell draws*.
@@ -198,9 +212,8 @@ struct LookBackView: View {
         case (false, true): return "Weeks"
         case (false, false):
             // Unreached: `linesSection(_:)` only calls this where `lookBack.lines` is non-empty,
-            // and a `.rhythmChanged` line is only ever appended immediately above a month or a
-            // week line, never on its own — so a non-empty `lines` always holds at least one of
-            // the two this switch tests for.
+            // and a non-empty `lines` is only ever a month line or a week line, never anything
+            // else — so it always holds at least one of the two this switch tests for.
             return ""
         }
     }
@@ -219,25 +232,6 @@ struct LookBackView: View {
                 Divider()
                     .gridCellColumns(2)
             }
-        case .rhythmChanged(let inWords, let from):
-            GridRow {
-                VStack(spacing: 6) {
-                    doubleRule
-                    Text("\(inWords) · \(from)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    doubleRule
-                }
-                .frame(maxWidth: .infinity)
-                .gridCellColumns(2)
-            }
-        }
-    }
-
-    private var doubleRule: some View {
-        VStack(spacing: 2) {
-            Divider()
-            Divider()
         }
     }
 
@@ -256,11 +250,11 @@ struct LookBackView: View {
     }
 
     /// The graph card: the trace through `graph.points` in the label colour (never the accent,
-    /// ADR-1045), the two bounds on a values axis pinned in a lane at the left, a dates axis off
-    /// `graph.days` and `graph.months`, and an era-boundary rule for each of `graph.rules` —
-    /// `design.md` § *What the shell draws*. `chartXVisibleDomain(length:)` holds `span`'s fixed
-    /// length of days in the width; `chartScrollPosition(initialX:)` opens the plot at the newest
-    /// end, so the trace runs off the left edge and stops flush at the right (grill decision 8).
+    /// ADR-1045), the two bounds on a values axis pinned in a lane at the left, and a dates axis
+    /// off `graph.days` and `graph.months` — `design.md` § *What the shell draws*.
+    /// `chartXVisibleDomain(length:)` holds `span`'s fixed length of days in the width;
+    /// `chartScrollPosition(initialX:)` opens the plot at the newest end, so the trace runs off
+    /// the left edge and stops flush at the right (grill decision 8).
     @ViewBuilder
     private func graphCard(_ graph: LookBack.Graph) -> some View {
         let rawLowest = (graph.lowest as NSDecimalNumber).doubleValue
@@ -379,11 +373,6 @@ struct LookBackView: View {
                     .symbol(.circle)
                     .symbolSize(20)
                 }
-                ForEach(graph.rules, id: \.day) { rule in
-                    RuleMark(x: .value("Boundary", rule.day))
-                        .foregroundStyle(Color.secondary)
-                        .lineStyle(StrokeStyle(dash: [4, 4]))
-                }
             }
             .chartYScale(domain: lowest...highest)
             .chartYAxis {
@@ -469,7 +458,7 @@ struct LookBackView: View {
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .fixedSize()
-                                    .position(x: tick.x, y: frame.maxY + 14)
+                                    .position(x: tick.x, y: frame.maxY + Self.datesLabelOffset)
                             }
                         } else {
                             let candidates = dayTickValues.compactMap { day -> XAxisTick? in
@@ -489,25 +478,7 @@ struct LookBackView: View {
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .fixedSize()
-                                    .position(x: tick.x, y: frame.maxY + 14)
-                            }
-                        }
-                        // Left-aligned to its own rule, `design.md` § *What the shell draws*,
-                        // rather than centred on it like the dates-axis labels above — shunted
-                        // left only where the rule sits close enough to the plot's trailing edge
-                        // that the label would otherwise overhang the card.
-                        ForEach(graph.rules, id: \.day) { rule in
-                            if let x = proxy.position(forX: rule.day) {
-                                let label = "\(rule.rhythmInWords) · \(rule.fromInWords)"
-                                Text(label)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .fixedSize()
-                                    .position(
-                                        x: Self.leftAlignedCenterX(
-                                            frame.minX + x, in: frame, width: Self.measuredWidth(label),
-                                            trailingInset: 16),
-                                        y: frame.maxY + 30)
+                                    .position(x: tick.x, y: frame.maxY + Self.datesLabelOffset)
                             }
                         }
                     }
@@ -527,8 +498,21 @@ struct LookBackView: View {
         // or trailing inset on the chart itself here is exactly the gap after the newest day the
         // reviewer measured, the outer padding rather than anything left unused by the domain
         // itself.
+        //
+        // Not the 48pt a second, lower label lane once needed: the dates-axis labels alone draw
+        // at `frame.maxY + Self.datesLabelOffset`, and this follows the dates lane at every text
+        // size rather than a constant read once off the walk's third picture at the default one —
+        // G7 fix round, finding 1: that constant cleared the axis labels at the default size with
+        // nothing to spare, so it overflowed as soon as `.caption2`'s line height, at a larger
+        // accessibility size, exceeded it. `Self.datesLabelOffset + Self.measuredHeight() / 2` is
+        // read inline here, every time this card redraws, rather than cached — G7 second fix
+        // round, finding 1a: cached, it went stale through a Dynamic Type change made while this
+        // view stayed on screen, since nothing about that change touches `plotBottomInset`'s own
+        // triggers. Reading it inline is what already keeps `Self.measuredWidth(...)` current for
+        // the labels themselves, so the same read here needs no trigger of its own — it is simply
+        // part of evaluating this card, which a Dynamic Type change already does.
         .padding(.top)
-        .padding(.bottom, 48)
+        .padding(.bottom, plotBottomInset + Self.datesLabelOffset + Self.measuredHeight() / 2)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
@@ -546,7 +530,18 @@ struct LookBackView: View {
         let frame = geometry[plotFrame]
         lowestLabelY = proxy.position(forY: lowest).map { frame.minY + $0 }
         highestLabelY = proxy.position(forY: highest).map { frame.minY + $0 }
+        // Text-size-independent, so this alone is safe to cache against these triggers — see
+        // `plotBottomInset`'s own doc comment. Never negative: a plot frame that already reaches
+        // the chart's own bottom edge needs none.
+        plotBottomInset = max(0, frame.maxY - geometry.size.height)
     }
+
+    /// The fixed offset, in points, from the plot's own bottom edge to a dates-axis label's
+    /// centre — shared by where `graphCard(_:)` draws each label and where
+    /// `updateValueLabelPositions(...)` derives the padding that keeps it inside the card, so the
+    /// two stay tied by the same value rather than by a comment repeating it in both places
+    /// (G7 fix round, finding 1).
+    private static let datesLabelOffset: CGFloat = 14
 
     /// `text`'s own rendered width at the `.caption2` size every overlay label in `graphCard(_:)`
     /// draws at — measured rather than estimated from its character count, which a proportional
@@ -554,6 +549,13 @@ struct LookBackView: View {
     private static func measuredWidth(_ text: String) -> CGFloat {
         (text as NSString).size(withAttributes: [.font: UIFont.preferredFont(forTextStyle: .caption2)])
             .width
+    }
+
+    /// A `.caption2` line's own rendered height at the system's current text size — `UIFont`
+    /// already answers this scaled for whatever Dynamic Type or accessibility size is active, the
+    /// same source `measuredWidth(_:)` reads for a label's width.
+    private static func measuredHeight() -> CGFloat {
+        UIFont.preferredFont(forTextStyle: .caption2).lineHeight
     }
 
     /// `x`, the centre a label of `width` would need to sit fully inside `frame` — pulled inward
@@ -567,16 +569,6 @@ struct LookBackView: View {
     ) -> CGFloat {
         let halfWidth = width / 2
         return min(max(x, frame.minX + halfWidth), frame.maxX - trailingInset - halfWidth)
-    }
-
-    /// The centre a label of `width` needs to sit with its own leading edge at `x` — left-aligned
-    /// to the rule it names, `design.md` § *What the shell draws* — shunted left only where that
-    /// would run the label past `frame`'s trailing edge, `trailingInset` inward.
-    private static func leftAlignedCenterX(
-        _ x: CGFloat, in frame: CGRect, width: CGFloat, trailingInset: CGFloat = 0
-    ) -> CGFloat {
-        let leadingX = min(x, frame.maxX - trailingInset - width)
-        return max(leadingX, frame.minX) + width / 2
     }
 
     /// A candidate dates-axis label at both its own natural centre (`naturalX`, before the

@@ -265,7 +265,12 @@ Things that are built, or deliberately not built, in a state someone will trip o
   sort, the placement and the newer-quota rule; it is right, and the split it wants — a tally pass
   and a `lines(from:)` pass, since the placement needs each line's last day — is a refactor left
   out of the Story's fix round rather than done at its end. Owed by the next Story that changes
-  how a look-back counts, which is #274 or #275 if either reaches this function.
+  how a look-back counts, which is #274 or #275 if either reaches this function. *Amended
+  2026-09-22 at #300's G7: #274 archived without reaching it, and #300 deleted the placement and
+  the two dictionaries, so the function is about ninety lines and does three of the five jobs —
+  the walk, the sort and the totals. #300's fix round takes out the sort's leftover tuple and
+  `SortableLine` wrappers; what is still owed is the tally-pass split, by #275 if it reaches the
+  function.*
 - **A quota's look-back scrolls its whole out of sight.** Flagged by the designer at #273's
   layout round, 2026-09-16. A weekly quota's page says one line per week, about fifty-two a year,
   where a tick's twelve month lines kept the whole card in view; nothing on the page is pinned, so

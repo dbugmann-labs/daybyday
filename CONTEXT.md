@@ -1856,6 +1856,18 @@ newer era's rhythm in words and its day — and the trace runs unbroken across i
 number yet draws its head and says so. What a total's page draws is #275's and what a note's page
 draws is #276's; until then each says nothing at all.
 
+**Amended 2026-09-21**, at the grill of `say-nothing-where-the-rhythm-changed` (#300), which takes
+three sentences above out: the line said "wherever one gives way to the next", the one between a
+weekday set's months and a quota's weeks, and the vertical rule on a number's graph. Nothing stands
+between two **eras** now. The months and the weeks run on unbroken, in the one newest-first order
+they were already in, and so does the graph's trace; no line, no rule, no wordless mark and no gap,
+whatever ended the older era — a rhythm change, an interval restart, or a range or a target changed
+on the sheet. The mark had been the designer's recommendation at #272, on the reasoning that a
+reader who sees the counts shift with no word for it sees a defect; the owner read the shipped page
+and called it clutter, breaking the run of the page for something its head already says. The head
+is where a rhythm is said, and now the only place: the newest era's rhythm in words, and the
+earliest era's day **kept from**.
+
 **Graph** — what a number commitment's **look-back** draws: one unbroken trace through its
 **points**, a point for each day that holds a number, over a dates axis running from the day it is
 **kept from** through today or through the day it was **kept until**. The days between two points
@@ -1869,6 +1881,11 @@ range is declared — fitting the numbers instead would turn 6, 7, 7, 6 into a m
 one axis for the whole graph and not for the days in view, so the trace does not reshape under the
 thumb. Deliberately not a **line**, which on this page is a row of text: a month line, a week line,
 the rhythm-changed line. Agreed 2026-09-17 at the grill of `look-back-at-a-number` (#274).
+
+**Amended 2026-09-21**, at the grill of `say-nothing-where-the-rhythm-changed` (#300), which
+replaces that last sentence and the vertical rule it names. A **line** on this page is a month line
+or a week line, those two and no third; the graph draws nothing where one **era** gives way to the
+next, and its trace crosses a boundary the way it crosses any two days that hold a number.
 
 **Era** — one commitment's span of being kept on one rhythm: from the day it is kept from through
 the day it was kept until, or through today while it is still kept. A **rhythm change** or an

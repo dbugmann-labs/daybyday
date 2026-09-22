@@ -782,8 +782,8 @@ func aStoppedEraOfTheSameNameAndKindKeptUntilTheChainsTargetDayDoesNotEndIt() th
 }
 
 @MainActor
-@Test("a look-back says where the rhythm changed, above the month the newer era is kept from")
-func aLookBackSaysWhereTheRhythmChangedAboveTheMonthTheNewerEraIsKeptFrom() throws {
+@Test("a look-back says nothing between the lines either side of a boundary")
+func aLookBackSaysNothingBetweenTheLinesEitherSideOfABoundary() throws {
     let places = freshRosterAndRecordPlaces()
     let olderKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
@@ -807,146 +807,40 @@ func aLookBackSaysWhereTheRhythmChangedAboveTheMonthTheNewerEraIsKeptFrom() thro
         switch $0 {
         case .month(let inWords, _): return "month:\(inWords)"
         case .week(let inWords, _): return "week:\(inWords)"
-        case .rhythmChanged(let inWords, let from): return "changed:\(inWords):\(from)"
+        }
+    }
+    #expect(lineKinds == ["month:March 2026", "month:February 2026", "month:January 2026"])
+
+    let mixedPlaces = freshRosterAndRecordPlaces()
+    let mixedOldKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let mixedBoundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let mixedNewKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let mixedOld = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: mixedOldKeptFrom)!
+    let mixedNew = Commitment(
+        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: mixedNewKeptFrom)!
+    let mixedToday = CalendarDate(year: 2026, month: 3, day: 15)!
+
+    let mixedRosterStore = try RosterStore(at: mixedPlaces.roster)
+    try mixedRosterStore.add(mixedOld)
+    try mixedRosterStore.supersede(mixedOld, with: mixedNew, keptUntil: mixedBoundary, under: nil)
+    _ = try RecordStore(at: mixedPlaces.record)
+
+    let mixedScreen = CommitmentsScreen(
+        asOf: mixedToday, keepingRosterAt: mixedPlaces.roster, keepingRecordAt: mixedPlaces.record)
+    let mixedLookBack = mixedScreen.lookBack(at: mixedNew)
+
+    let mixedLineKinds: [String] = mixedLookBack!.lines.map {
+        switch $0 {
+        case .month(let inWords, _): return "month:\(inWords)"
+        case .week(let inWords, _): return "week:\(inWords)"
         }
     }
     #expect(
-        lineKinds == [
-            "changed:Tue, Thu:4 March 2026", "month:March 2026", "month:February 2026",
-            "month:January 2026",
+        mixedLineKinds == [
+            "week:9–15 Mar 2026", "week:2–8 Mar 2026",
+            "month:March 2026", "month:February 2026", "month:January 2026",
         ])
-}
-
-@MainActor
-@Test("a look-back of one era says no line where the rhythm changed")
-func aLookBackOfOneEraSaysNoLineWhereTheRhythmChanged() throws {
-    let places = freshRosterAndRecordPlaces()
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
-    let today = CalendarDate(year: 2026, month: 3, day: 15)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(gym)
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: gym)
-
-    #expect(
-        lookBack!.lines.allSatisfy {
-            if case .month = $0 { return true }
-            return false
-        })
-}
-
-@MainActor
-@Test("a look-back of three eras says one line where the rhythm changed for each boundary")
-func aLookBackOfThreeErasSaysOneLineWhereTheRhythmChangedForEachBoundary() throws {
-    let places = freshRosterAndRecordPlaces()
-    let firstKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let firstKeptUntil = CalendarDate(year: 2026, month: 1, day: 31)!
-    let secondKeptFrom = CalendarDate(year: 2026, month: 2, day: 1)!
-    let secondKeptUntil = CalendarDate(year: 2026, month: 2, day: 28)!
-    let thirdKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
-    let first = Commitment(name: "Gym", schedule: .weekdays([.monday]), keptFrom: firstKeptFrom)!
-    let second = Commitment(name: "Gym", schedule: .weekdays([.tuesday]), keptFrom: secondKeptFrom)!
-    let third = Commitment(
-        name: "Gym", schedule: .weekdays([.wednesday]), keptFrom: thirdKeptFrom)!
-    let today = CalendarDate(year: 2026, month: 3, day: 31)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(first)
-    try rosterStore.supersede(first, with: second, keptUntil: firstKeptUntil, under: nil)
-    try rosterStore.supersede(second, with: third, keptUntil: secondKeptUntil, under: nil)
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: third)
-
-    let changedLines = lookBack!.lines.compactMap { line -> (String, String)? in
-        if case .rhythmChanged(let inWords, let from) = line { return (inWords, from) }
-        return nil
-    }
-    #expect(changedLines.count == 2)
-    #expect(changedLines[0] == ("Wed", "1 March 2026"))
-    #expect(changedLines[1] == ("Tue", "1 February 2026"))
-}
-
-// Not a scenario in the delta: scenario 7.3's own three eras start in three different months, so
-// nothing in that fixture reaches two boundaries landing inside one calendar month — this reaches
-// `LookBack.swift`'s `changedLinesFor` directly. G7 finding 1 on #272.
-@MainActor
-@Test("a look-back says two lines where the rhythm changed inside the same month, newest first")
-func aLookBackSaysTwoLinesWhereTheRhythmChangedInsideTheSameMonthNewestFirst() throws {
-    let places = freshRosterAndRecordPlaces()
-    let firstKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let firstKeptUntil = CalendarDate(year: 2026, month: 3, day: 5)!
-    let secondKeptFrom = CalendarDate(year: 2026, month: 3, day: 6)!
-    let secondKeptUntil = CalendarDate(year: 2026, month: 3, day: 10)!
-    let thirdKeptFrom = CalendarDate(year: 2026, month: 3, day: 11)!
-    let first = Commitment(name: "Gym", schedule: .weekdays([.monday]), keptFrom: firstKeptFrom)!
-    let second = Commitment(name: "Gym", schedule: .weekdays([.tuesday]), keptFrom: secondKeptFrom)!
-    let third = Commitment(
-        name: "Gym", schedule: .weekdays([.wednesday]), keptFrom: thirdKeptFrom)!
-    let today = CalendarDate(year: 2026, month: 3, day: 31)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(first)
-    try rosterStore.supersede(first, with: second, keptUntil: firstKeptUntil, under: nil)
-    try rosterStore.supersede(second, with: third, keptUntil: secondKeptUntil, under: nil)
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: third)
-
-    let changedLines = lookBack!.lines.compactMap { line -> (String, String)? in
-        if case .rhythmChanged(let inWords, let from) = line { return (inWords, from) }
-        return nil
-    }
-    #expect(changedLines.count == 2)
-    #expect(changedLines[0] == ("Wed", "11 March 2026"))
-    #expect(changedLines[1] == ("Tue", "6 March 2026"))
-}
-
-@MainActor
-@Test("a look-back says where an interval commitment's count began again")
-func aLookBackSaysWhereAnIntervalCommitmentsCountBeganAgain() throws {
-    let places = freshRosterAndRecordPlaces()
-    let oldKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let oldKeptUntil = CalendarDate(year: 2026, month: 3, day: 9)!
-    let newKeptFrom = CalendarDate(year: 2026, month: 3, day: 10)!
-    let old = Commitment(
-        name: "Sharpen knives", schedule: .everyNDays(DayInterval(days: 5)!, from: oldKeptFrom),
-        keptFrom: oldKeptFrom)!
-    let new = Commitment(
-        name: "Sharpen knives", schedule: .everyNDays(DayInterval(days: 5)!, from: newKeptFrom),
-        keptFrom: newKeptFrom)!
-    let today = CalendarDate(year: 2026, month: 3, day: 31)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(old)
-    try rosterStore.supersede(old, with: new, keptUntil: oldKeptUntil, under: nil)
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: new)
-
-    let changedLines = lookBack!.lines.compactMap { line -> (String, String)? in
-        if case .rhythmChanged(let inWords, let from) = line { return (inWords, from) }
-        return nil
-    }
-    #expect(changedLines.count == 1)
-    #expect(changedLines[0] == ("Every 5 days", "10 March 2026"))
-    let months = lookBack!.lines.compactMap { line -> String? in
-        if case .month(let inWords, _) = line { return inWords }
-        return nil
-    }
-    #expect(months.first == "March 2026")
 }
 
 @MainActor
@@ -1228,7 +1122,6 @@ func aLookBackSaysAWeekdayErasMonthsAndAQuotaErasWeeksEachInItsOwnUnit() throws 
         lookBack?.lines
             == [
                 .month(inWords: "March 2026", fraction: "3/5"),
-                .rhythmChanged(inWords: "Mon, Wed, Sat", from: "4 March 2026"),
                 .week(inWords: "2–8 Mar 2026", fraction: "1/3"),
                 .week(inWords: "23 Feb – 1 Mar 2026", fraction: "3/3"),
             ])
@@ -1328,78 +1221,6 @@ func aMixedChainsWholeSumsItsMonthsDueDaysAndItsWeeksQuotasAlike() throws {
     let lookBack = screen.lookBack(at: new)
 
     #expect(lookBack?.whole == "7/11")
-}
-
-@MainActor
-@Test("a look-back says where the rhythm changed, above the week the newer era is kept from")
-func aLookBackSaysWhereTheRhythmChangedAboveTheWeekTheNewerEraIsKeptFrom() throws {
-    let places = freshRosterAndRecordPlaces()
-    let oldKeptFrom = CalendarDate(year: 2026, month: 2, day: 23)!
-    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
-    let newKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
-    let old = Commitment(
-        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: oldKeptFrom)!
-    let new = Commitment(
-        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 5)!), keptFrom: newKeptFrom)!
-    let today = CalendarDate(year: 2026, month: 3, day: 8)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(old)
-    try rosterStore.supersede(old, with: new, keptUntil: boundary, under: nil)
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: new)
-
-    let lineKinds: [String] = lookBack!.lines.map {
-        switch $0 {
-        case .month(let inWords, _): return "month:\(inWords)"
-        case .week(let inWords, _): return "week:\(inWords)"
-        case .rhythmChanged(let inWords, let from): return "changed:\(inWords):\(from)"
-        }
-    }
-    #expect(
-        lineKinds == [
-            "changed:5x a week:4 March 2026", "week:2–8 Mar 2026", "week:23 Feb – 1 Mar 2026",
-        ])
-}
-
-@MainActor
-@Test("a look-back says where the rhythm changed between a quota era's weeks and a weekday era's months")
-func aLookBackSaysWhereTheRhythmChangedBetweenAQuotaErasWeeksAndAWeekdayErasMonths() throws {
-    let places = freshRosterAndRecordPlaces()
-    let oldKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
-    let newKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
-    let old = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: oldKeptFrom)!
-    let new = Commitment(
-        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: newKeptFrom)!
-    let today = CalendarDate(year: 2026, month: 3, day: 15)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(old)
-    try rosterStore.supersede(old, with: new, keptUntil: boundary, under: nil)
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: new)
-
-    let lineKinds: [String] = lookBack!.lines.map {
-        switch $0 {
-        case .month(let inWords, _): return "month:\(inWords)"
-        case .week(let inWords, _): return "week:\(inWords)"
-        case .rhythmChanged(let inWords, let from): return "changed:\(inWords):\(from)"
-        }
-    }
-    #expect(
-        lineKinds == [
-            "week:9–15 Mar 2026", "week:2–8 Mar 2026", "changed:3x a week:4 March 2026",
-            "month:March 2026", "month:February 2026", "month:January 2026",
-        ])
-    #expect(lookBack?.lines.contains(.month(inWords: "March 2026", fraction: "0/1")) == true)
 }
 
 @MainActor
@@ -1845,8 +1666,8 @@ func aNumberCommitmentsGraphWidensToHoldAValueOutsideItsNewestErasRange() throws
 }
 
 @MainActor
-@Test("a number commitment's graph says a rule where the rhythm changed")
-func aNumberCommitmentsGraphSaysARuleWhereTheRhythmChanged() throws {
+@Test("a number commitment's graph says nothing where one era gives way to the next")
+func aNumberCommitmentsGraphSaysNothingWhereOneEraGivesWayToTheNext() throws {
     let places = freshRosterAndRecordPlaces()
     let everyDay: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
@@ -1861,6 +1682,7 @@ func aNumberCommitmentsGraphSaysARuleWhereTheRhythmChanged() throws {
         name: "Weight", schedule: everyDay, keptFrom: olderKeptFrom, kind: .number(range: nil))!
     let today = CalendarDate(year: 2026, month: 3, day: 8)!
     let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
+    let newerDay = CalendarDate(year: 2026, month: 3, day: 5)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(newerWeight)
@@ -1868,79 +1690,20 @@ func aNumberCommitmentsGraphSaysARuleWhereTheRhythmChanged() throws {
     try rosterStore.remove(olderWeight, keptUntil: boundary)
     let recordStore = try RecordStore(at: places.record)
     try recordStore.add(Number(72.5, for: olderWeight, on: olderDay)!)
+    try recordStore.add(Number(71, for: newerWeight, on: newerDay)!)
 
     let screen = CommitmentsScreen(
         asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
     let lookBack = screen.lookBack(at: newerWeight)
 
+    #expect(lookBack?.graph?.days.count == 8)
+    #expect(lookBack?.graph?.days.first == "1 March 2026")
+    #expect(lookBack?.graph?.days.last == "8 March 2026")
+    #expect(lookBack?.graph?.months == [LookBack.Graph.Month(inWords: "March 2026", day: 0)])
     #expect(
-        lookBack?.graph?.rules == [
-            LookBack.Graph.Rule(day: 3, rhythmInWords: "Tue, Thu", fromInWords: "4 March 2026")
-        ])
-}
-
-@MainActor
-@Test("a number commitment's graph of one era says no rule")
-func aNumberCommitmentsGraphOfOneEraSaysNoRule() throws {
-    let places = freshRosterAndRecordPlaces()
-    let everyDay: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
-    let weight = Commitment(
-        name: "Weight", schedule: everyDay, keptFrom: keptFrom, kind: .number(range: nil))!
-    let today = CalendarDate(year: 2026, month: 3, day: 5)!
-    let secondDay = CalendarDate(year: 2026, month: 3, day: 2)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(weight)
-    let recordStore = try RecordStore(at: places.record)
-    try recordStore.add(Number(72.5, for: weight, on: secondDay)!)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: weight)
-
-    #expect(lookBack?.graph?.rules == [])
-}
-
-@MainActor
-@Test("a number commitment's graph of three eras says one rule for each boundary")
-func aNumberCommitmentsGraphOfThreeErasSaysOneRuleForEachBoundary() throws {
-    let places = freshRosterAndRecordPlaces()
-    let everyDay: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let firstKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
-    let firstKeptUntil = CalendarDate(year: 2026, month: 3, day: 2)!
-    let secondKeptFrom = CalendarDate(year: 2026, month: 3, day: 3)!
-    let secondKeptUntil = CalendarDate(year: 2026, month: 3, day: 4)!
-    let thirdKeptFrom = CalendarDate(year: 2026, month: 3, day: 5)!
-    let first = Commitment(
-        name: "Weight", schedule: everyDay, keptFrom: firstKeptFrom, kind: .number(range: nil))!
-    let second = Commitment(
-        name: "Weight", schedule: .weekdays([.tuesday]), keptFrom: secondKeptFrom,
-        kind: .number(range: nil))!
-    let third = Commitment(
-        name: "Weight", schedule: .weekdays([.wednesday]), keptFrom: thirdKeptFrom,
-        kind: .number(range: nil))!
-    let today = CalendarDate(year: 2026, month: 3, day: 8)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(first)
-    try rosterStore.supersede(first, with: second, keptUntil: firstKeptUntil, under: nil)
-    try rosterStore.supersede(second, with: third, keptUntil: secondKeptUntil, under: nil)
-    let recordStore = try RecordStore(at: places.record)
-    try recordStore.add(Number(72.5, for: first, on: firstKeptFrom)!)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: third)
-
-    #expect(
-        lookBack?.graph?.rules == [
-            LookBack.Graph.Rule(day: 4, rhythmInWords: "Wed", fromInWords: "5 March 2026"),
-            LookBack.Graph.Rule(day: 2, rhythmInWords: "Tue", fromInWords: "3 March 2026"),
+        lookBack?.graph?.points == [
+            LookBack.Graph.Point(day: 1, value: 72.5, inWords: "72.5"),
+            LookBack.Graph.Point(day: 4, value: 71, inWords: "71"),
         ])
 }
 
