@@ -820,6 +820,19 @@ Things that are built, or deliberately not built, in a state someone will trip o
   mean the app telling a trashed folder from a live one (`URLResourceKey` gives no such flag; the
   path contains `.Trash` on iCloud Drive) — a want if anyone wants it, not a defect. Forgetting the
   place and picking again worked as walked.
+- **Fourteen carried tests were edited outside `give-a-commitment-an-identity`'s (#303)
+  `tasks.md` § 1.3, because moving a store's form moves every fixture pinned to the form one later
+  than it.** § 1.4 raises `RosterDocument.currentVersion` from 4 to 5 and
+  `RecordDocument.currentVersion` from 5 to 6; the fixtures for *"a form one later than the one
+  this app knows"* hand-write that number plus one, so raising the constant forces the literal to
+  move with it in every fixture that names one — ten in `DayScreenTests.swift` (`:339`, `:423`,
+  `:601`, `:990`, `:1176`, `:3367`, `:3540`, `:3562`, `:4233`, `:6939`), one in
+  `CommitmentsScreenTests.swift` (`:1962`), one in `RecordStoreTests.swift` (`:256`) and two in
+  `RosterStoreTests.swift` (`:319`, `:2263`). Each edit is exactly the version literal, correct and
+  forced by § 1.4's own fact, and none is named in § 1.3 — § 1.2's own stop, "a carried test that
+  has to be edited and is not named in § 1.3 is the design being wrong: stop and report it," was
+  not taken for any of the fourteen. Found at #303's G7 fix round, 2026-09-22. The next Story whose
+  delta moves a store's form names that class of edit in its own § 1.3.
 
 ## Settled
 
