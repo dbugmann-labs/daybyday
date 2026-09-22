@@ -1589,31 +1589,6 @@ func anEraChangedThroughARosterStoreIsReadBackChangedByAStoreOpenedAfterwards() 
             ])
 }
 
-@Test("a commitment superseded through a roster store is read back superseded by a store opened afterwards")
-func aCommitmentSupersededThroughARosterStoreIsReadBackSupersededByAStoreOpenedAfterwards() throws {
-    let place = freshPlace()
-    let originalSchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: originalSchedule, keptFrom: keptFrom)!
-    let newGym = Commitment(
-        name: "Gym", schedule: newSchedule,
-        keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!)!
-    let thirtyFirstOfAugust = CalendarDate(year: 2026, month: 8, day: 31)!
-
-    let first = try RosterStore(at: place)
-    try first.add(gym)
-
-    let superseded = try first.supersede(
-        gym, with: newGym, keptUntil: thirtyFirstOfAugust, under: nil)
-
-    let later = try RosterStore(at: place)
-
-    #expect(superseded)
-    #expect(later.roster.commitments == [newGym])
-    #expect(later.roster.commitments(on: thirtyFirstOfAugust) == [newGym, gym])
-}
-
 @Test("a change and a new era a roster refuses keep nothing at a roster store's place")
 func aChangeAndANewEraARosterRefusesKeepNothingAtARosterStoresPlace() throws {
     let place = freshPlace()

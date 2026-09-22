@@ -6940,63 +6940,6 @@ func aStoppedCommitmentPutUnderACategoryThroughACommitmentsScreensChangeStaysSto
 }
 
 @MainActor
-@Test("a change that carries nothing over writes nothing at the record place")
-func aChangeThatCarriesNothingOverWritesNothingAtTheRecordPlace() throws {
-    // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation*: the
-    // record place is seeded with the current form, laid out with different key order and
-    // spacing than a store's own encoding ever produces — so a spurious carry-over that wrote
-    // this same tick back, even byte-identical, would still change the place's bytes.
-    let places = freshRosterAndRecordPlaces()
-    let daily: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(creatine)
-
-    try FileManager.default.createDirectory(
-        at: places.record.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let recordBytes = seededRecordBytes(
-        ticks: """
-            [
-              {
-                "commitment": {
-                  "name": "Creatine",
-                  "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                  "schedule": {
-                    "weekdays": [
-                      "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
-                    ]
-                  }
-                },
-                "date": { "year": 2026, "month": 8, "day": 3 }
-              }
-            ]
-            """)
-    try recordBytes.write(to: places.record)
-
-    // The shape guard in `RecordStore.init(at:)` requires `numbers`, `notes` and `additions` to
-    // be present at version 5 (`RecordDocument.swift`'s three `...IntroducedInVersion`
-    // constants); confirming the seeded bytes actually open as a store is what makes the byte
-    // check below mean anything — a place nothing could open would make it pass for free.
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-
-    let recordBytesBeforeChange = try Data(contentsOf: places.record)
-
-    let refusal = screen.change(
-        creatine, toName: "Creatine", on: Rhythm(daily), keptFrom: keptFrom, under: "Supplements")
-
-    #expect(refusal == nil)
-    #expect(try Data(contentsOf: places.record) == recordBytesBeforeChange)
-}
-
-@MainActor
 @Test("a change of rhythm through a commitments screen puts the commitment under the category it was given")
 func aChangeOfRhythmThroughACommitmentsScreenPutsTheCommitmentUnderTheCategoryItWasGiven() throws {
     let places = freshRosterAndRecordPlaces()

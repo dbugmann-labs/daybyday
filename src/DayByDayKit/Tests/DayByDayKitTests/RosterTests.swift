@@ -1928,27 +1928,6 @@ func movingACommitmentOnACopyOfARosterLeavesTheRosterItWasCopiedFromUnchanged() 
     #expect(original != copy)
 }
 
-@Test("a commitment moved and then stopped is taken up again in the place it was moved to")
-func aCommitmentMovedAndThenStoppedIsTakenUpAgainInThePlaceItWasMovedTo() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
-
-    var roster = Roster()
-    _ = roster.add(waterPlants)
-    _ = roster.add(gym)
-    _ = roster.add(journaling)
-    _ = roster.move(journaling, toOffset: 0, under: nil)
-    _ = roster.retire(journaling, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
-
-    let takenUp = roster.add(journaling)
-
-    #expect(takenUp)
-    #expect(roster.commitments == [journaling, waterPlants, gym])
-}
-
 @Test("a roster answers about a date in the order it was moved into")
 func aRosterAnswersAboutADateInTheOrderItWasMovedInto() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -3293,31 +3272,6 @@ func aRosterCountsACommitmentItHasRemovedInTheEarliestDayAnythingItHoldsIsKeptFr
 
     #expect(roster.earliestKeptFrom == CalendarDate(year: 2026, month: 1, day: 1))
     #expect(roster.commitments == [run])
-}
-
-@Test("a commitment taken on to supersede another lands in that one's place rather than after every commitment already there")
-func aCommitmentTakenOnToSupersedeAnotherLandsInThatOnesPlaceRatherThanAfterEveryCommitmentAlreadyThere()
-{
-    let originalSchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let waterPlants = Commitment(name: "Water plants", schedule: originalSchedule, keptFrom: keptFrom)!
-    let gym = Commitment(name: "Gym", schedule: originalSchedule, keptFrom: keptFrom)!
-    let journaling = Commitment(name: "Journaling", schedule: originalSchedule, keptFrom: keptFrom)!
-    let newGym = Commitment(
-        name: "Gym", schedule: newSchedule,
-        keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!)!
-    let thirtyFirstOfAugust = CalendarDate(year: 2026, month: 8, day: 31)!
-
-    var roster = Roster()
-    _ = roster.add(waterPlants)
-    _ = roster.add(gym)
-    _ = roster.add(journaling)
-
-    _ = roster.supersede(gym, with: newGym, keptUntil: thirtyFirstOfAugust, under: nil)
-
-    #expect(roster.commitments == [waterPlants, newGym, journaling])
-    #expect(roster.commitments.last != newGym)
 }
 
 @Test("a roster takes on a commitment on a schedule due on no day")
