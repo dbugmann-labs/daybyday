@@ -314,17 +314,18 @@ public final class RosterStore {
     }
 
     /// Kept at `place` in one write, replacing the whole roster with `nextRoster`. For a caller
-    /// that must apply more than one `Roster` mutation as a single act — a rename immediately
-    /// followed by a supersession, say — building the combined value first and handing it here
-    /// keeps the two from ever being kept as two separate writes, where a place that goes
-    /// unwritable between them could leave one half kept and the other refused. Answers `false`,
-    /// without throwing and without writing, when `nextRoster` is exactly the roster already
-    /// held.
+    /// that must apply more than one `Roster` mutation as a single act — a rename, a day-move and
+    /// a new era put on, say — building the combined value first and handing it here keeps them
+    /// from ever being kept as separate writes, where a place that goes unwritable partway
+    /// through could leave one half kept and the rest refused. Always writes: unlike `rename`'s
+    /// own "whether anything changed is judged by the name itself, not `nextRoster != roster`"
+    /// (`RosterStore.rename`'s own doc comment), a caller here has already judged for itself that
+    /// something changed, and `Roster`'s equality — identity alone — cannot be trusted to agree
+    /// when a rename or a day-move is the only thing that did, since neither touches an entry's
+    /// identity, its `keptUntil`, its `isRemoved` or its category, the only fields two `Roster`
+    /// values are compared on beyond an entry's very presence.
     @discardableResult
     func replace(with nextRoster: Roster) throws -> Bool {
-        guard nextRoster != roster else {
-            return false
-        }
         try write(nextRoster)
 
         roster = nextRoster

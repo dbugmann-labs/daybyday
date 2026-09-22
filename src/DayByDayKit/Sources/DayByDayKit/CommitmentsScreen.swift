@@ -366,8 +366,6 @@ public final class CommitmentsScreen {
         /// A day of the month, an interval or a weekly quota outside what that rhythm allows.
         /// One case for all three: the person changes the number in the field they are on.
         case rhythmOutOfRange
-        /// The roster is already keeping this commitment.
-        case alreadyKept
         /// The roster could not be written, the record place could not be written, or this
         /// screen is not keeping either.
         case notKept
@@ -381,11 +379,6 @@ public final class CommitmentsScreen {
         /// number of intervals in either direction. `design.md` § *An interval rhythm's grid
         /// moves with the day it is kept from*.
         case wouldLeaveARecordedDayNotDue
-        /// A change that would carry records onto a commitment the record place already holds
-        /// records of, told apart from `wouldLeaveARecordedDayNotDue` — which is given instead
-        /// where a change meets both causes. `design.md` § *The not-due cause is judged first,
-        /// then the records already kept*.
-        case recordsAlreadyExist
         /// A range whose lowest is above its highest, whose end is not a number, or with one
         /// end typed and the other blank.
         case rangeIsNotARange
@@ -667,7 +660,12 @@ public final class CommitmentsScreen {
 
     /// What `commitment` is made of, so a form opened to change it starts from what that
     /// commitment is rather than from what a new one would be. `nil` for a commitment on neither
-    /// of this screen's lists — kept or stopped are the only two a change can reach.
+    /// of this screen's lists — kept or stopped are the only two a change can reach. The day it
+    /// is kept from is that commitment's earliest era's, and the rhythm, the kind and what that
+    /// kind carries are its newest era's — `openspec/changes/give-a-commitment-an-identity/
+    /// specs/commitment/spec.md` § *A commitments screen says what a commitment it is asked to
+    /// change is made of*: "The day it is kept from SHALL be that commitment's earliest era's,
+    /// and the rhythm and the range or the target SHALL be its newest era's."
     public func whatItIsMadeOf(_ commitment: Commitment) -> Change? {
         guard let rosterStore,
             let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment }),
@@ -676,11 +674,14 @@ public final class CommitmentsScreen {
             return nil
         }
 
+        let newest = entry.commitment
+        let keptFrom = rosterStore.roster.keptFrom(of: commitment) ?? newest.keptFrom
+
         return Change(
-            name: commitment.name, rhythm: Rhythm(commitment.schedule), keptFrom: commitment.keptFrom,
+            name: newest.name, rhythm: Rhythm(newest.schedule), keptFrom: keptFrom,
             category: entry.category, canChangeMoreThanNameAndCategory: entry.keptUntil == nil,
-            kind: commitment.kind,
-            canRestart: entry.keptUntil == nil && Self.isIntervalSchedule(commitment.schedule))
+            kind: newest.kind,
+            canRestart: entry.keptUntil == nil && Self.isIntervalSchedule(newest.schedule))
     }
 
     /// Whether `schedule` is an interval of days — the one rhythm a restart applies to.
@@ -717,19 +718,20 @@ public final class CommitmentsScreen {
     }
 
     /// Which field a refusal that could be about the rhythm, the day kept from, the range or the
-    /// target is about: whichever one of the four `commitment` is actually made of differs from
-    /// what was asked, and `nil` — the whole change — where more than one differs.
-    /// `openspec/specs/commitment/spec.md` § *A commitments screen says whether a refusal about a
-    /// rhythm, a day kept from, a range or a target is about one of them or the whole change*,
-    /// `design.md` § *The screen decides which field, not the sheet* and `openspec/changes/
+    /// target is about: whichever one of the four `currentRhythm`/`currentKeptFrom`/`currentKind`
+    /// (what the commitment is currently made of) differs from what was asked, and `nil` — the
+    /// whole change — where more than one differs. Takes the current values explicitly, rather
+    /// than reading them off a single `Commitment`, because a multi-era commitment's day kept
+    /// from is its earliest era's while its rhythm and kind are its newest era's — `design.md` §
+    /// *The screen decides which field, not the sheet* and `openspec/changes/
     /// change-range-and-target/design.md` § *One comparison over four things, not two*.
     private static func ambiguousField(
         askedRhythm: Rhythm, askedKeptFrom: CalendarDate, askedKind: Commitment.Kind,
-        from commitment: Commitment
+        currentRhythm: Rhythm, currentKeptFrom: CalendarDate, currentKind: Commitment.Kind
     ) -> SheetField? {
-        let rhythmDiffers = Rhythm(commitment.schedule) != askedRhythm
-        let keptFromDiffers = commitment.keptFrom != askedKeptFrom
-        let kindDiffers = askedKind != commitment.kind
+        let rhythmDiffers = currentRhythm != askedRhythm
+        let keptFromDiffers = currentKeptFrom != askedKeptFrom
+        let kindDiffers = askedKind != currentKind
 
         guard [rhythmDiffers, keptFromDiffers, kindDiffers].filter({ $0 }).count == 1 else {
             return nil
@@ -748,96 +750,88 @@ public final class CommitmentsScreen {
         }
     }
 
-    /// Why carrying every record of `commitment` over to `target` would be refused, reading
-    /// `history` rather than writing it — `nil` where it may proceed. The not-due cause is
-    /// judged first: every date `commitment` holds a record on must be due on `target`, or the
-    /// change is refused as leaving a recorded day not due. Only then is `target` asked whether
-    /// the record place already holds any record of it, whether or not `commitment` holds any
-    /// itself — a rename must not adopt records that belong to no commitment on the roster.
-    /// `design.md` § *The not-due cause is judged first, then the records already kept* and §
-    /// *Refused whether or not the source holds records*.
-    private static func refusalCarryingRecords(
-        from commitment: Commitment, to target: Commitment, in history: History
-    ) -> Refusal? {
-        guard history.datesRecorded(for: commitment).allSatisfy({ target.isDue(on: $0) }) else {
-            return .wouldLeaveARecordedDayNotDue
+    /// `roster`, with the eras of `identity` moved onto `newKeptFrom`: the earliest surviving
+    /// era's schedule rebuilt from that day, on the rhythm it already runs on, and every era
+    /// `newKeptFrom` would leave holding no day dropped. `design.md` § *The seam* and
+    /// `openspec/changes/give-a-commitment-an-identity/specs/commitment/spec.md` § *A commitments
+    /// screen changes a commitment by renaming it, moving the day it is kept from, or putting a
+    /// new era on it*: "A day kept from moved forward past the day an era gives way SHALL drop
+    /// every era it would leave holding no day, and the earliest surviving era SHALL be kept from
+    /// that day." Moving `newKeptFrom` earlier drops nothing — widening the window only ever
+    /// leaves every era holding at least the days it already held.
+    private static func movingDayKeptFrom(
+        _ identity: Commitment.Identity, to newKeptFrom: CalendarDate, in roster: Roster
+    ) -> Roster {
+        var roster = roster
+        let ownIndices = roster.entries.indices.filter { roster.entries[$0].commitment.identity == identity }
+        guard !ownIndices.isEmpty else {
+            return roster
         }
-        guard !history.holdsRecords(of: target) else {
-            return .recordsAlreadyExist
+
+        let toDrop = ownIndices.dropFirst().filter { index in
+            guard let keptUntil = roster.entries[index].keptUntil else { return false }
+            return newKeptFrom.days(until: keptUntil) < 0
         }
-        return nil
+        let survivingIndices = ownIndices.filter { !toDrop.contains($0) }
+
+        guard let earliestSurvivingIndex = survivingIndices.last else {
+            return roster
+        }
+        let earliestEntry = roster.entries[earliestSurvivingIndex]
+        let earliestCommitment = earliestEntry.commitment
+        let rebuiltSchedule =
+            Rhythm(earliestCommitment.schedule).schedule(keptFrom: newKeptFrom) ?? earliestCommitment.schedule
+        let rebuilt = Commitment(
+            era: earliestCommitment, schedule: rebuiltSchedule, keptFrom: newKeptFrom,
+            kind: earliestCommitment.kind)!
+        roster.entries[earliestSurvivingIndex] = Roster.Entry(
+            commitment: rebuilt, keptUntil: earliestEntry.keptUntil, isRemoved: earliestEntry.isRemoved,
+            category: earliestEntry.category)
+
+        for index in toDrop.sorted(by: >) {
+            roster.entries.remove(at: index)
+        }
+        return roster
     }
 
-    /// Keeps a save in progress beside `recordPlace`, naming `source`'s records as carried to
-    /// `carried`, where `hasRecords` says there is anything of `source` to carry — a change or
-    /// restart that carries none keeps none, `design.md` § *The save in progress lives beside
-    /// the record place, not at a place of its own*. `nil` on success, with or without one kept;
-    /// `.notKept` — a place that could not be written, writing nothing — otherwise. Takes
-    /// `hasRecords` already judged rather than a `History` to ask itself, because a restart's own
-    /// answer is dated — onOrAfter the day it restarts from — while a change's is not.
-    private static func keepSaveInProgressIfCarrying(
-        from source: Commitment, to carried: Commitment, whenAnyRecorded hasRecords: Bool,
-        at recordPlace: URL
+    /// Why the change that would leave `roster` as it stands should be refused, reading `history`
+    /// rather than writing it — `nil` where it may proceed. `openspec/changes/
+    /// give-a-commitment-an-identity/specs/commitment/spec.md` § *A commitments screen refuses a
+    /// change it cannot make, and tells each refusal apart*: "A change SHALL be refused as a day
+    /// already recorded on that the change would leave not due where any day the commitment has
+    /// a record on is a day it would not be due on after the change." Every date `commitment`'s
+    /// identity holds a record on, wherever it was made, is asked against `roster` as the change
+    /// would leave it: due when some era of that identity holds the date within its own span and
+    /// is itself due on it.
+    private static func refusalLeavingARecordedDayNotDue(
+        for commitment: Commitment, in roster: Roster, history: History
     ) -> Refusal? {
-        guard hasRecords else {
-            return nil
+        let dueAfterChange = history.datesRecorded(for: commitment).allSatisfy { date in
+            roster.entries.contains { entry in
+                entry.commitment.identity == commitment.identity
+                    && entry.commitment.keptFrom.days(until: date) >= 0
+                    && (entry.keptUntil.map { date.days(until: $0) >= 0 } ?? true)
+                    && entry.commitment.isDue(on: date)
+            }
         }
-        do {
-            try SaveInProgress(carriedFrom: source, to: carried).keep(
-                at: SaveInProgress.place(besideRecordAt: recordPlace))
-        } catch {
-            return .notKept
-        }
-        return nil
-    }
-
-    /// Runs after this screen's own `recordStore` has already carried records forward for a
-    /// change or a restart, to undo the save in progress that carry kept — exactly the call the
-    /// next read of the places would make, but run here so the file never outlives a save that
-    /// landed or stands torn. A successful undo runs through a second, disjoint `RecordStore`
-    /// `SaveInProgress` opens for itself, so this screen's own copy — which already carried the
-    /// records forward before this runs — is left holding what the record place no longer has
-    /// until this reopens it; skipping that reopen would let this screen's next write put the
-    /// stale copy back over whatever the undo just corrected. Where the undo itself cannot be
-    /// completed, this screen goes on to hold a torn save it cannot undo, answering exactly as
-    /// `readPlaces` does for the same condition at `init` — `design.md` § *A torn save that
-    /// cannot be undone reuses two existing states* and `openspec/specs/commitment/spec.md` §
-    /// *A change that carries records leaves a save in progress until its roster place is
-    /// written*: "Where that undo fails, the screen SHALL from then on hold a torn save it
-    /// cannot undo." Answers whether the undo succeeded: every caller on a success path — the
-    /// roster place was just written and this is only tidying the file up after it — MUST stop
-    /// at `false` rather than going on to draw its lists from the local `RosterStore` binding it
-    /// opened this change or restart with, which is still set and still reflects the write even
-    /// once this has cleared `self.rosterStore` for it.
-    @discardableResult
-    private func undoTornSaveMadeDuringThisChange() -> Bool {
-        guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: place) else {
-            rosterStore = nil
-            rosterState = .notKept
-            recordStore = nil
-            recordsBelongToNoCommitment = false
-            refreshLists(from: nil)
-            // Answers exactly as `readPlaces` does for the same condition, so `offersATakeOut`
-            // and `storesNotRead` are consistent the moment a save torn during this very change
-            // cannot itself be undone, rather than lagging until the app is next shown.
-            storesNotRead = Copy.Store.allCases.map { StoreNotRead(store: $0, cause: .couldNotBeRead) }
-            return false
-        }
-        recordStore = Self.openRecord(at: recordPlace)
-        return true
+        return dueAfterChange ? nil : .wouldLeaveARecordedDayNotDue
     }
 
     /// Changes `commitment`, on either of this screen's lists, for the commitment `name`,
     /// `rhythm`, `keptFrom` and, where its kind has room for one, `lowest`/`highest` or `target`
-    /// name, under `category`. Works out from those which of two acts — carrying every record
-    /// over to the changed commitment, or superseding — the change needs, performing both in one
-    /// order where it needs both: the carry-over first, then the supersession. `lowest`,
-    /// `highest` and `target` are read exactly as `define` reads them; `nil` for a range or a
-    /// target is the one `commitment` already carries, `design.md` § *Three more strings, and
-    /// `nil` is the value it already carries*. See `openspec/specs/commitment/spec.md` § *A
-    /// commitments screen works out which act a change on either of its lists needs* and
-    /// `design.md` § *Two acts, not one* and `openspec/changes/change-range-and-target/design.md`
-    /// § *Supersede is decided on the whole kind, carry-over keeps the old one*.
+    /// name, under `category`. Works out from those which of three acts the change needs, doing
+    /// each it needs and no other, at the roster place alone: a different name renames the
+    /// commitment through every era of it; a different day kept from changes its earliest era
+    /// for one kept from that day; a different rhythm, range or target puts a new era on it, kept
+    /// from the day this screen was handed. One save renames first, moves the day second and puts
+    /// the era on third, so the day-move and the new era both see the name already written.
+    /// `lowest`, `highest` and `target` are read exactly as `define` reads them; `nil` for a
+    /// range or a target is the one `commitment` already carries, `design.md` § *Three more
+    /// strings, and `nil` is the value it already carries*. No record moves and nothing is
+    /// written at the record place by any of them. See `openspec/changes/
+    /// give-a-commitment-an-identity/specs/commitment/spec.md` § *A commitments screen changes a
+    /// commitment by renaming it, moving the day it is kept from, or putting a new era on it* and
+    /// § *A commitments screen refuses a change it cannot make, and tells each refusal apart*.
     public func change(
         _ commitment: Commitment, toName name: String, on rhythm: Rhythm, keptFrom: CalendarDate,
         under category: String?, lowest: String? = nil, highest: String? = nil, target: String? = nil
@@ -854,7 +848,11 @@ public final class CommitmentsScreen {
         }
 
         let isStopped = stopped.contains(commitment)
-        let sameRhythm = Rhythm(commitment.schedule) == rhythm
+        let currentCommitment = entry.commitment
+        let sameRhythm = Rhythm(currentCommitment.schedule) == rhythm
+        let currentKeptFrom = rosterStore.roster.keptFrom(of: commitment) ?? currentCommitment.keptFrom
+        let keptFromChanged = keptFrom != currentKeptFrom
+        let nameChanged = name != currentCommitment.name
 
         guard !Blank.saysNothing(name) else {
             refuse(.changing(commitment, .namesNothing), on: .name)
@@ -866,7 +864,7 @@ public final class CommitmentsScreen {
             return .dueOnNoDay
         }
 
-        guard let newSchedule = rhythm.schedule(keptFrom: keptFrom) else {
+        guard rhythm.schedule(keptFrom: keptFrom) != nil else {
             refuse(.changing(commitment, .rhythmOutOfRange), on: .rhythm)
             return .rhythmOutOfRange
         }
@@ -875,7 +873,7 @@ public final class CommitmentsScreen {
         // what the commitment is made of until it has been read. `design.md` § *The reading
         // comes before the stopped guard*.
         let newKind: Commitment.Kind
-        switch Self.changedKind(of: commitment, lowest: lowest, highest: highest, target: target) {
+        switch Self.changedKind(of: currentCommitment, lowest: lowest, highest: highest, target: target) {
         case .success(let kind):
             newKind = kind
         case .failure(let refusal):
@@ -883,236 +881,79 @@ public final class CommitmentsScreen {
             refuse(.changing(commitment, refusal), on: field)
             return refusal
         }
-        let sameKind = newKind == commitment.kind
+        let sameKind = newKind == currentCommitment.kind
         let ambiguousField = Self.ambiguousField(
-            askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind, from: commitment)
+            askedRhythm: rhythm, askedKeptFrom: keptFrom, askedKind: newKind,
+            currentRhythm: Rhythm(currentCommitment.schedule), currentKeptFrom: currentKeptFrom,
+            currentKind: currentCommitment.kind)
 
-        guard !isStopped || (sameRhythm && keptFrom == commitment.keptFrom && sameKind) else {
+        guard !isStopped || (sameRhythm && !keptFromChanged && sameKind) else {
             refuse(
                 .changing(commitment, .stoppedCommitmentDoesNotTakeThisChange), on: ambiguousField)
             return .stoppedCommitmentDoesNotTakeThisChange
         }
 
         let normalizedCategory = Self.normalizedCategory(category)
+        let putsNewEra = !sameRhythm || !sameKind
 
-        if sameRhythm, sameKind {
-            // A different name, a different day kept from, or both, on the rhythm the
-            // commitment already runs on — every record of it is carried over to the changed
-            // one, and the roster then changes the commitment for it, in the place it holds it.
-            // An unchanged day kept from keeps the schedule the commitment already has, even
-            // where that schedule's own start date differs from it; only a different day
-            // rebuilds the schedule from that day. `design.md` § *An unchanged day kept from
-            // keeps the schedule it has*.
-            let changedSchedule = keptFrom == commitment.keptFrom ? commitment.schedule : newSchedule
-            let changedCommitment = Commitment(
-                name: name, schedule: changedSchedule, keptFrom: keptFrom, kind: commitment.kind)!
-
-            if changedCommitment == commitment, normalizedCategory == entry.category {
-                // The four things name the commitment that is already there, and the category
-                // it is already under: change nothing, write nothing, refuse nothing.
-                return nil
-            }
-
-            guard
-                changedCommitment == commitment
-                    || !rosterStore.roster.entries.contains(where: { $0.commitment == changedCommitment })
-            else {
-                refuse(.changing(commitment, .alreadyKept), on: nil)
-                return .alreadyKept
-            }
-
-            if changedCommitment != commitment {
-                guard let recordStore else {
-                    refuse(.changing(commitment, .notKept), on: nil)
-                    return .notKept
-                }
-
-                if let refusal = Self.refusalCarryingRecords(
-                    from: commitment, to: changedCommitment, in: recordStore.history)
-                {
-                    let field: SheetField? =
-                        refusal == .wouldLeaveARecordedDayNotDue ? ambiguousField : nil
-                    refuse(.changing(commitment, refusal), on: field)
-                    return refusal
-                }
-
-                if let refusal = Self.keepSaveInProgressIfCarrying(
-                    from: commitment, to: changedCommitment,
-                    whenAnyRecorded: recordStore.history.holdsRecords(of: commitment), at: recordPlace)
-                {
-                    refuse(.changing(commitment, refusal), on: nil)
-                    return refusal
-                }
-
-                do {
-                    // The two checks above already answer both causes `carryOver` itself
-                    // refuses for; a `false` here means a record type has gained a formation
-                    // rule beyond `isDue` that they do not yet cover. Treated the same as the
-                    // requirement already does for a day a record could not have been made on:
-                    // `openspec/specs/commitment/spec.md` § *A commitments screen refuses a
-                    // change it cannot make* — "no record SHALL be carried over to a day it
-                    // could not have been made on".
-                    guard try recordStore.carryOver(commitment, to: changedCommitment) else {
-                        refuse(
-                            .changing(commitment, .wouldLeaveARecordedDayNotDue), on: ambiguousField)
-                        return .wouldLeaveARecordedDayNotDue
-                    }
-                } catch {
-                    refuse(.changing(commitment, .notKept), on: nil)
-                    return .notKept
-                }
-            }
-
-            do {
-                _ = try rosterStore.change(commitment, to: changedCommitment, under: category)
-            } catch {
-                if changedCommitment != commitment {
-                    undoTornSaveMadeDuringThisChange()
-                }
-                refuse(.changing(commitment, .notKept), on: nil)
-                return .notKept
-            }
-
-            if changedCommitment != commitment {
-                // Told the save finished by the roster it just wrote, not by the file: this is
-                // the same call the next read of the places would make, run here so the file
-                // never outlives a save that landed. `design.md` § *A save finished is told by
-                // the roster, not by the file*. Where that undo itself cannot be completed, this
-                // screen now holds a torn save it cannot undo — `rosterStore` above is the
-                // `self.rosterStore` this just cleared, not a fresh read, so drawing the lists
-                // from it here would redraw exactly what the screen can no longer answer for.
-                guard undoTornSaveMadeDuringThisChange() else {
-                    endedByAChangeOrByBeingShown()
-                    sheetRefusal = nil
-                    copyPlace?.keptAChange()
-                    return nil
-                }
-            }
-
-            endedByAChangeOrByBeingShown()
-            sheetRefusal = nil
-            refreshLists(from: rosterStore)
-            copyPlace?.keptAChange()
-            return nil
-        }
-
-        // A different rhythm or a different kind: the roster supersedes. `commitment` is kept
-        // until the day before the day this screen was handed and held removed; the commitment
-        // the six things name — the new range or target included, kept from the day this screen
-        // was handed — is taken on in its place. `openspec/changes/change-range-and-target
-        // /design.md` § *Supersede is decided on the whole kind, carry-over keeps the old one*.
-        let nameOrKeptFromChanged = name != commitment.name || keptFrom != commitment.keptFrom
-        let supersedeKeptUntil = Self.dayBefore(dayToKeepFrom)
-        let finalNewCommitment = Commitment(
-            name: name, schedule: newSchedule, keptFrom: dayToKeepFrom, kind: newKind)!
-
-        guard !nameOrKeptFromChanged else {
-            // Both, in one save: the carry-over first — the superseded commitment carries the
-            // new name and the corrected day it was kept from — then the supersession, which
-            // starts today. `design.md` § *Two acts, not one*.
-            // The commitment carried to before a supersession follows the same rule as the
-            // same-rhythm path: an unchanged day kept from keeps the schedule `commitment`
-            // already has, on the rhythm it already runs on. `design.md` § *An unchanged day
-            // kept from keeps the schedule it has*.
-            let oldRhythm = Rhythm(commitment.schedule)
-            let carryTargetSchedule =
-                keptFrom == commitment.keptFrom ? commitment.schedule : oldRhythm.schedule(keptFrom: keptFrom)!
-            let carryTarget = Commitment(
-                name: name, schedule: carryTargetSchedule, keptFrom: keptFrom, kind: commitment.kind)!
-
-            guard !rosterStore.roster.entries.contains(where: { $0.commitment == carryTarget })
-            else {
-                refuse(.changing(commitment, .alreadyKept), on: nil)
-                return .alreadyKept
-            }
-            guard !rosterStore.roster.entries.contains(where: { $0.commitment == finalNewCommitment })
-            else {
-                refuse(.changing(commitment, .alreadyKept), on: nil)
-                return .alreadyKept
-            }
-
-            guard let recordStore else {
-                refuse(.changing(commitment, .notKept), on: nil)
-                return .notKept
-            }
-
-            if let refusal = Self.refusalCarryingRecords(
-                from: commitment, to: carryTarget, in: recordStore.history)
-            {
-                let field: SheetField? =
-                    refusal == .wouldLeaveARecordedDayNotDue ? ambiguousField : nil
-                refuse(.changing(commitment, refusal), on: field)
-                return refusal
-            }
-
-            if let refusal = Self.keepSaveInProgressIfCarrying(
-                from: commitment, to: carryTarget,
-                whenAnyRecorded: recordStore.history.holdsRecords(of: commitment), at: recordPlace)
-            {
-                refuse(.changing(commitment, refusal), on: nil)
-                return refusal
-            }
-
-            do {
-                // Same fallback as the same-rhythm path above: the two checks already answer
-                // both causes `carryOver` refuses for, so a `false` here can only be a formation
-                // rule beyond `isDue` that they do not yet cover.
-                guard try recordStore.carryOver(commitment, to: carryTarget) else {
-                    refuse(.changing(commitment, .wouldLeaveARecordedDayNotDue), on: ambiguousField)
-                    return .wouldLeaveARecordedDayNotDue
-                }
-            } catch {
-                refuse(.changing(commitment, .notKept), on: nil)
-                return .notKept
-            }
-
-            do {
-                // The rename and the supersession are one act on the roster, not two: both are
-                // applied to a single in-memory `Roster` value and kept in one write, so a place
-                // that goes unwritable partway through can never leave the rename kept and the
-                // supersession refused, or the reverse.
-                var nextRoster = rosterStore.roster
-                _ = nextRoster.change(commitment, to: carryTarget, under: entry.category)
-                _ = nextRoster.supersede(
-                    carryTarget, with: finalNewCommitment, keptUntil: supersedeKeptUntil,
-                    under: category)
-                _ = try rosterStore.replace(with: nextRoster)
-            } catch {
-                undoTornSaveMadeDuringThisChange()
-                refuse(.changing(commitment, .notKept), on: nil)
-                return .notKept
-            }
-
-            // Told the save finished by the roster it just wrote, not by the file — the same
-            // call the next read of the places would make, run here so the file never outlives a
-            // save that landed. `design.md` § *A save finished is told by the roster, not by the
-            // file*. Where that undo itself cannot be completed, this screen now holds a torn
-            // save it cannot undo — `rosterStore` above is the `self.rosterStore` this just
-            // cleared, not a fresh read, so drawing the lists from it here would redraw exactly
-            // what the screen can no longer answer for.
-            guard undoTornSaveMadeDuringThisChange() else {
-                endedByAChangeOrByBeingShown()
-                sheetRefusal = nil
-                copyPlace?.keptAChange()
-                return nil
-            }
-
-            endedByAChangeOrByBeingShown()
-            sheetRefusal = nil
-            refreshLists(from: rosterStore)
-            copyPlace?.keptAChange()
-            return nil
-        }
-
-        guard !rosterStore.roster.entries.contains(where: { $0.commitment == finalNewCommitment })
+        guard nameChanged || keptFromChanged || putsNewEra || normalizedCategory != entry.category
         else {
-            refuse(.changing(commitment, .alreadyKept), on: nil)
-            return .alreadyKept
+            // The five things name what is already there, and the category it is already
+            // under: change nothing, write nothing, refuse nothing.
+            return nil
+        }
+
+        var nextRoster = rosterStore.roster
+
+        if nameChanged {
+            guard nextRoster.rename(commitment, to: name) else {
+                let refusal = Refusal.nameAlreadyInUse(
+                    Self.nameAlreadyHeld(name, among: kept + stopped))
+                refuse(.changing(commitment, refusal), on: .name)
+                return refusal
+            }
+        }
+
+        if keptFromChanged {
+            nextRoster = Self.movingDayKeptFrom(commitment.identity, to: keptFrom, in: nextRoster)
+        }
+
+        if putsNewEra {
+            let onValue = nameChanged ? Commitment(renaming: commitment, to: name) : commitment
+            let eraSchedule = rhythm.schedule(keptFrom: dayToKeepFrom)!
+            let era = Commitment(era: onValue, schedule: eraSchedule, keptFrom: dayToKeepFrom, kind: newKind)!
+            guard
+                nextRoster.put(
+                    era: era, on: onValue, keptUntil: Self.dayBefore(dayToKeepFrom), under: category)
+            else {
+                refuse(.changing(commitment, .notKept), on: nil)
+                return .notKept
+            }
+        } else if let index = nextRoster.entries.firstIndex(where: {
+            $0.commitment.identity == commitment.identity
+        }) {
+            // A different category, and none of the three acts runs to carry it: put where none
+            // does. `design.md`: "A different category SHALL be written by whichever act runs,
+            // and by a put where none does." Written by hand, rather than through
+            // `Roster.put(_:under:)`, because that member requires the roster to be currently
+            // keeping the commitment, which a stopped one — name and category the only things it
+            // can change — is not.
+            let existing = nextRoster.entries[index]
+            nextRoster.entries[index] = Roster.Entry(
+                commitment: existing.commitment, keptUntil: existing.keptUntil,
+                isRemoved: existing.isRemoved, category: normalizedCategory)
+        }
+
+        if let recordStore,
+            let refusal = Self.refusalLeavingARecordedDayNotDue(
+                for: commitment, in: nextRoster, history: recordStore.history)
+        {
+            refuse(.changing(commitment, refusal), on: ambiguousField)
+            return refusal
         }
 
         do {
-            _ = try rosterStore.supersede(
-                commitment, with: finalNewCommitment, keptUntil: supersedeKeptUntil, under: category)
+            _ = try rosterStore.replace(with: nextRoster)
         } catch {
             refuse(.changing(commitment, .notKept), on: nil)
             return .notKept
@@ -1125,41 +966,20 @@ public final class CommitmentsScreen {
         return nil
     }
 
-    /// Why carrying the records of `commitment` made on or after `day` over to `restarted` would
-    /// be refused, reading `history` rather than writing it — `nil` where it may proceed. Mirrors
-    /// `refusalCarryingRecords(from:to:in:)`, but judges only the dates on or after `day`: the
-    /// same not-due-first order, then records already kept.
-    /// `openspec/changes/add-interval-restart/design.md` § *The order refusals are judged in*.
-    private static func refusalCarryingRecordsOnOrAfter(
-        from commitment: Commitment, to restarted: Commitment, onOrAfter day: CalendarDate,
-        in history: History
-    ) -> Refusal? {
-        let datesOnOrAfter = history.datesRecorded(for: commitment).filter { day.days(until: $0) >= 0 }
-        guard datesOnOrAfter.allSatisfy({ restarted.isDue(on: $0) }) else {
-            return .wouldLeaveARecordedDayNotDue
-        }
-        guard !history.holdsRecords(of: restarted) else {
-            return .recordsAlreadyExist
-        }
-        return nil
-    }
-
-    /// Restarts `commitment`'s count from `day`: supersedes it as of the day before `day` with a
-    /// commitment alike in name, interval and kind, whose schedule starts on `day` and which is
-    /// kept from `day`, under the category `commitment` is under. Every record of `commitment`
-    /// made on or after `day` is carried onto the restarted commitment at the record place,
-    /// written before the roster place; every record made before `day` stays under `commitment`.
-    /// See `openspec/specs/commitment/spec.md` §§ *A commitments screen restarts an interval
-    /// commitment it keeps, from a day it is given*, *A commitments screen refuses a restart it
-    /// cannot make* and *A commitments screen says whether a commitment can be restarted, and
-    /// offers the day it was handed to restart from*, and this change's `design.md`.
+    /// Restarts `commitment`'s count from `day`: puts a new era on it as of the day before `day`
+    /// — an era alike in name, interval and kind whose schedule starts on `day` and which is kept
+    /// from `day` — under the category `commitment` is under. Moves no record and writes nothing
+    /// at the record place: every record already made stays a record of that commitment, on the
+    /// day it was made for, whichever era now holds that day. See `openspec/changes/
+    /// give-a-commitment-an-identity/specs/commitment/spec.md` §§ *A commitments screen restarts
+    /// an interval commitment it keeps by putting a new era on it* and *A commitments screen
+    /// refuses a restart it cannot make, and tells each refusal apart*.
     ///
     /// Does nothing and says nothing when `commitment` cannot be restarted: not on `kept`, or not
     /// on an interval schedule. Otherwise refuses, in order: a day later than `dayToKeepFrom`; a
     /// day earlier than `commitment`'s own `keptFrom`; a day `commitment` is already due on; a
-    /// restart whose result the roster already holds, in any state; a day already recorded on
-    /// that the restart would leave not due; records already kept under the restarted
-    /// commitment; and a place that could not be written.
+    /// day already recorded on that the restart would leave not due; and a place that could not
+    /// be written.
     @discardableResult public func restart(_ commitment: Commitment, from day: CalendarDate) -> Refusal? {
         // `kept.contains(commitment)` already guarantees `rosterStore` is not `nil` and holds an
         // `entry` for `commitment`: `rosterStore` is assigned only in `init` and `shown(asOf:)`,
@@ -1174,12 +994,14 @@ public final class CommitmentsScreen {
             return nil
         }
 
+        let currentKeptFrom = rosterStore.roster.keptFrom(of: commitment) ?? commitment.keptFrom
+
         guard day.days(until: dayToKeepFrom) >= 0 else {
             refuse(.restarting(commitment, .restartDayIsAfterToday), on: .restartDay)
             return .restartDayIsAfterToday
         }
 
-        guard commitment.keptFrom.days(until: day) >= 0 else {
+        guard currentKeptFrom.days(until: day) >= 0 else {
             refuse(.restarting(commitment, .restartDayIsBeforeKeptFrom), on: .restartDay)
             return .restartDayIsBeforeKeptFrom
         }
@@ -1191,65 +1013,43 @@ public final class CommitmentsScreen {
 
         let restartedSchedule = Schedule.everyNDays(interval, from: day)
         let restarted = Commitment(
-            name: commitment.name, schedule: restartedSchedule, keptFrom: day, kind: commitment.kind)!
+            era: commitment, schedule: restartedSchedule, keptFrom: day, kind: commitment.kind)!
 
-        guard !rosterStore.roster.entries.contains(where: { $0.commitment == restarted }) else {
-            refuse(.restarting(commitment, .alreadyKept), on: .restartDay)
-            return .alreadyKept
+        var nextRoster = rosterStore.roster
+        if currentKeptFrom == day {
+            // Restarting exactly on the day the commitment is already kept from leaves no era
+            // behind it: the one it would otherwise give way to would be kept from that same day
+            // and hold no day at all, which two eras of one identity may never both say
+            // (`RosterDocument.formRoster()`'s own guard against one identity kept from one day
+            // twice). The restarted era simply replaces the one already there.
+            guard nextRoster.change(commitment, to: restarted, under: entry.category) else {
+                refuse(.restarting(commitment, .notKept), on: nil)
+                return .notKept
+            }
+        } else {
+            guard
+                nextRoster.put(
+                    era: restarted, on: commitment, keptUntil: Self.dayBefore(day),
+                    under: entry.category)
+            else {
+                refuse(.restarting(commitment, .notKept), on: nil)
+                return .notKept
+            }
         }
 
-        guard let recordStore else {
-            refuse(.restarting(commitment, .notKept), on: nil)
-            return .notKept
-        }
-
-        if let refusal = Self.refusalCarryingRecordsOnOrAfter(
-            from: commitment, to: restarted, onOrAfter: day, in: recordStore.history)
+        if let recordStore,
+            let refusal = Self.refusalLeavingARecordedDayNotDue(
+                for: commitment, in: nextRoster, history: recordStore.history)
         {
             refuse(.restarting(commitment, refusal), on: .restartDay)
             return refusal
         }
 
-        let carriesRecords = recordStore.history.datesRecorded(for: commitment).contains {
-            day.days(until: $0) >= 0
-        }
-        if let refusal = Self.keepSaveInProgressIfCarrying(
-            from: commitment, to: restarted, whenAnyRecorded: carriesRecords, at: recordPlace)
-        {
-            refuse(.restarting(commitment, refusal), on: nil)
-            return refusal
-        }
-
         do {
-            guard try recordStore.carryOver(commitment, to: restarted, onOrAfter: day) else {
-                refuse(.restarting(commitment, .wouldLeaveARecordedDayNotDue), on: .restartDay)
-                return .wouldLeaveARecordedDayNotDue
-            }
+            _ = try rosterStore.replace(with: nextRoster)
         } catch {
             refuse(.restarting(commitment, .notKept), on: nil)
             return .notKept
-        }
-
-        let supersedeKeptUntil = Self.dayBefore(day)
-        do {
-            _ = try rosterStore.supersede(
-                commitment, with: restarted, keptUntil: supersedeKeptUntil, under: entry.category)
-        } catch {
-            undoTornSaveMadeDuringThisChange()
-            refuse(.restarting(commitment, .notKept), on: nil)
-            return .notKept
-        }
-
-        // Told the save finished by the roster it just wrote, not by the file — `design.md` §
-        // *A save finished is told by the roster, not by the file*. Where that undo itself cannot
-        // be completed, this screen now holds a torn save it cannot undo — `rosterStore` above is
-        // the `self.rosterStore` this just cleared, not a fresh read, so drawing the lists from it
-        // here would redraw exactly what the screen can no longer answer for.
-        guard undoTornSaveMadeDuringThisChange() else {
-            endedByAChangeOrByBeingShown()
-            sheetRefusal = nil
-            copyPlace?.keptAChange()
-            return nil
         }
 
         endedByAChangeOrByBeingShown()

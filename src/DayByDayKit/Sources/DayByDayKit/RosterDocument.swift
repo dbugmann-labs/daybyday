@@ -46,25 +46,52 @@ struct RosterDocument: Codable {
         }
     }
 
+    /// One era's shape, everything but its identity and its name — both fixed within one
+    /// identity's own adjacent run, the name by every era carrying what a rename last wrote
+    /// across all of them — so two eras of one run sharing this shape are the same era written
+    /// twice, `formRoster()`'s own duplicate guard.
+    private struct EraShape: Hashable {
+        let schedule: Schedule
+        let keptFrom: CalendarDate
+        let kind: Commitment.Kind
+    }
+
     /// Re-forms `roster` by rebuilding its entries directly, in the document's own order, rather
     /// than replaying through `Roster`'s mutating methods: a document at this form already carries
     /// every invariant the engine enforces on the way in — an identity's eras adjacent and its
     /// newest era first, a name refused twice over — so this only re-validates what this app could
     /// not itself have written: a commitment that will not form, an entry held removed with no day
-    /// it was kept until, and one identity kept from one day twice, which cannot both be true eras
-    /// of it. `nil` on any of those. Used at or after `identityIntroducedInVersion`; `folded()` is
-    /// the one path for a document before it.
+    /// it was kept until, the same identity's eras split apart by another identity's, and the same
+    /// era — its schedule, its day kept from and its kind together — written twice within one
+    /// identity's own run. Two of one identity's eras may share a day kept from without being the
+    /// same era — `Roster.put(era:on:keptUntil:under:)` already accepts that, "any date is
+    /// accepted", `design.md` § *A roster puts a new era on a commitment it is keeping, from a
+    /// day* — so this checks the whole shape rather than the day alone. `nil` on any of those.
+    /// Used at or after `identityIntroducedInVersion`; `folded()` is the one path for a document
+    /// before it.
     func formRoster() -> Roster? {
         var entries: [Roster.Entry] = []
-        var keptFromsSeen: [Commitment.Identity: Set<CalendarDate>] = [:]
+        var closedIdentities: Set<Commitment.Identity> = []
+        var currentIdentity: Commitment.Identity?
+        var shapesInCurrentRun: Set<EraShape> = []
 
         for entry in commitments {
             guard let commitment = entry.commitment.commitment() else {
                 return nil
             }
-            guard
-                keptFromsSeen[commitment.identity, default: []].insert(commitment.keptFrom).inserted
-            else {
+            if commitment.identity != currentIdentity {
+                guard !closedIdentities.contains(commitment.identity) else {
+                    return nil
+                }
+                if let currentIdentity {
+                    closedIdentities.insert(currentIdentity)
+                }
+                currentIdentity = commitment.identity
+                shapesInCurrentRun = []
+            }
+            let shape = EraShape(
+                schedule: commitment.schedule, keptFrom: commitment.keptFrom, kind: commitment.kind)
+            guard shapesInCurrentRun.insert(shape).inserted else {
                 return nil
             }
 
