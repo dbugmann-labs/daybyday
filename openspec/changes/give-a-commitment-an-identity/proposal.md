@@ -34,12 +34,13 @@ None.
 - `commitment`: requirements ADDED, MODIFIED and REMOVED; three replaced under new headings.
 - `look-back`: one requirement REMOVED and ADDED under a new heading, one MODIFIED.
 - `record`: requirements MODIFIED for the identity a record keys on and the form on disk.
+- `restore`: five requirements MODIFIED where they name the refusal that goes.
 
 ## Impact
 
 - `openspec/changes/give-a-commitment-an-identity/` — this folder.
 - `openspec/specs/commitment/spec.md`, `openspec/specs/look-back/spec.md`,
-  `openspec/specs/record/spec.md` — at archive.
+  `openspec/specs/record/spec.md`, `openspec/specs/restore/spec.md` — at archive.
 - `src/DayByDayKit/Sources/DayByDayKit/` — `Commitment`, `Roster`, `RosterDocument`,
   `RecordDocument`, `CommitmentCoding`, `RosterStore`, `RecordStore`, `History`,
   `CommitmentsScreen`, `DayScreen`, `LookBack`.

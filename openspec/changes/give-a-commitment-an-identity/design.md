@@ -7,9 +7,10 @@ commitment and moves every record onto it; a rhythm, range or target change supe
 removed entry beside a kept one. `RosterDocument` is at form 4 and `RecordDocument` at form 5;
 `CopyDocument` is at form 1 and carries the other three by reference, so it does not move.
 
-This delta reaches three capabilities and no others. `day-screen` needs no requirement change: a
+This delta reaches four capabilities and no others. `day-screen` needs no requirement change: a
 past day is still drawn from the era the roster answers that date with, and that era carries its own
-rhythm and its own range. `restore` needs none either: a copy is whatever the three places hold.
+rhythm and its own range. `restore` gains no rule of its own — a copy is whatever the three places
+hold — and is here only because five of its requirements name the refusal that goes.
 
 ## Goals / Non-Goals
 
@@ -107,14 +108,14 @@ name itself.
 - **Four ADRs are reversed in place** — 1023, 1030, 1035 and 1055 — and a fifth is written for the
   identity. A reader of any of the four must reach the amendment, so each gets a dated line rather
   than a rewrite.
-- **Nineteen requirements exceed the 150-word prose budget.** Fifteen are MODIFIED or replaced
-  blocks carried verbatim from specs already over it, which the format requires. Of the four that
-  are new prose, *A commitments screen changes a commitment by renaming it, moving the day it is
+- **Twenty-seven requirements exceed the 150-word prose budget.** Twenty-three are MODIFIED or
+  replaced blocks carried verbatim from specs already over it, which the format requires. Of the
+  four that are new prose, *A commitments screen changes a commitment by renaming it, moving the day it is
   kept from, or putting a new era on it* is the one that is far over, and it is one decision — which
   acts a change needs and in which order — so splitting it would state the ordering twice.
-- **249 of this delta's 347 scenarios are carried verbatim**, and a handful of those carried inside
-  MODIFIED blocks have edited bodies. `tasks.md` § 1.3 names all thirteen; a test touched that is not
-  named there is the design being wrong rather than a test to fix.
+- **335 of this delta's 433 scenarios are carried verbatim**, and a handful of those carried inside
+  MODIFIED blocks have edited bodies. `tasks.md` § 1.3 names all thirty-eight; a test touched that is
+  not named there is the design being wrong rather than a test to fix.
 
 ## Open Questions
 

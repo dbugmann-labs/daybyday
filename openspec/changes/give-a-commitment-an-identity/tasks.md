@@ -7,13 +7,13 @@ to it, one red-green cycle.
 - [x] 1.1 Confirm the starting point and report rather than work around a different one. From
   `src/DayByDayKit`, record what `swift test` reports as the number of tests passing, measured on
   this branch as it stands at G4. From the repo root, `pnpm run check:scenarios` reports
-  `249/347 scenario(s) covered` for this change and names *"two commitments formed alike in every
-  part are two different commitments"* as next. **Those 249 are the scenarios this delta carries
+  `335/433 scenario(s) covered` for this change and names *"two commitments formed alike in every
+  part are two different commitments"* as next. **Those 335 are the scenarios this delta carries
   verbatim from the current specs.**
-- [x] 1.2 Read § 1.3 before touching a carried test. Of the 249, **thirteen have edited bodies**
-  and their tests change with them; every other carried test must come through this change with its
-  name, its fixture and its assertions untouched. A carried test that has to be edited and is not
-  named in § 1.3 is the design being wrong: stop and report it.
+- [x] 1.2 Read § 1.3 before touching a carried test. Of the 335, **thirty-eight are named in
+  § 1.3** and their tests change with them; every other carried test must come through this change
+  with its name, its fixture and its assertions untouched. A carried test that has to be edited and
+  is not named in § 1.3 is the design being wrong: stop and report it.
 - [x] 1.3 The thirteen carried scenarios whose bodies this delta edits, each edited to say an era
   where it said a removed commitment, or to assert the record place untouched where it asserted a
   carry-over: *a mixed chain's whole sums its months' due days and its weeks' quotas alike*; *a
@@ -51,7 +51,20 @@ to it, one red-green cycle.
   writes no copy at the copy place*, *a copy that could not be made is not held as a refused
   change*, *a take-out made leaves a refused change standing and says nothing of its own* and *a
   take-out refused replaces the refused change a commitments screen held*: each assertion names the
-  name refusal in its place, and the sheet one is about the name field where it was about no field.
+  name refusal in its place, but for *what a commitments screen tells at the foot of its sheet stands
+  when a field is edited*, whose whole-change refusal is now a roster place that could not be
+  written. **And seven more the name rule reaches, whose bodies this delta edits as well.** **Four
+  reach two commitments of one name the one way a roster can now hold them, through the fold** — *a
+  stopped entry says the rhythm its commitment runs on, as a kept entry does*, *two commitments alike
+  in name and not in rhythm are told apart by the rhythm their entries say*, *two commitments alike
+  in name and in rhythm are two entries that say the same thing* and *removing one of two entries
+  alike in name removes the one it was asked about*: each opens on a roster stored in the form before
+  identities rather than taking two commitments on. **Two offer the same commitment again where they
+  formed a second alike to it** — *a commitment taken up again through a roster store is read back
+  kept, in the place it was taken on in* and *a commitment taken up again through a roster store
+  after being removed is read back kept*. **And one holds an era twice where it held a commitment
+  twice by value** — *a roster store holding what could not be a roster is refused*: its third place
+  holds one identity, kept from one day, twice.
 - [x] 1.4 Confirm the three facts `design.md` § *Context* rests on, and stop if any is false:
   `RosterDocument.currentVersion` is **4** and `RecordDocument.currentVersion` is **5**;
   `CopyDocument.currentVersion` is **1** and carries the other two by reference, so it does not
