@@ -306,24 +306,21 @@ public struct LookBack: Hashable, Sendable {
         // `spec.md` § *A tick commitment's look-back counts each calendar month's kept days out
         // of its due days* and § *A weekly quota era's look-back counts each week's kept days
         // out of its quota*.
-        let monthEntries: [(line: Line, lastDay: CalendarDate)] = months.compactMap { tally in
-            guard let line = tally.line else { return nil }
-            return (line, tally.lastDay)
-        }
-        let weekEntries: [(line: Line, lastDay: CalendarDate)] = weeks.compactMap { tally in
-            guard let line = tally.line else { return nil }
-            return (line, tally.lastDay)
-        }
-
         struct SortableLine {
             let line: Line
             let lastDay: CalendarDate
         }
-        var sortableLines: [SortableLine] = monthEntries.map {
-            SortableLine(line: $0.line, lastDay: $0.lastDay)
+        let monthEntries: [SortableLine] = months.compactMap { tally in
+            guard let line = tally.line else { return nil }
+            return SortableLine(line: line, lastDay: tally.lastDay)
         }
-        sortableLines.append(
-            contentsOf: weekEntries.map { SortableLine(line: $0.line, lastDay: $0.lastDay) })
+        let weekEntries: [SortableLine] = weeks.compactMap { tally in
+            guard let line = tally.line else { return nil }
+            return SortableLine(line: line, lastDay: tally.lastDay)
+        }
+
+        var sortableLines = monthEntries
+        sortableLines.append(contentsOf: weekEntries)
         sortableLines.sort { !Self.isOnOrBefore($0.lastDay, $1.lastDay) }
 
         let lines = sortableLines.map(\.line)
