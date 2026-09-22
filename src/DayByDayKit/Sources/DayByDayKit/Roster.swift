@@ -219,13 +219,34 @@ public struct Roster: Hashable, Sendable {
         Blank.trimmed(lhs).lowercased() == Blank.trimmed(rhs).lowercased()
     }
 
-    /// Renames `commitment` to `name`, writing it on every era of it. `design.md` § *The seam*.
-    /// Declared for § 1.5; § 5 gives it its behaviour.
+    /// Renames `commitment` to `name`, writing it on every era of it, and answers `true`. Each
+    /// era's schedule, day kept from, kind and day kept until, the commitment's identity, its
+    /// state, its category and its place in the roster's order are left exactly as they were.
+    /// Refuses, leaving this roster exactly as it was, where it does not hold `commitment` at
+    /// all, and where `name` is already held by another commitment it keeps or has stopped
+    /// keeping — `nameIsHeldByAnother(_:notIdentity:)`, which already reads `commitments` and
+    /// `stopped` alone, so a name only a removed commitment holds is free. Renaming a commitment
+    /// to the name it already has is not refused: `nameIsHeldByAnother` excludes `commitment`'s
+    /// own identity, so this never trips on itself. `openspec/changes/
+    /// give-a-commitment-an-identity/design.md` § *The seam*.
     @discardableResult
     public mutating func rename(_ commitment: Commitment, to name: String) -> Bool {
-        fatalError(
-            "Roster.rename is declared, not implemented — openspec/changes/"
-                + "give-a-commitment-an-identity/tasks.md § 5")
+        guard entries.contains(where: { $0.commitment.identity == commitment.identity }) else {
+            return false
+        }
+
+        guard !nameIsHeldByAnother(name, notIdentity: commitment.identity) else {
+            return false
+        }
+
+        for index in entries.indices
+        where entries[index].commitment.identity == commitment.identity {
+            entries[index] = Entry(
+                commitment: Commitment(renaming: entries[index].commitment, to: name),
+                keptUntil: entries[index].keptUntil, isRemoved: entries[index].isRemoved,
+                category: entries[index].category)
+        }
+        return true
     }
 
     /// Stops keeping `commitment` as of `date`, the last day it was kept, and answers `true`.

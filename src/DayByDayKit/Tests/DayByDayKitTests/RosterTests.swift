@@ -302,6 +302,38 @@ func stoppingACommitmentWithTwoErasRecordsTheDayAgainstItsNewest() {
     #expect(roster.commitments(on: CalendarDate(year: 2026, month: 4, day: 1)!).isEmpty)
 }
 
+@Test("renaming a commitment writes the new name on every era of it")
+func renamingACommitmentWritesTheNewNameOnEveryEraOfIt() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let newEra = Commitment(
+        era: gym, schedule: .weekdays([.tuesday, .thursday]),
+        keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!, kind: .tick)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.put(
+        era: newEra, on: gym, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!,
+        under: nil)
+
+    let renamed = roster.rename(gym, to: "Lifting")
+
+    #expect(renamed)
+    let eras = roster.eras(of: gym)
+    #expect(eras.count == 2)
+    #expect(eras.map(\.name) == ["Lifting", "Lifting"])
+    #expect(eras[0].rhythmInWords == "Tue, Thu")
+    #expect(eras[1].rhythmInWords == "Mon, Wed, Sat")
+    #expect(roster.keptFrom(of: gym) == keptFrom)
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 8, day: 31)!).map(\.rhythmInWords)
+            == ["Tue, Thu", "Mon, Wed, Sat"])
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 9, day: 1)!).map(\.rhythmInWords)
+            == ["Tue, Thu"])
+}
+
 @Test("adding a commitment a roster does not hold places it after the ones already there and says it was added")
 func addingACommitmentARosterDoesNotHoldPlacesItAfterTheOnesAlreadyThereAndSaysItWasAdded() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])

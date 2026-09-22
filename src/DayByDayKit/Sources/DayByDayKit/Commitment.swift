@@ -42,6 +42,17 @@ public struct Commitment: Sendable {
         self.kind = kind
     }
 
+    /// Forms `of`, renamed to `name` — the same identity, schedule, day kept from and kind.
+    /// Package-internal: `Roster.rename(_:to:)` is the one caller, writing a new name across
+    /// every era without disturbing anything else about it.
+    init(renaming of: Commitment, to name: String) {
+        self.identity = of.identity
+        self.name = name
+        self.schedule = of.schedule
+        self.keptFrom = of.keptFrom
+        self.kind = of.kind
+    }
+
     public func isDue(on date: CalendarDate) -> Bool {
         guard keptFrom.days(until: date) >= 0 else {
             return false
