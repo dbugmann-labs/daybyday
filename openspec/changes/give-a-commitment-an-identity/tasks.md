@@ -157,7 +157,7 @@ to it, one red-green cycle.
 - [x] 6.14 *changing an era of a stopped commitment leaves it stopped, on the day it was kept until*
 - [x] 6.15 *changing an era for itself under a different category puts its commitment under that category*
 - [x] 6.16 *changing an era on a copy of a roster leaves the roster it was copied from unchanged*
-- [ ] 6.17 Retire the tests of the two requirements this section replaces. `RosterTests` still
+- [x] 6.17 Retire the tests of the two requirements this section replaces. `RosterTests` still
   carries all twenty-one of them, and a test of a REMOVED requirement is deleted — never kept red,
   never weakened, never renamed onto a title above, which §§ 2–6 have already taken. Nothing else
   in this file retires one: § 1.3 governs carried tests only, and § 17.1 reaches just the eight
