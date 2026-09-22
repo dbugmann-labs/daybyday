@@ -1007,8 +1007,8 @@ func aCommitmentsScreenRefusesNothingElseAboutAName() {
 }
 
 @MainActor
-@Test("a commitments screen refuses a commitment its roster is already keeping")
-func aCommitmentsScreenRefusesACommitmentItsRosterIsAlreadyKeeping() throws {
+@Test("a commitments screen refuses a name a commitment its roster is already keeping has")
+func aCommitmentsScreenRefusesANameACommitmentItsRosterIsAlreadyKeepingHas() throws {
     let rosterPlace = freshRosterPlace()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -1022,9 +1022,9 @@ func aCommitmentsScreenRefusesACommitmentItsRosterIsAlreadyKeeping() throws {
     let bytesAfterOpen = try Data(contentsOf: rosterPlace)
 
     let refusal = screen.define(
-        name: "Gym", on: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom, under: nil)
+        name: "Gym", on: .weekdays([.tuesday, .thursday]), keptFrom: monday, under: nil)
 
-    #expect(refusal == .alreadyKept)
+    #expect(refusal == .nameAlreadyInUse("Gym"))
     #expect(screen.kept.map(\.name) == ["Gym"])
     #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
 }
@@ -9659,26 +9659,26 @@ func whatACommitmentsScreenTellsOnItsSheetStandsWhenAnotherFieldIsEdited() {
 @MainActor
 @Test("what a commitments screen tells at the foot of its sheet stands when a field is edited")
 func whatACommitmentsScreenTellsAtTheFootOfItsSheetStandsWhenAFieldIsEdited() throws {
-    let rosterPlace = freshRosterPlace()
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let allWeekdays: Schedule = .weekdays([
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    let rosterPlace = blocker.appendingPathComponent("roster.json")
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let allWeekdays: Rhythm = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
-    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-
-    let rosterStore = try RosterStore(at: rosterPlace)
-    try rosterStore.add(gym)
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
 
-    let refusal = screen.define(name: "Gym", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil)
-    #expect(refusal == .alreadyKept)
+    let refusal = screen.define(name: "Gym", on: allWeekdays, keptFrom: monday, under: nil)
+    #expect(refusal == .notKept)
 
     screen.sheetFieldEdited(.name)
 
     #expect(
-        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: nil, refusal: .alreadyKept))
+        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: nil, refusal: .notKept))
 }
 
 @MainActor
@@ -9714,7 +9714,7 @@ func whatACommitmentsScreenTellsOnItsSheetEndsWhenTheSheetIsClosed() throws {
 
     let otherRefusal = otherScreen.define(
         name: "Gym", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil)
-    #expect(otherRefusal == .alreadyKept)
+    #expect(otherRefusal == .nameAlreadyInUse("Gym"))
 
     otherScreen.sheetClosed()
 

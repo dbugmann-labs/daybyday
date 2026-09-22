@@ -565,8 +565,9 @@ public final class CommitmentsScreen {
 
         do {
             guard try rosterStore.add(commitment, under: category) else {
-                refuse(.defining(.alreadyKept), on: nil)
-                return .alreadyKept
+                let refusal = Refusal.nameAlreadyInUse(Self.nameAlreadyHeld(name, among: kept + stopped))
+                refuse(.defining(refusal), on: .name)
+                return refusal
             }
         } catch {
             refuse(.defining(.notKept), on: nil)
@@ -695,6 +696,22 @@ public final class CommitmentsScreen {
     /// means. `design.md` § *B-037 carries no requirement*.
     private static func normalizedCategory(_ category: String?) -> String? {
         category.flatMap { Blank.saysNothing($0) ? nil : $0 }
+    }
+
+    /// Whether `lhs` and `rhs` are one name for the name refusal: the same but for the case of a
+    /// letter, or for blank space at the start or the end of either — mirrors `Roster`'s own,
+    /// private, `sameName(_:_:)`, which this screen cannot reach across files. `openspec/specs/
+    /// commitment/spec.md` § *A roster refuses a commitment whose name one it keeps or has
+    /// stopped already has*.
+    private static func sameName(_ lhs: String, _ rhs: String) -> Bool {
+        Blank.trimmed(lhs).lowercased() == Blank.trimmed(rhs).lowercased()
+    }
+
+    /// The name `name` collided with, exactly as `commitments` holds it — the commitment the
+    /// name refusal names. Falls back to `name` itself only where none of `commitments` actually
+    /// collides, which `Roster.add`'s own refusal never leaves true.
+    private static func nameAlreadyHeld(_ name: String, among commitments: [Commitment]) -> String {
+        commitments.first { sameName($0.name, name) }?.name ?? name
     }
 
     /// Which field a refusal that could be about the rhythm, the day kept from, the range or the

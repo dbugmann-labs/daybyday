@@ -476,7 +476,7 @@ func aTakeOutMadeLeavesARefusedChangeStandingAndSaysNothingOfItsOwn() throws {
         keepingOneOffsAt: places.oneOffs)
 
     let defineRefusal = screen.define(name: "Gym", on: allWeekdaysRhythm, keptFrom: keptFrom, under: nil)
-    #expect(defineRefusal == .alreadyKept)
+    #expect(defineRefusal == .nameAlreadyInUse("Gym"))
 
     let result = screen.takeOut(writingInto: freshDirectory())
     guard case .success = result else {
@@ -484,7 +484,7 @@ func aTakeOutMadeLeavesARefusedChangeStandingAndSaysNothingOfItsOwn() throws {
         return
     }
 
-    #expect(screen.refusedChange == .defining(.alreadyKept))
+    #expect(screen.refusedChange == .defining(.nameAlreadyInUse("Gym")))
 }
 
 @MainActor
@@ -636,8 +636,8 @@ func aTakeOutRefusedReplacesTheRefusedChangeACommitmentsScreenHeld() throws {
         asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
         keepingOneOffsAt: places.oneOffs)
     let defineRefusal = screen.define(name: "Gym", on: allWeekdaysRhythm, keptFrom: keptFrom, under: nil)
-    #expect(defineRefusal == .alreadyKept)
-    #expect(screen.refusedChange == .defining(.alreadyKept))
+    #expect(defineRefusal == .nameAlreadyInUse("Gym"))
+    #expect(screen.refusedChange == .defining(.nameAlreadyInUse("Gym")))
     let sheetRefusalBeforeTakeOut = screen.sheetRefusal
     #expect(sheetRefusalBeforeTakeOut != nil)
 
