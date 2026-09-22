@@ -318,17 +318,17 @@ func addingACommitmentARosterDoesNotHoldPlacesItAfterTheOnesAlreadyThereAndSaysI
     #expect(roster.commitments == [gym, run])
 }
 
-@Test("adding a commitment a roster already holds says it was not added and leaves the roster as it was")
-func addingACommitmentARosterAlreadyHoldsSaysItWasNotAddedAndLeavesTheRosterAsItWas() {
+@Test("adding a commitment whose name a roster already keeps says it was not added and leaves the roster as it was")
+func addingACommitmentWhoseNameARosterAlreadyKeepsSaysItWasNotAddedAndLeavesTheRosterAsItWas() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let secondGym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
 
     var roster = Roster()
     _ = roster.add(gym)
 
-    let added = roster.add(gymAgain)
+    let added = roster.add(secondGym)
 
     var expected = Roster()
     _ = expected.add(gym)
@@ -338,103 +338,129 @@ func addingACommitmentARosterAlreadyHoldsSaysItWasNotAddedAndLeavesTheRosterAsIt
     #expect(roster == expected)
 }
 
-@Test("a refused commitment does not move the one already held")
-func aRefusedCommitmentDoesNotMoveTheOneAlreadyHeld() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+@Test("a commitment whose name a roster already keeps is refused whatever else differs")
+func aCommitmentWhoseNameARosterAlreadyKeepsIsRefusedWhateverElseDiffers() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
-    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-
-    var roster = Roster()
-    _ = roster.add(gym)
-    _ = roster.add(run)
-    _ = roster.add(journaling)
-    _ = roster.add(gymAgain)
-
-    #expect(roster.commitments == [gym, run, journaling])
-}
-
-@Test("two commitments alike in name but on different schedules are both held")
-func twoCommitmentsAlikeInNameButOnDifferentSchedulesAreBothHeld() {
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gymMonWedSat = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
-    let gymTueThu = Commitment(
-        name: "Gym", schedule: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom)!
-
-    var roster = Roster()
-    _ = roster.add(gymMonWedSat)
-
-    let added = roster.add(gymTueThu)
-
-    #expect(added)
-    #expect(roster.commitments == [gymMonWedSat, gymTueThu])
-}
-
-@Test("two commitments alike in name and schedule but kept from different days are both held")
-func twoCommitmentsAlikeInNameAndScheduleButKeptFromDifferentDaysAreBothHeld() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let firstDay = Commitment(
-        name: "Gym", schedule: schedule, keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
-    let secondDay = Commitment(
-        name: "Gym", schedule: schedule, keptFrom: CalendarDate(year: 2026, month: 1, day: 2)!)!
-
-    var roster = Roster()
-    _ = roster.add(firstDay)
-
-    let added = roster.add(secondDay)
-
-    #expect(added)
-    #expect(roster.commitments == [firstDay, secondDay])
-}
-
-@Test("two names differing only by a space at the end are different commitments and both are held")
-func twoNamesDifferingOnlyByASpaceAtTheEndAreDifferentCommitmentsAndBothAreHeld() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let gymWithTrailingSpace = Commitment(name: "Gym ", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .tick)!
+    let secondGym = Commitment(
+        name: "Gym", schedule: .weekdays([.tuesday, .thursday]),
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 2)!, kind: .note)!
 
     var roster = Roster()
     _ = roster.add(gym)
 
-    let added = roster.add(gymWithTrailingSpace)
+    let added = roster.add(secondGym)
 
-    #expect(added)
-    #expect(roster.commitments.map(\.name) == ["Gym", "Gym "])
+    #expect(!added)
+    #expect(roster.commitments.count == 1)
 }
 
-@Test("offering a commitment the roster has stopped keeping takes it up again")
-func offeringACommitmentTheRosterHasStoppedKeepingTakesItUpAgain() {
+@Test("a commitment whose name a roster has stopped keeping already has is refused")
+func aCommitmentWhoseNameARosterHasStoppedKeepingAlreadyHasIsRefused() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let secondGym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
 
     var roster = Roster()
     _ = roster.add(gym)
     _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
 
-    let takenUp = roster.add(gymAgain)
+    let added = roster.add(secondGym)
+
+    #expect(!added)
+    #expect(roster.commitments.isEmpty)
+    #expect(roster.stopped.map(\.name) == ["Gym"])
+}
+
+@Test("a name a roster has only removed a commitment under is free")
+func aNameARosterHasOnlyRemovedACommitmentUnderIsFree() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let secondGym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.remove(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let added = roster.add(secondGym)
+
+    #expect(added)
+    #expect(roster.commitments == [secondGym])
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!).count == 2)
+}
+
+@Test("two names differing only in the case of a letter are one name and the second is refused")
+func twoNamesDifferingOnlyInTheCaseOfALetterAreOneNameAndTheSecondIsRefused() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let lowercase = Commitment(name: "gym", schedule: schedule, keptFrom: keptFrom)!
+    let uppercase = Commitment(name: "GYM", schedule: schedule, keptFrom: keptFrom)!
+    let padded = Commitment(name: " Gym ", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+
+    let addedLowercase = roster.add(lowercase)
+    let addedUppercase = roster.add(uppercase)
+    let addedPadded = roster.add(padded)
+
+    #expect(!addedLowercase)
+    #expect(!addedUppercase)
+    #expect(!addedPadded)
+    #expect(roster.commitments.map(\.name) == ["Gym"])
+}
+
+@Test("two names differing by blank space inside them are two names and both are held")
+func twoNamesDifferingByBlankSpaceInsideThemAreTwoNamesAndBothAreHeld() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let noSpace = Commitment(name: "Waterplants", schedule: schedule, keptFrom: keptFrom)!
+    let doubleSpace = Commitment(name: "Water  plants", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+
+    let addedNoSpace = roster.add(noSpace)
+    let addedDoubleSpace = roster.add(doubleSpace)
+
+    #expect(addedNoSpace)
+    #expect(addedDoubleSpace)
+    #expect(roster.commitments.map(\.name) == ["Water plants", "Waterplants", "Water  plants"])
+}
+
+@Test("a commitment offered again as itself where the roster has stopped keeping it takes it up again")
+func aCommitmentOfferedAgainAsItselfWhereTheRosterHasStoppedKeepingItTakesItUpAgain() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let takenUp = roster.add(gym)
 
     #expect(takenUp)
-    #expect(roster.commitments == [gymAgain])
+    #expect(roster.commitments == [gym])
 
     var neverStopped = Roster()
     _ = neverStopped.add(gym)
     #expect(roster == neverStopped)
 }
 
-@Test("a commitment taken up again keeps the place it was taken on in")
-func aCommitmentTakenUpAgainKeepsThePlaceItWasTakenOnIn() {
+@Test("a commitment offered again as itself is taken up again in the place it was taken on in")
+func aCommitmentOfferedAgainAsItselfIsTakenUpAgainInThePlaceItWasTakenOnIn() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
-    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
 
     var roster = Roster()
     _ = roster.add(waterPlants)
@@ -442,10 +468,10 @@ func aCommitmentTakenUpAgainKeepsThePlaceItWasTakenOnIn() {
     _ = roster.add(journaling)
     _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
 
-    let takenUp = roster.add(gymAgain)
+    let takenUp = roster.add(gym)
 
     #expect(takenUp)
-    #expect(roster.commitments == [waterPlants, gymAgain, journaling])
+    #expect(roster.commitments == [waterPlants, gym, journaling])
 }
 
 @Test("stopping one commitment leaves the others where they were")
@@ -701,59 +727,6 @@ func aRosterThatHoldsNothingAnswersWithNothingOnEveryDate() {
     #expect(answers.allSatisfy { $0.isEmpty })
 }
 
-@Test("two commitments alike in every way but the kind their days take are both held")
-func twoCommitmentsAlikeInEveryWayButTheKindTheirDaysTakeAreBothHeld() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let range = Commitment.Range(lowest: 40, highest: 150)!
-    let number = Commitment(
-        name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .number(range: range))!
-    let note = Commitment(name: "Weight", schedule: schedule, keptFrom: keptFrom, kind: .note)!
-
-    var roster = Roster()
-    _ = roster.add(number)
-
-    let added = roster.add(note)
-
-    #expect(added)
-    #expect(roster.commitments == [number, note])
-
-    let addedAgain = roster.add(number)
-
-    #expect(!addedAgain)
-}
-
-@Test("two number commitments alike in every way but the range their kind carries are both held")
-func twoNumberCommitmentsAlikeInEveryWayButTheRangeTheirKindCarriesAreBothHeld() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let rangeOneToTen = Commitment.Range(lowest: 1, highest: 10)!
-    let rangeOneToFive = Commitment.Range(lowest: 1, highest: 5)!
-    let oneToTen = Commitment(
-        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: rangeOneToTen))!
-    let oneToFive = Commitment(
-        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: rangeOneToFive))!
-    let noRange = Commitment(
-        name: "Mood", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
-
-    var roster = Roster()
-    _ = roster.add(oneToTen)
-
-    let added = roster.add(oneToFive)
-
-    #expect(added)
-    #expect(roster.commitments == [oneToTen, oneToFive])
-
-    let addedThird = roster.add(noRange)
-
-    #expect(addedThird)
-    #expect(roster.commitments == [oneToTen, oneToFive, noRange])
-
-    let addedAgain = roster.add(oneToTen)
-
-    #expect(!addedAgain)
-}
-
 @Test("removing a commitment a roster keeps says so and records the day it was kept until")
 func removingACommitmentARosterKeepsSaysSoAndRecordsTheDayItWasKeptUntil() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
@@ -948,14 +921,13 @@ func aRosterThatHasRemovedEveryCommitmentItHoldsIsNotARosterHoldingNothing() {
     #expect(roster.commitments.isEmpty)
 }
 
-@Test("offering a commitment the roster has removed takes it up again, in the place it was taken on in")
-func offeringACommitmentTheRosterHasRemovedTakesItUpAgainInThePlaceItWasTakenOnIn() {
+@Test("a commitment offered again as itself where the roster has removed it takes it up again")
+func aCommitmentOfferedAgainAsItselfWhereTheRosterHasRemovedItTakesItUpAgain() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
-    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
 
     var roster = Roster()
     _ = roster.add(waterPlants)
@@ -963,34 +935,13 @@ func offeringACommitmentTheRosterHasRemovedTakesItUpAgainInThePlaceItWasTakenOnI
     _ = roster.add(journaling)
     _ = roster.remove(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
 
-    let takenUp = roster.add(gymAgain)
+    let takenUp = roster.add(gym)
 
     #expect(takenUp)
-    #expect(roster.commitments == [waterPlants, gymAgain, journaling])
-
-    var neverRemoved = Roster()
-    _ = neverRemoved.add(waterPlants)
-    _ = neverRemoved.add(gym)
-    _ = neverRemoved.add(journaling)
-    #expect(roster == neverRemoved)
-}
-
-@Test("a commitment taken up again after being removed is kept on every date again")
-func aCommitmentTakenUpAgainAfterBeingRemovedIsKeptOnEveryDateAgain() {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let gymAgain = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-
-    var roster = Roster()
-    _ = roster.add(gym)
-    _ = roster.remove(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
-    _ = roster.add(gymAgain)
-
-    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!) == [gymAgain])
-    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!) == [gymAgain])
-    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 3, day: 1)!) == [gymAgain])
-    #expect(roster.commitments == [gymAgain])
+    #expect(roster.commitments == [waterPlants, gym, journaling])
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!).contains(gym))
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!).contains(gym))
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 3, day: 1)!).contains(gym))
 }
 
 @Test("stopping a commitment a roster has removed says it was not stopped and keeps the day it was kept until")
@@ -3176,32 +3127,6 @@ func changingACommitmentARosterHasRemovedLeavesItRemoved() {
     #expect(roster.groups.isEmpty)
     #expect(roster.commitments(on: thirtyFirstOfJanuary) == [gymEmoji])
     #expect(roster.commitments(on: firstOfFebruary).isEmpty)
-}
-
-@Test("two total commitments alike in every way but the target their kind carries are both held")
-func twoTotalCommitmentsAlikeInEveryWayButTheTargetTheirKindCarriesAreBothHeld() {
-    let daily: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let smallTarget = Commitment(
-        name: "Protein", schedule: daily, keptFrom: keptFrom,
-        kind: .total(target: Commitment.Target(120)!))!
-    let bigTarget = Commitment(
-        name: "Protein", schedule: daily, keptFrom: keptFrom,
-        kind: .total(target: Commitment.Target(150)!))!
-
-    var roster = Roster()
-    let addedSmall = roster.add(smallTarget)
-    let addedBig = roster.add(bigTarget)
-
-    #expect(addedSmall)
-    #expect(addedBig)
-    #expect(roster.commitments == [smallTarget, bigTarget])
-
-    let addedAgain = roster.add(smallTarget)
-
-    #expect(!addedAgain)
 }
 
 @Test("a roster takes on a commitment on a schedule due on no day")

@@ -164,10 +164,22 @@ public struct Roster: Hashable, Sendable {
 
     /// The shared act behind both forms of the offer: `category` is asked what to put the
     /// commitment under, given the category it already holds (`nil` for one not held at all).
+    /// Refuses wherever `commitment`'s name is already held by a kept or a stopped commitment
+    /// other than itself — `nameIsHeldByAnother(_:notIdentity:)` — whether this is a brand-new
+    /// commitment or one taken up again by identity; a name a roster has only removed a
+    /// commitment under, and a name only an earlier era carries, are both free, because that
+    /// check already reads `commitments` and `stopped` alone. `openspec/changes/
+    /// give-a-commitment-an-identity/specs/commitment/spec.md` § *A roster refuses a commitment
+    /// whose name one it keeps or has stopped already has*.
     private mutating func addTakingUpAgain(
         _ commitment: Commitment, category: (String?) -> String?
     ) -> Bool {
-        if let index = entries.firstIndex(where: { $0.commitment == commitment }) {
+        guard !nameIsHeldByAnother(commitment.name, notIdentity: commitment.identity) else {
+            return false
+        }
+
+        if let index = entries.firstIndex(where: { $0.commitment.identity == commitment.identity })
+        {
             guard entries[index].keptUntil != nil else {
                 return false
             }
@@ -182,6 +194,29 @@ public struct Roster: Hashable, Sendable {
             Entry(
                 commitment: commitment, keptUntil: nil, isRemoved: false, category: category(nil)))
         return true
+    }
+
+    /// Whether `name` — compared as two names are compared throughout this type: the same but
+    /// for the case of a letter or blank space at either end — already belongs to a commitment
+    /// this roster keeps or has stopped keeping, other than the one `identity` names. A
+    /// commitment this roster has removed holds no name against one offered, and neither does an
+    /// earlier era beyond the name its own commitment carries: `commitments` and `stopped` each
+    /// already answer one commitment per identity, at its newest era alone.
+    private func nameIsHeldByAnother(_ name: String, notIdentity identity: Commitment.Identity)
+        -> Bool
+    {
+        (commitments + stopped).contains {
+            $0.identity != identity && Self.sameName($0.name, name)
+        }
+    }
+
+    /// Whether `lhs` and `rhs` are one name for the roster's name refusal: the same but for the
+    /// case of a letter, or for blank space at the start or the end of either — every other
+    /// difference, blank space inside a name included, makes two names. `Blank.trimmed` is the
+    /// one place this package trims blank space from a name; `docs/adr/1039-blank-is-one-test
+    /// -asked-in-one-place.md`.
+    private static func sameName(_ lhs: String, _ rhs: String) -> Bool {
+        Blank.trimmed(lhs).lowercased() == Blank.trimmed(rhs).lowercased()
     }
 
     /// Stops keeping `commitment` as of `date`, the last day it was kept, and answers `true`.

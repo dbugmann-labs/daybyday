@@ -55,16 +55,16 @@ to it, one red-green cycle.
 
 ## 4. `Roster` — the name refusal
 
-- [ ] 4.1 *adding a commitment whose name a roster already keeps says it was not added and leaves the roster as it was*
-- [ ] 4.2 *a commitment whose name a roster already keeps is refused whatever else differs*
-- [ ] 4.3 *a commitment whose name a roster has stopped keeping already has is refused*
-- [ ] 4.4 *a name a roster has only removed a commitment under is free* — catches the refusal counting removed entries.
-- [ ] 4.5 *two names differing only in the case of a letter are one name and the second is refused*
-- [ ] 4.6 *two names differing by blank space inside them are two names and both are held*
-- [ ] 4.7 *a commitment offered again as itself where the roster has stopped keeping it takes it up again*
-- [ ] 4.8 *a commitment offered again as itself is taken up again in the place it was taken on in*
+- [x] 4.1 *adding a commitment whose name a roster already keeps says it was not added and leaves the roster as it was*
+- [x] 4.2 *a commitment whose name a roster already keeps is refused whatever else differs*
+- [x] 4.3 *a commitment whose name a roster has stopped keeping already has is refused*
+- [x] 4.4 *a name a roster has only removed a commitment under is free* — catches the refusal counting removed entries.
+- [x] 4.5 *two names differing only in the case of a letter are one name and the second is refused*
+- [x] 4.6 *two names differing by blank space inside them are two names and both are held*
+- [x] 4.7 *a commitment offered again as itself where the roster has stopped keeping it takes it up again*
+- [x] 4.8 *a commitment offered again as itself is taken up again in the place it was taken on in*
 - [ ] 4.9 *taking a stopped commitment up again is refused where a commitment the roster keeps already has its name* — the resume path, not the add path.
-- [ ] 4.10 *a commitment offered again as itself where the roster has removed it takes it up again*
+- [x] 4.10 *a commitment offered again as itself where the roster has removed it takes it up again*
 
 ## 5. `Roster` — renaming through every era
 
