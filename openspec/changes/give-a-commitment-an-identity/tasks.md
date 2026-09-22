@@ -131,7 +131,7 @@ to it, one red-green cycle.
 - [x] 6.7 *an era put on as of the first supported date and one as of the last are both accepted*
 - [x] 6.8 *a third era put on a commitment leaves it one commitment with three eras*
 - [x] 6.9 *putting an era on a copy of a roster leaves the roster it was copied from unchanged*
-- [ ] 6.10 *changing an era puts the result in the place the one it replaced held*
+- [x] 6.10 *changing an era puts the result in the place the one it replaced held*
 - [ ] 6.11 *changing the earliest era of a commitment with two leaves the newer one alone*
 - [ ] 6.12 *changing an era for one of another commitment is refused*
 - [ ] 6.13 *changing an era a roster does not hold is refused and leaves the roster as it was*

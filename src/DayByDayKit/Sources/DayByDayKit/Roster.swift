@@ -513,41 +513,40 @@ public struct Roster: Hashable, Sendable {
         return true
     }
 
-    /// Changes `commitment` for `changed`, in the place `commitment` held, under `category` — or
-    /// under none where `category` is `nil` or holds nothing but blank space — and answers
-    /// `true`. A replacement, not a removal followed by an addition: the day `commitment` was
-    /// kept until and whether it was removed are carried across exactly as they were, whichever
-    /// of the three states it was in. Answers `false` and changes nothing when this roster does
-    /// not hold `commitment` at all, or when `changed` is a commitment this roster already holds
-    /// — kept, stopped or removed alike.
-    ///
-    /// Asked to change `commitment` for itself, this roster is left exactly as it was in every
-    /// other respect and still takes the offered `category`, exactly as `move` still applies a
-    /// category on the offset that asks for no move; answers `true` and refuses nothing, checked
-    /// before the already-holds refusal so a self-change is never mistaken for one.
+    /// Changes `era` for `changed`, in the place `era` held, under `category` — or under none
+    /// where `category` is `nil` or holds nothing but blank space — and answers `true`. The day
+    /// `era` was kept until and the state of its commitment are left exactly as they were, and
+    /// nothing else this roster holds moves; asked to change `era` for a value alike to it in
+    /// every part, this roster is left exactly as it was but for the category offered, and still
+    /// answers `true` — no branch of its own, because that case already satisfies every guard
+    /// below and takes the same path. Answers `false` and changes nothing when this roster does
+    /// not hold `era` at all — matched on its identity, its schedule, its day kept from and its
+    /// kind, because two eras of one commitment share an identity `==` alone cannot tell apart —
+    /// or when `changed` does not carry `era`'s identity, its name, or the sort of its kind.
+    /// `openspec/changes/give-a-commitment-an-identity/specs/commitment/spec.md` § *A roster
+    /// changes an era of a commitment it holds for another of that commitment*.
+    @discardableResult
     public mutating func change(
-        _ commitment: Commitment, to changed: Commitment, under category: String?
+        _ era: Commitment, to changed: Commitment, under category: String?
     ) -> Bool {
-        guard let index = entries.firstIndex(where: { $0.commitment == commitment }) else {
+        guard
+            let index = entries.firstIndex(where: {
+                $0.commitment.identity == era.identity && $0.commitment.schedule == era.schedule
+                    && $0.commitment.keptFrom == era.keptFrom && $0.commitment.kind == era.kind
+            })
+        else {
             return false
         }
 
-        let normalized = Self.normalized(category)
-
-        guard commitment != changed else {
-            entries[index] = Entry(
-                commitment: entries[index].commitment, keptUntil: entries[index].keptUntil,
-                isRemoved: entries[index].isRemoved, category: normalized)
-            return true
-        }
-
-        guard !entries.contains(where: { $0.commitment == changed }) else {
+        guard changed.identity == era.identity, changed.name == era.name,
+            changed.kind.isOfTheSameSort(as: era.kind)
+        else {
             return false
         }
 
         entries[index] = Entry(
             commitment: changed, keptUntil: entries[index].keptUntil,
-            isRemoved: entries[index].isRemoved, category: normalized)
+            isRemoved: entries[index].isRemoved, category: Self.normalized(category))
         return true
     }
 

@@ -712,6 +712,29 @@ func puttingAnEraOnACopyOfARosterLeavesTheRosterItWasCopiedFromUnchanged() {
     #expect(original.eras(of: gym).count == 1)
 }
 
+@Test("changing an era puts the result in the place the one it replaced held")
+func changingAnEraPutsTheResultInThePlaceTheOneItReplacedHeld() {
+    let keptFrom = CalendarDate(year: 2026, month: 8, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let changedEra = Commitment(
+        era: gym, schedule: schedule, keptFrom: CalendarDate(year: 2026, month: 6, day: 1)!,
+        kind: .tick)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym)
+    _ = roster.add(journaling)
+
+    let changed = roster.change(gym, to: changedEra, under: nil)
+
+    #expect(changed)
+    #expect(roster.commitments == [waterPlants, changedEra, journaling])
+    #expect(roster.keptFrom(of: gym) == CalendarDate(year: 2026, month: 6, day: 1)!)
+}
+
 @Test("adding a commitment a roster does not hold places it after the ones already there and says it was added")
 func addingACommitmentARosterDoesNotHoldPlacesItAfterTheOnesAlreadyThereAndSaysItWasAdded() {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
