@@ -180,6 +180,15 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **A `day-screen` scenario says a rename is "changed at both places" after #303 makes a rename write
+  the roster place only.** *a commitment renamed at a day screen's places is drawn under its new name
+  and still kept when the screen is returned to* (`openspec/specs/day-screen/spec.md`) keeps that
+  WHEN in a requirement `give-a-commitment-an-identity` (#303) does not modify — its THENs still hold,
+  its test is edited under that Story's `tasks.md` § 1.3, and `design.md` says `day-screen` needs no
+  requirement change, which is true of the rules and not of this sentence. Found by `spec-author` on
+  2026-09-22 while naming carried tests; booked here rather than reopening the G4-signed delta for
+  one clause of stale prose. The next Story that deltas `day-screen` carries the requirement as
+  MODIFIED and drops "at both places".
 - **A take-out's write failure is refused as a place that could not be written, and no test can reach it.**
   `CommitmentsScreen.takeOut` (#270) creates a directory named by a fresh UUID and writes each file
   into it in the same call; a failing `createDirectory` is refused the same way and is tested, but a
