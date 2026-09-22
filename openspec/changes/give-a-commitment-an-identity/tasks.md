@@ -312,7 +312,7 @@ to it, one red-green cycle.
 
 ## 9. The fold, at the record place
 
-- [ ] 9.1 *a record kept against an era that folded is read back under the commitment it folded into*
+- [x] 9.1 *a record kept against an era that folded is read back under the commitment it folded into*
 - [x] 9.2 *a record kept against an entry the fold dropped is dropped with it*
 - [x] 9.3 *a record whose commitment the folded roster never held is left as an orphan* — carries no identity, and the shipped carry-back rule takes it.
 - [x] 9.4 *a day screen opened on a folded roster carries the records too*

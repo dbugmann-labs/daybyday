@@ -9332,6 +9332,86 @@ func whatACommitmentsScreenHoldsAboutARefusedChangeStandsWhenARestoreIsAskedForA
 }
 
 @MainActor
+@Test("a record kept against an era that folded is read back under the commitment it folded into")
+func aRecordKeptAgainstAnEraThatFoldedIsReadBackUnderTheCommitmentItFoldedInto() throws {
+    let places = freshRosterAndRecordPlaces()
+    let allSevenDays =
+        #"["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]"#
+    try FileManager.default.createDirectory(
+        at: places.roster.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 3, "day": 1 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "keptUntil": { "year": 2026, "month": 2, "day": 28 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8
+        ).write(to: places.roster)
+    try Data(
+        """
+        {
+          "version": 5,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "date": { "year": 2026, "month": 1, "day": 5 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8
+        ).write(to: places.record)
+
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(!screen.recordsBelongToNoCommitment)
+    let gym = try #require(screen.kept.first)
+
+    #expect(screen.lookBack(at: gym)?.keptFromInWords == "1 January 2026")
+
+    // The era `gym` folded behind — same identity as `gym`, the older era's own schedule and
+    // day kept from, exactly what the fold minted for the removed entry above.
+    let olderEra = Commitment(
+        era: gym,
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!, kind: .tick)!
+
+    let laterRecordStore = try RecordStore(at: places.record)
+    #expect(laterRecordStore.history.commitmentsWithRecords().count == 1)
+    #expect(
+        laterRecordStore.history.isKept(olderEra, on: CalendarDate(year: 2026, month: 1, day: 5)!))
+}
+
+@MainActor
 @Test("a record kept against an entry the fold dropped is dropped with it")
 func aRecordKeptAgainstAnEntryTheFoldDroppedIsDroppedWithIt() throws {
     let places = freshRosterAndRecordPlaces()
