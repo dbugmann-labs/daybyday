@@ -434,7 +434,7 @@ to it, one red-green cycle.
   the original one, and month lines running across the day the rhythm changed with nothing between.
 - [x] 16.4 The day screen a few days back, before the rhythm changed — the row drawn under
   "Lifting".
-- [ ] 16.5 `phone:` the fold on the owner's own roster, after this build installs over the last —
+- [x] 16.5 `phone:` the fold on the owner's own roster, after this build installs over the last —
   the stopped list showing what survived, and one tangled commitment's look-back reading as one.
   The simulator cannot show it: the walk starts from a fresh install and nothing seeds an old
   roster.
@@ -449,8 +449,8 @@ to it, one red-green cycle.
   passing, the count read off the run and not derived.
 - [x] 17.2 `openspec validate give-a-commitment-an-identity --strict` exits 0 and
   `pnpm run checks` is clean but for what it is expected to warn.
-- [ ] 17.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
-- [ ] 17.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
+- [x] 17.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
+- [x] 17.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
   that everything the janitor needs is in place: the change folder is committed, `tasks.md` has no
   unticked box left, and the walk comment's URL is in § 16.6. The janitor then runs
   `/opsx:archive`, and checks afterwards that `openspec/specs/commitment/spec.md`,
