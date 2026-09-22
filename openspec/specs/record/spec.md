@@ -554,9 +554,9 @@ second commitment and none under the first.
 A store SHALL report exactly what its history reports, and MUST NOT turn the history's refusal into
 an error. A carry-over the history refused SHALL keep nothing at the place, and so SHALL one the
 history had nothing to carry for. A store that could not write SHALL refuse, SHALL leave its history
-exactly as it was, and SHALL say so as for every other change it could not keep. The form on disk
-SHALL NOT move for a carry-over: it writes different commitment values into records already kept in
-that shape, and adds no key, no field and no version to what a record is.
+exactly as it was, and SHALL say so as for every other change it could not keep. The form on disk SHALL NOT move for a carry-over: it writes a different identity, and the commitment
+that carries it, into records already kept in that shape, and adds no key, no field and no version
+to what a record is.
 
 #### Scenario: records carried over through a store are read back under the other commitment by a store opened afterwards
 
@@ -622,7 +622,7 @@ app has never written, one below the earliest, with an error saying the content 
 rather than that it is from a later form. A store SHALL read each form as the shape that form has,
 and SHALL refuse one whose shape and declared form disagree. Which shape belongs to which form SHALL
 be judged against the form each part was first written at, never the newest: numbers arrived at the
-third form, notes the fourth, additions the fifth. Opening a store MUST NOT change what is at its
+third form, notes the fourth, additions the fifth, and a record's identity the sixth. Opening a store MUST NOT change what is at its
 place, which SHALL stay byte-for-byte what it was: a store SHALL write only when a change is kept.
 
 #### Scenario: reading a history kept in an earlier form changes nothing at its place
@@ -688,6 +688,15 @@ place, which SHALL stay byte-for-byte what it was: a store SHALL write only when
   either
 - **AND** the store's history is the same as it was before what is at that place was made impossible
   to write
+#### Scenario: a store whose shape and declared form disagree about identities is refused
+
+- **WHEN** a store is opened at a place holding a store written in the form used before a record
+  carried an identity, which nonetheless says an identity for one record
+- **THEN** opening is refused with an error
+- **AND** a store at a place holding a store in the form this app writes, saying no identity for one
+  record, is refused the same way
+- **AND** the error says the content is not a store rather than that it is from a later form
+- **AND** the content at each place is byte-for-byte what it was before
 
 ### Requirement: Each earlier form is read as the record it always was
 
@@ -697,8 +706,11 @@ number SHALL be read with every tick as it stands and no number on any day; one 
 could hold a note, with every tick and number as they stand and no note on any day; and one kept
 before a day could hold an addition, with every tick, number and note as they stand and no addition
 on any day; such a history SHALL answer a total of zero on every day and every total commitment not
-kept. The next change kept there SHALL be written whole in the form this app writes, and every tick,
-number and note the earlier form held SHALL still be in it.
+kept. A history kept in the form written before a record carried an identity SHALL be read with every
+record carrying none, and each SHALL be given one as *Reading the places carries the records of a
+folded roster onto the commitments the fold made* says; a record left carrying none SHALL answer
+about no commitment at all. The next change kept there SHALL be written whole in the form this app
+writes, and every tick, number and note the earlier form held SHALL still be in it.
 
 #### Scenario: a history kept before a commitment carried a kind is read with every commitment of the plain kind
 
@@ -799,12 +811,23 @@ number and note the earlier form held SHALL still be in it.
   additions were added to, in that order
 - **AND** it answers that "Gym" was kept on that date, that "Journal" has "Ran 8k." on it, and that
   "Protein" has added 120 on it and was kept on it
+#### Scenario: a history kept before a record carried an identity is read with every record carrying none
+
+- **WHEN** a store is opened at a place holding a history written in the form used before a record
+  carried an identity, holding one tick for a commitment named "Gym" on a schedule listing Monday,
+  Wednesday and Saturday, kept from 1 January 2026, on Monday 31 August 2026
+- **THEN** it opens without error
+- **AND** its history answers that a commitment formed on its own, alike in every part, was not kept
+  on Monday 31 August 2026
+- **AND** the content at that place is byte-for-byte what it was before
 
 ### Requirement: A store persists each kind of record as exactly what it is
 
-A store SHALL persist each record as exactly what it is and nothing else: its commitment whole, kind
-included, its calendar date, and the number, text or amounts it carries, in the order they were
-made. A record read back SHALL be the same record that was added: every schedule shape, any name,
+A store SHALL persist each record as exactly what it is and nothing else: its commitment whole,
+identity and kind included, its calendar date, and the number, text or amounts it carries, in the
+order they were made. An identity SHALL be kept exactly as given and MUST NOT be reissued on a
+write, and what a record is of SHALL be that identity and that date and nothing else, so a record
+read back is a record of the same commitment rather than of one alike to it. A record read back SHALL be the same record that was added: every schedule shape, any name,
 any supported date, numbers and amounts digit for digit, notes character for character at every
 length and in every script, blank space and line breaks included, each character in the very form
 given. A store MUST NOT round or shorten a number or an amount, trim, re-spell or otherwise tidy a
@@ -924,6 +947,24 @@ persist the day's sum.
 - **THEN** the content at that place holds 120.5, the day's sum, nowhere
 - **AND** a store opened afterwards at the same place answers that the commitment has added 120.5 on
   that date
+#### Scenario: a record is read back as a record of the same commitment rather than one alike to it
+
+- **WHEN** a tick for a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, on Monday 31 August 2026 is added to a store, and a store is opened afterwards at
+  the same place
+- **THEN** the later store's history answers that that commitment was kept on Monday 31 August 2026
+- **AND** it answers that a commitment formed on its own, alike in name, schedule, day kept from and
+  kind, was not kept on it
+
+#### Scenario: a record of an era is read back under the commitment whose era it is
+
+- **WHEN** a tick for a commitment named "Gym" on a schedule listing all seven weekdays, kept from
+  1 January 2026, on Monday 3 August 2026 is added to a store; a tick for a further era of that same
+  commitment, on a schedule listing Tuesday and Thursday, kept from Monday 31 August 2026, on
+  Tuesday 1 September 2026 is added to it; and a store is opened afterwards at the same place
+- **THEN** the later store's history answers that the commitment was kept on Monday 3 August 2026
+  and on Tuesday 1 September 2026, asked with either era
+- **AND** its history is the same as a history those two ticks were added to
 
 ### Requirement: A tick is of a commitment on a calendar date it is due on, and nothing else
 
