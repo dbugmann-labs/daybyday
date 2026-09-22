@@ -376,24 +376,32 @@ func aRosterStoreHoldingWhatCouldNotBeARosterIsRefused() throws {
     try FileManager.default.createDirectory(
         at: sameCommitmentTwicePlace.deletingLastPathComponent(),
         withIntermediateDirectories: true)
+    // One identity, kept from one day, twice — two eras cannot both be true of it.
     let sameCommitmentTwiceBytes = Data(
         """
         {
-          "version": 1,
+          "version": 5,
           "commitments": [
             {
               "commitment": {
                 "name": "Gym",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
-              }
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "removed": false,
+              "category": null
             },
             {
               "commitment": {
                 "name": "Gym",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
-              }
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "removed": false,
+              "category": null
             }
           ]
         }
@@ -2603,4 +2611,164 @@ func takingAStoppedCommitmentUpAgainIsRefusedWhereACommitmentTheRosterKeepsAlrea
     #expect(roster.commitments.allSatisfy { $0.name == "Gym" })
     #expect(roster.stopped.map(\.rhythmInWords) == ["Tue, Thu"])
     #expect(roster.stopped.allSatisfy { $0.name == "Gym" })
+}
+
+@Test(
+    "a commitment with two eras kept through a roster store is read back as one commitment with two eras"
+)
+func aCommitmentWithTwoErasKeptThroughARosterStoreIsReadBackAsOneCommitmentWithTwoEras() throws {
+    let place = freshPlace()
+    let originalSchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: originalSchedule, keptFrom: keptFrom)!
+    let newEra = Commitment(
+        era: gym, schedule: newSchedule, keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!,
+        kind: .tick)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.put(
+        era: newEra, on: gym, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
+
+    let later = try RosterStore(at: place)
+
+    #expect(later.roster.commitments == [newEra])
+    #expect(later.roster.eras(of: newEra) == [newEra, gym])
+}
+
+@Test("a roster store read back holds the same commitments rather than commitments alike to them")
+func aRosterStoreReadBackHoldsTheSameCommitmentsRatherThanCommitmentsAlikeToThem() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+
+    let first = try RosterStore(at: place)
+    let second = try RosterStore(at: place)
+
+    #expect(first.roster.commitments.first == gym)
+    #expect(first.roster.commitments == second.roster.commitments)
+    #expect(first.roster.commitments.first?.identity == gym.identity)
+}
+
+@Test(
+    "an era a roster store refuses to put on a removed commitment is reported and nothing at its place changes"
+)
+func anEraARosterStoreRefusesToPutOnARemovedCommitmentIsReportedAndNothingAtItsPlaceChanges()
+    throws
+{
+    let place = freshPlace()
+    let originalSchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: originalSchedule, keptFrom: keptFrom)!
+    let newEra = Commitment(
+        era: gym, schedule: newSchedule, keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!,
+        kind: .tick)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    try store.remove(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+    let bytesBefore = try Data(contentsOf: place)
+
+    let put = try store.put(
+        era: newEra, on: gym, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
+
+    #expect(!put)
+    #expect(try Data(contentsOf: place) == bytesBefore)
+}
+
+@Test(
+    "a roster store declaring a form written before identities and saying something about one is refused"
+)
+func aRosterStoreDeclaringAFormWrittenBeforeIdentitiesAndSayingSomethingAboutOneIsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RosterStoreError.notAStore(at: place)) {
+        try RosterStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test(
+    "a roster store declaring the form this app writes and saying nothing about an identity is refused"
+)
+func aRosterStoreDeclaringTheFormThisAppWritesAndSayingNothingAboutAnIdentityIsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RosterStoreError.notAStore(at: place)) {
+        try RosterStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
+
+@Test(
+    "an era a roster store refuses to put on because it is not that commitment's is reported and nothing at its place changes"
+)
+func anEraARosterStoreRefusesToPutOnBecauseItIsNotThatCommitmentsIsReportedAndNothingAtItsPlaceChanges()
+    throws
+{
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let notGymsEra = Commitment(
+        name: "Gym", schedule: newSchedule, keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!)!
+
+    let store = try RosterStore(at: place)
+    try store.add(gym)
+    let bytesBefore = try Data(contentsOf: place)
+
+    let put = try store.put(
+        era: notGymsEra, on: gym, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!,
+        under: nil)
+
+    #expect(!put)
+    #expect(try Data(contentsOf: place) == bytesBefore)
 }

@@ -234,25 +234,39 @@ public final class RosterStore {
     }
 
     /// Kept at `place` before this returns, unless renaming `commitment` left the roster exactly
-    /// as it was. Answers what `Roster.rename` answers. `design.md` § *The seam*. Declared for §
-    /// 1.5; § 5 gives it its behaviour.
+    /// as it was. Answers what `Roster.rename` answers — `false`, without throwing and without
+    /// writing, when the roster does not hold `commitment` or `name` is already held by another.
     @discardableResult
     public func rename(_ commitment: Commitment, to name: String) throws -> Bool {
-        fatalError(
-            "RosterStore.rename is declared, not implemented — openspec/changes/"
-                + "give-a-commitment-an-identity/tasks.md § 5")
+        var nextRoster = roster
+        guard nextRoster.rename(commitment, to: name) else {
+            return false
+        }
+        if nextRoster != roster {
+            try write(nextRoster)
+        }
+
+        roster = nextRoster
+        return true
     }
 
     /// Kept at `place` before this returns. Answers what `Roster.put(era:on:keptUntil:under:)`
-    /// answers. `design.md` § *The seam*. Declared for § 1.5; § 7 gives it its behaviour.
+    /// answers — `false`, without throwing and without writing, when the roster is not currently
+    /// keeping `commitment`, or when `era` does not carry its identity, its name or the sort of
+    /// its kind.
     @discardableResult
     public func put(
         era: Commitment, on commitment: Commitment, keptUntil date: CalendarDate,
         under category: String?
     ) throws -> Bool {
-        fatalError(
-            "RosterStore.put(era:on:keptUntil:under:) is declared, not implemented — "
-                + "openspec/changes/give-a-commitment-an-identity/tasks.md § 7")
+        var nextRoster = roster
+        guard nextRoster.put(era: era, on: commitment, keptUntil: date, under: category) else {
+            return false
+        }
+        try write(nextRoster)
+
+        roster = nextRoster
+        return true
     }
 
     /// Kept at `place` before this returns, unless changing `commitment` for itself left the

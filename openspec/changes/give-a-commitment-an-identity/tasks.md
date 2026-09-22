@@ -189,12 +189,12 @@ to it, one red-green cycle.
 
 ## 7. The forms on disk
 
-- [ ] 7.1 *a commitment with two eras kept through a roster store is read back as one commitment with two eras*
-- [ ] 7.2 *a roster store read back holds the same commitments rather than commitments alike to them* — catches an identity reissued on a write.
-- [ ] 7.3 *an era a roster store refuses to put on a removed commitment is reported and nothing at its place changes*
-- [ ] 7.4 *an era a roster store refuses to put on because it is not that commitment's is reported and nothing at its place changes*
-- [ ] 7.5 *a roster store declaring a form written before identities and saying something about one is refused*
-- [ ] 7.6 *a roster store declaring the form this app writes and saying nothing about an identity is refused*
+- [x] 7.1 *a commitment with two eras kept through a roster store is read back as one commitment with two eras*
+- [x] 7.2 *a roster store read back holds the same commitments rather than commitments alike to them* — catches an identity reissued on a write.
+- [x] 7.3 *an era a roster store refuses to put on a removed commitment is reported and nothing at its place changes*
+- [x] 7.4 *an era a roster store refuses to put on because it is not that commitment's is reported and nothing at its place changes*
+- [x] 7.5 *a roster store declaring a form written before identities and saying something about one is refused*
+- [x] 7.6 *a roster store declaring the form this app writes and saying nothing about an identity is refused*
 - [ ] 7.7 *a record is read back as a record of the same commitment rather than one alike to it*
 - [ ] 7.8 *a record of an era is read back under the commitment whose era it is*
 - [ ] 7.9 *a store whose shape and declared form disagree about identities is refused*
