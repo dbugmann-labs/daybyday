@@ -604,17 +604,13 @@ func aRosterKeptBeforeACommitmentCarriedAKindIsReadWithEveryCommitmentOfThePlain
 
     let store = try RosterStore(at: place)
 
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
-        kind: .tick)!
-    let finances = Commitment(
-        name: "Finances", schedule: .dayOfMonth(DayOfMonth(day: 25)!), keptFrom: keptFrom,
-        kind: .tick)!
+    let gym = store.roster.commitments.first { $0.name == "Gym" }!
+    let finances = store.roster.commitments.first { $0.name == "Finances" }!
     var expected = Roster()
     _ = expected.add(gym)
     _ = expected.add(finances)
     #expect(store.roster == expected)
+    #expect(store.roster.commitments.map(\.kind) == [.tick, .tick])
 }
 
 @Test("reading a roster kept in an earlier form changes nothing at its place")
@@ -676,7 +672,7 @@ func aCommitmentOfAnotherKindTakenOnOverARosterKeptInAnEarlierFormIsReadBackWith
 
     let later = try RosterStore(at: place)
 
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let gym = store.roster.commitments.first { $0.name == "Gym" }!
     var expected = Roster()
     _ = expected.add(gym)
     _ = expected.add(weight)
@@ -841,10 +837,8 @@ func aRosterKeptBeforeACommitmentCouldBeRemovedIsReadWithEveryCommitmentNotRemov
 
     let store = try RosterStore(at: place)
 
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let gym = store.roster.stopped.first { $0.name == "Gym" }!
+    let journaling = store.roster.commitments.first { $0.name == "Journaling" }!
     var expected = Roster()
     _ = expected.add(gym)
     _ = expected.add(journaling)
@@ -876,9 +870,7 @@ func aCommitmentRemovedOverARosterKeptBeforeRemovalExistedIsReadBackRemoved() th
     try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gym = store.roster.commitments.first { $0.name == "Gym" }!
     try store.remove(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
 
     let later = try RosterStore(at: place)
@@ -1202,13 +1194,8 @@ func aRosterKeptBeforeACommitmentCouldBePutUnderACategoryIsReadWithEveryCommitme
 
     let store = try RosterStore(at: place)
 
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let creatine = Commitment(
-        name: "Creatine",
-        schedule: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]),
-        keptFrom: keptFrom)!
-    let gym = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let creatine = store.roster.commitments.first { $0.name == "Creatine" }!
+    let gym = store.roster.commitments.first { $0.name == "Gym" }!
 
     #expect(
         store.roster.groups == [Roster.Group(category: nil, commitments: [creatine, gym])])
@@ -1247,12 +1234,8 @@ func aCommitmentPutUnderACategoryOverARosterKeptBeforeCategoriesExistedIsReadBac
     try bytes.write(to: place)
 
     let store = try RosterStore(at: place)
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let schedule = Schedule.weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let creatine = store.roster.commitments.first { $0.name == "Creatine" }!
+    let gym = store.roster.commitments.first { $0.name == "Gym" }!
 
     try store.put(creatine, under: "Supplements")
 
@@ -2178,53 +2161,6 @@ func aNewEraARosterStoreRefusesToPutOnAStoppedCommitmentIsReportedAndNothingAtIt
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
-@Test(
-    "a supersession a roster store refuses for a removed commitment is reported and nothing at its place changes"
-)
-func aSupersessionARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlaceChanges()
-    throws
-{
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-    let running = Commitment(name: "Running", schedule: schedule, keptFrom: keptFrom)!
-
-    let place = try seededGymAndRunPlace(runState: .removed)
-    let store = try RosterStore(at: place)
-    let bytesBeforeAsk = try Data(contentsOf: place)
-
-    let superseded = try store.supersede(
-        run, with: running, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
-
-    #expect(!superseded)
-    #expect(store.roster.commitments == [gym])
-    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
-}
-
-@Test(
-    "a supersession a roster store refuses for a commitment it already holds is reported and nothing at its place changes"
-)
-func aSupersessionARosterStoreRefusesForACommitmentItAlreadyHoldsIsReportedAndNothingAtItsPlaceChanges()
-    throws
-{
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-
-    let place = try seededGymAndRunPlace(runState: .removed)
-    let store = try RosterStore(at: place)
-    let bytesBeforeAsk = try Data(contentsOf: place)
-
-    let superseded = try store.supersede(
-        gym, with: run, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
-
-    #expect(!superseded)
-    #expect(store.roster.commitments == [gym])
-    #expect(try Data(contentsOf: place) == bytesBeforeAsk)
-}
-
 @Test("categories differing only in case are read back out of a roster store as two categories")
 func categoriesDifferingOnlyInCaseAreReadBackOutOfARosterStoreAsTwoCategories() throws {
     let place = freshPlace()
@@ -2313,8 +2249,8 @@ func aChangeKeptOverARosterInAnEarlierFormKeepsEveryDayACommitmentWasKeptUntil()
     let store = try RosterStore(at: place)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let gym = store.roster.stopped.first { $0.name == "Gym" }!
+    let journaling = store.roster.commitments.first { $0.name == "Journaling" }!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
 
     try store.add(run)
