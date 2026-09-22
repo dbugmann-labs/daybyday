@@ -207,14 +207,14 @@ to it, one red-green cycle.
 
 ## 8. The fold, at the roster place
 
-- [ ] 8.1 *a chain of removed entries folds into the eras of the commitment in front of it*
-- [ ] 8.2 *a removed entry nothing kept or stopped resembles is dropped by the fold* — the erasure the owner chose; drive it from a document, never a file.
-- [ ] 8.3 *a removed entry that resembles a live commitment but chains to nothing becomes a stopped commitment*
-- [ ] 8.4 *the fold takes the nearest of two removed entries that both chain* — roster order decides, not the day.
-- [ ] 8.5 *a removed entry of another kind sort does not fold as an era*
-- [ ] 8.6 *an era whose range differs folds behind the commitment in front of it*
-- [ ] 8.7 *the fold leaves two commitments holding one name where the stored roster held two*
-- [ ] 8.8 *folding a roster changes nothing at its place, and the next change is written in the form this app writes*
+- [x] 8.1 *a chain of removed entries folds into the eras of the commitment in front of it*
+- [x] 8.2 *a removed entry nothing kept or stopped resembles is dropped by the fold* — the erasure the owner chose; drive it from a document, never a file.
+- [x] 8.3 *a removed entry that resembles a live commitment but chains to nothing becomes a stopped commitment*
+- [x] 8.4 *the fold takes the nearest of two removed entries that both chain* — roster order decides, not the day.
+- [x] 8.5 *a removed entry of another kind sort does not fold as an era*
+- [x] 8.6 *an era whose range differs folds behind the commitment in front of it*
+- [x] 8.7 *the fold leaves two commitments holding one name where the stored roster held two*
+- [x] 8.8 *folding a roster changes nothing at its place, and the next change is written in the form this app writes*
 
 ## 9. The fold, at the record place
 
