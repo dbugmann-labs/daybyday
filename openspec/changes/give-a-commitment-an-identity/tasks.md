@@ -122,15 +122,15 @@ to it, one red-green cycle.
 
 ## 6. `Roster` — putting a new era on, and changing one
 
-- [ ] 6.1 *a new era takes the place the commitment held and becomes its newest*
-- [ ] 6.2 *the era a new one gives way to carries the day it was kept until and sits behind it*
-- [ ] 6.3 *a commitment a new era is put on is put under the category it was offered under*
-- [ ] 6.4 *putting an era on a commitment a roster is not keeping is refused*
-- [ ] 6.5 *putting an era that is not of that commitment on it is refused* — identity, name and kind sort, each on its own.
-- [ ] 6.6 *an era put on as of a day before the day the era it gives way to is kept from leaves it holding no day* — no era is dropped here; #305 is where that lands.
-- [ ] 6.7 *an era put on as of the first supported date and one as of the last are both accepted*
-- [ ] 6.8 *a third era put on a commitment leaves it one commitment with three eras*
-- [ ] 6.9 *putting an era on a copy of a roster leaves the roster it was copied from unchanged*
+- [x] 6.1 *a new era takes the place the commitment held and becomes its newest*
+- [x] 6.2 *the era a new one gives way to carries the day it was kept until and sits behind it*
+- [x] 6.3 *a commitment a new era is put on is put under the category it was offered under*
+- [x] 6.4 *putting an era on a commitment a roster is not keeping is refused*
+- [x] 6.5 *putting an era that is not of that commitment on it is refused* — identity, name and kind sort, each on its own.
+- [x] 6.6 *an era put on as of a day before the day the era it gives way to is kept from leaves it holding no day* — no era is dropped here; #305 is where that lands.
+- [x] 6.7 *an era put on as of the first supported date and one as of the last are both accepted*
+- [x] 6.8 *a third era put on a commitment leaves it one commitment with three eras*
+- [x] 6.9 *putting an era on a copy of a roster leaves the roster it was copied from unchanged*
 - [ ] 6.10 *changing an era puts the result in the place the one it replaced held*
 - [ ] 6.11 *changing the earliest era of a commitment with two leaves the newer one alone*
 - [ ] 6.12 *changing an era for one of another commitment is refused*
