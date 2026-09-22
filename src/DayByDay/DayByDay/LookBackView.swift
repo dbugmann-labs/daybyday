@@ -53,13 +53,20 @@ struct LookBackView: View {
     // values-axis lane is clamped to a fraction of this rather than left free to swallow the
     // plot down to a sliver on an extreme value.
     @State private var cardWidth: CGFloat?
-    // How far the card's background must run past the chart's own bottom edge for the dates-axis
-    // label to stay inside it — read off the same geometry the label itself draws from, in
-    // `updateValueLabelPositions(...)`, rather than a padding constant tuned to one text size.
-    // 28 is that same computation's own default-size answer, kept as the seed so the first frame,
-    // before any chart geometry has resolved, still draws the card at its settled height instead
-    // of snapping to it after a visible resize (G7 fix round, finding 1).
-    @State private var datesLabelBottomPadding: CGFloat = 28
+    // How far the plot's own bottom edge sits above the chart's fixed 220pt frame — 0 here,
+    // architecturally: neither axis draws a value label that would reserve room below the plot,
+    // so the chart's own frame and its plot area share one bottom edge. Read off the chart's own
+    // geometry in `updateValueLabelPositions(...)` rather than assumed, in case that ever stops
+    // holding, but — unlike the dates-axis label's own offset and rendered height, below — it
+    // does not depend on text size, so it alone is what the card's bottom padding caches. G7
+    // second fix round, finding 1a: caching the *whole* padding, offset and height included,
+    // left it stale through a Dynamic Type change made while this view stayed on screen, since
+    // neither of `updateValueLabelPositions`'s own triggers — the chart's geometry, and whether
+    // its plot frame has resolved — moves on that change; the label's own font does, immediately,
+    // because `.font(.caption2)` reads it inline on every redraw. The offset and the measured
+    // height join this at the padding's own call site instead, read inline the same way, so nothing
+    // needs a new trigger to keep them current.
+    @State private var plotBottomInset: CGFloat = 0
 
     private var lookBack: LookBack? { screen.lookBack(at: commitment) }
 
@@ -493,15 +500,19 @@ struct LookBackView: View {
         // itself.
         //
         // Not the 48pt a second, lower label lane once needed: the dates-axis labels alone draw
-        // at `frame.maxY + Self.datesLabelOffset`, and `datesLabelBottomPadding` is computed in
-        // `updateValueLabelPositions(...)` from that same offset and the label's own rendered
-        // `.caption2` height, so this follows the dates lane at every text size rather than a
-        // constant read once off the walk's third picture at the default one — G7 fix round,
-        // finding 1: that constant cleared the axis labels at the default size with nothing to
-        // spare, so it overflowed as soon as `.caption2`'s line height, at a larger accessibility
-        // size, exceeded it.
+        // at `frame.maxY + Self.datesLabelOffset`, and this follows the dates lane at every text
+        // size rather than a constant read once off the walk's third picture at the default one —
+        // G7 fix round, finding 1: that constant cleared the axis labels at the default size with
+        // nothing to spare, so it overflowed as soon as `.caption2`'s line height, at a larger
+        // accessibility size, exceeded it. `Self.datesLabelOffset + Self.measuredHeight() / 2` is
+        // read inline here, every time this card redraws, rather than cached — G7 second fix
+        // round, finding 1a: cached, it went stale through a Dynamic Type change made while this
+        // view stayed on screen, since nothing about that change touches `plotBottomInset`'s own
+        // triggers. Reading it inline is what already keeps `Self.measuredWidth(...)` current for
+        // the labels themselves, so the same read here needs no trigger of its own — it is simply
+        // part of evaluating this card, which a Dynamic Type change already does.
         .padding(.top)
-        .padding(.bottom, datesLabelBottomPadding)
+        .padding(.bottom, plotBottomInset + Self.datesLabelOffset + Self.measuredHeight() / 2)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
@@ -519,16 +530,10 @@ struct LookBackView: View {
         let frame = geometry[plotFrame]
         lowestLabelY = proxy.position(forY: lowest).map { frame.minY + $0 }
         highestLabelY = proxy.position(forY: highest).map { frame.minY + $0 }
-        // The dates-axis label (drawn in `graphCard(_:)`'s own two `ForEach`s, below) centres at
-        // `frame.maxY + Self.datesLabelOffset`; its own bottom edge sits half its rendered height
-        // further down. `geometry.size.height` is the chart's own frame — 220pt, but read here
-        // rather than repeated as a second constant — so what is left is exactly the padding the
-        // card needs below that frame for the label to stay inside it, at whatever `.caption2`
-        // measures at the system's current text size. Never negative: a plot frame that already
-        // reaches the chart's own bottom edge asks for none.
-        datesLabelBottomPadding = max(
-            0,
-            frame.maxY + Self.datesLabelOffset + Self.measuredHeight() / 2 - geometry.size.height)
+        // Text-size-independent, so this alone is safe to cache against these triggers — see
+        // `plotBottomInset`'s own doc comment. Never negative: a plot frame that already reaches
+        // the chart's own bottom edge needs none.
+        plotBottomInset = max(0, frame.maxY - geometry.size.height)
     }
 
     /// The fixed offset, in points, from the plot's own bottom edge to a dates-axis label's
