@@ -38,13 +38,15 @@ many, and what a chain says SHALL depend on nothing else the roster holds.
 
 #### Scenario: a look-back reaches no era of another commitment however alike it is
 
-- **WHEN** a look-back is asked for at a commitment named "Gym" of one era, on a schedule listing
-  all seven weekdays, kept from 4 March 2026, whose days take a tick, on a roster also keeping a
-  commitment named "Gym 2" whose earlier era ran on that same schedule from 1 January 2026 until
-  3 March 2026, as of 31 March 2026
+- **WHEN** a look-back is asked, as of 31 March 2026, at a commitment named "Gym" of one era, on a
+  schedule listing all seven weekdays, kept from 4 March 2026, whose days take a tick, on a roster
+  folded from one written in the form used before a commitment had an identity, whose entries are
+  that "Gym"; "Gym 2" on that same schedule, kept from 4 March 2026 and kept; "Gym 2" on that same
+  schedule, kept from 1 January 2026, removed and kept until 3 March 2026; and "Gym 2" on that same
+  schedule, kept from 1 January 2026 and stopped as of 3 March 2026
 - **THEN** it says the day kept from "4 March 2026" and its one line is the month March 2026
-- **AND** a look-back at a commitment the roster has stopped, alike in every way to the earlier era
-  of "Gym 2", says the day kept from its own era is kept from
+- **AND** a look-back at the commitment the fold left stopped, alike in every way to the earlier era
+  of "Gym 2", says the day kept from "1 January 2026"
 
 #### Scenario: a look-back chains an era whose range or target differs behind the one it was asked about
 

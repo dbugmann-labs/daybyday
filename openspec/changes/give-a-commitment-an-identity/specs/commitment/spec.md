@@ -3249,16 +3249,19 @@ a roster that could not be written, leaving both lists as they were.
 - **THEN** it is refused as a roster that could not be written
 - **AND** what it keeps is one entry, named "Journaling", and what it has stopped is one entry,
   named "Gym"
+
 #### Scenario: taking a commitment up again is refused where a commitment the screen keeps already has its name
 
-- **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
-  2026, is taken on at a roster place; "Gym" is stopped there as of Sunday 30 August 2026; a
-  commitments screen is opened at that roster place as of Monday 31 August 2026; a commitment named
-  "GYM" on that same rhythm, kept from that same day, is defined through it; and the stopped
-  commitment is taken up again through it
-- **THEN** it is refused as a name already in use, naming "GYM", said against the stopped commitment
-- **AND** what it keeps is one entry, named "GYM", and what it has stopped is one, named "Gym"
-- **AND** the content at that roster place is byte-for-byte what it was after "GYM" was defined
+- **WHEN** a commitments screen is opened as of Monday 31 August 2026 at a roster place holding a
+  roster written in the form used before a commitment had an identity, whose entries are "Gym" on a
+  schedule listing Monday and Wednesday, kept from 1 January 2026 and kept, and "Gym" on a schedule
+  listing Tuesday and Thursday, kept from 1 January 2026 and stopped as of Sunday 30 August 2026;
+  and the stopped commitment is taken up again through it
+- **THEN** it is refused as a name already in use, naming "Gym", said against the stopped commitment
+- **AND** what it keeps is one entry, named "Gym", saying "Mon, Wed", and what it has stopped is
+  one, named "Gym", saying "Tue, Thu"
+- **AND** the content at that roster place is byte-for-byte what it was immediately after the screen
+  was opened
 
 ### Requirement: Reading the places carries an orphaned record back to its one possible source
 
