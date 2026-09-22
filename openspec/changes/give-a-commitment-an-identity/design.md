@@ -47,10 +47,12 @@ public enum CommitmentsScreen.Refusal { case nameAlreadyInUse(String) }
 public var CommitmentsScreen.stoppedRefusal: SheetRefusal? { get }
 ```
 
-`Roster.supersede(_:with:keptUntil:under:)`, `Roster.change(_:to:under:)`'s old meaning,
-`RecordStore.carryOver(_:to:)` as a change's act, `Refusal.alreadyKept` and
-`Refusal.recordsAlreadyKept` go. `History.carryOver(_:to:)` stays: the carry-back of an orphan is
-its one remaining caller.
+`Roster.change(_:to:under:)`'s old meaning, `RecordStore.carryOver(_:to:)` as a change's act,
+`Refusal.alreadyKept` and `Refusal.recordsAlreadyKept` go. `History.carryOver(_:to:)` stays: the
+carry-back of an orphan is its one remaining caller. `Roster.supersede(_:with:keptUntil:under:)` and
+`RosterStore.supersede` stay too, for the sake of *a superseded commitment is still under the
+category it was under* under the untouched *A roster puts a commitment under a category*; nothing
+new drives them.
 
 ### Equality is the identity, and an era is an entry
 

@@ -3961,9 +3961,10 @@ This app cannot read, as a roster store: content that is not a roster store; a r
 in a form later than the one this app knows; and a roster store holding something that could not be
 a roster — a commitment that could not be formed, a date that names no day, the same era held
 twice, or a commitment held as removed with no day it was kept until. Two entries SHALL be the same
-era where they carry one identity and are kept from one day, and, in a roster kept before a
-commitment had an identity, where the commitments they hold are alike in every part; entries
-carrying one identity and kept from different days SHALL be read as the eras of one commitment. A commitment of the number
+era where they carry one identity and are alike in schedule, in the day they are kept from and in
+the kind their days take, and, in a roster kept before a commitment had an identity, where the
+commitments they hold are alike in every part; entries carrying one identity and differing in any of
+those three SHALL be that commitment's eras and SHALL be read as one commitment. A commitment of the number
 kind carrying only one end of a range SHALL be one that could not be formed, and SHALL be refused
 with the rest; the missing end SHALL NOT be invented.
 
@@ -3989,7 +3990,7 @@ with the rest; the missing end SHALL NOT be invented.
 - **AND** a roster store at a place holding one commitment kept from 30 February 2026, a date that
   names no day, is refused the same way
 - **AND** a roster store at a place holding the same era twice — two entries alike in identity, in
-  name, in schedule and in the day it is kept from — is refused the same way
+  name, in schedule, in the day it is kept from and in kind — is refused the same way
 - **AND** the content at each of the three places is byte-for-byte what it was before
 
 #### Scenario: a roster store holding a commitment with half a range is refused
