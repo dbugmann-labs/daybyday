@@ -547,8 +547,8 @@ func aTargetTypedOnAKindWithNoRoomForOneIsIgnoredRatherThanRefused() throws {
 }
 
 @MainActor
-@Test("a commitment alike in every way but the kind it takes is not one a commitments screen already keeps")
-func aCommitmentAlikeInEveryWayButTheKindItTakesIsNotOneACommitmentsScreenAlreadyKeeps() throws {
+@Test("a commitment alike in every way but the kind it takes is refused for the name it shares")
+func aCommitmentAlikeInEveryWayButTheKindItTakesIsRefusedForTheNameItShares() throws {
     let rosterPlace = freshRosterPlace()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let daily: Schedule = .weekdays([
@@ -567,8 +567,9 @@ func aCommitmentAlikeInEveryWayButTheKindItTakesIsNotOneACommitmentsScreenAlread
     let refusal = screen.define(
         name: "Weight", on: dailyRhythm, keptFrom: keptFrom, under: nil, kind: .number)
 
-    #expect(refusal == nil)
-    #expect(screen.kept.map(\.name) == ["Weight", "Weight"])
+    #expect(refusal == .nameAlreadyInUse("Weight"))
+    #expect(screen.kept.map(\.name) == ["Weight"])
+    #expect(screen.kept.map(\.kind) == [.tick])
 
     let stoppedRosterPlace = freshRosterPlace()
     let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
@@ -580,9 +581,8 @@ func aCommitmentAlikeInEveryWayButTheKindItTakesIsNotOneACommitmentsScreenAlread
     let secondRefusal = stoppedScreen.define(
         name: "Weight", on: dailyRhythm, keptFrom: keptFrom, under: nil, kind: .number)
 
-    #expect(secondRefusal == nil)
-    #expect(stoppedScreen.kept.map(\.name) == ["Weight"])
-    #expect(stoppedScreen.kept.map(\.kind) == [.number(range: nil)])
+    #expect(secondRefusal == .nameAlreadyInUse("Weight"))
+    #expect(stoppedScreen.kept.isEmpty)
     #expect(stoppedScreen.stopped.map(\.name) == ["Weight"])
     #expect(stoppedScreen.stopped.map(\.kind) == [.tick])
 }
@@ -9267,8 +9267,8 @@ func aRefusalThatATargetIsNotATargetIsAboutTheTargetField() {
 }
 
 @MainActor
-@Test("a refusal that a commitment is already kept is about the whole change and no field")
-func aRefusalThatACommitmentIsAlreadyKeptIsAboutTheWholeChangeAndNoField() throws {
+@Test("a refusal that a name is already in use is about the name field")
+func aRefusalThatANameIsAlreadyInUseIsAboutTheNameField() throws {
     let rosterPlace = freshRosterPlace()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let allWeekdays: Schedule = .weekdays([
@@ -9285,9 +9285,10 @@ func aRefusalThatACommitmentIsAlreadyKeptIsAboutTheWholeChangeAndNoField() throw
     let refusal = screen.define(
         name: "Gym", on: Rhythm(allWeekdays), keptFrom: keptFrom, under: nil)
 
-    #expect(refusal == .alreadyKept)
+    #expect(refusal == .nameAlreadyInUse("Gym"))
     #expect(
-        screen.sheetRefusal == CommitmentsScreen.SheetRefusal(field: nil, refusal: .alreadyKept))
+        screen.sheetRefusal
+            == CommitmentsScreen.SheetRefusal(field: .name, refusal: .nameAlreadyInUse("Gym")))
 }
 
 @MainActor
