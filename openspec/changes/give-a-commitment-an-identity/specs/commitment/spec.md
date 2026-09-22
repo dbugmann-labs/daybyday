@@ -316,13 +316,15 @@ category, MUST NOT refuse on how many commitments it holds, and MUST NOT refuse 
 
 #### Scenario: taking a stopped commitment up again is refused where a commitment the roster keeps already has its name
 
-- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
-  Saturday, kept from 1 January 2026, stops keeping it as of 31 January 2026; "Gym" is renamed
-  "Lifting"; a commitment named "Gym" formed on its own is added; and the stopped commitment is
-  renamed "Gym " and then offered again as itself
+- **WHEN** a roster store is opened at a place holding a roster written in the form used before a
+  commitment had an identity, whose entries are "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026 and kept, and "Gym" on a schedule listing Tuesday and
+  Thursday, kept from 1 January 2026 and stopped as of 31 January 2026; and the roster it reads
+  back is offered that stopped commitment again as itself
 - **THEN** the roster reports that it did not take the commitment up again
-- **AND** the roster reads back one commitment it keeps, named "Gym", and one it has stopped, named
-  "Gym "
+- **AND** the roster reads back one commitment it keeps, named "Gym", on a schedule listing Monday,
+  Wednesday and Saturday, and one it has stopped, named "Gym", on a schedule listing Tuesday and
+  Thursday
 
 #### Scenario: a commitment offered again as itself where the roster has removed it takes it up again
 

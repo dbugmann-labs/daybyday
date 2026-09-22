@@ -10,7 +10,7 @@ to it, one red-green cycle.
   `335/433 scenario(s) covered` for this change and names *"two commitments formed alike in every
   part are two different commitments"* as next. **Those 335 are the scenarios this delta carries
   verbatim from the current specs.**
-- [x] 1.2 Read § 1.3 before touching a carried test. Of the 335, **thirty-eight are named in
+- [x] 1.2 Read § 1.3 before touching a carried test. Of the 335, **thirty-nine are named in
   § 1.3** and their tests change with them; every other carried test must come through this change
   with its name, its fixture and its assertions untouched. A carried test that has to be edited and
   is not named in § 1.3 is the design being wrong: stop and report it.
@@ -29,10 +29,11 @@ to it, one red-green cycle.
   whose start differs from the day it is kept from is renamed and every day recorded on stays due*;
   *a refusal that a roster could not be written is about the whole change and no field*.
   **And these carried tests, whose fixture or assertion this delta edits although their scenario
-  names do not change.** **Two rest on value equality between commitments formed on their own** —
-  *a commitment taken up again can be stopped again, on a new day* and *taking a commitment up
-  again puts it back in the answer for the dates between*: each fixture offers the roster the
-  original commitment again rather than forming a second one alike to it. **Three form an earlier
+  names do not change.** **Three rest on value equality between commitments formed on their own** —
+  *a commitment taken up again can be stopped again, on a new day*, *taking a commitment up
+  again puts it back in the answer for the dates between* and *a commitment moved and then stopped
+  is taken up again in the place it was moved to* (`RosterTests`): each fixture offers the roster
+  the original commitment again rather than forming a second one alike to it. **Three form an earlier
   era on its own and supersede it in** — *a look-back counts the era behind the one it was asked
   about*, *a look-back says the newest era's rhythm and the earliest era's day kept from* and *a
   look-back chains an era whose range or target differs behind the one it was asked about*: each
@@ -138,6 +139,35 @@ to it, one red-green cycle.
 - [x] 6.14 *changing an era of a stopped commitment leaves it stopped, on the day it was kept until*
 - [x] 6.15 *changing an era for itself under a different category puts its commitment under that category*
 - [x] 6.16 *changing an era on a copy of a roster leaves the roster it was copied from unchanged*
+- [ ] 6.17 Retire the tests of the two requirements this section replaces. `RosterTests` still
+  carries all twenty-one of them, and a test of a REMOVED requirement is deleted — never kept red,
+  never weakened, never renamed onto a title above, which §§ 2–6 have already taken. Nothing else
+  in this file retires one: § 1.3 governs carried tests only, and § 17.1 reaches just the eight
+  already red, because `Roster.supersede(_:with:keptUntil:under:)` is still there and the rest
+  still drive `Roster.change(_:to:under:)` — whose old meaning goes with them, as `design.md`
+  § *The seam* says. Passing is not a reason to keep one. **The nine of *A roster changes a
+  commitment it holds for another, in the place it holds it*** — *changing a commitment a roster
+  holds puts the result in the place the one it replaced held*, *a changed commitment is put under
+  the category the change was offered under*, *changing a commitment a roster has stopped keeping
+  leaves it stopped, on the day it was kept until*, *changing a commitment a roster has removed
+  leaves it removed*, *changing a commitment a roster does not hold is refused and leaves the
+  roster as it was*, *changing a commitment into one the roster already holds is refused, whichever
+  state it holds it in*, *changing a commitment for itself changes nothing and is not refused*,
+  *changing a commitment on a copy of a roster leaves the roster it was copied from unchanged* and
+  *changing a commitment for itself under a different category puts it under that category and
+  changes nothing else*. **And the twelve of *A roster supersedes a commitment it is keeping with
+  another, from a day*** — *superseding a commitment takes the other one on in the place the
+  superseded one held*, *a superseded commitment is held removed, on the day it was kept until*,
+  *the commitment that supersedes another is put under the category it was offered under*,
+  *superseding a commitment a roster is not keeping is refused*, *superseding a commitment with one
+  the roster already holds is refused*, *a commitment superseded as of a day before the day it is
+  kept from was kept on no date*, *a superseded commitment stays where it was for every date the
+  roster answers about*, *superseding on a copy of a roster leaves the roster it was copied from
+  unchanged*, *a commitment superseded as of the first supported date and one as of the last are
+  both accepted*, *a roster supersedes a commitment with one on a schedule due on no day*,
+  *superseding a commitment with one the roster has stopped keeping is refused* and *superseding a
+  commitment with one the roster has removed is refused*. The **implementer** ticks this once
+  `RosterTests` carries none of the twenty-one.
 
 ## 7. The forms on disk
 
