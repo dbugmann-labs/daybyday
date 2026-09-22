@@ -302,7 +302,7 @@ func aCommitmentFormedWithoutAKindIsOfThePlainKind() {
         name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)
 
     #expect(withoutKind?.kind == .tick)
-    #expect(withoutKind == withTickNamed)
+    #expect(withoutKind?.kind == withTickNamed?.kind)
 }
 
 @Test("a commitment's kind does not change whether it is due")

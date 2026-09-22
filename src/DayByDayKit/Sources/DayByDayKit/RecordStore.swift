@@ -232,13 +232,27 @@ public final class RecordStore {
     }
 
     /// Gives every record `fold` names an identity that identity, drops every record it maps to
-    /// `nil`, and writes only where something moved. `design.md` § *The seam* and § *Migration*.
-    /// Declared for § 1.5; § 8 gives it its behaviour.
+    /// `nil`, and writes only where something moved. Answers whether anything moved. `design.md`
+    /// § *The seam* and § *Migration*.
     @discardableResult
     public func settle(_ fold: [CommitmentRecord: Commitment.Identity?]) throws -> Bool {
-        fatalError(
-            "RecordStore.settle is declared, not implemented — openspec/changes/"
-                + "give-a-commitment-an-identity/tasks.md § 8")
+        var nextHistory = history
+        guard nextHistory.settle(fold) else {
+            return false
+        }
+
+        let parts = nextHistory.recordDocumentParts()
+        try write(
+            ticks: parts.ticks, numbers: parts.numbers, notes: parts.notes,
+            additions: parts.additions)
+
+        ticks = parts.ticks
+        numbers = parts.numbers
+        notes = parts.notes
+        additions = parts.additions
+        history = nextHistory
+
+        return true
     }
 
     /// Carries every record held of `commitment` over to `changed`, kept at `place` before this

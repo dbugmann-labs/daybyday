@@ -168,6 +168,7 @@ public final class DayScreen {
 
         let opened = Self.open(at: recordPlace)
         if let recordStore = opened.store, openedRoster.state == .kept {
+            _ = try? recordStore.settle(openedRoster.fold)
             SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
         }
 
@@ -240,18 +241,18 @@ public final class DayScreen {
     /// roster, and day one is not retried.
     private static func openRoster(
         at place: URL, takingOnIfEmpty dayOne: [Commitment]
-    ) -> (state: RosterState, roster: Roster) {
+    ) -> (state: RosterState, roster: Roster, fold: [CommitmentRecord: Commitment.Identity?]) {
         let store: RosterStore
         do {
             store = try RosterStore(at: place)
         } catch RosterStoreError.laterForm {
-            return (.writtenByALaterVersion, Roster())
+            return (.writtenByALaterVersion, Roster(), [:])
         } catch {
-            return (.notKept, Roster())
+            return (.notKept, Roster(), [:])
         }
 
         guard store.roster == Roster() else {
-            return (.kept, store.roster)
+            return (.kept, store.roster, store.fold)
         }
 
         do {
@@ -282,10 +283,10 @@ public final class DayScreen {
                         .error("\(message, privacy: .public)")
                 }
             }
-            return (.notKept, Roster())
+            return (.notKept, Roster(), [:])
         }
 
-        return (.kept, store.roster)
+        return (.kept, store.roster, store.fold)
     }
 
     /// The day view the person is looking at, as the record stood when it was last read.
@@ -924,6 +925,7 @@ public final class DayScreen {
         self.recordState = openedRecord.state
 
         if let recordStore = openedRecord.store, openedRoster.state == .kept {
+            _ = try? recordStore.settle(openedRoster.fold)
             SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
         }
 
@@ -970,7 +972,7 @@ public final class DayScreen {
             return
         }
 
-        let openedRoster: (state: RosterState, roster: Roster)
+        let openedRoster: (state: RosterState, roster: Roster, fold: [CommitmentRecord: Commitment.Identity?])
 
         if recordState == .kept {
             // The save in progress is read here, before the roster is ever handed day one to
@@ -992,6 +994,7 @@ public final class DayScreen {
                 self.recordState = opened.state
 
                 if let recordStore = opened.store, openedRoster.state == .kept {
+                    _ = try? recordStore.settle(openedRoster.fold)
                     SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
                 }
             } else {

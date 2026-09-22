@@ -55,6 +55,16 @@ public struct CommitmentRecord: Codable, Hashable {
         try container.encodeIfPresent(identity, forKey: .identity)
     }
 
+    /// `commitment`'s name, schedule, day kept from and kind alone, carrying no identity at all —
+    /// exactly the shape a roster's pre-identity entries decode as. The one way `History.settle(_:)`
+    /// looks a record's commitment up in a fold, which is keyed by exactly that shape.
+    static func bare(_ commitment: Commitment) -> CommitmentRecord {
+        var record = CommitmentRecord(commitment)
+        record.identity = nil
+        record.identityKeyPresent = false
+        return record
+    }
+
     /// `kind` decoded as `nil` — the form written before a commitment carried a kind — means the
     /// tick kind, per `design.md` § *The form on disk*. `identity` decoded as `nil` — the form
     /// written before a commitment carried one — mints a fresh identity, exactly as forming a

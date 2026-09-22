@@ -1630,7 +1630,7 @@ func aRosterWrittenInALaterFormThanThisAppKnowsMakesACommitmentsScreenThatSaysTh
     let rosterPlace = freshRosterPlace()
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 5, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: rosterPlace)
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
@@ -10037,3 +10037,176 @@ func whatACommitmentsScreenHoldsAboutARefusedChangeStandsWhenARestoreIsAskedForA
 
     #expect(screen.refusedChange == .defining(.namesNothing))
 }
+
+@MainActor
+@Test("a record kept against an entry the fold dropped is dropped with it")
+func aRecordKeptAgainstAnEntryTheFoldDroppedIsDroppedWithIt() throws {
+    let places = freshRosterAndRecordPlaces()
+    let allSevenDays =
+        #"["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]"#
+    try FileManager.default.createDirectory(
+        at: places.roster.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Yoga",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8
+        ).write(to: places.roster)
+    try Data(
+        """
+        {
+          "version": 5,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Yoga",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "date": { "year": 2026, "month": 1, "day": 15 }
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "date": { "year": 2026, "month": 3, "day": 3 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8
+        ).write(to: places.record)
+
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(!screen.recordsBelongToNoCommitment)
+    let gym = try #require(screen.kept.first)
+
+    let laterRecordStore = try RecordStore(at: places.record)
+    #expect(laterRecordStore.history.commitmentsWithRecords().count == 1)
+    #expect(laterRecordStore.history.isKept(gym, on: CalendarDate(year: 2026, month: 3, day: 3)!))
+}
+
+@MainActor
+@Test("a record whose commitment the folded roster never held is left as an orphan")
+func aRecordWhoseCommitmentTheFoldedRosterNeverHeldIsLeftAsAnOrphan() throws {
+    let places = freshRosterAndRecordPlaces()
+    try FileManager.default.createDirectory(
+        at: places.roster.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8
+        ).write(to: places.roster)
+    try Data(
+        """
+        {
+          "version": 5,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym 🏋️",
+                "keptFrom": { "year": 2026, "month": 8, "day": 4 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] }
+              },
+              "date": { "year": 2026, "month": 8, "day": 4 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8
+        ).write(to: places.record)
+
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(screen.recordsBelongToNoCommitment)
+
+    let laterRecordStore = try RecordStore(at: places.record)
+    #expect(laterRecordStore.history.commitmentsWithRecords().count == 1)
+}
+
+@MainActor
+@Test("a screen that cannot read its record place leaves a folded roster's records alone")
+func aScreenThatCannotReadItsRecordPlaceLeavesAFoldedRostersRecordsAlone() throws {
+    let places = freshRosterAndRecordPlaces()
+    try FileManager.default.createDirectory(
+        at: places.roster.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let rosterBytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": {
+                  "weekdays": [
+                    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+                  ]
+                }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try rosterBytes.write(to: places.roster)
+    let recordBytes = Data("not a record".utf8)
+    try recordBytes.write(to: places.record)
+
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(!screen.recordsBelongToNoCommitment)
+    #expect(try Data(contentsOf: places.roster) == rosterBytes)
+    #expect(try Data(contentsOf: places.record) == recordBytes)
+}
+

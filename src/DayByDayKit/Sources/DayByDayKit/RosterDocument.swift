@@ -94,7 +94,11 @@ struct RosterDocument: Codable {
 
     /// A roster folded from a document kept before a commitment had an identity, and the
     /// identity — or `nil` where the fold dropped it — each stored commitment record ended up
-    /// under. `design.md` § *The seam* and § *Migration*.
+    /// under. Keyed by `CommitmentRecord.bare(_:)` of the commitment each entry formed, never by
+    /// the entry's own raw wire record: a record's `kind` key absent and one naming the tick kind
+    /// explicitly describe the same commitment, and `RecordStore.settle(_:)` looks a record's
+    /// commitment up the same normalized way, so the two sides of a fold can never disagree over
+    /// a kind the wire form leaves to be inferred. `design.md` § *The seam* and § *Migration*.
     struct Fold {
         let roster: Roster
         let identities: [CommitmentRecord: Commitment.Identity?]
@@ -176,7 +180,7 @@ struct RosterDocument: Codable {
             chains.append(
                 Chain(representative: item.commitment, front: item.commitment.keptFrom, frontIndex: index))
             originallyKeptOrStopped.append((item.commitment.name, item.commitment.kind))
-            identities.updateValue(item.commitment.identity, forKey: item.record)
+            identities.updateValue(item.commitment.identity, forKey: CommitmentRecord.bare(item.commitment))
             resultEntries[index] = Roster.Entry(
                 commitment: item.commitment, keptUntil: item.keptUntil, isRemoved: false,
                 category: item.category)
@@ -201,7 +205,7 @@ struct RosterDocument: Codable {
                 let era = Commitment(
                     era: chain.representative, schedule: item.commitment.schedule,
                     keptFrom: item.commitment.keptFrom, kind: item.commitment.kind)!
-                identities.updateValue(era.identity, forKey: item.record)
+                identities.updateValue(era.identity, forKey: CommitmentRecord.bare(item.commitment))
                 resultEntries[index] = Roster.Entry(
                     commitment: era, keptUntil: keptUntil, isRemoved: false, category: item.category)
                 chain.front = item.commitment.keptFrom
@@ -213,7 +217,7 @@ struct RosterDocument: Codable {
                 $0.name == item.commitment.name && $0.kind.isOfTheSameSort(as: item.commitment.kind)
             }
             guard resemblesKeptOrStopped else {
-                identities.updateValue(nil, forKey: item.record)
+                identities.updateValue(nil, forKey: CommitmentRecord.bare(item.commitment))
                 continue
             }
 
@@ -221,7 +225,7 @@ struct RosterDocument: Codable {
                 Chain(
                     representative: item.commitment, front: item.commitment.keptFrom,
                     frontIndex: index))
-            identities.updateValue(item.commitment.identity, forKey: item.record)
+            identities.updateValue(item.commitment.identity, forKey: CommitmentRecord.bare(item.commitment))
             resultEntries[index] = Roster.Entry(
                 commitment: item.commitment, keptUntil: keptUntil, isRemoved: false,
                 category: item.category)

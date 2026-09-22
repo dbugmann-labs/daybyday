@@ -94,6 +94,7 @@ public final class CommitmentsScreen {
             return (read.roster, rosterState, read.record, false, read.notRead)
         }
 
+        _ = try? recordStore.settle(rosterStore.fold)
         let recordsBelongToNoCommitment = SaveInProgress.carryBackOrphanedRecords(
             in: recordStore, against: rosterStore.roster)
         return (rosterStore, rosterState, recordStore, recordsBelongToNoCommitment, read.notRead)

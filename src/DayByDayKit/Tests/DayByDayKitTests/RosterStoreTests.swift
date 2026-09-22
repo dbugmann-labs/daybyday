@@ -2868,7 +2868,7 @@ func aRemovedEntryNothingKeptOrStoppedResemblesIsDroppedByTheFold() throws {
     #expect(fold?.roster.stopped.isEmpty == true)
     #expect(fold?.roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!).map(\.name) == ["Gym"])
 
-    let yoga = document.commitments[1].commitment
+    let yoga = CommitmentRecord.bare(document.commitments[1].commitment.commitment()!)
     #expect(fold?.identities[yoga] == Optional<Commitment.Identity?>.some(nil))
 }
 
