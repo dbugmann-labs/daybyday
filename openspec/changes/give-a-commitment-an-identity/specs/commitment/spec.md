@@ -1163,7 +1163,7 @@ was added, or any other state, and MUST NOT alter a commitment it holds: one rea
 one that was put in. An identity is a part of a commitment and not a thing the roster gives it, and
 the eras of one commitment are linked by carrying it. Changing one era for another SHALL NOT be
 altering one. Being stopped, removed, put under a category, changed
-or superseded SHALL give a commitment no fifth part, and SHALL leave it answering whether it is due
+or given a new era SHALL give a commitment no fifth part, and SHALL leave it answering whether it is due
 exactly as before. The ban on a position is a ban on a read: nothing SHALL ask a roster where a
 commitment is, and moving one hands a place in rather than reading one out. A category SHALL be read
 back as part of the groups the roster reads its commitments back in, and nothing SHALL ask it about
@@ -1997,22 +1997,24 @@ well, and a roster store SHALL NOT be what reaches it.
 - **AND** the content at that place is byte-for-byte what was read before
 - **AND** asking it to move the group "Supplements" to the offset 1 instead leaves that true again
 
-#### Scenario: a commitment changed through a roster store is read back changed by a store opened afterwards
+#### Scenario: an era changed through a roster store is read back changed by a store opened afterwards
 
 - **WHEN** a commitment named "Water plants", then one named "Gym", then one named "Journaling", all
   on a schedule listing Monday, Wednesday and Saturday and all kept from 1 January 2026, are taken on
-  through a roster store; the store is asked to change "Gym" for a commitment named "Gym 🏋️" alike in
-  every other way, under the category "Sport"; and a store is opened afterwards at the same place
-- **THEN** the first store reports that it changed the commitment
+  through a roster store; the store is asked to change "Gym"'s one era for an era of that same
+  commitment on a schedule listing Tuesday and Thursday, under the category "Sport"; and a store is
+  opened afterwards at the same place
+- **THEN** the first store reports that it changed the era
 - **AND** the later store's roster reads back three commitments in the order "Water plants", then
-  "Gym 🏋️", then "Journaling", with "Gym 🏋️" under "Sport"
+  "Gym", then "Journaling", with "Gym" on a schedule listing Tuesday and Thursday, under "Sport"
 
-#### Scenario: a change and a supersession a roster refuses keep nothing at a roster store's place
+#### Scenario: a change and a new era a roster refuses keep nothing at a roster store's place
 
 - **WHEN** a commitment named "Gym" and one named "Run", both on a schedule listing Monday, Wednesday
   and Saturday and both kept from 1 January 2026, are taken on through a roster store; and the store
-  is asked to change "Gym" for "Run" under no category, and then to supersede a commitment named
-  "Journaling" alike in every other way, which it does not hold, with one named "Journal"
+  is asked to change "Gym"'s era for "Run"'s era under no category, and then to put a new era on a
+  commitment named "Journaling" alike in every other way, which it does not hold, as of
+  31 August 2026
 - **THEN** the store reports of each that the roster did not make the change, without an error
 - **AND** the content at that place is byte-for-byte what it was before either ask
 
@@ -2044,25 +2046,25 @@ well, and a roster store SHALL NOT be what reaches it.
 - **THEN** it is refused with an error
 - **AND** the store's roster is still the same roster it was before the ask
 
-#### Scenario: a change of one commitment for another that cannot be kept is refused and the roster a store reports does not move
+#### Scenario: a change of an era that cannot be kept is refused and the roster a store reports does not move
 
 - **WHEN** a commitment named "Gym" under the category "Sport", one named "Journaling" under the
   category "Evening" and one named "Run" under no category, all on a schedule listing Monday,
   Wednesday and Saturday and all kept from 1 January 2026, are taken on through a roster store, and
   "Run" is stopped through it as of 31 January 2026; what is at that place is then made impossible
-  to write; and the store is asked to change "Gym" for a commitment named "Gym 🏋️" alike in every
-  other way, under no category
+  to write; and the store is asked to change "Gym"'s era for an era of that same commitment on a
+  schedule listing Tuesday and Thursday, under no category
 - **THEN** it is refused with an error
 - **AND** the store's roster is still the same roster it was before the ask
 
-#### Scenario: a supersession that cannot be kept is refused and the roster a store reports does not move
+#### Scenario: a new era that cannot be kept is refused and the roster a store reports does not move
 
 - **WHEN** a commitment named "Gym" under the category "Sport", one named "Journaling" under the
   category "Evening" and one named "Run" under no category, all on a schedule listing Monday,
   Wednesday and Saturday and all kept from 1 January 2026, are taken on through a roster store, and
   "Run" is stopped through it as of 31 January 2026; what is at that place is then made impossible
-  to write; and the store is asked to supersede "Gym" with a commitment named "Gym" on a schedule
-  listing Tuesday and Thursday, kept from 1 September 2026, as of 31 August 2026, under no category
+  to write; and the store is asked to put a new era on "Gym", on a schedule listing Tuesday and
+  Thursday, kept from 1 September 2026, as of 31 August 2026, under no category
 - **THEN** it is refused with an error
 - **AND** the store's roster is still the same roster it was before the ask
 
@@ -2141,14 +2143,14 @@ well, and a roster store SHALL NOT be what reaches it.
 - **THEN** the store reports that it did not change the commitment, and reports no error
 - **AND** the content at that place is byte-for-byte what was read before the ask
 
-#### Scenario: a supersession a roster store refuses for a stopped commitment is reported and nothing at its place changes
+#### Scenario: a new era a roster store refuses to put on a stopped commitment is reported and nothing at its place changes
 
 - **WHEN** a commitment named "Gym" and one named "Run", both on a schedule listing Monday,
   Wednesday and Saturday and both kept from 1 January 2026, are taken on through a roster store;
-  "Run" is stopped through it as of 31 January 2026; the content at that place is read; and the
-  store is asked to supersede "Run" with a commitment named "Running" alike in every other way, as
-  of 31 August 2026, under no category
-- **THEN** the store reports that it did not supersede the commitment, and reports no error
+  "Run" is stopped through it as of 31 January 2026; the content at that place is read; and a new era
+  of "Run" on a schedule listing Tuesday and Thursday, kept from 1 September 2026, is put on it as of
+  31 August 2026, under no category
+- **THEN** the store reports that it did not put the era on, and reports no error
 - **AND** the content at that place is byte-for-byte what was read before the ask
 
 #### Scenario: an era a roster store refuses to put on because it is not that commitment's is reported and nothing at its place changes
@@ -2218,8 +2220,9 @@ kind at all. What is formed SHALL carry an identity of its own, SHALL be taken o
 either list says so, and SHALL then be last in what the screen keeps, in the group of the category
 given. It SHALL never find a commitment the roster holds stopped or removed, whatever it is named:
 taking a stopped commitment up again is the one-tap act on its row, and a removed one is beyond
-reach. Two commitments alike in every part SHALL be two here as in a roster. A
-rhythm SHALL be one of four, all four offered — a weekday set, a day of the month, an interval of
+reach. Two commitments alike in every part, their kind included, SHALL be
+two commitments here as in a roster, and the second SHALL be refused for the name the first already
+has. A rhythm SHALL be one of four, all four offered — a weekday set, a day of the month, an interval of
 whole days, a weekly quota — and an interval rhythm carries no start date. Three of the four take a
 number, which a rhythm SHALL carry as the person gave it, judged by nothing on the way. A kind SHALL
 likewise be one of four, all four offered — a tick, a number, a note, a total — and the tick SHALL
@@ -2395,17 +2398,17 @@ a target, and the total kind takes its target and ignores a range.
 - **AND** a roster store opened afterwards at that place holds one commitment, of the number kind
   with a range whose lowest is 1 and whose highest is 10
 
-#### Scenario: a commitment alike in every way but the kind it takes is not one a commitments screen already keeps
+#### Scenario: a commitment alike in every way but the kind it takes is refused for the name it shares
 
 - **WHEN** a commitment named "Weight" on a schedule listing all seven weekdays, kept from
   1 January 2026, of the tick kind, is taken on at a roster place; a commitments screen is opened at
   that roster place as of Monday 31 August 2026; and a commitment named "Weight" on a weekday-set
   rhythm of all seven weekdays, kept from 1 January 2026, under no category, of the number kind
   carrying no range, is defined through it
-- **THEN** it is not refused
-- **AND** what the screen keeps is two entries, both named "Weight"
-- **AND** a screen alike in every way whose roster had stopped the tick "Weight" instead keeps one
-  entry named "Weight", of the number kind, and has stopped one named "Weight"
+- **THEN** it is refused as a name already in use, naming "Weight"
+- **AND** what the screen keeps is one entry, named "Weight", of the tick kind
+- **AND** a screen alike in every way whose roster had stopped the tick "Weight" instead refuses it
+  the same way, and still keeps nothing and has stopped one named "Weight"
 
 #### Scenario: a target typed on the tick or the note kind is ignored rather than refused
 
@@ -4084,8 +4087,10 @@ is a name rather than a value. Replaced in full by *A roster refuses a commitmen
 keeps or has stopped already has*.
 
 **Migration:** the scenarios asserting that two commitments alike in name but differing in schedule,
-in the day kept from or in blank space at a name's end are both held go with it, along with their
-tests; each is answered the other way by a scenario under the requirement replacing this one.
+in the day kept from, in the kind their days take, in a range, in a target or in blank space at a
+name's end are both held go with it, along with their tests; each is answered the other way under
+the replacing requirement. The screen-level twin of the kind case reverses with them, renamed to
+*a commitment alike in every way but the kind it takes is refused for the name it shares*.
 
 ### Requirement: A roster supersedes a commitment it is keeping with another, from a day
 
@@ -4188,10 +4193,11 @@ scenarios under the replacing requirement. Their tests are renamed or deleted wi
 together, and superseding is no longer one of the changes it keeps. Replaced in full by *A roster
 store keeps a roster and every era at a place, across the app being closed and opened again*.
 
-**Migration:** two scenarios naming a supersession go with it; the replacing requirement answers both, with *a
-commitment with two eras kept through a roster store is read back as one commitment with two eras*
-and *an era a roster store refuses to put on a removed commitment is reported and nothing at its
-place changes*.
+**Migration:** three scenarios naming a supersession go with it, answered by *a commitment with two
+eras kept through a roster store is read back as one commitment with two eras* and *an era a roster
+store refuses to put on a removed commitment is reported and nothing at its place changes*. Five more
+are re-expressed under the replacing requirement as the acts that replace them — putting a new era
+on, and changing an era for another of that commitment — and renamed with them.
 
 ### Requirement: A commitments screen defines a commitment from a name, a rhythm and the day it is kept from
 

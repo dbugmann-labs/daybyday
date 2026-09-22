@@ -10,8 +10,10 @@ to it, one red-green cycle.
   `335/433 scenario(s) covered` for this change and names *"two commitments formed alike in every
   part are two different commitments"* as next. **Those 335 are the scenarios this delta carries
   verbatim from the current specs.**
-- [x] 1.2 Read § 1.3 before touching a carried test. Of the 335, **thirty-nine are named in
-  § 1.3** and their tests change with them; every other carried test must come through this change
+- [x] 1.2 Read § 1.3 before touching a carried test. Of the **329** scenarios this delta still
+  carries verbatim, **thirty-nine are named in § 1.3** and their tests change with them; **six more
+  carried tests are renamed**, named in § 1.3 under the acts that replace theirs, and their
+  scenarios are no longer among the 329. Every other carried test must come through this change
   with its name, its fixture and its assertions untouched. A carried test that has to be edited and
   is not named in § 1.3 is the design being wrong: stop and report it.
 - [x] 1.3 The thirteen carried scenarios whose bodies this delta edits, each edited to say an era
@@ -66,6 +68,22 @@ to it, one red-green cycle.
   after being removed is read back kept*. **And one holds an era twice where it held a commitment
   twice by value** — *a roster store holding what could not be a roster is refused*: its third place
   holds one identity, kept from one day, twice.
+  **And six carried tests this delta renames, because the act each drives is gone.** **Five drive
+  superseding or changing one commitment for another** — *a commitment changed through a roster store
+  is read back changed by a store opened afterwards* becomes *an era changed through a roster store is
+  read back changed by a store opened afterwards*; *a change and a supersession a roster refuses keep
+  nothing at a roster store's place* becomes *a change and a new era a roster refuses keep nothing at a
+  roster store's place*; *a change of one commitment for another that cannot be kept is refused and the
+  roster a store reports does not move* becomes *a change of an era that cannot be kept is refused and
+  the roster a store reports does not move*; *a supersession that cannot be kept is refused and the
+  roster a store reports does not move* becomes *a new era that cannot be kept is refused and the
+  roster a store reports does not move*; and *a supersession a roster store refuses for a stopped
+  commitment is reported and nothing at its place changes* becomes *a new era a roster store refuses to
+  put on a stopped commitment is reported and nothing at its place changes*. Each drives putting a new
+  era on, or changing an era for another of that commitment, in place of the act it drove.
+  **And one the name rule answers the other way** — *a commitment alike in every way but the kind it
+  takes is not one a commitments screen already keeps* becomes *a commitment alike in every way but
+  the kind it takes is refused for the name it shares*, and its assertions reverse with it.
 - [x] 1.4 Confirm the three facts `design.md` § *Context* rests on, and stop if any is false:
   `RosterDocument.currentVersion` is **4** and `RecordDocument.currentVersion` is **5**;
   `CopyDocument.currentVersion` is **1** and carries the other two by reference, so it does not
@@ -181,6 +199,11 @@ to it, one red-green cycle.
 - [ ] 7.8 *a record of an era is read back under the commitment whose era it is*
 - [ ] 7.9 *a store whose shape and declared form disagree about identities is refused*
 - [ ] 7.10 *a history kept before a record carried an identity is read with every record carrying none* — reading form 5, before any screen settles it.
+- [ ] 7.11 *an era changed through a roster store is read back changed by a store opened afterwards* — rename the carried test named in § 1.3, do not write a second.
+- [ ] 7.12 *a change and a new era a roster refuses keep nothing at a roster store's place* — rename the carried test named in § 1.3.
+- [ ] 7.13 *a change of an era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.
+- [ ] 7.14 *a new era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.
+- [ ] 7.15 *a new era a roster store refuses to put on a stopped commitment is reported and nothing at its place changes* — the stopped twin of 7.3; rename the carried test named in § 1.3.
 
 ## 8. The fold, at the roster place
 
@@ -214,6 +237,7 @@ to it, one red-green cycle.
 - [ ] 10.8 *taking a commitment up again is refused where a commitment the screen keeps already has its name*
 - [ ] 10.9 *an earlier era of a commitment is in neither of a commitments screen's lists*
 - [ ] 10.10 *a refusal that a name is already in use is about the name field*
+- [ ] 10.11 *a commitment alike in every way but the kind it takes is refused for the name it shares* — rename the carried test named in § 1.3 and reverse its assertions; the name rule reads no kind.
 
 ## 11. `CommitmentsScreen` — the three acts a change needs
 
