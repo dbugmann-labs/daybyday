@@ -206,16 +206,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   is shown, the seam tests do — but an acceptance line can be rewritten to describe the picture
   taken, and only a reviewer reading the commit log sees it. Whether `tasks.md` § 11 belongs in the
   digest, or a stop at the walk should be a second G4, is open.
-- **ADR-1055 says "the same name and the same kind" where the shipped chain rule says "a kind of
-  the same sort".** Found at #274's Stage 4, 2026-09-17. `change-range-and-target` (#262, merged
-  2026-09-16 as `d281584`) made a changed range or target supersede and widened the look-back's
-  resemblance rule so a chain runs across it — a number behind a number, a total behind a total,
-  whatever it carries — and `LookBack.chain` calls `Kind.isOfTheSameSort(as:)`. The ADR's
-  Decision still reads the old rule, and its § *The price is named, not hidden* does not list the
-  range change its own first paragraph says supersedes. The spec is right and the code follows
-  it; the ADR is the stale one. #274's `spec-author` drafted the amendment and withdrew it rather
-  than book another Story's decision under its own; the next Story or chore that opens ADR-1055
-  amends the Decision and the price list, dated, per `docs/adr/README.md`'s amendment rule.
 - **A number graph's year and "All" spans say one month label, and a wide label can overlap the
   one kept before it.** Found at #274's G7, 2026-09-21, and reshaped by its fifth fix round.
   `LookBackView`'s dates-axis candidates are every month in the whole domain; where two would
@@ -791,6 +781,13 @@ Things that are built, or deliberately not built, in a state someone will trip o
   place and picking again worked as walked.
 
 ## Settled
+
+- 2026-09-22 — **ADR-1055 says "the same name and the same kind" where the shipped chain rule said
+  "a kind of the same sort".** Closed at `give-a-commitment-an-identity` (#303), the next Story to
+  open ADR-1055, as the entry asked. Resemblance chaining goes with it: a look-back now reads a
+  commitment's eras off the roster by **identity**, not by walking removed entries that resemble
+  the one in front, so the name-and-kind question the entry raised no longer has anything to
+  answer — ADR-1055 is amended in place with a dated line rather than a rewritten Decision.
 
 - 2026-09-21 — **a copy that cannot be made over a store from a later version says so.** Closed at
   #270's grill, which #266's review had left it to: a refused copy tells a later-form store apart —

@@ -362,6 +362,11 @@ new commitment's first, not the old one's last — the same choice #145 made for
 same price: a record made that morning under the old rhythm is not drawn that day, though it stands.
 Agreed 2026-09-09 at the grill of `add-commitment-editing` (#148).
 
+**Corrected 2026-09-22**, while writing `give-a-commitment-an-identity` (#303)'s delta: an era now
+carries the same **identity** as the commitment in front of it, so the roster does hold a link
+after all, and a **look-back** reads the chain off it — "nothing reads one" no longer holds. The
+rest of this entry stands.
+
 **Restarting** — beginning an every-N-days commitment's count again from a day the person picks,
 because it was kept late: nails due on day 3 and done on day 4 run three days on from day 4. It
 belongs only to every N days. A weekday set, a day of the month and a weekly quota are anchored to

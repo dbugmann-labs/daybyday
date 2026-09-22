@@ -392,11 +392,11 @@ to it, one red-green cycle.
 
 ## 15. The documents
 
-- [ ] 15.1 Amend ADR-1023, ADR-1030, ADR-1035 and ADR-1055 in place, one dated line each, newest
+- [x] 15.1 Amend ADR-1023, ADR-1030, ADR-1035 and ADR-1055 in place, one dated line each, newest
   first where an amendment list already exists; do not rewrite the decision each records.
-- [ ] 15.2 Write the ADR for a commitment's identity — what it is, why equality is it alone, and why
+- [x] 15.2 Write the ADR for a commitment's identity — what it is, why equality is it alone, and why
   an era is an entry rather than a list the commitment owns — and add its line to `docs/adr/README.md`.
-- [ ] 15.3 Correct the stale "nothing reads a chain" sentence under `CONTEXT.md` § *Superseding*,
+- [x] 15.3 Correct the stale "nothing reads a chain" sentence under `CONTEXT.md` § *Superseding*,
   and the line it left behind in `docs/open-questions.md`, in the same commit as § 15.2.
   **The terms are already landed** — **Identity**, **Era** and the **Removed** amendment went in
   with the change folder — so this box is that one sentence and that one line, nothing else in

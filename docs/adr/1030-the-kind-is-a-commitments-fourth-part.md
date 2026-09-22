@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-09-06
 - Deciders: Diego Bugmann
+- Amended: 2026-09-22 — the trigger this record named has fired: `give-a-commitment-an-identity`
+  (#303) gives a commitment an identity of its own, equality is the identity alone, and the kind
+  stays the one part no change reaches — an era still carries the kind's sort it was given.
+  ADR-1059 is the record.
 - Amended: 2026-09-09 — B-014 was taken and this record's revisit trigger fired; a commitment gained
   no identity, and the kind is still the one part no change reaches
 
