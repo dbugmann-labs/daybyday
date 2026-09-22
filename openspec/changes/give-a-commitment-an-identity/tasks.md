@@ -195,10 +195,10 @@ to it, one red-green cycle.
 - [x] 7.4 *an era a roster store refuses to put on because it is not that commitment's is reported and nothing at its place changes*
 - [x] 7.5 *a roster store declaring a form written before identities and saying something about one is refused*
 - [x] 7.6 *a roster store declaring the form this app writes and saying nothing about an identity is refused*
-- [ ] 7.7 *a record is read back as a record of the same commitment rather than one alike to it*
-- [ ] 7.8 *a record of an era is read back under the commitment whose era it is*
-- [ ] 7.9 *a store whose shape and declared form disagree about identities is refused*
-- [ ] 7.10 *a history kept before a record carried an identity is read with every record carrying none* — reading form 5, before any screen settles it.
+- [x] 7.7 *a record is read back as a record of the same commitment rather than one alike to it*
+- [x] 7.8 *a record of an era is read back under the commitment whose era it is*
+- [x] 7.9 *a store whose shape and declared form disagree about identities is refused*
+- [x] 7.10 *a history kept before a record carried an identity is read with every record carrying none* — reading form 5, before any screen settles it.
 - [ ] 7.11 *an era changed through a roster store is read back changed by a store opened afterwards* — rename the carried test named in § 1.3, do not write a second.
 - [ ] 7.12 *a change and a new era a roster refuses keep nothing at a roster store's place* — rename the carried test named in § 1.3.
 - [ ] 7.13 *a change of an era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.

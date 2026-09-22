@@ -2200,3 +2200,149 @@ func aCarryOverThroughAStoreLeavesAtItsPlaceWhatAStoreGivenThoseRecordsUnderTheO
 
     #expect(try Data(contentsOf: firstPlace) == Data(contentsOf: secondPlace))
 }
+
+@Test("a record is read back as a record of the same commitment rather than one alike to it")
+func aRecordIsReadBackAsARecordOfTheSameCommitmentRatherThanOneAlikeToIt() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let store = try RecordStore(at: place)
+    try store.add(Tick(gym, on: monday)!)
+
+    let later = try RecordStore(at: place)
+
+    let alikeGym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    #expect(later.history.isKept(gym, on: monday))
+    #expect(!later.history.isKept(alikeGym, on: monday))
+}
+
+@Test("a record of an era is read back under the commitment whose era it is")
+func aRecordOfAnEraIsReadBackUnderTheCommitmentWhoseEraItIs() throws {
+    let place = freshPlace()
+    let schedule = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let newEra = Commitment(
+        era: gym, schedule: .weekdays([.tuesday, .thursday]),
+        keptFrom: CalendarDate(year: 2026, month: 8, day: 31)!, kind: .tick)!
+    let september1st = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let store = try RecordStore(at: place)
+    try store.add(Tick(gym, on: august3rd)!)
+    try store.add(Tick(newEra, on: september1st)!)
+
+    let later = try RecordStore(at: place)
+
+    #expect(later.history.isKept(gym, on: august3rd))
+    #expect(later.history.isKept(gym, on: september1st))
+    #expect(later.history.isKept(newEra, on: september1st))
+
+    var expected = History()
+    expected.add(Tick(gym, on: august3rd)!)
+    expected.add(Tick(newEra, on: september1st)!)
+    #expect(later.history == expected)
+}
+
+@Test("a store whose shape and declared form disagree about identities is refused")
+func aStoreWhoseShapeAndDeclaredFormDisagreeAboutIdentitiesIsRefused() throws {
+    let beforeIdentitiesPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: beforeIdentitiesPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let beforeIdentitiesBytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8)
+    try beforeIdentitiesBytes.write(to: beforeIdentitiesPlace)
+
+    let currentFormPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: currentFormPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let currentFormBytes = Data(
+        """
+        {
+          "version": 6,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8)
+    try currentFormBytes.write(to: currentFormPlace)
+
+    #expect(throws: RecordStoreError.notAStore(at: beforeIdentitiesPlace)) {
+        try RecordStore(at: beforeIdentitiesPlace)
+    }
+    #expect(throws: RecordStoreError.notAStore(at: currentFormPlace)) {
+        try RecordStore(at: currentFormPlace)
+    }
+    #expect(try Data(contentsOf: beforeIdentitiesPlace) == beforeIdentitiesBytes)
+    #expect(try Data(contentsOf: currentFormPlace) == currentFormBytes)
+}
+
+@Test("a history kept before a record carried an identity is read with every record carrying none")
+func aHistoryKeptBeforeARecordCarriedAnIdentityIsReadWithEveryRecordCarryingNone() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "date": { "year": 2026, "month": 8, "day": 31 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RecordStore(at: place)
+
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let alikeGym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    #expect(!store.history.isKept(alikeGym, on: CalendarDate(year: 2026, month: 8, day: 31)!))
+    #expect(try Data(contentsOf: place) == bytes)
+}

@@ -58,13 +58,30 @@ public final class RecordStore {
     /// presence must agree with the declared version in both directions. Checked against each
     /// field's own `...IntroducedInVersion` constant, not `currentVersion` — judged against the
     /// form each part was first written at, never against whichever form happens to be the newest.
+    /// `identity`, on every record's commitment across all four kinds, is checked the same way.
     private static func shapeMatchesItsForm(_ document: RecordDocument) -> Bool {
-        (document.numbers != nil)
-            == (document.version >= RecordDocument.numbersIntroducedInVersion)
-            && (document.notes != nil)
-                == (document.version >= RecordDocument.notesIntroducedInVersion)
-            && (document.additions != nil)
+        guard
+            (document.numbers != nil)
+                == (document.version >= RecordDocument.numbersIntroducedInVersion),
+            (document.notes != nil)
+                == (document.version >= RecordDocument.notesIntroducedInVersion),
+            (document.additions != nil)
                 == (document.version >= RecordDocument.additionsIntroducedInVersion)
+        else {
+            return false
+        }
+
+        let identityExpected = document.version >= RecordDocument.identityIntroducedInVersion
+        return document.ticks.allSatisfy { $0.commitment.identityKeyPresent == identityExpected }
+            && (document.numbers ?? []).allSatisfy {
+                $0.commitment.identityKeyPresent == identityExpected
+            }
+            && (document.notes ?? []).allSatisfy {
+                $0.commitment.identityKeyPresent == identityExpected
+            }
+            && (document.additions ?? []).allSatisfy {
+                $0.commitment.identityKeyPresent == identityExpected
+            }
     }
 
     /// Forms the ticks, numbers, notes and additions `document` holds — `nil` where its shape
