@@ -106,15 +106,31 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
         case .copyFromALaterVersion:
             Text("That copy is from a newer version of DayByDay.")
         case .nameAlreadyInUse(let name):
-            // The seam already hands over the one word this caption says — the name the roster
-            // holds the collision under, exactly as it holds it — so this draws it plain, rather
-            // than composing a sentence around it: `design.md` § *Risks / Trade-offs*, "the
-            // caption carries the name rather than saying 'already kept'."
-            Text(name)
+            // The sheet's own wording — a define and a rename alike, `grill.md` § *Settled* 6 —
+            // naming the collision and the field to fix, unlike the old foot-of-sheet caption it
+            // replaces. `name` is the collision exactly as the roster holds it.
+            Text("A commitment called \"\(name)\" already exists.")
         }
     }
     .font(.caption)
     .foregroundStyle(.red)
+}
+
+/// The words a person reads for a stopped row's own resume refusal — `grill.md` § *Settled* 9:
+/// the name a kept commitment already carries, said as "already kept" rather than the sheet's
+/// "already exists", because nothing offered from a stopped row is being defined. `refusal` is
+/// always `.nameAlreadyInUse` in practice, the one case `CommitmentsScreen.keepAgain` ever sets
+/// `stoppedRefusal` to, but every other case still reads through `refusalText` rather than being
+/// unreachable.
+@ViewBuilder
+private func stoppedRowRefusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
+    if case .nameAlreadyInUse(let name) = refusal {
+        Text("A commitment called \"\(name)\" is already kept.")
+            .font(.caption)
+            .foregroundStyle(.red)
+    } else {
+        refusalText(refusal)
+    }
 }
 
 /// The words a person reads for a refused copy, naming the store `store` says where one is
@@ -618,7 +634,7 @@ struct CommitmentsView: View {
                 Text("Stopped")
             } footer: {
                 if let stoppedRefusal = screen.stoppedRefusal {
-                    refusalText(stoppedRefusal.refusal)
+                    stoppedRowRefusalText(stoppedRefusal.refusal)
                 }
 
                 if case .removing(let removed, let removingRefusal) = screen.refusedChange,
