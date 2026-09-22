@@ -282,12 +282,10 @@ to it, one red-green cycle.
   six files and no others; a test that has to be edited and is not named in § 1.3 is a stop and a
   report, as § 1.2 says, never a test quietly weakened. Then run the full `swift test` from
   `src/DayByDayKit`. The **implementer** ticks this in the commit that makes it true, when every test
-  outside `CommitmentsScreenTests` and `LookBackTests` is green but the two that turn on work this
+  outside `CommitmentsScreenTests` and `LookBackTests` is green but the one that turns on work this
   box does not do: *a change reaching the record place and the roster place writes exactly one copy
-  holding both*, which waits on § 11's rename, and *a roster store holding a commitment again after
-  holding it stopped or removed is refused*, which is red because the fold does not yet refuse a
-  roster kept before identities holding two entries whose commitments are alike in every part. No
-  edit to that second test reaches its cause: leave it as it stands and report it.
+  holding both*, which waits on § 11's rename. *A roster store holding a commitment again after
+  holding it stopped or removed is refused* is § 8.9's, not this box's — do not edit it here.
 
 ## 8. The fold, at the roster place
 
@@ -299,6 +297,18 @@ to it, one red-green cycle.
 - [x] 8.6 *an era whose range differs folds behind the commitment in front of it*
 - [x] 8.7 *the fold leaves two commitments holding one name where the stored roster held two*
 - [x] 8.8 *folding a roster changes nothing at its place, and the next change is written in the form this app writes*
+- [ ] 8.9 Make the fold refuse a roster kept before identities that holds two entries whose
+  commitments are alike in every part, which *A roster store that cannot be read is refused rather
+  than emptied* now states and `RosterDocument.folded()` does not meet: `formRoster()` carries the
+  guard for the form this app writes, one identity kept from one day twice; `folded()` mints an
+  identity per entry, so nothing there can ever see the same era held twice, and two such entries
+  collide silently in the mapping it hands back. **Write no new test** — two carried tests already
+  assert it and are red: *a roster store holding a commitment again after holding it stopped or
+  removed is refused* (`RosterStoreTests`) and *a commitments screen whose roster holds what could
+  not be a roster says it is not keeping one* (`CommitmentsScreenTests`), each opening a place
+  holding one commitment record twice. Neither is a carried test § 1.3 edits: they are this box's
+  tests and their fixtures and assertions stand as they are. The **implementer** ticks this when
+  both are green.
 
 ## 9. The fold, at the record place
 
@@ -354,6 +364,20 @@ to it, one red-green cycle.
 
 - [ ] 13.1 *a look-back chains every era of the commitment it was asked about*
 - [ ] 13.2 *a look-back reaches no era of another commitment however alike it is* — catches resemblance surviving anywhere in the chain.
+- [ ] 13.3 Retire the tests of the requirement this section replaces. `LookBackTests` still carries
+  all eight of *A look-back reads a commitment's earlier eras off the roster by resemblance*, and a
+  test of a REMOVED requirement is deleted — never kept red, never weakened, never renamed onto a
+  title above, which 13.1 and 13.2 have already taken. **Three of the eight are not retired**:
+  *a look-back counts the era behind the one it was asked about*, *a look-back says the newest era's
+  rhythm and the earliest era's day kept from* and *a look-back chains an era whose range or target
+  differs behind the one it was asked about* carry into the requirement this section adds and are
+  carried tests § 1.3 edits. **The five that go** — *a look-back chains every era behind the one it
+  was asked about*, *a removed commitment of another name or another kind is not an earlier era*, *a
+  removed commitment kept until any day but the day before is not an earlier era*, *a look-back takes
+  the nearest of two removed commitments that both answer* and *an era the roster has taken up again
+  is kept rather than removed and ends a chain*. Four of the five pass today, because resemblance
+  still answers where an identity has not been asked for: passing is not a reason to keep one. The
+  **implementer** ticks this once `LookBackTests` carries none of the five.
 
 ## 14. The shell
 
