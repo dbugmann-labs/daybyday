@@ -11,9 +11,10 @@ to it, one red-green cycle.
   part are two different commitments"* as next. **Those 335 are the scenarios this delta carries
   verbatim from the current specs.**
 - [x] 1.2 Read § 1.3 before touching a carried test. Of the **329** scenarios this delta still
-  carries verbatim, **thirty-nine are named in § 1.3** and their tests change with them; **six more
+  carries verbatim, **seventy-seven are named in § 1.3** and their tests change with them; **six more
   carried tests are renamed**, named in § 1.3 under the acts that replace theirs, and their
-  scenarios are no longer among the 329. Every other carried test must come through this change
+  scenarios are no longer among the 329; and **two more are retired rather than edited**, named in
+  § 1.3 at the end. Every other carried test must come through this change
   with its name, its fixture and its assertions untouched. A carried test that has to be edited and
   is not named in § 1.3 is the design being wrong: stop and report it.
 - [x] 1.3 The thirteen carried scenarios whose bodies this delta edits, each edited to say an era
@@ -68,6 +69,71 @@ to it, one red-green cycle.
   after being removed is read back kept*. **And one holds an era twice where it held a commitment
   twice by value** — *a roster store holding what could not be a roster is refused*: its third place
   holds one identity, kept from one day, twice.
+  **And thirty-eight more, every one red only because equality is the identity, each with the edit
+  it takes.** **Eleven in `RosterStoreTests` whose scenario says the commitments are taken on
+  *through a roster store* while the test hand-writes a document in a form before identities** —
+  *a move that leaves a roster as it was keeps nothing at its place*, *a category change that leaves
+  a roster as it was keeps nothing at its place*, *a group move that leaves a group where it is keeps
+  nothing at a roster store's place*, *a change of a commitment for itself keeps nothing at a roster
+  store's place*, *a stop a roster store refuses for a removed commitment is reported and nothing at
+  its place changes*, *a move a roster store refuses for a stopped commitment is reported and nothing
+  at its place changes*, *a move a roster store refuses for a removed commitment is reported and
+  nothing at its place changes*, *a move a roster store refuses for an offset it does not have is
+  reported and nothing at its place changes*, *a category change a roster store refuses for a
+  commitment it does not hold is reported and nothing at its place changes*, *a category change a
+  roster store refuses for a removed commitment is reported and nothing at its place changes* and
+  *a change a roster store refuses for a commitment it does not hold is reported and nothing at its
+  place changes*: each seeds its place through the store, as its scenario says, so the identities its
+  assertions name are the ones on disk. The four no-op tests among them lay their bytes out by hand
+  on purpose, to prove the no-op check is no byte comparison — keep that, in the form this app writes
+  and carrying the identity each assertion reuses.
+  **Seven in `RosterStoreTests` whose scenario does name an earlier form** — *a roster kept before a
+  commitment carried a kind is read with every commitment of the plain kind*, *a commitment of another
+  kind taken on over a roster kept in an earlier form is read back with its kind*, *a roster kept
+  before a commitment could be removed is read with every commitment not removed*, *a commitment
+  removed over a roster kept before removal existed is read back removed*, *a roster kept before a
+  commitment could be put under a category is read with every commitment under none*, *a commitment
+  put under a category over a roster kept before categories existed is read back under it* and *a
+  change kept over a roster in an earlier form keeps every day a commitment was kept until*: each
+  reads the commitment back out of the store and builds what it expects from that, in place of one
+  formed alike to it.
+  **Nine in `RecordStoreTests`, the same edit against the history** — *a history kept before a
+  commitment carried a kind is read with every commitment of the plain kind*, *a tick added over a
+  history kept in an earlier form is read back beside the ticks already there*, *a history kept before
+  a day could hold a number is read, and no day in it holds a number*, *a number added over a history
+  kept before a day could hold a number is read back beside the ticks already there*, *a history kept
+  before a day could hold a note is read, and no day in it holds a note*, *a note added over a history
+  kept before a day could hold a note is read back beside the records already there*, *a history kept
+  before a day could hold an addition is read, and no day in it holds one* and *an addition made over
+  a history kept before a day could hold an addition is read back beside the records already there*:
+  each asks about the commitment the history read back rather than one formed alike to it, which is
+  what makes *a history kept before a record carried an identity is read with every record carrying
+  none* true at the same time; reaching it needs `@testable import DayByDayKit` on that file. The
+  ninth, *a store holding a day whose additions sum past what can be kept exactly is read rather than
+  refused*, is the exception: its scenario names the form this app writes, so its fixture declares
+  that form and carries an identity.
+  **Two in `DayScreenTests`** — *a commitment renamed at a day screen's places is drawn under its new
+  name and still kept when the screen is returned to* renames through the roster store and carries
+  nothing over, because a record now follows the identity; *a day screen draws a removed commitment
+  under a category exactly as it draws a stopped one* takes one commitment on at both places, which
+  is what lets the two day views be the same day view.
+  **Three across `RestoreTests`, `CopyTests` and `CopyPlaceTests`** — *a commitments screen asked to
+  restore says the copy's moment and what the copy and the phone keep, have stopped and hold as
+  one-offs* reads the commitments it stops and removes back off the screen's own list; *a copy of a
+  place kept in an earlier form is written in the form that store writes now* asks the copy's ticks
+  by name and date, and compares both places' bytes against what they were immediately after the
+  screen was opened, as its scenario already says; *a change reaching the record place and the roster
+  place writes exactly one copy holding both* asks the copy's history about the renamed commitment
+  read back, and waits on § 11 for the rename itself.
+  **And six in `CommitmentsScreenTests` that define and nothing more** — *a commitment defined on each
+  of the four rhythms is read back on the schedule that rhythm names*, *a commitment of each of the
+  four kinds is defined through a commitments screen and kept with that kind*, *a category is kept
+  exactly as it was typed on the form*, *a commitment defined under a category is drawn in that
+  category's group and kept under it*, *a commitment defined under a category of nothing but blank
+  space is under none and is not refused* and *a commitment defined under a category differing only in
+  case from one in use is a group of its own*: each reads what the screen and the store hold back and
+  judges it by name, category and kind, in place of a whole roster or group built from commitments
+  formed alike. These wait on nothing in §§ 10–13; they are named here so that round does not stop.
   **And six carried tests this delta renames, because the act each drives is gone.** **Five drive
   superseding or changing one commitment for another** — *a commitment changed through a roster store
   is read back changed by a store opened afterwards* becomes *an era changed through a roster store is
@@ -84,6 +150,12 @@ to it, one red-green cycle.
   **And one the name rule answers the other way** — *a commitment alike in every way but the kind it
   takes is not one a commitments screen already keeps* becomes *a commitment alike in every way but
   the kind it takes is refused for the name it shares*, and its assertions reverse with it.
+  **And two this delta retires rather than edits**, because the act each drives is gone and its
+  scenario is in no requirement this delta keeps — *a supersession a roster store refuses for a
+  removed commitment is reported and nothing at its place changes* and *a supersession a roster store
+  refuses for a commitment it already holds is reported and nothing at its place changes*
+  (`RosterStoreTests`), which §§ 7.3 and 7.4 already replace. A test of a REMOVED requirement is
+  deleted, as § 6.17 says: passing is not a reason to keep one.
 - [x] 1.4 Confirm the three facts `design.md` § *Context* rests on, and stop if any is false:
   `RosterDocument.currentVersion` is **4** and `RecordDocument.currentVersion` is **5**;
   `CopyDocument.currentVersion` is **1** and carries the other two by reference, so it does not
@@ -204,6 +276,18 @@ to it, one red-green cycle.
 - [x] 7.13 *a change of an era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.
 - [x] 7.14 *a new era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.
 - [x] 7.15 *a new era a roster store refuses to put on a stopped commitment is reported and nothing at its place changes* — the stopped twin of 7.3; rename the carried test named in § 1.3.
+- [ ] 7.16 Edit the carried tests § 1.3 names in `RosterStoreTests`, `RecordStoreTests`,
+  `DayScreenTests`, `RestoreTests`, `CopyTests` and `CopyPlaceTests`, each to the edit named there
+  and nothing else in it, and retire the two `RosterStoreTests` tests § 1.3 names as retired. Those
+  six files and no others; a test that has to be edited and is not named in § 1.3 is a stop and a
+  report, as § 1.2 says, never a test quietly weakened. Then run the full `swift test` from
+  `src/DayByDayKit`. The **implementer** ticks this in the commit that makes it true, when every test
+  outside `CommitmentsScreenTests` and `LookBackTests` is green but the two that turn on work this
+  box does not do: *a change reaching the record place and the roster place writes exactly one copy
+  holding both*, which waits on § 11's rename, and *a roster store holding a commitment again after
+  holding it stopped or removed is refused*, which is red because the fold does not yet refuse a
+  roster kept before identities holding two entries whose commitments are alike in every part. No
+  edit to that second test reaches its cause: leave it as it stands and report it.
 
 ## 8. The fold, at the roster place
 
