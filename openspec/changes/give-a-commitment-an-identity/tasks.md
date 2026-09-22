@@ -381,13 +381,13 @@ to it, one red-green cycle.
 
 ## 14. The shell
 
-- [ ] 14.1 Draw the name refusal under the name field of the sheet in `CommitmentsView.swift`, in
+- [x] 14.1 Draw the name refusal under the name field of the sheet in `CommitmentsView.swift`, in
   the slot #261 gave every field refusal, as the sentence the seam hands over already said. It
   wraps and is never truncated (ADR-1022); the shell must not build the sentence or quote the name
   itself.
-- [ ] 14.2 Replace the `Text("Already being kept.")` at the foot of the sheet with nothing: the
+- [x] 14.2 Replace the `Text("Already being kept.")` at the foot of the sheet with nothing: the
   refusal it stood for is gone, and the name refusal is the field caption above.
-- [ ] 14.3 Draw the resume refusal in the stopped row's existing footer, from the same seam, as the
+- [x] 14.3 Draw the resume refusal in the stopped row's existing footer, from the same seam, as the
   sentence that names the commitment already kept.
 
 ## 15. The documents

@@ -72,16 +72,12 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("Choose at least one weekday.")
         case .rhythmOutOfRange:
             Text("That number isn't one this rhythm accepts.")
-        case .alreadyKept:
-            Text("Already being kept.")
         case .notKept:
             Text("The roster could not be read or could not be written.")
         case .stoppedCommitmentDoesNotTakeThisChange:
             Text("Take it up again first to change anything but its name or category.")
         case .wouldLeaveARecordedDayNotDue:
             Text("Choose a day that leaves every recorded day due.")
-        case .recordsAlreadyExist:
-            Text("Records already exist under that.")
         case .rangeIsNotARange:
             Text("That's not a range.")
         case .targetIsNotATarget:
@@ -109,6 +105,12 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
             Text("That copy is damaged.")
         case .copyFromALaterVersion:
             Text("That copy is from a newer version of DayByDay.")
+        case .nameAlreadyInUse(let name):
+            // The seam already hands over the one word this caption says — the name the roster
+            // holds the collision under, exactly as it holds it — so this draws it plain, rather
+            // than composing a sentence around it: `design.md` § *Risks / Trade-offs*, "the
+            // caption carries the name rather than saying 'already kept'."
+            Text(name)
         }
     }
     .font(.caption)
@@ -615,8 +617,8 @@ struct CommitmentsView: View {
             } header: {
                 Text("Stopped")
             } footer: {
-                if case .keepingAgain(_, let keepAgainRefusal) = screen.refusedChange {
-                    refusalText(keepAgainRefusal)
+                if let stoppedRefusal = screen.stoppedRefusal {
+                    refusalText(stoppedRefusal.refusal)
                 }
 
                 if case .removing(let removed, let removingRefusal) = screen.refusedChange,
