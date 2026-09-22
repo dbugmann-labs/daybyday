@@ -389,6 +389,28 @@ to it, one red-green cycle.
   refusal it stood for is gone, and the name refusal is the field caption above.
 - [x] 14.3 Draw the resume refusal in the stopped row's existing footer, from the same seam, as the
   sentence that names the commitment already kept.
+- [ ] 14.4 Key every row the shell draws for a commitment by **what that row draws** — the identity
+  together with the name, the rhythm in words and whatever else it shows — or otherwise make SwiftUI
+  reconfigure a row whose commitment changed in value but not in identity. Equality is the identity
+  now, so a renamed commitment hashes equal to the value it replaced and a `ForEach` keyed on the
+  commitment sees no change at all: implementer E found at the walk that the seam is right —
+  `screen.kept` reads "Lifting" the moment the change is kept — while the list row and the sheet
+  title went on reading "Gym" until the screen was left and come back to. A rename, a rhythm change
+  and a category change must each show without leaving the screen. **The three places, all in
+  `src/DayByDay/DayByDay/CommitmentsView.swift`:** the kept list, `ForEach(group.commitments,
+  id: \.self)` at **:489**; the stopped list, `ForEach(screen.stopped, id: \.self)` at **:599**; and
+  `SheetTarget.id`, which answers `commitment.hashValue` at **:362** and so drives both the
+  `.sheet(item:)` at :858 and its title, `"Change \(changing!.name)"`, at :1315. Those are every
+  `ForEach` over commitments in `src/DayByDay` — `ContentView.swift:887` keys a day's rows by
+  `\.offset` and `:922` keys one-off rows, neither of which is a `Commitment`, and no view in
+  `LookBackView.swift` keys on one; do not change them. **Caught by the walk's picture 3** (§ 16.3),
+  whose head must read "Lifting" on a list row that reads "Lifting" — and § 16.2's sheet title is
+  the other half — **and by a UI test where the implementer can drive one**: a rename kept and
+  asserted on the list without a navigation in between. **The `"The shell identifies rows by
+  position"` entry in `docs/open-questions.md` foresaw exactly this** — *"the fix is unchanged and
+  still the shell's — a stable identity that is neither the value nor the position"* — and the
+  **implementer** amends it with one dated sentence saying what this Story did about it, in the same
+  commit as the fix. Not a rewrite of the entry, and nothing else in that file.
 
 ## 15. The documents
 
