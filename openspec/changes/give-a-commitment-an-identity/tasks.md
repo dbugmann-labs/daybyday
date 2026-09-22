@@ -132,12 +132,12 @@ to it, one red-green cycle.
 - [x] 6.8 *a third era put on a commitment leaves it one commitment with three eras*
 - [x] 6.9 *putting an era on a copy of a roster leaves the roster it was copied from unchanged*
 - [x] 6.10 *changing an era puts the result in the place the one it replaced held*
-- [ ] 6.11 *changing the earliest era of a commitment with two leaves the newer one alone*
-- [ ] 6.12 *changing an era for one of another commitment is refused*
-- [ ] 6.13 *changing an era a roster does not hold is refused and leaves the roster as it was*
-- [ ] 6.14 *changing an era of a stopped commitment leaves it stopped, on the day it was kept until*
-- [ ] 6.15 *changing an era for itself under a different category puts its commitment under that category*
-- [ ] 6.16 *changing an era on a copy of a roster leaves the roster it was copied from unchanged*
+- [x] 6.11 *changing the earliest era of a commitment with two leaves the newer one alone*
+- [x] 6.12 *changing an era for one of another commitment is refused*
+- [x] 6.13 *changing an era a roster does not hold is refused and leaves the roster as it was*
+- [x] 6.14 *changing an era of a stopped commitment leaves it stopped, on the day it was kept until*
+- [x] 6.15 *changing an era for itself under a different category puts its commitment under that category*
+- [x] 6.16 *changing an era on a copy of a roster leaves the roster it was copied from unchanged*
 
 ## 7. The forms on disk
 
