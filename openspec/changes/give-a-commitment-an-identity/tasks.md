@@ -1,0 +1,228 @@
+A command that fails or does something unexplained is a stop and a report, not a thing to work
+around (`AGENTS.md` rule 5). Rule 3 throughout: one scenario, one acceptance test named identically
+to it, one red-green cycle.
+
+## 1. Before a line is written
+
+- [ ] 1.1 Confirm the starting point and report rather than work around a different one. From
+  `src/DayByDayKit`, record what `swift test` reports as the number of tests passing, measured on
+  this branch as it stands at G4. From the repo root, `pnpm run check:scenarios` reports
+  `249/347 scenario(s) covered` for this change and names *"two commitments formed alike in every
+  part are two different commitments"* as next. **Those 249 are the scenarios this delta carries
+  verbatim from the current specs.**
+- [ ] 1.2 Read § 1.3 before touching a carried test. Of the 249, **thirteen have edited bodies**
+  and their tests change with them; every other carried test must come through this change with its
+  name, its fixture and its assertions untouched. A carried test that has to be edited and is not
+  named in § 1.3 is the design being wrong: stop and report it.
+- [ ] 1.3 The thirteen carried scenarios whose bodies this delta edits, each edited to say an era
+  where it said a removed commitment, or to assert the record place untouched where it asserted a
+  carry-over: *a mixed chain's whole sums its months' due days and its weeks' quotas alike*; *a
+  look-back says a weekday era's months and a quota era's weeks, each in its own unit*; *a week two
+  quota eras share says its kept days out of the newer era's quota*; *a number commitment's
+  look-back says the number the era holding a day kept*; *a number commitment's graph widens to hold a value
+  outside its newest era's range*; *a look-back says nothing between the lines either
+  side of a boundary*; *a number commitment's graph says nothing where one era gives way to the
+  next*; *an interval commitment's day kept from moved earlier by a whole number of intervals leaves
+  every recorded day due*; *a change a commitments screen could not keep leaves both places as they
+  were*; *changing the rhythm or the day kept from of a stopped commitment is refused*; *a change
+  refuses a range that is not a range and a target that is not a target*; *an interval commitment
+  whose start differs from the day it is kept from is renamed and every day recorded on stays due*;
+  *a refusal that a roster could not be written is about the whole change and no field*.
+- [ ] 1.4 Confirm the three facts `design.md` § *Context* rests on, and stop if any is false:
+  `RosterDocument.currentVersion` is **4** and `RecordDocument.currentVersion` is **5**;
+  `CopyDocument.currentVersion` is **1** and carries the other two by reference, so it does not
+  move; and `RecordedDay(commitment:date:)` in `History.swift` keys numbers, notes and additions by
+  the whole commitment, with `Set<Tick>` holding ticks — which is what makes equality-on-identity
+  re-key every record with no change of its own.
+- [ ] 1.5 Take the seam from `design.md` § *The seam* whole before the first cycle, as empty
+  declarations that do not compile away: every box below is driven at one of those members, and a
+  box that needs a member not listed there is a stop and a report.
+
+## 2. `Commitment` — the identity, and equality on it alone
+
+- [ ] 2.1 *two commitments formed alike in every part are two different commitments* — catches equality still reading the other four parts.
+- [ ] 2.2 *a commitment formed as a further era of another is the same commitment* — the era initialiser, and the one that mints.
+
+## 3. `Roster` — a commitment's eras are the entries carrying its identity
+
+- [ ] 3.1 *a roster holding two eras of one commitment reads back one commitment it is keeping*
+- [ ] 3.2 *a roster says a commitment's day kept from as its earliest era's and its rhythm as its newest era's*
+- [ ] 3.3 *a roster answers a date with the era of a commitment that holds that day*
+- [ ] 3.4 *an earlier era of a stopped commitment is in neither what a roster keeps nor what it has stopped*
+- [ ] 3.5 *a roster holding eras of two commitments keeps each commitment's eras together*
+- [ ] 3.6 *a new era put on a commitment lands in that commitment's place rather than after every commitment already there*
+- [ ] 3.7 *stopping a commitment with two eras records the day against its newest*
+
+## 4. `Roster` — the name refusal
+
+- [ ] 4.1 *adding a commitment whose name a roster already keeps says it was not added and leaves the roster as it was*
+- [ ] 4.2 *a commitment whose name a roster already keeps is refused whatever else differs*
+- [ ] 4.3 *a commitment whose name a roster has stopped keeping already has is refused*
+- [ ] 4.4 *a name a roster has only removed a commitment under is free* — catches the refusal counting removed entries.
+- [ ] 4.5 *two names differing only in the case of a letter are one name and the second is refused*
+- [ ] 4.6 *two names differing by blank space inside them are two names and both are held*
+- [ ] 4.7 *a commitment offered again as itself where the roster has stopped keeping it takes it up again*
+- [ ] 4.8 *a commitment offered again as itself is taken up again in the place it was taken on in*
+- [ ] 4.9 *taking a stopped commitment up again is refused where a commitment the roster keeps already has its name* — the resume path, not the add path.
+- [ ] 4.10 *a commitment offered again as itself where the roster has removed it takes it up again*
+
+## 5. `Roster` — renaming through every era
+
+- [ ] 5.1 *renaming a commitment writes the new name on every era of it*
+- [ ] 5.2 *a renamed commitment keeps its place, its category and its state*
+- [ ] 5.3 *renaming a commitment a roster does not hold is refused and leaves the roster as it was*
+- [ ] 5.4 *renaming a commitment to a name another commitment already has is refused*
+- [ ] 5.5 *renaming a commitment to the name it already has changes nothing and is not refused* — catches a commitment colliding with itself.
+- [ ] 5.6 *renaming a commitment on a copy of a roster leaves the roster it was copied from unchanged*
+
+## 6. `Roster` — putting a new era on, and changing one
+
+- [ ] 6.1 *a new era takes the place the commitment held and becomes its newest*
+- [ ] 6.2 *the era a new one gives way to carries the day it was kept until and sits behind it*
+- [ ] 6.3 *a commitment a new era is put on is put under the category it was offered under*
+- [ ] 6.4 *putting an era on a commitment a roster is not keeping is refused*
+- [ ] 6.5 *putting an era that is not of that commitment on it is refused* — identity, name and kind sort, each on its own.
+- [ ] 6.6 *an era put on as of a day before the day the era it gives way to is kept from leaves it holding no day* — no era is dropped here; #305 is where that lands.
+- [ ] 6.7 *an era put on as of the first supported date and one as of the last are both accepted*
+- [ ] 6.8 *a third era put on a commitment leaves it one commitment with three eras*
+- [ ] 6.9 *putting an era on a copy of a roster leaves the roster it was copied from unchanged*
+- [ ] 6.10 *changing an era puts the result in the place the one it replaced held*
+- [ ] 6.11 *changing the earliest era of a commitment with two leaves the newer one alone*
+- [ ] 6.12 *changing an era for one of another commitment is refused*
+- [ ] 6.13 *changing an era a roster does not hold is refused and leaves the roster as it was*
+- [ ] 6.14 *changing an era of a stopped commitment leaves it stopped, on the day it was kept until*
+- [ ] 6.15 *changing an era for itself under a different category puts its commitment under that category*
+- [ ] 6.16 *changing an era on a copy of a roster leaves the roster it was copied from unchanged*
+
+## 7. The forms on disk
+
+- [ ] 7.1 *a commitment with two eras kept through a roster store is read back as one commitment with two eras*
+- [ ] 7.2 *a roster store read back holds the same commitments rather than commitments alike to them* — catches an identity reissued on a write.
+- [ ] 7.3 *an era a roster store refuses to put on a removed commitment is reported and nothing at its place changes*
+- [ ] 7.4 *an era a roster store refuses to put on because it is not that commitment's is reported and nothing at its place changes*
+- [ ] 7.5 *a roster store declaring a form written before identities and saying something about one is refused*
+- [ ] 7.6 *a roster store declaring the form this app writes and saying nothing about an identity is refused*
+- [ ] 7.7 *a record is read back as a record of the same commitment rather than one alike to it*
+- [ ] 7.8 *a record of an era is read back under the commitment whose era it is*
+- [ ] 7.9 *a store whose shape and declared form disagree about identities is refused*
+- [ ] 7.10 *a history kept before a record carried an identity is read with every record carrying none* — reading form 5, before any screen settles it.
+
+## 8. The fold, at the roster place
+
+- [ ] 8.1 *a chain of removed entries folds into the eras of the commitment in front of it*
+- [ ] 8.2 *a removed entry nothing kept or stopped resembles is dropped by the fold* — the erasure the owner chose; drive it from a document, never a file.
+- [ ] 8.3 *a removed entry that resembles a live commitment but chains to nothing becomes a stopped commitment*
+- [ ] 8.4 *the fold takes the nearest of two removed entries that both chain* — roster order decides, not the day.
+- [ ] 8.5 *a removed entry of another kind sort does not fold as an era*
+- [ ] 8.6 *an era whose range differs folds behind the commitment in front of it*
+- [ ] 8.7 *the fold leaves two commitments holding one name where the stored roster held two*
+- [ ] 8.8 *folding a roster changes nothing at its place, and the next change is written in the form this app writes*
+
+## 9. The fold, at the record place
+
+- [ ] 9.1 *a record kept against an era that folded is read back under the commitment it folded into*
+- [ ] 9.2 *a record kept against an entry the fold dropped is dropped with it*
+- [ ] 9.3 *a record whose commitment the folded roster never held is left as an orphan* — carries no identity, and the shipped carry-back rule takes it.
+- [ ] 9.4 *a day screen opened on a folded roster carries the records too*
+- [ ] 9.5 *a screen that cannot read its record place leaves a folded roster's records alone*
+- [ ] 9.6 *a record of an era a roster holds is not an orphan*
+
+## 10. `CommitmentsScreen` — defining, and the name refusal
+
+- [ ] 10.1 *a commitments screen refuses a name a commitment its roster is already keeping has*
+- [ ] 10.2 *a commitments screen refuses a name that differs only in case or in blank space at its ends*
+- [ ] 10.3 *a commitments screen refuses a name a commitment its roster has stopped keeping has*
+- [ ] 10.4 *a commitments screen takes on a name only a commitment its roster has removed has*
+- [ ] 10.5 *a commitment a commitments screen refuses for its name is not taken on a second time*
+- [ ] 10.6 *a commitment defined through a commitments screen carries an identity of its own*
+- [ ] 10.7 *a commitment defined under the name a removed commitment has is taken on last, under the category the form carried*
+- [ ] 10.8 *taking a commitment up again is refused where a commitment the screen keeps already has its name*
+- [ ] 10.9 *an earlier era of a commitment is in neither of a commitments screen's lists*
+- [ ] 10.10 *a refusal that a name is already in use is about the name field*
+
+## 11. `CommitmentsScreen` — the three acts a change needs
+
+- [ ] 11.1 *a renamed commitment keeps every record already made, and the record place is not written*
+- [ ] 11.2 *a rename through a commitments screen reaches every era of the commitment*
+- [ ] 11.3 *a commitment whose rhythm is changed through a commitments screen is given a new era from today*
+- [ ] 11.4 *a name and a rhythm changed in one save put the new name on every era*
+- [ ] 11.5 *the day a commitment is kept from is moved onto a later era and the eras it leaves no day for are dropped* — grill § Settled 2.
+- [ ] 11.6 *a rhythm changed on the first date the calendar supports puts the new era on as of that day itself*
+- [ ] 11.7 *a name, an earlier day kept from and a rhythm changed in one save reach every era*
+- [ ] 11.8 *a change writes nothing at the record place, whatever it changes* — the one box that proves the carry-over is gone.
+- [ ] 11.9 *a change of rhythm through a commitments screen puts the commitment under the category it was given*
+- [ ] 11.10 *a commitment whose range is changed through a commitments screen is given a new era from today*
+- [ ] 11.11 *a target changed through a commitments screen puts a new era on and leaves every record standing*
+- [ ] 11.12 *a range added to a number commitment carrying none, and one taken off, each put a new era on*
+- [ ] 11.13 *a commitments screen says a commitment's earliest era's day kept from and its newest era's rhythm*
+- [ ] 11.14 *an interval commitment whose start differs from the day it is kept from is renamed on a new rhythm and the era it gives way to keeps its start*
+
+## 12. `CommitmentsScreen` — the refusals, and the restart
+
+- [ ] 12.1 *a change to a name another commitment already has is refused, kept or stopped alike*
+- [ ] 12.2 *a name and a rhythm changed in one save onto a name another commitment has are refused*
+- [ ] 12.3 *a change naming the name the commitment already has is not refused for it*
+- [ ] 12.4 *a change to a name only a removed commitment has is not refused* — the removed state holds no name.
+- [ ] 12.5 *restarting an interval commitment moves no record and writes nothing at the record place*
+- [ ] 12.6 *a restart is refused for no name and for no record already kept*
+- [ ] 12.7 *a restart refused for a day already recorded on is about the restart day field*
+
+## 13. `look-back` — eras read off the identity
+
+- [ ] 13.1 *a look-back chains every era of the commitment it was asked about*
+- [ ] 13.2 *a look-back reaches no era of another commitment however alike it is* — catches resemblance surviving anywhere in the chain.
+
+## 14. The shell
+
+- [ ] 14.1 Draw the name refusal under the name field of the sheet in `CommitmentsView.swift`, in
+  the slot #261 gave every field refusal, as the sentence the seam hands over already said. It
+  wraps and is never truncated (ADR-1022); the shell must not build the sentence or quote the name
+  itself.
+- [ ] 14.2 Replace the `Text("Already being kept.")` at the foot of the sheet with nothing: the
+  refusal it stood for is gone, and the name refusal is the field caption above.
+- [ ] 14.3 Draw the resume refusal in the stopped row's existing footer, from the same seam, as the
+  sentence that names the commitment already kept.
+
+## 15. The documents
+
+- [ ] 15.1 Amend ADR-1023, ADR-1030, ADR-1035 and ADR-1055 in place, one dated line each, newest
+  first where an amendment list already exists; do not rewrite the decision each records.
+- [ ] 15.2 Write the ADR for a commitment's identity — what it is, why equality is it alone, and why
+  an era is an entry rather than a list the commitment owns — and add its line to `docs/adr/README.md`.
+- [ ] 15.3 Correct the stale "nothing reads a chain" sentence under `CONTEXT.md` § *Superseding*,
+  and the line it left behind in `docs/open-questions.md`, in the same commit as § 15.2.
+  **The terms are already landed** — **Identity**, **Era** and the **Removed** amendment went in
+  with the change folder — so this box is that one sentence and that one line, nothing else in
+  `CONTEXT.md`.
+
+## 16. The walk
+
+- [ ] 16.1 The sheet with a second "Gym" typed in and saved — the refusal naming "Gym" under the
+  name field, and the first "Gym" still the only row on the kept list.
+- [ ] 16.2 The sheet reopened on "Gym" after its rhythm was changed through it — the rhythm now the
+  new one and *Kept from* still the day the commitment was first kept from.
+- [ ] 16.3 The look-back at "Gym" renamed "Lifting" — the head reading "Lifting", the day kept from
+  the original one, and month lines running across the day the rhythm changed with nothing between.
+- [ ] 16.4 The day screen a few days back, before the rhythm changed — the row drawn under
+  "Lifting".
+- [ ] 16.5 `phone:` the fold on the owner's own roster, after this build installs over the last —
+  the stopped list showing what survived, and one tangled commitment's look-back reading as one.
+  The simulator cannot show it: the walk starts from a fresh install and nothing seeds an old
+  roster.
+- [ ] 16.6 Post the pictures to the PR with `pnpm run walk -- --post-only <pr>` before hand-back,
+  and tick this on the comment's URL. Never `gh pr comment --attach`, which posts at full width.
+
+## 17. Gates and the archive handover
+
+- [ ] 17.1 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` reporting every test
+  passing, the count read off the run and not derived.
+- [ ] 17.2 `openspec validate give-a-commitment-an-identity --strict` exits 0 and
+  `pnpm run checks` is clean but for what it is expected to warn.
+- [ ] 17.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
+- [ ] 17.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
+  that everything the janitor needs is in place: the change folder is committed, `tasks.md` has no
+  unticked box left, and the walk comment's URL is in § 16.6. The janitor then runs
+  `/opsx:archive`, and checks afterwards that `openspec/specs/commitment/spec.md`,
+  `openspec/specs/look-back/spec.md` and `openspec/specs/record/spec.md` each carry every ADDED
+  requirement, no REMOVED one, and the MODIFIED ones whole. **Any drift there is a stop and a
+  report, never a hand-edit** — `openspec/changes/archive/**` is denied to every agent.
