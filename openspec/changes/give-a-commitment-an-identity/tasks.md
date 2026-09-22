@@ -127,7 +127,7 @@ to it, one red-green cycle.
 - [x] 4.6 *two names differing by blank space inside them are two names and both are held*
 - [x] 4.7 *a commitment offered again as itself where the roster has stopped keeping it takes it up again*
 - [x] 4.8 *a commitment offered again as itself is taken up again in the place it was taken on in*
-- [ ] 4.9 *taking a stopped commitment up again is refused where a commitment the roster keeps already has its name* — the resume path, not the add path.
+- [x] 4.9 *taking a stopped commitment up again is refused where a commitment the roster keeps already has its name* — the resume path, not the add path.
 - [x] 4.10 *a commitment offered again as itself where the roster has removed it takes it up again*
 
 ## 5. `Roster` — renaming through every era

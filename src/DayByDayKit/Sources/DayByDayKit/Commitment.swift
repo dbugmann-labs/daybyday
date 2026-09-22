@@ -10,6 +10,21 @@ public struct Commitment: Sendable {
         fileprivate init() {
             value = UUID()
         }
+
+        /// Reconstructs the identity `uuidString` names — `nil` where it does not read as a
+        /// UUID. Package-internal: `CommitmentRecord.commitment()` is the one caller, reading a
+        /// stored identity back exactly rather than minting a new one. `design.md` § *The form on
+        /// disk*.
+        init?(_ uuidString: String) {
+            guard let value = UUID(uuidString: uuidString) else {
+                return nil
+            }
+            self.value = value
+        }
+
+        /// This identity, written as its UUID string — the one way it is ever put on disk.
+        /// Package-internal, on the same footing as `init?(_:)`.
+        var uuidString: String { value.uuidString }
     }
 
     public let identity: Identity
@@ -37,6 +52,22 @@ public struct Commitment: Sendable {
     public init?(era of: Commitment, schedule: Schedule, keptFrom: CalendarDate, kind: Kind) {
         self.identity = of.identity
         self.name = of.name
+        self.schedule = schedule
+        self.keptFrom = keptFrom
+        self.kind = kind
+    }
+
+    /// Re-forms a commitment carrying `identity` already given, rather than minting a new one —
+    /// for a store reading one back exactly as it was written. Package-internal:
+    /// `CommitmentRecord.commitment()` is the one caller. `design.md` § *The form on disk*.
+    init?(identity: Identity, name: String, schedule: Schedule, keptFrom: CalendarDate, kind: Kind)
+    {
+        guard !Blank.saysNothing(name) else {
+            return nil
+        }
+
+        self.identity = identity
+        self.name = name
         self.schedule = schedule
         self.keptFrom = keptFrom
         self.kind = kind

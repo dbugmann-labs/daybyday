@@ -2550,3 +2550,57 @@ func aCategoryWrittenInAScriptOtherThanLatinIsHeldAndReadBackOutOfARosterStoreEx
                 Roster.Group(category: cyrillicCategory, commitments: [gym]),
             ])
 }
+
+@Test(
+    "taking a stopped commitment up again is refused where a commitment the roster keeps already has its name"
+)
+func takingAStoppedCommitmentUpAgainIsRefusedWhereACommitmentTheRosterKeepsAlreadyHasItsName()
+    throws
+{
+    // Two "Gym"s, one kept and one stopped, can only ever sit side by side in a roster read from
+    // the form used before a commitment had an identity: `Roster.add` itself already refuses a
+    // second "Gym" the moment a first is kept, so the fold is the one way in.
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+    var roster = store.roster
+    let stoppedGym = roster.stopped.first!
+
+    let takenUp = roster.add(stoppedGym)
+
+    #expect(!takenUp)
+    #expect(roster.commitments.map(\.rhythmInWords) == ["Mon, Wed, Sat"])
+    #expect(roster.commitments.allSatisfy { $0.name == "Gym" })
+    #expect(roster.stopped.map(\.rhythmInWords) == ["Tue, Thu"])
+    #expect(roster.stopped.allSatisfy { $0.name == "Gym" })
+}

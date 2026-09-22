@@ -15,16 +15,51 @@ public struct CommitmentRecord: Codable, Hashable {
     var keptFrom: DateRecord
     var schedule: ScheduleRecord
     var kind: KindRecord?
+    /// The identity this commitment was given, written as its UUID string — present exactly at
+    /// forms at or after `RosterDocument.identityIntroducedInVersion` and
+    /// `RecordDocument.identityIntroducedInVersion`, and absent entirely at every form before,
+    /// on the same footing as `RosterEntryRecord.category`. `identityKeyPresent` tells that apart
+    /// from a key that was present but empty, which this app never writes.
+    var identity: String?
+    var identityKeyPresent: Bool
+
+    private enum CodingKeys: String, CodingKey {
+        case name, keptFrom, schedule, kind, identity
+    }
 
     init(_ commitment: Commitment) {
         name = commitment.name
         keptFrom = DateRecord(commitment.keptFrom)
         schedule = ScheduleRecord(commitment.schedule)
         kind = KindRecord(commitment.kind)
+        identity = commitment.identity.uuidString
+        identityKeyPresent = true
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        keptFrom = try container.decode(DateRecord.self, forKey: .keptFrom)
+        schedule = try container.decode(ScheduleRecord.self, forKey: .schedule)
+        kind = try container.decodeIfPresent(KindRecord.self, forKey: .kind)
+        identityKeyPresent = container.contains(.identity)
+        identity = try container.decodeIfPresent(String.self, forKey: .identity)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(keptFrom, forKey: .keptFrom)
+        try container.encode(schedule, forKey: .schedule)
+        try container.encodeIfPresent(kind, forKey: .kind)
+        try container.encodeIfPresent(identity, forKey: .identity)
     }
 
     /// `kind` decoded as `nil` — the form written before a commitment carried a kind — means the
-    /// tick kind, per `design.md` § *The form on disk*.
+    /// tick kind, per `design.md` § *The form on disk*. `identity` decoded as `nil` — the form
+    /// written before a commitment carried one — mints a fresh identity, exactly as forming a
+    /// commitment for the first time does; `identity` present but not a UUID refuses the whole
+    /// record, as an unreadable `schedule` or `keptFrom` already does.
     func commitment() -> Commitment? {
         guard let schedule = schedule.schedule(), let keptFrom = keptFrom.calendarDate() else {
             return nil
@@ -40,7 +75,15 @@ public struct CommitmentRecord: Codable, Hashable {
             resolvedKind = .tick
         }
 
-        return Commitment(name: name, schedule: schedule, keptFrom: keptFrom, kind: resolvedKind)
+        guard let identity else {
+            return Commitment(name: name, schedule: schedule, keptFrom: keptFrom, kind: resolvedKind)
+        }
+        guard let identity = Commitment.Identity(identity) else {
+            return nil
+        }
+        return Commitment(
+            identity: identity, name: name, schedule: schedule, keptFrom: keptFrom,
+            kind: resolvedKind)
     }
 }
 

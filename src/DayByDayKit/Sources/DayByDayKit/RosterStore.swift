@@ -7,12 +7,15 @@ public final class RosterStore {
     private let place: URL
 
     /// Opens the roster store kept at `place`, reading what is there. A place where nothing has
-    /// been kept opens holding nothing; a place holding something that cannot be read throws.
+    /// been kept opens holding nothing; a place holding something that cannot be read throws. A
+    /// document before `RosterDocument.identityIntroducedInVersion` is folded once, as
+    /// `design.md` § *Migration* describes; a later one is read as it stands.
     public init(at place: URL) throws {
         self.place = place
 
         guard FileManager.default.fileExists(atPath: place.path) else {
             self.roster = Roster()
+            self.fold = [:]
             return
         }
 
@@ -29,52 +32,70 @@ public final class RosterStore {
             throw RosterStoreError.notAStore(at: place)
         }
         guard let document = try? JSONDecoder().decode(RosterDocument.self, from: data),
-            let roster = Self.formed(from: document)
+            Self.shapeAgrees(with: document)
         else {
             throw RosterStoreError.notAStore(at: place)
         }
 
-        self.roster = roster
+        if document.version < RosterDocument.identityIntroducedInVersion {
+            guard let fold = document.folded() else {
+                throw RosterStoreError.notAStore(at: place)
+            }
+            self.roster = fold.roster
+            self.fold = fold.identities
+        } else {
+            guard let formed = document.formRoster() else {
+                throw RosterStoreError.notAStore(at: place)
+            }
+            self.roster = formed
+            self.fold = [:]
+        }
     }
 
-    /// Forms the roster `document` holds — `nil` where its shape disagrees with its own declared
-    /// form, per `design.md` § *The form on disk*: the `removed` field is present on every entry
-    /// at the form that introduced it and at every form since, so its presence must agree with
-    /// the declared version in both directions. Checked against `removalIntroducedInVersion`, not
-    /// `currentVersion` — the two agree today only because form 3 is both, and a later form
-    /// raising `currentVersion` alone must not move which forms this check accepts. `category` is
-    /// checked the same way, against `categoryIntroducedInVersion`. The one place `init(at:)`
-    /// reads a decoded document into this store's own shape, shared with `CopyDocument.read`'s
-    /// own per-store reading — `openspec/changes/restore-from-a-copy/design.md` § *Reading a
-    /// copy: the envelope decides, and a later version outranks damage*.
+    /// Forms the roster `document` holds — folded once where it predates
+    /// `identityIntroducedInVersion`, read as it stands otherwise, per `design.md` § *Migration* —
+    /// or `nil` where its shape disagrees with its own declared form or it could not be formed.
+    /// Shared with `CopyDocument.read`'s own per-store reading, which has no use for a fold's
+    /// identities and so is not the one place `init(at:)` needs them from.
     static func formed(from document: RosterDocument) -> Roster? {
-        guard document.version >= 1 else {
+        guard Self.shapeAgrees(with: document) else {
             return nil
         }
-        guard
-            document.commitments.allSatisfy({
-                ($0.removed != nil) == (document.version >= RosterDocument.removalIntroducedInVersion)
-                    && $0.categoryKeyPresent
-                        == (document.version >= RosterDocument.categoryIntroducedInVersion)
-            })
-        else {
-            return nil
+        if document.version < RosterDocument.identityIntroducedInVersion {
+            return document.folded()?.roster
         }
         return document.formRoster()
+    }
+
+    /// Whether every entry's shape agrees with what `document.version` declares it should carry,
+    /// per `design.md` § *The form on disk*: `removed` present on every entry at the form that
+    /// introduced it and at every form since, and absent at every form before — checked against
+    /// `removalIntroducedInVersion`, not `currentVersion`, so a later form raising `currentVersion`
+    /// alone cannot silently move which forms this check accepts. `category` and `identity` are
+    /// each checked the same way, against their own introduced-at constant. The one place
+    /// `init(at:)` reads a decoded document into this store's own shape, shared with
+    /// `CopyDocument.read`'s own per-store reading — `openspec/changes/restore-from-a-copy/
+    /// design.md` § *Reading a copy: the envelope decides, and a later version outranks damage*.
+    private static func shapeAgrees(with document: RosterDocument) -> Bool {
+        guard document.version >= 1 else {
+            return false
+        }
+        return document.commitments.allSatisfy {
+            ($0.removed != nil) == (document.version >= RosterDocument.removalIntroducedInVersion)
+                && $0.categoryKeyPresent
+                    == (document.version >= RosterDocument.categoryIntroducedInVersion)
+                && $0.commitment.identityKeyPresent
+                    == (document.version >= RosterDocument.identityIntroducedInVersion)
+        }
     }
 
     /// Exactly what is kept at `place`.
     public private(set) var roster: Roster
 
-    /// The mapping a fold made while opening this store — each stored commitment record's
+    /// The mapping the fold made while opening this store — each stored commitment record's
     /// identity, or `nil` where the fold dropped it — or empty where nothing at `place` needed
-    /// folding. `design.md` § *The seam* and § *Migration*. Declared for § 1.5; § 8 gives it its
-    /// behaviour.
-    public var fold: [CommitmentRecord: Commitment.Identity?] {
-        fatalError(
-            "RosterStore.fold is declared, not implemented — openspec/changes/"
-                + "give-a-commitment-an-identity/tasks.md § 8")
-    }
+    /// folding. `design.md` § *The seam* and § *Migration*.
+    public private(set) var fold: [CommitmentRecord: Commitment.Identity?]
 
     /// Kept at `place` before this returns. Answers what `Roster.add` answers — `false`, without
     /// throwing and without writing, when the roster is already keeping `commitment`.
