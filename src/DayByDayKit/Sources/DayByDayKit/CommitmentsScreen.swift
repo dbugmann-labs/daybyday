@@ -127,18 +127,22 @@ public final class CommitmentsScreen {
         stopped = store.map { Self.stopped(in: $0.roster) } ?? []
     }
 
-    /// Ends both `refusedChange` and `copyRestored`, which last alike: until the app is shown
-    /// again or a change reaches a place — `openspec/specs/commitment/spec.md` § *What a
-    /// commitments screen holds about a refused change lasts until the app is shown again or a
-    /// change is kept* and `openspec/changes/restore-from-a-copy/specs/restore/spec.md` § *A
-    /// restore confirmed makes the three places what the copy holds, and nothing of what was
-    /// there* — "hold the moment of
+    /// Ends `refusedChange`, `stoppedRefusal` and `copyRestored`, which last alike: until the
+    /// app is shown again or a change reaches a place — `openspec/specs/commitment/spec.md` §
+    /// *What a commitments screen holds about a refused change lasts until the app is shown
+    /// again or a change is kept* and `openspec/changes/restore-from-a-copy/specs/restore/
+    /// spec.md` § *A restore confirmed makes the three places what the copy holds, and nothing
+    /// of what was there* — "hold the moment of
     /// the copy it restored until the app is shown again or a change is kept." Every call site
     /// that used to clear `refusedChange` alone calls this instead; every one already sits
     /// exactly where a change reached a place or the app was shown, guarded against a no-op the
-    /// same way `refusedChange` always was.
+    /// same way `refusedChange` always was. `stoppedRefusal` gets no rule of its own — `keepAgain`
+    /// is the one place that sets it, and it is read only against a name still standing in
+    /// `stopped`, so it is cleared here rather than answering a change or a rename that leaves it
+    /// stale, the way a renamed kept commitment otherwise would.
     private func endedByAChangeOrByBeingShown() {
         refusedChange = nil
+        stoppedRefusal = nil
         copyRestored = nil
     }
 

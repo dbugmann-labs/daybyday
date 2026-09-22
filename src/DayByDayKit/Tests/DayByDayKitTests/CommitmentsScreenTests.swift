@@ -1577,6 +1577,107 @@ func takingACommitmentUpAgainIsRefusedWhereACommitmentTheScreenKeepsAlreadyHasIt
     #expect(screen.kept.map(\.rhythmInWords) == ["Mon, Wed"])
     #expect(screen.stopped.map(\.rhythmInWords) == ["Tue, Thu"])
     #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
+    #expect(
+        screen.stoppedRefusal
+            == CommitmentsScreen.SheetRefusal(field: nil, refusal: .nameAlreadyInUse("Gym")))
+    #expect(screen.sheetRefusal == nil)
+}
+
+@MainActor
+@Test("a stopped row's refusal set by keepAgain is cleared by a kept change afterwards")
+func aStoppedRowsRefusalSetByKeepAgainIsClearedByAKeptChangeAfterwards() throws {
+    let rosterPlace = freshRosterPlace()
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: rosterPlace)
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let keptGym = screen.kept.first!
+    _ = screen.keepAgain(screen.stopped.first!)
+
+    #expect(screen.stoppedRefusal != nil)
+
+    _ = screen.change(
+        keptGym, toName: "Lifting", on: .weekdays([.monday, .wednesday]), keptFrom: keptFrom,
+        under: nil)
+
+    #expect(screen.stoppedRefusal == nil)
+}
+
+@MainActor
+@Test("a stopped row's refusal set by keepAgain is cleared by the app being shown again")
+func aStoppedRowsRefusalSetByKeepAgainIsClearedByTheAppBeingShownAgain() throws {
+    let rosterPlace = freshRosterPlace()
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: rosterPlace)
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    _ = screen.keepAgain(screen.stopped.first!)
+
+    #expect(screen.stoppedRefusal != nil)
+
+    screen.shown(asOf: tuesday)
+
+    #expect(screen.stoppedRefusal == nil)
 }
 
 @MainActor
