@@ -498,6 +498,119 @@ func aLookBackSaysTheNewestErasRhythmAndTheEarliestErasDayKeptFrom() throws {
 }
 
 @MainActor
+@Test("a look-back chains every era of the commitment it was asked about")
+func aLookBackChainsEveryEraOfTheCommitmentItWasAskedAbout() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let firstKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let firstKeptUntil = CalendarDate(year: 2026, month: 1, day: 31)!
+    let secondKeptFrom = CalendarDate(year: 2026, month: 2, day: 1)!
+    let secondKeptUntil = CalendarDate(year: 2026, month: 2, day: 28)!
+    let thirdKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let today = CalendarDate(year: 2026, month: 3, day: 31)!
+
+    let first = Commitment(name: "Gym", schedule: everyDay, keptFrom: firstKeptFrom)!
+    let second = Commitment(era: first, schedule: everyDay, keptFrom: secondKeptFrom, kind: .tick)!
+    let third = Commitment(era: second, schedule: everyDay, keptFrom: thirdKeptFrom, kind: .tick)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(first)
+    try rosterStore.put(era: second, on: first, keptUntil: firstKeptUntil, under: nil)
+    try rosterStore.put(era: third, on: second, keptUntil: secondKeptUntil, under: nil)
+    _ = try RecordStore(at: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: third)
+
+    let months = lookBack?.lines.compactMap { line -> String? in
+        if case .month(let inWords, _) = line { return inWords }
+        return nil
+    }
+    #expect(lookBack?.keptFromInWords == "1 January 2026")
+    #expect(months == ["March 2026", "February 2026", "January 2026"])
+}
+
+@MainActor
+@Test("a look-back reaches no era of another commitment however alike it is")
+func aLookBackReachesNoEraOfAnotherCommitmentHoweverAlikeItIs() throws {
+    let places = freshRosterAndRecordPlaces()
+    let allSevenDays =
+        #"["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]"#
+    try FileManager.default.createDirectory(
+        at: places.roster.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 3, "day": 4 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym 2",
+                "keptFrom": { "year": 2026, "month": 3, "day": 4 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym 2",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "keptUntil": { "year": 2026, "month": 3, "day": 3 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym 2",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": \(allSevenDays) }
+              },
+              "keptUntil": { "year": 2026, "month": 3, "day": 3 },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8
+        ).write(to: places.roster)
+
+    let today = CalendarDate(year: 2026, month: 3, day: 31)!
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let gym = try #require(screen.kept.first { $0.name == "Gym" })
+    let gymLookBack = screen.lookBack(at: gym)
+
+    #expect(gymLookBack?.keptFromInWords == "4 March 2026")
+    #expect(gymLookBack?.lines.count == 1)
+    #expect(
+        gymLookBack?.lines.contains { line in
+            if case .month(let inWords, _) = line { return inWords == "March 2026" }
+            return false
+        } == true)
+
+    let stoppedGym2 = try #require(screen.stopped.first { $0.name == "Gym 2" })
+    let stoppedLookBack = screen.lookBack(at: stoppedGym2)
+
+    #expect(stoppedLookBack?.keptFromInWords == "1 January 2026")
+}
+
+@MainActor
 @Test("a look-back chains every era behind the one it was asked about")
 func aLookBackChainsEveryEraBehindTheOneItWasAskedAbout() throws {
     let places = freshRosterAndRecordPlaces()
