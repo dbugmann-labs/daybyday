@@ -118,10 +118,11 @@ private func refusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
 
 /// The words a person reads for a stopped row's own resume refusal — `grill.md` § *Settled* 9:
 /// the name a kept commitment already carries, said as "already kept" rather than the sheet's
-/// "already exists", because nothing offered from a stopped row is being defined. `refusal` is
-/// always `.nameAlreadyInUse` in practice, the one case `CommitmentsScreen.keepAgain` ever sets
-/// `stoppedRefusal` to, but every other case still reads through `refusalText` rather than being
-/// unreachable.
+/// "already exists", because nothing offered from a stopped row is being defined.
+/// `CommitmentsScreen.keepAgain` sets `stoppedRefusal` to `.nameAlreadyInUse` for a name
+/// collision and to `.notKept` where the roster place could not be read or could not be
+/// written; the `else` branch below, reading through `refusalText`, is the live path for that
+/// second case.
 @ViewBuilder
 private func stoppedRowRefusalText(_ refusal: CommitmentsScreen.Refusal) -> some View {
     if case .nameAlreadyInUse(let name) = refusal {
