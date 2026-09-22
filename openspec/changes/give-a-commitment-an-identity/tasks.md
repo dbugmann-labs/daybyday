@@ -364,7 +364,7 @@ to it, one red-green cycle.
 
 - [x] 13.1 *a look-back chains every era of the commitment it was asked about*
 - [x] 13.2 *a look-back reaches no era of another commitment however alike it is* — catches resemblance surviving anywhere in the chain.
-- [ ] 13.3 Retire the tests of the requirement this section replaces. `LookBackTests` still carries
+- [x] 13.3 Retire the tests of the requirement this section replaces. `LookBackTests` still carries
   all eight of *A look-back reads a commitment's earlier eras off the roster by resemblance*, and a
   test of a REMOVED requirement is deleted — never kept red, never weakened, never renamed onto a
   title above, which 13.1 and 13.2 have already taken. **Three of the eight are not retired**:

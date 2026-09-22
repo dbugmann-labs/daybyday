@@ -451,12 +451,13 @@ func aLookBackCountsTheEraBehindTheOneItWasAskedAbout() throws {
     let olderGym = Commitment(
         name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: olderKeptFrom)!
     let newerGym = Commitment(
-        name: "Gym", schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom)!
+        era: olderGym, schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom,
+        kind: .tick)!
     let today = CalendarDate(year: 2026, month: 3, day: 31)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(olderGym)
-    try rosterStore.supersede(olderGym, with: newerGym, keptUntil: boundary, under: nil)
+    try rosterStore.put(era: newerGym, on: olderGym, keptUntil: boundary, under: nil)
     _ = try RecordStore(at: places.record)
 
     let screen = CommitmentsScreen(
@@ -481,12 +482,13 @@ func aLookBackSaysTheNewestErasRhythmAndTheEarliestErasDayKeptFrom() throws {
     let olderGym = Commitment(
         name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: olderKeptFrom)!
     let newerGym = Commitment(
-        name: "Gym", schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom)!
+        era: olderGym, schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom,
+        kind: .tick)!
     let today = CalendarDate(year: 2026, month: 3, day: 31)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(olderGym)
-    try rosterStore.supersede(olderGym, with: newerGym, keptUntil: boundary, under: nil)
+    try rosterStore.put(era: newerGym, on: olderGym, keptUntil: boundary, under: nil)
     _ = try RecordStore(at: places.record)
 
     let screen = CommitmentsScreen(
@@ -611,78 +613,6 @@ func aLookBackReachesNoEraOfAnotherCommitmentHoweverAlikeItIs() throws {
 }
 
 @MainActor
-@Test("a look-back chains every era behind the one it was asked about")
-func aLookBackChainsEveryEraBehindTheOneItWasAskedAbout() throws {
-    let places = freshRosterAndRecordPlaces()
-    let everyDay: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let firstKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let firstKeptUntil = CalendarDate(year: 2026, month: 1, day: 31)!
-    let secondKeptFrom = CalendarDate(year: 2026, month: 2, day: 1)!
-    let secondKeptUntil = CalendarDate(year: 2026, month: 2, day: 28)!
-    let thirdKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
-    let first = Commitment(name: "Gym", schedule: everyDay, keptFrom: firstKeptFrom)!
-    let second = Commitment(name: "Gym", schedule: everyDay, keptFrom: secondKeptFrom)!
-    let third = Commitment(name: "Gym", schedule: everyDay, keptFrom: thirdKeptFrom)!
-    let today = CalendarDate(year: 2026, month: 3, day: 31)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(first)
-    try rosterStore.supersede(first, with: second, keptUntil: firstKeptUntil, under: nil)
-    try rosterStore.supersede(second, with: third, keptUntil: secondKeptUntil, under: nil)
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: third)
-
-    let months = lookBack?.lines.compactMap { line -> String? in
-        if case .month(let inWords, _) = line { return inWords }
-        return nil
-    }
-    #expect(lookBack?.keptFromInWords == "1 January 2026")
-    #expect(months == ["March 2026", "February 2026", "January 2026"])
-}
-
-@MainActor
-@Test("a removed commitment of another name or another kind is not an earlier era")
-func aRemovedCommitmentOfAnotherNameOrAnotherKindIsNotAnEarlierEra() throws {
-    let places = freshRosterAndRecordPlaces()
-    let everyDay: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let gymKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
-    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
-    let earlierKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: gymKeptFrom)!
-    let running = Commitment(name: "Running", schedule: everyDay, keptFrom: earlierKeptFrom)!
-    let gymNumber = Commitment(
-        name: "Gym", schedule: everyDay, keptFrom: earlierKeptFrom, kind: .number(range: nil))!
-    let today = CalendarDate(year: 2026, month: 3, day: 31)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(gym)
-    try rosterStore.add(running)
-    try rosterStore.remove(running, keptUntil: boundary)
-    try rosterStore.add(gymNumber)
-    try rosterStore.remove(gymNumber, keptUntil: boundary)
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: gym)
-
-    #expect(lookBack?.keptFromInWords == "4 March 2026")
-    #expect(lookBack?.lines.count == 1)
-    #expect(
-        lookBack?.lines.contains { line in
-            if case .month(let inWords, _) = line { return inWords == "March 2026" }
-            return false
-        } == true)
-}
-
-@MainActor
 @Test("a look-back chains an era whose range or target differs behind the one it was asked about")
 func aLookBackChainsAnEraWhoseRangeOrTargetDiffersBehindTheOneItWasAskedAbout() throws {
     let everyDay: Schedule = .weekdays([
@@ -694,16 +624,15 @@ func aLookBackChainsAnEraWhoseRangeOrTargetDiffersBehindTheOneItWasAskedAbout() 
     let today = CalendarDate(year: 2026, month: 3, day: 31)!
 
     let moodPlaces = freshRosterAndRecordPlaces()
-    let newerMood = Commitment(
-        name: "Mood", schedule: everyDay, keptFrom: newerKeptFrom,
-        kind: .number(range: Commitment.Range(lowest: 1, highest: 5)))!
     let olderMood = Commitment(
         name: "Mood", schedule: everyDay, keptFrom: olderKeptFrom,
         kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let newerMood = Commitment(
+        era: olderMood, schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 5)))!
     let moodRosterStore = try RosterStore(at: moodPlaces.roster)
-    try moodRosterStore.add(newerMood)
     try moodRosterStore.add(olderMood)
-    try moodRosterStore.remove(olderMood, keptUntil: boundary)
+    try moodRosterStore.put(era: newerMood, on: olderMood, keptUntil: boundary, under: nil)
     _ = try RecordStore(at: moodPlaces.record)
     let moodScreen = CommitmentsScreen(
         asOf: today, keepingRosterAt: moodPlaces.roster, keepingRecordAt: moodPlaces.record)
@@ -711,16 +640,15 @@ func aLookBackChainsAnEraWhoseRangeOrTargetDiffersBehindTheOneItWasAskedAbout() 
     #expect(moodScreen.lookBack(at: newerMood)?.keptFromInWords == "1 January 2026")
 
     let proteinPlaces = freshRosterAndRecordPlaces()
-    let newerProtein = Commitment(
-        name: "Protein", schedule: everyDay, keptFrom: newerKeptFrom,
-        kind: .total(target: Commitment.Target(100)!))!
     let olderProtein = Commitment(
         name: "Protein", schedule: everyDay, keptFrom: olderKeptFrom,
         kind: .total(target: Commitment.Target(120)!))!
+    let newerProtein = Commitment(
+        era: olderProtein, schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .total(target: Commitment.Target(100)!))!
     let proteinRosterStore = try RosterStore(at: proteinPlaces.roster)
-    try proteinRosterStore.add(newerProtein)
     try proteinRosterStore.add(olderProtein)
-    try proteinRosterStore.remove(olderProtein, keptUntil: boundary)
+    try proteinRosterStore.put(era: newerProtein, on: olderProtein, keptUntil: boundary, under: nil)
     _ = try RecordStore(at: proteinPlaces.record)
     let proteinScreen = CommitmentsScreen(
         asOf: today, keepingRosterAt: proteinPlaces.roster, keepingRecordAt: proteinPlaces.record)
@@ -728,135 +656,19 @@ func aLookBackChainsAnEraWhoseRangeOrTargetDiffersBehindTheOneItWasAskedAbout() 
     #expect(proteinScreen.lookBack(at: newerProtein)?.keptFromInWords == "1 January 2026")
 
     let weightPlaces = freshRosterAndRecordPlaces()
-    let newerWeight = Commitment(
-        name: "Weight", schedule: everyDay, keptFrom: newerKeptFrom, kind: .number(range: nil))!
     let olderWeight = Commitment(
         name: "Weight", schedule: everyDay, keptFrom: olderKeptFrom,
         kind: .number(range: Commitment.Range(lowest: 40, highest: 150)))!
+    let newerWeight = Commitment(
+        era: olderWeight, schedule: everyDay, keptFrom: newerKeptFrom, kind: .number(range: nil))!
     let weightRosterStore = try RosterStore(at: weightPlaces.roster)
-    try weightRosterStore.add(newerWeight)
     try weightRosterStore.add(olderWeight)
-    try weightRosterStore.remove(olderWeight, keptUntil: boundary)
+    try weightRosterStore.put(era: newerWeight, on: olderWeight, keptUntil: boundary, under: nil)
     _ = try RecordStore(at: weightPlaces.record)
     let weightScreen = CommitmentsScreen(
         asOf: today, keepingRosterAt: weightPlaces.roster, keepingRecordAt: weightPlaces.record)
 
     #expect(weightScreen.lookBack(at: newerWeight)?.keptFromInWords == "1 January 2026")
-}
-
-@MainActor
-@Test("a removed commitment kept until any day but the day before is not an earlier era")
-func aRemovedCommitmentKeptUntilAnyDayButTheDayBeforeIsNotAnEarlierEra() throws {
-    let everyDay: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let gymKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
-    let earlierKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: gymKeptFrom)!
-    let today = CalendarDate(year: 2026, month: 3, day: 31)!
-
-    // Kept until two days before — one day too early.
-    let tooEarlyPlaces = freshRosterAndRecordPlaces()
-    let tooEarlyOld = Commitment(name: "Gym", schedule: everyDay, keptFrom: earlierKeptFrom)!
-    let tooEarly = CalendarDate(year: 2026, month: 3, day: 2)!
-    let tooEarlyRosterStore = try RosterStore(at: tooEarlyPlaces.roster)
-    try tooEarlyRosterStore.add(gym)
-    try tooEarlyRosterStore.add(tooEarlyOld)
-    try tooEarlyRosterStore.remove(tooEarlyOld, keptUntil: tooEarly)
-    _ = try RecordStore(at: tooEarlyPlaces.record)
-    let tooEarlyScreen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: tooEarlyPlaces.roster,
-        keepingRecordAt: tooEarlyPlaces.record)
-    let tooEarlyLookBack = tooEarlyScreen.lookBack(at: gym)
-
-    #expect(tooEarlyLookBack?.keptFromInWords == "4 March 2026")
-    #expect(tooEarlyLookBack?.lines.count == 1)
-
-    // Kept until the same day gym is kept from — one day too late.
-    let tooLatePlaces = freshRosterAndRecordPlaces()
-    let tooLateOld = Commitment(name: "Gym", schedule: everyDay, keptFrom: earlierKeptFrom)!
-    let tooLate = CalendarDate(year: 2026, month: 3, day: 4)!
-    let tooLateRosterStore = try RosterStore(at: tooLatePlaces.roster)
-    try tooLateRosterStore.add(gym)
-    try tooLateRosterStore.add(tooLateOld)
-    try tooLateRosterStore.remove(tooLateOld, keptUntil: tooLate)
-    _ = try RecordStore(at: tooLatePlaces.record)
-    let tooLateScreen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: tooLatePlaces.roster, keepingRecordAt: tooLatePlaces.record)
-    let tooLateLookBack = tooLateScreen.lookBack(at: gym)
-
-    #expect(tooLateLookBack?.keptFromInWords == "4 March 2026")
-    #expect(tooLateLookBack?.lines.count == 1)
-}
-
-@MainActor
-@Test("a look-back takes the nearest of two removed commitments that both answer")
-func aLookBackTakesTheNearestOfTwoRemovedCommitmentsThatBothAnswer() throws {
-    let places = freshRosterAndRecordPlaces()
-    let everyDay: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let gymKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
-    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
-    let nearKeptFrom = CalendarDate(year: 2026, month: 2, day: 1)!
-    let farKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: gymKeptFrom)!
-    let nearOld = Commitment(name: "Gym", schedule: everyDay, keptFrom: nearKeptFrom)!
-    let farOld = Commitment(name: "Gym", schedule: everyDay, keptFrom: farKeptFrom)!
-    let today = CalendarDate(year: 2026, month: 3, day: 31)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(gym)
-    try rosterStore.add(nearOld)
-    try rosterStore.remove(nearOld, keptUntil: boundary)
-    try rosterStore.add(farOld)
-    try rosterStore.remove(farOld, keptUntil: boundary)
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: gym)
-
-    let months = lookBack?.lines.compactMap { line -> String? in
-        if case .month(let inWords, _) = line { return inWords }
-        return nil
-    }
-    #expect(lookBack?.keptFromInWords == "1 February 2026")
-    #expect(months == ["March 2026", "February 2026"])
-}
-
-@MainActor
-@Test("an era the roster has taken up again is kept rather than removed and ends a chain")
-func anEraTheRosterHasTakenUpAgainIsKeptRatherThanRemovedAndEndsAChain() throws {
-    let places = freshRosterAndRecordPlaces()
-    let everyDay: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let gymKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
-    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
-    let oldKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: gymKeptFrom)!
-    let oldGym = Commitment(name: "Gym", schedule: everyDay, keptFrom: oldKeptFrom)!
-    let today = CalendarDate(year: 2026, month: 3, day: 31)!
-
-    let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(gym)
-    try rosterStore.add(oldGym)
-    try rosterStore.remove(oldGym, keptUntil: boundary)
-    try rosterStore.add(oldGym)
-    _ = try RecordStore(at: places.record)
-
-    let screen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
-    let lookBack = screen.lookBack(at: gym)
-
-    #expect(lookBack?.keptFromInWords == "4 March 2026")
-    #expect(lookBack?.lines.count == 1)
-    #expect(
-        lookBack?.lines.contains { line in
-            if case .month(let inWords, _) = line { return inWords == "March 2026" }
-            return false
-        } == true)
 }
 
 // Not a scenario in the delta: scenario 6.7's own fixture only re-offers an era the chain search
@@ -904,12 +716,13 @@ func aLookBackSaysNothingBetweenTheLinesEitherSideOfABoundary() throws {
     let olderGym = Commitment(
         name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: olderKeptFrom)!
     let newerGym = Commitment(
-        name: "Gym", schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom)!
+        era: olderGym, schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom,
+        kind: .tick)!
     let today = CalendarDate(year: 2026, month: 3, day: 31)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(olderGym)
-    try rosterStore.supersede(olderGym, with: newerGym, keptUntil: boundary, under: nil)
+    try rosterStore.put(era: newerGym, on: olderGym, keptUntil: boundary, under: nil)
     _ = try RecordStore(at: places.record)
 
     let screen = CommitmentsScreen(
@@ -931,12 +744,13 @@ func aLookBackSaysNothingBetweenTheLinesEitherSideOfABoundary() throws {
     let mixedOld = Commitment(
         name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: mixedOldKeptFrom)!
     let mixedNew = Commitment(
-        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: mixedNewKeptFrom)!
+        era: mixedOld, schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!),
+        keptFrom: mixedNewKeptFrom, kind: .tick)!
     let mixedToday = CalendarDate(year: 2026, month: 3, day: 15)!
 
     let mixedRosterStore = try RosterStore(at: mixedPlaces.roster)
     try mixedRosterStore.add(mixedOld)
-    try mixedRosterStore.supersede(mixedOld, with: mixedNew, keptUntil: mixedBoundary, under: nil)
+    try mixedRosterStore.put(era: mixedNew, on: mixedOld, keptUntil: mixedBoundary, under: nil)
     _ = try RecordStore(at: mixedPlaces.record)
 
     let mixedScreen = CommitmentsScreen(
@@ -1210,7 +1024,8 @@ func aLookBackSaysAWeekdayErasMonthsAndAQuotaErasWeeksEachInItsOwnUnit() throws 
     let old = Commitment(
         name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: oldKeptFrom)!
     let new = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: newKeptFrom)!
+        era: old, schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: newKeptFrom,
+        kind: .tick)!
     let today = CalendarDate(year: 2026, month: 3, day: 15)!
     let oldKeptDays = [23, 25, 27].map { CalendarDate(year: 2026, month: 2, day: $0)! }
         + [CalendarDate(year: 2026, month: 3, day: 2)!]
@@ -1218,7 +1033,7 @@ func aLookBackSaysAWeekdayErasMonthsAndAQuotaErasWeeksEachInItsOwnUnit() throws 
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(old)
-    try rosterStore.supersede(old, with: new, keptUntil: boundary, under: nil)
+    try rosterStore.put(era: new, on: old, keptUntil: boundary, under: nil)
     let recordStore = try RecordStore(at: places.record)
     for day in oldKeptDays {
         try recordStore.add(Tick(old, on: day)!)
@@ -1250,14 +1065,15 @@ func aWeekTwoQuotaErasShareSaysItsKeptDaysOutOfTheNewerErasQuota() throws {
     let old = Commitment(
         name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: oldKeptFrom)!
     let new = Commitment(
-        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 5)!), keptFrom: newKeptFrom)!
+        era: old, schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 5)!), keptFrom: newKeptFrom,
+        kind: .tick)!
     let today = CalendarDate(year: 2026, month: 3, day: 8)!
     let keptOn2March = CalendarDate(year: 2026, month: 3, day: 2)!
     let keptOn5March = CalendarDate(year: 2026, month: 3, day: 5)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(old)
-    try rosterStore.supersede(old, with: new, keptUntil: boundary, under: nil)
+    try rosterStore.put(era: new, on: old, keptUntil: boundary, under: nil)
     let recordStore = try RecordStore(at: places.record)
     try recordStore.add(Tick(old, on: keptOn2March)!)
     try recordStore.add(Tick(new, on: keptOn5March)!)
@@ -1312,7 +1128,8 @@ func aMixedChainsWholeSumsItsMonthsDueDaysAndItsWeeksQuotasAlike() throws {
     let old = Commitment(
         name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: oldKeptFrom)!
     let new = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: newKeptFrom)!
+        era: old, schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: newKeptFrom,
+        kind: .tick)!
     let today = CalendarDate(year: 2026, month: 3, day: 15)!
     let oldKeptDays = [23, 25, 27].map { CalendarDate(year: 2026, month: 2, day: $0)! }
         + [CalendarDate(year: 2026, month: 3, day: 2)!]
@@ -1320,7 +1137,7 @@ func aMixedChainsWholeSumsItsMonthsDueDaysAndItsWeeksQuotasAlike() throws {
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(old)
-    try rosterStore.supersede(old, with: new, keptUntil: boundary, under: nil)
+    try rosterStore.put(era: new, on: old, keptUntil: boundary, under: nil)
     let recordStore = try RecordStore(at: places.record)
     for day in oldKeptDays {
         try recordStore.add(Tick(old, on: day)!)
@@ -1511,22 +1328,21 @@ func aNumberCommitmentsLookBackSaysTheNumberTheEraHoldingADayKept() throws {
     let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
     let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 2)!
     let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
-    let newerWeight = Commitment(
-        name: "Weight",
-        schedule: .weekdays([
-            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-        ]), keptFrom: newerKeptFrom, kind: .number(range: nil))!
     let olderWeight = Commitment(
         name: "Weight", schedule: .weekdays([.monday]), keptFrom: olderKeptFrom,
         kind: .number(range: nil))!
+    let newerWeight = Commitment(
+        era: olderWeight,
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: newerKeptFrom, kind: .number(range: nil))!
     let today = CalendarDate(year: 2026, month: 3, day: 4)!
     let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
     let newerDay = CalendarDate(year: 2026, month: 3, day: 4)!
 
     let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(newerWeight)
     try rosterStore.add(olderWeight)
-    try rosterStore.remove(olderWeight, keptUntil: boundary)
+    try rosterStore.put(era: newerWeight, on: olderWeight, keptUntil: boundary, under: nil)
     let recordStore = try RecordStore(at: places.record)
     try recordStore.add(Number(80, for: olderWeight, on: olderDay)!)
     try recordStore.add(Number(70, for: newerWeight, on: newerDay)!)
@@ -1753,19 +1569,18 @@ func aNumberCommitmentsGraphWidensToHoldAValueOutsideItsNewestErasRange() throws
     let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
     let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
     let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
-    let newerMood = Commitment(
-        name: "Mood", schedule: everyDay, keptFrom: newerKeptFrom,
-        kind: .number(range: Commitment.Range(lowest: 1, highest: 5)))!
     let olderMood = Commitment(
         name: "Mood", schedule: everyDay, keptFrom: olderKeptFrom,
         kind: .number(range: Commitment.Range(lowest: 1, highest: 10)))!
+    let newerMood = Commitment(
+        era: olderMood, schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 5)))!
     let today = CalendarDate(year: 2026, month: 3, day: 4)!
     let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
 
     let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(newerMood)
     try rosterStore.add(olderMood)
-    try rosterStore.remove(olderMood, keptUntil: boundary)
+    try rosterStore.put(era: newerMood, on: olderMood, keptUntil: boundary, under: nil)
     let recordStore = try RecordStore(at: places.record)
     try recordStore.add(Number(8, for: olderMood, on: olderDay)!)
     try recordStore.add(Number(4, for: newerMood, on: newerKeptFrom)!)
@@ -1788,19 +1603,18 @@ func aNumberCommitmentsGraphSaysNothingWhereOneEraGivesWayToTheNext() throws {
     let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
     let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
     let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
-    let newerWeight = Commitment(
-        name: "Weight", schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom,
-        kind: .number(range: nil))!
     let olderWeight = Commitment(
         name: "Weight", schedule: everyDay, keptFrom: olderKeptFrom, kind: .number(range: nil))!
+    let newerWeight = Commitment(
+        era: olderWeight, schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom,
+        kind: .number(range: nil))!
     let today = CalendarDate(year: 2026, month: 3, day: 8)!
     let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
     let newerDay = CalendarDate(year: 2026, month: 3, day: 5)!
 
     let rosterStore = try RosterStore(at: places.roster)
-    try rosterStore.add(newerWeight)
     try rosterStore.add(olderWeight)
-    try rosterStore.remove(olderWeight, keptUntil: boundary)
+    try rosterStore.put(era: newerWeight, on: olderWeight, keptUntil: boundary, under: nil)
     let recordStore = try RecordStore(at: places.record)
     try recordStore.add(Number(72.5, for: olderWeight, on: olderDay)!)
     try recordStore.add(Number(71, for: newerWeight, on: newerDay)!)
