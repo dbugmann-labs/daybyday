@@ -7787,6 +7787,9 @@ func anIntervalCommitmentRestartedFromTodayIsKeptUntilYesterdayAndRunsOnFromToda
     #expect(rosterStoreAfterwards.roster.commitments(on: august30th).map(\.identity) == [nails.identity, nails.identity])
     #expect(rosterStoreAfterwards.roster.commitments(on: monday) == [nails])
     #expect(rosterStoreAfterwards.roster.eras(of: nails).count == 2)
+    #expect(
+        rosterStoreAfterwards.roster.eras(of: nails).first?.schedule
+            == .everyNDays(DayInterval(days: 4)!, from: monday))
 
     #expect(try Data(contentsOf: places.record) == recordBytesAfterOpen)
 }
