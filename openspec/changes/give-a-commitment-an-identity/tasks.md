@@ -439,7 +439,9 @@ to it, one red-green cycle.
   The simulator cannot show it: the walk starts from a fresh install and nothing seeds an old
   roster.
 - [x] 16.6 Post the pictures to the PR with `pnpm run walk -- --post-only <pr>` before hand-back,
-  and tick this on the comment's URL. Never `gh pr comment --attach`, which posts at full width.
+  and tick this on the comment's URL:
+  https://github.com/dbugmann-labs/daybyday/pull/308#issuecomment-5779979400. Never
+  `gh pr comment --attach`, which posts at full width.
 
 ## 17. Gates and the archive handover
 
