@@ -68,7 +68,7 @@ to it, one red-green cycle.
   kept, in the place it was taken on in* and *a commitment taken up again through a roster store
   after being removed is read back kept*. **And one holds an era twice where it held a commitment
   twice by value** — *a roster store holding what could not be a roster is refused*: its third place
-  holds one identity, kept from one day, twice.
+  holds two entries of one identity alike in schedule, in the day kept from and in kind.
   **And thirty-eight more, every one red only because equality is the identity, each with the edit
   it takes.** **Eleven in `RosterStoreTests` whose scenario says the commitments are taken on
   *through a roster store* while the test hand-writes a document in a form before identities** —
