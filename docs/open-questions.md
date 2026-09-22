@@ -820,19 +820,32 @@ Things that are built, or deliberately not built, in a state someone will trip o
   mean the app telling a trashed folder from a live one (`URLResourceKey` gives no such flag; the
   path contains `.Trash` on iCloud Drive) — a want if anyone wants it, not a defect. Forgetting the
   place and picking again worked as walked.
-- **Fourteen carried tests were edited outside `give-a-commitment-an-identity`'s (#303)
-  `tasks.md` § 1.3, because moving a store's form moves every fixture pinned to the form one later
-  than it.** § 1.4 raises `RosterDocument.currentVersion` from 4 to 5 and
-  `RecordDocument.currentVersion` from 5 to 6; the fixtures for *"a form one later than the one
-  this app knows"* hand-write that number plus one, so raising the constant forces the literal to
-  move with it in every fixture that names one — ten in `DayScreenTests.swift` (`:339`, `:423`,
-  `:601`, `:990`, `:1176`, `:3367`, `:3540`, `:3562`, `:4233`, `:6939`), one in
-  `CommitmentsScreenTests.swift` (`:1962`), one in `RecordStoreTests.swift` (`:256`) and two in
-  `RosterStoreTests.swift` (`:319`, `:2263`). Each edit is exactly the version literal, correct and
-  forced by § 1.4's own fact, and none is named in § 1.3 — § 1.2's own stop, "a carried test that
-  has to be edited and is not named in § 1.3 is the design being wrong: stop and report it," was
-  not taken for any of the fourteen. Found at #303's G7 fix round, 2026-09-22. The next Story whose
-  delta moves a store's form names that class of edit in its own § 1.3.
+- **Carried tests were edited outside `give-a-commitment-an-identity`'s (#303) `tasks.md` § 1.3,
+  in more than one class of edit.** Fourteen are a store form moving: § 1.4 raises
+  `RosterDocument.currentVersion` from 4 to 5 and `RecordDocument.currentVersion` from 5 to 6; the
+  fixtures for *"a form one later than the one this app knows"* hand-write that number plus one,
+  so raising the constant forces the literal to move with it in every fixture that names one — ten
+  in `DayScreenTests.swift` (`:339`, `:423`, `:601`, `:990`, `:1176`, `:3367`, `:3540`, `:3562`,
+  `:4233`, `:6939`), one in `CommitmentsScreenTests.swift` (`:1962`), one in
+  `RecordStoreTests.swift` (`:256`) and two in `RosterStoreTests.swift` (`:319`, `:2263`). Three
+  more swap out a fixture's own second identity for the one already in hand — *a stopped
+  commitment renamed through a commitments screen stays stopped, on the day it was kept until*
+  (`CommitmentsScreenTests.swift:5845`), *what a commitments screen holds about a refused change
+  ends when a change kept at both places is kept* (`:6723`) and *an interval commitment restarted
+  from the day it is kept from is kept on no date before the restart* (`:7765`) each dropped a
+  second commitment formed alike to the one already asked about, reading the original's identity
+  back where the dropped one used to stand. One restores an assertion a rewrite of it dropped: *an
+  interval commitment restarted from today is kept until yesterday and runs on from today under
+  its name, interval and category* (`:7688`) lost, then regained (`b296f9a`), the assertion that
+  the restarted era's interval starts on the restart day. And two are this Story's own G7
+  fix-round repairs rather than the original implementation pass's — *a take-up-again a
+  commitments screen could not keep leaves both its lists as they were* (`:7151`) and *a change
+  refused at the roster place after carrying its records leaves no save in progress and a roster
+  still kept* (`:8091`) — which is a repair's business and not § 1.3's. Every edit named above is
+  correct and forced by the fact that drives it, and none is named in § 1.3 — § 1.2's own stop, "a
+  carried test that has to be edited and is not named in § 1.3 is the design being wrong: stop and
+  report it," was not taken for any of them. Found across #303's G7 fix rounds, 2026-09-22. The
+  next Story whose delta moves a store's form names that class of edit in its own § 1.3.
 
 ## Settled
 
