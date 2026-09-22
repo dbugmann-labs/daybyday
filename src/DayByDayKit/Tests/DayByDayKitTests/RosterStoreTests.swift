@@ -1026,35 +1026,46 @@ func aMoveARosterStoreRefusesIsReportedAndNothingAtItsPlaceChanges() throws {
 @Test("a move that leaves a roster as it was keeps nothing at its place")
 func aMoveThatLeavesARosterAsItWasKeepsNothingAtItsPlace() throws {
     // Route 1, `design.md` § *Strengthened in place, and the three proven by mutation* (the four
-    // no-op tests): the place is seeded with the roster in an earlier form, one the store itself
-    // would never write. A write that rewrote byte-identical content would be invisible to a
-    // check against bytes the store wrote itself, because `RosterStore.write` is byte-stable;
-    // seeded here in a form only a write would ever replace, any write at all is visible.
+    // no-op tests): the place is seeded with the roster in the current form, laid out with
+    // different key order and spacing than `RosterStore.write`'s own `.sortedKeys` encoding ever
+    // produces. A write that rewrote byte-identical content would be invisible to a check against
+    // bytes the store wrote itself, because `RosterStore.write` is byte-stable; seeded here in a
+    // form only a write would ever replace, any write at all is visible.
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let waterPlants = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!,
+        name: "Water plants", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let gym = Commitment(
+        identity: Commitment.Identity("22222222-2222-2222-2222-222222222222")!,
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
     let bytes = Data(
         """
         {
-          "version": 1,
+          "version": 5,
           "commitments": [
             {
               "commitment": {
                 "name": "Water plants",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
-              }
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "removed": false,
+              "category": null
             },
             {
               "commitment": {
                 "name": "Gym",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
-              }
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "removed": false,
+              "category": null
             }
           ]
         }
@@ -1348,18 +1359,23 @@ func aCategoryChangeThatLeavesARosterAsItWasKeepsNothingAtItsPlace() throws {
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!,
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let journaling = Commitment(
+        identity: Commitment.Identity("22222222-2222-2222-2222-222222222222")!,
+        name: "Journaling", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
     let bytes = Data(
         """
         {
-          "version": 4,
+          "version": 5,
           "commitments": [
             {
               "commitment": {
                 "name": "Gym",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
               },
               "removed": false,
               "category": "Sport"
@@ -1368,7 +1384,8 @@ func aCategoryChangeThatLeavesARosterAsItWasKeepsNothingAtItsPlace() throws {
               "commitment": {
                 "name": "Journaling",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
               },
               "removed": false,
               "category": null
@@ -1506,18 +1523,23 @@ func aGroupMoveThatLeavesAGroupWhereItIsKeepsNothingAtARosterStoresPlace() throw
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let creatine = Commitment(name: "Creatine", schedule: schedule, keptFrom: keptFrom)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let creatine = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!,
+        name: "Creatine", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
+    let gym = Commitment(
+        identity: Commitment.Identity("22222222-2222-2222-2222-222222222222")!,
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
     let bytes = Data(
         """
         {
-          "version": 4,
+          "version": 5,
           "commitments": [
             {
               "commitment": {
                 "name": "Creatine",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
               },
               "removed": false,
               "category": "Supplements"
@@ -1526,7 +1548,8 @@ func aGroupMoveThatLeavesAGroupWhereItIsKeepsNothingAtARosterStoresPlace() throw
               "commitment": {
                 "name": "Gym",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
               },
               "removed": false,
               "category": null
@@ -1645,17 +1668,20 @@ func aChangeOfACommitmentForItselfKeepsNothingAtARosterStoresPlace() throws {
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!,
+        name: "Gym", schedule: schedule, keptFrom: keptFrom, kind: .tick)!
     let bytes = Data(
         """
         {
-          "version": 4,
+          "version": 5,
           "commitments": [
             {
               "commitment": {
                 "name": "Gym",
                 "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
               },
               "removed": false,
               "category": "Sport"
@@ -1960,7 +1986,12 @@ func aStopARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlace
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
 
-    let place = try seededGymAndRunPlace(runState: .removed)
+    let place = freshPlace()
+    let seedStore = try RosterStore(at: place)
+    try seedStore.add(gym)
+    try seedStore.add(run)
+    try seedStore.remove(run, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
     let store = try RosterStore(at: place)
     let bytesBeforeAsk = try Data(contentsOf: place)
 
@@ -1978,7 +2009,12 @@ func aMoveARosterStoreRefusesForAStoppedCommitmentIsReportedAndNothingAtItsPlace
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
 
-    let place = try seededGymAndRunPlace(runState: .stopped)
+    let place = freshPlace()
+    let seedStore = try RosterStore(at: place)
+    try seedStore.add(gym)
+    try seedStore.add(run)
+    try seedStore.retire(run, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
     let store = try RosterStore(at: place)
     let bytesBeforeAsk = try Data(contentsOf: place)
 
@@ -1996,7 +2032,12 @@ func aMoveARosterStoreRefusesForARemovedCommitmentIsReportedAndNothingAtItsPlace
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
 
-    let place = try seededGymAndRunPlace(runState: .removed)
+    let place = freshPlace()
+    let seedStore = try RosterStore(at: place)
+    try seedStore.add(gym)
+    try seedStore.add(run)
+    try seedStore.remove(run, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
     let store = try RosterStore(at: place)
     let bytesBeforeAsk = try Data(contentsOf: place)
 
@@ -2016,7 +2057,11 @@ func aMoveARosterStoreRefusesForAnOffsetItDoesNotHaveIsReportedAndNothingAtItsPl
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
 
-    let place = try seededGymAndRunPlace(runState: .kept)
+    let place = freshPlace()
+    let seedStore = try RosterStore(at: place)
+    try seedStore.add(gym)
+    try seedStore.add(run)
+
     let store = try RosterStore(at: place)
     let bytesBeforeAsk = try Data(contentsOf: place)
 
@@ -2041,7 +2086,11 @@ func aCategoryChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndN
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
 
-    let place = try seededGymAndRunPlace(runState: .kept)
+    let place = freshPlace()
+    let seedStore = try RosterStore(at: place)
+    try seedStore.add(gym)
+    try seedStore.add(run)
+
     let store = try RosterStore(at: place)
     let bytesBeforeAsk = try Data(contentsOf: place)
 
@@ -2063,7 +2112,12 @@ func aCategoryChangeARosterStoreRefusesForARemovedCommitmentIsReportedAndNothing
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
 
-    let place = try seededGymAndRunPlace(runState: .removed)
+    let place = freshPlace()
+    let seedStore = try RosterStore(at: place)
+    try seedStore.add(gym)
+    try seedStore.add(run)
+    try seedStore.remove(run, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
     let store = try RosterStore(at: place)
     let bytesBeforeAsk = try Data(contentsOf: place)
 
@@ -2085,7 +2139,11 @@ func aChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndNothingAt
     let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
     let journal = Commitment(name: "Journal", schedule: schedule, keptFrom: keptFrom)!
 
-    let place = try seededGymAndRunPlace(runState: .kept)
+    let place = freshPlace()
+    let seedStore = try RosterStore(at: place)
+    try seedStore.add(gym)
+    try seedStore.add(run)
+
     let store = try RosterStore(at: place)
     let bytesBeforeAsk = try Data(contentsOf: place)
 
