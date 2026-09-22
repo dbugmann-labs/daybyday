@@ -322,10 +322,10 @@ to it, one red-green cycle.
 ## 10. `CommitmentsScreen` — defining, and the name refusal
 
 - [x] 10.1 *a commitments screen refuses a name a commitment its roster is already keeping has*
-- [ ] 10.2 *a commitments screen refuses a name that differs only in case or in blank space at its ends*
-- [ ] 10.3 *a commitments screen refuses a name a commitment its roster has stopped keeping has*
-- [ ] 10.4 *a commitments screen takes on a name only a commitment its roster has removed has*
-- [ ] 10.5 *a commitment a commitments screen refuses for its name is not taken on a second time*
+- [x] 10.2 *a commitments screen refuses a name that differs only in case or in blank space at its ends*
+- [x] 10.3 *a commitments screen refuses a name a commitment its roster has stopped keeping has*
+- [x] 10.4 *a commitments screen takes on a name only a commitment its roster has removed has*
+- [x] 10.5 *a commitment a commitments screen refuses for its name is not taken on a second time*
 - [ ] 10.6 *a commitment defined through a commitments screen carries an identity of its own*
 - [ ] 10.7 *a commitment defined under the name a removed commitment has is taken on last, under the category the form carried*
 - [ ] 10.8 *taking a commitment up again is refused where a commitment the screen keeps already has its name*
