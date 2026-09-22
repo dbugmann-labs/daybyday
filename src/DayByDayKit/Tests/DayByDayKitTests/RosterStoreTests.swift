@@ -1681,6 +1681,38 @@ func anEraChangedThroughARosterStoreIsReadBackOnItsChangedScheduleByAStoreOpened
     #expect(later.roster.commitments.first?.schedule == newSchedule)
 }
 
+@Test(
+    "a commitment superseded through a roster store is read back under its new era's category, its superseded commitment removed, by a store opened afterwards"
+)
+func aCommitmentSupersededThroughARosterStoreIsReadBackUnderItsNewErasCategoryItsSupersededCommitmentRemovedByAStoreOpenedAfterwards()
+    throws
+{
+    let place = freshPlace()
+    let originalSchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let newKeptFrom = CalendarDate(year: 2026, month: 9, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: originalSchedule, keptFrom: keptFrom)!
+    let newGym = Commitment(name: "Gym", schedule: newSchedule, keptFrom: newKeptFrom)!
+    let thirtyFirstOfAugust = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let first = try RosterStore(at: place)
+    try first.add(gym, under: "Sport")
+
+    let superseded = try first.supersede(
+        gym, with: newGym, keptUntil: thirtyFirstOfAugust, under: "Morning")
+
+    let later = try RosterStore(at: place)
+
+    #expect(superseded)
+    #expect(
+        later.roster.groups(on: thirtyFirstOfAugust)
+            == [
+                Roster.Group(category: "Morning", commitments: [newGym]),
+                Roster.Group(category: "Sport", commitments: [gym]),
+            ])
+}
+
 @Test("a name of ten thousand characters is a commitment and is read back out of a roster store whole")
 func aNameOfTenThousandCharactersIsACommitmentAndIsReadBackOutOfARosterStoreWhole() throws {
     let place = freshPlace()
