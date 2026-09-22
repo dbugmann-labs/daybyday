@@ -485,6 +485,18 @@ Things that are built, or deliberately not built, in a state someone will trip o
   a public widening of `DayView.Row`, which is a delta against `openspec/specs/day-screen/spec.md`
   and a G4. It is the same widening the eighth face above describes, which is an argument for one
   Story covering both. Unowned: the tracker holds no open issue at all.
+
+  **A second screen hit a related shape, fixed 2026-09-22 by `give-a-commitment-an-identity`
+  (#303) at `tasks.md` § 14.4, but not by a stable row identity** — keying the commitments
+  screen's row `ForEach`s and `SheetTarget.id` on more than `Commitment` itself was tried and
+  found insufficient, since `CommitmentsView.body` was confirmed, at the pixel level, not to
+  re-run at all off a rename or a rhythm change kept through `CommitmentSheet` however a row was
+  keyed, while `screen.kept`/`keptGroups`/`stopped` already held the new value the instant the
+  sheet closed; the fix kept is a `listRevision` `@State` bumped in `.sheet(item:onDismiss:)`'s
+  `onDismiss` and read via `.id(listRevision)` on the `List`, forcing it to rebuild fresh
+  against those three properties whenever a sheet dismisses, and why Observation's own
+  invalidation does not reach this view across that presentation boundary on its own is not
+  understood, only worked around. The day screen's own gap above is untouched.
 - **The Story issue template asks an agent to write the G4 marker string.** Surfaced writing
   #91..#93, 2026-09-03. `.github/ISSUE_TEMPLATE/story.yml`'s last Definition-of-ready checkbox
   quotes the marker line literally, so an agent rendering the template faithfully writes that

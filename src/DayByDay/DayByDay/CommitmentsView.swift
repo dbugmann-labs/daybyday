@@ -390,6 +390,16 @@ struct CommitmentsView: View {
     let screen: CommitmentsScreen
 
     @State private var sheetTarget: SheetTarget?
+    /// Bumped in `.sheet(item:onDismiss:)`'s `onDismiss`, and read by `body` where the lists are
+    /// built, so a dismissed sheet always leaves this view's `List` re-evaluated against
+    /// `screen.kept`/`keptGroups`/`stopped` — `tasks.md` § 14.4. A rename or a rhythm change kept
+    /// through `CommitmentSheet` mutates those three stored, `@Observable`-tracked properties
+    /// correctly and immediately (confirmed: the roster place is written and `screen.kept` itself
+    /// already reads the new value the instant the sheet closes), but this view's own `body` was
+    /// not being re-run by that mutation alone — a fact about `.sheet(item:)` dismissal and
+    /// Observation invalidation across that presentation boundary this Story does not have an
+    /// explanation for, only a state change SwiftUI is documented to always honour.
+    @State private var listRevision = 0
     /// The last copy made, wrapped in `CopyShare` — `nil` until a copy is made, and drives the
     /// share sheet: presented exactly while this holds one. `design.md` § *The shell*: `ShareLink`
     /// needs its item before the tap, so the URL is put here on success rather than offered
@@ -485,7 +495,9 @@ struct CommitmentsView: View {
                     // Keyed on the commitment's own value, not its position — as the flat list
                     // was before this Story's group move started carrying whole blocks through
                     // this `ForEach`. `.onMove` still takes its offsets from the underlying
-                    // `group.commitments`, whatever the `id:` is keyed on.
+                    // `group.commitments`, whatever the `id:` is keyed on. Redrawing a row whose
+                    // commitment changed in value but not in identity — `tasks.md` § 14.4 — does
+                    // not turn on this key: see `listRevision` on `CommitmentsView`.
                     ForEach(group.commitments, id: \.self) { commitment in
                         // `LookBackView(screen:commitment:)` is cheap to construct — two
                         // references — so building it here, in the trailing closure this
@@ -855,7 +867,10 @@ struct CommitmentsView: View {
                 }
             }
         }
-        .sheet(item: $sheetTarget) { target in
+        // `listRevision`, above: forces this `List` to be rebuilt against
+        // `screen.kept`/`keptGroups`/`stopped` fresh whenever the sheet below dismisses.
+        .id(listRevision)
+        .sheet(item: $sheetTarget, onDismiss: { listRevision += 1 }) { target in
             CommitmentSheet(screen: screen, changing: target.commitment)
         }
         .sheet(item: $copyShare) { share in

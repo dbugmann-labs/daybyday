@@ -389,7 +389,7 @@ to it, one red-green cycle.
   refusal it stood for is gone, and the name refusal is the field caption above.
 - [x] 14.3 Draw the resume refusal in the stopped row's existing footer, from the same seam, as the
   sentence that names the commitment already kept.
-- [ ] 14.4 Key every row the shell draws for a commitment by **what that row draws** — the identity
+- [x] 14.4 Key every row the shell draws for a commitment by **what that row draws** — the identity
   together with the name, the rhythm in words and whatever else it shows — or otherwise make SwiftUI
   reconfigure a row whose commitment changed in value but not in identity. Equality is the identity
   now, so a renamed commitment hashes equal to the value it replaced and a `ForEach` keyed on the
