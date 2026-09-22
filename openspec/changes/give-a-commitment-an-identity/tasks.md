@@ -276,7 +276,7 @@ to it, one red-green cycle.
 - [x] 7.13 *a change of an era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.
 - [x] 7.14 *a new era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.
 - [x] 7.15 *a new era a roster store refuses to put on a stopped commitment is reported and nothing at its place changes* — the stopped twin of 7.3; rename the carried test named in § 1.3.
-- [ ] 7.16 Edit the carried tests § 1.3 names in `RosterStoreTests`, `RecordStoreTests`,
+- [x] 7.16 Edit the carried tests § 1.3 names in `RosterStoreTests`, `RecordStoreTests`,
   `DayScreenTests`, `RestoreTests`, `CopyTests` and `CopyPlaceTests`, each to the edit named there
   and nothing else in it, and retire the two `RosterStoreTests` tests § 1.3 names as retired. Those
   six files and no others; a test that has to be edited and is not named in § 1.3 is a stop and a

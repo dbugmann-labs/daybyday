@@ -345,13 +345,13 @@ func aCommitmentsScreenAskedToRestoreSaysTheCopysMomentAndWhatTheCopyAndThePhone
         return
     }
 
-    let journaling = Commitment(name: "Journaling", schedule: allWeekdays, keptFrom: keptFrom)!
+    let journaling = screen.kept.first { $0.name == "Journaling" }!
     screen.askToStopKeeping(journaling)
     #expect(screen.confirmStopKeeping() == nil)
     #expect(
         screen.define(name: "Reading", on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]), keptFrom: keptFrom, under: nil)
             == nil)
-    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let gym = screen.kept.first { $0.name == "Gym" }!
     screen.askToRemove(gym)
     screen.nameTypedBack = "Gym"
     #expect(screen.confirmRemoving() == nil)

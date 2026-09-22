@@ -692,9 +692,9 @@ func aChangeReachingTheRecordPlaceAndTheRosterPlaceWritesExactlyOneCopyHoldingBo
     let copy = try #require(
         JSONDecoder().decode(CopyDocument.self, from: Data(contentsOf: file)).formCopy())
     #expect(copy.roster.entries.map(\.commitment.name) == ["Gym 🏋️"])
-    #expect(
-        copy.history.datesRecorded(for: Commitment(name: "Gym 🏋️", schedule: allWeekdays, keptFrom: keptFrom)!)
-            == [sunday])
+    let renamedGym = try #require(
+        copy.roster.entries.first { $0.commitment.name == "Gym 🏋️" }?.commitment)
+    #expect(copy.history.datesRecorded(for: renamedGym) == [sunday])
     #expect(copy.moment == Moment(on: monday, hour: 14, minute: 33)!)
     #expect(copyPlace.lastCopy == Moment(on: monday, hour: 14, minute: 33)!)
 }

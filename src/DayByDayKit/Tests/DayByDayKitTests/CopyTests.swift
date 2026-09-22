@@ -486,6 +486,9 @@ func aCopyOfAPlaceKeptInAnEarlierFormIsWrittenInTheFormThatStoreWritesNow() thro
         asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
         keepingOneOffsAt: places.oneOffs)
 
+    let rosterBytesAfterOpen = try Data(contentsOf: places.roster)
+    let recordBytesAfterOpen = try Data(contentsOf: places.record)
+
     let result = screen.makeACopy(
         asOf: Moment(on: monday, hour: 14, minute: 32)!, writingInto: freshCopyDirectory())
 
@@ -498,15 +501,16 @@ func aCopyOfAPlaceKeptInAnEarlierFormIsWrittenInTheFormThatStoreWritesNow() thro
     #expect(copyDocument.roster.version == RosterDocument.currentVersion)
     #expect(copyDocument.record.version == RecordDocument.currentVersion)
 
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
     let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
 
     #expect(copyDocument.roster.formRoster()?.entries.map(\.commitment.name) == ["Gym"])
-    #expect(copyDocument.record.formTicks()?.contains(Tick(gym, on: august30th)!) == true)
+    #expect(
+        copyDocument.record.formTicks()?.contains {
+            $0.commitment.name == "Gym" && $0.date == august30th
+        } == true)
 
-    #expect(try Data(contentsOf: places.roster) == rosterBytes)
-    #expect(try Data(contentsOf: places.record) == recordBytes)
+    #expect(try Data(contentsOf: places.roster) == rosterBytesAfterOpen)
+    #expect(try Data(contentsOf: places.record) == recordBytesAfterOpen)
 }
 
 @MainActor
