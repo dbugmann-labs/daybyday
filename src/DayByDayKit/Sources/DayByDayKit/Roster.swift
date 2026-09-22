@@ -32,9 +32,45 @@ public struct Roster: Hashable, Sendable {
     }
 
     /// The commitments this roster keeps, in the order it holds them. A commitment it has
-    /// stopped keeping is not among them.
+    /// stopped keeping is not among them. An earlier era is never among them either: every era
+    /// but a commitment's newest carries a kept-until day of its own, the day it gave way to the
+    /// one in front of it, so this needs no clause of its own to leave earlier eras out.
     public var commitments: [Commitment] {
         entries.compactMap { $0.keptUntil == nil ? $0.commitment : nil }
+    }
+
+    /// The commitments this roster has stopped keeping, in the order it holds them — each read
+    /// back at its newest era. An earlier era of a stopped commitment is in neither this list nor
+    /// `commitments`: unlike `commitments`, which an earlier era's own kept-until day already
+    /// excludes, an earlier era of an actively-kept commitment also carries one, so this walks
+    /// each identity once and asks only its first — its newest — era. A removed commitment is in
+    /// neither list. `openspec/changes/give-a-commitment-an-identity/design.md` § *Equality is
+    /// the identity, and an era is an entry*.
+    public var stopped: [Commitment] {
+        var seenIdentities: Set<Commitment.Identity> = []
+        var result: [Commitment] = []
+        for entry in entries {
+            guard seenIdentities.insert(entry.commitment.identity).inserted else {
+                continue
+            }
+            if entry.keptUntil != nil, !entry.isRemoved {
+                result.append(entry.commitment)
+            }
+        }
+        return result
+    }
+
+    /// Every era of the commitment `commitment` identifies, newest first — the order this roster
+    /// already holds a commitment's eras in. Empty where this roster does not hold that identity
+    /// at all. `design.md` § *The seam*.
+    public func eras(of commitment: Commitment) -> [Commitment] {
+        entries.filter { $0.commitment.identity == commitment.identity }.map(\.commitment)
+    }
+
+    /// The day the commitment `commitment` identifies is kept from — its earliest era's, the
+    /// last in `eras(of:)` — or `nil` where this roster does not hold that identity at all.
+    public func keptFrom(of commitment: Commitment) -> CalendarDate? {
+        eras(of: commitment).last?.keptFrom
     }
 
     /// The earliest calendar date any commitment this roster holds is kept from, or `nil` where
@@ -203,6 +239,45 @@ public struct Roster: Hashable, Sendable {
         entries[index] = Entry(
             commitment: entries[index].commitment, keptUntil: entries[index].keptUntil,
             isRemoved: entries[index].isRemoved, category: Self.normalized(category))
+        return true
+    }
+
+    /// Puts `era` on `commitment`, which this roster is keeping, as of `date` — the day the era
+    /// it gives way to was kept until — under `category`, or under none where `category` is
+    /// `nil` or holds nothing but blank space, and answers `true`. `era` takes the place
+    /// `commitment` held and becomes its newest era; the era it gives way to carries `date` as
+    /// the day it was kept until and sits immediately behind it, holding the category
+    /// `commitment` had. Any date is accepted, including one earlier than the day the era it
+    /// gives way to is kept from, which leaves that era holding no day at all. Answers `false`
+    /// and changes nothing when this roster is not currently keeping `commitment` — one it does
+    /// not hold at all, one it has stopped keeping, or one it has removed — or when `era` does
+    /// not carry `commitment`'s identity, its name, or the sort of its kind.
+    /// `openspec/changes/give-a-commitment-an-identity/specs/commitment/spec.md` § *A roster
+    /// puts a new era on a commitment it is keeping, from a day*.
+    @discardableResult
+    public mutating func put(
+        era: Commitment, on commitment: Commitment, keptUntil date: CalendarDate,
+        under category: String?
+    ) -> Bool {
+        guard
+            let index = entries.firstIndex(where: { $0.commitment.identity == commitment.identity }
+            ), entries[index].keptUntil == nil
+        else {
+            return false
+        }
+
+        guard era.identity == commitment.identity, era.name == commitment.name,
+            era.kind.isOfTheSameSort(as: commitment.kind)
+        else {
+            return false
+        }
+
+        let precedingEntry = Entry(
+            commitment: entries[index].commitment, keptUntil: date, isRemoved: false,
+            category: entries[index].category)
+        entries[index] = Entry(
+            commitment: era, keptUntil: nil, isRemoved: false, category: Self.normalized(category))
+        entries.insert(precedingEntry, at: index + 1)
         return true
     }
 

@@ -4,17 +4,17 @@ to it, one red-green cycle.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 Confirm the starting point and report rather than work around a different one. From
+- [x] 1.1 Confirm the starting point and report rather than work around a different one. From
   `src/DayByDayKit`, record what `swift test` reports as the number of tests passing, measured on
   this branch as it stands at G4. From the repo root, `pnpm run check:scenarios` reports
   `249/347 scenario(s) covered` for this change and names *"two commitments formed alike in every
   part are two different commitments"* as next. **Those 249 are the scenarios this delta carries
   verbatim from the current specs.**
-- [ ] 1.2 Read § 1.3 before touching a carried test. Of the 249, **thirteen have edited bodies**
+- [x] 1.2 Read § 1.3 before touching a carried test. Of the 249, **thirteen have edited bodies**
   and their tests change with them; every other carried test must come through this change with its
   name, its fixture and its assertions untouched. A carried test that has to be edited and is not
   named in § 1.3 is the design being wrong: stop and report it.
-- [ ] 1.3 The thirteen carried scenarios whose bodies this delta edits, each edited to say an era
+- [x] 1.3 The thirteen carried scenarios whose bodies this delta edits, each edited to say an era
   where it said a removed commitment, or to assert the record place untouched where it asserted a
   carry-over: *a mixed chain's whole sums its months' due days and its weeks' quotas alike*; *a
   look-back says a weekday era's months and a quota era's weeks, each in its own unit*; *a week two
@@ -28,7 +28,7 @@ to it, one red-green cycle.
   refuses a range that is not a range and a target that is not a target*; *an interval commitment
   whose start differs from the day it is kept from is renamed and every day recorded on stays due*;
   *a refusal that a roster could not be written is about the whole change and no field*.
-- [ ] 1.4 Confirm the three facts `design.md` § *Context* rests on, and stop if any is false:
+- [x] 1.4 Confirm the three facts `design.md` § *Context* rests on, and stop if any is false:
   `RosterDocument.currentVersion` is **4** and `RecordDocument.currentVersion` is **5**;
   `CopyDocument.currentVersion` is **1** and carries the other two by reference, so it does not
   move; and `RecordedDay(commitment:date:)` in `History.swift` keys numbers, notes and additions by
@@ -40,18 +40,18 @@ to it, one red-green cycle.
 
 ## 2. `Commitment` — the identity, and equality on it alone
 
-- [ ] 2.1 *two commitments formed alike in every part are two different commitments* — catches equality still reading the other four parts.
-- [ ] 2.2 *a commitment formed as a further era of another is the same commitment* — the era initialiser, and the one that mints.
+- [x] 2.1 *two commitments formed alike in every part are two different commitments* — catches equality still reading the other four parts.
+- [x] 2.2 *a commitment formed as a further era of another is the same commitment* — the era initialiser, and the one that mints.
 
 ## 3. `Roster` — a commitment's eras are the entries carrying its identity
 
-- [ ] 3.1 *a roster holding two eras of one commitment reads back one commitment it is keeping*
-- [ ] 3.2 *a roster says a commitment's day kept from as its earliest era's and its rhythm as its newest era's*
-- [ ] 3.3 *a roster answers a date with the era of a commitment that holds that day*
-- [ ] 3.4 *an earlier era of a stopped commitment is in neither what a roster keeps nor what it has stopped*
-- [ ] 3.5 *a roster holding eras of two commitments keeps each commitment's eras together*
-- [ ] 3.6 *a new era put on a commitment lands in that commitment's place rather than after every commitment already there*
-- [ ] 3.7 *stopping a commitment with two eras records the day against its newest*
+- [x] 3.1 *a roster holding two eras of one commitment reads back one commitment it is keeping*
+- [x] 3.2 *a roster says a commitment's day kept from as its earliest era's and its rhythm as its newest era's*
+- [x] 3.3 *a roster answers a date with the era of a commitment that holds that day*
+- [x] 3.4 *an earlier era of a stopped commitment is in neither what a roster keeps nor what it has stopped*
+- [x] 3.5 *a roster holding eras of two commitments keeps each commitment's eras together*
+- [x] 3.6 *a new era put on a commitment lands in that commitment's place rather than after every commitment already there*
+- [x] 3.7 *stopping a commitment with two eras records the day against its newest*
 
 ## 4. `Roster` — the name refusal
 
