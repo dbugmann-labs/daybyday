@@ -110,10 +110,12 @@ public final class CommitmentsScreen {
     }
 
     /// The commitments `roster` has stopped keeping, in the order `roster` holds them. A removed
-    /// commitment is in neither this list nor `kept` — `design.md` § *The seam*: removal is a
-    /// third state, not a second way to be stopped.
+    /// commitment is in neither this list nor `kept`, and neither is an earlier era of one this
+    /// screen keeps or has stopped — `design.md` § *The seam*: removal is a third state, not a
+    /// second way to be stopped, and `Roster.stopped`, which this defers to, already keeps an
+    /// earlier era off this list.
     private static func stopped(in roster: Roster) -> [Commitment] {
-        roster.entries.compactMap { $0.keptUntil == nil || $0.isRemoved ? nil : $0.commitment }
+        roster.stopped
     }
 
     /// Sets `keptGroups`, `kept` and `stopped` from `store`, or empties all three when `store`
@@ -1377,7 +1379,12 @@ public final class CommitmentsScreen {
         }
 
         do {
-            try rosterStore.add(commitment)
+            guard try rosterStore.add(commitment) else {
+                let refusal = Refusal.nameAlreadyInUse(Self.nameAlreadyHeld(commitment.name, among: kept))
+                stoppedRefusal = SheetRefusal(field: nil, refusal: refusal)
+                refusedChange = .keepingAgain(commitment, refusal)
+                return refusal
+            }
         } catch {
             refusedChange = .keepingAgain(commitment, .notKept)
             return .notKept

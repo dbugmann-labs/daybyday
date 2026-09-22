@@ -328,8 +328,8 @@ to it, one red-green cycle.
 - [x] 10.5 *a commitment a commitments screen refuses for its name is not taken on a second time*
 - [x] 10.6 *a commitment defined through a commitments screen carries an identity of its own*
 - [x] 10.7 *a commitment defined under the name a removed commitment has is taken on last, under the category the form carried*
-- [ ] 10.8 *taking a commitment up again is refused where a commitment the screen keeps already has its name*
-- [ ] 10.9 *an earlier era of a commitment is in neither of a commitments screen's lists*
+- [x] 10.8 *taking a commitment up again is refused where a commitment the screen keeps already has its name*
+- [x] 10.9 *an earlier era of a commitment is in neither of a commitments screen's lists*
 - [ ] 10.10 *a refusal that a name is already in use is about the name field*
 - [ ] 10.11 *a commitment alike in every way but the kind it takes is refused for the name it shares* — rename the carried test named in § 1.3 and reverse its assertions; the name rule reads no kind.
 

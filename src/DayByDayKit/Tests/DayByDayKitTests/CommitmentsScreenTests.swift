@@ -1223,6 +1223,40 @@ func aCommitmentDefinedUnderTheNameARemovedCommitmentHasIsTakenOnLastUnderTheCat
 }
 
 @MainActor
+@Test("an earlier era of a commitment is in neither of a commitments screen's lists")
+func anEarlierEraOfACommitmentIsInNeitherOfACommitmentsScreensLists() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let newEra = Commitment(
+        era: gym, schedule: .weekdays([.tuesday, .thursday]), keptFrom: monday, kind: .tick)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.put(era: newEra, on: gym, keptUntil: sunday, under: nil)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+
+    #expect(screen.kept.map(\.name) == ["Gym"])
+    #expect(screen.kept.map(\.rhythmInWords) == ["Tue, Thu"])
+    #expect(screen.stopped.isEmpty)
+
+    let stoppedRosterPlace = freshRosterPlace()
+    let stoppedRosterStore = try RosterStore(at: stoppedRosterPlace)
+    try stoppedRosterStore.add(gym)
+    try stoppedRosterStore.put(era: newEra, on: gym, keptUntil: sunday, under: nil)
+    try stoppedRosterStore.retire(newEra, keptUntil: monday)
+
+    let stoppedScreen = CommitmentsScreen(asOf: monday, keepingRosterAt: stoppedRosterPlace)
+
+    #expect(stoppedScreen.stopped.map(\.rhythmInWords) == ["Tue, Thu"])
+    #expect(stoppedScreen.kept.isEmpty)
+}
+
+@MainActor
 @Test("asking a commitments screen to stop keeping a commitment changes nothing until it is confirmed")
 func askingACommitmentsScreenToStopKeepingACommitmentChangesNothingUntilItIsConfirmed() throws {
     let rosterPlace = freshRosterPlace()
@@ -1447,6 +1481,54 @@ func aCommitmentTakenUpAgainThroughACommitmentsScreenMovesFromWhatItHasStoppedTo
 
     let laterStore = try RosterStore(at: rosterPlace)
     #expect(laterStore.roster.commitments(on: tuesday).map(\.name).contains("Gym"))
+}
+
+@MainActor
+@Test("taking a commitment up again is refused where a commitment the screen keeps already has its name")
+func takingACommitmentUpAgainIsRefusedWhereACommitmentTheScreenKeepsAlreadyHasItsName() throws {
+    let rosterPlace = freshRosterPlace()
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: rosterPlace)
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    let bytesAfterOpen = try Data(contentsOf: rosterPlace)
+    let stoppedGym = screen.stopped.first!
+
+    let refusal = screen.keepAgain(stoppedGym)
+
+    #expect(refusal == .nameAlreadyInUse("Gym"))
+    #expect(screen.kept.map(\.rhythmInWords) == ["Mon, Wed"])
+    #expect(screen.stopped.map(\.rhythmInWords) == ["Tue, Thu"])
+    #expect(try Data(contentsOf: rosterPlace) == bytesAfterOpen)
 }
 
 @MainActor
