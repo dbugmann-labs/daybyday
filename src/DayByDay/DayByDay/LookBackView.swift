@@ -53,6 +53,13 @@ struct LookBackView: View {
     // values-axis lane is clamped to a fraction of this rather than left free to swallow the
     // plot down to a sliver on an extreme value.
     @State private var cardWidth: CGFloat?
+    // How far the card's background must run past the chart's own bottom edge for the dates-axis
+    // label to stay inside it — read off the same geometry the label itself draws from, in
+    // `updateValueLabelPositions(...)`, rather than a padding constant tuned to one text size.
+    // 28 is that same computation's own default-size answer, kept as the seed so the first frame,
+    // before any chart geometry has resolved, still draws the card at its settled height instead
+    // of snapping to it after a visible resize (G7 fix round, finding 1).
+    @State private var datesLabelBottomPadding: CGFloat = 28
 
     private var lookBack: LookBack? { screen.lookBack(at: commitment) }
 
@@ -444,7 +451,7 @@ struct LookBackView: View {
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .fixedSize()
-                                    .position(x: tick.x, y: frame.maxY + 14)
+                                    .position(x: tick.x, y: frame.maxY + Self.datesLabelOffset)
                             }
                         } else {
                             let candidates = dayTickValues.compactMap { day -> XAxisTick? in
@@ -464,7 +471,7 @@ struct LookBackView: View {
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .fixedSize()
-                                    .position(x: tick.x, y: frame.maxY + 14)
+                                    .position(x: tick.x, y: frame.maxY + Self.datesLabelOffset)
                             }
                         }
                     }
@@ -485,12 +492,16 @@ struct LookBackView: View {
         // reviewer measured, the outer padding rather than anything left unused by the domain
         // itself.
         //
-        // 28pt, not the 48 a second, lower label lane once needed: the dates-axis labels alone
-        // draw at `frame.maxY + 14`, and 14 more clears a `.caption2` line — `say-nothing-where-
-        // the-rhythm-changed` (#300), read off the walk's own third picture once the era lane's
-        // labels were gone, rather than guessed.
+        // Not the 48pt a second, lower label lane once needed: the dates-axis labels alone draw
+        // at `frame.maxY + Self.datesLabelOffset`, and `datesLabelBottomPadding` is computed in
+        // `updateValueLabelPositions(...)` from that same offset and the label's own rendered
+        // `.caption2` height, so this follows the dates lane at every text size rather than a
+        // constant read once off the walk's third picture at the default one — G7 fix round,
+        // finding 1: that constant cleared the axis labels at the default size with nothing to
+        // spare, so it overflowed as soon as `.caption2`'s line height, at a larger accessibility
+        // size, exceeded it.
         .padding(.top)
-        .padding(.bottom, 28)
+        .padding(.bottom, datesLabelBottomPadding)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
@@ -508,7 +519,24 @@ struct LookBackView: View {
         let frame = geometry[plotFrame]
         lowestLabelY = proxy.position(forY: lowest).map { frame.minY + $0 }
         highestLabelY = proxy.position(forY: highest).map { frame.minY + $0 }
+        // The dates-axis label (drawn in `graphCard(_:)`'s own two `ForEach`s, below) centres at
+        // `frame.maxY + Self.datesLabelOffset`; its own bottom edge sits half its rendered height
+        // further down. `geometry.size.height` is the chart's own frame — 220pt, but read here
+        // rather than repeated as a second constant — so what is left is exactly the padding the
+        // card needs below that frame for the label to stay inside it, at whatever `.caption2`
+        // measures at the system's current text size. Never negative: a plot frame that already
+        // reaches the chart's own bottom edge asks for none.
+        datesLabelBottomPadding = max(
+            0,
+            frame.maxY + Self.datesLabelOffset + Self.measuredHeight() / 2 - geometry.size.height)
     }
+
+    /// The fixed offset, in points, from the plot's own bottom edge to a dates-axis label's
+    /// centre — shared by where `graphCard(_:)` draws each label and where
+    /// `updateValueLabelPositions(...)` derives the padding that keeps it inside the card, so the
+    /// two stay tied by the same value rather than by a comment repeating it in both places
+    /// (G7 fix round, finding 1).
+    private static let datesLabelOffset: CGFloat = 14
 
     /// `text`'s own rendered width at the `.caption2` size every overlay label in `graphCard(_:)`
     /// draws at — measured rather than estimated from its character count, which a proportional
@@ -516,6 +544,13 @@ struct LookBackView: View {
     private static func measuredWidth(_ text: String) -> CGFloat {
         (text as NSString).size(withAttributes: [.font: UIFont.preferredFont(forTextStyle: .caption2)])
             .width
+    }
+
+    /// A `.caption2` line's own rendered height at the system's current text size — `UIFont`
+    /// already answers this scaled for whatever Dynamic Type or accessibility size is active, the
+    /// same source `measuredWidth(_:)` reads for a label's width.
+    private static func measuredHeight() -> CGFloat {
+        UIFont.preferredFont(forTextStyle: .caption2).lineHeight
     }
 
     /// `x`, the centre a label of `width` would need to sit fully inside `frame` — pulled inward
