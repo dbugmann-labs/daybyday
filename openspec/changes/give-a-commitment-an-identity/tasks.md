@@ -317,7 +317,7 @@ to it, one red-green cycle.
 - [x] 9.3 *a record whose commitment the folded roster never held is left as an orphan* — carries no identity, and the shipped carry-back rule takes it.
 - [x] 9.4 *a day screen opened on a folded roster carries the records too*
 - [x] 9.5 *a screen that cannot read its record place leaves a folded roster's records alone*
-- [ ] 9.6 *a record of an era a roster holds is not an orphan*
+- [x] 9.6 *a record of an era a roster holds is not an orphan*
 
 ## 10. `CommitmentsScreen` — defining, and the name refusal
 
@@ -335,30 +335,30 @@ to it, one red-green cycle.
 
 ## 11. `CommitmentsScreen` — the three acts a change needs
 
-- [ ] 11.1 *a renamed commitment keeps every record already made, and the record place is not written*
-- [ ] 11.2 *a rename through a commitments screen reaches every era of the commitment*
-- [ ] 11.3 *a commitment whose rhythm is changed through a commitments screen is given a new era from today*
-- [ ] 11.4 *a name and a rhythm changed in one save put the new name on every era*
-- [ ] 11.5 *the day a commitment is kept from is moved onto a later era and the eras it leaves no day for are dropped* — grill § Settled 2.
-- [ ] 11.6 *a rhythm changed on the first date the calendar supports puts the new era on as of that day itself*
-- [ ] 11.7 *a name, an earlier day kept from and a rhythm changed in one save reach every era*
-- [ ] 11.8 *a change writes nothing at the record place, whatever it changes* — the one box that proves the carry-over is gone.
-- [ ] 11.9 *a change of rhythm through a commitments screen puts the commitment under the category it was given*
-- [ ] 11.10 *a commitment whose range is changed through a commitments screen is given a new era from today*
-- [ ] 11.11 *a target changed through a commitments screen puts a new era on and leaves every record standing*
-- [ ] 11.12 *a range added to a number commitment carrying none, and one taken off, each put a new era on*
-- [ ] 11.13 *a commitments screen says a commitment's earliest era's day kept from and its newest era's rhythm*
-- [ ] 11.14 *an interval commitment whose start differs from the day it is kept from is renamed on a new rhythm and the era it gives way to keeps its start*
+- [x] 11.1 *a renamed commitment keeps every record already made, and the record place is not written*
+- [x] 11.2 *a rename through a commitments screen reaches every era of the commitment*
+- [x] 11.3 *a commitment whose rhythm is changed through a commitments screen is given a new era from today*
+- [x] 11.4 *a name and a rhythm changed in one save put the new name on every era*
+- [x] 11.5 *the day a commitment is kept from is moved onto a later era and the eras it leaves no day for are dropped* — grill § Settled 2.
+- [x] 11.6 *a rhythm changed on the first date the calendar supports puts the new era on as of that day itself*
+- [x] 11.7 *a name, an earlier day kept from and a rhythm changed in one save reach every era*
+- [x] 11.8 *a change writes nothing at the record place, whatever it changes* — the one box that proves the carry-over is gone.
+- [x] 11.9 *a change of rhythm through a commitments screen puts the commitment under the category it was given*
+- [x] 11.10 *a commitment whose range is changed through a commitments screen is given a new era from today*
+- [x] 11.11 *a target changed through a commitments screen puts a new era on and leaves every record standing*
+- [x] 11.12 *a range added to a number commitment carrying none, and one taken off, each put a new era on*
+- [x] 11.13 *a commitments screen says a commitment's earliest era's day kept from and its newest era's rhythm*
+- [x] 11.14 *an interval commitment whose start differs from the day it is kept from is renamed on a new rhythm and the era it gives way to keeps its start*
 
 ## 12. `CommitmentsScreen` — the refusals, and the restart
 
-- [ ] 12.1 *a change to a name another commitment already has is refused, kept or stopped alike*
-- [ ] 12.2 *a name and a rhythm changed in one save onto a name another commitment has are refused*
-- [ ] 12.3 *a change naming the name the commitment already has is not refused for it*
-- [ ] 12.4 *a change to a name only a removed commitment has is not refused* — the removed state holds no name.
-- [ ] 12.5 *restarting an interval commitment moves no record and writes nothing at the record place*
-- [ ] 12.6 *a restart is refused for no name and for no record already kept*
-- [ ] 12.7 *a restart refused for a day already recorded on is about the restart day field*
+- [x] 12.1 *a change to a name another commitment already has is refused, kept or stopped alike*
+- [x] 12.2 *a name and a rhythm changed in one save onto a name another commitment has are refused*
+- [x] 12.3 *a change naming the name the commitment already has is not refused for it*
+- [x] 12.4 *a change to a name only a removed commitment has is not refused* — the removed state holds no name.
+- [x] 12.5 *restarting an interval commitment moves no record and writes nothing at the record place*
+- [x] 12.6 *a restart is refused for no name and for no record already kept*
+- [x] 12.7 *a restart refused for a day already recorded on is about the restart day field*
 
 ## 13. `look-back` — eras read off the identity
 
