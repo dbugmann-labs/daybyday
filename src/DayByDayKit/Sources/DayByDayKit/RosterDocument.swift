@@ -173,10 +173,18 @@ struct RosterDocument: Codable {
         var resultEntries: [Int: Roster.Entry] = [:]
 
         // Every entry this document keeps or has stopped keeping becomes a commitment of its own
-        // straightaway — each a chain a removed entry may still attach to.
+        // straightaway — each a chain a removed entry may still attach to. Two such entries alike
+        // in every part would each mint their own identity and collide silently in `identities`,
+        // keyed by that one bare shape — which is exactly one identity kept from one day twice,
+        // `formRoster()`'s own guard for the form this app writes. `mintedBareShapes` is that same
+        // guard here, before any identity is minted rather than after.
         var chains: [Chain] = []
         var originallyKeptOrStopped: [(name: String, kind: Commitment.Kind)] = []
+        var mintedBareShapes: Set<CommitmentRecord> = []
         for (index, item) in decoded.enumerated() where !item.isRemoved {
+            guard mintedBareShapes.insert(CommitmentRecord.bare(item.commitment)).inserted else {
+                return nil
+            }
             chains.append(
                 Chain(representative: item.commitment, front: item.commitment.keptFrom, frontIndex: index))
             originallyKeptOrStopped.append((item.commitment.name, item.commitment.kind))
@@ -219,6 +227,10 @@ struct RosterDocument: Codable {
             guard resemblesKeptOrStopped else {
                 identities.updateValue(nil, forKey: CommitmentRecord.bare(item.commitment))
                 continue
+            }
+
+            guard mintedBareShapes.insert(CommitmentRecord.bare(item.commitment)).inserted else {
+                return nil
             }
 
             chains.append(

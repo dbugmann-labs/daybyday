@@ -297,7 +297,7 @@ to it, one red-green cycle.
 - [x] 8.6 *an era whose range differs folds behind the commitment in front of it*
 - [x] 8.7 *the fold leaves two commitments holding one name where the stored roster held two*
 - [x] 8.8 *folding a roster changes nothing at its place, and the next change is written in the form this app writes*
-- [ ] 8.9 Make the fold refuse a roster kept before identities that holds two entries whose
+- [x] 8.9 Make the fold refuse a roster kept before identities that holds two entries whose
   commitments are alike in every part, which *A roster store that cannot be read is refused rather
   than emptied* now states and `RosterDocument.folded()` does not meet: `formRoster()` carries the
   guard for the form this app writes, one identity kept from one day twice; `folded()` mints an
