@@ -180,6 +180,26 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **A shipped requirement is unreachable after #303, and stays on purpose for a phone upgrading
+  from an earlier form.** `openspec/specs/commitment/spec.md` § *A change that carries records
+  leaves a save in progress until its roster place is written* is untouched by
+  `give-a-commitment-an-identity`'s (#303) delta on purpose — `design.md`:86-88 says so, because a
+  phone upgrading from this app's earlier forms may still hold a torn save one of the three
+  save-in-progress requirements exists to undo. After this Story, no change or restart carries a
+  record to the record place at all — `keepSaveInProgressIfCarrying` is gone from source — so its
+  three scenarios now pass vacuously: nothing is ever refused, and no save in progress is ever
+  kept. Found at #303's G7 fix round, 2026-09-22. The next Story that deltas `commitment` carries
+  this requirement as REMOVED.
+- **`RosterDocument.folded()`'s tie-break for "the nearest such commitment" picks the farthest
+  chain, not the nearest.** `RosterDocument.swift:237` reads
+  `attachable.max(by: { $0.frontIndex < $1.frontIndex })` for what its own doc comment calls "the
+  nearest such commitment, by that front's own place" (`design.md` says "nearest in the roster's
+  order"). The two agree for every roster the old `supersede` ever wrote, where at most one
+  un-attached chain is ever attachable to a given removed entry at once — but not for a
+  hand-formed document holding two live entries of one name whose chains front at index 3 and
+  index 9 around a removed entry at index 5: the nearer of the two by roster position is the one
+  fronting at 3, and `max(by:)` picks the one fronting at 9 instead. Found at #303's G7 fix round,
+  2026-09-22.
 - **A `day-screen` scenario says a rename is "changed at both places" after #303 makes a rename write
   the roster place only.** *a commitment renamed at a day screen's places is drawn under its new name
   and still kept when the screen is returned to* (`openspec/specs/day-screen/spec.md`) keeps that
