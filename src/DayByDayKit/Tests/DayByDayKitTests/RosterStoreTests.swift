@@ -321,10 +321,10 @@ func aRosterStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 5, "commitments": []}"#.utf8)
+    let bytes = Data(#"{"version": 6, "commitments": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.laterForm(at: place, version: 5)) {
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 6)) {
         try RosterStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -1553,14 +1553,15 @@ func aGroupMoveThatLeavesAGroupWhereItIsKeepsNothingAtARosterStoresPlace() throw
     ])
 }
 
-@Test("a commitment changed through a roster store is read back changed by a store opened afterwards")
-func aCommitmentChangedThroughARosterStoreIsReadBackChangedByAStoreOpenedAfterwards() throws {
+@Test("an era changed through a roster store is read back changed by a store opened afterwards")
+func anEraChangedThroughARosterStoreIsReadBackChangedByAStoreOpenedAfterwards() throws {
     let place = freshPlace()
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let changedGym = Commitment(era: gym, schedule: newSchedule, keptFrom: keptFrom, kind: .tick)!
     let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
 
     let first = try RosterStore(at: place)
@@ -1568,16 +1569,16 @@ func aCommitmentChangedThroughARosterStoreIsReadBackChangedByAStoreOpenedAfterwa
     try first.add(gym)
     try first.add(journaling)
 
-    let changed = try first.change(gym, to: gymEmoji, under: "Sport")
+    let changed = try first.change(gym, to: changedGym, under: "Sport")
 
     let later = try RosterStore(at: place)
 
     #expect(changed)
-    #expect(later.roster.commitments == [waterPlants, gymEmoji, journaling])
+    #expect(later.roster.commitments == [waterPlants, changedGym, journaling])
     #expect(
         later.roster.groups
             == [
-                Roster.Group(category: "Sport", commitments: [gymEmoji]),
+                Roster.Group(category: "Sport", commitments: [changedGym]),
                 Roster.Group(category: nil, commitments: [waterPlants, journaling]),
             ])
 }
@@ -1607,8 +1608,8 @@ func aCommitmentSupersededThroughARosterStoreIsReadBackSupersededByAStoreOpenedA
     #expect(later.roster.commitments(on: thirtyFirstOfAugust) == [newGym, gym])
 }
 
-@Test("a change and a supersession a roster refuses keep nothing at a roster store's place")
-func aChangeAndASupersessionARosterRefusesKeepNothingAtARosterStoresPlace() throws {
+@Test("a change and a new era a roster refuses keep nothing at a roster store's place")
+func aChangeAndANewEraARosterRefusesKeepNothingAtARosterStoresPlace() throws {
     let place = freshPlace()
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -1621,14 +1622,16 @@ func aChangeAndASupersessionARosterRefusesKeepNothingAtARosterStoresPlace() thro
     try store.add(run)
     let bytesBefore = try Data(contentsOf: place)
 
+    // "run" carries neither gym's identity, so it is refused both as an era changed in place and
+    // as a new era put on.
     let changed = try store.change(gym, to: run, under: nil)
 
     #expect(!changed)
     #expect(try Data(contentsOf: place) == bytesBefore)
 
-    let superseded = try store.supersede(gym, with: run, keptUntil: thirtyFirstOfAugust, under: nil)
+    let put = try store.put(era: run, on: gym, keptUntil: thirtyFirstOfAugust, under: nil)
 
-    #expect(!superseded)
+    #expect(!put)
     #expect(try Data(contentsOf: place) == bytesBefore)
 }
 
@@ -1786,15 +1789,14 @@ func aGroupMoveThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() t
 }
 
 @Test(
-    "a change of one commitment for another that cannot be kept is refused and the roster a store reports does not move"
+    "a change of an era that cannot be kept is refused and the roster a store reports does not move"
 )
-func aChangeOfOneCommitmentForAnotherThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove()
-    throws
-{
+func aChangeOfAnEraThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
+    let changedGym = Commitment(era: gym, schedule: newSchedule, keptFrom: keptFrom, kind: .tick)!
     let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
     let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
     let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
@@ -1803,7 +1805,7 @@ func aChangeOfOneCommitmentForAnotherThatCannotBeKeptIsRefusedAndTheRosterAStore
         gym: gym, journaling: journaling, run: run, stoppedOn: stoppedOn)
 
     #expect(throws: RosterStoreError.cannotWrite(at: place)) {
-        try store.change(gym, to: gymEmoji, under: nil)
+        try store.change(gym, to: changedGym, under: nil)
     }
 
     var expected = Roster()
@@ -1814,8 +1816,8 @@ func aChangeOfOneCommitmentForAnotherThatCannotBeKeptIsRefusedAndTheRosterAStore
     #expect(store.roster == expected)
 }
 
-@Test("a supersession that cannot be kept is refused and the roster a store reports does not move")
-func aSupersessionThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
+@Test("a new era that cannot be kept is refused and the roster a store reports does not move")
+func aNewEraThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove() throws {
     let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
@@ -1824,14 +1826,14 @@ func aSupersessionThatCannotBeKeptIsRefusedAndTheRosterAStoreReportsDoesNotMove(
     let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
     let newSchedule = Schedule.weekdays([.tuesday, .thursday])
     let newKeptFrom = CalendarDate(year: 2026, month: 9, day: 1)!
-    let newGym = Commitment(name: "Gym", schedule: newSchedule, keptFrom: newKeptFrom)!
-    let supersedeAsOf = CalendarDate(year: 2026, month: 8, day: 31)!
+    let newEra = Commitment(era: gym, schedule: newSchedule, keptFrom: newKeptFrom, kind: .tick)!
+    let putAsOf = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let (store, place) = try storeThatCanWriteNoFurther(
         gym: gym, journaling: journaling, run: run, stoppedOn: stoppedOn)
 
     #expect(throws: RosterStoreError.cannotWrite(at: place)) {
-        try store.supersede(gym, with: newGym, keptUntil: supersedeAsOf, under: nil)
+        try store.put(era: newEra, on: gym, keptUntil: putAsOf, under: nil)
     }
 
     var expected = Roster()
@@ -2095,26 +2097,26 @@ func aChangeARosterStoreRefusesForACommitmentItDoesNotHoldIsReportedAndNothingAt
 }
 
 @Test(
-    "a supersession a roster store refuses for a stopped commitment is reported and nothing at its place changes"
+    "a new era a roster store refuses to put on a stopped commitment is reported and nothing at its place changes"
 )
-func aSupersessionARosterStoreRefusesForAStoppedCommitmentIsReportedAndNothingAtItsPlaceChanges()
+func aNewEraARosterStoreRefusesToPutOnAStoppedCommitmentIsReportedAndNothingAtItsPlaceChanges()
     throws
 {
-    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let run = Commitment(name: "Run", schedule: schedule, keptFrom: keptFrom)!
-    let running = Commitment(name: "Running", schedule: schedule, keptFrom: keptFrom)!
+    let newSchedule = Schedule.weekdays([.tuesday, .thursday])
 
     let place = try seededGymAndRunPlace(runState: .stopped)
     let store = try RosterStore(at: place)
     let bytesBeforeAsk = try Data(contentsOf: place)
+    let run = store.roster.stopped.first!
+    let newEra = Commitment(
+        era: run, schedule: newSchedule, keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!,
+        kind: .tick)!
 
-    let superseded = try store.supersede(
-        run, with: running, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
+    let put = try store.put(
+        era: newEra, on: run, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
 
-    #expect(!superseded)
-    #expect(store.roster.commitments == [gym])
+    #expect(!put)
+    #expect(store.roster.commitments.map(\.name) == ["Gym"])
     #expect(try Data(contentsOf: place) == bytesBeforeAsk)
 }
 
@@ -2272,10 +2274,10 @@ func aRosterStoreDeclaringALaterFormWhoseBodyThisAppCannotReadIsRefusedAsALaterF
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 5, "commitments": "not an array"}"#.utf8)
+    let bytes = Data(#"{"version": 6, "commitments": "not an array"}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.laterForm(at: place, version: 5)) {
+    #expect(throws: RosterStoreError.laterForm(at: place, version: 6)) {
         try RosterStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)

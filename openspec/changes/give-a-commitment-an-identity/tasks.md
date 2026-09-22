@@ -199,11 +199,11 @@ to it, one red-green cycle.
 - [x] 7.8 *a record of an era is read back under the commitment whose era it is*
 - [x] 7.9 *a store whose shape and declared form disagree about identities is refused*
 - [x] 7.10 *a history kept before a record carried an identity is read with every record carrying none* — reading form 5, before any screen settles it.
-- [ ] 7.11 *an era changed through a roster store is read back changed by a store opened afterwards* — rename the carried test named in § 1.3, do not write a second.
-- [ ] 7.12 *a change and a new era a roster refuses keep nothing at a roster store's place* — rename the carried test named in § 1.3.
-- [ ] 7.13 *a change of an era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.
-- [ ] 7.14 *a new era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.
-- [ ] 7.15 *a new era a roster store refuses to put on a stopped commitment is reported and nothing at its place changes* — the stopped twin of 7.3; rename the carried test named in § 1.3.
+- [x] 7.11 *an era changed through a roster store is read back changed by a store opened afterwards* — rename the carried test named in § 1.3, do not write a second.
+- [x] 7.12 *a change and a new era a roster refuses keep nothing at a roster store's place* — rename the carried test named in § 1.3.
+- [x] 7.13 *a change of an era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.
+- [x] 7.14 *a new era that cannot be kept is refused and the roster a store reports does not move* — rename the carried test named in § 1.3.
+- [x] 7.15 *a new era a roster store refuses to put on a stopped commitment is reported and nothing at its place changes* — the stopped twin of 7.3; rename the carried test named in § 1.3.
 
 ## 8. The fold, at the roster place
 
