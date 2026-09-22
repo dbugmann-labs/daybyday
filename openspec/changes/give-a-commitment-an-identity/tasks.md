@@ -426,26 +426,26 @@ to it, one red-green cycle.
 
 ## 16. The walk
 
-- [ ] 16.1 The sheet with a second "Gym" typed in and saved — the refusal naming "Gym" under the
+- [x] 16.1 The sheet with a second "Gym" typed in and saved — the refusal naming "Gym" under the
   name field, and the first "Gym" still the only row on the kept list.
-- [ ] 16.2 The sheet reopened on "Gym" after its rhythm was changed through it — the rhythm now the
+- [x] 16.2 The sheet reopened on "Gym" after its rhythm was changed through it — the rhythm now the
   new one and *Kept from* still the day the commitment was first kept from.
-- [ ] 16.3 The look-back at "Gym" renamed "Lifting" — the head reading "Lifting", the day kept from
+- [x] 16.3 The look-back at "Gym" renamed "Lifting" — the head reading "Lifting", the day kept from
   the original one, and month lines running across the day the rhythm changed with nothing between.
-- [ ] 16.4 The day screen a few days back, before the rhythm changed — the row drawn under
+- [x] 16.4 The day screen a few days back, before the rhythm changed — the row drawn under
   "Lifting".
 - [ ] 16.5 `phone:` the fold on the owner's own roster, after this build installs over the last —
   the stopped list showing what survived, and one tangled commitment's look-back reading as one.
   The simulator cannot show it: the walk starts from a fresh install and nothing seeds an old
   roster.
-- [ ] 16.6 Post the pictures to the PR with `pnpm run walk -- --post-only <pr>` before hand-back,
+- [x] 16.6 Post the pictures to the PR with `pnpm run walk -- --post-only <pr>` before hand-back,
   and tick this on the comment's URL. Never `gh pr comment --attach`, which posts at full width.
 
 ## 17. Gates and the archive handover
 
-- [ ] 17.1 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` reporting every test
+- [x] 17.1 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` reporting every test
   passing, the count read off the run and not derived.
-- [ ] 17.2 `openspec validate give-a-commitment-an-identity --strict` exits 0 and
+- [x] 17.2 `openspec validate give-a-commitment-an-identity --strict` exits 0 and
   `pnpm run checks` is clean but for what it is expected to warn.
 - [ ] 17.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
 - [ ] 17.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
