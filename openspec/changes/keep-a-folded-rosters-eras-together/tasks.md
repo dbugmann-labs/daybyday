@@ -25,7 +25,7 @@ fold tests. Nothing in `openspec/specs/` is edited here (rule 2), and no fixture
 ## 4. `commitment`: what cannot be read as a roster store — one test each
 
 - [x] 4.1 a roster store holding one commitment's eras split apart by another commitment's entry is refused — catches the store's adjacency guard relaxed instead of the fold fixed
-- [ ] 4.2 a roster kept before a commitment had an identity holding one era twice is refused — catches the same-era guard applied to a minted commitment but not to an entry attached as an era
+- [x] 4.2 a roster kept before a commitment had an identity holding one era twice is refused — catches the same-era guard applied to a minted commitment but not to an entry attached as an era
 - [ ] 4.3 the MODIFIED requirement carries every other scenario unchanged, and its shipped acceptance tests stand as they are — no shipped test is renamed or rewritten here
 
 ## 5. The records

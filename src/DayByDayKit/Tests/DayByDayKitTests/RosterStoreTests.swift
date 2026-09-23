@@ -3412,3 +3412,43 @@ func aRosterStoreHoldingOneCommitmentsErasSplitApartByAnotherCommitmentsEntryIsR
     }
     #expect(try Data(contentsOf: place) == bytes)
 }
+
+@Test("a roster kept before a commitment had an identity holding one era twice is refused")
+func aRosterKeptBeforeACommitmentHadAnIdentityHoldingOneEraTwiceIsRefused() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 3, "day": 1 },
+                "schedule": { "weekdays": ["monday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 3, "day": 1 },
+                "schedule": { "weekdays": ["monday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 2, "day": 28 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    #expect(throws: RosterStoreError.notAStore(at: place)) {
+        try RosterStore(at: place)
+    }
+    #expect(try Data(contentsOf: place) == bytes)
+}
