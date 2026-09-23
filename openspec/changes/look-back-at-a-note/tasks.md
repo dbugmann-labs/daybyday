@@ -39,9 +39,9 @@ make it pass, then the next. Every test goes in
 
 ## 6. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
-- [ ] 6.1 `LookBackView` draws a note page as `design.md` § *The shell rides this Story* says — `noteCountInWords` as a headline in the "Months" heading's place, one card per note in `notes` order, the day in caption semibold not uppercased — and the app target builds
-- [ ] 6.2 A folded note is two lines with a tail ellipsis, its line breaks as written; only a card the shell measures as cut is a button, the whole card toggles it, several may be open at once, and every visit opens with all folded
-- [ ] 6.3 A note page whose look-back says no note says "No note yet." and draws no heading and no card, and the tick, quota, number and total pages keep the sentences they have
+- [x] 6.1 `LookBackView` draws a note page as `design.md` § *The shell rides this Story* says — `noteCountInWords` as a headline in the "Months" heading's place, one card per note in `notes` order, the day in caption semibold not uppercased — and the app target builds
+- [x] 6.2 A folded note is two lines with a tail ellipsis, its line breaks as written; only a card the shell measures as cut is a button, the whole card toggles it, several may be open at once, and every visit opens with all folded
+- [x] 6.3 A note page whose look-back says no note says "No note yet." and draws no heading and no card, and the tick, quota, number and total pages keep the sentences they have
 
 ## 7. The records
 

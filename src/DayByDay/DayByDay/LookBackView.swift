@@ -67,6 +67,14 @@ struct LookBackView: View {
     // height join this at the padding's own call site instead, read inline the same way, so nothing
     // needs a new trigger to keep them current.
     @State private var plotBottomInset: CGFloat = 0
+    // Which notes are open — a set of places in `lookBack.notes`, empty on every visit (grill
+    // decision 10). Shell drawing state, crossing no seam: `design.md` § *The fold is drawn, not
+    // said*.
+    @State private var openNoteIndices: Set<Int> = []
+    // The note cards' own shared width, read once off the `LazyVStack` that holds them, the same
+    // way `cardWidth` reads the graph card's — so whether a note is cut can be measured against
+    // the width it actually draws at rather than guessed.
+    @State private var noteCardWidth: CGFloat?
 
     private var lookBack: LookBack? { screen.lookBack(at: commitment) }
 
@@ -105,6 +113,8 @@ struct LookBackView: View {
                         // Story*, grill decisions 7 and 8: the sentence names what a person does
                         // on the day screen, which is add.
                         Text("Nothing added yet.")
+                    } else if case .note = commitment.kind {
+                        noteSection(lookBack)
                     } else {
                         linesSection(lookBack)
                     }
@@ -238,6 +248,101 @@ struct LookBackView: View {
                     .gridCellColumns(2)
             }
         }
+    }
+
+    /// A note page: `noteCountInWords` as a `.headline` where the "Months" heading stands, then
+    /// one card per note, newest first — `design.md` § *The shell rides this Story*. Where
+    /// `notes` is empty the page says "No note yet." and draws no heading (grill decision 7).
+    @ViewBuilder
+    private func noteSection(_ lookBack: LookBack) -> some View {
+        if lookBack.notes.isEmpty {
+            Text("No note yet.")
+        } else {
+            if let noteCountInWords = lookBack.noteCountInWords {
+                Text(noteCountInWords)
+                    .font(.headline)
+                    .padding(.horizontal)
+            }
+            LazyVStack(alignment: .leading, spacing: 12) {
+                ForEach(Array(lookBack.notes.enumerated()), id: \.offset) { index, note in
+                    noteCard(note, index: index)
+                }
+            }
+            .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        .onAppear { noteCardWidth = geometry.size.width }
+                        .onChange(of: geometry.size) { _, newSize in noteCardWidth = newSize.width }
+                }
+            )
+            .padding(.horizontal)
+        }
+    }
+
+    /// One note's card, the dates card's own fill and radius — only a note the shell measures as
+    /// cut at this card's own width is a `Button`, and the whole card toggles it (grill decisions
+    /// 9 and 15); a note that fits draws the same content with no button behaviour at all, never
+    /// merely a disabled one, so nothing reads as tappable that is not.
+    @ViewBuilder
+    private func noteCard(_ note: LookBack.DatedNote, index: Int) -> some View {
+        let isOpen = openNoteIndices.contains(index)
+        let contentWidth = max((noteCardWidth ?? 0) - 32, 0)
+        let isCut =
+            Self.lineCount(of: note.text, at: contentWidth, font: .preferredFont(forTextStyle: .body))
+            > 2
+
+        Group {
+            if isCut {
+                Button {
+                    withAnimation {
+                        if isOpen {
+                            openNoteIndices.remove(index)
+                        } else {
+                            openNoteIndices.insert(index)
+                        }
+                    }
+                } label: {
+                    noteCardContent(note, isOpen: isOpen)
+                }
+                .buttonStyle(.plain)
+            } else {
+                noteCardContent(note, isOpen: isOpen)
+            }
+        }
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    /// A note card's own content: the day in `.caption` semibold, not uppercased, and the text
+    /// beneath it — folded to two lines with a tail ellipsis, or unlimited and open, line breaks
+    /// as written either way. `design.md` § *The shell rides this Story*.
+    @ViewBuilder
+    private func noteCardContent(_ note: LookBack.DatedNote, isOpen: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(note.dayInWords)
+                .font(.caption)
+                .fontWeight(.semibold)
+            Text(note.text)
+                .multilineTextAlignment(.leading)
+                .lineLimit(isOpen ? nil : 2)
+                .truncationMode(.tail)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// How many lines `text` wraps to at `width`, in `font` — real text layout via
+    /// `boundingRect(with:options:)`, respecting both wrapping and the text's own line breaks, the
+    /// same measuring style `measuredWidth(_:)` and `measuredHeight()` already use below for the
+    /// graph card's labels. `design.md` § *The fold is drawn, not said*: only the shell can tell a
+    /// cut note, since that depends on the screen's width and the text size.
+    private static func lineCount(of text: String, at width: CGFloat, font: UIFont) -> Int {
+        guard width > 0, font.lineHeight > 0 else { return 1 }
+        let bounding = (text as NSString).boundingRect(
+            with: CGSize(width: width, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin],
+            attributes: [.font: font],
+            context: nil)
+        return max(1, Int((bounding.height / font.lineHeight).rounded()))
     }
 
     /// The picker of spans above the graph card — grill decisions 6 and 7. "Month" is selected on
