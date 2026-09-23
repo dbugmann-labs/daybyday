@@ -20,7 +20,7 @@ fold tests. Nothing in `openspec/specs/` is edited here (rule 2), and no fixture
 
 - [x] 3.1 a commitment's eras fold together though the stored roster held another commitment's entry between them — catches the roster assembled in the stored document's own index order
 - [x] 3.2 an era the stored roster held in front of the commitment it belongs to folds behind it — catches an era left in front of its own newest era, which reads back as stopped and kept at once
-- [ ] 3.3 a folded roster whose stored entries were interleaved is read back whole after the next change is kept — catches a fold whose output only this app's memory accepts
+- [x] 3.3 a folded roster whose stored entries were interleaved is read back whole after the next change is kept — catches a fold whose output only this app's memory accepts
 
 ## 4. `commitment`: what cannot be read as a roster store — one test each
 

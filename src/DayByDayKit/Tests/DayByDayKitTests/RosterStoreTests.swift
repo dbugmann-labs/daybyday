@@ -3297,3 +3297,64 @@ func anEraTheStoredRosterHeldInFrontOfTheCommitmentItBelongsToFoldsBehindIt() th
     let swimIndices = entries.indices.filter { entries[$0].commitment.identity == swim.identity }
     #expect(swimIndices.allSatisfy { stoppedIndex < $0 })
 }
+
+@Test(
+    "a folded roster whose stored entries were interleaved is read back whole after the next change is kept"
+)
+func aFoldedRosterWhoseStoredEntriesWereInterleavedIsReadBackWholeAfterTheNextChangeIsKept()
+    throws
+{
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 3, "day": 1 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 2, "day": 1 },
+                "schedule": { "weekdays": ["monday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 2, "day": 28 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+    let schedule = Schedule.weekdays([.wednesday])
+    let swim = Commitment(
+        name: "Swim", schedule: schedule, keptFrom: CalendarDate(year: 2026, month: 3, day: 4)!)!
+    try store.add(swim)
+
+    let later = try RosterStore(at: place)
+
+    #expect(later.roster.commitments.map(\.name) == ["Gym", "Run", "Swim"])
+    let gym = later.roster.commitments.first!
+    #expect(later.roster.eras(of: gym).count == 2)
+    #expect(later.roster.keptFrom(of: gym) == CalendarDate(year: 2026, month: 1, day: 1)!)
+}
