@@ -68,10 +68,12 @@ top-level `emptied` Boolean, true only with no entries. A `removalRetiredInVersi
 
 ### Migration
 
-Reading a roster at forms 3–5, `RosterStore` leaves out every era of each identity whose newest era is
-held removed, and fills `erased` with those identities; a roster that held entries and ends with none
-is emptied, the fold's output included. Both screens hand `erased` to `RecordStore.erase` right after
-the fold's `settle` and before the orphan carry-back. If that write fails, the screens answer as they
+Reading a roster at form 5, the identity form, `RosterStore` leaves out every era of each identity
+whose newest era is held removed, and fills `erased` with those identities. Forms 3–4 go through the
+fold as it stands and erase nothing: `erased` stays empty there, so a removed entry the fold keeps,
+as an era or a stopped commitment, keeps its records (settled 1 is removals after #303). A roster
+that held entries and ends with none is emptied, the fold's output included. Both screens hand
+`erased` to `RecordStore.erase` right after the fold's `settle` and before the orphan carry-back. If that write fails, the screens answer as they
 do on a torn save they cannot undo. Nothing is written at the roster place until a change is kept.
 Copies read through `formed(from:)` get the same erasure, and `CopyDocument` drops those identities'
 records from the history it forms.
@@ -127,7 +129,7 @@ B · Field alone
 - **Test churn beyond the delta.** Hand-written roster fixtures that claim the form this app writes
   are at form 5 and move to form 6; ones naming an earlier form stay. `tasks.md` §1 draws the line.
 - **Many requirements exceed the 150-word prose budget**, carried verbatim from specs already over
-  it; the five new requirements are within it or close, and none is split.
+  it; four of the five new requirements are within it and the fifth is close, and none is split.
 
 ## Open Questions
 

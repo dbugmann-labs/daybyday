@@ -94,19 +94,17 @@ same roster as one given nothing and then that commitment.
 
 ### Requirement: A commitments screen deletes a commitment only when its name is typed back
 
-A commitments screen SHALL be asked to delete a commitment on either of its lists and SHALL change
-nothing until that deletion is confirmed. Until then it SHALL hold which commitment is awaiting
-deletion; being asked about a second SHALL replace the first and leave nothing typed back, and being
-asked to delete SHALL leave nothing awaiting a stop. It SHALL answer whether what has been typed back
-matches: it matches when it and the commitment's name are the same once surrounding blank space is
-trimmed from each, and case and blank space inside the name SHALL both matter. Nothing SHALL be
-awaiting deletion or typed back when the screen is opened, after a deletion is confirmed or
-cancelled, or after the app is shown again.
+A commitments screen asked to delete a commitment on either list SHALL hold it awaiting deletion,
+changing nothing unless the deletion is confirmed; asking about a second SHALL replace the first and
+leave nothing typed back, and asking to delete SHALL leave no stop awaiting. It SHALL answer that
+what is typed back matches exactly when it and the commitment's name are the same once surrounding
+blank space is trimmed from each; case and blank space inside the name SHALL both matter. Nothing
+SHALL await deletion or be typed back once the screen is opened, a deletion confirmed or cancelled,
+or the app shown again.
 
-A confirmed deletion SHALL do nothing at all, refusing nothing and saying nothing, unless the name
-matches. One that matches SHALL delete the commitment at the roster place before either list says so,
-and it SHALL then be in neither list. A cancelled deletion, and one asked about a commitment on
-neither list, SHALL change nothing.
+A confirmed deletion whose name matches SHALL delete the commitment at the roster place before
+either list says so, leaving it in neither list; any other SHALL do nothing, refusing and saying
+nothing. Asking about a commitment on neither list SHALL change nothing.
 
 #### Scenario: asking a commitments screen to delete a commitment changes nothing until it is confirmed
 
@@ -336,6 +334,16 @@ commitment's records, however alike the two are.
 - **AND** a store opened afterwards at that record place answers that "Gym" was kept on Monday
   3 August 2026
 
+#### Scenario: a deletion a commitments screen could not keep leaves both its lists as they were
+
+- **WHEN** a commitment named "Gym" and one named "Run", both on a schedule listing all seven
+  weekdays and kept from 1 January 2026, are taken on at a roster place, and "Run" is stopped there
+  as of Sunday 23 August 2026; a commitments screen is opened at that roster place as of Monday
+  31 August 2026; what is at that place is then made impossible to write; and the screen is asked to
+  delete "Run", "Run" is typed back and the deletion is confirmed
+- **THEN** it is refused as a roster that could not be written
+- **AND** what it keeps is one entry, named "Gym", and what it has stopped is one entry, named "Run"
+
 #### Scenario: a deletion on a commitments screen that cannot read its record is refused
 
 - **WHEN** a commitment named "Gym" on a schedule listing all seven weekdays, kept from 1 January
@@ -358,13 +366,13 @@ commitment's records, however alike the two are.
 
 ### Requirement: A roster store reads a commitment a stored roster held removed as deleted
 
-A roster store reading a stored roster that holds a commitment removed — its newest era held removed,
-in a form written before a commitment could be deleted — SHALL read that commitment as deleted:
-every era of it SHALL be left out of the roster it opens holding, with its place and its category,
-and every other commitment SHALL be read as it stands, in its order. Where that leaves a stored
-roster that held a commitment holding none, the store SHALL open emptied; so SHALL one whose fold,
-as *A roster store folds a roster kept before a commitment had an identity* says, drops every entry.
-The store SHALL answer the identities it read as deleted and SHALL say nothing to the person. It MUST
+A roster store reading a roster in the form written after a commitment had an identity and before
+one could be deleted SHALL read each commitment whose newest era it holds removed as deleted: every
+era of it, with its place and category, SHALL be left out of the roster it opens, and every other
+commitment SHALL be read as it stands, in its order. An earlier form SHALL be folded as *A roster
+store folds a roster kept before a commitment had an identity* says, reading nothing in it as
+deleted. Where either leaves a roster that held a commitment holding none, the store SHALL open
+emptied. It SHALL answer the identities it read as deleted, saying nothing to the person. It MUST
 NOT change what is at the place; the next change kept there SHALL be written whole in the form this
 app writes, holding no commitment removed.
 
@@ -568,9 +576,9 @@ commitment in the form written before a commitment could be removed SHALL be rea
 has not removed; every commitment in the form written before a commitment could be put under a category SHALL be
 read as one the roster holds under no category; every roster in a form written before a
 commitment had an identity SHALL be folded, as *A roster store folds a roster kept before a
-commitment had an identity* says; and every commitment a roster in a form written before a
-commitment could be deleted holds removed SHALL be read as deleted, as *A roster store reads a
-commitment a stored roster held removed as deleted* says.
+commitment had an identity* says; and every commitment a roster in the form written after a
+commitment had an identity and before one could be deleted holds removed SHALL be read as deleted,
+as *A roster store reads a commitment a stored roster held removed as deleted* says.
 
 Reading a roster kept in an earlier form MUST NOT change what is at the place. A store SHALL write
 on a change being kept and at no other moment. Opening the app and doing nothing SHALL leave the
@@ -4748,15 +4756,15 @@ the replacing requirement take their place; `Roster.remove` and `RosterStore.rem
 ### Requirement: A commitments screen removes a commitment only when its name is typed back
 
 **Reason:** the screen deletes rather than removes (#304). Replaced by *A commitments screen deletes
-a
-commitment only when its name is typed back*, which keeps the typed-back rule word for word.
+a commitment only when its name is typed back*, which keeps the typed-back rule word for word.
 
-**Migration:** three scenarios keep their titles under the replacing requirement and their tests
-follow it: *a commitments screen says a name typed back matches only when it is the commitment's
-name*, *a name typed back with blank space at either end matches, and one differing in case does
-not* and *a name typed back differing in blank space inside the name does not match*. Every other
-test is renamed from removing to deleting as its title is, but for the two on a kept-until day and
-the one on the first supported date, which go: a deletion has no day.
+**Migration:** the three scenarios on whether a name typed back matches keep their titles under the
+replacing requirement, and their tests follow it. Every other test is renamed from removing to
+deleting as its title is, but for four. The two on a kept-until day and the one on the first
+supported date go: a deletion has no day. *A removal a commitments screen could not keep leaves both
+its lists as they were* goes with its test; its successor, which deletes a stopped commitment so the
+stopped list is checked too, is under *A deletion erases every record of its commitment, or keeps
+nothing at either place* with a new test.
 
 ### Requirement: A roster answers which commitments it had not stopped keeping on a calendar date
 
