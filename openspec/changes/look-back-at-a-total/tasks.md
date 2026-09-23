@@ -14,37 +14,37 @@ make it pass, then the next. Every test goes in
 
 ## 2. The seam
 
-- [ ] 2.1 `LookBack.Graph.targetRule`, `LookBack.Graph.Stretch` and `LookBack.Graph.Point.isKept` exist as `design.md` § *The seam* writes them, and 3.1 is red before a total's graph is formed
-- [ ] 2.2 `Roster`, `Commitment`, `CalendarDate`, `History`, `Schedule` and `DayView` are unchanged, and `openspec/specs/` is untouched (rule 2)
-- [ ] 2.3 `LookBackWords.sum(_:of:)` is the one place a sum of its target is said, built on `LookBackWords.number(_:)`
+- [x] 2.1 `LookBack.Graph.targetRule`, `LookBack.Graph.Stretch` and `LookBack.Graph.Point.isKept` exist as `design.md` § *The seam* writes them, and 3.1 is red before a total's graph is formed
+- [x] 2.2 `Roster`, `Commitment`, `CalendarDate`, `History`, `Schedule` and `DayView` are unchanged, and `openspec/specs/` is untouched (rule 2)
+- [x] 2.3 `LookBackWords.sum(_:of:)` is the one place a sum of its target is said, built on `LookBackWords.number(_:)`
 
 ## 3. The points — one test each
 
-- [ ] 3.1 a total commitment's look-back says a point for each day that holds an addition — catches a point per day walked, a zero point on a day with nothing added, or the last addition read in place of the sum
-- [ ] 3.2 a total commitment's look-back says no graph where no day holds an addition — catches an empty graph answered in place of none, or a taken-back day left as a zero point
-- [ ] 3.3 a total commitment's look-back says the sum the era holding a day kept — catches every day's sum read against the newest era's commitment, which finds none behind a boundary
+- [x] 3.1 a total commitment's look-back says a point for each day that holds an addition — catches a point per day walked, a zero point on a day with nothing added, or the last addition read in place of the sum
+- [x] 3.2 a total commitment's look-back says no graph where no day holds an addition — catches an empty graph answered in place of none, or a taken-back day left as a zero point
+- [x] 3.3 a total commitment's look-back says the sum the era holding a day kept — catches every day's sum read against the newest era's commitment, which finds none behind a boundary
 
 ## 4. Kept and its words — one test each
 
-- [ ] 4.1 a total commitment's graph marks a point kept where its sum passes its target, and not where it falls short — catches the comparison reversed, or a number's words where the sum of its target belongs
-- [ ] 4.2 a total commitment's graph marks a point kept where its sum reaches its target exactly — catches `>` where `>=` belongs
-- [ ] 4.3 a total commitment's graph judges each point against the target the era holding its day declared — catches every point judged and said against the newest era's target
+- [x] 4.1 a total commitment's graph marks a point kept where its sum passes its target, and not where it falls short — catches the comparison reversed, or a number's words where the sum of its target belongs
+- [x] 4.2 a total commitment's graph marks a point kept where its sum reaches its target exactly — catches `>` where `>=` belongs
+- [x] 4.3 a total commitment's graph judges each point against the target the era holding its day declared — catches every point judged and said against the newest era's target
 
 ## 5. The target rule — one test each
 
-- [ ] 5.1 a total commitment's target rule runs across every day of its graph, a day holding no addition included — catches a rule fitted to the first and last point, or a rule on a number's graph
-- [ ] 5.2 a total commitment's target rule steps where the target changed — catches one stretch per era regardless of target, a step a day early or late, or stretches newest first
+- [x] 5.1 a total commitment's target rule runs across every day of its graph, a day holding no addition included — catches a rule fitted to the first and last point, or a rule on a number's graph
+- [x] 5.2 a total commitment's target rule steps where the target changed — catches one stretch per era regardless of target, a step a day early or late, or stretches newest first
 
 ## 6. The values axis — one test each
 
-- [ ] 6.1 a total commitment's graph runs from zero to its greatest sum where a sum passes every target — catches the number's bounds taken from the points' least value
-- [ ] 6.2 a total commitment's graph runs from zero to its greatest target where every sum falls short — catches the highest taken from the points alone, or from the newest era's target alone
+- [x] 6.1 a total commitment's graph runs from zero to its greatest sum where a sum passes every target — catches the number's bounds taken from the points' least value
+- [x] 6.2 a total commitment's graph runs from zero to its greatest target where every sum falls short — catches the highest taken from the points alone, or from the newest era's target alone
 
 ## 7. The boundary and what a note still says
 
-- [ ] 7.1 a total commitment's graph says nothing where only the rhythm changed — catches a stretch split at a boundary whose target did not change, or a day, month or point shifted by it
-- [ ] 7.2 a look-back at a commitment whose days take a note says no line, no whole and no graph — written here, and the test named for the scenario this delta removes, "a look-back at a commitment whose days take a note or a total says no line, no whole and no graph", is deleted; no other test is
-- [ ] 7.3 The two carried boundary tests, "a look-back says nothing between the lines either side of a boundary" and "a number commitment's graph says nothing where one era gives way to the next", pass unchanged
+- [x] 7.1 a total commitment's graph says nothing where only the rhythm changed — catches a stretch split at a boundary whose target did not change, or a day, month or point shifted by it
+- [x] 7.2 a look-back at a commitment whose days take a note says no line, no whole and no graph — written here, and the test named for the scenario this delta removes, "a look-back at a commitment whose days take a note or a total says no line, no whole and no graph", is deleted; no other test is
+- [x] 7.3 The two carried boundary tests, "a look-back says nothing between the lines either side of a boundary" and "a number commitment's graph says nothing where one era gives way to the next", pass unchanged
 
 ## 8. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 

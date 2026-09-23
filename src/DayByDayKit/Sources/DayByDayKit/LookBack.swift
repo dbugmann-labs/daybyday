@@ -30,6 +30,10 @@ public struct LookBack: Hashable, Sendable {
         public let lowestInWords: String
         public let highest: Decimal
         public let highestInWords: String
+        /// A total commitment's target across its whole dates axis, one `Stretch` per run of
+        /// consecutive days owed one target — empty on a number's graph. `design.md` § *The
+        /// rule is stretches, not a target per day*.
+        public let targetRule: [Stretch]
 
         public struct Month: Hashable, Sendable {
             public let inWords: String
@@ -39,6 +43,16 @@ public struct LookBack: Hashable, Sendable {
         public struct Point: Hashable, Sendable {
             public let day: Int
             public let value: Decimal
+            public let inWords: String
+            /// Whether a total's point reached its day's target — `nil` on a number's point,
+            /// which the graph judges nothing about. `design.md` § *`isKept` is optional*.
+            public let isKept: Bool?
+        }
+
+        public struct Stretch: Hashable, Sendable {
+            public let from: Int
+            public let through: Int
+            public let target: Decimal
             public let inWords: String
         }
     }
@@ -120,6 +134,15 @@ public struct LookBack: Hashable, Sendable {
         let earliestEra = eras.last!
 
         if case .number = commitment.kind {
+            let graph = Self.graph(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
+            return LookBack(
+                name: commitment.name, rhythmInWords: commitment.rhythmInWords,
+                keptFromInWords: LookBackWords.day(earliestEra.start),
+                keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
+                graph: graph)
+        }
+
+        if case .total = commitment.kind {
             let graph = Self.graph(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
             return LookBack(
                 name: commitment.name, rhythmInWords: commitment.rhythmInWords,
@@ -300,9 +323,10 @@ public struct LookBack: Hashable, Sendable {
         return (lines, totalDue, totalKept)
     }
 
-    /// A number commitment's graph: a walk of `start` through `end` inclusive of its own, sharing
-    /// `era(holding:in:)` with `walkDays` rather than widening it — `design.md` § *A second walk,
-    /// not a wider `walkDays`*. `nil` where no day it counts holds a number.
+    /// A number or a total commitment's graph: a walk of `start` through `end` inclusive of its
+    /// own, sharing `era(holding:in:)` with `walkDays` rather than widening it — `design.md` § *A
+    /// second walk, not a wider `walkDays`* and § *The graph walk grows; `walkDays` is not
+    /// reached*. `nil` where no day it counts holds a number or an addition.
     private static func graph(
         from start: CalendarDate, through end: CalendarDate, eras: [Era], history: History
     ) -> LookBack.Graph? {
@@ -310,9 +334,19 @@ public struct LookBack: Hashable, Sendable {
             return nil
         }
 
+        let isTotal: Bool
+        if case .total = eras.first!.commitment.kind {
+            isTotal = true
+        } else {
+            isTotal = false
+        }
+
         var days: [String] = []
         var months: [LookBack.Graph.Month] = []
         var points: [LookBack.Graph.Point] = []
+        var stretches: [LookBack.Graph.Stretch] = []
+        var currentStretchFrom: Int?
+        var currentStretchTarget: Decimal?
         var currentYearMonth: YearMonth?
         var day = start
         var index = 0
@@ -328,12 +362,38 @@ public struct LookBack: Hashable, Sendable {
                 currentYearMonth = yearMonth
             }
 
-            if let era = Self.era(holding: day, in: eras),
-                let value = history.number(for: era.commitment, on: day)
-            {
-                points.append(
-                    LookBack.Graph.Point(
-                        day: index, value: value, inWords: LookBackWords.number(value)))
+            if let era = Self.era(holding: day, in: eras) {
+                if isTotal, case .total(let target) = era.commitment.kind {
+                    let sum = history.total(for: era.commitment, on: day)
+                    if sum > 0 {
+                        points.append(
+                            LookBack.Graph.Point(
+                                day: index, value: sum,
+                                inWords: LookBackWords.sum(sum, of: target.amount),
+                                isKept: sum >= target.amount))
+                    }
+
+                    // One stretch per run of consecutive days owed the same target —
+                    // `design.md` § *The rule is stretches, not a target per day*. A day with
+                    // no addition is still owed a target, so this reads every day, not only
+                    // those that made a point.
+                    if currentStretchTarget != target.amount {
+                        if let from = currentStretchFrom, let previousTarget = currentStretchTarget
+                        {
+                            stretches.append(
+                                LookBack.Graph.Stretch(
+                                    from: from, through: index - 1, target: previousTarget,
+                                    inWords: LookBackWords.number(previousTarget)))
+                        }
+                        currentStretchFrom = index
+                        currentStretchTarget = target.amount
+                    }
+                } else if !isTotal, let value = history.number(for: era.commitment, on: day) {
+                    points.append(
+                        LookBack.Graph.Point(
+                            day: index, value: value, inWords: LookBackWords.number(value),
+                            isKept: nil))
+                }
             }
 
             guard day != end, let next = day.adding(days: 1) else {
@@ -341,6 +401,13 @@ public struct LookBack: Hashable, Sendable {
             }
             day = next
             index += 1
+        }
+
+        if let from = currentStretchFrom, let target = currentStretchTarget {
+            stretches.append(
+                LookBack.Graph.Stretch(
+                    from: from, through: index, target: target,
+                    inWords: LookBackWords.number(target)))
         }
 
         guard !points.isEmpty else {
@@ -352,7 +419,10 @@ public struct LookBack: Hashable, Sendable {
         // values axis says its two bounds and nothing between*.
         var lowest: Decimal
         var highest: Decimal
-        if case .number(let range) = eras.first!.commitment.kind, let range {
+        if isTotal {
+            lowest = 0
+            highest = 0
+        } else if case .number(let range) = eras.first!.commitment.kind, let range {
             lowest = range.lowest
             highest = range.highest
         } else {
@@ -363,10 +433,19 @@ public struct LookBack: Hashable, Sendable {
             if point.value < lowest { lowest = point.value }
             if point.value > highest { highest = point.value }
         }
+        if isTotal {
+            // The values axis stays in view of the target rule too, not only the sums —
+            // `design.md` § *The rule is stretches, not a target per day* / `spec.md` § *A total
+            // commitment's graph runs its values from zero to its greatest sum or target*.
+            for stretch in stretches {
+                if stretch.target > highest { highest = stretch.target }
+            }
+        }
 
         return LookBack.Graph(
             days: days, months: months, points: points,
             lowest: lowest, lowestInWords: LookBackWords.number(lowest),
-            highest: highest, highestInWords: LookBackWords.number(highest))
+            highest: highest, highestInWords: LookBackWords.number(highest),
+            targetRule: stretches)
     }
 }

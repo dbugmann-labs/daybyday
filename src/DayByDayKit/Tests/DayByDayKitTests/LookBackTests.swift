@@ -771,8 +771,8 @@ func aLookBackSaysNothingBetweenTheLinesEitherSideOfABoundary() throws {
 }
 
 @MainActor
-@Test("a look-back at a commitment whose days take a note or a total says no line, no whole and no graph")
-func aLookBackAtACommitmentWhoseDaysTakeANoteOrATotalSaysNoLineNoWholeAndNoGraph() throws {
+@Test("a look-back at a commitment whose days take a note says no line, no whole and no graph")
+func aLookBackAtACommitmentWhoseDaysTakeANoteSaysNoLineNoWholeAndNoGraph() throws {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let today = CalendarDate(year: 2026, month: 3, day: 15)!
     let everyDay: Schedule = .weekdays([
@@ -794,24 +794,6 @@ func aLookBackAtACommitmentWhoseDaysTakeANoteOrATotalSaysNoLineNoWholeAndNoGraph
     #expect(noteLookBack?.lines == [])
     #expect(noteLookBack?.whole == nil)
     #expect(noteLookBack?.graph == nil)
-
-    let totalPlaces = freshRosterAndRecordPlaces()
-    let saved = Commitment(
-        name: "Saved", schedule: everyDay, keptFrom: keptFrom,
-        kind: .total(target: Commitment.Target(100)!))!
-    let totalRosterStore = try RosterStore(at: totalPlaces.roster)
-    try totalRosterStore.add(saved)
-    _ = try RecordStore(at: totalPlaces.record)
-    let totalScreen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: totalPlaces.roster, keepingRecordAt: totalPlaces.record)
-    let totalLookBack = totalScreen.lookBack(at: saved)
-
-    #expect(totalLookBack?.name == "Saved")
-    #expect(totalLookBack?.rhythmInWords == "Every day")
-    #expect(totalLookBack?.keptFromInWords == "1 January 2026")
-    #expect(totalLookBack?.lines == [])
-    #expect(totalLookBack?.whole == nil)
-    #expect(totalLookBack?.graph == nil)
 }
 
 @MainActor
@@ -1245,9 +1227,9 @@ func aNumberCommitmentsLookBackSaysAPointForEachDayThatHoldsANumber() throws {
 
     #expect(
         lookBack?.graph?.points == [
-            LookBack.Graph.Point(day: 0, value: 72.5, inWords: "72.5"),
-            LookBack.Graph.Point(day: 2, value: 71, inWords: "71"),
-            LookBack.Graph.Point(day: 3, value: 70.8, inWords: "70.8"),
+            LookBack.Graph.Point(day: 0, value: 72.5, inWords: "72.5", isKept: nil),
+            LookBack.Graph.Point(day: 2, value: 71, inWords: "71", isKept: nil),
+            LookBack.Graph.Point(day: 3, value: 70.8, inWords: "70.8", isKept: nil),
         ])
     #expect(lookBack?.lines == [])
     #expect(lookBack?.whole == nil)
@@ -1317,7 +1299,7 @@ func aNumberCommitmentsLookBackSaysOnePointWhereOneDayHoldsANumber() throws {
 
     #expect(
         lookBack?.graph?.points == [
-            LookBack.Graph.Point(day: 2, value: 72.5, inWords: "72.5")
+            LookBack.Graph.Point(day: 2, value: 72.5, inWords: "72.5", isKept: nil)
         ])
 }
 
@@ -1353,8 +1335,8 @@ func aNumberCommitmentsLookBackSaysTheNumberTheEraHoldingADayKept() throws {
 
     #expect(
         lookBack?.graph?.points == [
-            LookBack.Graph.Point(day: 0, value: 80, inWords: "80"),
-            LookBack.Graph.Point(day: 2, value: 70, inWords: "70"),
+            LookBack.Graph.Point(day: 0, value: 80, inWords: "80", isKept: nil),
+            LookBack.Graph.Point(day: 2, value: 70, inWords: "70", isKept: nil),
         ])
 }
 
@@ -1470,7 +1452,7 @@ func aNumberCommitmentsGraphSaysNoPointForANumberKeptAfterTheDayItWasKeptUntil()
 
     #expect(
         lookBack?.graph?.points == [
-            LookBack.Graph.Point(day: 2, value: 72.5, inWords: "72.5")
+            LookBack.Graph.Point(day: 2, value: 72.5, inWords: "72.5", isKept: nil)
         ])
 }
 
@@ -1629,8 +1611,8 @@ func aNumberCommitmentsGraphSaysNothingWhereOneEraGivesWayToTheNext() throws {
     #expect(lookBack?.graph?.months == [LookBack.Graph.Month(inWords: "March 2026", day: 0)])
     #expect(
         lookBack?.graph?.points == [
-            LookBack.Graph.Point(day: 1, value: 72.5, inWords: "72.5"),
-            LookBack.Graph.Point(day: 4, value: 71, inWords: "71"),
+            LookBack.Graph.Point(day: 1, value: 72.5, inWords: "72.5", isKept: nil),
+            LookBack.Graph.Point(day: 4, value: 71, inWords: "71", isKept: nil),
         ])
 }
 
@@ -1684,6 +1666,424 @@ func aLookBackSaysAWholeNumberWithNoSeparatorBetweenThousands() throws {
     let lookBack = screen.lookBack(at: steps)
 
     #expect(lookBack?.graph?.points.map(\.inWords) == ["100000"])
+}
+
+@MainActor
+@Test("a total commitment's look-back says a point for each day that holds an addition")
+func aTotalCommitmentsLookBackSaysAPointForEachDayThatHoldsAnAddition() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let firstDay = CalendarDate(year: 2026, month: 3, day: 1)!
+    let thirdDay = CalendarDate(year: 2026, month: 3, day: 3)!
+    let fourthDay = CalendarDate(year: 2026, month: 3, day: 4)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(protein)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(100, for: protein, on: firstDay)!)
+    try recordStore.add(Addition(50, for: protein, on: firstDay)!)
+    try recordStore.add(Addition(87.5, for: protein, on: thirdDay)!)
+    try recordStore.add(Addition(120, for: protein, on: fourthDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: protein)
+
+    #expect(lookBack?.graph?.points.map(\.day) == [0, 2, 3])
+    #expect(lookBack?.graph?.points.map(\.value) == [150, 87.5, 120])
+    #expect(lookBack?.graph?.points.contains { $0.day == 1 } == false)
+    #expect(lookBack?.graph?.points.contains { $0.day == 4 } == false)
+    #expect(lookBack?.graph?.days.count == 5)
+    #expect(lookBack?.graph?.days.first == "1 March 2026")
+    #expect(lookBack?.graph?.days.last == "5 March 2026")
+    #expect(lookBack?.lines == [])
+    #expect(lookBack?.whole == nil)
+}
+
+@MainActor
+@Test("a total commitment's look-back says no graph where no day holds an addition")
+func aTotalCommitmentsLookBackSaysNoGraphWhereNoDayHoldsAnAddition() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(protein)
+    _ = try RecordStore(at: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: protein)
+
+    #expect(lookBack?.graph == nil)
+    #expect(lookBack?.lines == [])
+    #expect(lookBack?.whole == nil)
+    #expect(lookBack?.name == "Protein")
+    #expect(lookBack?.rhythmInWords == "Every day")
+    #expect(lookBack?.keptFromInWords == "1 March 2026")
+
+    let takenBackPlaces = freshRosterAndRecordPlaces()
+    let takenBackDay = CalendarDate(year: 2026, month: 3, day: 3)!
+    let takenBackProtein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let takenBackRosterStore = try RosterStore(at: takenBackPlaces.roster)
+    try takenBackRosterStore.add(takenBackProtein)
+    let takenBackRecordStore = try RecordStore(at: takenBackPlaces.record)
+    try takenBackRecordStore.add(Addition(50, for: takenBackProtein, on: takenBackDay)!)
+    try takenBackRecordStore.removeLastAddition(for: takenBackProtein, on: takenBackDay)
+
+    let takenBackScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: takenBackPlaces.roster,
+        keepingRecordAt: takenBackPlaces.record)
+    let takenBackLookBack = takenBackScreen.lookBack(at: takenBackProtein)
+
+    #expect(takenBackLookBack?.graph == nil)
+}
+
+@MainActor
+@Test("a total commitment's look-back says the sum the era holding a day kept")
+func aTotalCommitmentsLookBackSaysTheSumTheEraHoldingADayKept() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderProtein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: olderKeptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let newerProtein = Commitment(
+        era: olderProtein, schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .total(target: Commitment.Target(100)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
+    let newerDay = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderProtein)
+    try rosterStore.put(era: newerProtein, on: olderProtein, keptUntil: boundary, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(90, for: olderProtein, on: olderDay)!)
+    try recordStore.add(Addition(110, for: newerProtein, on: newerDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerProtein)
+
+    #expect(lookBack?.graph?.points.map(\.value) == [90, 110])
+}
+
+@MainActor
+@Test(
+    "a total commitment's graph marks a point kept where its sum passes its target, and not where it falls short"
+)
+func aTotalCommitmentsGraphMarksAPointKeptWhereItsSumPassesItsTargetAndNotWhereItFallsShort() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let firstDay = CalendarDate(year: 2026, month: 3, day: 1)!
+    let thirdDay = CalendarDate(year: 2026, month: 3, day: 3)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(protein)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(150, for: protein, on: firstDay)!)
+    try recordStore.add(Addition(87.5, for: protein, on: thirdDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: protein)
+
+    let firstPoint = lookBack?.graph?.points.first { $0.day == 0 }
+    let secondPoint = lookBack?.graph?.points.first { $0.day == 2 }
+
+    #expect(firstPoint?.inWords == "150 of 120")
+    #expect(firstPoint?.isKept == true)
+    #expect(secondPoint?.inWords == "87.5 of 120")
+    #expect(secondPoint?.isKept == false)
+}
+
+@MainActor
+@Test("a total commitment's graph marks a point kept where its sum reaches its target exactly")
+func aTotalCommitmentsGraphMarksAPointKeptWhereItsSumReachesItsTargetExactly() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let fourthDay = CalendarDate(year: 2026, month: 3, day: 4)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(protein)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(100, for: protein, on: fourthDay)!)
+    try recordStore.add(Addition(20, for: protein, on: fourthDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: protein)
+
+    #expect(lookBack?.graph?.points.count == 1)
+    #expect(lookBack?.graph?.points.first?.inWords == "120 of 120")
+    #expect(lookBack?.graph?.points.first?.isKept == true)
+}
+
+@MainActor
+@Test("a total commitment's graph judges each point against the target the era holding its day declared")
+func aTotalCommitmentsGraphJudgesEachPointAgainstTheTargetTheEraHoldingItsDayDeclared() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderProtein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: olderKeptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let newerProtein = Commitment(
+        era: olderProtein, schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .total(target: Commitment.Target(100)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
+    let newerDay = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderProtein)
+    try rosterStore.put(era: newerProtein, on: olderProtein, keptUntil: boundary, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(110, for: olderProtein, on: olderDay)!)
+    try recordStore.add(Addition(110, for: newerProtein, on: newerDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerProtein)
+
+    let olderPoint = lookBack?.graph?.points.first { $0.day == 1 }
+    let newerPoint = lookBack?.graph?.points.first { $0.day == 4 }
+
+    #expect(olderPoint?.inWords == "110 of 120")
+    #expect(olderPoint?.isKept == false)
+    #expect(newerPoint?.inWords == "110 of 100")
+    #expect(newerPoint?.isKept == true)
+}
+
+@MainActor
+@Test(
+    "a total commitment's target rule runs across every day of its graph, a day holding no addition included"
+)
+func aTotalCommitmentsTargetRuleRunsAcrossEveryDayOfItsGraphADayHoldingNoAdditionIncluded() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let thirdDay = CalendarDate(year: 2026, month: 3, day: 3)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(protein)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(150, for: protein, on: thirdDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: protein)
+
+    #expect(
+        lookBack?.graph?.targetRule == [
+            LookBack.Graph.Stretch(from: 0, through: 4, target: 120, inWords: "120")
+        ])
+
+    let numberPlaces = freshRosterAndRecordPlaces()
+    let weightKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let weight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: weightKeptFrom, kind: .number(range: nil))!
+    let numberRosterStore = try RosterStore(at: numberPlaces.roster)
+    try numberRosterStore.add(weight)
+    let numberRecordStore = try RecordStore(at: numberPlaces.record)
+    try numberRecordStore.add(Number(72.5, for: weight, on: weightKeptFrom)!)
+    let numberScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: numberPlaces.roster, keepingRecordAt: numberPlaces.record)
+    let numberLookBack = numberScreen.lookBack(at: weight)
+
+    #expect(numberLookBack?.graph?.targetRule == [])
+}
+
+@MainActor
+@Test("a total commitment's target rule steps where the target changed")
+func aTotalCommitmentsTargetRuleStepsWhereTheTargetChanged() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderProtein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: olderKeptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let newerProtein = Commitment(
+        era: olderProtein, schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .total(target: Commitment.Target(100)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 8)!
+    let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
+    let newerDay = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderProtein)
+    try rosterStore.put(era: newerProtein, on: olderProtein, keptUntil: boundary, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(90, for: olderProtein, on: olderDay)!)
+    try recordStore.add(Addition(110, for: newerProtein, on: newerDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerProtein)
+
+    #expect(
+        lookBack?.graph?.targetRule == [
+            LookBack.Graph.Stretch(from: 0, through: 2, target: 120, inWords: "120"),
+            LookBack.Graph.Stretch(from: 3, through: 7, target: 100, inWords: "100"),
+        ])
+}
+
+@MainActor
+@Test("a total commitment's graph runs from zero to its greatest sum where a sum passes every target")
+func aTotalCommitmentsGraphRunsFromZeroToItsGreatestSumWhereASumPassesEveryTarget() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let protein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: keptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let firstDay = CalendarDate(year: 2026, month: 3, day: 1)!
+    let thirdDay = CalendarDate(year: 2026, month: 3, day: 3)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(protein)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(150, for: protein, on: firstDay)!)
+    try recordStore.add(Addition(87.5, for: protein, on: thirdDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: protein)
+
+    #expect(lookBack?.graph?.lowestInWords == "0")
+    #expect(lookBack?.graph?.highestInWords == "150")
+}
+
+@MainActor
+@Test("a total commitment's graph runs from zero to its greatest target where every sum falls short")
+func aTotalCommitmentsGraphRunsFromZeroToItsGreatestTargetWhereEverySumFallsShort() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderProtein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: olderKeptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let newerProtein = Commitment(
+        era: olderProtein, schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .total(target: Commitment.Target(100)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
+    let newerDay = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderProtein)
+    try rosterStore.put(era: newerProtein, on: olderProtein, keptUntil: boundary, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(30, for: olderProtein, on: olderDay)!)
+    try recordStore.add(Addition(40, for: newerProtein, on: newerDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerProtein)
+
+    #expect(lookBack?.graph?.lowestInWords == "0")
+    #expect(lookBack?.graph?.highestInWords == "120")
+}
+
+@MainActor
+@Test("a total commitment's graph says nothing where only the rhythm changed")
+func aTotalCommitmentsGraphSaysNothingWhereOnlyTheRhythmChanged() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderProtein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: olderKeptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let newerProtein = Commitment(
+        era: olderProtein, schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 8)!
+    let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
+    let newerDay = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderProtein)
+    try rosterStore.put(era: newerProtein, on: olderProtein, keptUntil: boundary, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(150, for: olderProtein, on: olderDay)!)
+    try recordStore.add(Addition(90, for: newerProtein, on: newerDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerProtein)
+
+    #expect(lookBack?.graph?.days.count == 8)
+    #expect(lookBack?.graph?.days.first == "1 March 2026")
+    #expect(lookBack?.graph?.days.last == "8 March 2026")
+    #expect(lookBack?.graph?.months == [LookBack.Graph.Month(inWords: "March 2026", day: 0)])
+    #expect(
+        lookBack?.graph?.points == [
+            LookBack.Graph.Point(day: 1, value: 150, inWords: "150 of 120", isKept: true),
+            LookBack.Graph.Point(day: 4, value: 90, inWords: "90 of 120", isKept: false),
+        ])
+    #expect(
+        lookBack?.graph?.targetRule == [
+            LookBack.Graph.Stretch(from: 0, through: 7, target: 120, inWords: "120")
+        ])
 }
 
 @MainActor
