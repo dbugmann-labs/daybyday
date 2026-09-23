@@ -29,9 +29,11 @@ that, decided at the G1 of 2026-09-21 that reopened `FEAT: commitment` (#26) and
   (ADR-1027) is unchanged in its letter — it is written only into a roster holding nothing at all —
   and an emptied roster is not one. The mark travels in a copy because a copy nests the roster's own
   form, so a restore gives back an emptied roster exactly.
-- **What the state still holds on a phone is erased at the upgrade**, with its records, silently:
-  each was confirmed by its name typed back. A roster that leaves holding nothing is emptied. An old
-  copy is read the same way.
+- **What the state still holds in a roster at the identity form is erased at the upgrade**, with its
+  records, silently: each was removed after a commitment had an identity, and confirmed by its name
+  typed back. A roster still at an earlier form goes through the fold unchanged and erases nothing;
+  a removed entry the fold keeps, as an era or a stopped commitment, keeps its records. A roster
+  that either leaves holding nothing is emptied. An old copy is read the same way, by its form.
 
 ## Consequences
 
