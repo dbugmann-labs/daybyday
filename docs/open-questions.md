@@ -292,7 +292,9 @@ Things that are built, or deliberately not built, in a state someone will trip o
   the two dictionaries, so the function is about ninety lines and does three of the five jobs —
   the walk, the sort and the totals. #300's fix round takes out the sort's leftover tuple and
   `SortableLine` wrappers; what is still owed is the tally-pass split, by #275 if it reaches the
-  function.*
+  function.* *Amended 2026-09-23 at #275's G4: a total's page says no line, so #275 does not reach
+  `walkDays` and its `design.md` says so; the split is owed by the next Story that changes how a
+  tick or a quota is counted.*
 - **A quota's look-back scrolls its whole out of sight.** Flagged by the designer at #273's
   layout round, 2026-09-16. A weekly quota's page says one line per week, about fifty-two a year,
   where a tick's twelve month lines kept the whole card in view; nothing on the page is pinned, so
