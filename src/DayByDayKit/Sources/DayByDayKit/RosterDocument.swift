@@ -54,6 +54,12 @@ struct RosterDocument: Codable {
         let schedule: Schedule
         let keptFrom: CalendarDate
         let kind: Commitment.Kind
+
+        init(_ commitment: Commitment) {
+            schedule = commitment.schedule
+            keptFrom = commitment.keptFrom
+            kind = commitment.kind
+        }
     }
 
     /// Re-forms `roster` by rebuilding its entries directly, in the document's own order, rather
@@ -89,8 +95,7 @@ struct RosterDocument: Codable {
                 currentIdentity = commitment.identity
                 shapesInCurrentRun = []
             }
-            let shape = EraShape(
-                schedule: commitment.schedule, keptFrom: commitment.keptFrom, kind: commitment.kind)
+            let shape = EraShape(commitment)
             guard shapesInCurrentRun.insert(shape).inserted else {
                 return nil
             }
@@ -158,11 +163,7 @@ struct RosterDocument: Codable {
             self.front = representative.keptFrom
             self.frontIndex = headIndex
             self.eras = [head]
-            self.shapes = [
-                EraShape(
-                    schedule: representative.schedule, keptFrom: representative.keptFrom,
-                    kind: representative.kind)
-            ]
+            self.shapes = [EraShape(representative)]
         }
     }
 
@@ -170,13 +171,21 @@ struct RosterDocument: Codable {
     /// kept before a commitment had an identity* describe — `nil` where any one entry could not be
     /// formed, or where an entry is held removed with no day it was kept until, exactly as
     /// `formRoster()` refuses those. Every entry this document keeps or has stopped keeping becomes
-    /// a commitment of its own, in the place, the state and the category it was held in. Every
-    /// removed entry is then judged in the document's own order: one whose name and kind sort match
-    /// a commitment already placed, and whose day kept until is the day before that commitment's
-    /// current frontmost era, becomes an earlier era of it — the nearest such commitment, by that
-    /// front's own place, where more than one answers. One that chains to nothing but whose name
-    /// and kind sort match a commitment this document itself keeps or has stopped becomes a stopped
+    /// a commitment of its own, in the state and the category it was held in. Every removed entry
+    /// is then judged in the document's own order: one whose name and kind sort match a commitment
+    /// already placed, and whose day kept until is the day before that commitment's current
+    /// frontmost era, becomes an earlier era of it — the nearest such commitment, by that front's
+    /// own place, where more than one answers. One that chains to nothing but whose name and kind
+    /// sort match a commitment this document itself keeps or has stopped becomes a stopped
     /// commitment of its own. Every other removed entry is dropped.
+    ///
+    /// The roster this answers with holds its commitments in the order of the entry each was made
+    /// from — never the order a chain finished gathering eras in — with each commitment's own eras
+    /// gathered together immediately behind it, newest first: `design.md` § *The eras gather
+    /// behind their commitment; the commitments keep their order*. A document holding one era
+    /// twice, on either path — as two entries this document itself keeps or has stopped, or as an
+    /// era attaching to a chain that already holds its shape — is refused rather than folded, on
+    /// the same footing as *One era held twice in a stored form-4 roster is refused, not folded*.
     func folded() -> Fold? {
         struct Decoded {
             let record: CommitmentRecord
@@ -255,9 +264,7 @@ struct RosterDocument: Codable {
                 let era = Commitment(
                     era: chain.representative, schedule: item.commitment.schedule,
                     keptFrom: item.commitment.keptFrom, kind: item.commitment.kind)!
-                let shape = EraShape(
-                    schedule: item.commitment.schedule, keptFrom: item.commitment.keptFrom,
-                    kind: item.commitment.kind)
+                let shape = EraShape(era)
                 guard chain.shapes.insert(shape).inserted else {
                     return nil
                 }
