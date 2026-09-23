@@ -4,6 +4,15 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-23 — a note commitment's look-back lists its notes under a **count**, "38
+  notes", which is the first figure a look-back says beside something other than a fraction. It was
+  the owner's call at the grill, against the recommendation that the list's length already says it,
+  and a count out of the due days was offered and not chosen. What keeps it on the record's side of
+  the line is that it counts what was written and nothing that was owed: it is never a fraction,
+  never out of the due days and never a percentage, a day with no note is nothing on the page, due
+  or not, and the day screen shows none of it. A note cut at two lines is tappable and one that
+  fits is not, so what is a target on the page is exactly what looks like one — the ellipsis is its
+  only mark — and nothing on it fades. Written by `look-back-at-a-note` (#276).
 - Amended: 2026-09-23 — a total commitment's look-back draws a **graph** of its day sums with a
   **target rule** across, and its points are marked **kept** where a sum reached the target its day
   was owed. That goes past the amendment below, which says a graph "marks no day kept", so it was

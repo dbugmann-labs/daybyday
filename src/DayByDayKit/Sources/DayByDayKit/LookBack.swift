@@ -11,10 +11,23 @@ public struct LookBack: Hashable, Sendable {
     public let whole: String?
     public let lines: [Line]
     public let graph: Graph?
+    /// A note commitment's notes, newest first — empty on every other kind, and on a note that
+    /// says no note. `openspec/changes/look-back-at-a-note/design.md` § *The seam*.
+    public let notes: [DatedNote]
+    /// A note commitment's count of the notes it says, "38 notes" or "1 note" — `nil` on every
+    /// other kind, and where `notes` is empty. `design.md` § *The seam*.
+    public let noteCountInWords: String?
 
     public enum Line: Hashable, Sendable {
         case month(inWords: String, fraction: String)
         case week(inWords: String, fraction: String)
+    }
+
+    /// One day's note, said as a look-back says a day, and the text the record holds for it
+    /// exactly, line breaks included. `design.md` § *The seam*.
+    public struct DatedNote: Hashable, Sendable {
+        public let dayInWords: String
+        public let text: String
     }
 
     /// A number commitment's numbers over its dates axis — `nil` for every other kind, and for a
@@ -140,17 +153,17 @@ public struct LookBack: Hashable, Sendable {
                 name: commitment.name, rhythmInWords: commitment.rhythmInWords,
                 keptFromInWords: LookBackWords.day(earliestEra.start),
                 keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
-                graph: graph)
-        default:
-            break
-        }
-
-        guard case .tick = commitment.kind else {
+                graph: graph, notes: [], noteCountInWords: nil)
+        case .note:
+            let notes = Self.notes(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
             return LookBack(
                 name: commitment.name, rhythmInWords: commitment.rhythmInWords,
                 keptFromInWords: LookBackWords.day(earliestEra.start),
                 keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
-                graph: nil)
+                graph: nil, notes: notes,
+                noteCountInWords: notes.isEmpty ? nil : LookBackWords.notes(notes.count))
+        case .tick:
+            break
         }
 
         let (lines, totalDue, totalKept) = Self.walkDays(
@@ -161,7 +174,7 @@ public struct LookBack: Hashable, Sendable {
             keptFromInWords: LookBackWords.day(earliestEra.start),
             keptUntilInWords: keptUntil.map(LookBackWords.day),
             whole: LookBackWords.fraction(kept: totalKept, due: totalDue),
-            lines: lines, graph: nil)
+            lines: lines, graph: nil, notes: [], noteCountInWords: nil)
     }
 
     /// The chain of eras behind `commitment`, newest first: `commitment` itself, ending on `end`,
@@ -315,6 +328,36 @@ public struct LookBack: Hashable, Sendable {
         let totalKept = months.reduce(0) { $0 + $1.kept } + weeks.reduce(0) { $0 + $1.kept }
 
         return (lines, totalDue, totalKept)
+    }
+
+    /// A note commitment's notes, oldest first as walked then reversed — `design.md` § *A walk of
+    /// the span, reading the era holding each day*: shares `era(holding:in:)` with `walkDays` and
+    /// `graph` rather than widening either, and reads a day's note only where an era holds it, so
+    /// no note after the day kept until is said. Empty where `start` is after `end`.
+    private static func notes(
+        from start: CalendarDate, through end: CalendarDate, eras: [Era], history: History
+    ) -> [LookBack.DatedNote] {
+        guard start.days(until: end) >= 0 else {
+            return []
+        }
+
+        var notes: [LookBack.DatedNote] = []
+        var day = start
+
+        while true {
+            if let era = Self.era(holding: day, in: eras),
+                let text = history.note(for: era.commitment, on: day)
+            {
+                notes.append(LookBack.DatedNote(dayInWords: LookBackWords.day(day), text: text))
+            }
+
+            guard day != end, let next = day.adding(days: 1) else {
+                break
+            }
+            day = next
+        }
+
+        return notes.reversed()
     }
 
     /// A number or a total commitment's graph: a walk of `start` through `end` inclusive of its

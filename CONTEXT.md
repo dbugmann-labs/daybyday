@@ -1933,6 +1933,18 @@ owner's call against the recommendation that the rule was enough. A page with no
 draws its head and says "Nothing added yet." — no graph and no rule. What a note's page draws is
 #276's.
 
+**Amended 2026-09-23**, at the grill of `look-back-at-a-note` (#276), which answers that last
+sentence. A note's page lists the **notes** themselves, newest first, each under its day said the
+way every look-back says a day, "14 March 2026"; a day that holds no note is nothing on it, due or
+not, because a list of the days nothing was written on is a list of misses. A note is **folded** to
+its first two lines as written, line breaks and all, and one that runs longer is cut there and
+**opens** in place when tapped, the rest of the page moving down under it; several may be open at
+once and none stays open between visits. A note that fits is not tappable, since nothing more would
+show. A heading over the notes says how many there are, "38 notes" — a **count**, never a fraction
+and never out of the due days, the owner's call against the recommendation that the list's length
+already says it. A page with no note yet draws its head, no count, and says "No note yet." Opening a
+note enters nothing: a note is still changed only in its row on the day screen.
+
 **Graph** — what a number commitment's **look-back** draws: one unbroken trace through its
 **points**, a point for each day that holds a number, over a dates axis running from the day it is
 **kept from** through today or through the day it was **kept until**. The days between two points
