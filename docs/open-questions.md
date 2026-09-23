@@ -187,7 +187,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   end state `design.md` accepts for an app killed between the two writes, reached by a second
   failure instead. Found at G7 of `delete-a-commitment-for-good` (#304) and left on purpose; a
   save in progress for deletions would close both.
-
 - **A swiped look-back graph clips its newest date label.** The dates axis on a number's or a
   total's graph (#274's code, `LookBackView.swift` dates-label placement) picks its day ticks from
   the opening scroll position rather than the current one, so the labels slide with the chart and,
