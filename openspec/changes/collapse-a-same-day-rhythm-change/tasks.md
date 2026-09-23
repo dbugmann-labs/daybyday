@@ -62,8 +62,8 @@ to it, one red-green cycle.
   passing, the count read off the run.
 - [x] 6.2 `openspec validate collapse-a-same-day-rhythm-change --strict` exits 0 and `pnpm run checks`
   is clean but for what it is expected to warn.
-- [ ] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
-- [ ] 6.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
+- [x] 6.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
+- [x] 6.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
   that the change folder is committed and `tasks.md` has no other unticked box. The janitor then
   runs `/opsx:archive` and checks afterwards that `commitment/spec.md` carries both new-heading
   requirements and both ADDED ones, neither REMOVED heading, and the two MODIFIED ones whole. **Any
