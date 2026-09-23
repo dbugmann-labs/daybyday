@@ -370,7 +370,7 @@ public struct LookBack: Hashable, Sendable {
                             LookBack.Graph.Point(
                                 day: index, value: sum,
                                 inWords: LookBackWords.sum(sum, of: target.amount),
-                                isKept: sum >= target.amount))
+                                isKept: history.isKept(era.commitment, on: day)))
                     }
 
                     // One stretch per run of consecutive days owed the same target —

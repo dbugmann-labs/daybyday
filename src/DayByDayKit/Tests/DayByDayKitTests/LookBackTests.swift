@@ -1785,6 +1785,7 @@ func aTotalCommitmentsLookBackSaysTheSumTheEraHoldingADayKept() throws {
         asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
     let lookBack = screen.lookBack(at: newerProtein)
 
+    #expect(lookBack?.graph?.points.map(\.day) == [1, 4])
     #expect(lookBack?.graph?.points.map(\.value) == [90, 110])
 }
 

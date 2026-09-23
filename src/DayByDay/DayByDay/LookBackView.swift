@@ -380,42 +380,62 @@ struct LookBackView: View {
                     .symbolSize(20)
                 }
 
-                // A total's kept point is ringed — an extra mark laid over the shipped dot rather
-                // than a replacement for it, so a not-kept point stays exactly the dot above.
-                // `design.md` § *The shell rides this Story*: the mark is a shape, not a colour.
+                // A total's kept point is ringed, its dot in the label colour rather than the
+                // secondary colour every other dot draws in — a solid fill laid over the shipped
+                // dot to recolour it, plus the ring around it, both in `Color.primary`, so a
+                // not-kept point stays exactly the secondary dot above with no ring.
+                // `design.md` § *What the shell draws*.
                 ForEach(graph.points.filter { $0.isKept == true }, id: \.day) { point in
                     PointMark(
                         x: .value("Day", point.day),
                         y: .value("Value", (point.value as NSDecimalNumber).doubleValue)
                     )
                     .symbol {
-                        Circle()
-                            .strokeBorder(Color.secondary, lineWidth: 1.5)
-                            .frame(width: 10, height: 10)
+                        ZStack {
+                            Circle()
+                                .fill(Color.primary)
+                                .frame(width: 6, height: 6)
+                            Circle()
+                                .strokeBorder(Color.primary, lineWidth: 1.5)
+                                .frame(width: 10, height: 10)
+                        }
                     }
                 }
 
-                // The target rule: one dashed secondary segment per stretch, `from` through
-                // `through` at its own `target`, with no riser between two — each stretch its own
-                // `series`, so Swift Charts never joins one stretch's end to the next one's start.
+                // The target rule: one dashed secondary segment per stretch, from half a day
+                // before `from` through half a day past `through` at its own `target`, with no
+                // riser between two — each stretch its own `series`, so Swift Charts never joins
+                // one stretch's end to the next one's start. The half-day extension on both ends
+                // is what gives a one-day stretch (`from == through`, a target changed today
+                // through the edit sheet) a segment with real width to draw rather than the
+                // zero-length line two marks at the same point make; it also meets the next
+                // stretch's own half-day extension exactly at their shared boundary, so every day
+                // of the graph carries its target's rule with nothing left between two stretches.
                 // `design.md` § *The rule is stretches, not a target per day*.
                 ForEach(Array(graph.targetRule.enumerated()), id: \.offset) { index, stretch in
                     let target = (stretch.target as NSDecimalNumber).doubleValue
                     LineMark(
-                        x: .value("Day", stretch.from), y: .value("Target", target),
+                        x: .value("Day", Double(stretch.from) - 0.5), y: .value("Target", target),
                         series: .value("Stretch", index)
                     )
                     .foregroundStyle(Color.secondary)
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
                     LineMark(
-                        x: .value("Day", stretch.through), y: .value("Target", target),
+                        x: .value("Day", Double(stretch.through) + 0.5),
+                        y: .value("Target", target),
                         series: .value("Stretch", index)
                     )
                     .foregroundStyle(Color.secondary)
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
                 }
             }
-            .chartYScale(domain: lowest...highest)
+            // `range: .plotDimension(padding: 6)` — the same defect the x-axis padding above is
+            // already against, on this axis: a point exactly at `highest` sits on the plot's own
+            // top edge, so a kept point's ring there, 10pt across, drew half clipped. 6pt clears
+            // the ring's own radius without moving `lowest...highest`, the numeric domain the
+            // values axis itself still reads and labels — only where marks render inside the
+            // plot widens.
+            .chartYScale(domain: lowest...highest, range: .plotDimension(padding: 6))
             .chartYAxis {
                 // Gridlines only — the values themselves draw in the lane beside the chart.
                 AxisMarks(position: .leading, values: [lowest, highest]) { _ in
@@ -525,22 +545,32 @@ struct LookBackView: View {
 
                         // Each stretch's own label, at its last day — the newest at the rule's
                         // newest end, each earlier one where the rule steps (grill decision 14).
-                        // `design.md` § *The shell rides this Story*.
+                        // `design.md` § *The shell rides this Story*. Drawn only where `through`'s
+                        // own natural position already falls inside the visible plot: unlike the
+                        // dates-axis candidates above, `graph.targetRule` is not sampled from the
+                        // visible window, so a stretch scrolled out of view — its own last day
+                        // beyond either edge — would otherwise have `Self.clampedCenterX` pull its
+                        // label back onto the frame's edge and pin it there under the wrong rule,
+                        // or none at all where only an older stretch's line still crosses the
+                        // window (W.5).
                         ForEach(Array(graph.targetRule.enumerated()), id: \.offset) { _, stretch in
                             if let x = proxy.position(forX: stretch.through),
                                 let y = proxy.position(
                                     forY: (stretch.target as NSDecimalNumber).doubleValue)
                             {
-                                let width = Self.measuredWidth(stretch.inWords)
-                                Text(stretch.inWords)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .fixedSize()
-                                    .position(
-                                        x: Self.clampedCenterX(
-                                            frame.minX + x, in: frame, width: width,
-                                            trailingInset: 16),
-                                        y: frame.minY + y - 10)
+                                let naturalX = frame.minX + x
+                                if naturalX >= frame.minX && naturalX <= frame.maxX {
+                                    let width = Self.measuredWidth(stretch.inWords)
+                                    Text(stretch.inWords)
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                        .fixedSize()
+                                        .position(
+                                            x: Self.clampedCenterX(
+                                                naturalX, in: frame, width: width,
+                                                trailingInset: 16),
+                                            y: frame.minY + y - 10)
+                                }
                             }
                         }
                     }
