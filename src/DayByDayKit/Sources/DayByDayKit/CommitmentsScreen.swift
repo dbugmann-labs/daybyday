@@ -864,12 +864,13 @@ public final class CommitmentsScreen {
     /// the rhythm at the screen*. `lowest`, `highest` and `target` are read exactly as `define`
     /// reads them; `nil` for a range or a target is the one `commitment` already carries,
     /// `design.md` § *Three more strings, and `nil` is the value it already carries*. No record
-    /// moves and nothing is written at the record place by any of them. See `openspec/changes/
-    /// collapse-a-same-day-rhythm-change/specs/commitment/spec.md` §§ *A commitments screen
-    /// changes a commitment by renaming it, moving the day it is kept from, or putting a new era
-    /// on it*, *A commitments screen keeps no era a change or a restart leaves holding no day, and
-    /// a change back leaves the commitment as it was* and *A commitments screen refuses a change
-    /// it cannot make, tells each refusal apart, and changes nothing it has deleted*.
+    /// moves and nothing is written at the record place by any of them. See
+    /// `openspec/changes/collapse-a-same-day-rhythm-change/specs/commitment/spec.md` §§ *A
+    /// commitments screen changes a commitment by renaming it, moving the day it is kept from, or
+    /// putting a new era on it* and *A commitments screen keeps no era a change or a restart leaves
+    /// holding no day, and a change back leaves the commitment as it was*, and
+    /// `openspec/specs/commitment/spec.md` § *A commitments screen refuses a change it cannot make,
+    /// tells each refusal apart, and changes nothing it has deleted*.
     public func change(
         _ commitment: Commitment, toName name: String, on rhythm: Rhythm, keptFrom: CalendarDate,
         under category: String?, lowest: String? = nil, highest: String? = nil, target: String? = nil
