@@ -42,10 +42,10 @@ roster is the one input the suite cannot hold. Both are walked from the G7 stop;
 **`implementer` ticks them** in its last commit before the archive, on the owner's reply relayed by
 the conductor, and a line the owner cannot confirm is a stop and a report, never a tick.
 
-- [ ] 6.1 `phone:` install this build over the one on the phone, open the app so the fold runs,
+- [x] 6.1 `phone:` install this build over the one on the phone, open the app so the fold runs,
   remove one stopped commitment, force-quit and reopen — every commitment still listed, each under
   the rhythm and in the group it had
-- [ ] 6.2 `phone:` rename one commitment that has more than one era, force-quit and reopen — the new
+- [x] 6.2 `phone:` rename one commitment that has more than one era, force-quit and reopen — the new
   name on every era, the day kept from unchanged, and nothing gone from either list
 
 ## 7. Gates and the archive handover
@@ -57,8 +57,8 @@ the conductor, and a line the owner cannot confirm is a stop and a report, never
   warn
 - [x] 7.3 `git diff --stat origin/main` lists only this change folder, `RosterDocument.swift` and
   `RosterStoreTests.swift`
-- [ ] 7.4 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 7.5 The **`implementer` ticks this box in its last commit before the archive**, on the
+- [x] 7.4 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 7.5 The **`implementer` ticks this box in its last commit before the archive**, on the
   evidence that every box above is ticked and that this instruction is here for the janitor. The
   janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and
   reads the spec diff that produced: `openspec/specs/commitment/spec.md` gains one requirement and
