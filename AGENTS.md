@@ -198,7 +198,8 @@ at G7 and warned about by `pnpm run check:budgets`.
 **Walk** — a Story's list of screens to show, and the run that shows them (ADR-1053). Owed by
 every Story whose diff reaches `src/DayByDay/`: `spec-author` writes `## The walk` in `tasks.md`,
 one line per screenshot; `implementer` drives the simulator through it with a throwaway XCUITest
-at the end of Stage 6, posts the pictures to the PR with `gh pr comment --attach` and deletes the
+at the end of Stage 6, posts the pictures to the PR with `pnpm run walk -- --post-only <pr>` —
+never a hand-written `gh pr comment --attach`, which shows them at full width — and deletes the
 test; `reviewer` reads the pictures at G7 and the human sees them from the G7 stop. It fails only
 when a step cannot be driven and asserts nothing about what is shown — the seam tests say what,
 the walk shows it. A line marked `phone:` is a step no simulator can prove, and the human walks
