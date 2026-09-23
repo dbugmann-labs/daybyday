@@ -61,22 +61,6 @@ struct RosterDocument: Codable {
         emptied = roster.emptied
     }
 
-    /// One era's shape, everything but its identity and its name — both fixed within one
-    /// identity's own adjacent run, the name by every era carrying what a rename last wrote
-    /// across all of them — so two eras of one run sharing this shape are the same era written
-    /// twice, `formRoster()`'s own duplicate guard.
-    private struct EraShape: Hashable {
-        let schedule: Schedule
-        let keptFrom: CalendarDate
-        let kind: Commitment.Kind
-
-        init(_ commitment: Commitment) {
-            schedule = commitment.schedule
-            keptFrom = commitment.keptFrom
-            kind = commitment.kind
-        }
-    }
-
     /// What `formRoster()` answers with: the roster itself, and the identity of every commitment
     /// this read erases — a stored commitment whose newest era was held removed, in a form written
     /// before a commitment could be deleted. `RosterStore.erased` is where this ends up.
@@ -89,16 +73,14 @@ struct RosterDocument: Codable {
     /// Re-forms `roster` by rebuilding its entries directly, in the document's own order, rather
     /// than replaying through `Roster`'s mutating methods: a document at this form already carries
     /// every invariant the engine enforces on the way in — an identity's eras adjacent and its
-    /// newest era first, a name refused twice over — so this only re-validates what this app could
-    /// not itself have written: a commitment that will not form, an entry held removed with no day
-    /// it was kept until, the same identity's eras split apart by another identity's, and the same
-    /// era — its schedule, its day kept from and its kind together — written twice within one
-    /// identity's own run. Two of one identity's eras may share a day kept from without being the
-    /// same era — `Roster.put(era:on:keptUntil:under:)` already accepts that, "any date is
-    /// accepted", `design.md` § *A roster puts a new era on a commitment it is keeping, from a
-    /// day* — so this checks the whole shape rather than the day alone. `nil` on any of those.
-    /// Used at or after `identityIntroducedInVersion`; `folded()` is the one path for a document
-    /// before it.
+    /// newest era first — so this only re-validates what this app could not itself have written: a
+    /// commitment that will not form, an entry held removed with no day it was kept until, and the
+    /// same identity's eras split apart by another identity's. Each identity's own run is then
+    /// mended, `Roster.mended(_:)`, exactly as `Roster.put(era:on:keptUntil:under:)` mends after
+    /// putting an era on — so a run this app could only have written by an earlier version, before
+    /// an era it left holding no day was dropped on the way in, reads mended now. `nil` on any of
+    /// those checks failing. Used at or after `identityIntroducedInVersion`; `folded()` is the one
+    /// path for a document before it.
     ///
     /// An identity whose *newest* era — the run's first entry — is held removed is left out of the
     /// roster this answers with in full, every era of it, not the newest one alone, and is named
@@ -112,7 +94,6 @@ struct RosterDocument: Codable {
         var erased: Set<Commitment.Identity> = []
         var closedIdentities: Set<Commitment.Identity> = []
         var currentIdentity: Commitment.Identity?
-        var shapesInCurrentRun: Set<EraShape> = []
         var currentRunEntries: [Roster.Entry] = []
         var currentRunIsRemoved = false
 
@@ -121,7 +102,7 @@ struct RosterDocument: Codable {
             if currentRunIsRemoved {
                 erased.insert(currentIdentity)
             } else {
-                entries.append(contentsOf: currentRunEntries)
+                entries.append(contentsOf: Roster.mended(currentRunEntries))
             }
             currentRunEntries = []
             currentRunIsRemoved = false
@@ -141,12 +122,7 @@ struct RosterDocument: Codable {
                 }
                 closeCurrentRun()
                 currentIdentity = commitment.identity
-                shapesInCurrentRun = []
                 isNewestOfRun = true
-            }
-            let shape = EraShape(commitment)
-            guard shapesInCurrentRun.insert(shape).inserted else {
-                return nil
             }
 
             let keptUntil: CalendarDate?
@@ -210,17 +186,16 @@ struct RosterDocument: Codable {
     /// `headIndex` is the place, among `commitments`, of the entry this chain was made from — set
     /// once and never moved, unlike `frontIndex` — so the roster a fold answers with can stand its
     /// commitments in that order once every chain has gathered its own eras. `eras` gathers those
-    /// eras as they attach, the head first, so it is already newest-first by construction; `shapes`
-    /// is every era's shape gathered so far, the head's included, so an entry alike in every part
-    /// with one already in this chain — the same era held twice — is caught on attach, on the same
-    /// footing as `formRoster()`'s own duplicate guard for the form this app writes.
+    /// eras as they attach, the head first, so it is already newest-first by construction — mended,
+    /// `Roster.mended(_:)`, once the chain is complete, exactly as `formRoster()`'s own runs mend on
+    /// the way in; an entry alike in every part with one already in this chain is no longer caught
+    /// on attach, but joined or dropped by that mend instead.
     private final class Chain {
         let representative: Commitment
         let headIndex: Int
         var front: CalendarDate
         var frontIndex: Int
         var eras: [Roster.Entry]
-        var shapes: Set<EraShape>
 
         init(representative: Commitment, headIndex: Int, head: Roster.Entry) {
             self.representative = representative
@@ -228,7 +203,6 @@ struct RosterDocument: Codable {
             self.front = representative.keptFrom
             self.frontIndex = headIndex
             self.eras = [head]
-            self.shapes = [EraShape(representative)]
         }
     }
 
@@ -246,11 +220,12 @@ struct RosterDocument: Codable {
     ///
     /// The roster this answers with holds its commitments in the order of the entry each was made
     /// from — never the order a chain finished gathering eras in — with each commitment's own eras
-    /// gathered together immediately behind it, newest first: `design.md` § *The eras gather
-    /// behind their commitment; the commitments keep their order*. A document holding one era
-    /// twice, on either path — as two entries this document itself keeps or has stopped, or as an
-    /// era attaching to a chain that already holds its shape — is refused rather than folded, on
-    /// the same footing as *One era held twice in a stored form-4 roster is refused, not folded*.
+    /// gathered together immediately behind it, newest first and mended: `design.md` § *The eras
+    /// gather behind their commitment; the commitments keep their order* and § *One mend, run by
+    /// the put and by the reader*. Two entries this document itself keeps or has stopped, alike in
+    /// every part, mint two identities `identities` cannot tell apart, and are refused rather than
+    /// folded; an era attaching to a chain that already holds its shape is mended instead, on the
+    /// same footing as every other era a chain gathers.
     func folded() -> Fold? {
         struct Decoded {
             let record: CommitmentRecord
@@ -292,9 +267,12 @@ struct RosterDocument: Codable {
         // Every entry this document keeps or has stopped keeping becomes a commitment of its own
         // straightaway — each a chain a removed entry may still attach to. Two such entries alike
         // in every part would each mint their own identity and collide silently in `identities`,
-        // keyed by that one bare shape — which is exactly one identity kept from one day twice,
-        // `formRoster()`'s own guard for the form this app writes. `mintedBareShapes` is that same
-        // guard here, before any identity is minted rather than after.
+        // keyed by that one bare shape — two identities this map cannot tell apart, which the mend
+        // has no way to reach because neither entry is `removed`. `mintedBareShapes` refuses that
+        // before any identity is minted, on the same footing as *A roster store refuses what could
+        // not be a roster rather than emptying it, and mends what it can read*: "two entries alike
+        // in every part that would each become a commitment of its own SHALL be one commitment
+        // held twice."
         var chains: [Chain] = []
         var originallyKeptOrStopped: [(name: String, kind: Commitment.Kind)] = []
         var mintedBareShapes: Set<CommitmentRecord> = []
@@ -328,10 +306,6 @@ struct RosterDocument: Codable {
                 let era = Commitment(
                     era: chain.representative, schedule: item.commitment.schedule,
                     keptFrom: item.commitment.keptFrom, kind: item.commitment.kind)!
-                let shape = EraShape(era)
-                guard chain.shapes.insert(shape).inserted else {
-                    return nil
-                }
                 identities.updateValue(era.identity, forKey: CommitmentRecord.bare(item.commitment))
                 chain.eras.append(
                     Roster.Entry(commitment: era, keptUntil: keptUntil, category: item.category))
@@ -360,10 +334,11 @@ struct RosterDocument: Codable {
 
         // Each chain in the order of the entry its commitment was made from, `headIndex` — never
         // `frontIndex`, which moves as eras attach — then that chain's own eras, already
-        // newest-first by construction: `design.md` § *The eras gather behind their commitment;
-        // the commitments keep their order*.
+        // newest-first by construction and mended: `design.md` § *The eras gather behind their
+        // commitment; the commitments keep their order* and § *One mend, run by the put and by
+        // the reader*.
         var roster = Roster()
-        roster.entries = chains.sorted { $0.headIndex < $1.headIndex }.flatMap(\.eras)
+        roster.entries = chains.sorted { $0.headIndex < $1.headIndex }.flatMap { Roster.mended($0.eras) }
         // A document that held entries and whose fold leaves the roster holding none is emptied,
         // not the same as one given no commitment at all: `design.md` § *Emptied is a mark on the
         // roster, not the file's absence* and § *Migration* — "the fold's output included."

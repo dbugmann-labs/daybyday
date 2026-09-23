@@ -502,7 +502,12 @@ func aLookBackSaysTheNewestErasRhythmAndTheEarliestErasDayKeptFrom() throws {
 @Test("a look-back chains every era of the commitment it was asked about")
 func aLookBackChainsEveryEraOfTheCommitmentItWasAskedAbout() throws {
     let places = freshRosterAndRecordPlaces()
-    let everyDay: Schedule = .weekdays([
+    // Three different weekday sets, so the roster's mend — which joins eras alike in schedule
+    // and kind — never joins these three into one: `openspec/changes/
+    // collapse-a-same-day-rhythm-change/tasks.md` § 1.3.
+    let firstSchedule: Schedule = .weekdays([.monday, .wednesday, .friday])
+    let secondSchedule: Schedule = .weekdays([.tuesday, .thursday, .saturday])
+    let thirdSchedule: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
     let firstKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -512,9 +517,9 @@ func aLookBackChainsEveryEraOfTheCommitmentItWasAskedAbout() throws {
     let thirdKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
     let today = CalendarDate(year: 2026, month: 3, day: 31)!
 
-    let first = Commitment(name: "Gym", schedule: everyDay, keptFrom: firstKeptFrom)!
-    let second = Commitment(era: first, schedule: everyDay, keptFrom: secondKeptFrom, kind: .tick)!
-    let third = Commitment(era: second, schedule: everyDay, keptFrom: thirdKeptFrom, kind: .tick)!
+    let first = Commitment(name: "Gym", schedule: firstSchedule, keptFrom: firstKeptFrom)!
+    let second = Commitment(era: first, schedule: secondSchedule, keptFrom: secondKeptFrom, kind: .tick)!
+    let third = Commitment(era: second, schedule: thirdSchedule, keptFrom: thirdKeptFrom, kind: .tick)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(first)

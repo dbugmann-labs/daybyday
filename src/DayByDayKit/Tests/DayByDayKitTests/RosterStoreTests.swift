@@ -372,42 +372,6 @@ func aRosterStoreHoldingWhatCouldNotBeARosterIsRefused() throws {
         """.utf8)
     try noSuchDayBytes.write(to: noSuchDayPlace)
 
-    let sameCommitmentTwicePlace = freshPlace()
-    try FileManager.default.createDirectory(
-        at: sameCommitmentTwicePlace.deletingLastPathComponent(),
-        withIntermediateDirectories: true)
-    // One identity, kept from one day, twice — two eras cannot both be true of it.
-    let sameCommitmentTwiceBytes = Data(
-        """
-        {
-          "version": 5,
-          "commitments": [
-            {
-              "commitment": {
-                "name": "Gym",
-                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
-                "identity": "11111111-1111-1111-1111-111111111111"
-              },
-              "removed": false,
-              "category": null
-            },
-            {
-              "commitment": {
-                "name": "Gym",
-                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
-                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
-                "identity": "11111111-1111-1111-1111-111111111111"
-              },
-              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
-              "removed": false,
-              "category": null
-            }
-          ]
-        }
-        """.utf8)
-    try sameCommitmentTwiceBytes.write(to: sameCommitmentTwicePlace)
-
     let halfRangePlace = freshPlace()
     try FileManager.default.createDirectory(
         at: halfRangePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -435,15 +399,11 @@ func aRosterStoreHoldingWhatCouldNotBeARosterIsRefused() throws {
     #expect(throws: RosterStoreError.notAStore(at: noSuchDayPlace)) {
         try RosterStore(at: noSuchDayPlace)
     }
-    #expect(throws: RosterStoreError.notAStore(at: sameCommitmentTwicePlace)) {
-        try RosterStore(at: sameCommitmentTwicePlace)
-    }
     #expect(throws: RosterStoreError.notAStore(at: halfRangePlace)) {
         try RosterStore(at: halfRangePlace)
     }
     #expect(try Data(contentsOf: blankNamePlace) == blankNameBytes)
     #expect(try Data(contentsOf: noSuchDayPlace) == noSuchDayBytes)
-    #expect(try Data(contentsOf: sameCommitmentTwicePlace) == sameCommitmentTwiceBytes)
     #expect(try Data(contentsOf: halfRangePlace) == halfRangeBytes)
 }
 
@@ -3106,8 +3066,10 @@ func aRosterStoreHoldingOneCommitmentsErasSplitApartByAnotherCommitmentsEntryIsR
     #expect(try Data(contentsOf: place) == bytes)
 }
 
-@Test("a roster kept before a commitment had an identity holding one era twice is refused")
-func aRosterKeptBeforeACommitmentHadAnIdentityHoldingOneEraTwiceIsRefused() throws {
+@Test(
+    "a roster kept before a commitment had an identity holding an era that holds no day is read back without it"
+)
+func aRosterKeptBeforeACommitmentHadAnIdentityHoldingAnEraThatHoldsNoDayIsReadBackWithoutIt() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -3140,9 +3102,12 @@ func aRosterKeptBeforeACommitmentHadAnIdentityHoldingOneEraTwiceIsRefused() thro
         """.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: RosterStoreError.notAStore(at: place)) {
-        try RosterStore(at: place)
-    }
+    let store = try RosterStore(at: place)
+
+    #expect(store.roster.commitments.map(\.name) == ["Gym"])
+    let gym = store.roster.commitments.first!
+    #expect(store.roster.eras(of: gym).count == 1)
+    #expect(store.roster.keptFrom(of: gym) == CalendarDate(year: 2026, month: 3, day: 1)!)
     #expect(try Data(contentsOf: place) == bytes)
 }
 
@@ -3686,4 +3651,328 @@ func readingARemovedCommitmentAsDeletedChangesNothingAtThePlaceAndTheNextChangeI
     #expect(laterBytes != bytes)
     #expect(laterDocument.version == RosterDocument.currentVersion)
     #expect(laterDocument.commitments.allSatisfy { $0.removed == nil })
+}
+
+// MARK: - Mending, `openspec/changes/collapse-a-same-day-rhythm-change/tasks.md` § 3
+
+@MainActor
+@Test("a stored roster holding eras that hold no day is read back without them")
+func aStoredRosterHoldingErasThatHoldNoDayIsReadBackWithoutThem() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let identity = "11111111-1111-1111-1111-111111111111"
+    let bytes = Data(
+        """
+        {
+          "version": 6,
+          "emptied": false,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 8, "day": 31 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] },
+                "identity": "\(identity)"
+              },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 8, "day": 31 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(identity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 8, "day": 31 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] },
+                "identity": "\(identity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(identity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+
+    #expect(store.roster.commitments.map(\.rhythmInWords) == ["Tue, Thu"])
+    let gym = store.roster.commitments.first!
+    #expect(store.roster.eras(of: gym).map(\.rhythmInWords) == ["Tue, Thu", "Mon, Wed, Sat"])
+    #expect(store.roster.keptFrom(of: gym) == CalendarDate(year: 2026, month: 1, day: 1)!)
+    #expect(try Data(contentsOf: place) == bytes)
+
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: place)
+    #expect(screen.kept.map(\.name) == ["Gym"])
+    #expect(screen.kept.first?.rhythmInWords == "Tue, Thu")
+
+    let run = Commitment(
+        name: "Run", schedule: .weekdays([.monday, .wednesday, .saturday]),
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    try store.add(run)
+
+    let later = try RosterStore(at: place)
+    #expect(later.roster.commitments.map(\.name) == ["Gym", "Run"])
+    #expect(later.roster.eras(of: gym).map(\.rhythmInWords) == ["Tue, Thu", "Mon, Wed, Sat"])
+}
+
+@Test("alike eras standing side by side are read back as one")
+func alikeErasStandingSideBySideAreReadBackAsOne() throws {
+    let firstPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: firstPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let firstIdentity = "11111111-1111-1111-1111-111111111111"
+    let firstBytes = Data(
+        """
+        {
+          "version": 6,
+          "emptied": false,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 8, "day": 31 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(firstIdentity)"
+              },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 8, "day": 31 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] },
+                "identity": "\(firstIdentity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(firstIdentity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try firstBytes.write(to: firstPlace)
+
+    let firstStore = try RosterStore(at: firstPlace)
+
+    #expect(firstStore.roster.commitments.count == 1)
+    let gym = firstStore.roster.commitments.first!
+    #expect(firstStore.roster.eras(of: gym).count == 1)
+    #expect(firstStore.roster.commitments.map(\.rhythmInWords) == ["Mon, Wed, Sat"])
+    #expect(firstStore.roster.keptFrom(of: gym) == CalendarDate(year: 2026, month: 1, day: 1)!)
+
+    let secondPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: secondPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let secondIdentity = "22222222-2222-2222-2222-222222222222"
+    let secondBytes = Data(
+        """
+        {
+          "version": 6,
+          "emptied": false,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 9, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(secondIdentity)"
+              },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(secondIdentity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 31 },
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try secondBytes.write(to: secondPlace)
+
+    let secondStore = try RosterStore(at: secondPlace)
+
+    #expect(secondStore.roster.commitments.count == 1)
+    let secondGym = secondStore.roster.commitments.first!
+    #expect(secondStore.roster.eras(of: secondGym).count == 1)
+    #expect(secondStore.roster.keptFrom(of: secondGym) == CalendarDate(year: 2026, month: 1, day: 1)!)
+}
+
+@Test("eras holding the same days are read back with the newer keeping them")
+func erasHoldingTheSameDaysAreReadBackWithTheNewerKeepingThem() throws {
+    let firstPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: firstPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let firstIdentity = "11111111-1111-1111-1111-111111111111"
+    let firstBytes = Data(
+        """
+        {
+          "version": 6,
+          "emptied": false,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Nails",
+                "keptFrom": { "year": 2026, "month": 8, "day": 18 },
+                "schedule": { "everyNDays": 4, "from": { "year": 2026, "month": 8, "day": 18 } },
+                "identity": "\(firstIdentity)"
+              },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Nails",
+                "keptFrom": { "year": 2026, "month": 8, "day": 20 },
+                "schedule": { "everyNDays": 5, "from": { "year": 2026, "month": 8, "day": 20 } },
+                "identity": "\(firstIdentity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 17 },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Nails",
+                "keptFrom": { "year": 2026, "month": 8, "day": 4 },
+                "schedule": { "everyNDays": 4, "from": { "year": 2026, "month": 8, "day": 6 } },
+                "identity": "\(firstIdentity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 19 },
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try firstBytes.write(to: firstPlace)
+
+    let firstStore = try RosterStore(at: firstPlace)
+
+    #expect(firstStore.roster.commitments.count == 1)
+    let nails = firstStore.roster.commitments.first!
+    #expect(firstStore.roster.eras(of: nails).count == 2)
+    #expect(
+        firstStore.roster.eras(of: nails).first?.keptFrom
+            == CalendarDate(year: 2026, month: 8, day: 18)!)
+    #expect(
+        firstStore.roster.commitments(on: CalendarDate(year: 2026, month: 8, day: 17)!).count == 2)
+    #expect(
+        firstStore.roster.commitments(on: CalendarDate(year: 2026, month: 8, day: 18)!).count == 1)
+
+    let secondPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: secondPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let secondIdentity = "22222222-2222-2222-2222-222222222222"
+    let secondBytes = Data(
+        """
+        {
+          "version": 6,
+          "emptied": false,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(secondIdentity)"
+              },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(secondIdentity)"
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try secondBytes.write(to: secondPlace)
+
+    let secondStore = try RosterStore(at: secondPlace)
+
+    #expect(secondStore.roster.commitments.count == 1)
+    let gym = secondStore.roster.commitments.first!
+    #expect(secondStore.roster.eras(of: gym).count == 1)
+}
+
+@Test("the newest era of a commitment stopped on the day it began is read back as it is")
+func theNewestEraOfACommitmentStoppedOnTheDayItBeganIsReadBackAsItIs() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let identity = "11111111-1111-1111-1111-111111111111"
+    let bytes = Data(
+        """
+        {
+          "version": 6,
+          "emptied": false,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 8, "day": 31 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] },
+                "identity": "\(identity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(identity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+
+    #expect(store.roster.commitments.isEmpty)
+    #expect(store.roster.stopped.map(\.name) == ["Gym"])
+    #expect(store.roster.stopped.first?.rhythmInWords == "Tue, Thu")
+    let gym = store.roster.stopped.first!
+    #expect(store.roster.eras(of: gym).count == 2)
 }
