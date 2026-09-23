@@ -2942,6 +2942,89 @@ func aCommitmentsScreenThatCannotEraseARemovedCommitmentsRecordsOffersATakeOut()
 }
 
 @MainActor
+@Test(
+    "a commitments screen that cannot erase a removed commitment's records and cannot read the one-off place lists the roster before the one-offs"
+)
+func
+    aCommitmentsScreenThatCannotEraseARemovedCommitmentsRecordsAndCannotReadTheOneOffPlaceListsTheRosterBeforeTheOneOffs()
+    throws
+{
+    // Same migration failure as the scenario above — the erase `readPlaces` owes at open fails,
+    // so `.roster` is inserted into `storesNotRead` after the read already happened — but here the
+    // one-off place is also unreadable, so `openspec/specs/restore/spec.md` § *A commitments
+    // screen offers a take-out only while a store cannot be read, and says which*'s fixed record,
+    // roster, one-offs order has somewhere to go wrong: the roster must still come before the
+    // one-offs rather than after it.
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Lifting",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: rosterPlace)
+
+    let gym = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!,
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!, kind: .tick)!
+
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+
+    try makeReadOnly(recordDirectory)
+    defer { try? makeWritable(recordDirectory) }
+
+    let oneOffPlace = freshOneOffPlace()
+    try FileManager.default.createDirectory(
+        at: oneOffPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a one-off holder is written as".utf8).write(to: oneOffPlace)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    #expect(
+        screen.storesNotRead == [
+            CommitmentsScreen.StoreNotRead(store: .roster, cause: .couldNotBeRead),
+            CommitmentsScreen.StoreNotRead(store: .oneOffs, cause: .couldNotBeRead),
+        ])
+}
+
+@MainActor
 @Test("a record of a removed commitment is not carried back to a commitment alike to it")
 func aRecordOfARemovedCommitmentIsNotCarriedBackToACommitmentAlikeToIt() throws {
     let places = freshRosterAndRecordPlaces()

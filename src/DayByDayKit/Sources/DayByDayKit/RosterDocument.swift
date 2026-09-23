@@ -100,10 +100,12 @@ struct RosterDocument: Codable {
     /// Used at or after `identityIntroducedInVersion`; `folded()` is the one path for a document
     /// before it.
     ///
-    /// An identity any of whose eras is held removed is left out of the roster this answers with —
-    /// every era of it, not the removed one alone — and is named in `Formed.erased` instead:
-    /// `openspec/changes/delete-a-commitment-for-good/specs/commitment/spec.md` § *A roster store
-    /// reads a commitment a stored roster held removed as deleted*. A removed era with no day it
+    /// An identity whose *newest* era — the run's first entry — is held removed is left out of the
+    /// roster this answers with in full, every era of it, not the newest one alone, and is named
+    /// in `Formed.erased` instead: `openspec/changes/delete-a-commitment-for-good/specs/
+    /// commitment/spec.md` § *A roster store reads a commitment a stored roster held removed as
+    /// deleted*. An earlier era carrying `removed: true` says nothing, on the same footing as
+    /// every other state that is its newest era's alone. A newest era held removed with no day it
     /// was kept until still refuses the whole document, exactly as it always has.
     func formRoster() -> Formed? {
         var entries: [Roster.Entry] = []

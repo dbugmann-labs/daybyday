@@ -109,8 +109,18 @@ public final class CommitmentsScreen {
                 // The roster itself was read fine, so `read.notRead` names neither place — but
                 // this screen now answers as one that cannot read its roster, so the roster is
                 // named here for `offersATakeOut` to read a take-out from, the same as any other
-                // roster it could not read: `design.md` § *Migration*.
-                return (nil, .notKept, nil, false, read.notRead + [StoreNotRead(store: .roster, cause: .couldNotBeRead)])
+                // roster it could not read: `design.md` § *Migration*. Inserted between whatever
+                // `read.notRead` already holds for the record and the one-offs, rather than
+                // appended, so the result keeps `openspec/specs/restore/spec.md` § *A commitments
+                // screen offers a take-out only while a store cannot be read, and says which*'s
+                // fixed record, roster, one-offs order even when the one-off place is also
+                // unreadable.
+                let recordNotRead = read.notRead.filter { $0.store == .record }
+                let oneOffsNotRead = read.notRead.filter { $0.store == .oneOffs }
+                return (
+                    nil, .notKept, nil, false,
+                    recordNotRead + [StoreNotRead(store: .roster, cause: .couldNotBeRead)]
+                        + oneOffsNotRead)
             }
         }
 
