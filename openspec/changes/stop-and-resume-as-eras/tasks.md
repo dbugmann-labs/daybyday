@@ -31,31 +31,31 @@ to it, one red-green cycle.
 
 ## 3. `CommitmentsScreen` — stop and take up again
 
-- [ ] 3.1 a commitment stopped through a commitments screen on a day holding a record of it is kept until that day — catches a total short of its target not counted
-- [ ] 3.2 a record taken back on the day its commitment was stopped leaves the row and the day kept until as they were — catches the day kept until re-derived
-- [ ] 3.3 a commitment stopped through a commitments screen on the day its newest era began is stopped at the era before it
-- [ ] 3.4 a commitment stopped through a commitments screen on the day its newest era began keeps that era where the day holds a record of it
-- [ ] 3.5 a commitment taken up again through a commitments screen days after its stop begins a new era on the day the screen was handed — catches the screen still calling `add`
-- [ ] 3.6 a commitment stopped and taken up again on one day through a commitments screen is one era, as though it had never been stopped
-- [ ] 3.7 an interval commitment taken up again through a commitments screen begins its count on the day the screen was handed
-- [ ] 3.8 a commitment defined and stopped on one day and taken up again on a later day is kept from that later day
+- [x] 3.1 a commitment stopped through a commitments screen on a day holding a record of it is kept until that day — catches a total short of its target not counted
+- [x] 3.2 a record taken back on the day its commitment was stopped leaves the row and the day kept until as they were — catches the day kept until re-derived
+- [x] 3.3 a commitment stopped through a commitments screen on the day its newest era began is stopped at the era before it
+- [x] 3.4 a commitment stopped through a commitments screen on the day its newest era began keeps that era where the day holds a record of it
+- [x] 3.5 a commitment taken up again through a commitments screen days after its stop begins a new era on the day the screen was handed — catches the screen still calling `add`
+- [x] 3.6 a commitment stopped and taken up again on one day through a commitments screen is one era, as though it had never been stopped
+- [x] 3.7 an interval commitment taken up again through a commitments screen begins its count on the day the screen was handed
+- [x] 3.8 a commitment defined and stopped on one day and taken up again on a later day is kept from that later day
 
 ## 4. `LookBack` — the gap and the part week
 
-- [ ] 4.1 a tick commitment's look-back says a month in a gap as nothing out of nothing and counts no tick a gap day holds — catches a month left out
-- [ ] 4.2 a quota commitment's look-back says a week in a gap as nothing out of nothing
-- [ ] 4.3 a gap between a weekly quota era and one that is not is said in the unit of the era before it
-- [ ] 4.4 a number commitment's graph says the days of a gap and no number a gap day holds
-- [ ] 4.5 a total commitment's target rule runs through a gap at the target of the era before it
-- [ ] 4.6 a note commitment's look-back says no note a gap day holds
-- [ ] 4.7 a part week owes its quota times the days held over seven, rounded to the nearest whole number — catches floor and ceiling
-- [ ] 4.8 a part week that owes nothing is still said, and a day kept in it counts
-- [ ] 4.9 a look-back counts the week a commitment is kept from against its part of the quota
-- [ ] 4.10 a week two quota eras share says its kept days out of both eras' parts of their quotas — catches rounding each era's part apart
-- [ ] 4.11 a stopped quota commitment's look-back counts its last week through the day it was kept until
-- [ ] 4.12 a look-back says a weekday era's months and a quota era's weeks, each in its own unit
-- [ ] 4.13 a mixed chain's whole sums its months' due days and its weeks' quotas alike
-- [ ] 4.14 a week a gap cuts owes the days its eras hold, days to come included, and counts a day kept before the stop — catches days held counted only through today
+- [x] 4.1 a tick commitment's look-back says a month in a gap as nothing out of nothing and counts no tick a gap day holds — catches a month left out
+- [x] 4.2 a quota commitment's look-back says a week in a gap as nothing out of nothing
+- [x] 4.3 a gap between a weekly quota era and one that is not is said in the unit of the era before it
+- [x] 4.4 a number commitment's graph says the days of a gap and no number a gap day holds
+- [x] 4.5 a total commitment's target rule runs through a gap at the target of the era before it
+- [x] 4.6 a note commitment's look-back says no note a gap day holds
+- [x] 4.7 a part week owes its quota times the days held over seven, rounded to the nearest whole number — catches floor and ceiling
+- [x] 4.8 a part week that owes nothing is still said, and a day kept in it counts
+- [x] 4.9 a look-back counts the week a commitment is kept from against its part of the quota
+- [x] 4.10 a week two quota eras share says its kept days out of both eras' parts of their quotas — catches rounding each era's part apart
+- [x] 4.11 a stopped quota commitment's look-back counts its last week through the day it was kept until
+- [x] 4.12 a look-back says a weekday era's months and a quota era's weeks, each in its own unit
+- [x] 4.13 a mixed chain's whole sums its months' due days and its weeks' quotas alike
+- [x] 4.14 a week a gap cuts owes the days its eras hold, days to come included, and counts a day kept before the stop — catches days held counted only through today
 
 ## 5. `DayView`, `DayScreen` and `Schedule`
 
