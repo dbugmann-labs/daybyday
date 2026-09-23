@@ -322,17 +322,18 @@ struct ContentView: View {
                             screen.showToday()
                         }
                     } else {
-                        // A label, not a disabled button: `.disabled` washes any tint to grey.
-                        Text("Today")
-                            .foregroundStyle(.white)
-                            .fixedSize()
-                            .padding(.horizontal, 16)
-                            .frame(height: 44)
-                            .glassEffect(.regular.tint(.green))
+                        // Drawn by the toolbar as a prominent button so it sits exactly where
+                        // the Today button does, but it takes no touch and reads as a label, not
+                        // a control. Not `.disabled`: that washes any tint to grey.
+                        Button("Today") {}
+                            .buttonStyle(.glassProminent)
+                            .tint(.green)
+                            .allowsHitTesting(false)
+                            .accessibilityRemoveTraits(.isButton)
+                            .accessibilityAddTraits(.isStaticText)
                             .accessibilityIdentifier("TodayMarker")
                     }
                 }
-                .sharedBackgroundVisibility(screen.offersGoingBackToToday ? .automatic : .hidden)
                 ToolbarItem {
                     Button("Commitments") {
                         commitmentsScreen = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
