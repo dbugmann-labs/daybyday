@@ -65,4 +65,4 @@ the implementation.** This box confirms rather than writes.
 - [x] W.3 A note written with line breaks, opened, in the dark appearance (`xcrun simctl ui booted appearance dark` before the run): its lines as written, and the cards legible against the page
 - [x] W.4 A note commitment with no note: the head, the dates card and "No note yet.", with no count and no card
 - [x] W.5 A stopped *Journal* holding one note: the dates card's "KEPT UNTIL" row and "1 note" over its one card
-- [x] W.6 **The handover** — all five pictures, W.1–W.5, retaken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL
+- [x] W.6 **The handover** — all five pictures, W.1–W.5, retaken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL — https://github.com/dbugmann-labs/daybyday/pull/316#issuecomment-5797632380
