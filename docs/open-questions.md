@@ -178,6 +178,8 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 ## Known gaps
 
+Things that are built, or deliberately not built, in a state someone will trip over.
+
 - **A deletion's put-back is not checked.** When the roster refuses a deletion, the commitments
   screen puts the erased record back with `try?` and ignores a failure
   (`CommitmentsScreen.confirmDeleting`). If the put-back also fails, the commitment stays listed
@@ -185,8 +187,6 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   end state `design.md` accepts for an app killed between the two writes, reached by a second
   failure instead. Found at G7 of `delete-a-commitment-for-good` (#304) and left on purpose; a
   save in progress for deletions would close both.
-
-Things that are built, or deliberately not built, in a state someone will trip over.
 
 - **A swiped look-back graph clips its newest date label.** The dates axis on a number's or a
   total's graph (#274's code, `LookBackView.swift` dates-label placement) picks its day ticks from
