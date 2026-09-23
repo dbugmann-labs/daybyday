@@ -85,4 +85,10 @@ enum LookBackWords {
     static func number(_ decimal: Decimal) -> String {
         "\(decimal)"
     }
+
+    /// A total commitment's point as its sum, a single space, the word "of", a single space and
+    /// its target — "150 of 120" — each said as `number(_:)` says it. `design.md` § *The seam*.
+    static func sum(_ sum: Decimal, of target: Decimal) -> String {
+        "\(number(sum)) of \(number(target))"
+    }
 }
