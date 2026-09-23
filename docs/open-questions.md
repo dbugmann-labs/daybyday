@@ -180,6 +180,13 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **A swiped look-back graph clips its newest date label.** The dates axis on a number's or a
+  total's graph (#274's code, `LookBackView.swift` dates-label placement) picks its day ticks from
+  the opening scroll position rather than the current one, so the labels slide with the chart and,
+  once it is swiped back, the newest runs past the card's right edge — "18 Se" for "18 September
+  2026". Seen in #275's W.5 walk picture, the first simulator picture of a swiped graph; outside
+  #275's diff, so not fixed there. Found at #275's third G7 pass, 2026-09-23; owed by a chore or
+  the next Story that touches the graph.
 - **A shipped requirement is unreachable after #303, and stays on purpose for a phone upgrading
   from an earlier form.** `openspec/specs/commitment/spec.md` § *A change that carries records
   leaves a save in progress until its roster place is written* is untouched by
