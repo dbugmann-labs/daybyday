@@ -3730,6 +3730,16 @@ func aStoredRosterHoldingErasThatHoldNoDayIsReadBackWithoutThem() throws {
         keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
     try store.add(run)
 
+    // The next change kept there is written mended, not the four stale entries re-serialized
+    // beside "Run": read the document `store.add(run)` itself wrote, before anything reopens
+    // and mends it again.
+    let writtenDocument = try JSONDecoder().decode(RosterDocument.self, from: Data(contentsOf: place))
+    #expect(writtenDocument.commitments.count == 3)
+    #expect(writtenDocument.commitments.map(\.commitment.name) == ["Gym", "Gym", "Run"])
+    #expect(writtenDocument.commitments[0].keptUntil == nil)
+    #expect(writtenDocument.commitments[1].keptUntil != nil)
+    #expect(writtenDocument.commitments[2].keptUntil == nil)
+
     let later = try RosterStore(at: place)
     #expect(later.roster.commitments.map(\.name) == ["Gym", "Run"])
     #expect(later.roster.eras(of: gym).map(\.rhythmInWords) == ["Tue, Thu", "Mon, Wed, Sat"])

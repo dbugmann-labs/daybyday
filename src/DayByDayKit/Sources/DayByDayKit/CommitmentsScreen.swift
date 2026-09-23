@@ -869,7 +869,7 @@ public final class CommitmentsScreen {
     /// changes a commitment by renaming it, moving the day it is kept from, or putting a new era
     /// on it*, *A commitments screen keeps no era a change or a restart leaves holding no day, and
     /// a change back leaves the commitment as it was* and *A commitments screen refuses a change
-    /// it cannot make, and tells each refusal apart*.
+    /// it cannot make, tells each refusal apart, and changes nothing it has deleted*.
     public func change(
         _ commitment: Commitment, toName name: String, on rhythm: Rhythm, keptFrom: CalendarDate,
         under category: String?, lowest: String? = nil, highest: String? = nil, target: String? = nil
@@ -979,9 +979,9 @@ public final class CommitmentsScreen {
             // way to already runs on the rhythm and kind just asked, this is a change back: no
             // new era is put, and that era runs on as the newest with the schedule it had, an
             // interval's start date included — `Roster.put`'s own mend only joins on schedule,
-            // which a restart's own new start date never matches, so this checks the rhythm the
-            // screen was asked for instead. `design.md` § *Alike is the schedule at the roster,
-            // the rhythm at the screen*.
+            // which this change's own interval era, carrying its own new start date, never
+            // matches, so this checks the rhythm the screen was asked for instead. `design.md`
+            // § *Alike is the schedule at the roster, the rhythm at the screen*.
             if let identityStart = candidateRoster.entries.firstIndex(where: {
                 $0.commitment.identity == onValue.identity
             }), identityStart + 1 < candidateRoster.entries.count,

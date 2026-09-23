@@ -665,6 +665,9 @@ func anEraPutOnAsOfTheFirstSupportedDateAndOneAsOfTheLastAreBothAccepted() {
     #expect(
         roster.commitments(on: CalendarDate(year: 1583, month: 1, day: 1)!).map(\.rhythmInWords)
             == ["Tue, Thu", "Tue, Thu"])
+    #expect(
+        roster.commitments(on: CalendarDate(year: 1583, month: 1, day: 1)!).map(\.name)
+            == ["Gym", "Run"])
 }
 
 @Test("an era put on as of a day before a later era began replaces every era begun after that day")
@@ -681,12 +684,14 @@ func anEraPutOnAsOfADayBeforeALaterEraBeganReplacesEveryEraBegunAfterThatDay() {
 
     var roster = Roster()
     _ = roster.add(gym)
-    _ = roster.put(
+    let putSecond = roster.put(
         era: secondEra, on: gym, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!, under: nil)
-    _ = roster.put(
+    let putThird = roster.put(
         era: thirdEra, on: secondEra, keptUntil: CalendarDate(year: 2026, month: 8, day: 19)!,
         under: nil)
 
+    #expect(putSecond)
+    #expect(putThird)
     #expect(roster.commitments.count == 1)
     #expect(roster.eras(of: gym).count == 2)
     #expect(roster.eras(of: gym).map(\.rhythmInWords) == ["3x a week", "Mon, Wed, Sat"])
@@ -714,12 +719,14 @@ func anEraPutOnAlikeTheOneItWouldGiveWayToLeavesThatOneTheNewestAsItWas() {
 
     var roster = Roster()
     _ = roster.add(gym)
-    _ = roster.put(
+    let putSecond = roster.put(
         era: secondEra, on: gym, keptUntil: CalendarDate(year: 2026, month: 8, day: 30)!, under: nil)
-    _ = roster.put(
+    let putThird = roster.put(
         era: thirdEra, on: secondEra, keptUntil: CalendarDate(year: 2026, month: 8, day: 30)!,
         under: nil)
 
+    #expect(putSecond)
+    #expect(putThird)
     #expect(roster.commitments.count == 1)
     #expect(roster.eras(of: gym).count == 1)
     #expect(roster.commitments.map(\.rhythmInWords) == ["Mon, Wed, Sat"])
@@ -735,6 +742,28 @@ func anEraPutOnAlikeTheOneItWouldGiveWayToLeavesThatOneTheNewestAsItWas() {
 
     #expect(single.eras(of: gym).count == 1)
     #expect(single.keptFrom(of: gym) == keptFrom)
+}
+
+@Test("an era joined with the one it gives way to carries its own category, not the one it joins")
+func anEraJoinedWithTheOneItGivesWayToCarriesItsOwnCategoryNotTheOneItJoins() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let newEra = Commitment(
+        era: gym, schedule: schedule,
+        keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!, kind: .tick)!
+
+    var roster = Roster()
+    _ = roster.add(gym, under: "Sport")
+    let put = roster.put(
+        era: newEra, on: gym, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!,
+        under: "Morning")
+
+    #expect(put)
+    #expect(roster.eras(of: gym).count == 1)
+    #expect(roster.keptFrom(of: gym) == keptFrom)
+    #expect(roster.groups.first?.category == "Morning")
+    #expect(!roster.groups.contains { $0.category == "Sport" })
 }
 
 @Test("a third era put on a commitment leaves it one commitment with three eras")

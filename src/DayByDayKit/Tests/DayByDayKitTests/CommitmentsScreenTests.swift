@@ -6987,6 +6987,37 @@ func anIntervalRhythmChangedAwayAndBackOnOneDayKeepsTheStartDateItHad() throws {
 }
 
 @MainActor
+@Test("an interval rhythm changed away and back under a new category writes that category, not the one the era it joins already carries")
+func anIntervalRhythmChangedAwayAndBackUnderANewCategoryWritesThatCategoryNotTheOneTheEraItJoinsAlreadyCarries() throws {
+    let places = freshRosterAndRecordPlaces()
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+    let august6th = CalendarDate(year: 2026, month: 8, day: 6)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
+        keptFrom: august4th)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(nails, under: "Beauty")
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    let awayRefusal = screen.change(
+        nails, toName: "Nails", on: .weekdays([.sunday]), keptFrom: august4th, under: "Beauty")
+    let backRefusal = screen.change(
+        nails, toName: "Nails", on: .everyNDays(4), keptFrom: august4th, under: "Grooming")
+
+    #expect(awayRefusal == nil)
+    #expect(backRefusal == nil)
+
+    let laterRosterStore = try RosterStore(at: places.roster)
+    #expect(laterRosterStore.roster.eras(of: nails).count == 1)
+    #expect(laterRosterStore.roster.groups.first?.category == "Grooming")
+    #expect(!laterRosterStore.roster.groups.contains { $0.category == "Beauty" })
+}
+
+@MainActor
 @Test("a change back on one day is refused where a record made that day would be left not due")
 func aChangeBackOnOneDayIsRefusedWhereARecordMadeThatDayWouldBeLeftNotDue() throws {
     let places = freshRosterAndRecordPlaces()
@@ -7062,7 +7093,7 @@ func aRestartReachesBehindAChangeMadeDaysAgoAndReplacesIt() throws {
     let alike = Commitment(
         name: "Nails 2", schedule: .everyNDays(DayInterval(days: 4)!, from: august6th),
         keptFrom: august4th)!
-    try rosterStore.add(alike)
+    try laterRosterStore.add(alike)
     let firstRestartScreen = CommitmentsScreen(
         asOf: CalendarDate(year: 2026, month: 8, day: 25)!, keepingRosterAt: places.roster,
         keepingRecordAt: places.record)
@@ -7116,11 +7147,16 @@ func aCommitmentKeptFromADayAfterTodayChangedBeforeThatDayKeepsTheDayItIsKeptFro
     #expect(laterRosterStore.roster.eras(of: gym).count == 1)
     #expect(laterRosterStore.roster.commitments.first { $0.identity == gym.identity }?.rhythmInWords == "Tue, Thu")
     #expect(laterRosterStore.roster.keptFrom(of: gym) == september4th)
+    #expect(screen.whatItIsMadeOf(gym)?.keptFrom == september4th)
 
     #expect(laterRosterStore.roster.eras(of: nails).count == 1)
-    let restartedNails = laterRosterStore.roster.commitments.first { $0.identity == nails.identity }
-    #expect(restartedNails?.rhythmInWords == "Every 5 days")
+    let changedNails = laterRosterStore.roster.commitments.first { $0.identity == nails.identity }
+    #expect(changedNails?.rhythmInWords == "Every 5 days")
     #expect(laterRosterStore.roster.keptFrom(of: nails) == september4th)
+    // The every-5-days schedule itself starts on 4 September 2026, not on the day the screen
+    // was handed (1 September 2026): due only if the schedule's own start date is the 4th.
+    #expect(changedNails?.isDue(on: september4th) == true)
+    #expect(changedNails?.isDue(on: september1st) == false)
 }
 
 @MainActor
@@ -7152,10 +7188,14 @@ func aRestartReachingBehindAChangeIsRefusedWhereARecordTheChangesEraHoldsWouldBe
 
     let restartScreen = CommitmentsScreen(
         asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let rosterBytesAfterOpening = try Data(contentsOf: places.roster)
+    let recordBytesAfterOpening = try Data(contentsOf: places.record)
     let currentNails = restartScreen.kept.first!
     let restartRefusal = restartScreen.restart(currentNails, from: august18th)
 
     #expect(restartRefusal == .wouldLeaveARecordedDayNotDue)
+    #expect(try Data(contentsOf: places.roster) == rosterBytesAfterOpening)
+    #expect(try Data(contentsOf: places.record) == recordBytesAfterOpening)
 
     let laterRosterStore = try RosterStore(at: places.roster)
     #expect(laterRosterStore.roster.eras(of: nails).count == 2)
