@@ -265,6 +265,13 @@ still said, owing nothing, as a month with no due day is. A record already stand
 stays in the store and is shown nowhere. Pausing is a stop followed by a resume, and the gap is the
 pause. Agreed 2026-09-23 at the grill of `stop-and-resume-as-eras` (#306).
 
+**Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
+up again**, which is what the specs call it; the two name one act. A resume is made on the day it is
+made and asks for nothing, and it begins a new **era** there unless no day would lie between it and
+the stop, when it undoes the stop instead. A roster offered a stopped commitment again as itself,
+with no day, does that same undo. Written 2026-09-23, while writing the delta of
+`stop-and-resume-as-eras` (#306).
+
 **Fold** — the one-time reading of a roster kept in the form before identities into commitments
 with eras, done when the app first opens it after the upgrade and never again. What chains —
 a removed entry of the same name and kind-sort kept until the day before the next's day kept
@@ -506,6 +513,11 @@ is that date or later. It judges that date against a
 kept-until day and against nothing else — never against a commitment's own day it is kept from,
 never against a schedule — so the refusal on a duplicate is no longer the only one it makes, but the
 rule that it never asks what day it is, and adds nothing to a commitment's own answer, is unchanged.
+
+**Amended 2026-09-23**, while writing the delta of `stop-and-resume-as-eras` (#306). Offering a
+stopped commitment again as itself still takes it up again as though it had never been stopped. A
+**resume** from a day is the other way up again, and the one a person reaches: it puts a new era on
+from that day, and the days since the stop are a **gap**.
 
 The order is **the order they were taken on** and nothing the system worked out: not alphabetical,
 which would be a rule about the owner's own words, and not by the day each is kept from, since day
@@ -1854,6 +1866,12 @@ its **rhythm in words**, on the day screen only — the commitments screen goes 
 and a met quota's row stays, says so, and still offers a tick. Agreed 2026-09-14 at the eighth
 grooming pass, for B-025: the owner chose the kept count over what the week still asks, told which
 side of *nothing congratulates you* it sits on.
+
+**Amended 2026-09-23**, while writing the delta of `stop-and-resume-as-eras` (#306). A quota row's
+standing counts the days of its week, through its date, that one of the commitment's weekly-quota
+**eras** holds and a record keeps — a day kept before a stop in that week included, a **gap** day never
+— and says it against what the week owes, "1/2x a week" in a **part week**. The history's own
+standing is unchanged; the row no longer reads it.
 
 **Rhythm** — a person's word for the schedule a commitment runs on, and the shape a **commitments
 screen** offers them to build one from: one of the four schedule shapes carrying nothing the
