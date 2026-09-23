@@ -296,6 +296,11 @@ commitment again exactly mints an **identity** of its own and so never finds the
 is unreachable from that Story until #304 replaces removal with deletion. The name a removed
 commitment carries also stops standing against anything, so it can be used again at once.
 
+**Amended 2026-09-23**, at the grill of `delete-a-commitment-for-good` (#304). What the state
+still holds when that Story reaches the phone — commitments removed after the fold — is erased with
+every record against it, as a deleted commitment is, because each was already confirmed by typing
+its name back. A roster that erasure empties stays empty, as one emptied by deletion does.
+
 **Deleted** — a commitment taken out for good, with everything it ever recorded: every era, its
 place and category on the roster, and every tick, number, note and total against any of its eras,
 all gone from the phone's stores in one act. Nothing holds it afterwards — no list, no past day,
@@ -307,6 +312,19 @@ app losing one, so *restore, not sync* is not failed. A roster emptied by deleti
 **day one** is not written back over a deliberate act. Distinct from **stopped**, which keeps
 every day and is the way to pause; the **one-off**, removed outright since it shipped, is the
 precedent. Agreed 2026-09-21 at the G1 that reopened `FEAT: commitment` (#26) for B-057.
+
+**Amended 2026-09-23**, at the grill of `delete-a-commitment-for-good` (#304). The mark that a
+roster was emptied on purpose travels in the copy, so restoring a copy of an emptied roster leaves
+it empty and only a fresh install is given **day one**. Copies made on request are the person's and
+a deletion does not reach them; the sheet promises only that the copy in Files follows.
+
+**Emptied** — a roster that deleting has left holding no commitment, or that reading a stored
+roster's removed commitments as deleted has left holding none. It holds nothing and is still not a
+roster given nothing, which is the whole of the mark: **day one** is written only into a roster
+holding nothing at all, so it is never written into an emptied one. The mark is part of the roster's
+own form, so a copy carries it and a restore gives it back. Given a commitment, an emptied roster is
+simply a roster holding that one. Settled 2026-09-23 while writing the delta of
+`delete-a-commitment-for-good` (#304); ADR-1060.
 
 **Changing a commitment** — giving one a different name, a different rhythm, or a different day it
 is **kept from**, without losing what has been recorded against it. It is the person's verb, and it

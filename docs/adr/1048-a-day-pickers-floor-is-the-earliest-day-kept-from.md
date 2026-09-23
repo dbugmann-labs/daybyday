@@ -5,6 +5,8 @@
   the prose which had been carrying the reasoning
 - Date: 2026-09-10
 - Deciders: Diego Bugmann
+- Amended: 2026-09-23 — the removed state is retired (ADR-1060); a deleted commitment no longer
+  counts toward the floor, so deleting the earliest one raises it.
 - Amended: 2026-09-10 — why the aggregate question belongs to the roster rather than to any
   commitment is added to the decision, by `condense-commitment-spec` (#204), which deletes the
   `commitment` requirement prose that carried it.

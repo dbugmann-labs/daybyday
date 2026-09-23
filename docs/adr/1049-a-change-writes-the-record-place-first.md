@@ -4,6 +4,9 @@
   (#148) and `rework-commitment-row-actions`; this record is written by `condense-commitment-spec`
   (#204), the Story that deletes the requirement prose which had been carrying the reasoning
 - Date: 2026-09-10
+- Amended: 2026-09-23 — a deletion writes the record place first too, erasing its records, and puts
+  it back where the roster place refuses; a kill between the two leaves the commitment listed with
+  no records rather than records under no commitment. ADR-1060.
 - Amended: 2026-09-14 — the write order stands, but asking for the same change again is no longer the
   repair for a half-written change, because the refusal onto records already kept (#247) blocks that
   retry. `save-change-whole` (#249) replaces it with a save in progress undone when the places are
