@@ -160,7 +160,7 @@ to it, one red-green cycle.
   passing, the count read off the run.
 - [x] 11.2 `openspec validate delete-a-commitment-for-good --strict` exits 0 and `pnpm run checks`
   is clean but for what it is expected to warn.
-- [ ] 11.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
+- [x] 11.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
 - [x] 11.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
   that the change folder is committed, `tasks.md` has no other unticked box and the walk comment's
   URL is in § 10.6. The janitor then runs `/opsx:archive` and checks afterwards that the four specs
