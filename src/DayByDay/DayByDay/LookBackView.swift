@@ -100,6 +100,11 @@ struct LookBackView: View {
                         graphSection(graph)
                     } else if case .number = commitment.kind {
                         Text("No number yet.")
+                    } else if case .total = commitment.kind {
+                        // No graph card and no picker — `design.md` § *The shell rides this
+                        // Story*, grill decisions 7 and 8: the sentence names what a person does
+                        // on the day screen, which is add.
+                        Text("Nothing added yet.")
                     } else {
                         linesSection(lookBack)
                     }
@@ -364,7 +369,8 @@ struct LookBackView: View {
                 ForEach(graph.points, id: \.day) { point in
                     // `.symbol(.circle)` marks every point along the trace — without it a
                     // `LineMark` draws only the segments between points, so a graph of exactly
-                    // one point, with no segment to stroke, drew nothing at all.
+                    // one point, with no segment to stroke, drew nothing at all. A number's point
+                    // draws exactly as it did — `design.md` § *The shell rides this Story*.
                     LineMark(
                         x: .value("Day", point.day),
                         y: .value("Value", (point.value as NSDecimalNumber).doubleValue)
@@ -372,6 +378,41 @@ struct LookBackView: View {
                     .foregroundStyle(Color.secondary)
                     .symbol(.circle)
                     .symbolSize(20)
+                }
+
+                // A total's kept point is ringed — an extra mark laid over the shipped dot rather
+                // than a replacement for it, so a not-kept point stays exactly the dot above.
+                // `design.md` § *The shell rides this Story*: the mark is a shape, not a colour.
+                ForEach(graph.points.filter { $0.isKept == true }, id: \.day) { point in
+                    PointMark(
+                        x: .value("Day", point.day),
+                        y: .value("Value", (point.value as NSDecimalNumber).doubleValue)
+                    )
+                    .symbol {
+                        Circle()
+                            .strokeBorder(Color.secondary, lineWidth: 1.5)
+                            .frame(width: 10, height: 10)
+                    }
+                }
+
+                // The target rule: one dashed secondary segment per stretch, `from` through
+                // `through` at its own `target`, with no riser between two — each stretch its own
+                // `series`, so Swift Charts never joins one stretch's end to the next one's start.
+                // `design.md` § *The rule is stretches, not a target per day*.
+                ForEach(Array(graph.targetRule.enumerated()), id: \.offset) { index, stretch in
+                    let target = (stretch.target as NSDecimalNumber).doubleValue
+                    LineMark(
+                        x: .value("Day", stretch.from), y: .value("Target", target),
+                        series: .value("Stretch", index)
+                    )
+                    .foregroundStyle(Color.secondary)
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                    LineMark(
+                        x: .value("Day", stretch.through), y: .value("Target", target),
+                        series: .value("Stretch", index)
+                    )
+                    .foregroundStyle(Color.secondary)
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
                 }
             }
             .chartYScale(domain: lowest...highest)
@@ -479,6 +520,27 @@ struct LookBackView: View {
                                     .foregroundStyle(.secondary)
                                     .fixedSize()
                                     .position(x: tick.x, y: frame.maxY + Self.datesLabelOffset)
+                            }
+                        }
+
+                        // Each stretch's own label, at its last day — the newest at the rule's
+                        // newest end, each earlier one where the rule steps (grill decision 14).
+                        // `design.md` § *The shell rides this Story*.
+                        ForEach(Array(graph.targetRule.enumerated()), id: \.offset) { _, stretch in
+                            if let x = proxy.position(forX: stretch.through),
+                                let y = proxy.position(
+                                    forY: (stretch.target as NSDecimalNumber).doubleValue)
+                            {
+                                let width = Self.measuredWidth(stretch.inWords)
+                                Text(stretch.inWords)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize()
+                                    .position(
+                                        x: Self.clampedCenterX(
+                                            frame.minX + x, in: frame, width: width,
+                                            trailingInset: 16),
+                                        y: frame.minY + y - 10)
                             }
                         }
                     }

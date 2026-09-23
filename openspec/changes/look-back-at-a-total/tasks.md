@@ -48,20 +48,20 @@ make it pass, then the next. Every test goes in
 
 ## 8. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 
-- [ ] 8.1 `LookBackView` draws a total's target rule as `design.md` § *The shell rides this Story* says — a dashed secondary segment per stretch, no riser, each labelled with its `inWords` at its last day — and the app target builds
-- [ ] 8.2 A total's kept point is ringed and one not kept is the shipped dot in the secondary colour, and a number's graph draws exactly as it did
-- [ ] 8.3 A total page whose look-back says no graph draws neither the graph card nor the picker and says "Nothing added yet.", and the number, tick, quota and note pages keep the sentences they have
+- [x] 8.1 `LookBackView` draws a total's target rule as `design.md` § *The shell rides this Story* says — a dashed secondary segment per stretch, no riser, each labelled with its `inWords` at its last day — and the app target builds
+- [x] 8.2 A total's kept point is ringed and one not kept is the shipped dot in the secondary colour, and a number's graph draws exactly as it did
+- [x] 8.3 A total page whose look-back says no graph draws neither the graph card nor the picker and says "Nothing added yet.", and the number, tick, quota and note pages keep the sentences they have
 
 ## 9. The records
 
 **The ADR amendment and the `CONTEXT.md` edits are written by this Story's proposal commit, not by
 the implementation.** This box confirms rather than writes.
 
-- [ ] 9.1 Confirm `CONTEXT.md` § *Target rule*, § *Look-back* and § *Graph*, and ADR-1045's newest amendment, still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
+- [x] 9.1 Confirm `CONTEXT.md` § *Target rule*, § *Look-back* and § *Graph*, and ADR-1045's newest amendment, still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
 
 ## 10. The gates
 
-- [ ] 10.1 `openspec validate look-back-at-a-total --strict` exits 0 and `pnpm run check:scenarios` exits 0
+- [x] 10.1 `openspec validate look-back-at-a-total --strict` exits 0 and `pnpm run check:scenarios` exits 0
 - [ ] 10.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/1045-*`, the two kit sources, the kit test file and `LookBackView.swift`
 - [ ] 10.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
 - [ ] 10.4 `swift test` in `src/DayByDayKit` passes, and the count it reports against a run on `main` differs by exactly the tests §§ 3–7 write less the one 7.2 deletes, each count read off a run
