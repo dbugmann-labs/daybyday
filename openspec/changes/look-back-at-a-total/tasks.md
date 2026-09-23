@@ -22,7 +22,7 @@ make it pass, then the next. Every test goes in
 
 - [x] 3.1 a total commitment's look-back says a point for each day that holds an addition — catches a point per day walked, a zero point on a day with nothing added, or the last addition read in place of the sum
 - [x] 3.2 a total commitment's look-back says no graph where no day holds an addition — catches an empty graph answered in place of none, or a taken-back day left as a zero point
-- [x] 3.3 a total commitment's look-back says the sum the era holding a day kept — catches every day's sum read against the newest era's commitment, which finds none behind a boundary
+- [x] 3.3 a total commitment's look-back says the sum the era holding a day kept — catches a day behind a boundary losing its point: the older era's day 1 must still carry its 90 beside today's 110; a sum read against another era of the chain is not caught here, since every era reads the same record
 
 ## 4. Kept and its words — one test each
 
@@ -71,7 +71,7 @@ the implementation.** This box confirms rather than writes.
 
 - [x] W.1 A *Protein* total with a target of 120, sums added on about ten past days of the last three weeks — some above 120, one exactly 120, some below — its look-back opened from the commitments screen: the month span shows the above and exact points ringed, the below points unringed, the dashed rule labelled "120" at its newest end, and the values axis from "0"
 - [x] W.2 A total with sums on past days whose target was then changed from 120 to 100 through the edit sheet, and 110 added today: the rule stands at 120 then 100 with no riser, "120" labelled where it steps and "100" at its newest end, and today's point ringed — kept against 100, where against 120 it would not be
-- [x] W.3 The W.1 page after tapping "All": the whole run in the width, the rule across all of it, and the values axis from "0"
+- [x] W.3 The W.2 page after tapping "All": the whole run in the width, the rule across all of it, and the values axis from "0"
 - [x] W.4 A total commitment with nothing added: the head, the dates card and "Nothing added yet.", with no graph and no picker
 - [x] W.5 The W.2 total on Month, the graph swiped back by the walk's test until neither today nor yesterday is in view: only the 120 rule is drawn, and no "100" or "120" label is pinned to the plot's right edge — the drivable mirror of a step more than 31 days back, which the edit sheet cannot make, since a target change is always kept from today
 - [x] W.6 **The handover** — all five pictures, W.1–W.5, retaken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL
