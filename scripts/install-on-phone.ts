@@ -1,6 +1,6 @@
 /**
  * Builds DayByDay for a physical iPhone and installs it over whatever is already there.
- * `pnpm run phone`, optionally with a device name or identifier: `pnpm run phone -- 'Diego's iPhone'`.
+ * `pnpm run phone`, optionally with a device name or identifier: `pnpm run phone 'Diego's iPhone'`.
  *
  * **This is the only way a new version reaches the phone.** There is no App Store here and no
  * TestFlight — TestFlight needs a paid Apple Developer Program membership, and this project signs
@@ -149,7 +149,7 @@ function chooseDevice(asked: string | undefined): Phone {
     die([
       `${devices.length} devices are paired, so name the one you mean:`,
       '',
-      ...devices.map((d) => `pnpm run phone -- '${d.name}'`),
+      ...devices.map((d) => `pnpm run phone '${d.name}'`),
     ])
   }
 
@@ -221,7 +221,10 @@ function builtApp(destination: string): string {
   return path.join(dir, name)
 }
 
-const phone = chooseDevice(process.argv[2])
+// pnpm hands a `--` to the script as an argument of its own rather than swallowing it, so
+// `pnpm run phone -- 'DiegoiPhone'` arrives as `['--', 'DiegoiPhone']` — a form this script's own
+// device list printed until 2026-09-23, and which then went looking for a phone called `--`.
+const phone = chooseDevice(process.argv.slice(2).find((arg) => arg !== '--'))
 warnAboutThePhone(phone)
 
 /**
