@@ -3417,3 +3417,211 @@ func aCommitmentOfferedAgainAsItselfAfterTheRosterDeletedItIsTakenOnLast() {
     #expect(added)
     #expect(roster.commitments == [waterPlants, journaling, gym])
 }
+
+@Test("a commitment taken up again days after it was stopped begins a new era on the day of the resume")
+func aCommitmentTakenUpAgainDaysAfterItWasStoppedBeginsANewEraOnTheDayOfTheResume() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
+    let resumeDay = CalendarDate(year: 2026, month: 3, day: 1)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.retire(gym, keptUntil: stoppedOn)
+
+    let resumed = roster.keepAgain(gym, from: resumeDay)
+
+    #expect(resumed)
+    #expect(roster.commitments.count == 1)
+    let newGym = roster.commitments.first!
+    #expect(roster.eras(of: newGym).count == 2)
+    #expect(roster.eras(of: newGym).map(\.rhythmInWords) == ["Mon, Wed, Sat", "Mon, Wed, Sat"])
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 15)!) == [newGym])
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!).count == 2)
+
+    let moodRange = Commitment.Range(lowest: 1, highest: 10)!
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: moodRange))!
+    var moodRoster = Roster()
+    _ = moodRoster.add(mood)
+    _ = moodRoster.retire(mood, keptUntil: stoppedOn)
+    _ = moodRoster.keepAgain(mood, from: resumeDay)
+    let newMood = moodRoster.commitments.first!
+    #expect(newMood.kind == .number(range: moodRange))
+
+    let proteinTarget = Commitment.Target(120)!
+    let protein = Commitment(
+        name: "Protein", schedule: schedule, keptFrom: keptFrom, kind: .total(target: proteinTarget))!
+    var proteinRoster = Roster()
+    _ = proteinRoster.add(protein)
+    _ = proteinRoster.retire(protein, keptUntil: stoppedOn)
+    _ = proteinRoster.keepAgain(protein, from: resumeDay)
+    let newProtein = proteinRoster.commitments.first!
+    #expect(newProtein.kind == .total(target: proteinTarget))
+}
+
+@Test("a commitment taken up again from the day after it was stopped is one era, as though it had never been stopped")
+func aCommitmentTakenUpAgainFromTheDayAfterItWasStoppedIsOneEraAsThoughItHadNeverBeenStopped() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
+    let dayAfter = CalendarDate(year: 2026, month: 2, day: 1)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.retire(gym, keptUntil: stoppedOn)
+
+    let resumed = roster.keepAgain(gym, from: dayAfter)
+
+    var neverStopped = Roster()
+    _ = neverStopped.add(gym)
+
+    #expect(resumed)
+    #expect(roster == neverStopped)
+
+    var stopDayRoster = Roster()
+    _ = stopDayRoster.add(gym)
+    _ = stopDayRoster.retire(gym, keptUntil: stoppedOn)
+    _ = stopDayRoster.keepAgain(gym, from: stoppedOn)
+
+    #expect(stopDayRoster == neverStopped)
+
+    var beforeStopRoster = Roster()
+    _ = beforeStopRoster.add(gym)
+    _ = beforeStopRoster.retire(gym, keptUntil: stoppedOn)
+    _ = beforeStopRoster.keepAgain(gym, from: CalendarDate(year: 2026, month: 1, day: 15)!)
+
+    #expect(beforeStopRoster == neverStopped)
+}
+
+@Test("an interval commitment taken up again begins its count on the day of the resume")
+func anIntervalCommitmentTakenUpAgainBeginsItsCountOnTheDayOfTheResume() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let nails = Commitment(
+        name: "Nails", schedule: .everyNDays(DayInterval(days: 4)!, from: keptFrom), keptFrom: keptFrom)!
+    let stoppedOn = CalendarDate(year: 2026, month: 1, day: 31)!
+    let resumeDay = CalendarDate(year: 2026, month: 2, day: 16)!
+
+    var roster = Roster()
+    _ = roster.add(nails)
+    _ = roster.retire(nails, keptUntil: stoppedOn)
+
+    let resumed = roster.keepAgain(nails, from: resumeDay)
+
+    #expect(resumed)
+    let kept = roster.commitments.first!
+    #expect(kept.isDue(on: resumeDay))
+    #expect(kept.isDue(on: CalendarDate(year: 2026, month: 2, day: 20)!))
+    #expect(!kept.isDue(on: CalendarDate(year: 2026, month: 2, day: 18)!))
+}
+
+@Test("a commitment whose only era holds no day, taken up again, is kept from the day of the resume")
+func aCommitmentWhoseOnlyEraHoldsNoDayTakenUpAgainIsKeptFromTheDayOfTheResume() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let stoppedOn = CalendarDate(year: 2026, month: 2, day: 28)!
+    let resumeDay = CalendarDate(year: 2026, month: 3, day: 16)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.retire(gym, keptUntil: stoppedOn)
+
+    let resumed = roster.keepAgain(gym, from: resumeDay)
+
+    #expect(resumed)
+    let kept = roster.commitments.first!
+    #expect(roster.eras(of: kept).count == 1)
+    #expect(roster.keptFrom(of: kept) == resumeDay)
+
+    let laterKeptFrom = CalendarDate(year: 2026, month: 4, day: 1)!
+    let laterGym = Commitment(name: "Gym", schedule: schedule, keptFrom: laterKeptFrom)!
+    var laterRoster = Roster()
+    _ = laterRoster.add(laterGym)
+    _ = laterRoster.retire(laterGym, keptUntil: stoppedOn)
+    _ = laterRoster.keepAgain(laterGym, from: resumeDay)
+
+    let laterKept = laterRoster.commitments.first!
+    #expect(laterRoster.eras(of: laterKept).count == 1)
+    #expect(laterRoster.keptFrom(of: laterKept) == laterKeptFrom)
+}
+
+@Test("a commitment taken up again from a day keeps its place and its category")
+func aCommitmentTakenUpAgainFromADayKeepsItsPlaceAndItsCategory() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let waterPlants = Commitment(name: "Water plants", schedule: schedule, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: schedule, keptFrom: keptFrom)!
+
+    var roster = Roster()
+    _ = roster.add(waterPlants)
+    _ = roster.add(gym, under: "Sport")
+    _ = roster.add(journaling)
+    _ = roster.retire(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
+
+    let resumed = roster.keepAgain(gym, from: CalendarDate(year: 2026, month: 3, day: 1)!)
+
+    #expect(resumed)
+    #expect(roster.commitments.map(\.name) == ["Water plants", "Gym", "Journaling"])
+    #expect(roster.groups.first { $0.category == "Sport" }?.commitments.map(\.name) == ["Gym"])
+}
+
+@Test("taking up again from a day a commitment a roster keeps, does not hold or has deleted is refused")
+func takingUpAgainFromADayACommitmentARosterKeepsDoesNotHoldOrHasDeletedIsRefused() {
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
+    let resumeDay = CalendarDate(year: 2026, month: 3, day: 1)!
+
+    var keptRoster = Roster()
+    _ = keptRoster.add(gym)
+    let neverAsked = keptRoster
+
+    let keptResumed = keptRoster.keepAgain(gym, from: resumeDay)
+
+    #expect(!keptResumed)
+    #expect(keptRoster == neverAsked)
+
+    var deletedRoster = Roster()
+    _ = deletedRoster.add(gym)
+    _ = deletedRoster.delete(gym)
+
+    let deletedResumed = deletedRoster.keepAgain(gym, from: resumeDay)
+
+    #expect(!deletedResumed)
+
+    var neverHeldRoster = Roster()
+    let neverHeldResumed = neverHeldRoster.keepAgain(gym, from: resumeDay)
+
+    #expect(!neverHeldResumed)
+}
+
+@Test("stopping a commitment as of a day before its newest era began stops the era behind it")
+func stoppingACommitmentAsOfADayBeforeItsNewestEraBeganStopsTheEraBehindIt() {
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]),
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let boundary = CalendarDate(year: 2026, month: 2, day: 28)!
+    let newEra = Commitment(
+        era: gym, schedule: .weekdays([.tuesday, .thursday]),
+        keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!, kind: .tick)!
+
+    var roster = Roster()
+    _ = roster.add(gym)
+    _ = roster.put(era: newEra, on: gym, keptUntil: boundary, under: nil)
+
+    let stopped = roster.retire(newEra, keptUntil: boundary)
+
+    #expect(stopped)
+    #expect(roster.commitments.isEmpty)
+    #expect(roster.stopped.map(\.rhythmInWords) == ["Mon, Wed, Sat"])
+    #expect(roster.eras(of: gym).count == 1)
+    #expect(roster.commitments(on: boundary) == [roster.stopped.first!])
+    #expect(roster.commitments(on: CalendarDate(year: 2026, month: 3, day: 1)!).isEmpty)
+}

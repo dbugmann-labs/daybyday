@@ -903,8 +903,8 @@ func aLookBackCountsTheWeekInProgressAgainstTheWholeQuota() throws {
 }
 
 @MainActor
-@Test("a look-back counts the week a commitment is kept from against the whole quota")
-func aLookBackCountsTheWeekACommitmentIsKeptFromAgainstTheWholeQuota() throws {
+@Test("a look-back counts the week a commitment is kept from against its part of the quota")
+func aLookBackCountsTheWeekACommitmentIsKeptFromAgainstItsPartOfTheQuota() throws {
     let places = freshRosterAndRecordPlaces()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -921,7 +921,7 @@ func aLookBackCountsTheWeekACommitmentIsKeptFromAgainstTheWholeQuota() throws {
         asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
     let lookBack = screen.lookBack(at: gym)
 
-    #expect(lookBack?.lines.last == .week(inWords: "29 Dec 2025 – 4 Jan 2026", fraction: "1/3"))
+    #expect(lookBack?.lines.last == .week(inWords: "29 Dec 2025 – 4 Jan 2026", fraction: "1/2"))
 }
 
 @MainActor
@@ -971,7 +971,7 @@ func aStoppedQuotaCommitmentsLookBackCountsItsLastWeekThroughTheDayItWasKeptUnti
         asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
     let lookBack = screen.lookBack(at: gym)
 
-    #expect(lookBack?.lines.first == .week(inWords: "2–8 Mar 2026", fraction: "1/3"))
+    #expect(lookBack?.lines.first == .week(inWords: "2–8 Mar 2026", fraction: "1/1"))
 }
 
 @MainActor
@@ -1010,14 +1010,14 @@ func aLookBackSaysAWeekdayErasMonthsAndAQuotaErasWeeksEachInItsOwnUnit() throws 
         lookBack?.lines
             == [
                 .month(inWords: "March 2026", fraction: "3/5"),
-                .week(inWords: "2–8 Mar 2026", fraction: "1/3"),
+                .week(inWords: "2–8 Mar 2026", fraction: "1/1"),
                 .week(inWords: "23 Feb – 1 Mar 2026", fraction: "3/3"),
             ])
 }
 
 @MainActor
-@Test("a week two quota eras share says its kept days out of the newer era's quota")
-func aWeekTwoQuotaErasShareSaysItsKeptDaysOutOfTheNewerErasQuota() throws {
+@Test("a week two quota eras share says its kept days out of both eras' parts of their quotas")
+func aWeekTwoQuotaErasShareSaysItsKeptDaysOutOfBothErasPartsOfTheirQuotas() throws {
     let places = freshRosterAndRecordPlaces()
     let oldKeptFrom = CalendarDate(year: 2026, month: 2, day: 23)!
     let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
@@ -1046,7 +1046,7 @@ func aWeekTwoQuotaErasShareSaysItsKeptDaysOutOfTheNewerErasQuota() throws {
         if case .week(let inWords, _) = line { return inWords == "2–8 Mar 2026" }
         return false
     }
-    #expect(weekOf2March == [.week(inWords: "2–8 Mar 2026", fraction: "2/5")])
+    #expect(weekOf2March == [.week(inWords: "2–8 Mar 2026", fraction: "2/4")])
     #expect(lookBack?.lines.contains(.week(inWords: "23 Feb – 1 Mar 2026", fraction: "0/3")) == true)
 }
 
@@ -1110,7 +1110,7 @@ func aMixedChainsWholeSumsItsMonthsDueDaysAndItsWeeksQuotasAlike() throws {
         asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
     let lookBack = screen.lookBack(at: new)
 
-    #expect(lookBack?.whole == "7/11")
+    #expect(lookBack?.whole == "7/9")
 }
 
 @MainActor

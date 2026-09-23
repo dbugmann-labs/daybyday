@@ -4,30 +4,30 @@ to it, one red-green cycle.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they
   are exactly the new titles boxed in §§ 2–5. Any other uncovered title is a stop.
-- [ ] 1.2 Carried tests this delta edits, each only as its scenario now says: *a look-back counts the
+- [x] 1.2 Carried tests this delta edits, each only as its scenario now says: *a look-back counts the
   week a commitment is kept from against the whole quota* and *a week two quota eras share says its
   kept days out of the newer era's quota* are renamed to §§ 4.9 and 4.10's titles; §§ 4.11–4.13
   change a fraction; § 2.11 changes its stop day from 30 to 31 August. Tick when all six assert
   their new text.
-- [ ] 1.3 Sweep every carried test holding a weekly quota kept from a day that is not a Monday, a
+- [x] 1.3 Sweep every carried test holding a weekly quota kept from a day that is not a Monday, a
   quota era chain, a stop, or two alike eras with days between them. Any red beyond § 1.2's six is a
   stop and a report before G7, never a quiet fixture edit.
 
 ## 2. `Roster` and `RosterStore` — take up again from a day, stop, mend
 
-- [ ] 2.1 a commitment taken up again days after it was stopped begins a new era on the day of the resume — catches the mend joining alike eras over the gap
-- [ ] 2.2 a commitment taken up again from the day after it was stopped is one era, as though it had never been stopped — catches a zero-day gap left as two eras
-- [ ] 2.3 an interval commitment taken up again begins its count on the day of the resume — catches the old start date carried
-- [ ] 2.4 a commitment whose only era holds no day, taken up again, is kept from the day of the resume — catches the kept-from day moved before a future start
-- [ ] 2.5 a commitment taken up again from a day keeps its place and its category
-- [ ] 2.6 taking up again from a day a commitment a roster keeps, does not hold or has deleted is refused
-- [ ] 2.7 taking up again from a day is refused where a commitment the roster keeps already has its name
-- [ ] 2.8 stopping a commitment as of a day before its newest era began stops the era behind it — catches `retire` not mending
-- [ ] 2.9 a stopped newest era holding no day is read back without it, the era behind it stopped — catches the later of the two days kept until carried
-- [ ] 2.10 alike eras with days between them are read back as two
-- [ ] 2.11 the newest era of a commitment stopped on the day it began is read back as it is — the carried test, its stop now on 31 August
+- [x] 2.1 a commitment taken up again days after it was stopped begins a new era on the day of the resume — catches the mend joining alike eras over the gap
+- [x] 2.2 a commitment taken up again from the day after it was stopped is one era, as though it had never been stopped — catches a zero-day gap left as two eras
+- [x] 2.3 an interval commitment taken up again begins its count on the day of the resume — catches the old start date carried
+- [x] 2.4 a commitment whose only era holds no day, taken up again, is kept from the day of the resume — catches the kept-from day moved before a future start
+- [x] 2.5 a commitment taken up again from a day keeps its place and its category
+- [x] 2.6 taking up again from a day a commitment a roster keeps, does not hold or has deleted is refused
+- [x] 2.7 taking up again from a day is refused where a commitment the roster keeps already has its name
+- [x] 2.8 stopping a commitment as of a day before its newest era began stops the era behind it — catches `retire` not mending
+- [x] 2.9 a stopped newest era holding no day is read back without it, the era behind it stopped — catches the later of the two days kept until carried
+- [x] 2.10 alike eras with days between them are read back as two
+- [x] 2.11 the newest era of a commitment stopped on the day it began is read back as it is — the carried test, its stop now on 31 August
 
 ## 3. `CommitmentsScreen` — stop and take up again
 
