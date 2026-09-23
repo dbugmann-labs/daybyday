@@ -59,23 +59,23 @@ to it, one red-green cycle.
 
 ## 5. `DayView`, `DayScreen` and `Schedule`
 
-- [ ] 5.1 a weekly quota said given a count and what its week owes says that number in place of its own
-- [ ] 5.2 a weekly-quota row in a part week says what its week owes
-- [ ] 5.3 a weekly-quota row counts a day kept before a stop in the week it was taken up again — catches `History.standing` still read
-- [ ] 5.4 two weekly-quota rows alike but for what their week owes are different rows
-- [ ] 5.5 a day screen draws no row for a commitment on a day of a gap
+- [x] 5.1 a weekly quota said given a count and what its week owes says that number in place of its own
+- [x] 5.2 a weekly-quota row in a part week says what its week owes
+- [x] 5.3 a weekly-quota row counts a day kept before a stop in the week it was taken up again — catches `History.standing` still read
+- [x] 5.4 two weekly-quota rows alike but for what their week owes are different rows
+- [x] 5.5 a day screen draws no row for a commitment on a day of a gap
 
 ## 6. Tidy
 
-- [ ] 6.1 The doc comments on `Roster.retire`, `Roster.mended`, `CommitmentsScreen.keepAgain`,
+- [x] 6.1 The doc comments on `Roster.retire`, `Roster.mended`, `CommitmentsScreen.keepAgain`,
   `CommitmentsScreen.confirmStopKeeping`, `LookBack.WeekTally` and `DayView.Row.standing` say what
   the code now does; `grep -rn "judged by the newer" src/DayByDayKit/Sources` finds none.
 
 ## 7. Gates and the archive handover
 
-- [ ] 7.1 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` reporting every test
+- [x] 7.1 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` reporting every test
   passing, the count read off the run.
-- [ ] 7.2 `openspec validate stop-and-resume-as-eras --strict` exits 0 and `pnpm run checks` is clean
+- [x] 7.2 `openspec validate stop-and-resume-as-eras --strict` exits 0 and `pnpm run checks` is clean
   but for what it is expected to warn.
 - [ ] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
 - [ ] 7.4 The **implementer** ticks this box in its last commit before the archive, on the evidence

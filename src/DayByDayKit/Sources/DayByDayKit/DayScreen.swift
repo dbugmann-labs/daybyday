@@ -106,8 +106,8 @@ public final class DayScreen {
         // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
         // back. The parameter holds the same value `shownDay` was just set to, two lines up.
         self.dayView = Self.formDayView(
-            of: read.roster.groups(on: today), oneOffs: read.oneOffStore, asOf: today,
-            on: today, in: read.recordStore?.history ?? History())
+            of: read.roster.groups(on: today), roster: read.roster, oneOffs: read.oneOffStore,
+            asOf: today, on: today, in: read.recordStore?.history ?? History())
     }
 
     /// What reading the record, the roster and the one-off places produces: a restore in
@@ -237,16 +237,20 @@ public final class DayScreen {
     /// Forms a day view of `groups` on `date`, from `history`, and of the one-offs `oneOffStore`
     /// holds as of `today` — or of no one-offs at all where `oneOffStore` is `nil`, so a screen
     /// not keeping one-offs draws no One-offs group rather than an empty one. `design.md` § *The
-    /// empty group is the offer*.
+    /// empty group is the offer*. `roster` is the roster `groups` was read from, so a
+    /// weekly-quota row can read its commitment's whole chain rather than the one era `groups`
+    /// itself holds — `openspec/changes/stop-and-resume-as-eras/design.md` § *One week rule, in
+    /// one place*.
     private static func formDayView(
-        of groups: [Roster.Group], oneOffs oneOffStore: OneOffStore?, asOf today: CalendarDate,
-        on date: CalendarDate, in history: History
+        of groups: [Roster.Group], roster: Roster, oneOffs oneOffStore: OneOffStore?,
+        asOf today: CalendarDate, on date: CalendarDate, in history: History
     ) -> DayView {
         guard let oneOffStore else {
-            return DayView(of: groups, on: date, in: history)
+            return DayView(of: groups, on: date, in: history, roster: roster)
         }
         return DayView(
-            of: groups, oneOffs: oneOffStore.oneOffs, asOf: today, on: date, in: history)
+            of: groups, oneOffs: oneOffStore.oneOffs, asOf: today, on: date, in: history,
+            roster: roster)
     }
 
     /// Opens the roster at `place`. A place written by a later version of DayByDay is told apart
@@ -765,7 +769,7 @@ public final class DayScreen {
     /// which stand as of `today`, never as of `day`.
     private func dayView(on day: CalendarDate) -> DayView {
         Self.formDayView(
-            of: roster.groups(on: day), oneOffs: oneOffStore, asOf: today, on: day,
+            of: roster.groups(on: day), roster: roster, oneOffs: oneOffStore, asOf: today, on: day,
             in: recordStore?.history ?? History())
     }
 
@@ -876,7 +880,7 @@ public final class DayScreen {
         self.oneOffState = read.oneOffState
 
         self.dayView = Self.formDayView(
-            of: read.roster.groups(on: shownDay), oneOffs: read.oneOffStore,
+            of: read.roster.groups(on: shownDay), roster: read.roster, oneOffs: read.oneOffStore,
             asOf: self.today, on: shownDay, in: read.recordStore?.history ?? History())
     }
 
@@ -925,7 +929,8 @@ public final class DayScreen {
             self.recordState = .unreadable
             self.oneOffStore = nil
             self.oneOffState = .unreadable
-            self.dayView = Self.formDayView(of: [], oneOffs: nil, asOf: today, on: shownDay, in: History())
+            self.dayView = Self.formDayView(
+                of: [], roster: Roster(), oneOffs: nil, asOf: today, on: shownDay, in: History())
             return
         }
         guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) else {
@@ -938,8 +943,8 @@ public final class DayScreen {
             self.oneOffStore = openedOneOffs.store
             self.oneOffState = openedOneOffs.state
             self.dayView = Self.formDayView(
-                of: readOnly.roster.groups(on: shownDay), oneOffs: openedOneOffs.store, asOf: today,
-                on: shownDay, in: History())
+                of: readOnly.roster.groups(on: shownDay), roster: readOnly.roster,
+                oneOffs: openedOneOffs.store, asOf: today, on: shownDay, in: History())
             return
         }
 
@@ -961,8 +966,9 @@ public final class DayScreen {
         self.oneOffState = openedOneOffs.state
 
         self.dayView = Self.formDayView(
-            of: openedRoster.roster.groups(on: shownDay), oneOffs: openedOneOffs.store, asOf: today,
-            on: shownDay, in: recordStore?.history ?? History())
+            of: openedRoster.roster.groups(on: shownDay), roster: openedRoster.roster,
+            oneOffs: openedOneOffs.store, asOf: today, on: shownDay,
+            in: recordStore?.history ?? History())
     }
 
     /// Being returned to where no copy has been restored: a restore in progress is undone first,
@@ -1040,8 +1046,8 @@ public final class DayScreen {
         self.roster = openedRoster.roster
 
         self.dayView = Self.formDayView(
-            of: openedRoster.roster.groups(on: shownDay), oneOffs: oneOffStore, asOf: today,
-            on: shownDay, in: recordStore?.history ?? History())
+            of: openedRoster.roster.groups(on: shownDay), roster: openedRoster.roster,
+            oneOffs: oneOffStore, asOf: today, on: shownDay, in: recordStore?.history ?? History())
     }
 }
 

@@ -62,4 +62,13 @@ enum ScheduleWords {
     static func weeklyQuota(_ timesPerWeek: Int, given count: Int) -> String {
         "\(count)/\(weeklyQuota(timesPerWeek))"
     }
+
+    /// A weekly quota said given a count and what its week owes — the count in digits, a slash
+    /// with no space on either side, and then what the week owes in place of the quota's own
+    /// number of times a week. Both numbers are said exactly as given and judged against
+    /// nothing. `openspec/changes/stop-and-resume-as-eras/specs/schedule/spec.md` § *A weekly
+    /// quota said given what its week owes says that number in place of its own times a week*.
+    static func weeklyQuota(given count: Int, owing owed: Int) -> String {
+        "\(count)/\(owed)x a week"
+    }
 }

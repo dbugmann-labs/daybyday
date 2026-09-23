@@ -54,22 +54,29 @@ public struct DayView: Hashable, Sendable {
         /// on this row's date. Not given back by anything but `totalEntry(asOf:)`.
         let total: Decimal
 
-        /// This row's commitment's standing through this row's date, where its schedule is a
-        /// weekly quota — `nil` on every other schedule. A fourth thing a weekly-quota row is,
-        /// alongside its commitment, its date and what that day holds; see `design.md` § *A row
-        /// stores its standing, and stores none off a weekly quota*.
-        let standing: Int?
+        /// This row's commitment's standing on a weekly quota — the days of its week, from its
+        /// Monday through this row's date, that a weekly-quota era of the commitment's chain
+        /// holds and history answers kept against, and what that week owes — `nil` on every
+        /// other schedule. A fourth thing a weekly-quota row is, alongside its commitment, its
+        /// date and what that day holds; see `design.md` § *A row stores its standing, and
+        /// stores none off a weekly quota* and § *One week rule, in one place*.
+        struct WeekStanding: Hashable, Sendable {
+            let kept: Int
+            let owed: Int
+        }
+
+        let weekStanding: WeekStanding?
 
         public var name: String { commitment.name }
 
-        /// The rhythm this row's commitment runs on, in words — given this row's standing on a
-        /// weekly quota, and plainly otherwise. See
+        /// The rhythm this row's commitment runs on, in words — given this row's standing and
+        /// what its week owes on a weekly quota, and plainly otherwise. See
         /// `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
         public var rhythmInWords: String {
-            guard let standing else {
+            guard let weekStanding else {
                 return commitment.rhythmInWords
             }
-            return commitment.schedule.inWords(given: standing)
+            return commitment.schedule.inWords(given: weekStanding.kept, owing: weekStanding.owed)
         }
 
         /// The tick this row makes, or `nil` when the row's date is later than `today`.
@@ -265,23 +272,29 @@ public struct DayView: Hashable, Sendable {
 
     /// Forms a day view from `groups` — the same shape a roster reads its commitments back in —
     /// each drawn as its own group, dropping every commitment not due on `date` and, with it, a
-    /// group left holding none. `design.md` § *The seam*.
-    public init(of groups: [Roster.Group], on date: CalendarDate, in history: History) {
+    /// group left holding none. `design.md` § *The seam*. `roster`, where given, is where a
+    /// weekly-quota row reads its commitment's whole chain from, so a week a resume's gap or a
+    /// stop cuts is judged against every era it holds and not the one shown alone —
+    /// `openspec/changes/stop-and-resume-as-eras/design.md` § *One week rule, in one place*. A
+    /// day view formed with no roster reads every commitment as its own only era.
+    public init(
+        of groups: [Roster.Group], on date: CalendarDate, in history: History, roster: Roster? = nil
+    ) {
         self.date = date
-        self.groups = Self.makeGroups(from: groups, on: date, in: history)
+        self.groups = Self.makeGroups(from: groups, on: date, in: history, roster: roster)
         self.oneOffGroup = nil
     }
 
-    /// Forms a day view exactly as `init(of:on:in:)` does, and additionally holds a `OneOffGroup`
-    /// headed "One-offs" of the one-offs standing on `date` as of `today` — holding no rows where
-    /// none stand, rather than no group at all, since this initializer was handed one-offs.
-    /// `design.md` § *The empty group is the offer*.
+    /// Forms a day view exactly as `init(of:on:in:roster:)` does, and additionally holds a
+    /// `OneOffGroup` headed "One-offs" of the one-offs standing on `date` as of `today` — holding
+    /// no rows where none stand, rather than no group at all, since this initializer was handed
+    /// one-offs. `design.md` § *The empty group is the offer*.
     public init(
         of groups: [Roster.Group], oneOffs: OneOffs, asOf today: CalendarDate,
-        on date: CalendarDate, in history: History
+        on date: CalendarDate, in history: History, roster: Roster? = nil
     ) {
         self.date = date
-        self.groups = Self.makeGroups(from: groups, on: date, in: history)
+        self.groups = Self.makeGroups(from: groups, on: date, in: history, roster: roster)
 
         let standing = oneOffs.standing(on: date, asOf: today)
         self.oneOffGroup = OneOffGroup(
@@ -291,21 +304,28 @@ public struct DayView: Hashable, Sendable {
             })
     }
 
-    /// The groups `init(of:on:in:)` and `init(of:oneOffs:asOf:on:in:)` both hold: one for each
-    /// group handed in that keeps at least one row due on `date`, dropping every commitment not
-    /// due and, with it, a group left holding none.
+    /// The groups `init(of:on:in:roster:)` and `init(of:oneOffs:asOf:on:in:roster:)` both hold:
+    /// one for each group handed in that keeps at least one row due on `date`, dropping every
+    /// commitment not due and, with it, a group left holding none. A weekly-quota row's standing
+    /// is read off `WeekQuota`, against `commitment`'s whole chain where `roster` holds one.
     private static func makeGroups(
-        from groups: [Roster.Group], on date: CalendarDate, in history: History
+        from groups: [Roster.Group], on date: CalendarDate, in history: History, roster: Roster?
     ) -> [Group] {
         groups.compactMap { group in
             let rows = group.commitments
                 .filter { $0.isDue(on: date) }
                 .map { commitment -> Row in
-                    let standing: Int?
+                    let weekStanding: Row.WeekStanding?
                     if case .weeklyQuota = commitment.schedule {
-                        standing = history.standing(for: commitment, through: date)
+                        let links = WeekQuota.chain(of: commitment, in: roster)
+                        let monday = WeekQuota.monday(of: date)
+                        let standing =
+                            WeekQuota.standing(
+                                monday: monday, links: links, history: history, keptThrough: date)
+                            ?? (kept: 0, owed: 0)
+                        weekStanding = Row.WeekStanding(kept: standing.kept, owed: standing.owed)
                     } else {
-                        standing = nil
+                        weekStanding = nil
                     }
                     return Row(
                         commitment: commitment, date: date,
@@ -313,7 +333,7 @@ public struct DayView: Hashable, Sendable {
                         number: history.number(for: commitment, on: date),
                         note: history.note(for: commitment, on: date),
                         total: history.total(for: commitment, on: date),
-                        standing: standing)
+                        weekStanding: weekStanding)
                 }
             guard !rows.isEmpty else {
                 return nil
