@@ -50,12 +50,12 @@ the conductor, and a line the owner cannot confirm is a stop and a report, never
 
 ## 7. Gates and the archive handover
 
-- [ ] 7.1 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` reporting every test
+- [x] 7.1 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` reporting every test
   passing, the count read off the run and not derived
-- [ ] 7.2 `openspec validate keep-a-folded-rosters-eras-together --strict` exits 0,
+- [x] 7.2 `openspec validate keep-a-folded-rosters-eras-together --strict` exits 0,
   `pnpm run check:scenarios` exits 0, and `pnpm run checks` is clean but for what it is expected to
   warn
-- [ ] 7.3 `git diff --stat origin/main` lists only this change folder, `RosterDocument.swift` and
+- [x] 7.3 `git diff --stat origin/main` lists only this change folder, `RosterDocument.swift` and
   `RosterStoreTests.swift`
 - [ ] 7.4 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 7.5 The **`implementer` ticks this box in its last commit before the archive**, on the
