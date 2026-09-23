@@ -246,6 +246,10 @@ struct ContentView: View {
     // losing focus; without this, the second finds the field already emptied by the first — a
     // harmless no-op for an add, but not for a rename, which a blank text removes outright.
     @State private var justCommittedOneOffField = false
+    // The day picker's identity, bumped on every day picked so SwiftUI rebuilds the picker and
+    // with it drops the calendar it popped open: a compact `DatePicker` offers no way to close
+    // that calendar, and left alone it stays open over the day it has just moved to.
+    @State private var dayPickerIdentity = 0
     // The paged day content's own width, measured off `GeometryReader` and used both to size the
     // full slide a carry or a chevron tap settles to and as the threshold a drag must cross to
     // carry. `dragTranslation` is the live offset applied to the three-list `HStack`: the drag's
@@ -712,12 +716,14 @@ struct ContentView: View {
                             else { return }
                             commitFocusedOneOffField(forDeparture: true)
                             screen.showDay(picked)
+                            dayPickerIdentity += 1
                         }
                     ),
                     in: date(from: screen.dayPickerReach.earliest)...,
                     displayedComponents: [.date]
                 )
                 .labelsHidden()
+                .id(dayPickerIdentity)
                 Spacer()
                 Button {
                     playSettle(towards: .next)

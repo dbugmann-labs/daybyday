@@ -176,7 +176,7 @@ pnpm run phone
 It picks the phone when exactly one is paired, and names them when more than one is:
 
 ```bash
-pnpm run phone -- 'Diego’s iPhone'
+pnpm run phone 'Diego’s iPhone'
 ```
 
 Someone who is not the owner sets their own team: `DAYBYDAY_TEAM_ID=XXXXXXXXXX pnpm run phone`.
