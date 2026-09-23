@@ -310,17 +310,29 @@ struct ContentView: View {
                 }
             }
             .toolbar {
-                // The way back to today: a plain text button on the toolbar's left, where
-                // nothing is drawn today. Still gated on `screen.offersGoingBackToToday` and
-                // still calls exactly what the button under the day row used to.
-                if screen.offersGoingBackToToday {
-                    ToolbarItem(placement: .topBarLeading) {
+                // The way back to today: a plain text button on the toolbar's left, where it
+                // is offered. On today itself, where it is not (§ *Offered*), the same slot
+                // holds a green pill that says "you are on today" and offers no tap. Still
+                // gated on `screen.offersGoingBackToToday` and still calls exactly what the
+                // button under the day row used to.
+                ToolbarItem(placement: .topBarLeading) {
+                    if screen.offersGoingBackToToday {
                         Button("Today") {
                             commitFocusedOneOffField(forDeparture: true)
                             screen.showToday()
                         }
+                    } else {
+                        // A label, not a disabled button: `.disabled` washes any tint to grey.
+                        Text("Today")
+                            .foregroundStyle(.white)
+                            .fixedSize()
+                            .padding(.horizontal, 16)
+                            .frame(height: 44)
+                            .glassEffect(.regular.tint(.green))
+                            .accessibilityIdentifier("TodayMarker")
                     }
                 }
+                .sharedBackgroundVisibility(screen.offersGoingBackToToday ? .automatic : .hidden)
                 ToolbarItem {
                     Button("Commitments") {
                         commitmentsScreen = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
