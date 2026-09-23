@@ -673,8 +673,7 @@ public final class CommitmentsScreen {
     /// and the rhythm and the range or the target SHALL be its newest era's."
     public func whatItIsMadeOf(_ commitment: Commitment) -> Change? {
         guard let rosterStore,
-            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment }),
-            !entry.isRemoved
+            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
         else {
             return nil
         }
@@ -790,8 +789,7 @@ public final class CommitmentsScreen {
             era: earliestCommitment, schedule: rebuiltSchedule, keptFrom: newKeptFrom,
             kind: earliestCommitment.kind)!
         roster.entries[earliestSurvivingIndex] = Roster.Entry(
-            commitment: rebuilt, keptUntil: earliestEntry.keptUntil, isRemoved: earliestEntry.isRemoved,
-            category: earliestEntry.category)
+            commitment: rebuilt, keptUntil: earliestEntry.keptUntil, category: earliestEntry.category)
 
         for index in toDrop.sorted(by: >) {
             roster.entries.remove(at: index)
@@ -946,7 +944,7 @@ public final class CommitmentsScreen {
             let existing = nextRoster.entries[index]
             nextRoster.entries[index] = Roster.Entry(
                 commitment: existing.commitment, keptUntil: existing.keptUntil,
-                isRemoved: existing.isRemoved, category: normalizedCategory)
+                category: normalizedCategory)
         }
 
         if let recordStore,
@@ -1137,13 +1135,16 @@ public final class CommitmentsScreen {
         nameTypedBack = ""
     }
 
-    /// Removes whatever is awaiting removal, as of the day before the one this screen holds where
-    /// the roster is still keeping it — the same day-before rule and the same fallback
-    /// `confirmStopKeeping` uses — or the day it was already kept until where the roster had
-    /// already stopped keeping it, which `Roster.remove` enforces on its own by ignoring the date
-    /// it is handed there. Answers `nil` and does nothing when nothing is awaiting removal, and
-    /// when what has been typed back does not match: no refusal, because a name still being typed
-    /// is not a change anyone has asked for yet.
+    /// Deletes whatever is awaiting removal. Answers `nil` and does nothing when nothing is
+    /// awaiting removal, and when what has been typed back does not match: no refusal, because a
+    /// name still being typed is not a change anyone has asked for yet.
+    ///
+    /// This still runs under the `askToRemove`/`awaitingRemoval`/`RefusedChange.removing` names:
+    /// `openspec/changes/delete-a-commitment-for-good/tasks.md` § 5 is where those become
+    /// `askToDelete`/`awaitingDeletion`/`RefusedChange.deleting` and this call gains the
+    /// whole-or-nothing record erasure `design.md` § *Deletion writes the record place first and
+    /// puts it back* asks for; today it only calls the roster's own `delete`, kept apart from
+    /// `RosterStore.remove` and `Roster.Entry.isRemoved`, which `tasks.md` § 1.4 retires.
     @discardableResult public func confirmRemoving() -> Refusal? {
         guard let commitment = awaitingRemoval else {
             return nil
@@ -1160,7 +1161,7 @@ public final class CommitmentsScreen {
         }
 
         do {
-            try rosterStore.remove(commitment, keptUntil: Self.dayBefore(dayToKeepFrom))
+            try rosterStore.delete(commitment)
         } catch {
             refusedChange = .removing(commitment, .notKept)
             return .notKept
@@ -1678,8 +1679,7 @@ public final class CommitmentsScreen {
     /// second screen opening the same places*.
     public func lookBack(at commitment: Commitment) -> LookBack? {
         guard let rosterStore, let recordStore,
-            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment }),
-            !entry.isRemoved
+            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
         else {
             return nil
         }

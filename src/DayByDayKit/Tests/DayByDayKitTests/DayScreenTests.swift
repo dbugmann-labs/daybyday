@@ -992,7 +992,7 @@ func aDayScreenThatIsNotKeepingARosterMovesAndGoesOnSayingWhy() throws {
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 7, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let journaling = Commitment(
@@ -1202,7 +1202,7 @@ func goingBackToTodayDoesNotReadTheRosterAgain() throws {
     let (laterFormPlace, laterFormRosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: laterFormRosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: laterFormRosterPlace)
+    try Data(#"{"version": 7, "commitments": []}"#.utf8).write(to: laterFormRosterPlace)
 
     let laterFormScreen = DayScreen(
         startingFrom: [], asOf: monday, keepingRecordAt: laterFormPlace,
@@ -3373,7 +3373,7 @@ func aRosterWrittenInALaterFormThanThisAppKnowsMakesADayScreenThatSaysTheRosterI
     let (place, rosterPlace) = freshPlaces()
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 7, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -3550,7 +3550,7 @@ func aDayScreenThatWasKeepingARosterStopsWhenItIsShownAgainAndTheRosterCannotBeR
     let screen = DayScreen(startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 7, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     screen.shown(asOf: monday)
 
@@ -3567,7 +3567,7 @@ func aDayScreenShownAgainCarriesOverNoReasonItGaveForNotKeepingItsRecordOrItsRos
     try Data(#"{"version": 7, "ticks": []}"#.utf8).write(to: place)
     try FileManager.default.createDirectory(
         at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": 6, "commitments": []}"#.utf8).write(to: rosterPlace)
+    try Data(#"{"version": 7, "commitments": []}"#.utf8).write(to: rosterPlace)
 
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -4334,63 +4334,47 @@ func aDayScreenReturnedToGoesOnTellingWhatItWasTellingOnARow() throws {
 }
 
 @MainActor
-@Test("a day screen draws a removed commitment on the day it was kept until and not on the day after it")
-func aDayScreenDrawsARemovedCommitmentOnTheDayItWasKeptUntilAndNotOnTheDayAfterIt() throws {
-    let (place, rosterPlace) = freshPlaces()
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let daily: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
-    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-
-    let rosterStore = try RosterStore(at: rosterPlace)
-    try rosterStore.add(journaling)
-    try rosterStore.remove(journaling, keptUntil: sunday)
-
-    let recordStore = try RecordStore(at: place)
-    try recordStore.add(Tick(journaling, on: sunday)!)
-
-    let screen = DayScreen(
-        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
-
-    #expect(screen.dayView.rows.isEmpty)
-
-    screen.showPreviousDay()
-
-    #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
-    #expect(screen.dayView.rows[0].isKept)
-}
-
-@MainActor
 @Test("a day screen opened on a roster whose commitments have all been removed takes nothing on")
 func aDayScreenOpenedOnARosterWhoseCommitmentsHaveAllBeenRemovedTakesNothingOn() throws {
     let (place, rosterPlace) = freshPlaces()
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let daily: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
     let gym = Commitment(
-        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
-    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]),
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
-    let rosterStore = try RosterStore(at: rosterPlace)
-    try rosterStore.add(journaling)
-    try rosterStore.remove(journaling, keptUntil: sunday)
+    // A roster written in the form used before a commitment could be deleted, holding one
+    // commitment removed and kept until Sunday 30 August 2026 — `design.md` § *Migration* is
+    // where this form is read as a deleted commitment; this Story's own §1–§3 pass does not
+    // reach that yet, so today it is unreadable, exactly like any other roster store this app
+    // cannot read.
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Journaling",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: rosterPlace)
 
     let screen = DayScreen(
         startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
 
     #expect(screen.dayView.rows.isEmpty)
-
-    let later = try RosterStore(at: rosterPlace)
-    var expected = Roster()
-    _ = expected.add(journaling)
-    _ = expected.remove(journaling, keptUntil: sunday)
-    #expect(later.roster == expected)
+    #expect(try Data(contentsOf: rosterPlace) == bytes)
 }
 
 @MainActor
@@ -7030,44 +7014,6 @@ func aDayScreenDrawsAGroupAgainAfterACategoryIsChangedAtItsRosterPlace() throws 
 }
 
 @MainActor
-@Test("a day screen draws a removed commitment under a category exactly as it draws a stopped one")
-func aDayScreenDrawsARemovedCommitmentUnderACategoryExactlyAsItDrawsAStoppedOne() throws {
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let daily: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let creatine = Commitment(name: "Creatine", schedule: daily, keptFrom: keptFrom)!
-    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-
-    let (stoppedPlace, stoppedRosterPlace) = freshPlaces()
-    let stoppedRoster = try RosterStore(at: stoppedRosterPlace)
-    try stoppedRoster.add(creatine)
-    try stoppedRoster.put(creatine, under: "Supplements")
-    try stoppedRoster.retire(creatine, keptUntil: sunday)
-
-    let (removedPlace, removedRosterPlace) = freshPlaces()
-    let removedRoster = try RosterStore(at: removedRosterPlace)
-    try removedRoster.add(creatine)
-    try removedRoster.put(creatine, under: "Supplements")
-    try removedRoster.remove(creatine, keptUntil: sunday)
-
-    let stoppedScreen = DayScreen(
-        startingFrom: [], asOf: monday, keepingRecordAt: stoppedPlace,
-        keepingRosterAt: stoppedRosterPlace, keepingOneOffsAt: freshOneOffPlace())
-    stoppedScreen.showPreviousDay()
-
-    let removedScreen = DayScreen(
-        startingFrom: [], asOf: monday, keepingRecordAt: removedPlace,
-        keepingRosterAt: removedRosterPlace, keepingOneOffsAt: freshOneOffPlace())
-    removedScreen.showPreviousDay()
-
-    #expect(stoppedScreen.dayView == removedScreen.dayView)
-    #expect(stoppedScreen.dayView.groups.map(\.category) == ["Supplements"])
-    #expect(stoppedScreen.dayView.rows.map(\.name) == ["Creatine"])
-}
-
-@MainActor
 @Test("a day screen moved into the past offers the way back to today")
 func aDayScreenMovedIntoThePastOffersTheWayBackToToday() {
     let (place, rosterPlace) = freshPlaces()
@@ -7716,31 +7662,6 @@ func aDayScreenPickingTheDayItIsAlreadyShowingChangesNothing() throws {
     #expect(!screen.offersGoingBackToToday)
     #expect(screen.notice?.row == row)
     #expect(screen.dayView == dayViewBefore)
-}
-
-@MainActor
-@Test("a day screen's day picker reaches back past a commitment its roster has removed")
-func aDayScreensDayPickerReachesBackPastACommitmentItsRosterHasRemoved() throws {
-    let (place, rosterPlace) = freshPlaces()
-    let daily: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let gym = Commitment(
-        name: "Gym", schedule: daily, keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
-    let run = Commitment(
-        name: "Run", schedule: daily, keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-
-    let rosterStore = try RosterStore(at: rosterPlace)
-    try rosterStore.add(gym)
-    try rosterStore.add(run)
-    try rosterStore.remove(gym, keptUntil: CalendarDate(year: 2026, month: 1, day: 31)!)
-
-    let screen = DayScreen(
-        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
-
-    #expect(screen.dayPickerReach.earliest == CalendarDate(year: 2026, month: 1, day: 1))
-    #expect(screen.dayView.rows.map(\.name) == ["Run"])
 }
 
 @MainActor
@@ -8862,43 +8783,6 @@ func aTornSaveADayScreenCouldNotUndoIsUndoneOnceItIsShownAgainAndItsPlacesCanBeW
     #expect(screen.dayView.rows[0].isKept)
     #expect(
         !FileManager.default.fileExists(atPath: SaveInProgress.place(besideRecordAt: place).path))
-}
-
-@MainActor
-@Test(
-    "an orphaned record is carried back to a removed commitment beside the records it already holds when a day screen is opened"
-)
-func anOrphanedRecordIsCarriedBackToARemovedCommitmentBesideTheRecordsItAlreadyHoldsWhenADayScreenIsOpened()
-    throws
-{
-    let (place, rosterPlace) = freshPlaces()
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let schedule: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let gym = Commitment(name: "Gym", schedule: schedule, keptFrom: keptFrom)!
-    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: schedule, keptFrom: keptFrom)!
-    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
-    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
-    let august30th = CalendarDate(year: 2026, month: 8, day: 30)!
-    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
-
-    let rosterStore = try RosterStore(at: rosterPlace)
-    try rosterStore.add(gym)
-    try rosterStore.remove(gym, keptUntil: august30th)
-    let recordStore = try RecordStore(at: place)
-    try recordStore.add(Tick(gym, on: august3rd)!)
-    try recordStore.add(Tick(gymEmoji, on: august4th)!)
-
-    _ = DayScreen(
-        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
-        keepingOneOffsAt: freshOneOffPlace())
-
-    let laterRecordStore = try RecordStore(at: place)
-    #expect(laterRecordStore.history.isKept(gym, on: august3rd))
-    #expect(laterRecordStore.history.isKept(gym, on: august4th))
-    #expect(!laterRecordStore.history.isKept(gymEmoji, on: august3rd))
-    #expect(!laterRecordStore.history.isKept(gymEmoji, on: august4th))
 }
 
 @MainActor

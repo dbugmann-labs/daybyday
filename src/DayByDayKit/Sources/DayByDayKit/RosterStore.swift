@@ -68,25 +68,38 @@ public final class RosterStore {
     }
 
     /// Whether every entry's shape agrees with what `document.version` declares it should carry,
-    /// per `design.md` § *The form on disk*: `removed` present on every entry at the form that
-    /// introduced it and at every form since, and absent at every form before — checked against
-    /// `removalIntroducedInVersion`, not `currentVersion`, so a later form raising `currentVersion`
-    /// alone cannot silently move which forms this check accepts. `category` and `identity` are
-    /// each checked the same way, against their own introduced-at constant. The one place
-    /// `init(at:)` reads a decoded document into this store's own shape, shared with
-    /// `CopyDocument.read`'s own per-store reading — `openspec/changes/restore-from-a-copy/
-    /// design.md` § *Reading a copy: the envelope decides, and a later version outranks damage*.
+    /// per `design.md` § *The form on disk*: `removed` present on every entry between the form
+    /// that introduced it and the form that retired it, and absent at every other form — checked
+    /// against `removalIntroducedInVersion` and `removalRetiredInVersion`, not `currentVersion`,
+    /// so a later form raising `currentVersion` alone cannot silently move which forms this check
+    /// accepts. `category` and `identity` are each checked the same way, against their own
+    /// introduced-at constant. The document's own top-level `emptied` is checked the same way
+    /// too, against `emptiedIntroducedInVersion` — present exactly at the forms that carry it —
+    /// and, where present, MUST NOT say the roster was emptied while an entry is still in it: a
+    /// roster that says it was emptied and yet holds a commitment could not have been written by
+    /// this app, `design.md` § *A roster store that cannot be read is refused rather than
+    /// emptied*. The one place `init(at:)` reads a decoded document into this store's own shape,
+    /// shared with `CopyDocument.read`'s own per-store reading — `openspec/changes/
+    /// restore-from-a-copy/design.md` § *Reading a copy: the envelope decides, and a later
+    /// version outranks damage*.
     private static func shapeAgrees(with document: RosterDocument) -> Bool {
         guard document.version >= 1 else {
             return false
         }
-        return document.commitments.allSatisfy {
-            ($0.removed != nil) == (document.version >= RosterDocument.removalIntroducedInVersion)
+        let entriesAgree = document.commitments.allSatisfy {
+            ($0.removed != nil)
+                == (document.version >= RosterDocument.removalIntroducedInVersion
+                    && document.version < RosterDocument.removalRetiredInVersion)
                 && $0.categoryKeyPresent
                     == (document.version >= RosterDocument.categoryIntroducedInVersion)
                 && $0.commitment.identityKeyPresent
                     == (document.version >= RosterDocument.identityIntroducedInVersion)
         }
+        let emptiedKeyAgrees =
+            (document.emptied != nil)
+            == (document.version >= RosterDocument.emptiedIntroducedInVersion)
+        let emptiedConsistent = document.emptied != true || document.commitments.isEmpty
+        return entriesAgree && emptiedKeyAgrees && emptiedConsistent
     }
 
     /// Exactly what is kept at `place`.
@@ -159,13 +172,13 @@ public final class RosterStore {
         return true
     }
 
-    /// Kept at `place` before this returns. Answers what `Roster.remove` answers — `false`,
-    /// without throwing and without writing, when the roster does not hold `commitment` or has
-    /// already removed it.
+    /// Kept at `place` before this returns. Answers what `Roster.delete` answers — `false`,
+    /// without throwing and without writing, when the roster does not hold `commitment` — one it
+    /// does not hold at all, one already deleted included.
     @discardableResult
-    public func remove(_ commitment: Commitment, keptUntil date: CalendarDate) throws -> Bool {
+    public func delete(_ commitment: Commitment) throws -> Bool {
         var nextRoster = roster
-        guard nextRoster.remove(commitment, keptUntil: date) else {
+        guard nextRoster.delete(commitment) else {
             return false
         }
         try write(nextRoster)
@@ -299,24 +312,6 @@ public final class RosterStore {
         return true
     }
 
-    /// Kept at `place` before this returns. Answers what `Roster.supersede` answers — `false`,
-    /// without throwing and without writing, when the roster is not currently keeping
-    /// `commitment`, or when `new` is a commitment it already holds.
-    @discardableResult
-    public func supersede(
-        _ commitment: Commitment, with new: Commitment, keptUntil date: CalendarDate,
-        under category: String?
-    ) throws -> Bool {
-        var nextRoster = roster
-        guard nextRoster.supersede(commitment, with: new, keptUntil: date, under: category) else {
-            return false
-        }
-        try write(nextRoster)
-
-        roster = nextRoster
-        return true
-    }
-
     /// Kept at `place` in one write, replacing the whole roster with `nextRoster`. For a caller
     /// that must apply more than one `Roster` mutation as a single act — a rename, a day-move and
     /// a new era put on, say — building the combined value first and handing it here keeps them
@@ -326,8 +321,8 @@ public final class RosterStore {
     /// (`RosterStore.rename`'s own doc comment), a caller here has already judged for itself that
     /// something changed, and `Roster`'s equality — identity alone — cannot be trusted to agree
     /// when a rename or a day-move is the only thing that did, since neither touches an entry's
-    /// identity, its `keptUntil`, its `isRemoved` or its category, the only fields two `Roster`
-    /// values are compared on beyond an entry's very presence.
+    /// identity, its `keptUntil` or its category, the only fields two `Roster` values are
+    /// compared on beyond an entry's very presence.
     @discardableResult
     func replace(with nextRoster: Roster) throws -> Bool {
         try write(nextRoster)
@@ -348,7 +343,7 @@ public final class RosterStore {
                 && a.commitment.schedule == b.commitment.schedule
                 && a.commitment.keptFrom == b.commitment.keptFrom
                 && a.commitment.kind == b.commitment.kind && a.keptUntil == b.keptUntil
-                && a.isRemoved == b.isRemoved && a.category == b.category
+                && a.category == b.category
         }
     }
 }

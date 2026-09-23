@@ -4,7 +4,7 @@ to it, one red-green cycle.
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they
   are exactly the titles boxed in §§ 2–9. Any other uncovered title is a stop.
 - [ ] 1.2 Carried tests this delta edits without renaming — each fixture's removal becomes a deletion,
   a stop, or a form-5 roster held removed, as its scenario now says, and nothing else in it moves:
@@ -36,39 +36,39 @@ to it, one red-green cycle.
   `removed`, an `emptied` key), and one whose scenario names an earlier form stays; a fixture that
   stands for *a later form* moves from 6 to 7. A test edited for any other reason is the design
   being wrong: stop and report it.
-- [ ] 1.4 Every test of a scenario going under a REMOVED heading's `**Migration:**` is deleted with
+- [x] 1.4 Every test of a scenario going under a REMOVED heading's `**Migration:**` is deleted with
   it, and `Roster.remove`, `Roster.supersede`, their store twins and `isRemoved` go; `swift test`
   builds with none of them.
 
 ## 2. `Roster` — deleting
 
-- [ ] 2.1 deleting a commitment a roster keeps says so and takes it out of every date — catches a delete that only ends the commitment
-- [ ] 2.2 deleting a commitment a roster has stopped takes it out of the days it was kept on
-- [ ] 2.3 deleting a commitment takes every era of it with it — catches deleting the newest era alone
-- [ ] 2.4 deleting one commitment leaves every other where it was, under its category
-- [ ] 2.5 deleting a commitment a roster does not hold says it was not deleted and leaves the roster as it was
-- [ ] 2.6 deleting a commitment already deleted says it was not deleted
-- [ ] 2.7 a roster that has deleted every commitment it held is emptied and not a roster given nothing
-- [ ] 2.8 an emptied roster given a commitment is the same roster as one given only that commitment — catches a mark that outlives an add
-- [ ] 2.9 deleting a commitment on a copy of a roster leaves the roster it was copied from unchanged
-- [ ] 2.10 the offset just after a commitment's own passes nothing, with a stopped commitment lying between
-- [ ] 2.11 a roster that had stopped keeping everything it holds before a date reads back no groups on that date
-- [ ] 2.12 a group's stopped commitments travel with it
-- [ ] 2.13 a roster no longer counts a commitment it has deleted in the earliest day anything it holds is kept from
-- [ ] 2.14 a name a roster has deleted a commitment under is free
-- [ ] 2.15 a commitment offered again as itself after the roster deleted it is taken on last — catches a roster remembering a deleted identity
+- [x] 2.1 deleting a commitment a roster keeps says so and takes it out of every date — catches a delete that only ends the commitment
+- [x] 2.2 deleting a commitment a roster has stopped takes it out of the days it was kept on
+- [x] 2.3 deleting a commitment takes every era of it with it — catches deleting the newest era alone
+- [x] 2.4 deleting one commitment leaves every other where it was, under its category
+- [x] 2.5 deleting a commitment a roster does not hold says it was not deleted and leaves the roster as it was
+- [x] 2.6 deleting a commitment already deleted says it was not deleted
+- [x] 2.7 a roster that has deleted every commitment it held is emptied and not a roster given nothing
+- [x] 2.8 an emptied roster given a commitment is the same roster as one given only that commitment — catches a mark that outlives an add
+- [x] 2.9 deleting a commitment on a copy of a roster leaves the roster it was copied from unchanged
+- [x] 2.10 the offset just after a commitment's own passes nothing, with a stopped commitment lying between
+- [x] 2.11 a roster that had stopped keeping everything it holds before a date reads back no groups on that date
+- [x] 2.12 a group's stopped commitments travel with it
+- [x] 2.13 a roster no longer counts a commitment it has deleted in the earliest day anything it holds is kept from
+- [x] 2.14 a name a roster has deleted a commitment under is free
+- [x] 2.15 a commitment offered again as itself after the roster deleted it is taken on last — catches a roster remembering a deleted identity
 
 ## 3. `RosterStore` — deleting, and form 6
 
-- [ ] 3.1 a commitment deleted through a roster store is not read back, on any date
-- [ ] 3.2 a deletion a roster store refuses is reported and nothing at its place changes
-- [ ] 3.3 a deletion that cannot be kept is refused and the roster a store reports does not move
-- [ ] 3.4 a roster store whose last commitment was deleted opens emptied, not holding nothing — catches a mark not written to disk
-- [ ] 3.5 a roster store declaring the form this app writes and saying something about removal is refused
-- [ ] 3.6 a roster store declaring the form this app writes and saying nothing about being emptied is refused
-- [ ] 3.7 a roster store declaring a form written before deletion and saying whether it was emptied is refused
-- [ ] 3.8 a roster store saying it was emptied while holding a commitment is refused
-- [ ] 3.9 a commitment deleted over a roster kept before removal existed is not read back
+- [x] 3.1 a commitment deleted through a roster store is not read back, on any date
+- [x] 3.2 a deletion a roster store refuses is reported and nothing at its place changes
+- [x] 3.3 a deletion that cannot be kept is refused and the roster a store reports does not move
+- [x] 3.4 a roster store whose last commitment was deleted opens emptied, not holding nothing — catches a mark not written to disk
+- [x] 3.5 a roster store declaring the form this app writes and saying something about removal is refused
+- [x] 3.6 a roster store declaring the form this app writes and saying nothing about being emptied is refused
+- [x] 3.7 a roster store declaring a form written before deletion and saying whether it was emptied is refused
+- [x] 3.8 a roster store saying it was emptied while holding a commitment is refused
+- [x] 3.9 a commitment deleted over a roster kept before removal existed is not read back
 
 ## 4. The upgrade — a commitment held removed is read as deleted
 
