@@ -71,10 +71,10 @@ struct LookBackView: View {
     // decision 10). Shell drawing state, crossing no seam: `design.md` § *The fold is drawn, not
     // said*.
     @State private var openNoteIndices: Set<Int> = []
-    // The note cards' own shared width, read once off the `LazyVStack` that holds them, the same
-    // way `cardWidth` reads the graph card's — so whether a note is cut can be measured against
-    // the width it actually draws at rather than guessed.
-    @State private var noteCardWidth: CGFloat?
+    // Whether a note is cut, keyed by its place in `lookBack.notes` — measured by `FoldMeasurer`
+    // below at each card's own width and settled once its layout has run, so this starts empty
+    // and fills in rather than being computed synchronously. G7 fix round, finding 3.
+    @State private var isCutByIndex: [Int: Bool] = [:]
 
     private var lookBack: LookBack? { screen.lookBack(at: commitment) }
 
@@ -252,7 +252,10 @@ struct LookBackView: View {
 
     /// A note page: `noteCountInWords` as a `.headline` where the "Months" heading stands, then
     /// one card per note, newest first — `design.md` § *The shell rides this Story*. Where
-    /// `notes` is empty the page says "No note yet." and draws no heading (grill decision 7).
+    /// `notes` is empty the page says "No note yet." and draws no heading (grill decision 7). The
+    /// heading alone is indented; the cards share the dates card's own edges. G7 fix round,
+    /// finding 2: an extra `.padding(.horizontal)` on the `LazyVStack` used to indent the cards a
+    /// second time, on top of the inset the outer `ScrollView`'s content already carries.
     @ViewBuilder
     private func noteSection(_ lookBack: LookBack) -> some View {
         if lookBack.notes.isEmpty {
@@ -268,28 +271,30 @@ struct LookBackView: View {
                     noteCard(note, index: index)
                 }
             }
-            .background(
-                GeometryReader { geometry in
-                    Color.clear
-                        .onAppear { noteCardWidth = geometry.size.width }
-                        .onChange(of: geometry.size) { _, newSize in noteCardWidth = newSize.width }
-                }
-            )
-            .padding(.horizontal)
         }
     }
 
     /// One note's card, the dates card's own fill and radius — only a note the shell measures as
     /// cut at this card's own width is a `Button`, and the whole card toggles it (grill decisions
     /// 9 and 15); a note that fits draws the same content with no button behaviour at all, never
-    /// merely a disabled one, so nothing reads as tappable that is not.
+    /// merely a disabled one, so nothing reads as tappable that is not. The card's own padding is
+    /// part of the label, with `.contentShape(Rectangle())` over it — `ContentView.swift`'s tick
+    /// row is the repo's own precedent — so the whole card is the hit target rather than only
+    /// where the text glyphs sit. G7 fix round, finding 1: the `Button` used to wrap
+    /// `noteCardContent` alone, with the padding and the background applied outside it, so a tap
+    /// on the card's own margin fell through to nothing.
     @ViewBuilder
     private func noteCard(_ note: LookBack.DatedNote, index: Int) -> some View {
         let isOpen = openNoteIndices.contains(index)
-        let contentWidth = max((noteCardWidth ?? 0) - 32, 0)
-        let isCut =
-            Self.lineCount(of: note.text, at: contentWidth, font: .preferredFont(forTextStyle: .body))
-            > 2
+        let isCut = isCutByIndex[index] ?? false
+        let content = noteCardContent(note, isOpen: isOpen)
+            .background(
+                FoldMeasurer(text: note.text) { measuredIsCut in
+                    if isCutByIndex[index] != measuredIsCut {
+                        isCutByIndex[index] = measuredIsCut
+                    }
+                }
+            )
 
         Group {
             if isCut {
@@ -302,14 +307,16 @@ struct LookBackView: View {
                         }
                     }
                 } label: {
-                    noteCardContent(note, isOpen: isOpen)
+                    content
+                        .padding()
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             } else {
-                noteCardContent(note, isOpen: isOpen)
+                content
+                    .padding()
             }
         }
-        .padding()
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
@@ -328,21 +335,6 @@ struct LookBackView: View {
                 .truncationMode(.tail)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    /// How many lines `text` wraps to at `width`, in `font` — real text layout via
-    /// `boundingRect(with:options:)`, respecting both wrapping and the text's own line breaks, the
-    /// same measuring style `measuredWidth(_:)` and `measuredHeight()` already use below for the
-    /// graph card's labels. `design.md` § *The fold is drawn, not said*: only the shell can tell a
-    /// cut note, since that depends on the screen's width and the text size.
-    private static func lineCount(of text: String, at width: CGFloat, font: UIFont) -> Int {
-        guard width > 0, font.lineHeight > 0 else { return 1 }
-        let bounding = (text as NSString).boundingRect(
-            with: CGSize(width: width, height: .greatestFiniteMagnitude),
-            options: [.usesLineFragmentOrigin],
-            attributes: [.font: font],
-            context: nil)
-        return max(1, Int((bounding.height / font.lineHeight).rounded()))
     }
 
     /// The picker of spans above the graph card — grill decisions 6 and 7. "Month" is selected on
@@ -827,5 +819,58 @@ private struct ValuesAxisPadding: ViewModifier {
         } else {
             content.chartYScale(domain: domain)
         }
+    }
+}
+
+/// Whether a note runs past two lines, measured `design.md`'s own way — § *The fold is drawn,
+/// not said*: "the text at two lines against the same text unlimited, at the card's width." Two
+/// copies of `text`, one folded and one open, laid out by SwiftUI itself at whatever width this
+/// view is given (the card's own content width, since `noteCard(_:index:)` attaches this to
+/// `noteCardContent(_:isOpen:)`'s own background, before the card's padding is added) — so the
+/// fold and the tap read the same layout SwiftUI is about to draw, rather than a UIKit font
+/// metric estimating it. G7 fix round, finding 3: `NSString.boundingRect` against `UIFont`,
+/// measured at the stack's width less a hard-coded 32, could disagree with what `.lineLimit(2)`
+/// actually drew.
+///
+/// Hidden rather than absent: `.hidden()` still takes part in layout, so each `Text` receives the
+/// same width `noteCardContent`'s own does, but is neither drawn nor hit-tested. `isCut` settles
+/// once both heights have resolved, which is before any tap can land — nothing here is on the
+/// path a visit takes before it can be measured.
+private struct FoldMeasurer: View {
+    let text: String
+    let onMeasured: (Bool) -> Void
+
+    @State private var twoLineHeight: CGFloat?
+    @State private var fullHeight: CGFloat?
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            Text(text)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .background(heightReader { twoLineHeight = $0 })
+            Text(text)
+                .fixedSize(horizontal: false, vertical: true)
+                .background(heightReader { fullHeight = $0 })
+        }
+        .hidden()
+        .onChange(of: twoLineHeight) { _, _ in reportIfReady() }
+        .onChange(of: fullHeight) { _, _ in reportIfReady() }
+    }
+
+    private func heightReader(_ report: @escaping (CGFloat) -> Void) -> some View {
+        GeometryReader { geometry in
+            Color.clear
+                .onAppear { report(geometry.size.height) }
+                .onChange(of: geometry.size) { _, newSize in report(newSize.height) }
+        }
+    }
+
+    private func reportIfReady() {
+        guard let twoLineHeight, let fullHeight else { return }
+        // A point of slack against floating-point rounding between the two passes — a note that
+        // fits exactly at two lines must read as not cut, since folding it would show nothing an
+        // opening tap could add.
+        onMeasured(fullHeight > twoLineHeight + 1)
     }
 }
