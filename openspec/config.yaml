@@ -82,7 +82,8 @@ rules:
       one line each, naming the state to drive to and what the picture must show, outside the
       80. A step a simulator cannot prove (a drag, paging feel, a long press) is one line
       marked "phone:" instead, and the section ends with the handover box that says the
-      implementer posts the pictures to the PR with gh pr comment --attach before hand-back.
+      implementer posts the pictures to the PR with pnpm run walk -- --post-only <pr>, never
+      a hand-written gh pr comment --attach, before hand-back.
       A change that does not reach src/DayByDay/ carries no walk section. ADR-1053.
     - >-
       Never paste source, test bodies, build recipes, command transcripts or logs. A
