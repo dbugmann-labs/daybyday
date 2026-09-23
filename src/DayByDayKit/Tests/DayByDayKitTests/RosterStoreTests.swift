@@ -3235,3 +3235,65 @@ func aCommitmentsErasFoldTogetherThoughTheStoredRosterHeldAnotherCommitmentsEntr
     #expect(store.roster.entries.map(\.commitment.name) == ["Gym", "Gym", "Run"])
     #expect(store.roster.keptFrom(of: gym) == CalendarDate(year: 2026, month: 1, day: 1)!)
 }
+
+@Test("an era the stored roster held in front of the commitment it belongs to folds behind it")
+func anEraTheStoredRosterHeldInFrontOfTheCommitmentItBelongsToFoldsBehindIt() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Swim",
+                "keptFrom": { "year": 2026, "month": 9, "day": 10 },
+                "schedule": {
+                  "everyNDays": 8, "from": { "year": 2026, "month": 9, "day": 10 }
+                }
+              },
+              "keptUntil": { "year": 2026, "month": 9, "day": 15 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Swim",
+                "keptFrom": { "year": 2026, "month": 9, "day": 10 },
+                "schedule": { "weekdays": ["friday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 9, "day": 15 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Swim",
+                "keptFrom": { "year": 2026, "month": 9, "day": 16 },
+                "schedule": { "weekdays": ["friday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+
+    #expect(store.roster.commitments.map(\.name) == ["Swim"])
+    let swim = store.roster.commitments.first!
+    #expect(store.roster.eras(of: swim).map(\.rhythmInWords).first == "Fri")
+    #expect(store.roster.eras(of: swim).count == 2)
+    #expect(store.roster.keptFrom(of: swim) == CalendarDate(year: 2026, month: 9, day: 10)!)
+    #expect(store.roster.stopped.map(\.name) == ["Swim"])
+    let stopped = store.roster.stopped.first!
+    #expect(stopped.identity != swim.identity)
+    let entries = store.roster.entries
+    let stoppedIndex = entries.firstIndex { $0.commitment.identity == stopped.identity }!
+    let swimIndices = entries.indices.filter { entries[$0].commitment.identity == swim.identity }
+    #expect(swimIndices.allSatisfy { stoppedIndex < $0 })
+}
