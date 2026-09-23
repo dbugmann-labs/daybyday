@@ -429,8 +429,8 @@ public struct LookBack: Hashable, Sendable {
         }
         if isTotal {
             // The values axis stays in view of the target rule too, not only the sums —
-            // `design.md` § *The rule is stretches, not a target per day* / `spec.md` § *A total
-            // commitment's graph runs its values from zero to its greatest sum or target*.
+            // `spec.md` § *A total commitment's graph runs its values from zero to its greatest
+            // sum or target*.
             for stretch in stretches {
                 if stretch.target > highest { highest = stretch.target }
             }

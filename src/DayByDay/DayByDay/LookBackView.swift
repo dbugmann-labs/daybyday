@@ -429,21 +429,9 @@ struct LookBackView: View {
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
                 }
             }
-            // `range: .plotDimension(padding: 6)` — the same defect the x-axis padding above is
-            // already against, on this axis: a point exactly at `highest` sits on the plot's own
-            // top edge, so a kept point's ring there, 10pt across, drew half clipped. 6pt clears
-            // the ring's own radius without moving `lowest...highest`, the numeric domain the
-            // values axis itself still reads and labels — only where marks render inside the
-            // plot widens. Only a total's graph rings a kept point at all (`graph.targetRule` is
-            // empty on a number's, per `LookBack.Graph.targetRule`'s own doc comment), so this
-            // padding is scoped to a total's graph alone — a number's graph draws exactly as it
-            // did on `origin/main`, `.chartYScale(domain:)` with no `range:` at all. N2, second
-            // G7 fix round. `chartYScale(domain:range:)` and `chartYScale(domain:)` are two
-            // distinct overloads with no shared spelling for "no range", so the choice is a
-            // `ViewModifier` branch rather than a value read into one call.
             .modifier(
                 ValuesAxisPadding(
-                    domain: lowest...highest, ringsAKeptPoint: !graph.targetRule.isEmpty))
+                    domain: lowest...highest, drawsTargetRule: !graph.targetRule.isEmpty))
             .chartYAxis {
                 // Gridlines only — the values themselves draw in the lane beside the chart.
                 AxisMarks(position: .leading, values: [lowest, highest]) { _ in
@@ -717,19 +705,19 @@ struct LookBackView: View {
     }
 }
 
-/// The values-axis padding `graphCard(_:)` applies to its `Chart` — N2, second G7 fix round.
-/// `Charts.chartYScale(domain:range:)` and `chartYScale(domain:)` are two separate overloads with
-/// no shared spelling for "no range", so this branches on which one is called rather than
-/// choosing a value for a shared parameter. `ringsAKeptPoint` is `true` only for a total's graph
-/// (`graph.targetRule` is non-empty there, empty on a number's), so a number's graph keeps the
-/// exact call `origin/main` makes — no `range:` at all — and only a total's graph, whose kept
-/// point is ringed and can therefore sit clipped at the plot's own top edge, gets the 6pt pad.
+/// The values-axis padding `graphCard(_:)` applies to its `Chart`: a kept point's ring, drawn at
+/// `highest`, would sit on the plot's own top edge and draw half clipped, so a total's graph — the
+/// only graph that rings a kept point — gets 6pt of `range:` padding around the numeric domain,
+/// which the values axis itself still reads and labels. A number's graph keeps the shipped
+/// `.chartYScale(domain:)` call, with no `range:` at all — `chartYScale(domain:range:)` and
+/// `chartYScale(domain:)` are two separate overloads with no shared spelling for "no range", so
+/// this branches on which one is called rather than choosing a value for a shared parameter.
 private struct ValuesAxisPadding: ViewModifier {
     let domain: ClosedRange<Double>
-    let ringsAKeptPoint: Bool
+    let drawsTargetRule: Bool
 
     func body(content: Content) -> some View {
-        if ringsAKeptPoint {
+        if drawsTargetRule {
             content.chartYScale(domain: domain, range: .plotDimension(padding: 6))
         } else {
             content.chartYScale(domain: domain)
