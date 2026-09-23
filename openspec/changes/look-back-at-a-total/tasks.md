@@ -62,9 +62,9 @@ the implementation.** This box confirms rather than writes.
 ## 10. The gates
 
 - [x] 10.1 `openspec validate look-back-at-a-total --strict` exits 0 and `pnpm run check:scenarios` exits 0
-- [ ] 10.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/1045-*`, the two kit sources, the kit test file and `LookBackView.swift`
-- [ ] 10.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
-- [ ] 10.4 `swift test` in `src/DayByDayKit` passes, and the count it reports against a run on `main` differs by exactly the tests §§ 3–7 write less the one 7.2 deletes, each count read off a run
+- [x] 10.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, `docs/adr/1045-*`, the two kit sources, the kit test file and `LookBackView.swift`
+- [x] 10.3 `pnpm run check:budgets` warns about nothing in this folder, or each warning is named here with why it stands
+- [x] 10.4 `swift test` in `src/DayByDayKit` passes, and the count it reports against a run on `main` differs by exactly the tests §§ 3–7 write less the one 7.2 deletes, each count read off a run
 - [ ] 10.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–10.4 and the walk below are ticked and that the instruction here is written for the janitor to carry out. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff it produced: `openspec/specs/look-back/spec.md` holds seventeen requirements, the one this delta removes gone and the five it adds in its place, the one it modifies differing only in the sentence and the scenario the delta adds, every other requirement byte for byte as it was, and no other spec moved. `pnpm run checks` runs after the archive commit exists, and the archive commit is pushed. **Any other drift is a stop and a report, never a hand-edit** — rule 2 denies `openspec/specs/`, and `.claude/settings.json` denies `Edit(/openspec/changes/archive/**)`, so a box left unticked here cannot be reached afterwards.
 
 ## The walk
