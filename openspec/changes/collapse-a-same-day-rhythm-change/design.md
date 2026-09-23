@@ -85,6 +85,8 @@ roster the duplicate guard locked out reads again; nothing a person saw is lost.
 - [Carried scenario *a commitments screen whose roster holds what could not be a roster says it is
   not keeping one* says "the form this app writes" of a form-4 fixture; read as form 6 it would now
   mend] → its test is form 4 and stays refused; its wording is not this Story's.
+- [Three scenarios outside the delta (look-back's *reaches no era of another commitment*, two fold
+  record scenarios) keep alike eras the read now joins; each still passes] → not this delta's to touch.
 - [Two carried requirements under new headings, and one MODIFIED, stay over the prose budget] →
   condensing is an editorial Story's (ADR-1047); only the sentences this rule falsified moved.
 

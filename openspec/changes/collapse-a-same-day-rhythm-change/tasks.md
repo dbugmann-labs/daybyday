@@ -6,8 +6,8 @@ to it, one red-green cycle.
 
 - [ ] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they
   are exactly the titles boxed in §§ 2–4. Any other uncovered title is a stop.
-- [ ] 1.2 Carried tests this delta edits, each only as its scenario now says, are §§ 2.2 and 3.7. The
-  test of *an era put on as of a day before the day the era it gives way to is kept from leaves it
+- [ ] 1.2 Carried tests this delta edits, each only as its scenario now says, are §§ 2.2, 3.7 and
+  4.9. The test of *an era put on as of a day before the day the era it gives way to is kept from leaves it
   holding no day* becomes § 2.1's and the one of *a roster kept before a commitment had an identity
   holding one era twice is refused* becomes § 3.5's, each renamed and rewritten with it. *A roster
   store holding a commitment again after holding it stopped or removed is refused* changes wording
@@ -46,6 +46,7 @@ to it, one red-green cycle.
 - [ ] 4.6 a restart reaches behind a change made days ago and replaces it — catches the already-due check asked of the era holding the day
 - [ ] 4.7 a commitment kept from a day after today, changed before that day, keeps the day it is kept from — catches the new era kept from today
 - [ ] 4.8 a restart reaching behind a change is refused where a record the change's era holds would be left not due
+- [ ] 4.9 a rhythm changed on the first date the calendar supports puts the new era on as of that day itself — the carried `aRhythmChangedOnTheFirstDateTheCalendarSupportsPutsTheNewEraOnAsOfThatDayItself`, rewritten to one era: the era it gives way to began that day
 
 ## 5. Tidy
 

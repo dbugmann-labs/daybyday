@@ -650,8 +650,8 @@ the screen SHALL change nothing, SHALL write nothing at either place and SHALL r
   as of 1 January 1583; and "Gym" is changed through it to a weekday-set rhythm of Tuesday and
   Thursday, under no category
 - **THEN** nothing is refused
-- **AND** a roster store opened afterwards at that place answers about 1 January 1583 with both eras,
-  and about 2 January 1583 with the one on Tuesday and Thursday alone
+- **AND** a roster store opened afterwards at that place reads back one era of "Gym", on Tuesday and
+  Thursday, kept from 1 January 1583, and answers about 1 January 1583 with that era alone
 
 #### Scenario: a category set through a commitments screen's change is kept at the roster place
 
