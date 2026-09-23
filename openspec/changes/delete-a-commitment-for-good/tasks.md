@@ -125,20 +125,20 @@ to it, one red-green cycle.
 
 ## 7. `day-screen`
 
-- [ ] 7.1 a day screen draws a deleted commitment on no day, the days it was ticked on included
-- [ ] 7.2 a day screen's day picker no longer reaches back to a commitment its roster has deleted
-- [ ] 7.3 a day screen opened on a roster whose last commitment was deleted takes nothing on — catches day one written over an emptied roster
+- [x] 7.1 a day screen draws a deleted commitment on no day, the days it was ticked on included
+- [x] 7.2 a day screen's day picker no longer reaches back to a commitment its roster has deleted
+- [x] 7.3 a day screen opened on a roster whose last commitment was deleted takes nothing on — catches day one written over an emptied roster
 
 ## 8. `restore`
 
-- [ ] 8.1 a copy of an emptied roster restores an emptied roster, and a day screen takes nothing on — catches a copy dropping the mark
-- [ ] 8.2 a copy made after a deletion holds neither the commitment nor its records
-- [ ] 8.3 a copy holding a removed commitment restores none of it and none of its records
-- [ ] 8.4 a commitment defined, stopped, taken up again and deleted through a commitments screen each write a copy at the copy place
+- [x] 8.1 a copy of an emptied roster restores an emptied roster, and a day screen takes nothing on — catches a copy dropping the mark
+- [x] 8.2 a copy made after a deletion holds neither the commitment nor its records
+- [x] 8.3 a copy holding a removed commitment restores none of it and none of its records
+- [x] 8.4 a commitment defined, stopped, taken up again and deleted through a commitments screen each write a copy at the copy place
 
 ## 9. The shell
 
-- [ ] 9.1 `CommitmentsView.swift`: both lists' trash swipe reads *Delete* and calls `askToDelete`; the
+- [x] 9.1 `CommitmentsView.swift`: both lists' trash swipe reads *Delete* and calls `askToDelete`; the
   sheet is `design.md` § *What the shell draws*, titled *Delete <name>*, its *Delete* button
   disabled until `nameTypedBackMatches`, the footer drawn only while `copyPlace` is set; refusals
   shown where a removal's were. `grep -rn -i "remov" src/DayByDay` finds no commitment removal left.

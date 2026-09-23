@@ -428,7 +428,7 @@ struct CommitmentsView: View {
     @State private var pendingCopyPlaceFolderName: String?
     @Environment(\.editMode) private var editMode
 
-    /// Which of the four refusals against something already kept — a stop, a kept-side removal,
+    /// Which of the four refusals against something already kept — a stop, a kept-side deletion,
     /// a single commitment's move or a whole group's move — belongs in `group`'s own section
     /// footer: the group holding what was refused, or the roster's last kept group where none is
     /// known. `chore/commitments-layout`, #261: every refusal still sits with the thing it names.
@@ -440,9 +440,9 @@ struct CommitmentsView: View {
         case .stopping(let commitment, let stopRefusal):
             owningGroup = screen.keptGroups.first { $0.commitments.contains(commitment) }
             refusal = stopRefusal
-        case .removing(let removed, let removingRefusal) where screen.kept.contains(removed):
-            owningGroup = screen.keptGroups.first { $0.commitments.contains(removed) }
-            refusal = removingRefusal
+        case .deleting(let deleted, let deletingRefusal) where screen.kept.contains(deleted):
+            owningGroup = screen.keptGroups.first { $0.commitments.contains(deleted) }
+            refusal = deletingRefusal
         case .moving(let commitment, let movingRefusal):
             owningGroup = screen.keptGroups.first { $0.commitments.contains(commitment) }
             refusal = movingRefusal
@@ -533,12 +533,12 @@ struct CommitmentsView: View {
                             .tint(.orange)
                             .accessibilityLabel("Stop")
                             Button(role: .destructive) {
-                                screen.askToRemove(commitment)
+                                screen.askToDelete(commitment)
                             } label: {
                                 Image(systemName: "trash")
                             }
                             .tint(.red)
-                            .accessibilityLabel("Remove")
+                            .accessibilityLabel("Delete")
                         }
                     }
                     .onMove { source, offset in
@@ -635,12 +635,12 @@ struct CommitmentsView: View {
                         .tint(.green)
                         .accessibilityLabel("Resume")
                         Button(role: .destructive) {
-                            screen.askToRemove(commitment)
+                            screen.askToDelete(commitment)
                         } label: {
                             Image(systemName: "trash")
                         }
                         .tint(.red)
-                        .accessibilityLabel("Remove")
+                        .accessibilityLabel("Delete")
                     }
                 }
             } header: {
@@ -650,10 +650,10 @@ struct CommitmentsView: View {
                     stoppedRowRefusalText(stoppedRefusal.refusal)
                 }
 
-                if case .removing(let removed, let removingRefusal) = screen.refusedChange,
-                    screen.stopped.contains(removed)
+                if case .deleting(let deleted, let deletingRefusal) = screen.refusedChange,
+                    screen.stopped.contains(deleted)
                 {
-                    refusalText(removingRefusal)
+                    refusalText(deletingRefusal)
                 }
             }
 
@@ -830,37 +830,44 @@ struct CommitmentsView: View {
         }
         .sheet(
             isPresented: Binding(
-                get: { screen.awaitingRemoval != nil },
+                get: { screen.awaitingDeletion != nil },
                 set: { isPresented in
                     if !isPresented {
-                        screen.cancelRemoving()
+                        screen.cancelDeleting()
                     }
                 }
             )
         ) {
-            if let commitment = screen.awaitingRemoval {
+            if let commitment = screen.awaitingDeletion {
                 NavigationStack {
                     Form {
                         Section {
-                            Text("Type \"\(commitment.name)\" to remove it for good.")
                             TextField(
                                 "Name",
                                 text: Binding(
                                     get: { screen.nameTypedBack },
                                     set: { screen.nameTypedBack = $0 }
                                 ))
+                        } header: {
+                            Text("Type \"\(commitment.name)\" to delete it for good.")
+                        } footer: {
+                            if screen.copyPlace != nil {
+                                Text(
+                                    "The copy in Files follows, so it will not hold \(commitment.name) either."
+                                )
+                            }
                         }
                     }
-                    .navigationTitle("Remove \(commitment.name)")
+                    .navigationTitle("Delete \(commitment.name)")
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("Cancel") {
-                                screen.cancelRemoving()
+                                screen.cancelDeleting()
                             }
                         }
                         ToolbarItem(placement: .confirmationAction) {
-                            Button("Remove", role: .destructive) {
-                                screen.confirmRemoving()
+                            Button("Delete", role: .destructive) {
+                                screen.confirmDeleting()
                             }
                             .disabled(!screen.nameTypedBackMatches)
                         }

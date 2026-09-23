@@ -59,16 +59,25 @@ public final class RosterStore {
     /// `identityIntroducedInVersion`, read as it stands otherwise, per `design.md` § *Migration* —
     /// or `nil` where its shape disagrees with its own declared form or it could not be formed.
     /// Shared with `CopyDocument.read`'s own per-store reading, which has no use for a fold's
-    /// identities, nor for which identities were erased, and so is not the one place `init(at:)`
-    /// needs either from.
-    static func formed(from document: RosterDocument) -> Roster? {
+    /// identities but does need which identities were erased, so it can drop those from the
+    /// record it forms alongside this roster — `design.md` § *Migration*: "Copies read through
+    /// `formed(from:)` get the same erasure." A document before `identityIntroducedInVersion`
+    /// erases nothing here: `folded()`'s own removed-entry handling predates and is unrelated to
+    /// deletion, exactly as `init(at:)` answers `erased` empty on that same path.
+    static func formed(from document: RosterDocument) -> (roster: Roster, erased: Set<Commitment.Identity>)? {
         guard Self.shapeAgrees(with: document) else {
             return nil
         }
         if document.version < RosterDocument.identityIntroducedInVersion {
-            return document.folded()?.roster
+            guard let fold = document.folded() else {
+                return nil
+            }
+            return (fold.roster, [])
         }
-        return document.formRoster()?.roster
+        guard let formed = document.formRoster() else {
+            return nil
+        }
+        return (formed.roster, formed.erased)
     }
 
     /// Whether every entry's shape agrees with what `document.version` declares it should carry,

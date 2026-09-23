@@ -9846,3 +9846,112 @@ func aDayScreenOpenedOnAFoldedRosterCarriesTheRecordsToo() throws {
     #expect(row.name == "Gym")
     #expect(row.isKept)
 }
+
+// MARK: - delete-a-commitment-for-good
+
+@MainActor
+@Test("a day screen draws a deleted commitment on no day, the days it was ticked on included")
+func aDayScreenDrawsADeletedCommitmentOnNoDayTheDaysItWasTickedOnIncluded() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+    try rosterStore.add(gym)
+
+    let recordStore = try RecordStore(at: place)
+    try recordStore.add(Tick(journaling, on: sunday)!)
+
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: place,
+        keepingOneOffsAt: oneOffPlace)
+    commitmentsScreen.askToDelete(journaling)
+    commitmentsScreen.nameTypedBack = "Journaling"
+    commitmentsScreen.confirmDeleting()
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    dayScreen.showPreviousDay()
+
+    #expect(dayScreen.dayView.rows.count == 1)
+    let sundayRow = try #require(dayScreen.dayView.rows.first)
+    #expect(sundayRow.name == "Gym")
+    #expect(!sundayRow.isKept)
+
+    dayScreen.showNextDay()
+
+    #expect(dayScreen.dayView.rows.count == 1)
+    #expect(dayScreen.dayView.rows.first?.name == "Gym")
+}
+
+@MainActor
+@Test("a day screen's day picker no longer reaches back to a commitment its roster has deleted")
+func aDayScreensDayPickerNoLongerReachesBackToACommitmentItsRosterHasDeleted() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(
+        name: "Gym", schedule: daily, keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let run = Commitment(
+        name: "Run", schedule: daily, keptFrom: CalendarDate(year: 2026, month: 3, day: 1)!)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.add(run)
+    try rosterStore.delete(gym)
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+
+    #expect(dayScreen.dayPickerReach.earliest == CalendarDate(year: 2026, month: 3, day: 1)!)
+    #expect(dayScreen.dayView.rows.count == 1)
+    #expect(dayScreen.dayView.rows.first?.name == "Run")
+}
+
+@MainActor
+@Test(
+    "a day screen opened on a roster whose last commitment was deleted takes nothing on — catches day one written over an emptied roster"
+)
+func aDayScreenOpenedOnARosterWhoseLastCommitmentWasDeletedTakesNothingOn() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let oneOffPlace = freshOneOffPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+    try rosterStore.delete(journaling)
+
+    let dayScreen = DayScreen(
+        startingFrom: [gym], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: oneOffPlace)
+    dayScreen.shown(asOf: tuesday)
+
+    #expect(dayScreen.dayView.rows.isEmpty)
+
+    let later = try RosterStore(at: rosterPlace)
+    #expect(later.roster.commitments(on: tuesday).isEmpty)
+    #expect(later.roster.stopped.isEmpty)
+    #expect(!later.roster.commitments(on: tuesday).contains { $0.name == "Gym" })
+}

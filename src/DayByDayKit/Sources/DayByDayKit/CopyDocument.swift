@@ -118,9 +118,15 @@ struct CopyDocument: Codable {
             return .failure(.damagedCopy)
         }
 
+        // A commitment the nested roster held removed, in a form written before a commitment
+        // could be deleted, is read as deleted — its records go with it, exactly as they would
+        // reading that roster at its own place. `design.md` § *Migration*.
+        var history = formedRecord.history
+        _ = history.erase(formedRoster.erased)
+
         return .success(
             Copy(
-                moment: moment, history: formedRecord.history, roster: formedRoster,
+                moment: moment, history: history, roster: formedRoster.roster,
                 oneOffs: formedOneOffs))
     }
 
