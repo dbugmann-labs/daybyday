@@ -312,13 +312,17 @@ struct ContentView: View {
             .toolbar {
                 // The way back to today: a plain text button on the toolbar's left. Always
                 // drawn so the toolbar never shifts, but on today itself it is disabled and
-                // greyed — offered nothing, it recedes rather than vanishing (§ *Offered*,
-                // ADR-1045). Still gated on `screen.offersGoingBackToToday` and still calls
-                // exactly what the button under the day row used to.
+                // drawn green, saying "you are on today" rather than offering a tap
+                // (§ *Offered*, ADR-1045). Still gated on `screen.offersGoingBackToToday` and
+                // still calls exactly what the button under the day row used to.
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Today") {
+                    Button {
                         commitFocusedOneOffField(forDeparture: true)
                         screen.showToday()
+                    } label: {
+                        Text("Today")
+                            .foregroundStyle(
+                                screen.offersGoingBackToToday ? Color.primary : Color.green)
                     }
                     .disabled(!screen.offersGoingBackToToday)
                 }
