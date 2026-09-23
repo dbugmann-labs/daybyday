@@ -82,5 +82,5 @@ to it, one red-green cycle.
   that the change folder is committed and `tasks.md` has no other unticked box. The janitor then
   runs `/opsx:archive` and checks afterwards that `look-back/spec.md` carries the new week-line
   heading and not the removed one, that `schedule/spec.md` carries its new requirement, and that the
-  nine MODIFIED requirements are whole. **Any drift there is a stop and a report, never a
+  eleven MODIFIED requirements are whole. **Any drift there is a stop and a report, never a
   hand-edit.**

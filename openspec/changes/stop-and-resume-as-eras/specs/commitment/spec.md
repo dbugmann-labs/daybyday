@@ -24,6 +24,8 @@ deleted, or whose name one it keeps has, refusing on no date.
   2026 with both
 - **AND** a commitment named "Mood" of the number kind with a range of 1 to 10, stopped and taken up
   again alike, reads back a newer era ranging 1 to 10
+- **AND** a commitment named "Protein" of the total kind with a target of 120, stopped and taken up
+  again alike, reads back a newer era with a target of 120
 
 #### Scenario: a commitment taken up again from the day after it was stopped is one era, as though it had never been stopped
 
@@ -262,7 +264,7 @@ rhythm it runs on, which is its newest era's.
 A roster SHALL stop keeping a commitment it holds, on being given that commitment and the calendar
 date it was kept until, which is the last day it was kept. Stopping SHALL take the commitment out of the commitments the roster reads back, SHALL record that
 day against its newest era and then hold its eras mended, and SHALL report that the roster stopped
-keeping it, leaving everything else exactly as it was, in the order it was in. A newest era that day
+keeping it, leaving every other commitment exactly as it was, in the order it was in. A newest era that day
 leaves holding no day SHALL be dropped where an older era stands, and the era behind it SHALL be the
 one stopped, as *A roster store reads each commitment's eras mended* says; every other earlier era
 SHALL be left exactly as it is.
@@ -632,6 +634,7 @@ kept there SHALL be written mended.
   newer alone
 - **AND** a roster store holding two eras of "Gym" alike in every part, both kept from 1 January
   2026, the newer kept and the older kept until 31 January 2026, reads back one era of "Gym", kept
+  from 1 January 2026, which it is keeping
 
 #### Scenario: the newest era of a commitment stopped on the day it began is read back as it is
 
@@ -689,3 +692,273 @@ kept there SHALL be written mended.
 - **THEN** it reads back two eras of "Gym", the one kept from 1 March 2026 first
 - **AND** asked about 15 February 2026 it answers with that one alone, and about 31 January 2026
   with both
+
+### Requirement: A roster answers which commitments it had not stopped keeping on a calendar date, and never one it deleted
+
+For any calendar date the system supports, a roster SHALL answer with the commitments it had not
+stopped keeping on that date: every one it is keeping, and every one it has stopped whose kept-until
+day is that date or later. A commitment it has deleted SHALL be in the answer on no date at all, the
+days it was kept on included. The answer SHALL be in the order the roster holds them, with a stopped
+commitment in the place it has rather than at either end. Moving a commitment SHALL change the order every date answers in and nothing else about
+any date: a move SHALL be dated by nothing and SHALL move no kept-until day.
+
+The roster SHALL answer with a stopped commitment on the day it was kept until, and SHALL NOT answer
+with it on any later date. A commitment taken up again as though it had never been stopped SHALL
+hold no kept-until day. The roster SHALL answer with it on every date, the dates between the day it
+was kept until and the day it was taken up again included; those dates SHALL answer differently
+afterwards, and every tick already recorded SHALL stand. A commitment taken up again from a later
+day SHALL keep that kept-until day on the era it stopped, and SHALL be answered about the dates
+between as *A roster takes a commitment it has stopped up again from a day, as a new era* says.
+
+The roster SHALL apply nothing else: it MUST NOT apply a commitment's own day it is kept from, MUST
+NOT apply its schedule, and MUST NOT consider whether anything has been ticked. A date before
+anything was taken on SHALL be answered no differently from any other. The answer SHALL be one every
+date can be asked for, never a refusal, and a roster holding nothing SHALL answer with nothing on
+every date. The roster SHALL NOT ask what day it is, and the same roster asked about the same date
+SHALL answer the same way whenever it is asked.
+
+#### Scenario: a roster answers with every commitment it keeps, in the order they were taken on
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", all on a schedule
+  listing Monday, Wednesday and Saturday and all kept from 1 January 2026, is asked which
+  commitments it had not stopped keeping on 31 January 2026
+- **THEN** it answers with both, "Water plants" first and "Gym" second
+
+#### Scenario: a stopped commitment is in the answer on the day it was kept until and out of it on the next day
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, stops keeping it as of 31 January 2026
+- **THEN** it answers with that commitment on 31 January 2026
+- **AND** it answers with nothing on 1 February 2026
+- **AND** it answers with nothing on 1 March 2026
+
+#### Scenario: a stopped commitment keeps its place in the answer for a date it was still kept on
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from 1 January
+  2026, stops keeping "Gym" as of 31 January 2026
+- **THEN** asked about 31 January 2026 it answers with all three in the order "Water plants", "Gym",
+  "Journaling", with "Gym" in the middle and not at either end
+- **AND** asked about 1 February 2026 it answers with "Water plants" and then "Journaling"
+
+#### Scenario: taking a commitment up again puts it back in the answer for the dates between
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, stops keeping it as of 31 January 2026, and is then given that
+  same commitment again
+- **THEN** it answers with that commitment on 31 January 2026, on 1 February 2026 and on 1 March 2026
+
+#### Scenario: stopping a commitment leaves every earlier date answering as it did
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, is asked about 1 January 2026, 2 January 2026 and 1 January
+  1583, and is then asked to stop keeping it as of 31 January 2026 and asked about those three dates
+  again
+- **THEN** all three answers are the same after the commitment was stopped as before it, each naming
+  that one commitment
+- **AND** it answers with nothing on 1 February 2026
+
+#### Scenario: a commitment kept from a later date is in the answer for a date before it
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 March 2026, is asked which commitments it had not stopped keeping on
+  1 January 2026
+- **THEN** it answers with that commitment, because the day it is kept from is the commitment's own
+  answer and not the roster's
+
+#### Scenario: a roster that holds nothing answers with nothing on every date
+
+- **WHEN** a roster that has been given no commitment is asked about 1 January 1583, about 1 January
+  2026 and about 31 December 9999
+- **THEN** it answers with nothing on each of the three, and refuses none of them
+
+#### Scenario: a roster answers about a date in the order it was moved into
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from
+  1 January 2026, stops keeping "Gym" as of 31 January 2026 and then moves "Journaling" to the
+  offset 0
+- **THEN** asked about 31 January 2026 it answers with "Journaling", then "Water plants", then "Gym"
+  — the offset naming "Water plants", the first of the two commitments it was keeping, as the one the
+  moved commitment comes to stand before, and "Gym" still after "Water plants", passed rather than
+  pushed
+- **AND** asked about 1 February 2026 it answers with "Journaling" and then "Water plants"
+
+### Requirement: A roster refuses a commitment whose name one it keeps or has stopped already has, and takes a stopped one up again
+
+A roster SHALL refuse a commitment whose name a commitment it keeps or has stopped keeping already
+has, SHALL leave itself exactly as it was, and SHALL report that the commitment was not added. Two
+names SHALL be one name where they differ only in the case of their letters, only in blank space at
+the start or the end of them, or only in both; every other difference, blank space inside a name
+included, SHALL make two names. A name SHALL be stored exactly as it was given, and a roster MUST
+NOT rewrite one it accepts. A commitment the roster has deleted SHALL hold no name against a
+commitment offered, and neither SHALL an earlier era beyond the name its own commitment carries.
+
+A commitment the roster holds in no state SHALL be placed after every commitment already there,
+under the category it was offered under, and SHALL be reported as added; one the roster has deleted
+is one it holds in no state, whatever identity it carries. A commitment the roster holds — one of
+its eras carrying the identity offered — SHALL be taken up again where the roster has stopped keeping
+it, and refused where the roster is keeping it. Offered again as itself, a stopped commitment SHALL
+be taken up again as though it had never been stopped: taking up again this way SHALL drop the day
+that commitment was kept until, leaving no gap, SHALL read it back among the commitments the roster
+keeps in the place it has, and SHALL be refused where a commitment the roster keeps already has its
+name. A take-up-again that leaves a gap SHALL be made only from a day, as *A roster takes a
+commitment it has stopped up again from a day, as a new era* says.
+
+A commitment MAY be offered with a category or without a category being said at all, and the two
+SHALL be different asks; there SHALL be no third. One offered with a category SHALL be put under the
+category said, and being offered under no category SHALL take the category off. One offered without
+a category being said at all SHALL leave the category the roster holds for it exactly as it is —
+none for a commitment it does not hold at all, whatever it was for one it is taking up again.
+
+Reporting SHALL be part of the refusal and MUST NOT be dropped. A roster SHALL refuse nothing else
+it is offered to add: it MUST NOT judge a schedule, a day a commitment is kept from, a kind or a
+category, MUST NOT refuse on how many commitments it holds, and MUST NOT refuse on a date.
+
+#### Scenario: adding a commitment a roster does not hold places it after the ones already there and says it was added
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, is given one named "Run" alike in every other way
+- **THEN** the roster reports that the commitment was added
+- **AND** the roster holds two commitments, "Gym" first and "Run" second
+
+#### Scenario: adding a commitment whose name a roster already keeps says it was not added and leaves the roster as it was
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, is given a second commitment named "Gym", formed on its own,
+  alike in schedule and day kept from
+- **THEN** the roster reports that the commitment was not added
+- **AND** the roster still holds exactly one commitment, named "Gym"
+- **AND** it is the same roster as one given that commitment once
+
+#### Scenario: a commitment whose name a roster already keeps is refused whatever else differs
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, of the tick kind, is given a second commitment named "Gym",
+  formed on its own, on a schedule listing Tuesday and Thursday, kept from 2 January 2026, of the
+  note kind
+- **THEN** the roster reports that the commitment was not added
+- **AND** the roster still holds exactly one commitment
+
+#### Scenario: a commitment whose name a roster has stopped keeping already has is refused
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, stops keeping it as of 31 January 2026 and is then given a
+  second commitment named "Gym", formed on its own, alike in schedule and day kept from
+- **THEN** the roster reports that the commitment was not added
+- **AND** the roster reads back nothing it keeps and one commitment it has stopped, named "Gym"
+
+#### Scenario: two names differing only in the case of a letter are one name and the second is refused
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, is given commitments named "gym", "GYM" and " Gym ", each
+  formed on its own and alike in every other way
+- **THEN** the roster reports of each that it was not added
+- **AND** the roster still holds exactly one commitment, whose name reads back as "Gym"
+
+#### Scenario: two names differing by blank space inside them are two names and both are held
+
+- **WHEN** a roster holding a commitment named "Water plants" on a schedule listing Monday,
+  Wednesday and Saturday, kept from 1 January 2026, is given one named "Waterplants" and then one
+  named "Water  plants", each formed on its own and alike in every other way
+- **THEN** the roster reports of each that it was added
+- **AND** the roster holds three commitments, each reading back the name it was given
+
+#### Scenario: a commitment offered again as itself where the roster has stopped keeping it takes it up again
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, has stopped keeping it as of 31 January 2026, and is then
+  given that same commitment
+- **THEN** the roster reports that it now keeps the commitment
+- **AND** the roster reads back that one commitment and no second copy of it
+- **AND** it is the same roster as one given that commitment once and never asked to stop keeping it
+
+#### Scenario: a commitment offered again as itself is taken up again in the place it was taken on in
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from 1 January
+  2026, stops keeping "Gym" as of 31 January 2026 and is then given that same commitment
+- **THEN** the roster reports that it now keeps the commitment
+- **AND** the roster reads back three commitments in the order "Water plants", "Gym", "Journaling",
+  with "Gym" in the place it was taken on in and not at the end
+
+#### Scenario: taking a stopped commitment up again is refused where a commitment the roster keeps already has its name
+
+- **WHEN** a roster store is opened at a place holding a roster written in the form used before a
+  commitment had an identity, whose entries are "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026 and kept, and "Gym" on a schedule listing Tuesday and
+  Thursday, kept from 1 January 2026 and stopped as of 31 January 2026; and the roster it reads
+  back is offered that stopped commitment again as itself
+- **THEN** the roster reports that it did not take the commitment up again
+- **AND** the roster reads back one commitment it keeps, named "Gym", on a schedule listing Monday,
+  Wednesday and Saturday, and one it has stopped, named "Gym", on a schedule listing Tuesday and
+  Thursday
+
+#### Scenario: a commitment a roster is already keeping is refused whatever category it is offered under
+
+- **WHEN** a roster given a commitment named "Creatine" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, under the category "Supplements", is offered that same commitment under
+  the category "Morning"
+- **THEN** the roster reports that the commitment was not added
+- **AND** it reads back one group, under "Supplements", holding "Creatine"
+- **AND** it is the same roster as one given that commitment once under "Supplements" and asked
+  nothing else
+
+#### Scenario: a commitment a roster does not hold is added under the category it was offered under
+
+- **WHEN** a roster is given a commitment named "Creatine" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, under the category "Supplements", then one named "Gym" alike in
+  every other way under no category, and then one named "Journaling" alike in every other way with
+  no category said at all
+- **THEN** the roster reports that each was added
+- **AND** it reads back two groups, one under "Supplements" holding "Creatine" and one under no
+  category holding "Gym" and then "Journaling"
+
+#### Scenario: a commitment offered again with no category said keeps the category it was under
+
+- **WHEN** a roster given a commitment named "Creatine" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, under the category "Supplements", stops keeping it as of
+  31 January 2026, and is then given that same commitment with no category said at all
+- **THEN** the roster reports that it now keeps the commitment
+- **AND** it reads back one group, under "Supplements", holding "Creatine"
+
+#### Scenario: a commitment taken up again is put under the category it was offered under
+
+- **WHEN** a roster given a commitment named "Creatine" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, under the category "Supplements", stops keeping it as of
+  31 January 2026, and is then given that same commitment under the category "Morning"
+- **THEN** the roster reports that it now keeps the commitment
+- **AND** it reads back one group, under "Morning", holding "Creatine"
+- **AND** a roster alike in every way offered it again under no category instead reads back one
+  group, under no category, holding "Creatine"
+
+#### Scenario: a roster takes on a commitment on a schedule due on no day
+
+- **WHEN** a roster is given a commitment named "Gym" on a schedule listing no weekday at all, kept
+  from 1 January 2026
+- **THEN** the roster reports that the commitment was added
+- **AND** the roster holds that one commitment
+
+#### Scenario: a roster takes on a commitment offered under a category of nothing but blank space, under none
+
+- **WHEN** a roster is given a commitment named "Creatine" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, under a category of three spaces
+- **THEN** the roster reports that the commitment was added
+- **AND** it reads back one group, with no category, holding "Creatine"
+
+#### Scenario: a name a roster has deleted a commitment under is free
+
+- **WHEN** a roster holding a commitment named "Gym" on a schedule listing Monday, Wednesday and
+  Saturday, kept from 1 January 2026, deletes it and is then given a second commitment named "Gym",
+  formed on its own, alike in schedule and day kept from
+- **THEN** the roster reports that the commitment was added
+- **AND** the roster reads back one commitment it keeps, named "Gym", with one era
+- **AND** asked about 31 January 2026 it answers with that one commitment alone
+
+#### Scenario: a commitment offered again as itself after the roster deleted it is taken on last
+
+- **WHEN** a roster given a commitment named "Water plants", then one named "Gym", then one named
+  "Journaling", all on a schedule listing Monday, Wednesday and Saturday and all kept from 1 January
+  2026, deletes "Gym", and is then given that same commitment
+- **THEN** the roster reports that the commitment was added
+- **AND** the roster reads back three commitments in the order "Water plants", "Journaling", "Gym"

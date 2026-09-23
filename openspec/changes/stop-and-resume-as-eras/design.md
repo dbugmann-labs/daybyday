@@ -51,7 +51,9 @@ is `RosterStore`'s. Day-screen scenarios drive `DayScreen` at its places, as the
 `keepAgain(_:from:)` puts the new era on and mends, or clears `keptUntil` where the new era would
 begin no later than the day after it. `add(_:)` offered a stopped commitment keeps doing what it
 does, which is that same undo, so every carried roster scenario that takes up again through it
-stands. The screen's one tap calls `keepAgain(_:from: dayToKeepFrom)`.
+stands. The screen's one tap calls `keepAgain(_:from: dayToKeepFrom)`. The two shipped requirements
+that describe that path are MODIFIED to scope it: offered again as itself, a stopped commitment is
+taken up as though never stopped, and a take-up-again leaving a gap is made only from a day.
 - *`add` refuses a stopped commitment:* rejected — every carried test taking up again through it
   is rewritten, for no behaviour a person sees.
 - *`add` takes a date:* rejected — every caller changes to pass a day most of them never need.
@@ -111,7 +113,7 @@ commitment resumed before this ships already lost its gap, and nothing recovers 
   and their tests with them] → tasks.md § 1 names them; any other carried test gone red is a stop.
 - [`History.standing(for:through:)` keeps its `record` requirement but no row reads it] → left for a
   later Story; its own tests stay green.
-- [Seven carried MODIFIED requirements stay over the prose budget, and `check:budgets` reads the
+- [Nine carried MODIFIED requirements stay over the prose budget, and `check:budgets` reads the
   REMOVED block's reason as prose] → condensing is an editorial Story's; the warnings are expected.
 
 ## Open Questions
