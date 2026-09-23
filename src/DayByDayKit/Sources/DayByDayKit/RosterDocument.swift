@@ -77,6 +77,15 @@ struct RosterDocument: Codable {
         }
     }
 
+    /// What `formRoster()` answers with: the roster itself, and the identity of every commitment
+    /// this read erases — a stored commitment whose newest era was held removed, in a form written
+    /// before a commitment could be deleted. `RosterStore.erased` is where this ends up.
+    /// `design.md` § *Migration*.
+    struct Formed {
+        let roster: Roster
+        let erased: Set<Commitment.Identity>
+    }
+
     /// Re-forms `roster` by rebuilding its entries directly, in the document's own order, rather
     /// than replaying through `Roster`'s mutating methods: a document at this form already carries
     /// every invariant the engine enforces on the way in — an identity's eras adjacent and its
@@ -90,11 +99,31 @@ struct RosterDocument: Codable {
     /// day* — so this checks the whole shape rather than the day alone. `nil` on any of those.
     /// Used at or after `identityIntroducedInVersion`; `folded()` is the one path for a document
     /// before it.
-    func formRoster() -> Roster? {
+    ///
+    /// An identity any of whose eras is held removed is left out of the roster this answers with —
+    /// every era of it, not the removed one alone — and is named in `Formed.erased` instead:
+    /// `openspec/changes/delete-a-commitment-for-good/specs/commitment/spec.md` § *A roster store
+    /// reads a commitment a stored roster held removed as deleted*. A removed era with no day it
+    /// was kept until still refuses the whole document, exactly as it always has.
+    func formRoster() -> Formed? {
         var entries: [Roster.Entry] = []
+        var erased: Set<Commitment.Identity> = []
         var closedIdentities: Set<Commitment.Identity> = []
         var currentIdentity: Commitment.Identity?
         var shapesInCurrentRun: Set<EraShape> = []
+        var currentRunEntries: [Roster.Entry] = []
+        var currentRunIsRemoved = false
+
+        func closeCurrentRun() {
+            guard let currentIdentity else { return }
+            if currentRunIsRemoved {
+                erased.insert(currentIdentity)
+            } else {
+                entries.append(contentsOf: currentRunEntries)
+            }
+            currentRunEntries = []
+            currentRunIsRemoved = false
+        }
 
         for entry in commitments {
             guard let commitment = entry.commitment.commitment() else {
@@ -107,20 +136,12 @@ struct RosterDocument: Codable {
                 if let currentIdentity {
                     closedIdentities.insert(currentIdentity)
                 }
+                closeCurrentRun()
                 currentIdentity = commitment.identity
                 shapesInCurrentRun = []
             }
             let shape = EraShape(commitment)
             guard shapesInCurrentRun.insert(shape).inserted else {
-                return nil
-            }
-
-            // A document at a form that still carries `removed` (forms 3 through 5) holding one
-            // held removed is not read here: turning it into a deleted commitment, records
-            // included, is `openspec/changes/delete-a-commitment-for-good/specs/commitment/
-            // spec.md` § *A roster store reads a commitment a stored roster held removed as
-            // deleted*, owned by that requirement's own scenarios rather than this one.
-            guard entry.removed != true else {
                 return nil
             }
 
@@ -134,14 +155,29 @@ struct RosterDocument: Codable {
                 keptUntil = nil
             }
 
-            entries.append(
+            // A stored era held removed, in a form written before a commitment could be deleted,
+            // still refuses the whole document where it carries no day it was kept until — the
+            // same refusal this always was. Otherwise its whole identity is erased rather than
+            // formed: `design.md` § *Migration*.
+            if entry.removed == true {
+                guard keptUntil != nil else {
+                    return nil
+                }
+                currentRunIsRemoved = true
+            }
+
+            currentRunEntries.append(
                 Roster.Entry(commitment: commitment, keptUntil: keptUntil, category: entry.category))
         }
+        if let currentIdentity {
+            closedIdentities.insert(currentIdentity)
+        }
+        closeCurrentRun()
 
         var roster = Roster()
         roster.entries = entries
-        roster.emptied = emptied ?? false
-        return roster
+        roster.emptied = (emptied ?? false) || (!commitments.isEmpty && entries.isEmpty)
+        return Formed(roster: roster, erased: erased)
     }
 
     /// A roster folded from a document kept before a commitment had an identity, and the
@@ -319,6 +355,10 @@ struct RosterDocument: Codable {
         // the commitments keep their order*.
         var roster = Roster()
         roster.entries = chains.sorted { $0.headIndex < $1.headIndex }.flatMap(\.eras)
+        // A document that held entries and whose fold leaves the roster holding none is emptied,
+        // not the same as one given no commitment at all: `design.md` § *Emptied is a mark on the
+        // roster, not the file's absence* and § *Migration* — "the fold's output included."
+        roster.emptied = !commitments.isEmpty && roster.entries.isEmpty
         return Fold(roster: roster, identities: identities)
     }
 }

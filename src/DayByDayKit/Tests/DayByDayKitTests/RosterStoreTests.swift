@@ -3409,3 +3409,229 @@ func aCommitmentDeletedOverARosterKeptBeforeRemovalExistedIsNotReadBack() throws
         later.roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 1)!).map(\.name)
             == ["Journaling"])
 }
+
+@Test("a commitment a stored roster held removed is read as deleted, with every era of it")
+func aCommitmentAStoredRosterHeldRemovedIsReadAsDeletedWithEveryEraOfIt() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 3, "day": 1 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "keptUntil": { "year": 2026, "month": 2, "day": 28 },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "33333333-3333-3333-3333-333333333333"
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+
+    #expect(store.roster.commitments.map(\.name) == ["Run"])
+    #expect(store.roster.stopped.isEmpty)
+    #expect(
+        store.roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 15)!).map(\.name)
+            == ["Run"])
+    #expect(
+        store.roster.commitments(on: CalendarDate(year: 2026, month: 3, day: 15)!).map(\.name)
+            == ["Run"])
+    #expect(store.erased == [Commitment.Identity("22222222-2222-2222-2222-222222222222")!])
+}
+
+@Test("a stopped commitment beside a removed one is read as it stands")
+func aStoppedCommitmentBesideARemovedOneIsReadAsItStands() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "removed": false,
+              "category": "Sport"
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+
+    #expect(store.roster.commitments.isEmpty)
+    #expect(store.roster.stopped.map(\.name) == ["Gym"])
+    #expect(
+        store.roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!).map(\.name)
+            == ["Gym"])
+}
+
+@Test("a stored roster whose every commitment was removed is read as emptied")
+func aStoredRosterWhoseEveryCommitmentWasRemovedIsReadAsEmptied() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+
+    #expect(store.roster.commitments.isEmpty)
+    #expect(store.roster.stopped.isEmpty)
+    #expect(store.roster != Roster())
+}
+
+@Test("a fold that drops every entry reads an emptied roster")
+func aFoldThatDropsEveryEntryReadsAnEmptiedRoster() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Yoga",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+
+    #expect(store.roster.commitments.isEmpty)
+    #expect(store.roster.stopped.isEmpty)
+    #expect(store.roster != Roster())
+}
+
+@Test(
+    "reading a removed commitment as deleted changes nothing at the place, and the next change is written without it"
+)
+func readingARemovedCommitmentAsDeletedChangesNothingAtThePlaceAndTheNextChangeIsWrittenWithoutIt()
+    throws
+{
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 1, "day": 31 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+    #expect(try Data(contentsOf: place) == bytes)
+
+    let swim = Commitment(
+        name: "Swim",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    try store.add(swim)
+
+    let later = try RosterStore(at: place)
+    #expect(later.roster.commitments.map(\.name) == ["Run", "Swim"])
+    #expect(try Data(contentsOf: place) != bytes)
+}

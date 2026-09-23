@@ -6,7 +6,7 @@ to it, one red-green cycle.
 
 - [x] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they
   are exactly the titles boxed in §§ 2–9. Any other uncovered title is a stop.
-- [ ] 1.2 Carried tests this delta edits without renaming — each fixture's removal becomes a deletion,
+- [x] 1.2 Carried tests this delta edits without renaming — each fixture's removal becomes a deletion,
   a stop, or a form-5 roster held removed, as its scenario now says, and nothing else in it moves:
   *a commitment put under a category over a roster kept before categories existed is read back under
   it*; *a roster store holding a commitment removed with no day it was kept until is refused*; *a
@@ -30,7 +30,7 @@ to it, one red-green cycle.
   screen and its three places as they were*; *a commitments screen that restored a copy lists what
   the copy holds and has nothing awaiting*; *a take-out made leaves a commitments screen's lists and
   what it is awaiting exactly as they were*. Tick when all twenty-three pass.
-- [ ] 1.3 Carried tests that change for the API or the form alone, titles and assertions untouched:
+- [x] 1.3 Carried tests that change for the API or the form alone, titles and assertions untouched:
   the three typed-back tests now under the deletion requirement drive `askToDelete`; a hand-written
   roster fixture whose scenario says *the form this app writes* moves from form 5 to form 6 (no
   `removed`, an `emptied` key), and one whose scenario names an earlier form stays; a fixture that
@@ -72,56 +72,56 @@ to it, one red-green cycle.
 
 ## 4. The upgrade — a commitment held removed is read as deleted
 
-- [ ] 4.1 a commitment a stored roster held removed is read as deleted, with every era of it — catches erasing the newest era alone
-- [ ] 4.2 a stopped commitment beside a removed one is read as it stands
-- [ ] 4.3 a stored roster whose every commitment was removed is read as emptied
-- [ ] 4.4 a fold that drops every entry reads an emptied roster
-- [ ] 4.5 reading a removed commitment as deleted changes nothing at the place, and the next change is written without it
-- [ ] 4.6 the records of a commitment a stored roster held removed are erased when a commitments screen is opened
-- [ ] 4.7 the records of a commitment a stored roster held removed are erased when a day screen is opened
-- [ ] 4.8 a record of a removed commitment is not carried back to a commitment alike to it — catches erasing after the carry-back
-- [ ] 4.9 a record place that cannot be written keeps a removed commitment's records from every commitment
+- [x] 4.1 a commitment a stored roster held removed is read as deleted, with every era of it — catches erasing the newest era alone
+- [x] 4.2 a stopped commitment beside a removed one is read as it stands
+- [x] 4.3 a stored roster whose every commitment was removed is read as emptied
+- [x] 4.4 a fold that drops every entry reads an emptied roster
+- [x] 4.5 reading a removed commitment as deleted changes nothing at the place, and the next change is written without it
+- [x] 4.6 the records of a commitment a stored roster held removed are erased when a commitments screen is opened
+- [x] 4.7 the records of a commitment a stored roster held removed are erased when a day screen is opened
+- [x] 4.8 a record of a removed commitment is not carried back to a commitment alike to it — catches erasing after the carry-back
+- [x] 4.9 a record place that cannot be written keeps a removed commitment's records from every commitment
 
 ## 5. `CommitmentsScreen` — deleting by the name typed back
 
-- [ ] 5.1 asking a commitments screen to delete a commitment changes nothing until it is confirmed
-- [ ] 5.2 a commitment whose name ends in a space is deleted by typing the name without it
-- [ ] 5.3 a deletion confirmed on a name that does not match changes nothing and refuses nothing
-- [ ] 5.4 a deletion confirmed with nothing awaiting deletion changes nothing
-- [ ] 5.5 a commitment deleted through a commitments screen is answered on no date by its roster place — catches the old day-before stop
-- [ ] 5.6 a stopped commitment deleted through a commitments screen is on neither list and on no date
-- [ ] 5.7 a commitment deleted through a commitments screen is in neither of its lists
-- [ ] 5.8 a deletion a commitments screen has been asked for and then cancelled changes nothing
-- [ ] 5.9 a commitments screen asked to delete a second commitment awaits deletion of that one only
-- [ ] 5.10 a commitments screen asked to delete a commitment on neither of its lists does nothing
-- [ ] 5.11 asking a commitments screen to delete a commitment leaves no stop awaiting confirmation
-- [ ] 5.12 a commitments screen shown again leaves nothing awaiting deletion and nothing typed back
-- [ ] 5.13 a commitments screen opened has nothing awaiting deletion and nothing typed back
-- [ ] 5.14 the last commitment deleted through a commitments screen leaves its roster place emptied
-- [ ] 5.15 a commitments screen that cannot read its roster does nothing when it is asked to delete a commitment
-- [ ] 5.16 what a commitments screen holds about a refused change ends when a deletion is kept
-- [ ] 5.17 what a commitments screen holds about a refused change stands when a deletion is asked for and cancelled
-- [ ] 5.18 deleting one of two entries alike in name deletes the one it was asked about
-- [ ] 5.19 a commitments screen holds a refused deletion against the commitment it was asked to delete
-- [ ] 5.20 a commitments screen holds nothing against a deletion confirmed on a name that does not match
-- [ ] 5.21 what a commitments screen holds about a refused change stands when a deletion is asked about a commitment on neither of its lists
-- [ ] 5.22 what a commitments screen holds about a refused change stands when a deletion is confirmed with nothing awaiting deletion
-- [ ] 5.23 asking a commitments screen to stop keeping a commitment leaves nothing awaiting deletion
-- [ ] 5.24 moving a commitment leaves a deletion awaiting confirmation and what has been typed back exactly as they were
-- [ ] 5.25 a commitments screen takes on a name only a commitment its roster has deleted had
-- [ ] 5.26 a change to a name only a deleted commitment had is not refused
-- [ ] 5.27 a commitment defined under the name a deleted commitment had is taken on last, under the category the form carried
-- [ ] 5.28 an orphaned record is carried back to a stopped commitment beside the records it already holds when a day screen is opened
+- [x] 5.1 asking a commitments screen to delete a commitment changes nothing until it is confirmed
+- [x] 5.2 a commitment whose name ends in a space is deleted by typing the name without it
+- [x] 5.3 a deletion confirmed on a name that does not match changes nothing and refuses nothing
+- [x] 5.4 a deletion confirmed with nothing awaiting deletion changes nothing
+- [x] 5.5 a commitment deleted through a commitments screen is answered on no date by its roster place — catches the old day-before stop
+- [x] 5.6 a stopped commitment deleted through a commitments screen is on neither list and on no date
+- [x] 5.7 a commitment deleted through a commitments screen is in neither of its lists
+- [x] 5.8 a deletion a commitments screen has been asked for and then cancelled changes nothing
+- [x] 5.9 a commitments screen asked to delete a second commitment awaits deletion of that one only
+- [x] 5.10 a commitments screen asked to delete a commitment on neither of its lists does nothing
+- [x] 5.11 asking a commitments screen to delete a commitment leaves no stop awaiting confirmation
+- [x] 5.12 a commitments screen shown again leaves nothing awaiting deletion and nothing typed back
+- [x] 5.13 a commitments screen opened has nothing awaiting deletion and nothing typed back
+- [x] 5.14 the last commitment deleted through a commitments screen leaves its roster place emptied
+- [x] 5.15 a commitments screen that cannot read its roster does nothing when it is asked to delete a commitment
+- [x] 5.16 what a commitments screen holds about a refused change ends when a deletion is kept
+- [x] 5.17 what a commitments screen holds about a refused change stands when a deletion is asked for and cancelled
+- [x] 5.18 deleting one of two entries alike in name deletes the one it was asked about
+- [x] 5.19 a commitments screen holds a refused deletion against the commitment it was asked to delete
+- [x] 5.20 a commitments screen holds nothing against a deletion confirmed on a name that does not match
+- [x] 5.21 what a commitments screen holds about a refused change stands when a deletion is asked about a commitment on neither of its lists
+- [x] 5.22 what a commitments screen holds about a refused change stands when a deletion is confirmed with nothing awaiting deletion
+- [x] 5.23 asking a commitments screen to stop keeping a commitment leaves nothing awaiting deletion
+- [x] 5.24 moving a commitment leaves a deletion awaiting confirmation and what has been typed back exactly as they were
+- [x] 5.25 a commitments screen takes on a name only a commitment its roster has deleted had
+- [x] 5.26 a change to a name only a deleted commitment had is not refused
+- [x] 5.27 a commitment defined under the name a deleted commitment had is taken on last, under the category the form carried
+- [x] 5.28 an orphaned record is carried back to a stopped commitment beside the records it already holds when a day screen is opened
 
 ## 6. A deletion's records, whole or nothing
 
-- [ ] 6.1 a deletion erases every tick, number, note and addition of the commitment, from every era — catches erasing the newest era's records alone
-- [ ] 6.2 a deletion leaves every record of every other commitment as it was
-- [ ] 6.3 a commitment deleted with no record leaves the record place as it was — catches a rewrite of an unchanged record
-- [ ] 6.4 a deletion the record place cannot take is refused and keeps nothing at either place — catches writing the roster first
-- [ ] 6.5 a deletion the roster place refuses puts the record place back as it was
-- [ ] 6.6 a deletion on a commitments screen that cannot read its record is refused
-- [ ] 6.7 a commitment defined after a deletion holds none of the deleted commitment's records
+- [x] 6.1 a deletion erases every tick, number, note and addition of the commitment, from every era — catches erasing the newest era's records alone
+- [x] 6.2 a deletion leaves every record of every other commitment as it was
+- [x] 6.3 a commitment deleted with no record leaves the record place as it was — catches a rewrite of an unchanged record
+- [x] 6.4 a deletion the record place cannot take is refused and keeps nothing at either place — catches writing the roster first
+- [x] 6.5 a deletion the roster place refuses puts the record place back as it was
+- [x] 6.6 a deletion on a commitments screen that cannot read its record is refused
+- [x] 6.7 a commitment defined after a deletion holds none of the deleted commitment's records
 
 ## 7. `day-screen`
 

@@ -652,9 +652,9 @@ func aCommitmentDefinedStoppedTakenUpAgainAndRemovedThroughACommitmentsScreenEac
     #expect(screen.keepAgain(gym) == nil)
     #expect(try rosterInCopy() == (try RosterStore(at: places.roster)).roster)
 
-    screen.askToRemove(gym)
+    screen.askToDelete(gym)
     screen.nameTypedBack = gym.name
-    #expect(screen.confirmRemoving() == nil)
+    #expect(screen.confirmDeleting() == nil)
     #expect(try rosterInCopy() == (try RosterStore(at: places.roster)).roster)
 
     #expect(copyPlace.lastCopy == Moment(on: monday, hour: 14, minute: 36)!)

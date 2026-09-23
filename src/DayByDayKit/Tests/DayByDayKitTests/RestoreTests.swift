@@ -352,9 +352,9 @@ func aCommitmentsScreenAskedToRestoreSaysTheCopysMomentAndWhatTheCopyAndThePhone
         screen.define(name: "Reading", on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]), keptFrom: keptFrom, under: nil)
             == nil)
     let gym = screen.kept.first { $0.name == "Gym" }!
-    screen.askToRemove(gym)
+    screen.askToDelete(gym)
     screen.nameTypedBack = "Gym"
-    #expect(screen.confirmRemoving() == nil)
+    #expect(screen.confirmDeleting() == nil)
     try oneOffStore.add(OneOff(name: "Post the form", date: CalendarDate(year: 2026, month: 9, day: 1)!)!)
 
     let rosterBytesBeforeAsk = try Data(contentsOf: places.roster)
@@ -481,7 +481,7 @@ func aRestoreAskedForAndCancelledLeavesACommitmentsScreenAndItsThreePlacesAsThey
         return
     }
 
-    screen.askToRemove(gym)
+    screen.askToDelete(gym)
     screen.nameTypedBack = "Gym"
 
     let rosterBytesBefore = try Data(contentsOf: places.roster)
@@ -493,7 +493,7 @@ func aRestoreAskedForAndCancelledLeavesACommitmentsScreenAndItsThreePlacesAsThey
 
     #expect(screen.awaitingRestore == nil)
     #expect(screen.copyRestored == nil)
-    #expect(screen.awaitingRemoval == gym)
+    #expect(screen.awaitingDeletion == gym)
     #expect(screen.nameTypedBack == "Gym")
     #expect(try Data(contentsOf: places.roster) == rosterBytesBefore)
     #expect(FileManager.default.fileExists(atPath: places.record.path) == recordExistedBefore)
@@ -791,7 +791,7 @@ func aCommitmentsScreenThatRestoredACopyListsWhatTheCopyHoldsAndHasNothingAwaiti
     }
 
     #expect(screen.keepAgain(journaling) == nil)
-    screen.askToRemove(gym)
+    screen.askToDelete(gym)
     screen.nameTypedBack = "Gym"
 
     #expect(screen.askToRestore(from: copyURL) == nil)
@@ -799,7 +799,7 @@ func aCommitmentsScreenThatRestoredACopyListsWhatTheCopyHoldsAndHasNothingAwaiti
 
     #expect(screen.kept.map(\.name) == ["Gym"])
     #expect(screen.stopped.map(\.name) == ["Journaling"])
-    #expect(screen.awaitingRemoval == nil)
+    #expect(screen.awaitingDeletion == nil)
     #expect(screen.nameTypedBack == "")
     #expect(screen.awaitingRestore == nil)
 

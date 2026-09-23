@@ -4378,6 +4378,167 @@ func aDayScreenOpenedOnARosterWhoseCommitmentsHaveAllBeenRemovedTakesNothingOn()
 }
 
 @MainActor
+@Test(
+    "an orphaned record is carried back to a stopped commitment beside the records it already holds when a day screen is opened"
+)
+func anOrphanedRecordIsCarriedBackToAStoppedCommitmentBesideTheRecordsItAlreadyHoldsWhenADayScreenIsOpened()
+    throws
+{
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily = Schedule.weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let gymEmoji = Commitment(name: "Gym 🏋️", schedule: daily, keptFrom: keptFrom)!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let august4th = CalendarDate(year: 2026, month: 8, day: 4)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gym)
+    try rosterStore.retire(gym, keptUntil: sunday)
+
+    let recordStore = try RecordStore(at: place)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+    try recordStore.add(Tick(gymEmoji, on: august4th)!)
+
+    _ = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: freshOneOffPlace())
+
+    let laterRecordStore = try RecordStore(at: place)
+    #expect(laterRecordStore.history.isKept(gym, on: august3rd))
+    #expect(laterRecordStore.history.isKept(gym, on: august4th))
+    #expect(!laterRecordStore.history.isKept(gymEmoji, on: august3rd))
+    #expect(!laterRecordStore.history.isKept(gymEmoji, on: august4th))
+}
+
+@MainActor
+@Test(
+    "the records of a commitment a stored roster held removed are erased when a day screen is opened"
+)
+func theRecordsOfACommitmentAStoredRosterHeldRemovedAreErasedWhenADayScreenIsOpened() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: rosterPlace)
+
+    let gym = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!,
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!, kind: .tick)!
+
+    let recordStore = try RecordStore(at: place)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: freshOneOffPlace())
+    screen.showDay(august3rd)
+
+    #expect(screen.dayView.rows.isEmpty)
+
+    let laterRecordStore = try RecordStore(at: place)
+    #expect(laterRecordStore.history == History())
+}
+
+@MainActor
+@Test(
+    "a record place that cannot be written keeps a removed commitment's records from every commitment"
+)
+func aRecordPlaceThatCannotBeWrittenKeepsARemovedCommitmentsRecordsFromEveryCommitment() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Lifting",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: rosterPlace)
+
+    let gym = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!,
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!, kind: .tick)!
+
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+    let bytesRead = try Data(contentsOf: recordPlace)
+
+    try makeReadOnly(recordDirectory)
+    defer { try? makeWritable(recordDirectory) }
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: recordPlace, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: freshOneOffPlace())
+
+    #expect(screen.recordState == .unreadable)
+    #expect(screen.dayView.rows.map(\.name) == ["Lifting"])
+
+    try makeWritable(recordDirectory)
+    #expect(try Data(contentsOf: recordPlace) == bytesRead)
+}
+
+@MainActor
 @Test("a day screen draws its rows in the order its roster was moved into")
 func aDayScreenDrawsItsRowsInTheOrderItsRosterWasMovedInto() throws {
     let (place, rosterPlace) = freshPlaces()

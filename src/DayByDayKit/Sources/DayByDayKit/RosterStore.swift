@@ -16,6 +16,7 @@ public final class RosterStore {
         guard FileManager.default.fileExists(atPath: place.path) else {
             self.roster = Roster()
             self.fold = [:]
+            self.erased = []
             return
         }
 
@@ -43,12 +44,14 @@ public final class RosterStore {
             }
             self.roster = fold.roster
             self.fold = fold.identities
+            self.erased = []
         } else {
             guard let formed = document.formRoster() else {
                 throw RosterStoreError.notAStore(at: place)
             }
-            self.roster = formed
+            self.roster = formed.roster
             self.fold = [:]
+            self.erased = formed.erased
         }
     }
 
@@ -56,7 +59,8 @@ public final class RosterStore {
     /// `identityIntroducedInVersion`, read as it stands otherwise, per `design.md` § *Migration* —
     /// or `nil` where its shape disagrees with its own declared form or it could not be formed.
     /// Shared with `CopyDocument.read`'s own per-store reading, which has no use for a fold's
-    /// identities and so is not the one place `init(at:)` needs them from.
+    /// identities, nor for which identities were erased, and so is not the one place `init(at:)`
+    /// needs either from.
     static func formed(from document: RosterDocument) -> Roster? {
         guard Self.shapeAgrees(with: document) else {
             return nil
@@ -64,7 +68,7 @@ public final class RosterStore {
         if document.version < RosterDocument.identityIntroducedInVersion {
             return document.folded()?.roster
         }
-        return document.formRoster()
+        return document.formRoster()?.roster
     }
 
     /// Whether every entry's shape agrees with what `document.version` declares it should carry,
@@ -109,6 +113,13 @@ public final class RosterStore {
     /// identity, or `nil` where the fold dropped it — or empty where nothing at `place` needed
     /// folding. `design.md` § *The seam* and § *Migration*.
     public private(set) var fold: [CommitmentRecord: Commitment.Identity?]
+
+    /// The identity of every commitment this read erased: one a stored roster held removed, in a
+    /// form written before a commitment could be deleted, read as deleted rather than formed.
+    /// Empty where nothing at `place` needed erasing. A day screen and a commitments screen hand
+    /// this to `RecordStore.erase(_:)` right after settling the fold and before carrying any
+    /// orphaned record back. `design.md` § *The seam* and § *Migration*.
+    public private(set) var erased: Set<Commitment.Identity>
 
     /// Kept at `place` before this returns. Answers what `Roster.add` answers — `false`, without
     /// throwing and without writing, when the roster is already keeping `commitment`.

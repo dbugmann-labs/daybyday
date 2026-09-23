@@ -43,7 +43,7 @@ struct CopyDocument: Codable {
         else {
             return nil
         }
-        guard let formedRoster = roster.formRoster() else {
+        guard let formedRoster = roster.formRoster()?.roster else {
             return nil
         }
         guard let formedOneOffs = oneOffs.formOneOffs() else {

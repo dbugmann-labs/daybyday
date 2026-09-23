@@ -255,6 +255,52 @@ public final class RecordStore {
         return true
     }
 
+    /// Erases, at `place`, every record held of a commitment whose identity is in `identities` —
+    /// writing nothing where none of them holds a record. Answers whether anything was erased.
+    /// The one primitive a single commitment's whole-or-nothing deletion and the upgrade's
+    /// migration erasure both use, one identity or many alike. `design.md` § *The seam*.
+    @discardableResult
+    public func erase(_ identities: Set<Commitment.Identity>) throws -> Bool {
+        var nextHistory = history
+        guard nextHistory.erase(identities) else {
+            return false
+        }
+
+        let parts = nextHistory.recordDocumentParts()
+        try write(
+            ticks: parts.ticks, numbers: parts.numbers, notes: parts.notes,
+            additions: parts.additions)
+
+        ticks = parts.ticks
+        numbers = parts.numbers
+        notes = parts.notes
+        additions = parts.additions
+        history = nextHistory
+
+        return true
+    }
+
+    /// Kept at `place` in one write, replacing the whole record with `nextHistory` — the one way
+    /// to put the record place back exactly as it was after an erasure a later refusal must undo.
+    /// Package-internal: `CommitmentsScreen.confirmDeleting()` is the one caller, on a roster
+    /// refusal that follows a kept erasure — `design.md` § *Deletion writes the record place first
+    /// and puts it back*.
+    @discardableResult
+    func replace(with nextHistory: History) throws -> Bool {
+        let parts = nextHistory.recordDocumentParts()
+        try write(
+            ticks: parts.ticks, numbers: parts.numbers, notes: parts.notes,
+            additions: parts.additions)
+
+        ticks = parts.ticks
+        numbers = parts.numbers
+        notes = parts.notes
+        additions = parts.additions
+        history = nextHistory
+
+        return true
+    }
+
     /// Carries every record held of `commitment` over to `changed`, kept at `place` before this
     /// returns. `false` is the history's own refusal, reported without an error and without a
     /// write; a place that could not be written throws, as every other change does. See
