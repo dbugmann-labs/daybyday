@@ -851,7 +851,7 @@ struct CommitmentsView: View {
                         } header: {
                             Text("Type \"\(commitment.name)\" to delete it for good.")
                         } footer: {
-                            if screen.copyPlace != nil {
+                            if screen.copyPlace?.folderName != nil {
                                 Text(
                                     "The copy in Files follows, so it will not hold \(commitment.name) either."
                                 )
