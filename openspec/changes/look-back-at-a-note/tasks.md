@@ -14,28 +14,28 @@ make it pass, then the next. Every test goes in
 
 ## 2. The seam
 
-- [ ] 2.1 `LookBack.notes`, `LookBack.noteCountInWords` and `LookBack.DatedNote` exist as `design.md` § *The seam* writes them, and 3.1 is red before a note's notes are formed
-- [ ] 2.2 `History`, `Note`, `Roster`, `Commitment`, `CalendarDate` and `DayScreen` are unchanged, and `openspec/specs/` is untouched (rule 2)
-- [ ] 2.3 `LookBackWords.notes(_:)` is the one place a count is said, built on `LookBackWords.number(_:)`
+- [x] 2.1 `LookBack.notes`, `LookBack.noteCountInWords` and `LookBack.DatedNote` exist as `design.md` § *The seam* writes them, and 3.1 is red before a note's notes are formed
+- [x] 2.2 `History`, `Note`, `Roster`, `Commitment`, `CalendarDate` and `DayScreen` are unchanged, and `openspec/specs/` is untouched (rule 2)
+- [x] 2.3 `LookBackWords.notes(_:)` is the one place a count is said, built on `LookBackWords.number(_:)`
 
 ## 3. The notes — one test each
 
-- [ ] 3.1 a note commitment's look-back says each day's note under its day, newest first — catches the notes said oldest first, a day with no note said as an empty note, or a day said in a form other than the look-back's
-- [ ] 3.2 a note commitment's look-back says a note's text exactly as the record holds it, line breaks included — catches the text cut, trimmed again, or its line breaks folded into spaces in the kit
-- [ ] 3.3 a note commitment's look-back says no note where no day holds one — catches a taken-back note still said, a future kept-from walked backwards, or notes said on a tick's look-back
-- [ ] 3.4 a stopped note commitment's look-back says no note after the day it was kept until — catches notes read off the record unbounded rather than off the days counted
-- [ ] 3.5 a note commitment's look-back says the notes of every era of its chain — catches the walk reading the newest era alone, or a mark said where one era gives way
+- [x] 3.1 a note commitment's look-back says each day's note under its day, newest first — catches the notes said oldest first, a day with no note said as an empty note, or a day said in a form other than the look-back's
+- [x] 3.2 a note commitment's look-back says a note's text exactly as the record holds it, line breaks included — catches the text cut, trimmed again, or its line breaks folded into spaces in the kit
+- [x] 3.3 a note commitment's look-back says no note where no day holds one — catches a taken-back note still said, a future kept-from walked backwards, or notes said on a tick's look-back
+- [x] 3.4 a stopped note commitment's look-back says no note after the day it was kept until — catches notes read off the record unbounded rather than off the days counted
+- [x] 3.5 a note commitment's look-back says the notes of every era of its chain — catches the walk reading the newest era alone, or a mark said where one era gives way
 
 ## 4. The count — one test each
 
-- [ ] 4.1 a note commitment's look-back counts the notes it says — catches a fraction out of the due days, or the count said without its word
-- [ ] 4.2 a note commitment's look-back that says one note counts it in the singular — catches "1 notes", or a count of the record's notes rather than the ones said
-- [ ] 4.3 a look-back that says no note says no count — catches "0 notes", or a count said on a tick's look-back
+- [x] 4.1 a note commitment's look-back counts the notes it says — catches a fraction out of the due days, or the count said without its word
+- [x] 4.2 a note commitment's look-back that says one note counts it in the singular — catches "1 notes", or a count of the record's notes rather than the ones said
+- [x] 4.3 a look-back that says no note says no count — catches "0 notes", or a count said on a tick's look-back
 
 ## 5. The removed test and the carried ones
 
-- [ ] 5.1 The test named for the scenario this delta removes, "a look-back at a commitment whose days take a note says no line, no whole and no graph", is deleted; no other test is
-- [ ] 5.2 Every other test in `LookBackTests.swift` passes unchanged, the boundary and identity-chain tests among them
+- [x] 5.1 The test named for the scenario this delta removes, "a look-back at a commitment whose days take a note says no line, no whole and no graph", is deleted; no other test is
+- [x] 5.2 Every other test in `LookBackTests.swift` passes unchanged, the boundary and identity-chain tests among them
 
 ## 6. The shell (ADR-1019: this Story's immediate consumer, no behaviour the kit does not specify)
 

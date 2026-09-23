@@ -91,4 +91,11 @@ enum LookBackWords {
     static func sum(_ sum: Decimal, of target: Decimal) -> String {
         "\(number(sum)) of \(number(target))"
     }
+
+    /// A note commitment's count as `count` said as a number, a single space and "notes" — "38
+    /// notes" — except "1 note" for exactly one. `openspec/changes/look-back-at-a-note/design.md`
+    /// § *The seam*.
+    static func notes(_ count: Int) -> String {
+        "\(number(Decimal(count))) \(count == 1 ? "note" : "notes")"
+    }
 }

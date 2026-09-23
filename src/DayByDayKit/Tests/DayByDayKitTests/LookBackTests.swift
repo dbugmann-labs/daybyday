@@ -770,32 +770,6 @@ func aLookBackSaysNothingBetweenTheLinesEitherSideOfABoundary() throws {
 }
 
 @MainActor
-@Test("a look-back at a commitment whose days take a note says no line, no whole and no graph")
-func aLookBackAtACommitmentWhoseDaysTakeANoteSaysNoLineNoWholeAndNoGraph() throws {
-    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let today = CalendarDate(year: 2026, month: 3, day: 15)!
-    let everyDay: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-
-    let notePlaces = freshRosterAndRecordPlaces()
-    let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
-    let noteRosterStore = try RosterStore(at: notePlaces.roster)
-    try noteRosterStore.add(journal)
-    _ = try RecordStore(at: notePlaces.record)
-    let noteScreen = CommitmentsScreen(
-        asOf: today, keepingRosterAt: notePlaces.roster, keepingRecordAt: notePlaces.record)
-    let noteLookBack = noteScreen.lookBack(at: journal)
-
-    #expect(noteLookBack?.name == "Journal")
-    #expect(noteLookBack?.rhythmInWords == "Every day")
-    #expect(noteLookBack?.keptFromInWords == "1 January 2026")
-    #expect(noteLookBack?.lines == [])
-    #expect(noteLookBack?.whole == nil)
-    #expect(noteLookBack?.graph == nil)
-}
-
-@MainActor
 @Test("a look-back says a month as that month's name and its year")
 func aLookBackSaysAMonthAsThatMonthsNameAndItsYear() throws {
     let places = freshRosterAndRecordPlaces()
@@ -2111,4 +2085,309 @@ func aLookBackSaysANumberBelowZeroWithALeadingMinus() throws {
     #expect(lookBack?.graph?.points.map(\.inWords) == ["-3"])
     #expect(lookBack?.graph?.lowestInWords == "-10")
     #expect(lookBack?.graph?.highestInWords == "10")
+}
+
+@MainActor
+@Test("a note commitment's look-back says each day's note under its day, newest first")
+func aNoteCommitmentsLookBackSaysEachDaysNoteUnderItsDayNewestFirst() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(journal)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(
+        Note("Quiet day.", for: journal, on: CalendarDate(year: 2026, month: 3, day: 1)!)!)
+    try recordStore.add(
+        Note("Long walk.", for: journal, on: CalendarDate(year: 2026, month: 3, day: 3)!)!)
+    try recordStore.add(
+        Note("Read in the evening.", for: journal, on: CalendarDate(year: 2026, month: 3, day: 4)!)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: journal)
+
+    #expect(
+        lookBack?.notes == [
+            LookBack.DatedNote(dayInWords: "4 March 2026", text: "Read in the evening."),
+            LookBack.DatedNote(dayInWords: "3 March 2026", text: "Long walk."),
+            LookBack.DatedNote(dayInWords: "1 March 2026", text: "Quiet day."),
+        ])
+    #expect(lookBack?.lines == [])
+    #expect(lookBack?.whole == nil)
+    #expect(lookBack?.graph == nil)
+}
+
+@MainActor
+@Test(
+    "a note commitment's look-back says a note's text exactly as the record holds it, line breaks included"
+)
+func aNoteCommitmentsLookBackSaysANotesTextExactlyAsTheRecordHoldsItLineBreaksIncluded() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    let fourthMarch = CalendarDate(year: 2026, month: 3, day: 4)!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let fourLines = "Three things today:\n– finished the draft\n– called Anna\n– early night"
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(journal)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Note(fourLines, for: journal, on: fourthMarch)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: journal)
+
+    #expect(
+        lookBack?.notes == [
+            LookBack.DatedNote(dayInWords: "4 March 2026", text: fourLines)
+        ])
+
+    let longPlaces = freshRosterAndRecordPlaces()
+    let longJournal = Commitment(
+        name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    let longNote = String(repeating: "a", count: 600)
+
+    let longRosterStore = try RosterStore(at: longPlaces.roster)
+    try longRosterStore.add(longJournal)
+    let longRecordStore = try RecordStore(at: longPlaces.record)
+    try longRecordStore.add(Note(longNote, for: longJournal, on: fourthMarch)!)
+
+    let longScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: longPlaces.roster, keepingRecordAt: longPlaces.record)
+    let longLookBack = longScreen.lookBack(at: longJournal)
+
+    #expect(longLookBack?.notes.map(\.text) == [longNote])
+}
+
+@MainActor
+@Test("a note commitment's look-back says no note where no day holds one")
+func aNoteCommitmentsLookBackSaysNoNoteWhereNoDayHoldsOne() throws {
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let places = freshRosterAndRecordPlaces()
+    let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(journal)
+    _ = try RecordStore(at: places.record)
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: journal)
+
+    #expect(lookBack?.notes == [])
+    #expect(lookBack?.noteCountInWords == nil)
+    #expect(lookBack?.lines == [])
+    #expect(lookBack?.whole == nil)
+    #expect(lookBack?.graph == nil)
+    #expect(lookBack?.name == "Journal")
+    #expect(lookBack?.rhythmInWords == "Every day")
+    #expect(lookBack?.keptFromInWords == "1 March 2026")
+
+    let takenBackPlaces = freshRosterAndRecordPlaces()
+    let takenBackJournal = Commitment(
+        name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    let thirdMarch = CalendarDate(year: 2026, month: 3, day: 3)!
+    let takenBackRosterStore = try RosterStore(at: takenBackPlaces.roster)
+    try takenBackRosterStore.add(takenBackJournal)
+    let takenBackRecordStore = try RecordStore(at: takenBackPlaces.record)
+    try takenBackRecordStore.add(Note("Quiet day.", for: takenBackJournal, on: thirdMarch)!)
+    try takenBackRecordStore.removeNote(for: takenBackJournal, on: thirdMarch)
+    let takenBackScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: takenBackPlaces.roster,
+        keepingRecordAt: takenBackPlaces.record)
+
+    #expect(takenBackScreen.lookBack(at: takenBackJournal)?.notes == [])
+
+    let futurePlaces = freshRosterAndRecordPlaces()
+    let futureKeptFrom = CalendarDate(year: 2026, month: 4, day: 1)!
+    let futureJournal = Commitment(
+        name: "Journal", schedule: everyDay, keptFrom: futureKeptFrom, kind: .note)!
+    let futureRosterStore = try RosterStore(at: futurePlaces.roster)
+    try futureRosterStore.add(futureJournal)
+    _ = try RecordStore(at: futurePlaces.record)
+    let futureScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: futurePlaces.roster, keepingRecordAt: futurePlaces.record)
+
+    #expect(futureScreen.lookBack(at: futureJournal)?.notes == [])
+
+    let tickPlaces = freshRosterAndRecordPlaces()
+    let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: keptFrom)!
+    let tickRosterStore = try RosterStore(at: tickPlaces.roster)
+    try tickRosterStore.add(gym)
+    let tickRecordStore = try RecordStore(at: tickPlaces.record)
+    try tickRecordStore.add(Tick(gym, on: thirdMarch)!)
+    let tickScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: tickPlaces.roster, keepingRecordAt: tickPlaces.record)
+
+    #expect(tickScreen.lookBack(at: gym)?.notes == [])
+}
+
+@MainActor
+@Test("a stopped note commitment's look-back says no note after the day it was kept until")
+func aStoppedNoteCommitmentsLookBackSaysNoNoteAfterTheDayItWasKeptUntil() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 2, day: 25)!
+    let keptUntil = CalendarDate(year: 2026, month: 2, day: 28)!
+    let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(journal)
+    try rosterStore.retire(journal, keptUntil: keptUntil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(
+        Note("Quiet day.", for: journal, on: CalendarDate(year: 2026, month: 2, day: 27)!)!)
+    try recordStore.add(
+        Note("Long walk.", for: journal, on: CalendarDate(year: 2026, month: 3, day: 4)!)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: journal)
+
+    #expect(
+        lookBack?.notes == [
+            LookBack.DatedNote(dayInWords: "27 February 2026", text: "Quiet day.")
+        ])
+    #expect(lookBack?.keptUntilInWords == "28 February 2026")
+}
+
+@MainActor
+@Test("a note commitment's look-back says the notes of every era of its chain")
+func aNoteCommitmentsLookBackSaysTheNotesOfEveryEraOfItsChain() throws {
+    let places = freshRosterAndRecordPlaces()
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 4)!
+    let olderJournal = Commitment(
+        name: "Journal",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: olderKeptFrom, kind: .note)!
+    let newerJournal = Commitment(
+        era: olderJournal, schedule: .weekdays([.tuesday, .thursday]), keptFrom: newerKeptFrom,
+        kind: .note)!
+    let today = CalendarDate(year: 2026, month: 3, day: 8)!
+    let secondMarch = CalendarDate(year: 2026, month: 3, day: 2)!
+    let fifthMarch = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderJournal)
+    try rosterStore.put(era: newerJournal, on: olderJournal, keptUntil: boundary, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Note("Quiet day.", for: olderJournal, on: secondMarch)!)
+    try recordStore.add(Note("Long walk.", for: newerJournal, on: fifthMarch)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerJournal)
+
+    #expect(
+        lookBack?.notes == [
+            LookBack.DatedNote(dayInWords: "5 March 2026", text: "Long walk."),
+            LookBack.DatedNote(dayInWords: "2 March 2026", text: "Quiet day."),
+        ])
+    #expect(lookBack?.keptFromInWords == "1 March 2026")
+}
+
+@MainActor
+@Test("a note commitment's look-back counts the notes it says")
+func aNoteCommitmentsLookBackCountsTheNotesItSays() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(journal)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(
+        Note("Quiet day.", for: journal, on: CalendarDate(year: 2026, month: 3, day: 1)!)!)
+    try recordStore.add(
+        Note("Long walk.", for: journal, on: CalendarDate(year: 2026, month: 3, day: 3)!)!)
+    try recordStore.add(
+        Note("Read in the evening.", for: journal, on: CalendarDate(year: 2026, month: 3, day: 4)!)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: journal)
+
+    #expect(lookBack?.noteCountInWords == "3 notes")
+}
+
+@MainActor
+@Test("a note commitment's look-back that says one note counts it in the singular")
+func aNoteCommitmentsLookBackThatSaysOneNoteCountsItInTheSingular() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 2, day: 25)!
+    let keptUntil = CalendarDate(year: 2026, month: 2, day: 28)!
+    let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(journal)
+    try rosterStore.retire(journal, keptUntil: keptUntil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(
+        Note("Quiet day.", for: journal, on: CalendarDate(year: 2026, month: 2, day: 27)!)!)
+    try recordStore.add(
+        Note("Long walk.", for: journal, on: CalendarDate(year: 2026, month: 3, day: 4)!)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: journal)
+
+    #expect(lookBack?.noteCountInWords == "1 note")
+}
+
+@MainActor
+@Test("a look-back that says no note says no count")
+func aLookBackThatSaysNoNoteSaysNoCount() throws {
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let places = freshRosterAndRecordPlaces()
+    let journal = Commitment(name: "Journal", schedule: everyDay, keptFrom: keptFrom, kind: .note)!
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(journal)
+    _ = try RecordStore(at: places.record)
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+
+    #expect(screen.lookBack(at: journal)?.noteCountInWords == nil)
+
+    let tickPlaces = freshRosterAndRecordPlaces()
+    let gym = Commitment(name: "Gym", schedule: everyDay, keptFrom: keptFrom)!
+    let tickRosterStore = try RosterStore(at: tickPlaces.roster)
+    try tickRosterStore.add(gym)
+    let tickRecordStore = try RecordStore(at: tickPlaces.record)
+    try tickRecordStore.add(Tick(gym, on: CalendarDate(year: 2026, month: 3, day: 3)!)!)
+    let tickScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: tickPlaces.roster, keepingRecordAt: tickPlaces.record)
+
+    #expect(tickScreen.lookBack(at: gym)?.noteCountInWords == nil)
 }
