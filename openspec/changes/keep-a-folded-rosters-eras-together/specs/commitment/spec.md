@@ -166,6 +166,7 @@ with the rest; the missing end SHALL NOT be invented.
   starting on 30 February 2026
 - **THEN** opening is refused with an error
 - **AND** the error says the content is not a roster store rather than that it is from a later form
+- **AND** the content at that place is byte-for-byte what it was before
 
 #### Scenario: a roster store holding one commitment's eras split apart by another commitment's entry is refused
 
