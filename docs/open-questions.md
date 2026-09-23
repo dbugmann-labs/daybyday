@@ -863,6 +863,15 @@ Things that are built, or deliberately not built, in a state someone will trip o
   report it," was not taken for any of them. Found across #303's G7 fix rounds, 2026-09-22. The
   next Story whose delta moves a store's form names that class of edit in its own § 1.3.
 
+- **`check:scenarios` can miss a test that is there.** `blankSwiftComments` in
+  `scripts/lib/swift-tests.ts` builds its output from `[...source]`, indexed by code point, but
+  scans `source` by UTF-16 code unit. Every non-BMP character earlier in a `.swift` file — the
+  `"Gym 🏋️"` already in `CommitmentsScreenTests.swift` is one — shifts each later blanked comment by
+  one unit, which can blank part of an unrelated `@Test("…")` title further down and report its
+  scenario missing. In CI that is a false failure of the merge check rather than a false pass. Found
+  by the implementer of `collapse-a-same-day-rhythm-change` (#305), 2026-09-23, and worked around
+  there by where a comment was placed; the tool is unchanged and wants a chore.
+
 ## Settled
 
 - 2026-09-22 — **ADR-1055 says "the same name and the same kind" where the shipped chain rule said

@@ -252,6 +252,15 @@ chain becomes a stopped commitment of its own. It is silent, it invents no name,
 commitments it leaves with one name are the person's to tidy. Agreed 2026-09-22 at the grill of
 `give-a-commitment-an-identity` (#303), on the Feature grill's answers of the day before.
 
+**Collapse** — what becomes of an **era** that would hold no day: it is not one, and the roster
+does not keep it. Whatever began it — a rhythm, a range, a target or a restart — an era replaced
+on the day it began, or reached behind by a restart, leaves nothing behind, and where the eras
+either side of it are alike they are one era again, as though the change had never been made. A
+commitment changed back on the day it was changed is the commitment it was that morning. A roster
+already holding such an era, or two eras holding the same days, is mended silently whenever it is
+read, the newer era keeping the days. Agreed 2026-09-23 at the grill of
+`collapse-a-same-day-rhythm-change` (#305).
+
 **Removed** — a commitment a person has got rid of for good: the roster still holds it, in the place
 it was taken on in and with the day it was **kept until**, but it is shown in neither of the
 **commitments screen**'s lists and is owed on no day after that one. It is the third state a roster
@@ -385,6 +394,11 @@ carries the same **identity** as the commitment in front of it, so the roster do
 after all, and a **look-back** reads the chain off it — "nothing reads one" no longer holds. The
 rest of this entry stands.
 
+**Corrected 2026-09-23**, while writing `collapse-a-same-day-rhythm-change` (#305)'s delta. A record
+made that morning under the old rhythm no longer stands undrawn: since #303 a change that would leave
+a recorded day not due is refused, and that one is, so untick-then-change is the way through. An era
+replaced on the day it began is not kept at all — **Collapse**.
+
 **Restarting** — beginning an every-N-days commitment's count again from a day the person picks,
 because it was kept late: nails due on day 3 and done on day 4 run three days on from day 4. It
 belongs only to every N days. A weekday set, a day of the month and a weekly quota are anchored to
@@ -407,6 +421,13 @@ grid from an older day. The day offered is **today**, and the picked day may be 
 and no earlier than the day the commitment is kept from. A day the commitment is already due on is
 refused, because restarting there changes nothing. Records made on or after the picked day are
 carried onto the restarted commitment, and those made before it stay where they are.
+
+**Amended 2026-09-23**, at the grill of `collapse-a-same-day-rhythm-change` (#305). A later restart
+*can* reach behind an earlier one, and behind a rhythm, range or target change, as far back as the
+day the commitment is kept from: every era that began after the picked day is replaced, and the era
+holding the picked day ends the day before it. Since #303 this was already what the app did, without
+the replacing; the owner chose to keep the reach rather than restore the bound. A record on any day
+the restarted count would leave not due still refuses it.
 
 **Category** — the word a person put a commitment under: *supplements*, *sport*, whatever they
 type. It is the owner's own word and never one the app names — no fixed menu holds the day-one
@@ -2000,3 +2021,8 @@ behind a number, a total behind a total — and never on the range or the target
 because a page saying Mood began on the day its range was narrowed is the commitment started over
 in the one place anyone would look. What each kind's page draws across such a boundary is that
 page's own Story.
+
+**Superseded 2026-09-22** by the **Era** entry written at `give-a-commitment-an-identity` (#303),
+which is the one to read: an era carries the commitment's own **identity**, the roster holds the
+link, and resemblance survives only as the **fold**'s rule. Marked while writing the delta of
+`collapse-a-same-day-rhythm-change` (#305).

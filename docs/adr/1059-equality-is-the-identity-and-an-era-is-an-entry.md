@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-22
 - Deciders: Diego Bugmann
+- Amended: 2026-09-23 — `collapse-a-same-day-rhythm-change` (#305): an entry that would hold no day
+  is not an era. Putting one on drops every era it leaves holding none, alike neighbours are one era,
+  and a stored roster is mended whenever it is read rather than refused.
 
 ## Context
 
@@ -49,6 +52,15 @@ commitment is kept from moves the earliest entry's own day, dropping any era it 
 no day. Every one of those is an act on the identity, not a second commitment taking the first's
 place, so nothing is carried over and nothing is refused for a record that would land on an
 identity the roster no longer holds.
+
+**No entry that holds no day is an era.** An era replaced on the day it began goes, and where the
+eras either side of it are alike in schedule and kind they are one entry again, so a change made and
+taken back on one day leaves the roster as it was. A restart may reach behind any later era as far
+as the day the commitment is kept from, replacing every era begun after the day it picks. A roster
+already holding an entry that holds no day, two entries holding the same days, or two alike side by
+side is mended when it is read — the newer era keeping the days, the newest never dropped — because
+every such shape is one an earlier build wrote, and an era nobody kept a day on is invisible to a
+person, so mending loses nothing they can see where refusing it locked them out.
 
 **A look-back reads the chain rather than inferring it.** Every entry carrying an identity is that
 commitment's own era, in the order the roster already holds them, so ADR-1055's resemblance walk —

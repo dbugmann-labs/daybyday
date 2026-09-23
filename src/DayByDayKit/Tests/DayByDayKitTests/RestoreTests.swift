@@ -585,6 +585,85 @@ func aRestoreConfirmedMakesTheThreePlacesHoldWhatTheCopyHoldsAndWhatTheyHeldIsGo
 }
 
 @MainActor
+@Test("a copy holding eras that hold no day is restored with them mended")
+func aCopyHoldingErasThatHoldNoDayIsRestoredWithThemMended() throws {
+    let places = freshThreePlaces()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let identity = "11111111-1111-1111-1111-111111111111"
+
+    let rosterJSON = """
+        {
+          "version": 6,
+          "emptied": false,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 8, "day": 31 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] },
+                "identity": "\(identity)"
+              },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 8, "day": 31 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(identity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 8, "day": 31 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] },
+                "identity": "\(identity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] },
+                "identity": "\(identity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "category": null
+            }
+          ]
+        }
+        """
+
+    let file = freshPickedFile()
+    try FileManager.default.createDirectory(
+        at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try copyJSON(roster: rosterJSON).write(to: file)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs)
+
+    let askRefusal = screen.askToRestore(from: file)
+
+    #expect(askRefusal == nil)
+    #expect(screen.awaitingRestore?.copy.kept == 1)
+
+    let confirmRefusal = screen.confirmRestoring()
+
+    #expect(confirmRefusal == nil)
+
+    let rosterStoreAfterwards = try RosterStore(at: places.roster)
+    #expect(rosterStoreAfterwards.roster.commitments.map(\.rhythmInWords) == ["Tue, Thu"])
+    let gym = rosterStoreAfterwards.roster.commitments.first!
+    #expect(rosterStoreAfterwards.roster.eras(of: gym).map(\.rhythmInWords) == ["Tue, Thu", "Mon, Wed, Sat"])
+}
+
+@MainActor
 @Test("a restore confirmed over places that cannot be read replaces what is there")
 func aRestoreConfirmedOverPlacesThatCannotBeReadReplacesWhatIsThere() throws {
     let firstPlaces = freshThreePlaces()

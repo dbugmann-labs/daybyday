@@ -855,15 +855,22 @@ public final class CommitmentsScreen {
     /// each it needs and no other, at the roster place alone: a different name renames the
     /// commitment through every era of it; a different day kept from changes its earliest era
     /// for one kept from that day; a different rhythm, range or target puts a new era on it, kept
-    /// from the day this screen was handed. One save renames first, moves the day second and puts
-    /// the era on third, so the day-move and the new era both see the name already written.
-    /// `lowest`, `highest` and `target` are read exactly as `define` reads them; `nil` for a
-    /// range or a target is the one `commitment` already carries, `design.md` § *Three more
-    /// strings, and `nil` is the value it already carries*. No record moves and nothing is
-    /// written at the record place by any of them. See `openspec/changes/
-    /// give-a-commitment-an-identity/specs/commitment/spec.md` § *A commitments screen changes a
-    /// commitment by renaming it, moving the day it is kept from, or putting a new era on it* and
-    /// § *A commitments screen refuses a change it cannot make, and tells each refusal apart*.
+    /// from the day this screen was handed — or from the day the commitment is kept from, where
+    /// that is later. One save renames first, moves the day second and puts the era on third, so
+    /// the day-move and the new era both see the name already written. Where the era that put
+    /// would give way to already runs, once the eras it leaves holding no day are dropped, on the
+    /// rhythm and kind just named, no era is put on: that era runs on as the newest instead, with
+    /// the schedule it had — a change back, `design.md` § *Alike is the schedule at the roster,
+    /// the rhythm at the screen*. `lowest`, `highest` and `target` are read exactly as `define`
+    /// reads them; `nil` for a range or a target is the one `commitment` already carries,
+    /// `design.md` § *Three more strings, and `nil` is the value it already carries*. No record
+    /// moves and nothing is written at the record place by any of them. See
+    /// `openspec/changes/collapse-a-same-day-rhythm-change/specs/commitment/spec.md` §§ *A
+    /// commitments screen changes a commitment by renaming it, moving the day it is kept from, or
+    /// putting a new era on it* and *A commitments screen keeps no era a change or a restart leaves
+    /// holding no day, and a change back leaves the commitment as it was*, and
+    /// `openspec/specs/commitment/spec.md` § *A commitments screen refuses a change it cannot make,
+    /// tells each refusal apart, and changes nothing it has deleted*.
     public func change(
         _ commitment: Commitment, toName name: String, on rhythm: Rhythm, keptFrom: CalendarDate,
         under category: String?, lowest: String? = nil, highest: String? = nil, target: String? = nil
@@ -952,15 +959,44 @@ public final class CommitmentsScreen {
 
         if putsNewEra {
             let onValue = nameChanged ? Commitment(renaming: commitment, to: name) : commitment
-            let eraSchedule = rhythm.schedule(keptFrom: dayToKeepFrom)!
-            let era = Commitment(era: onValue, schedule: eraSchedule, keptFrom: dayToKeepFrom, kind: newKind)!
+            // Kept from the day this screen was handed, or from the day the commitment is kept
+            // from where that is later — a day-move earlier in this same save has already
+            // written that day, so `keptFrom` already says it. `design.md` § *A change before a
+            // future day kept from keeps that day*.
+            let eraKeptFrom = dayToKeepFrom.days(until: keptFrom) > 0 ? keptFrom : dayToKeepFrom
+            let eraSchedule = rhythm.schedule(keptFrom: eraKeptFrom)!
+            let era = Commitment(era: onValue, schedule: eraSchedule, keptFrom: eraKeptFrom, kind: newKind)!
+
+            var candidateRoster = nextRoster
             guard
-                nextRoster.put(
-                    era: era, on: onValue, keptUntil: Self.dayBefore(dayToKeepFrom), under: category)
+                candidateRoster.put(
+                    era: era, on: onValue, keptUntil: Self.dayBefore(eraKeptFrom), under: category)
             else {
                 refuse(.changing(commitment, .notKept), on: nil)
                 return .notKept
             }
+
+            // Where, with the eras this leaves holding no day dropped, the era the new one gives
+            // way to already runs on the rhythm and kind just asked, this is a change back: no
+            // new era is put, and that era runs on as the newest with the schedule it had, an
+            // interval's start date included — `Roster.put`'s own mend only joins on schedule,
+            // which this change's own interval era, carrying its own new start date, never
+            // matches, so this checks the rhythm the screen was asked for instead. `design.md`
+            // § *Alike is the schedule at the roster, the rhythm at the screen*.
+            if let identityStart = candidateRoster.entries.firstIndex(where: {
+                $0.commitment.identity == onValue.identity
+            }), identityStart + 1 < candidateRoster.entries.count,
+                candidateRoster.entries[identityStart + 1].commitment.identity == onValue.identity,
+                Rhythm(candidateRoster.entries[identityStart + 1].commitment.schedule) == rhythm,
+                candidateRoster.entries[identityStart + 1].commitment.kind == newKind
+            {
+                let survivor = candidateRoster.entries[identityStart + 1]
+                candidateRoster.entries.remove(at: identityStart)
+                candidateRoster.entries[identityStart] = Roster.Entry(
+                    commitment: survivor.commitment, keptUntil: nil, category: normalizedCategory)
+            }
+
+            nextRoster = candidateRoster
         } else if let index = nextRoster.entries.firstIndex(where: {
             $0.commitment.identity == commitment.identity
         }) {
@@ -1000,17 +1036,21 @@ public final class CommitmentsScreen {
 
     /// Restarts `commitment`'s count from `day`: puts a new era on it as of the day before `day`
     /// — an era alike in name, interval and kind whose schedule starts on `day` and which is kept
-    /// from `day` — under the category `commitment` is under. Moves no record and writes nothing
-    /// at the record place: every record already made stays a record of that commitment, on the
-    /// day it was made for, whichever era now holds that day. See `openspec/changes/
-    /// give-a-commitment-an-identity/specs/commitment/spec.md` §§ *A commitments screen restarts
-    /// an interval commitment it keeps by putting a new era on it* and *A commitments screen
-    /// refuses a restart it cannot make, and tells each refusal apart*.
+    /// from `day` — under the category `commitment` is under. `day` may reach behind any later
+    /// era back to the day `commitment` is kept from, and the mend `Roster.put` runs replaces
+    /// every era begun after `day`, keeping the era `day` falls within until the day before.
+    /// Moves no record and writes nothing at the record place: every record already made stays a
+    /// record of that commitment, on the day it was made for, whichever era now holds that day.
+    /// See `openspec/changes/collapse-a-same-day-rhythm-change/specs/commitment/spec.md` §§ *A
+    /// commitments screen keeps no era a change or a restart leaves holding no day, and a change
+    /// back leaves the commitment as it was* and *A commitments screen refuses a restart it
+    /// cannot make, and tells each refusal apart*.
     ///
     /// Does nothing and says nothing when `commitment` cannot be restarted: not on `kept`, or not
     /// on an interval schedule. Otherwise refuses, in order: a day later than `dayToKeepFrom`; a
-    /// day earlier than `commitment`'s own `keptFrom`; a day `commitment` is already due on; a
-    /// day already recorded on that the restart would leave not due; and a place that could not
+    /// day earlier than `commitment`'s own `keptFrom`; a day `commitment`'s newest era is already
+    /// due on — asked of `commitment` itself, the newest era, whatever era `day` reaches behind;
+    /// a day already recorded on that the restart would leave not due; and a place that could not
     /// be written.
     @discardableResult public func restart(_ commitment: Commitment, from day: CalendarDate) -> Refusal? {
         // `kept.contains(commitment)` already guarantees `rosterStore` is not `nil` and holds an
@@ -1047,26 +1087,20 @@ public final class CommitmentsScreen {
         let restarted = Commitment(
             era: commitment, schedule: restartedSchedule, keptFrom: day, kind: commitment.kind)!
 
+        // One put, whatever day it reaches back to — `Roster.put`'s own mend cuts every era it
+        // reaches behind to the day before, newest first, and drops any that then holds no day,
+        // the newest never among them. A restart exactly on the day the commitment is kept from
+        // leaves the era it would otherwise give way to holding no day, and the mend drops it,
+        // so the restarted era stands alone; the mend never joins it with an older era, because a
+        // restart's own new start date never leaves one alike in schedule. `design.md` § *Alike
+        // is the schedule at the roster, the rhythm at the screen*.
         var nextRoster = rosterStore.roster
-        if currentKeptFrom == day {
-            // Restarting exactly on the day the commitment is already kept from leaves no era
-            // behind it: the one it would otherwise give way to would be kept from that same day
-            // and hold no day at all, which two eras of one identity may never both say
-            // (`RosterDocument.formRoster()`'s own guard against one identity kept from one day
-            // twice). The restarted era simply replaces the one already there.
-            guard nextRoster.change(commitment, to: restarted, under: entry.category) else {
-                refuse(.restarting(commitment, .notKept), on: nil)
-                return .notKept
-            }
-        } else {
-            guard
-                nextRoster.put(
-                    era: restarted, on: commitment, keptUntil: Self.dayBefore(day),
-                    under: entry.category)
-            else {
-                refuse(.restarting(commitment, .notKept), on: nil)
-                return .notKept
-            }
+        guard
+            nextRoster.put(
+                era: restarted, on: commitment, keptUntil: Self.dayBefore(day), under: entry.category)
+        else {
+            refuse(.restarting(commitment, .notKept), on: nil)
+            return .notKept
         }
 
         if let recordStore,
