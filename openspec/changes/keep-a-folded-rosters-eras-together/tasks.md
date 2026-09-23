@@ -30,9 +30,9 @@ fold tests. Nothing in `openspec/specs/` is edited here (rule 2), and no fixture
 
 ## 5. The records
 
-- [ ] 5.1 `CONTEXT.md` § *Fold* still describes what shipped; a sentence that turns out wrong is a
+- [x] 5.1 `CONTEXT.md` § *Fold* still describes what shipped; a sentence that turns out wrong is a
   **stop and a G4 question**, never an edit slipped in
-- [ ] 5.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
+- [x] 5.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## 6. The walk (ADR-1053)
 
