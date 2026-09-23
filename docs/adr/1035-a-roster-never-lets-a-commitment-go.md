@@ -1,8 +1,11 @@
 # 1035. A roster never lets a commitment go: removing is a third state, not a departure
 
-- Status: accepted
+- Status: superseded by ADR-1060
 - Date: 2026-09-07
 - Deciders: Diego Bugmann
+- Amended: 2026-09-23 — superseded by ADR-1060: `delete-a-commitment-for-good` (#304) retires the
+  removed state, and a commitment a person is done with is deleted with every record against it.
+  What the state still holds on a phone is erased at the upgrade.
 - Amended: 2026-09-22 — `give-a-commitment-an-identity` (#303) gives a commitment an identity, so
   typing a matching name, rhythm, day kept from and kind no longer reproduces a removed one; only
   its own identity does, and a matching name now takes on a new commitment instead. ADR-1059 is

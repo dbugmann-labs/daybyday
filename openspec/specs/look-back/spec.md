@@ -40,7 +40,7 @@ screen holds and SHALL write nothing at either place it keeps.
 - **WHEN** a commitments screen keeping a commitment named "Gym" is asked for a look-back at a
   commitment named "Journaling" that its roster does not hold
 - **THEN** it answers no look-back
-- **AND** asked for a look-back at a commitment its roster holds removed, it answers none either
+- **AND** asked for a look-back at a commitment it has deleted, it answers none either
 
 #### Scenario: a commitments screen that cannot read its roster or its record answers no look-back
 

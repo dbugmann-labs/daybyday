@@ -3,6 +3,9 @@
 - Status: accepted
 - Date: 2026-09-04
 - Deciders: Diego Bugmann
+- Amended: 2026-09-23 — `delete-a-commitment-for-good` (#304) lets a roster shrink to nothing. A
+  roster emptied by deletion is marked *emptied* and is not equal to one given nothing, so the rule
+  below stands in its letter and day one is never written over it; ADR-1060.
 
 ## Context
 

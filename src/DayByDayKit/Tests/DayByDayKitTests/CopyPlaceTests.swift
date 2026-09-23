@@ -611,9 +611,9 @@ func aFolderRefusedIsHeldApartFromARefusedChangeAndEndsWhenTheAppIsShownAgain() 
 
 @MainActor
 @Test(
-    "a commitment defined, stopped, taken up again and removed through a commitments screen each write a copy at the copy place"
+    "a commitment defined, stopped, taken up again and deleted through a commitments screen each write a copy at the copy place"
 )
-func aCommitmentDefinedStoppedTakenUpAgainAndRemovedThroughACommitmentsScreenEachWriteACopyAtTheCopyPlace()
+func aCommitmentDefinedStoppedTakenUpAgainAndDeletedThroughACommitmentsScreenEachWriteACopyAtTheCopyPlace()
     throws
 {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -652,10 +652,12 @@ func aCommitmentDefinedStoppedTakenUpAgainAndRemovedThroughACommitmentsScreenEac
     #expect(screen.keepAgain(gym) == nil)
     #expect(try rosterInCopy() == (try RosterStore(at: places.roster)).roster)
 
-    screen.askToRemove(gym)
+    screen.askToDelete(gym)
     screen.nameTypedBack = gym.name
-    #expect(screen.confirmRemoving() == nil)
+    #expect(screen.confirmDeleting() == nil)
     #expect(try rosterInCopy() == (try RosterStore(at: places.roster)).roster)
+    #expect(try rosterInCopy().commitments.isEmpty)
+    #expect(try rosterInCopy().stopped.isEmpty)
 
     #expect(copyPlace.lastCopy == Moment(on: monday, hour: 14, minute: 36)!)
 }

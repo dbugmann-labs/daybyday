@@ -76,13 +76,12 @@ func aCommitmentsScreenAnswersNoLookBackAtACommitmentOnNeitherOfItsLists() throw
     let journaling = Commitment(
         name: "Journaling", schedule: .weekdays([.monday, .wednesday, .saturday]),
         keptFrom: keptFrom)!
-    let keptUntil = CalendarDate(year: 2026, month: 2, day: 28)!
     let today = CalendarDate(year: 2026, month: 3, day: 15)!
 
     let rosterStore = try RosterStore(at: places.roster)
     try rosterStore.add(gym)
     try rosterStore.add(journaling)
-    try rosterStore.remove(journaling, keptUntil: keptUntil)
+    try rosterStore.delete(journaling)
     _ = try RecordStore(at: places.record)
 
     let screen = CommitmentsScreen(

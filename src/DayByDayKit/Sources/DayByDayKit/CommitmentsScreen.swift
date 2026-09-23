@@ -95,6 +95,35 @@ public final class CommitmentsScreen {
         }
 
         _ = try? recordStore.settle(rosterStore.fold)
+
+        // The records of a commitment this read erased are erased at the record place before any
+        // orphaned record is carried back — `design.md` § *Migration*. Where the record place
+        // cannot be written, this screen answers as one that cannot read its roster and writes
+        // nothing at either place: `openspec/changes/delete-a-commitment-for-good/specs/
+        // commitment/spec.md` § *Reading the places erases the records of a commitment a stored
+        // roster held removed*.
+        if !rosterStore.erased.isEmpty {
+            do {
+                try recordStore.erase(rosterStore.erased)
+            } catch {
+                // The roster itself was read fine, so `read.notRead` names neither place — but
+                // this screen now answers as one that cannot read its roster, so the roster is
+                // named here for `offersATakeOut` to read a take-out from, the same as any other
+                // roster it could not read: `design.md` § *Migration*. Inserted between whatever
+                // `read.notRead` already holds for the record and the one-offs, rather than
+                // appended, so the result keeps `openspec/specs/restore/spec.md` § *A commitments
+                // screen offers a take-out only while a store cannot be read, and says which*'s
+                // fixed record, roster, one-offs order even when the one-off place is also
+                // unreadable.
+                let recordNotRead = read.notRead.filter { $0.store == .record }
+                let oneOffsNotRead = read.notRead.filter { $0.store == .oneOffs }
+                return (
+                    nil, .notKept, nil, false,
+                    recordNotRead + [StoreNotRead(store: .roster, cause: .couldNotBeRead)]
+                        + oneOffsNotRead)
+            }
+        }
+
         let recordsBelongToNoCommitment = SaveInProgress.carryBackOrphanedRecords(
             in: recordStore, against: rosterStore.roster)
         return (rosterStore, rosterState, recordStore, recordsBelongToNoCommitment, read.notRead)
@@ -269,26 +298,26 @@ public final class CommitmentsScreen {
     /// The commitment a stop has been asked for and not yet confirmed or cancelled.
     public private(set) var awaitingConfirmation: Commitment?
 
-    /// The commitment a removal has been asked for and not yet confirmed or cancelled.
-    public private(set) var awaitingRemoval: Commitment?
+    /// The commitment a deletion has been asked for and not yet confirmed or cancelled.
+    public private(set) var awaitingDeletion: Commitment?
 
-    /// What has been typed back to confirm removing `awaitingRemoval`. Settable so the shell can
+    /// What has been typed back to confirm deleting `awaitingDeletion`. Settable so the shell can
     /// bind a text field to it; `design.md` § *The screen holds what has been typed* is why this
-    /// lives here rather than in `@State`. Cleared to `""` whenever a removal is asked for, when
+    /// lives here rather than in `@State`. Cleared to `""` whenever a deletion is asked for, when
     /// a second one is asked for, when either is cancelled or confirmed, and when the app is
     /// shown again.
     public var nameTypedBack: String = ""
 
-    /// Whether `nameTypedBack` matches the name of the commitment awaiting removal, once
-    /// surrounding blank space is trimmed from both. `false` when nothing is awaiting removal.
+    /// Whether `nameTypedBack` matches the name of the commitment awaiting deletion, once
+    /// surrounding blank space is trimmed from both. `false` when nothing is awaiting deletion.
     /// This is a fact about two strings, not words a person reads — ADR-1022, restated for
-    /// removal in `design.md` § *Nothing here is words a person reads*.
+    /// deletion in `design.md` § *Nothing here is words a person reads*.
     public var nameTypedBackMatches: Bool {
-        guard let awaitingRemoval else {
+        guard let awaitingDeletion else {
             return false
         }
         return nameTypedBack.trimmingCharacters(in: .whitespacesAndNewlines)
-            == awaitingRemoval.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            == awaitingDeletion.name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// A folder given as the copy place that does not hold a readable copy — refused for its own
@@ -304,13 +333,13 @@ public final class CommitmentsScreen {
 
     /// A change a commitments screen was asked for and refused: which one, and why. The commitment
     /// is carried on the changes that are asked about a commitment already on a list — stopping,
-    /// taking one up again, removing, moving and changing — so that a person is told beside the
+    /// taking one up again, deleting, moving and changing — so that a person is told beside the
     /// row they tapped rather than in one place for all of them.
     public enum RefusedChange: Equatable, Sendable {
         case defining(Refusal)
         case stopping(Commitment, Refusal)
         case keepingAgain(Commitment, Refusal)
-        case removing(Commitment, Refusal)
+        case deleting(Commitment, Refusal)
         case moving(Commitment, Refusal)
         case movingGroup(String, Refusal)
         /// A change asked for, refused, and held against the commitment it was asked to change
@@ -346,7 +375,7 @@ public final class CommitmentsScreen {
             case .defining(let refusal): return refusal
             case .stopping(_, let refusal): return refusal
             case .keepingAgain(_, let refusal): return refusal
-            case .removing(_, let refusal): return refusal
+            case .deleting(_, let refusal): return refusal
             case .moving(_, let refusal): return refusal
             case .movingGroup(_, let refusal): return refusal
             case .changing(_, let refusal): return refusal
@@ -673,8 +702,7 @@ public final class CommitmentsScreen {
     /// and the rhythm and the range or the target SHALL be its newest era's."
     public func whatItIsMadeOf(_ commitment: Commitment) -> Change? {
         guard let rosterStore,
-            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment }),
-            !entry.isRemoved
+            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
         else {
             return nil
         }
@@ -790,8 +818,7 @@ public final class CommitmentsScreen {
             era: earliestCommitment, schedule: rebuiltSchedule, keptFrom: newKeptFrom,
             kind: earliestCommitment.kind)!
         roster.entries[earliestSurvivingIndex] = Roster.Entry(
-            commitment: rebuilt, keptUntil: earliestEntry.keptUntil, isRemoved: earliestEntry.isRemoved,
-            category: earliestEntry.category)
+            commitment: rebuilt, keptUntil: earliestEntry.keptUntil, category: earliestEntry.category)
 
         for index in toDrop.sorted(by: >) {
             roster.entries.remove(at: index)
@@ -946,7 +973,7 @@ public final class CommitmentsScreen {
             let existing = nextRoster.entries[index]
             nextRoster.entries[index] = Roster.Entry(
                 commitment: existing.commitment, keptUntil: existing.keptUntil,
-                isRemoved: existing.isRemoved, category: normalizedCategory)
+                category: normalizedCategory)
         }
 
         if let recordStore,
@@ -1072,7 +1099,7 @@ public final class CommitmentsScreen {
             return
         }
         awaitingConfirmation = commitment
-        awaitingRemoval = nil
+        awaitingDeletion = nil
         nameTypedBack = ""
     }
 
@@ -1119,50 +1146,64 @@ public final class CommitmentsScreen {
         date.adding(days: -1) ?? date
     }
 
-    /// Puts `commitment` up for removal, replacing whatever was there, and leaves nothing
+    /// Puts `commitment` up for deletion, replacing whatever was there, and leaves nothing
     /// awaiting a stop — a screen has at most one change of any kind awaiting confirmation. Does
     /// nothing when neither `kept` nor `stopped` holds it.
-    public func askToRemove(_ commitment: Commitment) {
+    public func askToDelete(_ commitment: Commitment) {
         guard kept.contains(commitment) || stopped.contains(commitment) else {
             return
         }
-        awaitingRemoval = commitment
+        awaitingDeletion = commitment
         nameTypedBack = ""
         awaitingConfirmation = nil
     }
 
-    /// Leaves nothing awaiting removal and nothing typed back, and changes nothing else.
-    public func cancelRemoving() {
-        awaitingRemoval = nil
+    /// Leaves nothing awaiting deletion and nothing typed back, and changes nothing else.
+    public func cancelDeleting() {
+        awaitingDeletion = nil
         nameTypedBack = ""
     }
 
-    /// Removes whatever is awaiting removal, as of the day before the one this screen holds where
-    /// the roster is still keeping it — the same day-before rule and the same fallback
-    /// `confirmStopKeeping` uses — or the day it was already kept until where the roster had
-    /// already stopped keeping it, which `Roster.remove` enforces on its own by ignoring the date
-    /// it is handed there. Answers `nil` and does nothing when nothing is awaiting removal, and
-    /// when what has been typed back does not match: no refusal, because a name still being typed
-    /// is not a change anyone has asked for yet.
-    @discardableResult public func confirmRemoving() -> Refusal? {
-        guard let commitment = awaitingRemoval else {
+    /// Deletes whatever is awaiting deletion. Answers `nil` and does nothing when nothing is
+    /// awaiting deletion, and when what has been typed back does not match: no refusal, because a
+    /// name still being typed is not a change anyone has asked for yet.
+    ///
+    /// Erases the commitment's records at the record place first, writing nothing where it holds
+    /// none, then deletes it at the roster place; a roster refusal writes the record document this
+    /// screen read back, undoing the erasure — whole or nothing, at both places together. A screen
+    /// not keeping its roster, or not keeping its record, refuses without touching either place.
+    /// `design.md` § *Deletion writes the record place first and puts it back*.
+    @discardableResult public func confirmDeleting() -> Refusal? {
+        guard let commitment = awaitingDeletion else {
             return nil
         }
         guard nameTypedBackMatches else {
             return nil
         }
-        awaitingRemoval = nil
+        awaitingDeletion = nil
         nameTypedBack = ""
 
-        guard let rosterStore else {
-            refusedChange = .removing(commitment, .notKept)
+        guard let rosterStore, let recordStore else {
+            refusedChange = .deleting(commitment, .notKept)
+            return .notKept
+        }
+
+        let recordBeforeErasure = recordStore.history
+        let erasedSomething: Bool
+        do {
+            erasedSomething = try recordStore.erase([commitment.identity])
+        } catch {
+            refusedChange = .deleting(commitment, .notKept)
             return .notKept
         }
 
         do {
-            try rosterStore.remove(commitment, keptUntil: Self.dayBefore(dayToKeepFrom))
+            try rosterStore.delete(commitment)
         } catch {
-            refusedChange = .removing(commitment, .notKept)
+            if erasedSomething {
+                _ = try? recordStore.replace(with: recordBeforeErasure)
+            }
+            refusedChange = .deleting(commitment, .notKept)
             return .notKept
         }
 
@@ -1247,7 +1288,7 @@ public final class CommitmentsScreen {
     /// group nothing this screen keeps is under, or when `offset` is outside what that group
     /// draws, each a place that is not there rather than a move the roster refuses. Answers
     /// `nil` on the change being kept, including a move that leaves what is kept exactly where
-    /// it was. Neither `awaitingConfirmation` nor `awaitingRemoval` is touched: a move takes
+    /// it was. Neither `awaitingConfirmation` nor `awaitingDeletion` is touched: a move takes
     /// neither slot.
     @discardableResult public func move(
         _ commitment: Commitment, toOffset offset: Int, under category: String?
@@ -1649,7 +1690,7 @@ public final class CommitmentsScreen {
 
         refusedChange = nil
         awaitingConfirmation = nil
-        awaitingRemoval = nil
+        awaitingDeletion = nil
         nameTypedBack = ""
         copyRestored = copy.moment
         hasRestoredACopy = true
@@ -1678,8 +1719,7 @@ public final class CommitmentsScreen {
     /// second screen opening the same places*.
     public func lookBack(at commitment: Commitment) -> LookBack? {
         guard let rosterStore, let recordStore,
-            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment }),
-            !entry.isRemoved
+            let entry = rosterStore.roster.entries.first(where: { $0.commitment == commitment })
         else {
             return nil
         }
@@ -1695,7 +1735,7 @@ public final class CommitmentsScreen {
         dayToKeepFrom = today
         endedByAChangeOrByBeingShown()
         sheetRefusal = nil
-        awaitingRemoval = nil
+        awaitingDeletion = nil
         nameTypedBack = ""
         refusedCopyPlace = nil
 

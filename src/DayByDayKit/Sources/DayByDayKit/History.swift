@@ -225,6 +225,37 @@ public struct History: Hashable, Sendable {
         return moved
     }
 
+    /// Erases every tick, number, note and addition whose commitment's identity is one of
+    /// `identities`, from every date it was made on. Answers whether anything was erased.
+    /// Package-internal: `RecordStore.erase(_:)` is the one caller. `design.md` § *The seam* and
+    /// § *Deletion writes the record place first and puts it back* — the one act both a single
+    /// commitment's deletion and the upgrade's migration erasure share.
+    mutating func erase(_ identities: Set<Commitment.Identity>) -> Bool {
+        guard !identities.isEmpty else {
+            return false
+        }
+
+        var erased = false
+
+        let newTicks = ticks.filter { !identities.contains($0.commitment.identity) }
+        if newTicks.count != ticks.count { erased = true }
+        ticks = newTicks
+
+        let newNumbers = numbers.filter { !identities.contains($0.key.commitment.identity) }
+        if newNumbers.count != numbers.count { erased = true }
+        numbers = newNumbers
+
+        let newNotes = notes.filter { !identities.contains($0.key.commitment.identity) }
+        if newNotes.count != notes.count { erased = true }
+        notes = newNotes
+
+        let newAdditions = additions.filter { !identities.contains($0.key.commitment.identity) }
+        if newAdditions.count != additions.count { erased = true }
+        additions = newAdditions
+
+        return erased
+    }
+
     /// Carries every record held of `commitment` over to `changed`, on the same date each was
     /// made for. See `openspec/specs/record/spec.md` § *A history carries every record of one
     /// commitment over to another*.

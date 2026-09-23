@@ -448,7 +448,7 @@ func aTakeOutMadeLeavesACommitmentsScreensListsAndWhatItIsAwaitingExactlyAsTheyW
     let screen = CommitmentsScreen(
         asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
         keepingOneOffsAt: places.oneOffs)
-    screen.askToRemove(gym)
+    screen.askToDelete(gym)
     screen.nameTypedBack = "Gym"
 
     let result = screen.takeOut(writingInto: freshDirectory())
@@ -459,7 +459,7 @@ func aTakeOutMadeLeavesACommitmentsScreensListsAndWhatItIsAwaitingExactlyAsTheyW
 
     #expect(screen.kept.map(\.name) == ["Gym"])
     #expect(screen.stopped.map(\.name) == ["Journaling"])
-    #expect(screen.awaitingRemoval == gym)
+    #expect(screen.awaitingDeletion == gym)
     #expect(screen.nameTypedBack == "Gym")
     #expect(screen.awaitingConfirmation == nil)
 }

@@ -3,6 +3,8 @@
 - Status: accepted
 - Date: 2026-09-08
 - Deciders: Diego Bugmann
+- Amended: 2026-09-23 — the removed state is retired (ADR-1060); what this record says of removed
+  commitments now holds of stopped ones alone.
 
 ## Context
 

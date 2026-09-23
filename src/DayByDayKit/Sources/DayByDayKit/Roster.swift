@@ -1,18 +1,20 @@
 public struct Roster: Hashable, Sendable {
     /// A commitment this roster holds, and the day it was kept until when this roster has
     /// stopped keeping it. `keptUntil` is `nil` for a commitment this roster has not stopped
-    /// keeping. `isRemoved` is `true` for a commitment this roster has removed — always alongside
-    /// a `keptUntil` day, never on its own; `design.md` § *Removed is a third state on the entry,
-    /// not a fourth part on the commitment* is why the state lives here rather than on
-    /// `Commitment`.
+    /// keeping.
     struct Entry: Hashable, Sendable {
         let commitment: Commitment
         let keptUntil: CalendarDate?
-        let isRemoved: Bool
         let category: String?
     }
 
     var entries: [Entry]
+
+    /// Whether deleting left this roster holding nothing. `false` for a roster given no
+    /// commitment at all — the two are not the same roster. Set by `delete` when the last entry
+    /// goes, cleared by any `add`. `design.md` § *Emptied is a mark on the roster, not the file's
+    /// absence*.
+    var emptied: Bool
 
     /// A category, or no category at all, together with the commitments under it in the order
     /// the roster holds them. `design.md` § *The seam*.
@@ -29,6 +31,7 @@ public struct Roster: Hashable, Sendable {
     /// A roster holding no commitments.
     public init() {
         entries = []
+        emptied = false
     }
 
     /// The commitments this roster keeps, in the order it holds them. A commitment it has
@@ -43,9 +46,10 @@ public struct Roster: Hashable, Sendable {
     /// back at its newest era. An earlier era of a stopped commitment is in neither this list nor
     /// `commitments`: unlike `commitments`, which an earlier era's own kept-until day already
     /// excludes, an earlier era of an actively-kept commitment also carries one, so this walks
-    /// each identity once and asks only its first — its newest — era. A removed commitment is in
-    /// neither list. `openspec/changes/give-a-commitment-an-identity/design.md` § *Equality is
-    /// the identity, and an era is an entry*.
+    /// each identity once and asks only its first — its newest — era. A deleted commitment holds
+    /// no entry at all, so it is in neither list without a clause of its own.
+    /// `openspec/changes/give-a-commitment-an-identity/design.md` § *Equality is the identity,
+    /// and an era is an entry*.
     public var stopped: [Commitment] {
         var seenIdentities: Set<Commitment.Identity> = []
         var result: [Commitment] = []
@@ -53,7 +57,7 @@ public struct Roster: Hashable, Sendable {
             guard seenIdentities.insert(entry.commitment.identity).inserted else {
                 continue
             }
-            if entry.keptUntil != nil, !entry.isRemoved {
+            if entry.keptUntil != nil {
                 result.append(entry.commitment)
             }
         }
@@ -135,8 +139,8 @@ public struct Roster: Hashable, Sendable {
     }
 
     /// Adds `commitment` under `category` — or under none where `category` is `nil` — after
-    /// every commitment already held, and answers `true`. When this roster holds it stopped or
-    /// removed, takes it up again in the place it has, putting it under `category` whatever
+    /// every commitment already held, and answers `true`. When this roster holds it stopped,
+    /// takes it up again in the place it has, putting it under `category` whatever
     /// category it was under before. Answers `false` and changes nothing when this roster is
     /// already keeping it. `design.md` § *A commitment is offered with a category or without
     /// one*: this is the form used by something that has a category to say, and it always wins.
@@ -166,11 +170,12 @@ public struct Roster: Hashable, Sendable {
     /// commitment under, given the category it already holds (`nil` for one not held at all).
     /// Refuses wherever `commitment`'s name is already held by a kept or a stopped commitment
     /// other than itself — `nameIsHeldByAnother(_:notIdentity:)` — whether this is a brand-new
-    /// commitment or one taken up again by identity; a name a roster has only removed a
-    /// commitment under, and a name only an earlier era carries, are both free, because that
-    /// check already reads `commitments` and `stopped` alone. `openspec/changes/
-    /// give-a-commitment-an-identity/specs/commitment/spec.md` § *A roster refuses a commitment
-    /// whose name one it keeps or has stopped already has*.
+    /// commitment or one taken up again by identity; a name a roster has deleted a commitment
+    /// under, and a name only an earlier era carries, are both free, because that check already
+    /// reads `commitments` and `stopped` alone. A successful add or take-up-again clears
+    /// `emptied`: this roster is never both emptied and holding something.
+    /// `openspec/changes/give-a-commitment-an-identity/specs/commitment/spec.md` § *A roster
+    /// refuses a commitment whose name one it keeps or has stopped already has*.
     private mutating func addTakingUpAgain(
         _ commitment: Commitment, category: (String?) -> String?
     ) -> Bool {
@@ -185,21 +190,22 @@ public struct Roster: Hashable, Sendable {
             }
 
             entries[index] = Entry(
-                commitment: entries[index].commitment, keptUntil: nil, isRemoved: false,
+                commitment: entries[index].commitment, keptUntil: nil,
                 category: category(entries[index].category))
+            emptied = false
             return true
         }
 
         entries.append(
-            Entry(
-                commitment: commitment, keptUntil: nil, isRemoved: false, category: category(nil)))
+            Entry(commitment: commitment, keptUntil: nil, category: category(nil)))
+        emptied = false
         return true
     }
 
     /// Whether `name` — compared as two names are compared throughout this type: the same but
     /// for the case of a letter or blank space at either end — already belongs to a commitment
     /// this roster keeps or has stopped keeping, other than the one `identity` names. A
-    /// commitment this roster has removed holds no name against one offered, and neither does an
+    /// commitment this roster has deleted holds no name against one offered, and neither does an
     /// earlier era beyond the name its own commitment carries: `commitments` and `stopped` each
     /// already answer one commitment per identity, at its newest era alone.
     private func nameIsHeldByAnother(_ name: String, notIdentity identity: Commitment.Identity)
@@ -225,7 +231,7 @@ public struct Roster: Hashable, Sendable {
     /// Refuses, leaving this roster exactly as it was, where it does not hold `commitment` at
     /// all, and where `name` is already held by another commitment it keeps or has stopped
     /// keeping — `nameIsHeldByAnother(_:notIdentity:)`, which already reads `commitments` and
-    /// `stopped` alone, so a name only a removed commitment holds is free. Renaming a commitment
+    /// `stopped` alone, so a name only a deleted commitment held is free. Renaming a commitment
     /// to the name it already has is not refused: `nameIsHeldByAnother` excludes `commitment`'s
     /// own identity, so this never trips on itself. `openspec/changes/
     /// give-a-commitment-an-identity/design.md` § *The seam*.
@@ -243,8 +249,7 @@ public struct Roster: Hashable, Sendable {
         where entries[index].commitment.identity == commitment.identity {
             entries[index] = Entry(
                 commitment: Commitment(renaming: entries[index].commitment, to: name),
-                keptUntil: entries[index].keptUntil, isRemoved: entries[index].isRemoved,
-                category: entries[index].category)
+                keptUntil: entries[index].keptUntil, category: entries[index].category)
         }
         return true
     }
@@ -262,29 +267,26 @@ public struct Roster: Hashable, Sendable {
         }
 
         entries[index] = Entry(
-            commitment: entries[index].commitment, keptUntil: date, isRemoved: false,
+            commitment: entries[index].commitment, keptUntil: date,
             category: entries[index].category)
         return true
     }
 
-    /// Removes `commitment` as of `date`, the last day it was kept, and answers `true`. Where
-    /// this roster is still keeping it, `date` becomes the day it was kept until; where this
-    /// roster has already stopped keeping it, the day it already holds stands and `date` is not
-    /// used. Answers `false` and changes nothing when this roster does not hold `commitment`, or
-    /// has already removed it.
-    public mutating func remove(_ commitment: Commitment, keptUntil date: CalendarDate) -> Bool {
-        guard let index = entries.firstIndex(where: { $0.commitment == commitment }) else {
+    /// Deletes `commitment` — every era of it — and answers `true`, whatever state this roster
+    /// holds it in, kept or stopped. The roster answers with it on no date afterwards, and every
+    /// other commitment is left exactly as it was, in the order it was in. A roster this leaves
+    /// holding no commitment at all becomes `emptied`. Answers `false` and changes nothing when
+    /// this roster does not hold `commitment` — one it does not hold at all, one already deleted
+    /// included.
+    public mutating func delete(_ commitment: Commitment) -> Bool {
+        guard entries.contains(where: { $0.commitment.identity == commitment.identity }) else {
             return false
         }
 
-        guard !entries[index].isRemoved else {
-            return false
+        entries.removeAll { $0.commitment.identity == commitment.identity }
+        if entries.isEmpty {
+            emptied = true
         }
-
-        let keptUntil = entries[index].keptUntil ?? date
-        entries[index] = Entry(
-            commitment: entries[index].commitment, keptUntil: keptUntil, isRemoved: true,
-            category: entries[index].category)
         return true
     }
 
@@ -293,7 +295,7 @@ public struct Roster: Hashable, Sendable {
     /// category is kept exactly as given — no trimming, no folding of case. Changes nothing else
     /// about this roster: not the commitment, not its state, not its place in the order. Answers
     /// `false` and changes nothing when this roster is not currently keeping `commitment` — one
-    /// it does not hold at all, one it has stopped keeping, or one it has removed.
+    /// it does not hold at all, one it has stopped keeping, or one it has deleted.
     public mutating func put(_ commitment: Commitment, under category: String?) -> Bool {
         guard let index = entries.firstIndex(where: { $0.commitment == commitment }),
             entries[index].keptUntil == nil
@@ -303,7 +305,7 @@ public struct Roster: Hashable, Sendable {
 
         entries[index] = Entry(
             commitment: entries[index].commitment, keptUntil: entries[index].keptUntil,
-            isRemoved: entries[index].isRemoved, category: Self.normalized(category))
+            category: Self.normalized(category))
         return true
     }
 
@@ -315,7 +317,7 @@ public struct Roster: Hashable, Sendable {
     /// `commitment` had. Any date is accepted, including one earlier than the day the era it
     /// gives way to is kept from, which leaves that era holding no day at all. Answers `false`
     /// and changes nothing when this roster is not currently keeping `commitment` — one it does
-    /// not hold at all, one it has stopped keeping, or one it has removed — or when `era` does
+    /// not hold at all, one it has stopped keeping, or one it has deleted — or when `era` does
     /// not carry `commitment`'s identity, its name, or the sort of its kind.
     /// `openspec/changes/give-a-commitment-an-identity/specs/commitment/spec.md` § *A roster
     /// puts a new era on a commitment it is keeping, from a day*.
@@ -338,10 +340,10 @@ public struct Roster: Hashable, Sendable {
         }
 
         let precedingEntry = Entry(
-            commitment: entries[index].commitment, keptUntil: date, isRemoved: false,
+            commitment: entries[index].commitment, keptUntil: date,
             category: entries[index].category)
         entries[index] = Entry(
-            commitment: era, keptUntil: nil, isRemoved: false, category: Self.normalized(category))
+            commitment: era, keptUntil: nil, category: Self.normalized(category))
         entries.insert(precedingEntry, at: index + 1)
         return true
     }
@@ -359,9 +361,8 @@ public struct Roster: Hashable, Sendable {
     /// `entries` and nothing in it moves, though `category` is still applied. Every other offset
     /// takes `commitment` out of the sequence and puts it back immediately before whichever
     /// commitment stood at `offset` among the kept ones before the move, or after all of them
-    /// when `offset` is the number kept; a stopped or removed commitment lying between is passed
-    /// rather than pushed. Both paths answer `true` and report that the roster moved
-    /// `commitment`.
+    /// when `offset` is the number kept; a stopped commitment lying between is passed rather
+    /// than pushed. Both paths answer `true` and report that the roster moved `commitment`.
     public mutating func move(_ commitment: Commitment, toOffset offset: Int, under category: String?)
         -> Bool
     {
@@ -383,23 +384,20 @@ public struct Roster: Hashable, Sendable {
         // `sourceKeptIndex + 1` names the commitment that already follows it among the ones kept
         // — or, where the moved commitment is the last one kept, is the number kept, again where
         // it already stands. Neither asks a kept commitment to stand anywhere new, so nothing in
-        // the sequence moves, and a stopped or removed commitment lying between the two is not
-        // passed because nothing goes by it. Checking this before touching `entries` is what
-        // keeps that true: computing a destination from a post-removal index, as the general case
-        // below does, would walk the moved commitment past exactly such a commitment. The
-        // category is still applied here — a carve-out is about the sequence, not the category.
+        // the sequence moves, and a stopped commitment lying between the two is not passed
+        // because nothing goes by it. Checking this before touching `entries` is what keeps that
+        // true: computing a destination from a post-removal index, as the general case below
+        // does, would walk the moved commitment past exactly such a commitment. The category is
+        // still applied here — a carve-out is about the sequence, not the category.
         guard offset != sourceKeptIndex, offset != sourceKeptIndex + 1 else {
             entries[sourceIndex] = Entry(
                 commitment: entries[sourceIndex].commitment,
-                keptUntil: entries[sourceIndex].keptUntil,
-                isRemoved: entries[sourceIndex].isRemoved, category: normalized)
+                keptUntil: entries[sourceIndex].keptUntil, category: normalized)
             return true
         }
 
         var entry = entries.remove(at: sourceIndex)
-        entry = Entry(
-            commitment: entry.commitment, keptUntil: entry.keptUntil, isRemoved: entry.isRemoved,
-            category: normalized)
+        entry = Entry(commitment: entry.commitment, keptUntil: entry.keptUntil, category: normalized)
 
         // `offset == keptBeforeMove.count` means "after the last of them"; every other offset
         // names the commitment that stood there before the move, before which the moved
@@ -420,7 +418,7 @@ public struct Roster: Hashable, Sendable {
     /// Moves the **group** named by `category` to `offset`, a place counted over the groups this
     /// roster is keeping that are under a category, as they stand before the move, running from 0
     /// (before the first of them) to the number of them (after the last). Every commitment under
-    /// `category` — kept, stopped and removed alike — travels together as one block, keeping its
+    /// `category` — kept and stopped alike — travels together as one block, keeping its
     /// order against the others that travel; every commitment that does not travel stays in the
     /// order it was in against every other commitment that does not travel. `design.md` § *A group
     /// move is a block move*, ADR-1044.
@@ -429,7 +427,7 @@ public struct Roster: Hashable, Sendable {
     /// category of nothing but blank space is the group under no category. Answers `false` and
     /// changes nothing when `category` — normalized — names no group this roster is keeping under
     /// a category: no category at all, one nothing it holds has ever been under, or one only a
-    /// stopped or removed commitment is under. Answers `false` and changes nothing when `offset` is
+    /// stopped commitment is under. Answers `false` and changes nothing when `offset` is
     /// below 0 or above the number of groups kept under a category; not clamped.
     ///
     /// Two offsets name the place the group already has — the one it is at among the groups kept
@@ -441,9 +439,9 @@ public struct Roster: Hashable, Sendable {
     /// when `offset` is the number of them — that second anchor counted over every commitment under
     /// the target category, whatever state it is in, and not only the ones this roster is keeping.
     /// The first is measured over the kept ones because the offset itself is counted over the groups
-    /// a person can see; where a stopped or removed commitment under the target lies earlier than
-    /// its first kept one, the block lands after that stopped or removed commitment, so a date
-    /// before the stop reads the two groups the other way round from today. `design.md` § *Where the
+    /// a person can see; where a stopped commitment under the target lies earlier than its first
+    /// kept one, the block lands after that stopped commitment, so a date before the stop reads
+    /// the two groups the other way round from today. `design.md` § *Where the
     /// block is put*, ADR-1044. Both paths answer `true` and report that the roster moved the group.
     public mutating func move(group category: String?, toOffset offset: Int) -> Bool {
         guard let normalizedCategory = Self.normalized(category) else {
@@ -494,7 +492,7 @@ public struct Roster: Hashable, Sendable {
         // see, `design.md` § *Where the block is put*. Neither lookup can miss: the guard above
         // ruled out `offset == sourceGroupIndex` and `offset == sourceGroupIndex + 1`, so
         // `targetCategory` is never `normalizedCategory`, and `remaining` still holds every
-        // commitment under it — kept, stopped and removed alike — with at least one kept, because
+        // commitment under it — kept and stopped alike — with at least one kept, because
         // being in `categorisedOrder` is exactly what having one means.
         let targetCategory =
             offset == categorisedOrder.count ? categorisedOrder.last! : categorisedOrder[offset]
@@ -546,49 +544,14 @@ public struct Roster: Hashable, Sendable {
 
         entries[index] = Entry(
             commitment: changed, keptUntil: entries[index].keptUntil,
-            isRemoved: entries[index].isRemoved, category: Self.normalized(category))
-        return true
-    }
-
-    /// Supersedes `commitment`, which this roster is keeping, with `new` — as of `date`, the day
-    /// `commitment` was kept until — under `category`, or under none where `category` is `nil` or
-    /// holds nothing but blank space, and answers `true`. `new` takes the place `commitment` held
-    /// and keeps it; `commitment` is held **removed**, on `date`, immediately behind it — the
-    /// only place the two are ever read together. Any date is accepted, including one before the
-    /// day `commitment` is kept from, which leaves it kept on no date at all. Answers `false` and
-    /// changes nothing when this roster is not currently keeping `commitment` — one it does not
-    /// hold, one it has stopped keeping and one it has removed alike — or when `new` is a
-    /// commitment this roster already holds, kept, stopped or removed alike, which is also what
-    /// refuses superseding a commitment with itself.
-    public mutating func supersede(
-        _ commitment: Commitment, with new: Commitment, keptUntil date: CalendarDate,
-        under category: String?
-    ) -> Bool {
-        guard let index = entries.firstIndex(where: { $0.commitment == commitment }),
-            entries[index].keptUntil == nil
-        else {
-            return false
-        }
-
-        guard !entries.contains(where: { $0.commitment == new }) else {
-            return false
-        }
-
-        let normalized = Self.normalized(category)
-        let supersededEntry = Entry(
-            commitment: commitment, keptUntil: date, isRemoved: true,
-            category: entries[index].category)
-
-        entries[index] = Entry(
-            commitment: new, keptUntil: nil, isRemoved: false, category: normalized)
-        entries.insert(supersededEntry, at: index + 1)
+            category: Self.normalized(category))
         return true
     }
 
     /// The commitments this roster had not stopped keeping on `date`, in the order it holds
     /// them. It applies no other rule: a commitment's own day it is kept from and its
-    /// schedule are the commitment's answer, not the roster's. A removed commitment answers
-    /// exactly as a stopped one does — invisible to removal is the whole point.
+    /// schedule are the commitment's answer, not the roster's. A deleted commitment holds no
+    /// entry at all, so it never answers on any date without a clause of its own.
     public func commitments(on date: CalendarDate) -> [Commitment] {
         entries.compactMap { entry in
             guard let keptUntil = entry.keptUntil else {

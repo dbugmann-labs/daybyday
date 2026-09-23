@@ -166,18 +166,42 @@ public final class DayScreen {
 
         let openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: dayOne)
 
-        let opened = Self.open(at: recordPlace)
-        if let recordStore = opened.store, openedRoster.state == .kept {
-            _ = try? recordStore.settle(openedRoster.fold)
-            SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
+        var recordStore = Self.open(at: recordPlace)
+        if let store = recordStore.store, openedRoster.state == .kept {
+            recordStore = Self.settleAndErase(
+                store, fold: openedRoster.fold, erased: openedRoster.erased,
+                against: openedRoster.roster)
         }
 
         let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
 
         return (
-            opened.store, opened.state, openedRoster.roster, openedRoster.state,
+            recordStore.store, recordStore.state, openedRoster.roster, openedRoster.state,
             openedOneOffs.store, openedOneOffs.state
         )
+    }
+
+    /// Settles `store`'s history onto `fold`, erases the records of `erased` and carries any
+    /// orphaned record back against `roster`, in that order — `design.md` § *Migration*. Where
+    /// the erasure cannot be written, `store` is answered without its record, `.unreadable`:
+    /// `openspec/changes/delete-a-commitment-for-good/specs/commitment/spec.md` § *Reading the
+    /// places erases the records of a commitment a stored roster held removed*.
+    private static func settleAndErase(
+        _ store: RecordStore, fold: [CommitmentRecord: Commitment.Identity?],
+        erased: Set<Commitment.Identity>, against roster: Roster
+    ) -> (store: RecordStore?, state: RecordState) {
+        _ = try? store.settle(fold)
+
+        if !erased.isEmpty {
+            do {
+                try store.erase(erased)
+            } catch {
+                return (nil, .unreadable)
+            }
+        }
+
+        SaveInProgress.carryBackOrphanedRecords(in: store, against: roster)
+        return (store, .kept)
     }
 
     /// Opens the record at `place`, telling apart the one refusal a person can act on
@@ -241,18 +265,21 @@ public final class DayScreen {
     /// roster, and day one is not retried.
     private static func openRoster(
         at place: URL, takingOnIfEmpty dayOne: [Commitment]
-    ) -> (state: RosterState, roster: Roster, fold: [CommitmentRecord: Commitment.Identity?]) {
+    ) -> (
+        state: RosterState, roster: Roster, fold: [CommitmentRecord: Commitment.Identity?],
+        erased: Set<Commitment.Identity>
+    ) {
         let store: RosterStore
         do {
             store = try RosterStore(at: place)
         } catch RosterStoreError.laterForm {
-            return (.writtenByALaterVersion, Roster(), [:])
+            return (.writtenByALaterVersion, Roster(), [:], [])
         } catch {
-            return (.notKept, Roster(), [:])
+            return (.notKept, Roster(), [:], [])
         }
 
         guard store.roster == Roster() else {
-            return (.kept, store.roster, store.fold)
+            return (.kept, store.roster, store.fold, store.erased)
         }
 
         do {
@@ -283,10 +310,10 @@ public final class DayScreen {
                         .error("\(message, privacy: .public)")
                 }
             }
-            return (.notKept, Roster(), [:])
+            return (.notKept, Roster(), [:], [])
         }
 
-        return (.kept, store.roster, store.fold)
+        return (.kept, store.roster, store.fold, store.erased)
     }
 
     /// The day view the person is looking at, as the record stood when it was last read.
@@ -920,14 +947,14 @@ public final class DayScreen {
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
 
-        let openedRecord = Self.open(at: recordPlace)
+        var openedRecord = Self.open(at: recordPlace)
+        if let store = openedRecord.store, openedRoster.state == .kept {
+            openedRecord = Self.settleAndErase(
+                store, fold: openedRoster.fold, erased: openedRoster.erased,
+                against: openedRoster.roster)
+        }
         self.recordStore = openedRecord.store
         self.recordState = openedRecord.state
-
-        if let recordStore = openedRecord.store, openedRoster.state == .kept {
-            _ = try? recordStore.settle(openedRoster.fold)
-            SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
-        }
 
         let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
         self.oneOffStore = openedOneOffs.store
@@ -972,7 +999,10 @@ public final class DayScreen {
             return
         }
 
-        let openedRoster: (state: RosterState, roster: Roster, fold: [CommitmentRecord: Commitment.Identity?])
+        let openedRoster: (
+            state: RosterState, roster: Roster, fold: [CommitmentRecord: Commitment.Identity?],
+            erased: Set<Commitment.Identity>
+        )
 
         if recordState == .kept {
             // The save in progress is read here, before the roster is ever handed day one to
@@ -989,14 +1019,14 @@ public final class DayScreen {
             if SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) {
                 openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: commitments)
 
-                let opened = Self.open(at: recordPlace)
+                var opened = Self.open(at: recordPlace)
+                if let store = opened.store, openedRoster.state == .kept {
+                    opened = Self.settleAndErase(
+                        store, fold: openedRoster.fold, erased: openedRoster.erased,
+                        against: openedRoster.roster)
+                }
                 self.recordStore = opened.store
                 self.recordState = opened.state
-
-                if let recordStore = opened.store, openedRoster.state == .kept {
-                    _ = try? recordStore.settle(openedRoster.fold)
-                    SaveInProgress.carryBackOrphanedRecords(in: recordStore, against: openedRoster.roster)
-                }
             } else {
                 openedRoster = Self.openRoster(at: rosterPlace, takingOnIfEmpty: [])
                 self.recordStore = nil

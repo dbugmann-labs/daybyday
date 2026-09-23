@@ -352,9 +352,9 @@ func aCommitmentsScreenAskedToRestoreSaysTheCopysMomentAndWhatTheCopyAndThePhone
         screen.define(name: "Reading", on: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]), keptFrom: keptFrom, under: nil)
             == nil)
     let gym = screen.kept.first { $0.name == "Gym" }!
-    screen.askToRemove(gym)
+    screen.askToDelete(gym)
     screen.nameTypedBack = "Gym"
-    #expect(screen.confirmRemoving() == nil)
+    #expect(screen.confirmDeleting() == nil)
     try oneOffStore.add(OneOff(name: "Post the form", date: CalendarDate(year: 2026, month: 9, day: 1)!)!)
 
     let rosterBytesBeforeAsk = try Data(contentsOf: places.roster)
@@ -481,7 +481,7 @@ func aRestoreAskedForAndCancelledLeavesACommitmentsScreenAndItsThreePlacesAsThey
         return
     }
 
-    screen.askToRemove(gym)
+    screen.askToDelete(gym)
     screen.nameTypedBack = "Gym"
 
     let rosterBytesBefore = try Data(contentsOf: places.roster)
@@ -493,7 +493,7 @@ func aRestoreAskedForAndCancelledLeavesACommitmentsScreenAndItsThreePlacesAsThey
 
     #expect(screen.awaitingRestore == nil)
     #expect(screen.copyRestored == nil)
-    #expect(screen.awaitingRemoval == gym)
+    #expect(screen.awaitingDeletion == gym)
     #expect(screen.nameTypedBack == "Gym")
     #expect(try Data(contentsOf: places.roster) == rosterBytesBefore)
     #expect(FileManager.default.fileExists(atPath: places.record.path) == recordExistedBefore)
@@ -791,7 +791,7 @@ func aCommitmentsScreenThatRestoredACopyListsWhatTheCopyHoldsAndHasNothingAwaiti
     }
 
     #expect(screen.keepAgain(journaling) == nil)
-    screen.askToRemove(gym)
+    screen.askToDelete(gym)
     screen.nameTypedBack = "Gym"
 
     #expect(screen.askToRestore(from: copyURL) == nil)
@@ -799,7 +799,7 @@ func aCommitmentsScreenThatRestoredACopyListsWhatTheCopyHoldsAndHasNothingAwaiti
 
     #expect(screen.kept.map(\.name) == ["Gym"])
     #expect(screen.stopped.map(\.name) == ["Journaling"])
-    #expect(screen.awaitingRemoval == nil)
+    #expect(screen.awaitingDeletion == nil)
     #expect(screen.nameTypedBack == "")
     #expect(screen.awaitingRestore == nil)
 
@@ -1261,4 +1261,180 @@ func aRestoreInProgressThatCannotBeUndoneLeavesAScreenReadingNothingFromTheThree
         #expect(try Data(contentsOf: places.oneOffs) == oneOffBytesBefore)
         #expect(FileManager.default.fileExists(atPath: restoreInProgressPlace.path))
     }
+}
+
+// MARK: - delete-a-commitment-for-good
+
+@MainActor
+@Test("a copy of an emptied roster restores an emptied roster, and a day screen takes nothing on")
+func aCopyOfAnEmptiedRosterRestoresAnEmptiedRosterAndADayScreenTakesNothingOn() throws {
+    let places = freshThreePlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let journaling = Commitment(name: "Journaling", schedule: allWeekdays, keptFrom: keptFrom)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs)
+    screen.askToDelete(gym)
+    screen.nameTypedBack = "Gym"
+    #expect(screen.confirmDeleting() == nil)
+
+    let copyResult = screen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!, writingInto: freshCopyDirectory())
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+
+    #expect(
+        screen.define(
+            name: "Run",
+            on: .weekdays([
+                .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+            ]), keptFrom: keptFrom, under: nil) == nil)
+
+    #expect(screen.askToRestore(from: copyURL) == nil)
+    #expect(screen.confirmRestoring() == nil)
+
+    #expect(screen.kept == [])
+    #expect(screen.stopped == [])
+
+    let dayScreen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOffs)
+
+    #expect(dayScreen.dayView.rows.isEmpty)
+    #expect(
+        !(try RosterStore(at: places.roster).roster.commitments(on: monday).contains {
+            $0.name == "Journaling"
+        }))
+}
+
+@MainActor
+@Test("a copy made after a deletion holds neither the commitment nor its records")
+func aCopyMadeAfterADeletionHoldsNeitherTheCommitmentNorItsRecords() throws {
+    let places = freshThreePlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+    let gym = Commitment(name: "Gym", schedule: allWeekdays, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: allWeekdays, keptFrom: keptFrom)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    try rosterStore.add(run)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+    try recordStore.add(Tick(run, on: august3rd)!)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs)
+    screen.askToDelete(gym)
+    screen.nameTypedBack = "Gym"
+    #expect(screen.confirmDeleting() == nil)
+
+    let copyResult = screen.makeACopy(
+        asOf: Moment(on: monday, hour: 14, minute: 32)!, writingInto: freshCopyDirectory())
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+
+    let copy = try CopyDocument.read(Data(contentsOf: copyURL)).get()
+    #expect(copy.roster.commitments.map(\.name) == ["Run"])
+    #expect(copy.history.datesRecorded(for: run) == [august3rd])
+    #expect(copy.history.datesRecorded(for: gym).isEmpty)
+}
+
+@MainActor
+@Test("a copy holding a removed commitment restores none of it and none of its records")
+func aCopyHoldingARemovedCommitmentRestoresNoneOfItAndNoneOfItsRecords() throws {
+    let places = freshThreePlaces()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let roster = """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """
+    let record = """
+        {
+          "version": 6,
+          "ticks": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "date": { "year": 2026, "month": 8, "day": 3 }
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "date": { "year": 2026, "month": 8, "day": 3 }
+            }
+          ],
+          "numbers": [],
+          "notes": [],
+          "additions": []
+        }
+        """
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOffs)
+    let file = freshPickedFile()
+    try FileManager.default.createDirectory(
+        at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try copyJSON(record: record, roster: roster).write(to: file)
+
+    #expect(screen.askToRestore(from: file) == nil)
+    #expect(screen.awaitingRestore?.copy.kept == 1)
+    #expect(screen.awaitingRestore?.copy.stopped == 0)
+
+    #expect(screen.confirmRestoring() == nil)
+
+    #expect(screen.kept.map(\.name) == ["Run"])
+    #expect(screen.stopped == [])
+    let laterRecordStore = try RecordStore(at: places.record)
+    let run = try #require(screen.kept.first)
+    #expect(laterRecordStore.history.datesRecorded(for: run) == [
+        CalendarDate(year: 2026, month: 8, day: 3)!
+    ])
+    #expect(laterRecordStore.history.commitmentsWithRecords().count == 1)
 }
