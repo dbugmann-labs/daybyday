@@ -1906,6 +1906,15 @@ and called it clutter, breaking the run of the page for something its head alrea
 is where a rhythm is said, and now the only place: the newest era's rhythm in words, and the
 earliest era's day **kept from**.
 
+**Amended 2026-09-23**, at the grill of `look-back-at-a-total` (#275), which answers what a total's
+page draws. It draws a **graph** of its day sums with a **target rule** across, read exactly as a
+number's graph is read — the newest month in view, the same picker, the same sideways scroll — and
+no fraction of any kind: no line and no whole, although a total's day can be kept, because the rule
+already says which days reached it. Unlike a number's, its points are marked **kept** or not, the
+owner's call against the recommendation that the rule was enough. A page with nothing added yet
+draws its head and says "Nothing added yet." — no graph and no rule. What a note's page draws is
+#276's.
+
 **Graph** — what a number commitment's **look-back** draws: one unbroken trace through its
 **points**, a point for each day that holds a number, over a dates axis running from the day it is
 **kept from** through today or through the day it was **kept until**. The days between two points
@@ -1924,6 +1933,22 @@ the rhythm-changed line. Agreed 2026-09-17 at the grill of `look-back-at-a-numbe
 replaces that last sentence and the vertical rule it names. A **line** on this page is a month line
 or a week line, those two and no third; the graph draws nothing where one **era** gives way to the
 next, and its trace crosses a boundary the way it crosses any two days that hold a number.
+
+**Amended 2026-09-23**, at the grill of `look-back-at-a-total` (#275). A total commitment's
+look-back draws a graph too, one point for each day holding an **addition**, at that day's sum; a
+day with none is nothing on it, as a day with no number is. Each point is marked **kept** where its
+sum reached the **target** of the era holding its day, and is said as that sum of that target —
+"150 of 120" — the words the day screen's row uses. Its values axis runs from zero to whichever is
+greater, the highest sum or the highest target, because a sum is an amount and its heights should
+compare honestly, and the **target rule** must stay in view.
+
+**Target rule** — the horizontal mark across a total commitment's **graph** at the **target** each
+day was owed, running the whole dates axis, days with no point included, and labelled with that target. It follows the era
+holding each day, so it steps where a target changed: the step is the target, not a mark of the
+**era** boundary, and a boundary where only the rhythm changed draws nothing. Each run of days owed
+one target is a **stretch** of the rule, and a rule with no step is one stretch. Called a rule because a
+**line** on the look-back is a row of text. Agreed 2026-09-23 at the grill of
+`look-back-at-a-total` (#275).
 
 **Era** — one commitment's span of being kept on one rhythm: from the day it is kept from through
 the day it was kept until, or through today while it is still kept. A **rhythm change** or an
