@@ -3177,3 +3177,61 @@ func foldingARosterChangesNothingAtItsPlaceAndTheNextChangeIsWrittenInTheFormThi
     #expect(later.roster.stopped.isEmpty)
     #expect(laterDocument.version == RosterDocument.currentVersion)
 }
+
+@Test(
+    "a commitment's eras fold together though the stored roster held another commitment's entry between them"
+)
+func aCommitmentsErasFoldTogetherThoughTheStoredRosterHeldAnotherCommitmentsEntryBetweenThem()
+    throws
+{
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 3, "day": 1 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Run",
+                "keptFrom": { "year": 2026, "month": 2, "day": 1 },
+                "schedule": { "weekdays": ["monday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday", "saturday"] }
+              },
+              "keptUntil": { "year": 2026, "month": 2, "day": 28 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+
+    #expect(store.roster.commitments.map(\.name) == ["Gym", "Run"])
+    let gym = store.roster.commitments[0]
+    let run = store.roster.commitments[1]
+    #expect(store.roster.eras(of: gym).map(\.rhythmInWords) == ["Tue, Thu", "Mon, Wed, Sat"])
+    #expect(store.roster.eras(of: run).map(\.rhythmInWords) == ["Mon"])
+    #expect(store.roster.entries.map(\.commitment.name) == ["Gym", "Gym", "Run"])
+    #expect(store.roster.keptFrom(of: gym) == CalendarDate(year: 2026, month: 1, day: 1)!)
+}
