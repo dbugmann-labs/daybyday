@@ -133,22 +133,16 @@ public struct LookBack: Hashable, Sendable {
         let eras = chain(from: commitment, end: frontEnd, entries: entries)
         let earliestEra = eras.last!
 
-        if case .number = commitment.kind {
+        switch commitment.kind {
+        case .number, .total:
             let graph = Self.graph(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
             return LookBack(
                 name: commitment.name, rhythmInWords: commitment.rhythmInWords,
                 keptFromInWords: LookBackWords.day(earliestEra.start),
                 keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
                 graph: graph)
-        }
-
-        if case .total = commitment.kind {
-            let graph = Self.graph(from: earliestEra.start, through: frontEnd, eras: eras, history: history)
-            return LookBack(
-                name: commitment.name, rhythmInWords: commitment.rhythmInWords,
-                keptFromInWords: LookBackWords.day(earliestEra.start),
-                keptUntilInWords: keptUntil.map(LookBackWords.day), whole: nil, lines: [],
-                graph: graph)
+        default:
+            break
         }
 
         guard case .tick = commitment.kind else {
