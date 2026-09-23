@@ -9922,9 +9922,7 @@ func aDayScreensDayPickerNoLongerReachesBackToACommitmentItsRosterHasDeleted() t
 }
 
 @MainActor
-@Test(
-    "a day screen opened on a roster whose last commitment was deleted takes nothing on — catches day one written over an emptied roster"
-)
+@Test("a day screen opened on a roster whose last commitment was deleted takes nothing on")
 func aDayScreenOpenedOnARosterWhoseLastCommitmentWasDeletedTakesNothingOn() throws {
     let (place, rosterPlace) = freshPlaces()
     let oneOffPlace = freshOneOffPlace()

@@ -1266,9 +1266,7 @@ func aRestoreInProgressThatCannotBeUndoneLeavesAScreenReadingNothingFromTheThree
 // MARK: - delete-a-commitment-for-good
 
 @MainActor
-@Test(
-    "a copy of an emptied roster restores an emptied roster, and a day screen takes nothing on — catches a copy dropping the mark"
-)
+@Test("a copy of an emptied roster restores an emptied roster, and a day screen takes nothing on")
 func aCopyOfAnEmptiedRosterRestoresAnEmptiedRosterAndADayScreenTakesNothingOn() throws {
     let places = freshThreePlaces()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!

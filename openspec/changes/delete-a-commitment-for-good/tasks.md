@@ -145,22 +145,22 @@ to it, one red-green cycle.
 
 ## 10. The walk
 
-- [ ] 10.1 The delete sheet on "Gym" with no copy place picked and "Gm" typed — *Delete* disabled, no footer.
-- [ ] 10.2 The same sheet after a copy place is picked and "Gym" typed — *Delete* enabled, the footer naming Files.
-- [ ] 10.3 The commitments screen after "Gym" is deleted from the kept list and a stopped one from the stopped list — neither shown.
-- [ ] 10.4 The day screen on a past day "Gym" was ticked on — drawn without a "Gym" row.
-- [ ] 10.5 The last commitment deleted, the app relaunched — the day screen holding no commitment rows.
-- [ ] 10.6 Post the pictures to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, and
-  tick this on the comment's URL — that command and never `gh pr comment --attach`.
+- [x] 10.1 The delete sheet on "Gym" with no copy place picked and "Gm" typed — *Delete* disabled, no footer.
+- [x] 10.2 The same sheet after a copy place is picked and "Gym" typed — *Delete* enabled, the footer naming Files.
+- [x] 10.3 The commitments screen after "Gym" is deleted from the kept list and a stopped one from the stopped list — neither shown.
+- [x] 10.4 The day screen on a past day "Gym" was ticked on — drawn without a "Gym" row.
+- [x] 10.5 The last commitment deleted, the app relaunched — the day screen holding no commitment rows.
+- [x] 10.6 Post the pictures to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, and
+  tick this on the comment's URL — that command and never `gh pr comment --attach`. https://github.com/dbugmann-labs/daybyday/pull/313#issuecomment-5793861354
 
 ## 11. Gates and the archive handover
 
-- [ ] 11.1 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` reporting every test
+- [x] 11.1 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` reporting every test
   passing, the count read off the run.
-- [ ] 11.2 `openspec validate delete-a-commitment-for-good --strict` exits 0 and `pnpm run checks`
+- [x] 11.2 `openspec validate delete-a-commitment-for-good --strict` exits 0 and `pnpm run checks`
   is clean but for what it is expected to warn.
 - [ ] 11.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
-- [ ] 11.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
+- [x] 11.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
   that the change folder is committed, `tasks.md` has no other unticked box and the walk comment's
   URL is in § 10.6. The janitor then runs `/opsx:archive` and checks afterwards that the four specs
   carry every ADDED requirement, no REMOVED one and the MODIFIED ones whole. **Any drift there is a
