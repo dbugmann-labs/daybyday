@@ -21,9 +21,9 @@ final class WalkthroughUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        // The *Today* button is drawn on every day but tappable only off the today the screen was
-        // handed: disabled there (`add-offered-today-control`, #174, then drawn greyed rather than
-        // hidden), so both states are proved here rather than assumed. The move between them is
+        // The *Today* button is offered only off the today the screen was handed
+        // (`add-offered-today-control`, #174); on that today its slot holds a green `TodayMarker`
+        // pill that is not a button, so both states are proved here rather than assumed. The move between them is
         // ADR-1042's horizontal swipe, the same recognizer a row that offers nothing still sits
         // under. `add-adjacent-day-views` pages the day's rows across three `List`s rather than one
         // (`design.md` § *What the shell draws*), so `firstMatch` no longer names a particular one
@@ -33,9 +33,9 @@ final class WalkthroughUITests: XCTestCase {
         _ = list.waitForExistence(timeout: 60)
         let todayButton = app.buttons["Today"]
         XCTAssertTrue(
-            todayButton.waitForExistence(timeout: 60),
-            "the day screen drew no Today button on today")
-        XCTAssertFalse(todayButton.isEnabled, "the Today button was tappable on today itself")
+            app.staticTexts["TodayMarker"].waitForExistence(timeout: 60),
+            "the day screen drew no Today marker on today")
+        XCTAssertFalse(todayButton.exists, "the Today button was offered on today itself")
         list.swipeRight()
 
         // The three fixed controls of the day screen. If the body failed to build, or a binding
