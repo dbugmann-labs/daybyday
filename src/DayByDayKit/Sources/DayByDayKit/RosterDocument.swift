@@ -54,6 +54,12 @@ struct RosterDocument: Codable {
         let schedule: Schedule
         let keptFrom: CalendarDate
         let kind: Commitment.Kind
+
+        init(_ commitment: Commitment) {
+            schedule = commitment.schedule
+            keptFrom = commitment.keptFrom
+            kind = commitment.kind
+        }
     }
 
     /// Re-forms `roster` by rebuilding its entries directly, in the document's own order, rather
@@ -89,8 +95,7 @@ struct RosterDocument: Codable {
                 currentIdentity = commitment.identity
                 shapesInCurrentRun = []
             }
-            let shape = EraShape(
-                schedule: commitment.schedule, keptFrom: commitment.keptFrom, kind: commitment.kind)
+            let shape = EraShape(commitment)
             guard shapesInCurrentRun.insert(shape).inserted else {
                 return nil
             }
@@ -137,15 +142,28 @@ struct RosterDocument: Codable {
     /// frontmost unresolved end of it, and `frontIndex` that era's own place among `commitments`,
     /// for *the nearest in the roster's order* tie-break. `representative` carries the identity
     /// and the name every era of it shares; `Commitment(era of:)` reads nothing else from it.
+    /// `headIndex` is the place, among `commitments`, of the entry this chain was made from — set
+    /// once and never moved, unlike `frontIndex` — so the roster a fold answers with can stand its
+    /// commitments in that order once every chain has gathered its own eras. `eras` gathers those
+    /// eras as they attach, the head first, so it is already newest-first by construction; `shapes`
+    /// is every era's shape gathered so far, the head's included, so an entry alike in every part
+    /// with one already in this chain — the same era held twice — is caught on attach, on the same
+    /// footing as `formRoster()`'s own duplicate guard for the form this app writes.
     private final class Chain {
         let representative: Commitment
+        let headIndex: Int
         var front: CalendarDate
         var frontIndex: Int
+        var eras: [Roster.Entry]
+        var shapes: Set<EraShape>
 
-        init(representative: Commitment, front: CalendarDate, frontIndex: Int) {
+        init(representative: Commitment, headIndex: Int, head: Roster.Entry) {
             self.representative = representative
-            self.front = front
-            self.frontIndex = frontIndex
+            self.headIndex = headIndex
+            self.front = representative.keptFrom
+            self.frontIndex = headIndex
+            self.eras = [head]
+            self.shapes = [EraShape(representative)]
         }
     }
 
@@ -153,13 +171,21 @@ struct RosterDocument: Codable {
     /// kept before a commitment had an identity* describe — `nil` where any one entry could not be
     /// formed, or where an entry is held removed with no day it was kept until, exactly as
     /// `formRoster()` refuses those. Every entry this document keeps or has stopped keeping becomes
-    /// a commitment of its own, in the place, the state and the category it was held in. Every
-    /// removed entry is then judged in the document's own order: one whose name and kind sort match
-    /// a commitment already placed, and whose day kept until is the day before that commitment's
-    /// current frontmost era, becomes an earlier era of it — the nearest such commitment, by that
-    /// front's own place, where more than one answers. One that chains to nothing but whose name
-    /// and kind sort match a commitment this document itself keeps or has stopped becomes a stopped
+    /// a commitment of its own, in the state and the category it was held in. Every removed entry
+    /// is then judged in the document's own order: one whose name and kind sort match a commitment
+    /// already placed, and whose day kept until is the day before that commitment's current
+    /// frontmost era, becomes an earlier era of it — the nearest such commitment, by that front's
+    /// own place, where more than one answers. One that chains to nothing but whose name and kind
+    /// sort match a commitment this document itself keeps or has stopped becomes a stopped
     /// commitment of its own. Every other removed entry is dropped.
+    ///
+    /// The roster this answers with holds its commitments in the order of the entry each was made
+    /// from — never the order a chain finished gathering eras in — with each commitment's own eras
+    /// gathered together immediately behind it, newest first: `design.md` § *The eras gather
+    /// behind their commitment; the commitments keep their order*. A document holding one era
+    /// twice, on either path — as two entries this document itself keeps or has stopped, or as an
+    /// era attaching to a chain that already holds its shape — is refused rather than folded, on
+    /// the same footing as *One era held twice in a stored form-4 roster is refused, not folded*.
     func folded() -> Fold? {
         struct Decoded {
             let record: CommitmentRecord
@@ -197,7 +223,6 @@ struct RosterDocument: Codable {
         }
 
         var identities: [CommitmentRecord: Commitment.Identity?] = [:]
-        var resultEntries: [Int: Roster.Entry] = [:]
 
         // Every entry this document keeps or has stopped keeping becomes a commitment of its own
         // straightaway — each a chain a removed entry may still attach to. Two such entries alike
@@ -212,13 +237,12 @@ struct RosterDocument: Codable {
             guard mintedBareShapes.insert(CommitmentRecord.bare(item.commitment)).inserted else {
                 return nil
             }
-            chains.append(
-                Chain(representative: item.commitment, front: item.commitment.keptFrom, frontIndex: index))
-            originallyKeptOrStopped.append((item.commitment.name, item.commitment.kind))
-            identities.updateValue(item.commitment.identity, forKey: CommitmentRecord.bare(item.commitment))
-            resultEntries[index] = Roster.Entry(
+            let head = Roster.Entry(
                 commitment: item.commitment, keptUntil: item.keptUntil, isRemoved: false,
                 category: item.category)
+            chains.append(Chain(representative: item.commitment, headIndex: index, head: head))
+            originallyKeptOrStopped.append((item.commitment.name, item.commitment.kind))
+            identities.updateValue(item.commitment.identity, forKey: CommitmentRecord.bare(item.commitment))
         }
 
         // Removed entries are judged in the document's own order, so a chain's front has already
@@ -240,9 +264,15 @@ struct RosterDocument: Codable {
                 let era = Commitment(
                     era: chain.representative, schedule: item.commitment.schedule,
                     keptFrom: item.commitment.keptFrom, kind: item.commitment.kind)!
+                let shape = EraShape(era)
+                guard chain.shapes.insert(shape).inserted else {
+                    return nil
+                }
                 identities.updateValue(era.identity, forKey: CommitmentRecord.bare(item.commitment))
-                resultEntries[index] = Roster.Entry(
-                    commitment: era, keptUntil: keptUntil, isRemoved: false, category: item.category)
+                chain.eras.append(
+                    Roster.Entry(
+                        commitment: era, keptUntil: keptUntil, isRemoved: false,
+                        category: item.category))
                 chain.front = item.commitment.keptFrom
                 chain.frontIndex = index
                 continue
@@ -260,18 +290,19 @@ struct RosterDocument: Codable {
                 return nil
             }
 
-            chains.append(
-                Chain(
-                    representative: item.commitment, front: item.commitment.keptFrom,
-                    frontIndex: index))
-            identities.updateValue(item.commitment.identity, forKey: CommitmentRecord.bare(item.commitment))
-            resultEntries[index] = Roster.Entry(
+            let standalone = Roster.Entry(
                 commitment: item.commitment, keptUntil: keptUntil, isRemoved: false,
                 category: item.category)
+            chains.append(Chain(representative: item.commitment, headIndex: index, head: standalone))
+            identities.updateValue(item.commitment.identity, forKey: CommitmentRecord.bare(item.commitment))
         }
 
+        // Each chain in the order of the entry its commitment was made from, `headIndex` — never
+        // `frontIndex`, which moves as eras attach — then that chain's own eras, already
+        // newest-first by construction: `design.md` § *The eras gather behind their commitment;
+        // the commitments keep their order*.
         var roster = Roster()
-        roster.entries = decoded.indices.compactMap { resultEntries[$0] }
+        roster.entries = chains.sorted { $0.headIndex < $1.headIndex }.flatMap(\.eras)
         return Fold(roster: roster, identities: identities)
     }
 }

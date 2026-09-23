@@ -194,7 +194,7 @@ Things that are built, or deliberately not built, in a state someone will trip o
   one in `TakeOutTests` — that went with the helpers they drove. The next Story that deltas
   `commitment` carries this requirement as REMOVED.
 - **`RosterDocument.folded()`'s tie-break for "the nearest such commitment" picks the farthest
-  chain, not the nearest.** `RosterDocument.swift:237` reads
+  chain, not the nearest.** `RosterDocument.swift:252` reads
   `attachable.max(by: { $0.frontIndex < $1.frontIndex })` for what its own doc comment calls "the
   nearest such commitment, by that front's own place" (`design.md` says "nearest in the roster's
   order"). The two agree for every roster the old `supersede` ever wrote, where at most one
