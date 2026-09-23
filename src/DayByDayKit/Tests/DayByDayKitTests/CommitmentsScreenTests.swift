@@ -2468,6 +2468,33 @@ func aCommitmentWhoseNameEndsInASpaceIsDeletedByTypingTheNameWithoutIt() throws 
 }
 
 @MainActor
+@Test("a commitment whose name ends in a newline is deleted by typing the name without it")
+func aCommitmentWhoseNameEndsInANewlineIsDeletedByTypingTheNameWithoutIt() throws {
+    let rosterPlace = freshRosterPlace()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gymWithTrailingNewline = Commitment(name: "Gym\n", schedule: daily, keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(gymWithTrailingNewline)
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    screen.askToDelete(gymWithTrailingNewline)
+    screen.nameTypedBack = "Gym"
+
+    #expect(screen.nameTypedBackMatches)
+
+    let refusal = screen.confirmDeleting()
+
+    #expect(refusal == nil)
+    #expect(screen.kept.isEmpty)
+    #expect(screen.stopped.isEmpty)
+}
+
+@MainActor
 @Test("a deletion confirmed on a name that does not match changes nothing and refuses nothing")
 func aDeletionConfirmedOnANameThatDoesNotMatchChangesNothingAndRefusesNothing() throws {
     let rosterPlace = freshRosterPlace()
@@ -2846,6 +2873,75 @@ func theRecordsOfACommitmentAStoredRosterHeldRemovedAreErasedWhenACommitmentsScr
 }
 
 @MainActor
+@Test("a commitments screen that cannot erase a removed commitment's records offers a take-out")
+func aCommitmentsScreenThatCannotEraseARemovedCommitmentsRecordsOffersATakeOut() throws {
+    // `design.md` § *Migration*: the roster itself opens fine here — the fixture is well formed
+    // and `read.notRead` never names it — but the erase the migration owes at open fails, so this
+    // screen answers as one that cannot read its roster and must offer a take-out on the same
+    // footing as any other roster it could not read.
+    let rosterPlace = freshRosterPlace()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Lifting",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: rosterPlace)
+
+    let gym = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!,
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!, kind: .tick)!
+
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+
+    try makeReadOnly(recordDirectory)
+    defer { try? makeWritable(recordDirectory) }
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: rosterPlace, keepingRecordAt: recordPlace)
+
+    #expect(screen.rosterState == .notKept)
+    #expect(screen.kept.isEmpty)
+    #expect(screen.stopped.isEmpty)
+    #expect(screen.offersATakeOut)
+}
+
+@MainActor
 @Test("a record of a removed commitment is not carried back to a commitment alike to it")
 func aRecordOfARemovedCommitmentIsNotCarriedBackToACommitmentAlikeToIt() throws {
     let places = freshRosterAndRecordPlaces()
@@ -3186,22 +3282,82 @@ func aCommitmentDefinedAfterADeletionHoldsNoneOfTheDeletedCommitmentsRecords() t
 }
 
 @MainActor
-@Test("deleting one of two entries alike in name deletes the one it was asked about")
-func deletingOneOfTwoEntriesAlikeInNameDeletesTheOneItWasAskedAbout() throws {
+@Test("a deletion a commitments screen could not keep leaves both its lists as they were")
+func aDeletionACommitmentsScreenCouldNotKeepLeavesBothItsListsAsTheyWere() throws {
     let rosterPlace = freshRosterPlace()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
-    let vitaminsMondayWednesday = Commitment(
-        name: "Vitamins", schedule: .weekdays([.monday, .wednesday]), keptFrom: keptFrom)!
-    let vitaminsTuesdayThursday = Commitment(
-        name: "Vitamins", schedule: .weekdays([.tuesday, .thursday]), keptFrom: keptFrom)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: keptFrom)!
+    let run = Commitment(name: "Run", schedule: daily, keptFrom: keptFrom)!
+    let stoppedAsOf = CalendarDate(year: 2026, month: 8, day: 23)!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
 
     let rosterStore = try RosterStore(at: rosterPlace)
-    try rosterStore.add(vitaminsMondayWednesday)
-    try rosterStore.add(vitaminsTuesdayThursday)
+    try rosterStore.add(gym)
+    try rosterStore.add(run)
+    _ = try rosterStore.retire(run, keptUntil: stoppedAsOf)
 
     let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
-    screen.askToDelete(vitaminsTuesdayThursday)
+
+    try FileManager.default.removeItem(at: rosterPlace)
+    try FileManager.default.createDirectory(
+        at: rosterPlace, withIntermediateDirectories: true)
+
+    screen.askToDelete(run)
+    screen.nameTypedBack = "Run"
+    let refusal = screen.confirmDeleting()
+
+    #expect(refusal == .notKept)
+    #expect(screen.kept.map(\.name) == ["Gym"])
+    #expect(screen.stopped.map(\.name) == ["Run"])
+}
+
+@MainActor
+@Test("deleting one of two entries alike in name deletes the one it was asked about")
+func deletingOneOfTwoEntriesAlikeInNameDeletesTheOneItWasAskedAbout() throws {
+    // The fixture is the form used before a commitment had an identity, the scenario's own
+    // words: a name is not yet unique there, so two "Vitamins" entries can both be taken on,
+    // which today's `RosterStore.add` would refuse for the second. Writing the roster directly
+    // in form 4 — rather than through `rosterStore.add` — is what makes the two entries
+    // distinguishable only by which the roster folds them into.
+    let rosterPlace = freshRosterPlace()
+    try FileManager.default.createDirectory(
+        at: rosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 4,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Vitamins",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "wednesday"] }
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Vitamins",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] }
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: rosterPlace)
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = CommitmentsScreen(asOf: monday, keepingRosterAt: rosterPlace)
+    #expect(screen.kept.map(\.rhythmInWords) == ["Mon, Wed", "Tue, Thu"])
+
+    screen.askToDelete(screen.kept[1])
     screen.nameTypedBack = "Vitamins"
     screen.confirmDeleting()
 

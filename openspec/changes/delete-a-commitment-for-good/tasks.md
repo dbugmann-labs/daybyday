@@ -122,7 +122,7 @@ to it, one red-green cycle.
 - [x] 6.5 a deletion the roster place refuses puts the record place back as it was
 - [x] 6.6 a deletion on a commitments screen that cannot read its record is refused
 - [x] 6.7 a commitment defined after a deletion holds none of the deleted commitment's records
-- [ ] 6.8 a deletion a commitments screen could not keep leaves both its lists as they were — catches a refused deletion that drops a stopped commitment
+- [x] 6.8 a deletion a commitments screen could not keep leaves both its lists as they were — catches a refused deletion that drops a stopped commitment
 
 ## 7. `day-screen`
 
@@ -161,7 +161,7 @@ to it, one red-green cycle.
 - [x] 11.2 `openspec validate delete-a-commitment-for-good --strict` exits 0 and `pnpm run checks`
   is clean but for what it is expected to warn.
 - [ ] 11.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
-- [ ] 11.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
+- [x] 11.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
   that the change folder is committed, `tasks.md` has no other unticked box and the walk comment's
   URL is in § 10.6. The janitor then runs `/opsx:archive` and checks afterwards that the four specs
   carry every ADDED requirement, no REMOVED one and the MODIFIED ones whole. **Any drift there is a

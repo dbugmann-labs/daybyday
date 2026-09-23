@@ -3470,6 +3470,51 @@ func aCommitmentAStoredRosterHeldRemovedIsReadAsDeletedWithEveryEraOfIt() throws
     #expect(store.erased == [Commitment.Identity("22222222-2222-2222-2222-222222222222")!])
 }
 
+@Test("an earlier era held removed does not erase a commitment whose newest era is kept")
+func anEarlierEraHeldRemovedDoesNotEraseACommitmentWhoseNewestEraIsKept() throws {
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 3, "day": 1 },
+                "schedule": { "weekdays": ["tuesday", "thursday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "removed": false,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 2, "day": 28 },
+              "removed": true,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try RosterStore(at: place)
+
+    #expect(store.roster.commitments.map(\.name) == ["Gym"])
+    #expect(store.erased.isEmpty)
+    let gym = try #require(store.roster.commitments.first)
+    #expect(store.roster.eras(of: gym).count == 2)
+    #expect(store.roster.keptFrom(of: gym) == CalendarDate(year: 2026, month: 1, day: 1)!)
+}
+
 @Test("a stopped commitment beside a removed one is read as it stands")
 func aStoppedCommitmentBesideARemovedOneIsReadAsItStands() throws {
     let place = freshPlace()
@@ -3514,6 +3559,9 @@ func aStoppedCommitmentBesideARemovedOneIsReadAsItStands() throws {
     #expect(
         store.roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!).map(\.name)
             == ["Gym"])
+    let groupsWhileStillKept = store.roster.groups(on: CalendarDate(year: 2026, month: 1, day: 31)!)
+    #expect(groupsWhileStillKept.map(\.category) == ["Sport"])
+    #expect(groupsWhileStillKept.first?.commitments.map(\.name) == ["Gym"])
 }
 
 @Test("a stored roster whose every commitment was removed is read as emptied")
@@ -3632,6 +3680,10 @@ func readingARemovedCommitmentAsDeletedChangesNothingAtThePlaceAndTheNextChangeI
     try store.add(swim)
 
     let later = try RosterStore(at: place)
+    let laterBytes = try Data(contentsOf: place)
+    let laterDocument = try JSONDecoder().decode(RosterDocument.self, from: laterBytes)
     #expect(later.roster.commitments.map(\.name) == ["Run", "Swim"])
-    #expect(try Data(contentsOf: place) != bytes)
+    #expect(laterBytes != bytes)
+    #expect(laterDocument.version == RosterDocument.currentVersion)
+    #expect(laterDocument.commitments.allSatisfy { $0.removed == nil })
 }

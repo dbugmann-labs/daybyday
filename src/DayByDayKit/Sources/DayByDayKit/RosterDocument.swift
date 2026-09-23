@@ -129,6 +129,7 @@ struct RosterDocument: Codable {
             guard let commitment = entry.commitment.commitment() else {
                 return nil
             }
+            var isNewestOfRun = false
             if commitment.identity != currentIdentity {
                 guard !closedIdentities.contains(commitment.identity) else {
                     return nil
@@ -139,6 +140,7 @@ struct RosterDocument: Codable {
                 closeCurrentRun()
                 currentIdentity = commitment.identity
                 shapesInCurrentRun = []
+                isNewestOfRun = true
             }
             let shape = EraShape(commitment)
             guard shapesInCurrentRun.insert(shape).inserted else {
@@ -158,8 +160,13 @@ struct RosterDocument: Codable {
             // A stored era held removed, in a form written before a commitment could be deleted,
             // still refuses the whole document where it carries no day it was kept until — the
             // same refusal this always was. Otherwise its whole identity is erased rather than
-            // formed: `design.md` § *Migration*.
-            if entry.removed == true {
+            // formed: `design.md` § *Migration*. Read only of the newest era — the run's first
+            // entry — per *A roster store reads a commitment a stored roster held removed as
+            // deleted*: "each commitment whose newest era it holds removed". An earlier era
+            // carrying `removed: true` says nothing; the state is its newest era's alone, on the
+            // same footing as every other state a roster holds of a commitment with more than one
+            // era, `design.md` § *The eras gather behind their commitment*.
+            if isNewestOfRun, entry.removed == true {
                 guard keptUntil != nil else {
                     return nil
                 }

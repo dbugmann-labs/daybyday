@@ -106,7 +106,11 @@ public final class CommitmentsScreen {
             do {
                 try recordStore.erase(rosterStore.erased)
             } catch {
-                return (nil, .notKept, nil, false, read.notRead)
+                // The roster itself was read fine, so `read.notRead` names neither place — but
+                // this screen now answers as one that cannot read its roster, so the roster is
+                // named here for `offersATakeOut` to read a take-out from, the same as any other
+                // roster it could not read: `design.md` § *Migration*.
+                return (nil, .notKept, nil, false, read.notRead + [StoreNotRead(store: .roster, cause: .couldNotBeRead)])
             }
         }
 
