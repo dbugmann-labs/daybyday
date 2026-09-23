@@ -10,10 +10,11 @@
   the owner's call at the grill, against the recommendation that the rule already says which days
   reached it. What keeps it on the record's side of the line is what kept the number's graph there:
   a point not kept carries no mark, a day with nothing added is no point at all and the trace joins
-  across it, so nothing marks a day missed; the mark is a ring, a shape and not a colour, so it
-  reads as neither good-and-bad nor a score; no figure stands beside the graph; and the day screen
-  shows none of it. The rule steps where the target changed, which is the target itself and not a
-  mark of the era boundary. Written by `look-back-at-a-total` (#275).
+  across it, so nothing marks a day missed; a kept point is ringed and drawn in the label colour
+  where one not kept stays in secondary, which is emphasis and never a good-or-bad colour — no
+  green, no red — so it reads as neither good-and-bad nor a score, as the owner chose at #275's G7
+  on 2026-09-23; no figure stands beside the graph; and the day screen shows none of it. The rule
+  steps where the target changed, which is the target itself and not a mark of the era boundary. Written by `look-back-at-a-total` (#275).
 - Amended: 2026-09-17 — a number commitment's look-back draws a **graph** of its numbers, and that
   is on the record's side of the line this record draws. What the Decision forbids is the *run* — a
   chain that snaps back to zero, a percentage that punishes the first gap. A graph charts the values
