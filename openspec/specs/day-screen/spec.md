@@ -919,24 +919,24 @@ from a clock or a locale.
 
 A number entry SHALL say two things and no others: the number the history the day view was formed
 from holds for that commitment on that date, or no number where it holds none; and the range the
-commitment declares, said as a hint, or no hint where it declares none.
+commitment declares, as a hint where the entry is typed and as its values where it is chosen, or no
+hint where it declares none.
 
-The hint SHALL be the lowest bound the commitment declares, an en dash, and the highest, and nothing
-else — "40–150" for a range of 40 to 150 — in this package's own words and no locale's, each bound
-said as it was given, with no digit added and none dropped. The number SHALL be the one the `record`
-capability answers for that commitment on that date, MUST NOT be recomputed here, and SHALL be no
-number where the history the entry is offered from has had it taken back. A row SHALL NOT say the
-number itself.
+The hint SHALL be the lowest bound the commitment declares, an en dash, and the highest — "40–150"
+for a range of 40 to 150 — in this package's own words and no locale's, each bound said as given, no
+digit added or dropped. The number SHALL be the one the `record` capability answers for that
+commitment on that date, MUST NOT be recomputed here, and SHALL be no number where the history has
+had it taken back. A row SHALL NOT say the number itself.
 
 #### Scenario: a number entry says the range its commitment declares as a hint
 
 - **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no record,
   of a commitment named "Weight" of the number kind with a range of 40 to 150 and a commitment
-  named "Mood" of the number kind with a range of 1 to 10, both on a schedule listing Monday,
+  named "Sleep" of the number kind with a range of 0 to 24, both on a schedule listing Monday,
   Wednesday and Saturday and both kept from 1 January 2026, and both its rows are asked as of that
   same day
 - **THEN** the entry the first row offers says the hint "40–150"
-- **AND** the entry the second row offers says the hint "1–10"
+- **AND** the entry the second row offers says the hint "0–24"
 - **AND** the entry of a row for a commitment alike in every way but with a range of 40.5 to
   150.25 says the hint "40.5–150.25"
 
@@ -1038,7 +1038,7 @@ exactly. Such a value SHALL keep nothing, take nothing back, and leave the day e
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Weight" of the number kind with a range of 40 to 150 and a
-  commitment named "Mood" of the number kind with a range of 1 to 10, both on a schedule listing
+  commitment named "Sleep" of the number kind with a range of 0 to 24, both on a schedule listing
   Monday, Wednesday and Saturday and both kept from 1 January 2026; "70.5" is committed on the
   first row and "8" on the second; and then nothing at all is committed on the first row and two
   spaces on the second
@@ -3272,13 +3272,13 @@ record.
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Weight" of the number kind with a range of 40 to 150 and a
-  commitment named "Mood" of the number kind with a range of 1 to 10, both on a schedule listing
+  commitment named "Sleep" of the number kind with a range of 0 to 24, both on a schedule listing
   Monday, Wednesday and Saturday and both kept from 1 January 2026, and "300" is committed on the
   first row
 - **THEN** the day screen tells, on that row, that the number must be between 40 and 150
 - **AND** it tells nothing on the second row
-- **AND** committing "0.5" on the second row of the screen it then holds tells, on that row, that
-  the number must be between 1 and 10
+- **AND** committing "25" on the second row of the screen it then holds tells, on that row, that
+  the number must be between 0 and 24
 
 #### Scenario: a number refused by the place is told on the row and names no cause
 
@@ -3294,7 +3294,7 @@ record.
 
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
   kept, of a commitment named "Weight" of the number kind with a range of 40 to 150 and a
-  commitment named "Mood" of the number kind with a range of 1 to 10, in that order and both on a
+  commitment named "Sleep" of the number kind with a range of 0 to 24, in that order and both on a
   schedule listing Monday, Wednesday and Saturday and both kept from 1 January 2026; "300" is
   committed on the first row; and "1.2.3" is then committed on the second row of the screen it
   then holds
@@ -3978,10 +3978,10 @@ says about its roster.
 - **WHEN** a day screen is opened as of Monday 31 August 2026, at a place that can be read from but
   not written to and that holds a record in which a commitment named "Weight" of the number kind
   with a range of 40 to 150 holds the number 70.5 on that date, of that commitment and a commitment
-  named "Mood" of the number kind with a range of 1 to 10, in that order, both on a schedule listing
+  named "Sleep" of the number kind with a range of 0 to 24, in that order, both on a schedule listing
   Monday, Wednesday and Saturday and both kept from 1 January 2026; nothing at all is committed on
-  the row named "Mood"; and nothing at all is then committed on the row named "Weight"
-- **THEN** committing on the row named "Mood" is not refused and the day screen tells nothing
+  the row named "Sleep"; and nothing at all is then committed on the row named "Weight"
+- **THEN** committing on the row named "Sleep" is not refused and the day screen tells nothing
 - **AND** committing on the row named "Weight" is refused with an error
 - **AND** the day screen then tells, on the row named "Weight", that the change could not be kept
 - **AND** its day view still says "Weight" holds the number 70.5 on that date
@@ -5381,3 +5381,206 @@ commitments due on some day, to those still kept, or to those its day view holds
 - **THEN** its day picker reaches back to 1 January 2026, and neither to 25 January 2026 nor to
   1 March 2026
 - **AND** its day view holds one row, named "Journaling"
+
+### Requirement: A number entry is chosen from the values of a short range, and typed otherwise
+
+A number entry SHALL be chosen where the range its row's commitment declares is short, and typed
+otherwise, a commitment declaring no range included. A range SHALL be short where both its bounds
+are whole numbers and it holds eleven whole numbers or fewer, both bounds counted. The commitment
+SHALL be the one the row holds, the era holding the row's date, and never another.
+
+A chosen entry SHALL say as its values every whole number from the lowest bound to the highest, both
+included, lowest first, and SHALL say no hint. Neither whether an entry is chosen nor its values
+SHALL depend on what the history holds, and a number the day holds that is not among them SHALL NOT
+be added to them. Text committed in a chosen entry SHALL change nothing at all, a take-back
+included, and SHALL end nothing already told.
+
+#### Scenario: a number entry of a range of one to ten is chosen from the ten whole numbers in it
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no record,
+  of a commitment named "Mood" of the number kind with a range of 1 to 10, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, and its one row is asked as of that same
+  day
+- **THEN** the entry that row offers is chosen, and says the values 1, 2, 3, 4, 5, 6, 7, 8, 9 and 10
+  in that order
+- **AND** it says no hint and no number
+- **AND** the entry of a row for a commitment alike in every way but with a range of 0 to 10 is
+  chosen, and says the eleven values 0 to 10 in order
+- **AND** the entry of one with a range of -2 to 2 says the values -2, -1, 0, 1 and 2 in that order
+- **AND** the entry of one with a range of 4 to 4 says the one value 4
+
+#### Scenario: a number entry of a range holding more than eleven whole numbers, or a bound that is not whole, is typed
+
+- **WHEN** a day view is formed on Monday 31 August 2026, from a history that has taken no record,
+  of a commitment named "Hours" of the number kind with a range of 1 to 12, on a schedule listing
+  Monday, Wednesday and Saturday, kept from 1 January 2026, and its one row is asked as of that same
+  day
+- **THEN** the entry that row offers is typed, says the hint "1–12" and says no values
+- **AND** the entry of a row for a commitment alike in every way but with a range of 1 to 10.5 is
+  typed and says the hint "1–10.5"
+- **AND** the entry of one with a range of 0.5 to 5 is typed and says the hint "0.5–5"
+- **AND** the entry of one with no range is typed and says no hint and no values
+
+#### Scenario: a chosen entry on a day holding a number not among its values says that number, and its values as they are
+
+- **WHEN** a day view is formed on Monday 31 August 2026, of a commitment named "Mood" of the number
+  kind with a range of 1 to 10, on a schedule listing Monday, Wednesday and Saturday, kept from 1
+  January 2026, from a history holding a number of 5.5 for that commitment on that date, and its one
+  row is asked as of that same day
+- **THEN** the entry that row offers is chosen and says the number 5.5
+- **AND** it says the values 1 to 10 in order, and no other
+- **AND** the entry of a row of a day view formed the same way but from a history holding a number of
+  7 instead says the number 7 and those same values
+
+#### Scenario: a number entry is chosen or typed by the range of the era holding its day
+
+- **WHEN** a commitment named "Mood" of the number kind with a range of 1 to 10, on a schedule
+  listing all seven weekdays, kept from 1 January 2026, is taken on at a roster place; a
+  commitments screen opened at that place as of Monday 31 August 2026 changes its range to 1 to 20;
+  and a day screen of no commitments at all is then opened at that roster place and a record place
+  where nothing has been kept, as of that same day
+- **THEN** the entry its one row offers is typed and says the hint "1–20"
+- **AND** once the screen is moved to the day before, the entry the row it then holds offers is
+  chosen and says the values 1 to 10 in order
+- **AND** where the range is changed the other way, from 1 to 20 to 1 to 10, the entry is chosen on
+  Monday 31 August 2026 and typed on the day before
+
+#### Scenario: text committed in a chosen entry changes nothing, whatever it holds
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a record in which a
+  commitment named "Mood" of the number kind with a range of 1 to 10 holds the number 7 on that
+  date, of a commitment named "Weight" of the number kind with a range of 40 to 150 and that
+  commitment, in that order, both on a schedule listing Monday, Wednesday and Saturday and both kept
+  from 1 January 2026; "300" is committed on the row named "Weight"; and each of "8", "5.5", "11",
+  "abc" and nothing at all is then committed in turn on the row named "Mood"
+- **THEN** the entry the row named "Mood" then offers says the number 7
+- **AND** the day screen still tells, on the row named "Weight", that the number must be between 40
+  and 150
+- **AND** a day screen opened afterwards at the same place as of the same day says "Mood" holds 7
+
+### Requirement: A day screen keeps the value chosen in a row's entry, and takes the day's number back through its clear
+
+A day screen SHALL keep the value chosen in a row's chosen entry, replacing any number the day
+holds, one not among the values included, and SHALL take the day's number back where the entry's
+clear is chosen instead. Choosing the value the day holds, or the clear on a day holding no number,
+SHALL write nothing and SHALL NOT be refused.
+
+A choice SHALL change nothing on a row the day view does not hold, on a row offering no chosen entry
+as of the screen's today, on a screen keeping no record, and for a value not among the entry's
+values. A change SHALL be kept at the record place before the day view says so; one that cannot be
+kept SHALL be refused and told on its row naming no cause, leaving the day view as it was. A choice
+MUST NOT write to the roster's place.
+
+#### Scenario: a value chosen in a chosen entry is kept, and the entry then says it
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a record place and a roster place
+  where nothing has been kept, of a commitment named "Mood" of the number kind with a range of 1 to
+  10, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026; the roster
+  place is read once the screen has been opened; and 7 is chosen in its one row's entry
+- **THEN** the day screen's day view says the commitment is kept on that date
+- **AND** the entry the row it then holds offers says the number 7
+- **AND** a day screen opened afterwards at the same places as of the same day says the same
+- **AND** the content at the roster place is byte-for-byte what it was after the screen was opened
+
+#### Scenario: a value chosen on a day holding another number replaces it, one not among the values included
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a record in which a
+  commitment named "Mood" of the number kind with a range of 1 to 10 holds the number 5.5 on that
+  date, of that commitment on a schedule listing Monday, Wednesday and Saturday, kept from 1 January
+  2026, and 7 is chosen in its one row's entry
+- **THEN** the entry the row the day screen then holds offers says the number 7
+- **AND** choosing 3 in the entry of the row it then holds leaves it saying the number 3
+- **AND** a day screen opened afterwards at the same place as of the same day says the number 3
+
+#### Scenario: choosing the value the day already holds writes nothing and is not refused
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place that can be read from but
+  not written to and that holds a record in which a commitment named "Mood" of the number kind with
+  a range of 1 to 10 holds the number 7 on that date, of a commitment named "Weight" of the number
+  kind with a range of 40 to 150 and that commitment, in that order, both on a schedule listing
+  Monday, Wednesday and Saturday and both kept from 1 January 2026; "300" is committed on the row
+  named "Weight"; and 7 is then chosen in the entry of the row named "Mood"
+- **THEN** choosing is not refused
+- **AND** the entry the row named "Mood" then offers says the number 7
+- **AND** the day screen still tells, on the row named "Weight", that the number must be between 40
+  and 150, and tells nothing on the row named "Mood"
+
+#### Scenario: the clear takes the day's number back
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Mood" of the number kind with a range of 1 to 10, on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026; 7 is chosen in its one row's
+  entry; and the clear is then chosen in the entry of the row it then holds
+- **THEN** the day screen's day view says the commitment is not kept on that date
+- **AND** the entry its row offers says no number
+- **AND** a day screen opened afterwards at the same place as of the same day says the same
+- **AND** the clear chosen on a day screen opened at a place whose record holds 5.5 for that
+  commitment on that date leaves its row's entry saying no number too
+
+#### Scenario: the clear on a day holding no number writes nothing and is not refused
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place that can be read from but
+  not written to and that holds a record in which a commitment named "Weight" of the number kind
+  with a range of 40 to 150 holds the number 70.5 on that date, of that commitment and a commitment
+  named "Mood" of the number kind with a range of 1 to 10, in that order, both on a schedule listing
+  Monday, Wednesday and Saturday and both kept from 1 January 2026, and the clear is chosen in the
+  entry of the row named "Mood"
+- **THEN** choosing is not refused and the day screen tells nothing
+- **AND** its day view still says "Weight" holds the number 70.5 on that date
+
+#### Scenario: a choice that cannot be kept is refused, told on its row naming no cause, and leaves the day view as it was
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing can be
+  written — a path beneath an existing ordinary file — of a commitment named "Mood" of the number
+  kind with a range of 1 to 10, on a schedule listing Monday, Wednesday and Saturday, kept from 1
+  January 2026, and 7 is chosen in its one row's entry
+- **THEN** choosing is refused with an error
+- **AND** the day screen tells, on that row, that the change could not be kept, and names no cause
+- **AND** its day view still says the commitment is not kept on that date
+- **AND** the clear chosen on a day screen opened at a place that can be read from but not written
+  to, whose record holds 7 for that commitment on that date, is refused and told alike, its day
+  view still saying the number 7
+
+#### Scenario: a value that is not among the entry's values changes nothing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Mood" of the number kind with a range of 1 to 10, on a schedule
+  listing Monday, Wednesday and Saturday, kept from 1 January 2026, and each of 11, 0, -1 and 5.5 is
+  chosen in turn in its one row's entry
+- **THEN** the day screen's day view says the commitment is not kept on that date
+- **AND** the day screen tells nothing on any row
+- **AND** a day screen opened afterwards at the same place as of the same day says the same
+
+#### Scenario: a choice on a row that offers no chosen entry changes nothing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place where nothing has been
+  kept, of a commitment named "Gym" of the tick kind, a commitment named "Weight" of the number kind
+  with a range of 40 to 150 and a commitment named "Mood" of the number kind with a range of 1 to
+  10, all three on a schedule listing all seven weekdays and all kept from 1 January 2026; 70 is
+  chosen on the row named "Weight" and 7 on the row named "Gym"; the screen is then moved to the day
+  after; and 7 is chosen on the row it then holds named "Mood"
+- **THEN** the day screen's day view says none of the three is kept on Tuesday 1 September 2026
+- **AND** it tells nothing on any row
+- **AND** a day screen opened afterwards at that place as of Monday 31 August 2026 says none of the
+  three is kept on that date
+
+#### Scenario: choosing on a row the day screen's day view does not hold changes nothing
+
+- **WHEN** two day screens of a commitment named "Mood" of the number kind with a range of 1 to 10,
+  on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, are opened at one
+  place where nothing has been kept, the first as of Monday 31 August 2026 and the second as of
+  Wednesday 2 September 2026, and 7 is chosen on the first screen in the second screen's row's entry
+- **THEN** the first day screen's day view still says the commitment is not kept on Monday 31 August
+  2026
+- **AND** a day screen opened afterwards at that place as of Wednesday 2 September 2026 says the
+  commitment is not kept on that date either
+
+#### Scenario: choosing on a day screen that is not keeping a record changes nothing and keeps nothing
+
+- **WHEN** a day screen is opened as of Monday 31 August 2026, at a place holding a run of bytes that
+  is not what a record is written as, of a commitment named "Mood" of the number kind with a range of
+  1 to 10, on a schedule listing Monday, Wednesday and Saturday, kept from 1 January 2026, and 7 is
+  chosen in its one row's entry
+- **THEN** its day view still says the commitment is not kept on that date
+- **AND** it still says it is not keeping a record
+- **AND** the content at that place is byte-for-byte what it was before the screen was opened

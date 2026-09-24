@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 import DayByDayKit
 
@@ -1758,20 +1759,20 @@ func aNumberEntrySaysTheRangeItsCommitmentDeclaresAsAHint() {
     let weight = Commitment(
         name: "Weight", schedule: schedule, keptFrom: keptFrom,
         kind: .number(range: Commitment.Range(lowest: 40, highest: 150)!))!
-    let mood = Commitment(
-        name: "Mood", schedule: schedule, keptFrom: keptFrom,
-        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)!))!
+    let sleep = Commitment(
+        name: "Sleep", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 0, highest: 24)!))!
     let fractional = Commitment(
         name: "Weight", schedule: schedule, keptFrom: keptFrom,
         kind: .number(range: Commitment.Range(lowest: 40.5, highest: 150.25)!))!
     let monday = CalendarDate(year: 2026, month: 8, day: 31)!
     let history = History()
 
-    let dayView = DayView(of: [weight, mood], on: monday, in: history)
+    let dayView = DayView(of: [weight, sleep], on: monday, in: history)
     let fractionalDayView = DayView(of: [fractional], on: monday, in: history)
 
     #expect(dayView.rows[0].numberEntry(asOf: monday)?.hint == "40–150")
-    #expect(dayView.rows[1].numberEntry(asOf: monday)?.hint == "1–10")
+    #expect(dayView.rows[1].numberEntry(asOf: monday)?.hint == "0–24")
     #expect(fractionalDayView.rows[0].numberEntry(asOf: monday)?.hint == "40.5–150.25")
 }
 
@@ -1832,6 +1833,130 @@ func aNumberEntrySaysNoNumberWhereTheDayHoldsNone() throws {
 
     #expect(neverRecordedEntry.number == nil)
     #expect(addedThenRemovedEntry.number == nil)
+}
+
+@Test("a number entry of a range of one to ten is chosen from the ten whole numbers in it")
+func aNumberEntryOfARangeOfOneToTenIsChosenFromTheTenWholeNumbersInIt() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let mood = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)!))!
+    let elevenValues = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 0, highest: 10)!))!
+    let negative = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: -2, highest: 2)!))!
+    let singleValue = Commitment(
+        name: "Mood", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 4, highest: 4)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let entry = try #require(
+        DayView(of: [mood], on: monday, in: history).rows[0].numberEntry(asOf: monday))
+    #expect(entry.values == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    #expect(entry.hint == nil)
+    #expect(entry.number == nil)
+
+    let elevenEntry = try #require(
+        DayView(of: [elevenValues], on: monday, in: history).rows[0].numberEntry(asOf: monday))
+    #expect(elevenEntry.values == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+    let negativeEntry = try #require(
+        DayView(of: [negative], on: monday, in: history).rows[0].numberEntry(asOf: monday))
+    #expect(negativeEntry.values == [-2, -1, 0, 1, 2])
+
+    let singleEntry = try #require(
+        DayView(of: [singleValue], on: monday, in: history).rows[0].numberEntry(asOf: monday))
+    #expect(singleEntry.values == [4])
+}
+
+/// Not a scenario: a single-value range whose bound sits past `Decimal`'s own precision, where
+/// `bound + 1 == bound` holds and a naive walk from `lowest` to `highest` would never terminate.
+/// Free-form, below the seam, `docs/process.md` § *Where the spec stops and the test starts*.
+@Test
+func numberEntryOfASingleValueRangePastDecimalsPrecisionStillReturns() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let hugeBound = Decimal(sign: .plus, exponent: 50, significand: 1)
+    let mood = Commitment(
+        name: "Mood", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: hugeBound, highest: hugeBound)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let entry = try #require(
+        DayView(of: [mood], on: monday, in: history).rows[0].numberEntry(asOf: monday))
+    #expect(entry.values == [hugeBound])
+}
+
+@Test(
+  "a number entry of a range holding more than eleven whole numbers, or a bound that is not whole, is typed"
+)
+func aNumberEntryOfARangeHoldingMoreThanElevenWholeNumbersOrABoundThatIsNotWholeIsTyped() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let schedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+    let hours = Commitment(
+        name: "Hours", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 12)!))!
+    let fractionalHighest = Commitment(
+        name: "Hours", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10.5)!))!
+    let fractionalLowest = Commitment(
+        name: "Hours", schedule: schedule, keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 0.5, highest: 5)!))!
+    let noRange = Commitment(
+        name: "Hours", schedule: schedule, keptFrom: keptFrom, kind: .number(range: nil))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let entry = try #require(
+        DayView(of: [hours], on: monday, in: history).rows[0].numberEntry(asOf: monday))
+    #expect(entry.hint == "1–12")
+    #expect(entry.values == nil)
+
+    let fractionalHighestEntry = try #require(
+        DayView(of: [fractionalHighest], on: monday, in: history).rows[0]
+            .numberEntry(asOf: monday))
+    #expect(fractionalHighestEntry.hint == "1–10.5")
+    #expect(fractionalHighestEntry.values == nil)
+
+    let fractionalLowestEntry = try #require(
+        DayView(of: [fractionalLowest], on: monday, in: history).rows[0]
+            .numberEntry(asOf: monday))
+    #expect(fractionalLowestEntry.hint == "0.5–5")
+    #expect(fractionalLowestEntry.values == nil)
+
+    let noRangeEntry = try #require(
+        DayView(of: [noRange], on: monday, in: history).rows[0].numberEntry(asOf: monday))
+    #expect(noRangeEntry.hint == nil)
+    #expect(noRangeEntry.values == nil)
+}
+
+@Test(
+  "a chosen entry on a day holding a number not among its values says that number, and its values as they are"
+)
+func aChosenEntryOnADayHoldingANumberNotAmongItsValuesSaysThatNumberAndItsValuesAsTheyAre() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let mood = Commitment(
+        name: "Mood", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: 1, highest: 10)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var historyWith5_5 = History()
+    historyWith5_5.add(Number(5.5, for: mood, on: monday)!)
+    var historyWith7 = History()
+    historyWith7.add(Number(7, for: mood, on: monday)!)
+
+    let entry = try #require(
+        DayView(of: [mood], on: monday, in: historyWith5_5).rows[0].numberEntry(asOf: monday))
+    #expect(entry.number == 5.5)
+    #expect(entry.values == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+    let otherEntry = try #require(
+        DayView(of: [mood], on: monday, in: historyWith7).rows[0].numberEntry(asOf: monday))
+    #expect(otherEntry.number == 7)
+    #expect(otherEntry.values == entry.values)
 }
 
 @Test(

@@ -792,11 +792,23 @@ The range is still said "for an empty field" and only there — a field that ope
 does not say it, which the owner chose over the range being said whenever the entry is open.
 
 **Short range** — a range whose bounds are both whole numbers and which holds eleven values or fewer:
-mood's one to ten. A number commitment with one is **chosen** from it, one tap on a value, and never
+mood's one to ten. A number commitment with one is **chosen** from it and never
 typed; a range of 40 to 150, or one with a bound of 0.5, is not short and its number is typed. It is
 a property of the range and not something a commitment declares, and it narrows only the entry: the
 record still takes 5.5 on a range of one to ten, the row just does not offer it. Agreed 2026-09-24 at
 the Feature grill of B-032 and B-034.
+
+**Amended 2026-09-24**, at the grill of `choose-a-number-from-a-short-range` (#324). Choosing is two
+taps, not one: the row at rest shows neither the day's number nor the values, a tap on it opens the
+values over the screen, and a tap on a value keeps it and closes them. The owner reversed the one tap
+on seeing it drawn — "I don't want to see the value or the value choices without clicking on it to
+record it" — which also keeps a row from ever drawing the number.
+
+**Clear** — a chosen number entry's way of taking its day's number back: a control of its own beside
+the values, drawn only while the day holds a number, and never a second tap on the chosen value, which
+does nothing. It is the take-back of a chosen entry as committing blank is of a typed one, and on a
+day holding no number it writes nothing. Named 2026-09-24 while writing the delta of
+`choose-a-number-from-a-short-range` (#324), from its grill's settled answers 1 to 3.
 
 **Starting number** — what a typed number entry starts from on a day that holds no number: the latest
 number its commitment holds on a date before that day, from any era, however far back. Not the latest

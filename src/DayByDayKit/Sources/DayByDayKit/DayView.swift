@@ -6,8 +6,14 @@ public struct DayView: Hashable, Sendable {
         /// The number the day already holds, or `nil` where it holds none.
         public let number: Decimal?
         /// The range the commitment declares, said for an empty field — "40–150" — or `nil`
-        /// where it declares none.
+        /// where it declares none or the entry is chosen. `CONTEXT.md` § *Number entry*.
         public let hint: String?
+        /// Every whole number the commitment's range holds, lowest first, where the range is
+        /// short — both bounds whole numbers and eleven values or fewer, both counted,
+        /// `CONTEXT.md` § *Short range* — and `nil` where the entry is typed instead. Never
+        /// empty where it is not `nil`; `hint` and this are never both non-`nil` — but a typed
+        /// entry whose commitment declares no range at all has neither.
+        public let values: [Decimal]?
         /// The same range said as the cause a number outside it is refused for — "Must be
         /// between 40 and 150" — or `nil` where the commitment declares none. Internal: the
         /// shell reads a cause off the notice, never off an entry.
@@ -89,7 +95,8 @@ public struct DayView: Hashable, Sendable {
         }
 
         /// The number entry this row offers, or `nil` when its commitment's kind is not a number
-        /// or the row's date is later than `today`.
+        /// or the row's date is later than `today`. Chosen where the commitment's range is short
+        /// (`Commitment.Range.isShort`), typed otherwise — `CONTEXT.md` § *Short range*.
         public func numberEntry(asOf today: CalendarDate) -> NumberEntry? {
             guard today.days(until: date) <= 0 else {
                 return nil
@@ -99,8 +106,14 @@ public struct DayView: Hashable, Sendable {
                 return nil
             }
 
+            if let range, range.isShort {
+                return NumberEntry(
+                    number: number, hint: nil, values: range.wholeNumbers,
+                    refusalCause: "Must be between \(range.lowest) and \(range.highest)")
+            }
+
             return NumberEntry(
-                number: number, hint: range.map { "\($0.lowest)–\($0.highest)" },
+                number: number, hint: range.map { "\($0.lowest)–\($0.highest)" }, values: nil,
                 refusalCause: range.map { "Must be between \($0.lowest) and \($0.highest)" })
         }
 
@@ -401,5 +414,51 @@ public struct DayView: Hashable, Sendable {
         }
 
         return DayView(of: groups, on: nextDate, in: history)
+    }
+}
+
+/// A range is short where both its bounds are whole numbers and it holds eleven whole numbers or
+/// fewer, both bounds counted — `CONTEXT.md` § *Short range*. A short range's number entry is
+/// chosen from `wholeNumbers`; every other range is typed. Kept here, `fileprivate`, rather than
+/// on `Commitment.Range` itself: this Story's own fix reaches no file but `DayView.swift`,
+/// `DayScreen.swift` and their tests (`tasks.md` § 1).
+extension Commitment.Range {
+    fileprivate var isShort: Bool {
+        guard lowest.isWholeNumber, highest.isWholeNumber else {
+            return false
+        }
+        return (highest - lowest + 1) <= 11
+    }
+
+    /// Every whole number from `lowest` to `highest`, both included, lowest first — the values a
+    /// short range's entry offers. Bounded to `highest − lowest + 1` steps by the loop itself, so
+    /// it can never run more than eleven times: a `Decimal` past its own precision can make
+    /// `value + 1 == value` hold forever (`1e50 + 1 == 1e50`), so the loop counts steps down
+    /// rather than comparing `value` against `highest` on every pass.
+    fileprivate var wholeNumbers: [Decimal] {
+        let stepCount = NSDecimalNumber(decimal: highest - lowest + 1).intValue
+        var values: [Decimal] = []
+        var value = lowest
+        for _ in 0..<max(stepCount, 0) {
+            values.append(value)
+            value += 1
+        }
+        return values
+    }
+}
+
+extension Decimal {
+    /// Whether this decimal holds no fractional part — 40 is, 40.5 is not, and 40.0 is (a
+    /// `Decimal`'s own trailing zeros never make it fractional). Compares against the value
+    /// rounded toward zero, so how many trailing zeros this decimal's own representation happens
+    /// to carry never changes the answer.
+    fileprivate var isWholeNumber: Bool {
+        guard !isNaN else {
+            return false
+        }
+        var rounded = Decimal()
+        var value = self
+        NSDecimalRound(&rounded, &value, 0, .down)
+        return rounded == self
     }
 }

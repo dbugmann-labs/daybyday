@@ -563,11 +563,11 @@ being returned to is.
 
 #### Scenario: a day screen returned to after a restore tells nothing it was telling
 
-- **WHEN** a commitment named "Mood" of the number kind, taking 1 to 10, on a schedule listing all
+- **WHEN** a commitment named "Sleep" of the number kind, taking 0 to 24, on a schedule listing all
   seven weekdays and kept from 1 January 2026, is taken on at a roster place; a one-off named "Book
   dentist" on 31 August 2026 is kept at a one-off place; a day screen of no commitments at all is
   opened at those places and a record place where nothing has been kept as of Monday 31 August 2026;
-  11 is committed in the "Mood" row's number entry and refused; "Book dentist" is committed in its
+  25 is committed in the "Sleep" row's number entry and refused; "Book dentist" is committed in its
   one-off entry and refused; a commitments screen opened at the same places restores a copy made
   there; and the day screen is returned to from it
 - **THEN** it tells nothing on any row
