@@ -1808,6 +1808,20 @@ everything else, and kept when the switch is turned off, which draws nothing and
 Agreed 2026-09-24 at the Feature grill of B-059, which groomed cluster H of the eleventh pass; the
 capability is `birthday`, under `EPIC: Birthdays` (#321).
 
+**Amended 2026-09-24**, at the grill of `add-birthday` (#326). A birthday's name and age are the
+calendar's own words for that year's occurrence, kept verbatim — nothing is parsed out of them and
+nothing composed. Its tick is held against the contact and the **day** it falls on, never the words,
+so a rename keeps it and each year's birthday takes its own (ADR-1062). A deleted contact takes its
+*row* and not its tick: the tick is kept unseen until it is taken back, and returns with a contact
+put back, so "the one record here that can go without a deliberate act" above is withdrawn — the
+row goes, the record does not. Whether birthdays are on is the phone's own setting and never kept.
+
+**Birthday store** — the store that keeps **birthday** ticks, each a contact and a day and nothing
+else: no words, no name and not whether birthdays are turned on. It is the fourth store, beside the
+**record store**, the **roster store** and the one-off store, at a place of its own, and it keeps a
+tick until it is taken back whatever the calendar hands. Agreed 2026-09-24 while writing the delta
+of `add-birthday` (#326).
+
 **One-off entry** — the line a **day view**'s One-offs group always ends with, where a person types a
 new one-off's name in place, as in Apple Reminders; the toolbar's `+` brings it into focus. It is
 deliberately not a **one-off**, which is what `one-off` holds — this is the place one is made, in the
