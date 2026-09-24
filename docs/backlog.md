@@ -173,6 +173,36 @@ it as a gap rather than saying it unprompted.*
 - **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
+### B-060 — see what is still owed at the top of the One-offs group
+
+*Captured 2026-09-24.*
+
+> "Inside the One-Off Group, I would like to have it ordered, so that all the ticked one-offs are at
+> the bottom, and all due ones on top. Can you implement an ordering that when a one-off is ticked,
+> it moves below the last unticked one?"
+
+- **Trigger** — a day holding several one-offs, some ticked: what is still owed should be what the
+  eye lands on first, without reading past the ones already done.
+- **Touches** — `one-off`, and it **reverses a shipped requirement**: *One-offs answer the one-offs
+  standing on a day, earliest owed first* says the answer "MUST NOT be ordered by name, by whether a
+  one-off is done, or by the day one was done", with the scenario *done and undone one-offs standing
+  on one day are ordered by the date owed alone* — the owner's choice at the grill of
+  `draw-one-offs-on-day-screen` (#243). The day view "orders nothing of its own" (`CONTEXT.md`
+  § **Day view**), so the order is the store's answer and `day-screen` only if the row's move is
+  drawn. A Story against `FEAT: one-off` (#239, closed — reopen it rather than mint a second Feature).
+- **Principle** — tested against *five percent of seven things*: **fails** — it deepens the one-off
+  group, which works, rather than making a new thing possible. Captured anyway because it is small
+  and the owner asked for it directly; the grooming pass weighs that.
+- **Open** — where does a ticked row land among the ticked? "Below the last unticked one" puts the
+  newest tick at the top of the done block; keeping the done block in date-owed order puts it
+  wherever its date falls. Either is a rule the store must keep across a reopen.
+- **Open** — the row leaves the thumb that ticked it. Is the move animated, and does a mistaken tick
+  stay easy to take back when the row is no longer under the finger?
+- **Open** — a tick taken back: presumably the row returns to its date-owed place among the undone,
+  but nobody has said so.
+- **Open** — one-offs only, or commitment groups too? Commitment rows do not move when ticked today,
+  and a day whose groups sort differently from one another is a choice worth making on purpose.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
