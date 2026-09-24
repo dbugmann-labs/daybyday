@@ -192,6 +192,16 @@ Things that are built, or deliberately not built, in a state someone will trip o
   Whether such a range is typed instead is a change to `day-screen`'s rule for a short range, and
   nobody types a mood with forty digits. Found at #324's G7, 2026-09-24, and left by the owner's
   reply rather than reopening the delta.
+- **The walk cannot get calendar access on this machine's simulators.** At #328's walk the throwaway
+  XCUITest could not turn birthdays on: `XCUIApplication.resetAuthorizationStatus(for: .calendar)`
+  with an interruption monitor saw no system prompt anywhere, and no TCC row for the app appeared.
+  `xcrun simctl privacy <udid> grant calendar com.dbugmann.daybyday` wrote a TCC row with
+  `auth_value=2`, but the app still did not read full access. The same failure showed on an
+  unmodified `origin/main` build, on four devices and at low host load. Yet #327's walk drove the
+  prompt successfully earlier the same day, and an ad hoc probe app got full access from the same
+  `simctl` grant. The cause is undiagnosed. Until it is found, a Story whose walk needs the calendar
+  on is walked on the phone. Found at #328's walk, 2026-09-24; the owner walked W.1–W.5 on the phone
+  and approved at G7 without simulator pictures.
 - **The one-off store's "kept before the store reports it kept" test does not keep the first store
   open.** The scenario opens a second store at the same place *with the first still open*, but the
   test's first store is last used before the second opens, so an optimised build may release it
