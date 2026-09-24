@@ -49,10 +49,10 @@ make it pass, then the next.
 
 ## 8. The gates
 
-- [ ] 8.1 `openspec validate start-a-number-from-the-last-one --strict` exits 0 and `pnpm run check:scenarios` exits 0
-- [ ] 8.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, the two kit sources, the two kit test files and `ContentView.swift`
-- [ ] 8.3 `pnpm run check:budgets` warns about nothing in this folder
-- [ ] 8.4 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing, its count read off the run
+- [x] 8.1 `openspec validate start-a-number-from-the-last-one --strict` exits 0 and `pnpm run check:scenarios` exits 0
+- [x] 8.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, the two kit sources, the two kit test files and `ContentView.swift`
+- [x] 8.3 `pnpm run check:budgets` warns about nothing in this folder
+- [x] 8.4 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing, its count read off the run
 - [ ] 8.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–8.4 and the walk below are ticked and that this instruction is written for the janitor. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `day-screen/spec.md` gains the two added requirements and its two MODIFIED ones are whole, and no other spec moved. `pnpm run checks` runs after the archive commit exists, and that commit is pushed. **Any drift is a stop and a report, never a hand-edit.**
 
 ## The walk
