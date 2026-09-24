@@ -291,12 +291,14 @@ struct ContentView: View {
     init() {
         let copyPlace = CopyPlace(asking: momentNow)
         _copyPlace = State(initialValue: copyPlace)
-        _birthdaySwitch = State(
-            initialValue: BirthdaySwitch(
-                readingAccess: currentCalendarAccess, askingForAccess: askForCalendarAccess))
+        let birthdaySwitch = BirthdaySwitch(
+            readingAccess: currentCalendarAccess, askingForAccess: askForCalendarAccess)
+        _birthdaySwitch = State(initialValue: birthdaySwitch)
         _screen = State(
             initialValue: DayScreen(
-                startingFrom: dayOneCommitments, asOf: today(), copyingTo: copyPlace))
+                startingFrom: dayOneCommitments, asOf: today(),
+                readingBirthdaysFrom: makeBirthdayCalendar(), whileOn: birthdaySwitch,
+                copyingTo: copyPlace))
     }
 
     var body: some View {
@@ -507,9 +509,11 @@ struct ContentView: View {
                 commitFocusedOneOffField(forDeparture: true)
             }
             if phase == .active {
+                // `screen.shown(asOf:)` reads `birthdaySwitch` itself first — `design.md`
+                // § *The switch at every forming, the birthday place at opening and showing*
+                // — so this no longer asks it directly.
                 screen.shown(asOf: today())
                 commitmentsScreen?.shown(asOf: today())
-                birthdaySwitch.shown()
             }
         }
         .onChange(of: showingCommitments) { _, isShowing in
@@ -786,6 +790,28 @@ struct ContentView: View {
                     .foregroundStyle(.red)
             }
 
+            // The three birthday lines, after the one-off lines — `design.md` § *The shell*.
+            // `.off` and `.on` say nothing: birthdays being off is not a fault, and the group
+            // itself already says they are on.
+            switch screen.birthdayState {
+            case .off, .on:
+                EmptyView()
+            case .calendarUnreadable:
+                Text("Birthdays could not be read.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            case .ticksUnreadable:
+                Text("The birthday ticks could not be read.")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            case .ticksWrittenByALaterVersion:
+                Text(
+                    "The birthday ticks were written by a newer version of DayByDay and must not be deleted."
+                )
+                .font(.caption)
+                .foregroundStyle(.red)
+            }
+
             // The one line pointing at the way out — `design.md` § *What the shell draws*: the
             // secondary grey, not the red the causes above take, so the way out does not read as a
             // third thing wrong.
@@ -906,6 +932,24 @@ struct ContentView: View {
         ScrollViewReader { proxy in
             List {
                 if let dayView {
+                    // The Birthdays group, first of all — `openspec/specs/day-screen/spec.md`'s
+                    // *A day screen draws the birthdays falling on each day...*: "it SHALL come
+                    // before every group of commitments." `nil` while birthdays are off or none
+                    // fall on this date (`design.md` § *A group of its own, mirroring the
+                    // one-offs*). Rows are keyed by offset, not by value, for the same reason a
+                    // commitment row is just below: a tap changes `isTicked`, which is part of a
+                    // birthday row's own equality, so keying by value would read as one row
+                    // removed and another inserted.
+                    if let birthdayGroup = dayView.birthdayGroup {
+                        Section {
+                            ForEach(Array(birthdayGroup.rows.enumerated()), id: \.offset) { _, row in
+                                birthdayRowView(row)
+                            }
+                        } header: {
+                            Text(birthdayGroup.heading)
+                                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
+                        }
+                    }
                     // A `Section` per group, the category as its header and none where there is no
                     // category — the same arrangement `CommitmentsView`'s kept list takes.
                     // `design.md` § *The shell rides this Story*.
@@ -1117,6 +1161,68 @@ struct ContentView: View {
             // Decisions 3 and 5, ADR-1045: a row that offers nothing recedes as one thing —
             // the name, the rhythm and any mark fade together rather than by three different
             // amounts.
+            label
+                .opacity(0.5)
+        }
+    }
+
+    /// One birthday row's content and the tap that acts on it — `design.md` § *The shell*: "A
+    /// row is `Text(verbatim:)` words, grey and struck through with the green check when
+    /// ticked, faded to 0.5 where it offers no tick; a tap ticks; the notice line under it
+    /// reads 'Not saved. Try again.'" No rhythm, no entry — a birthday row offers nothing but
+    /// its tick (`grill.md` § *Settled* 1). Acting on a row from a neighbouring day is inert
+    /// the same way a commitment row's tap already is: `DayScreen.tick(_: DayView.BirthdayRow)`
+    /// returns early on a row `screen.dayView.birthdayGroup` does not hold. Two G7 changes from
+    /// the owner, after walking the phone: a small icon before the words, then — after seeing it
+    /// as an SF Symbol — the 🎂 emoji instead. A shell-only change either time; this file's own
+    /// doc comment on `nameLine` below has the rest of it.
+    @ViewBuilder
+    private func birthdayRowView(_ row: DayView.BirthdayRow) -> some View {
+        let nameColor: Color = row.isTicked ? .secondary : .primary
+        let markSystemName: String? = row.isTicked ? "checkmark" : nil
+        let markColor: Color = Color.green
+        let offersTick = row.offersTick(asOf: today())
+
+        // The 🎂 emoji before the words, then a space — the owner's second G7 word on this row,
+        // in place of the SF Symbol `birthday.cake` the first one asked for. No `.foregroundStyle`
+        // on the emoji piece, so it stays in its own full colour whether or not the row is
+        // ticked; concatenation keeps each piece's own modifiers, so only the words piece —
+        // still `Text(verbatim: row.words)`, unedited — takes the secondary colour and the
+        // strikethrough once ticked.
+        let nameLine: Text =
+            Text("🎂 ")
+            + Text(verbatim: row.words)
+                .foregroundStyle(nameColor)
+                .strikethrough(row.isTicked)
+
+        let label = HStack {
+            VStack(alignment: .leading) {
+                nameLine
+                if row == screen.notice?.birthdayRow {
+                    Text("Not saved. Try again.")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            }
+            if markSystemName != nil {
+                Spacer()
+            }
+            if let markSystemName {
+                Image(systemName: markSystemName)
+                    .foregroundStyle(markColor)
+            }
+        }
+
+        if offersTick {
+            Button {
+                try? screen.tick(row)
+            } label: {
+                label
+            }
+        } else {
+            // Faded as a whole, the same way a commitment row that offers nothing recedes
+            // (ADR-1045 decisions 3 and 5) — `grill.md` § *Layout*: "A row on a future day
+            // fades as a whole to 0.5."
             label
                 .opacity(0.5)
         }

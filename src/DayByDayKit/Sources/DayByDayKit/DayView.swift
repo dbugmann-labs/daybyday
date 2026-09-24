@@ -279,6 +279,34 @@ public struct DayView: Hashable, Sendable {
         public let rows: [OneOffRow]
     }
 
+    /// A birthday falling on a day view's date, and whether it is ticked. `design.md` § *The
+    /// seam*. Holds its birthday privately — a row gives back its words, whether it is ticked
+    /// and whether it offers its tick, and nothing else; `openspec/changes
+    /// /draw-birthdays-on-day-screen/specs/day-screen/spec.md` requirement *A birthday row is
+    /// its birthday and whether it is ticked...* "MUST NOT give back its birthday's contact or
+    /// day."
+    public struct BirthdayRow: Hashable, Sendable {
+        let birthday: Birthday
+        public let isTicked: Bool
+
+        /// The calendar's own words for this row's birthday, exactly as handed — empty space
+        /// included, never trimmed.
+        public var words: String { birthday.words }
+
+        /// Whether this row offers its tick as of `today`: `true` exactly when `today` is no
+        /// earlier than this row's birthday's day, whether or not it is ticked.
+        public func offersTick(asOf today: CalendarDate) -> Bool {
+            today.days(until: birthday.day) <= 0
+        }
+    }
+
+    /// The birthdays falling on a day view's date, headed "Birthdays". `design.md` § *A group
+    /// of its own, mirroring the one-offs*.
+    public struct BirthdayGroup: Hashable, Sendable {
+        public let heading: String
+        public let rows: [BirthdayRow]
+    }
+
     let date: CalendarDate
 
     /// This day view's rows, in **groups** — one for each group it was handed that holds at
@@ -290,6 +318,14 @@ public struct DayView: Hashable, Sendable {
     /// The one-offs standing on this day view's date, or `nil` where none stand. `design.md`
     /// § *A One-offs group of its own, not a fifth `Group`*.
     public let oneOffGroup: OneOffGroup?
+
+    /// The birthdays standing on this day view's date, or `nil` where none fall there —
+    /// `openspec/changes/draw-birthdays-on-day-screen/specs/day-screen/spec.md` requirement *A
+    /// day screen draws the birthdays falling on each day...*: "SHALL hold no such group where
+    /// none falls there." Also `nil` from every `public` initializer below, none of which takes
+    /// one; the two package-internal initializers' own `birthdayGroup:` parameter, defaulted to
+    /// `nil`, is the only way to hand one in — `DayScreen` is their one caller.
+    public let birthdayGroup: BirthdayGroup?
 
     /// Every row this day view holds, read across `groups` in the order the groups are drawn —
     /// the same rows `groups` holds and each exactly once.
@@ -316,11 +352,13 @@ public struct DayView: Hashable, Sendable {
     /// Package-internal: `DayScreen.formDayView` is the one caller, which always has a roster to
     /// give; nothing outside the package needs a day view read this way.
     init(
-        of groups: [Roster.Group], on date: CalendarDate, in history: History, roster: Roster?
+        of groups: [Roster.Group], on date: CalendarDate, in history: History, roster: Roster?,
+        birthdayGroup: BirthdayGroup? = nil
     ) {
         self.date = date
         self.groups = Self.makeGroups(from: groups, on: date, in: history, roster: roster)
         self.oneOffGroup = nil
+        self.birthdayGroup = birthdayGroup
     }
 
     /// Forms a day view exactly as `init(of:on:in:)` does, and additionally holds a `OneOffGroup`
@@ -341,7 +379,8 @@ public struct DayView: Hashable, Sendable {
     /// .formDayView` is the one caller.
     init(
         of groups: [Roster.Group], oneOffs: OneOffs, asOf today: CalendarDate,
-        on date: CalendarDate, in history: History, roster: Roster?
+        on date: CalendarDate, in history: History, roster: Roster?,
+        birthdayGroup: BirthdayGroup? = nil
     ) {
         self.date = date
         self.groups = Self.makeGroups(from: groups, on: date, in: history, roster: roster)
@@ -352,6 +391,7 @@ public struct DayView: Hashable, Sendable {
             rows: standing.map { oneOff in
                 OneOffRow(oneOff: oneOff, date: date, isDone: oneOffs.isDone(oneOff))
             })
+        self.birthdayGroup = birthdayGroup
     }
 
     /// The groups `init(of:on:in:roster:)` and `init(of:oneOffs:asOf:on:in:roster:)` both hold:

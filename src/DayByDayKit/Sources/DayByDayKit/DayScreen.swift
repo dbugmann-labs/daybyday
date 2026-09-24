@@ -29,15 +29,63 @@ public final class DayScreen {
         case writtenByALaterVersion
     }
 
+    /// What a day screen says about birthdays: off before anything about the calendar or the
+    /// birthday ticks is asked; then whether the calendar could be read; then the birthday
+    /// ticks. `design.md` § *One state, the calendar first*.
+    public enum BirthdayState: Equatable, Sendable {
+        /// Birthdays are off — no calendar and no birthday switch were handed in, or the switch
+        /// reads off. The calendar is asked nothing.
+        case off
+        /// Birthdays are on, but the calendar could not be read. No Birthdays group is drawn,
+        /// on any day, and nothing is said about the birthday ticks.
+        case calendarUnreadable
+        /// Birthdays are on and the calendar answered; the birthday ticks were read, and a tick
+        /// made on this screen is kept.
+        case on
+        /// Birthdays are on and the calendar answered, but the birthday ticks could not be
+        /// read, for a reason a person cannot act on differently.
+        case ticksUnreadable
+        /// Birthdays are on and the calendar answered, but the birthday ticks were written by a
+        /// later version of DayByDay. They are whole; the app is what is behind, and what is at
+        /// the place must not be replaced.
+        case ticksWrittenByALaterVersion
+    }
+
+    /// What a day screen is doing with the birthday ticks at its place — read at `init` and
+    /// `shown(asOf:)` only, exactly as `recordState` and `oneOffState` are, but never given back
+    /// on its own: `BirthdayState` folds this in behind whether the calendar itself could be
+    /// read. `design.md` § *One state, the calendar first*.
+    private enum BirthdayTicksState: Equatable {
+        case kept
+        case unreadable
+        case writtenByALaterVersion
+    }
+
+    /// What the last ask of the calendar, for the span around whichever day was last formed,
+    /// came back as — cached so a neighbour's day view reads it back rather than asking again.
+    /// `design.md` § *Asked once per forming of the shown day, for three days*. The birthdays
+    /// `.read` holds are already filtered to the span that was actually asked for.
+    private enum CalendarReading {
+        case off
+        case unreadable
+        case read([Birthday])
+    }
+
     private let commitments: [Commitment]
     private let recordPlace: URL
     private let rosterPlace: URL
     private let oneOffPlace: URL
+    private let birthdayPlace: URL
+    private let calendar: BirthdayCalendar?
+    private let birthdaySwitch: BirthdaySwitch?
     private var today: CalendarDate
     private var shownDay: CalendarDate
     private var recordStore: RecordStore?
     private var roster: Roster
     private var oneOffStore: OneOffStore?
+    private var birthdayStore: BirthdayStore?
+    private var birthdayTicksState: BirthdayTicksState
+    private var lastBirthdayReading: CalendarReading
 
     /// The copy place this screen writes to after every change it keeps — `nil` where none was
     /// handed in, which is the whole of "no copying": every call site that reaches a place
@@ -63,6 +111,13 @@ public final class DayScreen {
         applicationSupportPlace(fileName: "one-offs.json")
     }
 
+    /// The place a day screen keeps its birthday ticks when it is not told another: one file,
+    /// in the same directory as `recordPlace`, `rosterPlace` and `oneOffPlace`, but none of
+    /// those files, and not `BirthdaySwitch.place` either. `design.md` § *Migration*.
+    public static var birthdayPlace: URL {
+        applicationSupportPlace(fileName: "birthday-ticks.json")
+    }
+
     /// The place named `fileName`, inside a directory of this app's own under the platform's
     /// application-support directory. `recordPlace` and `rosterPlace` differ only in `fileName`.
     private static func applicationSupportPlace(fileName: String) -> URL {
@@ -76,12 +131,18 @@ public final class DayScreen {
     /// Opens on `today`, reading the record kept at `recordPlace`. `copyingTo` is the copy place
     /// a kept change writes to, `nil` by default so every existing call site still compiles
     /// unchanged — `openspec/changes/copy-on-every-change/design.md` § *The seam*.
+    /// `readingBirthdaysFrom` and `whileOn` are `nil` by default for the same reason — every
+    /// existing call site draws no Birthdays group and asks no calendar, `design.md` § *One
+    /// state, the calendar first*: birthdays are off wherever either is missing.
     public init(
         startingFrom dayOne: [Commitment],
         asOf today: CalendarDate,
         keepingRecordAt recordPlace: URL = DayScreen.recordPlace,
         keepingRosterAt rosterPlace: URL = DayScreen.rosterPlace,
         keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace,
+        keepingBirthdayTicksAt birthdayPlace: URL = DayScreen.birthdayPlace,
+        readingBirthdaysFrom calendar: BirthdayCalendar? = nil,
+        whileOn birthdaySwitch: BirthdaySwitch? = nil,
         copyingTo copyPlace: CopyPlace? = nil
     ) {
         self.commitments = dayOne
@@ -90,6 +151,9 @@ public final class DayScreen {
         self.recordPlace = recordPlace
         self.rosterPlace = rosterPlace
         self.oneOffPlace = oneOffPlace
+        self.birthdayPlace = birthdayPlace
+        self.calendar = calendar
+        self.birthdaySwitch = birthdaySwitch
         self.copyPlace = copyPlace
 
         let read = Self.readRecordAndRoster(
@@ -102,12 +166,27 @@ public final class DayScreen {
         self.oneOffStore = read.oneOffStore
         self.oneOffState = read.oneOffState
 
+        let openedBirthdays = Self.openBirthdays(at: birthdayPlace)
+        self.birthdayStore = openedBirthdays.store
+        self.birthdayTicksState = openedBirthdays.state
+
+        // `calendar` and `birthdaySwitch` here are the parameters above, not `self.calendar` and
+        // `self.birthdaySwitch`: `self` is not yet fully initialized (`dayView` is being assigned
+        // right now), so neither can be read back — the same reason `today`, not `self.today`,
+        // is used just below.
+        let reading = Self.readCalendar(
+            for: today, calendar: calendar, isOn: birthdaySwitch?.isOn ?? false)
+        self.lastBirthdayReading = reading
+        self.birthdayState = Self.birthdayState(from: reading, ticksState: openedBirthdays.state)
+
         // `today` here is the parameter above, not `self.today`: `self` is not yet fully
         // initialized (`dayView` is being assigned right now), so `self.shownDay` cannot be read
         // back. The parameter holds the same value `shownDay` was just set to, two lines up.
         self.dayView = Self.formDayView(
             of: read.roster.groups(on: today), roster: read.roster, oneOffs: read.oneOffStore,
-            asOf: today, on: today, in: read.recordStore?.history ?? History())
+            asOf: today, on: today, in: read.recordStore?.history ?? History(),
+            birthdayGroup: Self.birthdayGroup(
+                on: today, from: reading, calendar: calendar, ticks: openedBirthdays.store?.ticks))
     }
 
     /// What reading the record, the roster and the one-off places produces: a restore in
@@ -240,17 +319,120 @@ public final class DayScreen {
     /// empty group is the offer*. `roster` is the roster `groups` was read from, so a
     /// weekly-quota row can read its commitment's whole chain rather than the one era `groups`
     /// itself holds — `openspec/changes/stop-and-resume-as-eras/design.md` § *One week rule, in
-    /// one place*.
+    /// one place*. `birthdayGroup` is `date`'s own Birthdays group, formed by the caller —
+    /// `nil` where birthdays are off, the calendar could not be read, or none fall on `date`.
+    /// Required, not defaulted (G7 review finding 3): every caller already forms this value —
+    /// this type's own instance `birthdayGroup(on:)`, or, from `init`, the static function
+    /// directly — so a default here would only let a later call site that forgot the argument
+    /// compile clean and silently drop the group instead of failing to build.
     private static func formDayView(
         of groups: [Roster.Group], roster: Roster, oneOffs oneOffStore: OneOffStore?,
-        asOf today: CalendarDate, on date: CalendarDate, in history: History
+        asOf today: CalendarDate, on date: CalendarDate, in history: History,
+        birthdayGroup: DayView.BirthdayGroup?
     ) -> DayView {
         guard let oneOffStore else {
-            return DayView(of: groups, on: date, in: history, roster: roster)
+            return DayView(
+                of: groups, on: date, in: history, roster: roster, birthdayGroup: birthdayGroup)
         }
         return DayView(
             of: groups, oneOffs: oneOffStore.oneOffs, asOf: today, on: date, in: history,
-            roster: roster)
+            roster: roster, birthdayGroup: birthdayGroup)
+    }
+
+    /// Opens the birthday ticks at `place`, telling apart the one refusal a person can act on
+    /// differently — a later form — exactly as `open(at:)` and `openOneOffs(at:)` answer their
+    /// own refusals. Opening writes nothing, and is called at `init` and `shown(asOf:)` only —
+    /// `design.md` § *The switch at every forming, the birthday place at opening and showing*.
+    private static func openBirthdays(
+        at place: URL
+    ) -> (store: BirthdayStore?, state: BirthdayTicksState) {
+        do {
+            let store = try BirthdayStore(at: place)
+            return (store, .kept)
+        } catch BirthdayStoreError.laterForm {
+            return (nil, .writtenByALaterVersion)
+        } catch {
+            return (nil, .unreadable)
+        }
+    }
+
+    /// Reads `calendar` for the span around `day` — the day before through the day after,
+    /// clamped at the supported range's own ends — filtered to birthdays actually falling
+    /// inside that span, so a day the calendar hands but was not asked for is never drawn.
+    /// `.off` where birthdays are off: no calendar was handed in, or `isOn` reads `false`, in
+    /// which case the calendar is asked nothing at all. `.unreadable` where the ask throws.
+    /// `design.md` § *Asked once per forming of the shown day, for three days*.
+    private static func readCalendar(
+        for day: CalendarDate, calendar: BirthdayCalendar?, isOn: Bool
+    ) -> CalendarReading {
+        guard let calendar, isOn else {
+            return .off
+        }
+
+        let first = day.adding(days: -1) ?? day
+        let last = day.adding(days: 1) ?? day
+
+        guard let handed = try? calendar.reading(first, last) else {
+            return .unreadable
+        }
+
+        let inSpan = handed.filter {
+            first.days(until: $0.day) >= 0 && $0.day.days(until: last) >= 0
+        }
+        return .read(inSpan)
+    }
+
+    /// What a day screen says about birthdays, from a calendar reading already taken and the
+    /// birthday ticks already read — `design.md` § *One state, the calendar first*: off before
+    /// the calendar, then whether the calendar could be read, then the ticks.
+    private static func birthdayState(
+        from reading: CalendarReading, ticksState: BirthdayTicksState
+    ) -> BirthdayState {
+        switch reading {
+        case .off:
+            return .off
+        case .unreadable:
+            return .calendarUnreadable
+        case .read:
+            switch ticksState {
+            case .kept: return .on
+            case .unreadable: return .ticksUnreadable
+            case .writtenByALaterVersion: return .ticksWrittenByALaterVersion
+            }
+        }
+    }
+
+    /// The Birthdays group `date` draws, from a calendar reading already taken — `nil` where
+    /// birthdays are off, the calendar could not be read, or none fall on `date`. Rows are
+    /// sorted by `calendar`'s own collation of their words, then by contact where neither comes
+    /// before the other — `design.md` § *The calendar is handed in, and the Kit orders by the
+    /// collation it is handed*. `ticks` is `nil` exactly where the birthday ticks could not be
+    /// read, in which case every row says it is not ticked.
+    private static func birthdayGroup(
+        on date: CalendarDate, from reading: CalendarReading, calendar: BirthdayCalendar?,
+        ticks: BirthdayTicks?
+    ) -> DayView.BirthdayGroup? {
+        guard case .read(let birthdays) = reading, let calendar else {
+            return nil
+        }
+        let falling = Birthday.falling(on: date, among: birthdays)
+        guard !falling.isEmpty else {
+            return nil
+        }
+
+        let ordered = falling.sorted { first, second in
+            if calendar.collating(first.words, second.words) {
+                return true
+            }
+            if calendar.collating(second.words, first.words) {
+                return false
+            }
+            return first.contact < second.contact
+        }
+        let rows = ordered.map { birthday in
+            DayView.BirthdayRow(birthday: birthday, isTicked: ticks?.isTicked(birthday) ?? false)
+        }
+        return DayView.BirthdayGroup(heading: "Birthdays", rows: rows)
     }
 
     /// Opens the roster at `place`. A place written by a later version of DayByDay is told apart
@@ -361,6 +543,11 @@ public final class DayScreen {
     /// Anything but `.kept` means this screen holds no One-offs group on any day.
     public private(set) var oneOffState: OneOffState
 
+    /// What this screen says about birthdays: `.off` draws no Birthdays group on any day and
+    /// asks the calendar nothing; anything else draws one wherever a birthday falls, unticked
+    /// throughout but for `.on`. `design.md` § *One state, the calendar first*.
+    public private(set) var birthdayState: BirthdayState
+
     /// Whether this screen says a copy can be restored, and where: exactly while it could not
     /// read its record, could not read its one-offs, or is not keeping its roster for a reason
     /// that is not a later version of DayByDay — `.notKept` already bundles a roster that could
@@ -374,22 +561,32 @@ public final class DayScreen {
 
     /// What a person is told on a row, and nothing else: which row, and the cause where there is
     /// one a person can act on. `cause` is `nil` for a refusal by the place, which names nothing,
-    /// and for a refused tick, which carries no cause at all. Exactly one of `row` and
-    /// `oneOffRow` is set. `design.md` § *One notice carrying a row of either kind*.
+    /// and for a refused tick, which carries no cause at all. Exactly one of `row`, `oneOffRow`
+    /// and `birthdayRow` is set. `design.md` § *One notice carrying a row of either kind*.
     public struct Notice: Hashable, Sendable {
         public let row: DayView.Row?
         public let oneOffRow: DayView.OneOffRow?
+        public let birthdayRow: DayView.BirthdayRow?
         public let cause: String?
 
         init(row: DayView.Row, cause: String? = nil) {
             self.row = row
             self.oneOffRow = nil
+            self.birthdayRow = nil
             self.cause = cause
         }
 
         init(oneOffRow: DayView.OneOffRow) {
             self.row = nil
             self.oneOffRow = oneOffRow
+            self.birthdayRow = nil
+            self.cause = nil
+        }
+
+        init(birthdayRow: DayView.BirthdayRow) {
+            self.row = nil
+            self.oneOffRow = nil
+            self.birthdayRow = birthdayRow
             self.cause = nil
         }
     }
@@ -637,6 +834,38 @@ public final class DayScreen {
         copyPlace?.keptAChange()
     }
 
+    /// Makes the tick `row` offers, or takes it back where `row` says its birthday is ticked,
+    /// and keeps the change at the birthday place before `dayView` says so. Does nothing when
+    /// `row` is not one this screen's day view holds, when the birthday ticks could not be
+    /// read, or when `row` offers no tick as of today. Throws when the change could not be
+    /// kept, leaving `dayView` as it was. Writes no copy — `design.md` § Non-Goals: "a birthday
+    /// tick writes no copy."
+    public func tick(_ row: DayView.BirthdayRow) throws {
+        guard dayView.birthdayGroup?.rows.contains(row) ?? false else {
+            return
+        }
+        guard let birthdayStore else {
+            return
+        }
+        guard row.offersTick(asOf: today) else {
+            return
+        }
+
+        do {
+            if row.isTicked {
+                try birthdayStore.takeBack(row.birthday)
+            } else {
+                try birthdayStore.tick(row.birthday)
+            }
+        } catch {
+            notice = Notice(birthdayRow: row)
+            throw error
+        }
+        notice = nil
+
+        dayView = dayViewOfShownDay()
+    }
+
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
     /// nothing, and keeps the change before `dayView` says so. Does nothing when `row` is not one
     /// this screen's day view holds, when this screen is not keeping a record, when `row` offers
@@ -825,11 +1054,40 @@ public final class DayScreen {
 
     /// The day view of `day`, drawn from `roster`, `recordStore`'s history and `oneOffStore`'s
     /// one-offs exactly as they stand now — asks none of the three again, and asks the one-offs
-    /// which stand as of `today`, never as of `day`.
+    /// which stand as of `today`, never as of `day`. Its Birthdays group is read off
+    /// `lastBirthdayReading`, the calendar's own last answer — this never asks the calendar
+    /// itself, so `previousDayView` and `nextDayView` reuse the same answer `dayViewOfShownDay()`
+    /// last took rather than asking again — `design.md` § *Asked once per forming of the shown
+    /// day, for three days*.
     private func dayView(on day: CalendarDate) -> DayView {
         Self.formDayView(
             of: roster.groups(on: day), roster: roster, oneOffs: oneOffStore, asOf: today, on: day,
-            in: recordStore?.history ?? History())
+            in: recordStore?.history ?? History(),
+            birthdayGroup: birthdayGroup(on: day)
+        )
+    }
+
+    /// Reads the calendar again for the span around `day`, and sets `birthdayState` from that
+    /// reading and from the birthday ticks already read — called at every forming of the day
+    /// view of the day being shown, so a switch turned on or off, or a calendar that starts or
+    /// stops answering, is followed at the next one. `design.md` § *The switch at every
+    /// forming, the birthday place at opening and showing* and § *Asked once per forming of the
+    /// shown day, for three days*.
+    private func refreshBirthdays(for day: CalendarDate) {
+        lastBirthdayReading = Self.readCalendar(
+            for: day, calendar: calendar, isOn: birthdaySwitch?.isOn ?? false)
+        birthdayState = Self.birthdayState(from: lastBirthdayReading, ticksState: birthdayTicksState)
+    }
+
+    /// `date`'s own Birthdays group, against this screen's own `lastBirthdayReading`, `calendar`
+    /// and `birthdayStore`'s ticks — `Self.birthdayGroup(on:from:calendar:ticks:)` read off this
+    /// instance, so every `formDayView` call site below hands it the same four values by naming
+    /// this once rather than repeating the expression (G7 review finding 3). Not callable from
+    /// `init`, which forms `dayView` before `self` is fully initialized and so calls the static
+    /// function directly, off its own local `reading` and `calendar`.
+    private func birthdayGroup(on date: CalendarDate) -> DayView.BirthdayGroup? {
+        Self.birthdayGroup(
+            on: date, from: lastBirthdayReading, calendar: calendar, ticks: birthdayStore?.ticks)
     }
 
     /// The day view of `shownDay`, drawn from `roster`, `recordStore`'s history and
@@ -837,9 +1095,12 @@ public final class DayScreen {
     /// by every caller that re-forms `dayView` after changing what it is drawn from or which day
     /// it is drawn for: the writes `tick` and `enter(_:on:)` keep before re-forming it, and the
     /// moves `showPreviousDay`, `showNextDay` and `showToday` that only step the day already
-    /// held.
+    /// held. Refreshes the calendar reading for `shownDay` first, every time — every one of
+    /// those callers is a forming of the day view of the day being shown, `design.md` § *Asked
+    /// once per forming of the shown day, for three days*.
     private func dayViewOfShownDay() -> DayView {
-        dayView(on: shownDay)
+        refreshBirthdays(for: shownDay)
+        return dayView(on: shownDay)
     }
 
     /// The day view of the calendar date one day before `shownDay`, or `nil` where `shownDay` is
@@ -919,7 +1180,13 @@ public final class DayScreen {
     /// The app has been shown on `today`: the day view and the record are read again. A screen
     /// showing its today follows onto the new one; a screen showing any other day goes on
     /// showing that day. The comparison is against the today the screen held before this call.
+    /// Shows the birthday switch first, so access withdrawn in Settings is followed before the
+    /// calendar is asked anything — `design.md` § *The switch at every forming, the birthday
+    /// place at opening and showing*. The birthday place is opened again here, exactly as the
+    /// record, the roster and the one-offs are.
     public func shown(asOf today: CalendarDate) {
+        birthdaySwitch?.shown()
+
         notice = nil
         nameRefusal = nil
 
@@ -938,9 +1205,15 @@ public final class DayScreen {
         self.oneOffStore = read.oneOffStore
         self.oneOffState = read.oneOffState
 
+        let openedBirthdays = Self.openBirthdays(at: birthdayPlace)
+        self.birthdayStore = openedBirthdays.store
+        self.birthdayTicksState = openedBirthdays.state
+        refreshBirthdays(for: shownDay)
+
         self.dayView = Self.formDayView(
             of: read.roster.groups(on: shownDay), roster: read.roster, oneOffs: read.oneOffStore,
-            asOf: self.today, on: shownDay, in: read.recordStore?.history ?? History())
+            asOf: self.today, on: shownDay, in: read.recordStore?.history ?? History(),
+            birthdayGroup: birthdayGroup(on: shownDay))
     }
 
     /// The person has come back to this screen from somewhere else in the app: the roster, and
@@ -988,8 +1261,10 @@ public final class DayScreen {
             self.recordState = .unreadable
             self.oneOffStore = nil
             self.oneOffState = .unreadable
+            refreshBirthdays(for: shownDay)
             self.dayView = Self.formDayView(
-                of: [], roster: Roster(), oneOffs: nil, asOf: today, on: shownDay, in: History())
+                of: [], roster: Roster(), oneOffs: nil, asOf: today, on: shownDay, in: History(),
+                birthdayGroup: birthdayGroup(on: shownDay))
             return
         }
         guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) else {
@@ -1001,9 +1276,11 @@ public final class DayScreen {
             let openedOneOffs = Self.openOneOffs(at: oneOffPlace)
             self.oneOffStore = openedOneOffs.store
             self.oneOffState = openedOneOffs.state
+            refreshBirthdays(for: shownDay)
             self.dayView = Self.formDayView(
                 of: readOnly.roster.groups(on: shownDay), roster: readOnly.roster,
-                oneOffs: openedOneOffs.store, asOf: today, on: shownDay, in: History())
+                oneOffs: openedOneOffs.store, asOf: today, on: shownDay, in: History(),
+                birthdayGroup: birthdayGroup(on: shownDay))
             return
         }
 
@@ -1024,10 +1301,12 @@ public final class DayScreen {
         self.oneOffStore = openedOneOffs.store
         self.oneOffState = openedOneOffs.state
 
+        refreshBirthdays(for: shownDay)
         self.dayView = Self.formDayView(
             of: openedRoster.roster.groups(on: shownDay), roster: openedRoster.roster,
             oneOffs: openedOneOffs.store, asOf: today, on: shownDay,
-            in: recordStore?.history ?? History())
+            in: recordStore?.history ?? History(),
+            birthdayGroup: birthdayGroup(on: shownDay))
     }
 
     /// Being returned to where no copy has been restored: a restore in progress is undone first,
@@ -1104,9 +1383,11 @@ public final class DayScreen {
         self.rosterState = openedRoster.state
         self.roster = openedRoster.roster
 
+        refreshBirthdays(for: shownDay)
         self.dayView = Self.formDayView(
             of: openedRoster.roster.groups(on: shownDay), roster: openedRoster.roster,
-            oneOffs: oneOffStore, asOf: today, on: shownDay, in: recordStore?.history ?? History())
+            oneOffs: oneOffStore, asOf: today, on: shownDay, in: recordStore?.history ?? History(),
+            birthdayGroup: birthdayGroup(on: shownDay))
     }
 }
 

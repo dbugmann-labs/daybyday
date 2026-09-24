@@ -1600,6 +1600,15 @@ leaves what is there untouched, naming a file written by a later version as the 
 on any row, and one that lands ends it. It does not move a **reach**, which stays the roster's.
 Agreed 2026-09-14 at the grill of `draw-one-offs-on-day-screen` (#243).
 
+**Birthday place** — the one place a day screen keeps its **birthday** ticks at, the **birthday
+store**'s file, chosen exactly as the **one-off place** is and a file of its own beside the other
+three and beside the birthday switch's, so that ticks that will not open never take a record, a
+roster or the one-offs down with them. It is read when the day screen is opened and when the app is
+shown again, whether or not birthdays are on, and never written but by a tick. A day screen that
+cannot read it still draws the day's birthdays, every one unticked, keeps no tick, and says why in one
+line, naming a file written by a later version as the other three do. Agreed 2026-09-24 while
+writing the delta of `draw-birthdays-on-day-screen` (#328).
+
 **Copy** — one file holding what the **record store**, the **roster store** and the one-off store
 hold at one moment, written for a person to keep somewhere the phone is not: their own files,
 another device, a folder they chose. It is the whole of a history and never part of one — a record
