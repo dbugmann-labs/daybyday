@@ -6,57 +6,57 @@ Rule 3 throughout: one scenario, one acceptance test named identically to it, on
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they
   are exactly the twelve titles boxed in § 3. Any other uncovered title is a stop.
-- [ ] 1.2 The tests go in a new `src/DayByDayKit/Tests/DayByDayKitTests/BirthdaySwitchTests.swift`,
+- [x] 1.2 The tests go in a new `src/DayByDayKit/Tests/DayByDayKitTests/BirthdaySwitchTests.swift`,
   with a fake phone whose access a test sets, whose answer to an ask a test sets, and which counts
   its asks; each place is a fresh directory, as `CopyPlaceTests` makes one.
 
 ## 2. The seam
 
-- [ ] 2.1 `CalendarAccess` and `BirthdaySwitch` exist with the signatures in `design.md` § *The
+- [x] 2.1 `CalendarAccess` and `BirthdaySwitch` exist with the signatures in `design.md` § *The
   seam*, and 3.1 is red before either does more than compile
-- [ ] 2.2 `isOn` and `isRefused` change only in `init`, `shown()`, `turnOn()` and `turnOff()`; the
+- [x] 2.2 `isOn` and `isRefused` change only in `init`, `shown()`, `turnOn()` and `turnOff()`; the
   verdict that write-only, denied and restricted refuse lives in the Kit, and no Kit file imports
   `EventKit`
-- [ ] 2.3 The form on disk is `design.md` § *The form on disk, version 1*; anything unreadable opens
+- [x] 2.3 The form on disk is `design.md` § *The form on disk, version 1*; anything unreadable opens
   off, as `CopyPlace`'s own state does, and `BirthdaySwitch.place` is its own file under
   `ApplicationSupport/DayByDay/`
 
 ## 3. The twelve scenarios — one test each
 
-- [ ] 3.1 a birthday switch opened where nothing has been kept is off — catches a switch that opens on, or asks at opening
-- [ ] 3.2 a birthday switch opened again is on or off as it was left — catches a switch held only in memory
-- [ ] 3.3 a birthday switch opened where what is kept cannot be read is off — catches an unreadable file refused, or read as on
-- [ ] 3.4 a restore confirmed leaves the birthday switch as it was before the restore — catches the switch carried in a copy
-- [ ] 3.5 birthdays turned on where the phone has never been asked are on once it gives full access — catches on before the answer is read
-- [ ] 3.6 birthdays turned on and refused at the prompt turn themselves back off — catches a switch left on over a refusal
-- [ ] 3.7 birthdays turned on where the phone already gives full access are on without asking — catches an ask on every turn
-- [ ] 3.8 birthdays turned on where the phone gives less than full access ask again, and are on only if it then gives it — catches asking only when never asked
-- [ ] 3.9 birthdays turned off are off and kept off, and ask nothing — catches a turn-off that never reaches the disk
-- [ ] 3.10 birthdays kept on are off when opened where the phone no longer gives full access — catches on computed from access alone
-- [ ] 3.11 birthdays on are off when shown again after access is withdrawn, and stay off when it is given back — catches a switch that reads access only at opening
-- [ ] 3.12 a birthday switch says it is refused where the phone refuses, though it was never turned on — catches a refusal remembered as an event
+- [x] 3.1 a birthday switch opened where nothing has been kept is off — catches a switch that opens on, or asks at opening
+- [x] 3.2 a birthday switch opened again is on or off as it was left — catches a switch held only in memory
+- [x] 3.3 a birthday switch opened where what is kept cannot be read is off — catches an unreadable file refused, or read as on
+- [x] 3.4 a restore confirmed leaves the birthday switch as it was before the restore — catches the switch carried in a copy
+- [x] 3.5 birthdays turned on where the phone has never been asked are on once it gives full access — catches on before the answer is read
+- [x] 3.6 birthdays turned on and refused at the prompt turn themselves back off — catches a switch left on over a refusal
+- [x] 3.7 birthdays turned on where the phone already gives full access are on without asking — catches an ask on every turn
+- [x] 3.8 birthdays turned on where the phone gives less than full access ask again, and are on only if it then gives it — catches asking only when never asked
+- [x] 3.9 birthdays turned off are off and kept off, and ask nothing — catches a turn-off that never reaches the disk
+- [x] 3.10 birthdays kept on are off when opened where the phone no longer gives full access — catches on computed from access alone
+- [x] 3.11 birthdays on are off when shown again after access is withdrawn, and stay off when it is given back — catches a switch that reads access only at opening
+- [x] 3.12 a birthday switch says it is refused where the phone refuses, though it was never turned on — catches a refusal remembered as an event
 
 ## 4. The shell
 
-- [ ] 4.1 `src/DayByDay/Info.plist` carries `NSCalendarsFullAccessUsageDescription` with the sentence
+- [x] 4.1 `src/DayByDay/Info.plist` carries `NSCalendarsFullAccessUsageDescription` with the sentence
   in `design.md` § *The shell*, verbatim
-- [ ] 4.2 The adapter maps every `EKAuthorizationStatus` onto the `CalendarAccess` of the same meaning
+- [x] 4.2 The adapter maps every `EKAuthorizationStatus` onto the `CalendarAccess` of the same meaning
   and `@unknown default` onto `.denied`, and asks through `requestFullAccessToEvents()`, ignoring its
   error; it lives in `src/DayByDay/DayByDay/` and nowhere in the Kit
-- [ ] 4.3 `ContentView` builds one `BirthdaySwitch` beside `copyPlace`, hands it to `CommitmentsView`,
+- [x] 4.3 `ContentView` builds one `BirthdaySwitch` beside `copyPlace`, hands it to `CommitmentsView`,
   and calls `shown()` when the app becomes active and when *Commitments* is tapped
-- [ ] 4.4 `CommitmentsView` draws the section in `design.md` § *What the shell draws*, just above
+- [x] 4.4 `CommitmentsView` draws the section in `design.md` § *What the shell draws*, just above
   *Copy*, with the words in § *The shell* verbatim; *Open Settings* opens `openSettingsURLString`
-- [ ] 4.5 The app target builds for the simulator, and `CommitmentsScreen` and `CopyPlace` are
+- [x] 4.5 The app target builds for the simulator, and `CommitmentsScreen` and `CopyPlace` are
   untouched: `git diff origin/main -- src/DayByDayKit/Sources` lists `BirthdaySwitch.swift` alone
 
 ## 5. The records
 
-- [ ] 5.1 Confirm `CONTEXT.md` § *Birthday*'s 2026-09-24 amendment for #327 still describes what
+- [x] 5.1 Confirm `CONTEXT.md` § *Birthday*'s 2026-09-24 amendment for #327 still describes what
   shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
-- [ ] 5.2 Confirm `openspec/specs/` was not hand-edited on this branch (rule 2):
+- [x] 5.2 Confirm `openspec/specs/` was not hand-edited on this branch (rule 2):
   `git diff --stat origin/main... -- openspec/specs/` reports nothing
 
 ## 6. The walk

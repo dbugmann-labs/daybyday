@@ -389,6 +389,10 @@ private struct TakeOutShare: Identifiable {
 /// changes one already on either list.
 struct CommitmentsView: View {
     let screen: CommitmentsScreen
+    // The app's second setting — `openspec/changes/turn-birthdays-on/design.md` § *A type of its
+    // own beside `CopyPlace`, not a member of `CommitmentsScreen`*: built in `ContentView.init`
+    // and handed here, drawn just above *Copy*.
+    let birthdaySwitch: BirthdaySwitch
 
     @State private var sheetTarget: SheetTarget?
     /// Bumped in `.sheet(item:onDismiss:)`'s `onDismiss`, and read by `body` where the lists are
@@ -671,6 +675,39 @@ struct CommitmentsView: View {
             // *The shell rides this Story*.
             if screen.recordsBelongToNoCommitment {
                 Text("Some records belong to no commitment.")
+            }
+
+            // The birthday switch, its own section, no header — `openspec/changes/
+            // turn-birthdays-on/design.md` § *What the shell draws*, Option A: sits just above
+            // *Copy*, and its lines go in the footer as *Copy*'s already do. The toggle draws
+            // only what `birthdaySwitch` already says; turning it on runs `turnOn()` in a `Task`,
+            // and the refused line and *Open Settings* show only while it says it is refused.
+            Section {
+                Toggle(
+                    "Birthdays",
+                    isOn: Binding(
+                        get: { birthdaySwitch.isOn },
+                        set: { isOn in
+                            if isOn {
+                                Task { await birthdaySwitch.turnOn() }
+                            } else {
+                                birthdaySwitch.turnOff()
+                            }
+                        }
+                    ))
+            } footer: {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Birthdays from your phone's calendar, on the day they fall.")
+                    if birthdaySwitch.isRefused {
+                        Text("Calendar access is off for DayByDay, so birthdays can't be read.")
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                    }
+                }
+                .font(.caption)
             }
 
             // The one section this screen offers a copy through, below *Stopped* —

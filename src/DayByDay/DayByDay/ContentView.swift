@@ -189,6 +189,11 @@ struct ContentView: View {
     // reassigns, but `@State` is what SwiftUI's own convention already uses for `screen` below,
     // and keeps this view's every stored property on the same footing.
     @State private var copyPlace: CopyPlace
+    // The app's second setting, beside `copyPlace` — `openspec/changes/turn-birthdays-on/
+    // design.md` § *A type of its own beside `CopyPlace`, not a member of `CommitmentsScreen`*:
+    // one instance, built here and handed to `CommitmentsView`, reading and asking through the
+    // shell's own adapter in `BirthdayCalendarAccess.swift`.
+    @State private var birthdaySwitch: BirthdaySwitch
     @State private var screen: DayScreen
     @Environment(\.scenePhase) private var scenePhase
     // `openspec/changes/add-adjacent-day-views/design.md` § *What the shell draws*: the settle
@@ -286,6 +291,9 @@ struct ContentView: View {
     init() {
         let copyPlace = CopyPlace(asking: momentNow)
         _copyPlace = State(initialValue: copyPlace)
+        _birthdaySwitch = State(
+            initialValue: BirthdaySwitch(
+                readingAccess: currentCalendarAccess, askingForAccess: askForCalendarAccess))
         _screen = State(
             initialValue: DayScreen(
                 startingFrom: dayOneCommitments, asOf: today(), copyingTo: copyPlace))
@@ -315,7 +323,7 @@ struct ContentView: View {
             }
             .navigationDestination(isPresented: $showingCommitments) {
                 if let commitmentsScreen {
-                    CommitmentsView(screen: commitmentsScreen)
+                    CommitmentsView(screen: commitmentsScreen, birthdaySwitch: birthdaySwitch)
                 }
             }
             .toolbar {
@@ -346,6 +354,7 @@ struct ContentView: View {
                 ToolbarItem {
                     Button("Commitments") {
                         commitmentsScreen = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
+                        birthdaySwitch.shown()
                         showingCommitments = true
                     }
                 }
@@ -500,6 +509,7 @@ struct ContentView: View {
             if phase == .active {
                 screen.shown(asOf: today())
                 commitmentsScreen?.shown(asOf: today())
+                birthdaySwitch.shown()
             }
         }
         .onChange(of: showingCommitments) { _, isShowing in
