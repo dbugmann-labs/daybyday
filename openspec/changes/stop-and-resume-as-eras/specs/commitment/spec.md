@@ -577,13 +577,13 @@ both lists as they were.
 
 ### Requirement: A roster store reads each commitment's eras mended
 
-A roster store SHALL read each commitment's eras mended, whatever form they were in, and a copy to
-be restored alike. Newest first, each era but the newest SHALL end at the latest on the day before
-the next kept era's day kept from, and SHALL be dropped where it then holds no day. Two neighbouring
-eras alike in schedule and kind, range or target included, SHALL be one where no day lies between
-them, kept from the older's day with the newer's day kept until, state and category, and two
-otherwise. The newest era SHALL be dropped for holding no day only where it is stopped with an older
-era behind it, which takes its state, category and earlier day kept until.
+A roster store SHALL read each commitment's eras mended, whatever form they were kept in, and a copy
+to be restored alike. Newest first, each era but the newest SHALL hold only days before the day the
+kept era in front of it is kept from, dropped where it then holds none. Two neighbouring eras alike
+in schedule and kind, range or target included, SHALL be one where no day lies between them, kept
+from the older's day with the newer's day kept until, state and category, two otherwise. The newest
+era SHALL NOT be dropped for holding no day, but a stopped one holding none SHALL be while an older
+era stands behind it, taking its state, category and earlier day kept until.
 
 Mending SHALL say nothing to the person and MUST NOT change what is at the place; the next change
 kept there SHALL be written mended.
