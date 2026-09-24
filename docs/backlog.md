@@ -1126,6 +1126,13 @@ found nothing.
     the switch on the commitments screen and its refused line; then the copy carries the store.
     §7: `birthday` is a new capability; the day-screen and copy Stories delta `day-screen` and
     `restore`, which no open Story touches — nothing is open on the tracker.
+    G2 accepted the same day, from `/to-tickets 322` stopped after its quiz: #326 `add-birthday`
+    first, blocked by nothing; #327 `turn-birthdays-on` blocked by #326; #328
+    `draw-birthdays-on-day-screen` blocked by #327; #329 `carry-birthdays-in-a-copy` blocked by
+    #326. The switch comes before the day screen, against the order proposed above, because
+    nothing is read on a phone until the switch has asked. The orchestrator's G2 comment on
+    #322 serialises all four; #329 shares no capability with #327 or #328 and may run beside
+    them if its grill confirms that.
   - **Not taken**, each with the disposition this pass proposed:
     - **E**, entry affordances: B-032, B-034 — `day-screen` Stories, buildable now; Epic #1 excludes
       prefill by name and needs amending at its G1. Handed to a session of its own by the owner,
