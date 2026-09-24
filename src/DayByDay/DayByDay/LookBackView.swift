@@ -44,11 +44,15 @@ struct LookBackView: View {
     let commitment: Commitment
 
     @State private var span: Span = .month
-    // Where the two values-axis labels sit in the lane beside the chart — read once from the
-    // chart's own `ChartProxy` inside `graphCard(_:)` and cached here, since the lane is a
-    // sibling view of the `Chart` with no access to the proxy itself. Third G7 round, finding 3.
+    // Where the two values-axis labels, and each distinct target's own, sit in the lane beside
+    // the chart — read once from the chart's own `ChartProxy` inside `graphCard(_:)` and cached
+    // here, since the lane is a sibling view of the `Chart` with no access to the proxy itself.
+    // Third G7 round, finding 3; `targetLabels` joined them on the owner's later request that
+    // every target's number sit in this lane the same way, in place of a label per stretch drawn
+    // on the plot itself.
     @State private var lowestLabelY: CGFloat?
     @State private var highestLabelY: CGFloat?
+    @State private var targetLabels: [TargetLabel] = []
     // The card's own rendered width, read once the same way — fourth G7 round, finding E: the
     // values-axis lane is clamped to a fraction of this rather than left free to swallow the
     // plot down to a sliver on an extreme value.
@@ -435,9 +439,12 @@ struct LookBackView: View {
         // whole plainly (`design.md` § *Context*) — unclamped, that reads as roughly two thirds of
         // a phone-width card, leaving the plot a sliver. `cardWidth` is read the same way the
         // label positions are, below, and stands unclamped for the one frame before it is known.
+        // `targetLabels`' own widths join the two bounds' here now that a target's number draws
+        // in this lane too, rather than on the plot.
         let unclampedLaneWidth = max(
             Self.measuredWidth(graph.lowestInWords),
-            Self.measuredWidth(graph.highestInWords)
+            Self.measuredWidth(graph.highestInWords),
+            targetLabels.map { Self.measuredWidth($0.inWords) }.max() ?? 0
         ) + 16
         let valueLabelLaneWidth =
             cardWidth.map { min(unclampedLaneWidth, max($0 * 0.3, 60)) } ?? unclampedLaneWidth
@@ -468,6 +475,19 @@ struct LookBackView: View {
                         .lineLimit(1)
                         .frame(width: valueLabelContentWidth, alignment: .trailing)
                         .position(x: 16 + valueLabelContentWidth / 2, y: highestLabelY)
+                }
+                // A total's target rule used to say each stretch's own number on the plot itself,
+                // at its `through`; the owner asked for it to read like `lowest`/`highest` instead
+                // — one label per distinct target, in this lane, at the target's own y rather
+                // than the stretch's x. `resolvedTargetLabels(...)` has already dropped a target
+                // equal to a bound or too close to another kept label, so every one of these draws.
+                ForEach(targetLabels) { label in
+                    Text(label.inWords)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .frame(width: valueLabelContentWidth, alignment: .trailing)
+                        .position(x: 16 + valueLabelContentWidth / 2, y: label.y)
                 }
             }
             .frame(width: valueLabelLaneWidth, height: 220)
@@ -518,7 +538,12 @@ struct LookBackView: View {
                 // zero-length line two marks at the same point make; it also meets the next
                 // stretch's own half-day extension exactly at their shared boundary, so every day
                 // of the graph carries its target's rule with nothing left between two stretches.
-                // `design.md` § *The rule is stretches, not a target per day*.
+                // `design.md` § *The rule is stretches, not a target per day*. The oldest
+                // stretch's own start is widened further still, to `domainStart` where that
+                // reaches further left than its own half-day mark — a history shorter than the
+                // visible window otherwise left the rule starting only at the first real day,
+                // with the empty part of the plot before it bare, on the owner's request that the
+                // dashed rule reach the plot's own left edge the way the trace already does.
                 // The tapped point's marker: a thin vertical rule through its day, under the
                 // callout the overlay draws above the point.
                 if let selectedDay, graph.points.contains(where: { $0.day == selectedDay }) {
@@ -529,8 +554,12 @@ struct LookBackView: View {
 
                 ForEach(Array(graph.targetRule.enumerated()), id: \.offset) { index, stretch in
                     let target = (stretch.target as NSDecimalNumber).doubleValue
+                    let startX =
+                        index == 0
+                        ? min(Double(stretch.from) - 0.5, domainStart)
+                        : Double(stretch.from) - 0.5
                     LineMark(
-                        x: .value("Day", Double(stretch.from) - 0.5), y: .value("Target", target),
+                        x: .value("Day", startX), y: .value("Target", target),
                         series: .value("Stretch", index)
                     )
                     .foregroundStyle(Color.secondary)
@@ -597,19 +626,22 @@ struct LookBackView: View {
             // nothing here otherwise stops one sliding past the card. Their `trailingInset`
             // matches the dates card's own inset, so a label sitting near the newest day — which
             // the trace itself still runs flush to, finding 5 — reads inset from the card's edge
-            // rather than touching it. The values-axis labels draw in the lane beside the chart
-            // instead, since they have no x-position to read off this proxy — only their own
-            // fixed y-position, cached in state below and read by the lane.
+            // rather than touching it. The values-axis labels, and now every target's own number,
+            // draw in the lane beside the chart instead, since none of them have an x-position to
+            // read off this proxy that would mean anything — only their own fixed y-position,
+            // cached in state below and read by the lane.
             .chartOverlay { proxy in
                 GeometryReader { geometry in
                     Color.clear
                         .onAppear {
                             updateValueLabelPositions(
-                                proxy: proxy, geometry: geometry, lowest: lowest, highest: highest)
+                                proxy: proxy, geometry: geometry, lowest: lowest, highest: highest,
+                                graph: graph)
                         }
                         .onChange(of: geometry.size) { _, _ in
                             updateValueLabelPositions(
-                                proxy: proxy, geometry: geometry, lowest: lowest, highest: highest)
+                                proxy: proxy, geometry: geometry, lowest: lowest, highest: highest,
+                                graph: graph)
                         }
                         // Finding D, fourth round: `proxy.plotFrame` read `nil` at `onAppear` on
                         // occasion, and `geometry.size` never changing again afterwards left the
@@ -620,7 +652,8 @@ struct LookBackView: View {
                         .onChange(of: proxy.plotFrame != nil) { _, resolved in
                             guard resolved else { return }
                             updateValueLabelPositions(
-                                proxy: proxy, geometry: geometry, lowest: lowest, highest: highest)
+                                proxy: proxy, geometry: geometry, lowest: lowest, highest: highest,
+                                graph: graph)
                         }
                     if let plotFrame = proxy.plotFrame {
                         let frame = geometry[plotFrame]
@@ -686,37 +719,6 @@ struct LookBackView: View {
                                     atX: naturalX, pointY: frame.minY + y, in: frame)
                             }
                         }
-
-                        // Each stretch's own label, at its last day — the newest at the rule's
-                        // newest end, each earlier one where the rule steps (grill decision 14).
-                        // `design.md` § *The shell rides this Story*. Drawn only where `through`'s
-                        // own natural position already falls inside the visible plot: unlike the
-                        // dates-axis candidates above, `graph.targetRule` is not sampled from the
-                        // visible window, so a stretch scrolled out of view — its own last day
-                        // beyond either edge — would otherwise have `Self.clampedCenterX` pull its
-                        // label back onto the frame's edge and pin it there under the wrong rule,
-                        // or none at all where only an older stretch's line still crosses the
-                        // window (W.5).
-                        ForEach(Array(graph.targetRule.enumerated()), id: \.offset) { _, stretch in
-                            if let x = proxy.position(forX: stretch.through),
-                                let y = proxy.position(
-                                    forY: (stretch.target as NSDecimalNumber).doubleValue)
-                            {
-                                let naturalX = frame.minX + x
-                                if naturalX >= frame.minX && naturalX <= frame.maxX {
-                                    let width = Self.measuredWidth(stretch.inWords)
-                                    Text(stretch.inWords)
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                        .fixedSize()
-                                        .position(
-                                            x: Self.clampedCenterX(
-                                                naturalX, in: frame, width: width,
-                                                trailingInset: 16),
-                                            y: frame.minY + y - 10)
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -752,25 +754,64 @@ struct LookBackView: View {
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
-    /// Where the two values-axis labels sit in the lane beside the chart — read once from the
-    /// chart's own `ChartProxy`, since the lane is a sibling view of the `Chart` with no access to
-    /// the proxy itself. `lowest`/`highest` never move once the graph loads (`span` changes only
-    /// the x-domain), so `onAppear`, an `onChange` of the chart's own geometry size (covering the
-    /// one Dynamic Type or rotation case that would move them), and an `onChange` of whether
-    /// `proxy.plotFrame` has resolved yet (finding D, fourth G7 round) between them call this
-    /// however this state gets to the point where the two labels can draw at all.
+    /// Where the two values-axis labels, and each distinct target's own, sit in the lane beside
+    /// the chart — read once from the chart's own `ChartProxy`, since the lane is a sibling view
+    /// of the `Chart` with no access to the proxy itself. `lowest`/`highest` never move once the
+    /// graph loads (`span` changes only the x-domain), and neither does a target — so `onAppear`,
+    /// an `onChange` of the chart's own geometry size (covering the one Dynamic Type or rotation
+    /// case that would move them), and an `onChange` of whether `proxy.plotFrame` has resolved
+    /// yet (finding D, fourth G7 round) between them call this however this state gets to the
+    /// point where the lane's labels can draw at all.
     private func updateValueLabelPositions(
-        proxy: ChartProxy, geometry: GeometryProxy, lowest: Double, highest: Double
+        proxy: ChartProxy, geometry: GeometryProxy, lowest: Double, highest: Double,
+        graph: LookBack.Graph
     ) {
         guard let plotFrame = proxy.plotFrame else { return }
         let frame = geometry[plotFrame]
         plotMinX = frame.minX
         lowestLabelY = proxy.position(forY: lowest).map { frame.minY + $0 }
         highestLabelY = proxy.position(forY: highest).map { frame.minY + $0 }
+        targetLabels = Self.resolvedTargetLabels(
+            graph: graph, proxy: proxy, frameMinY: frame.minY,
+            lowestLabelY: lowestLabelY, highestLabelY: highestLabelY)
         // Text-size-independent, so this alone is safe to cache against these triggers — see
         // `plotBottomInset`'s own doc comment. Never negative: a plot frame that already reaches
         // the chart's own bottom edge needs none.
         plotBottomInset = max(0, frame.maxY - geometry.size.height)
+    }
+
+    /// The distinct target values the lane draws beside `lowest`/`highest`, newest stretch first
+    /// — on the owner's request that every target read like the two bounds already do, rather
+    /// than a label per stretch drawn on the plot at its own `through` (grill decision 14 of
+    /// #311, which chose the plot for that label; this moves it). A target equal to
+    /// `graph.lowest` or `graph.highest` is dropped since that bound's own label already says the
+    /// number — a target equal to `highest` is the common case, since no sum ever beats it, and
+    /// then the highest label alone says the number. Among the rest, a target whose y lands
+    /// within one label height (`Self.measuredHeight()`) of an already-kept label — `lowest`'s,
+    /// `highest`'s, or a newer target's own — is dropped too: stretches are read newest to
+    /// oldest, so a close pair keeps the newer target's own number rather than the two
+    /// overlapping or the older one winning. The same pass also keeps only the first — newest —
+    /// stretch for a target value repeated later in the chain.
+    private static func resolvedTargetLabels(
+        graph: LookBack.Graph, proxy: ChartProxy, frameMinY: CGFloat,
+        lowestLabelY: CGFloat?, highestLabelY: CGFloat?
+    ) -> [TargetLabel] {
+        var keptYs: [CGFloat] = [lowestLabelY, highestLabelY].compactMap { $0 }
+        var seenValues: Set<Decimal> = []
+        var labels: [TargetLabel] = []
+        let minimumGap = Self.measuredHeight()
+
+        for stretch in graph.targetRule.reversed() {
+            guard seenValues.insert(stretch.target).inserted else { continue }
+            guard stretch.target != graph.lowest, stretch.target != graph.highest else { continue }
+            guard let y = proxy.position(forY: (stretch.target as NSDecimalNumber).doubleValue)
+            else { continue }
+            let labelY = frameMinY + y
+            guard !keptYs.contains(where: { abs($0 - labelY) < minimumGap }) else { continue }
+            keptYs.append(labelY)
+            labels.append(TargetLabel(value: stretch.target, inWords: stretch.inWords, y: labelY))
+        }
+        return labels
     }
 
     /// The tapped point's callout: its value as the point says it — a total's "150 of 120", a
@@ -861,6 +902,19 @@ struct LookBackView: View {
         let naturalX: CGFloat
         let x: CGFloat
         let width: CGFloat
+    }
+
+    /// One target's own label, drawn in the values-axis lane — `resolvedTargetLabels(...)`'s own
+    /// output, cached in `targetLabels` the same way `lowestLabelY`/`highestLabelY` are. `value`
+    /// is the stretch's own `target`, kept so it can be compared for equality against
+    /// `graph.lowest`/`graph.highest` and against another target exactly — a `Decimal` compares
+    /// exactly, where the `Double` `proxy.position(forY:)` takes would not. `id` is `value` since
+    /// `resolvedTargetLabels` only ever keeps one label per distinct target.
+    private struct TargetLabel: Identifiable {
+        var id: Decimal { value }
+        let value: Decimal
+        let inWords: String
+        let y: CGFloat
     }
 
     /// Keeps a candidate only where it would not touch the last one already kept, reading left to
