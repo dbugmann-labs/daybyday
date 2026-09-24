@@ -1816,6 +1816,22 @@ A rename also keeps the one-off's **place** among those owed on its date, since 
 a removal and an add. The sentence above that no *One-offs* group is drawn where none stands is
 withdrawn, as it is under **Day view**.
 
+**Amended 2026-09-24**, at the grill of `put-done-one-offs-last` (#340). The group's order is no
+longer by the date owed alone: every **undone** one-off stands above every **done** one. The undone
+keep the order above — earliest owed first, one date's in the order they were added — and the done
+are **newest tick first**, so a one-off ticked moves to just below the last one still owed. A
+one-off made already done on a past day is ticked as it is made. A tick taken back returns the
+one-off to its place among the undone, and ticked again it is the newest. A rename keeps a done
+one-off's place among the done. "Newest" is the order ticks were made in and never a time of day,
+which no store holds; a one-off ticked before that order was kept is older than every tick made
+since, and such ones stand among themselves by the date owed. A **copy** carries the order.
+
+That order is the **tick order**, in the spec's words: the order one-offs were made done in, kept by
+the one-offs and by the one-off store, and nothing else — two holders alike in every one-off differ
+where their tick orders do. A one-off row also gives back a **key**, the same for the rows of one
+one-off on one date whether it is done or not, and never the one-off itself; it is how the day
+screen follows a row that a tick moves.
+
 **Birthday** — a person's birthday as the phone's own calendar knows it, on the day it falls each
 year: a name, the day, and the age where the calendar holds the year. It is not the app's — it is
 read from the phone's birthday calendars, through the one permission that reading a calendar takes,
