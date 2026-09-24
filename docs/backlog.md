@@ -1149,5 +1149,11 @@ found nothing.
     neither weight nor mood is in the day-one week and that both fail *five percent of seven
     things*; approved. First Story recommended: B-034's. Both amend the number entry, so they
     serialise, and both queue behind cluster H if its Stories delta `day-screen`.
+  - **G2** — accepted the same day, from `/to-tickets 27` stopped at its quiz: #324
+    `choose-a-number-from-a-short-range` first, #325 `start-a-number-from-the-last-one` blocked by
+    it. `FEAT: birthday` (#322) had no Stories yet at the G2; its #328 `draw-birthdays-on-day-screen`
+    landed minutes later and also deltas `day-screen`. The owner put it last — #324 → #325 → #328,
+    #328 blocked by #325 as well as #327 — against the recommendation to put the birthday row ahead
+    of #325, because the birthday lane had just started on #326 and would reach #328 last anyway.
   - **Not taken** — B-039, B-041, B-054 with the dispositions of 2026-09-21 unchanged; B-059 is
     cluster H's.
