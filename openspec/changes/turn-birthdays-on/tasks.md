@@ -71,6 +71,7 @@ Rule 3 throughout: one scenario, one acceptance test named identically to it, on
   tick this on the comment's URL — that command and never `gh pr comment --attach`. The walk's
   throwaway test resets calendar access itself; a change to `scripts/walk.ts` is a stop. The two
   `phone:` boxes are the human's at G7, and the conductor ticks them on the G7 approval.
+  https://github.com/dbugmann-labs/daybyday/pull/334#issuecomment-5814426946
 
 ## 7. Gates and the archive handover
 
