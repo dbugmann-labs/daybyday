@@ -53,12 +53,12 @@ make it pass, then the next.
 - [x] 8.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, the two kit sources, the two kit test files and `ContentView.swift`
 - [x] 8.3 `pnpm run check:budgets` warns about nothing in this folder
 - [x] 8.4 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing, its count read off the run
-- [ ] 8.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–8.4 and the walk below are ticked and that this instruction is written for the janitor. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `day-screen/spec.md` gains the two added requirements and its two MODIFIED ones are whole, and no other spec moved. `pnpm run checks` runs after the archive commit exists, and that commit is pushed. **Any drift is a stop and a report, never a hand-edit.**
+- [x] 8.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–8.4 and the walk below are ticked and that this instruction is written for the janitor. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `day-screen/spec.md` gains the two added requirements and its two MODIFIED ones are whole, and no other spec moved. `pnpm run checks` runs after the archive commit exists, and that commit is pushed. **Any drift is a stop and a report, never a hand-edit.**
 
 ## The walk
 
-- [ ] W.1 A *Weight* (40–150) kept every day, yesterday holding 72.4 and today nothing, tapped on today: the alert's field reads "72.4" and no "40–150" shows
-- [ ] W.2 Today holding 73, yesterday nothing and the day before 71.8; moved to yesterday and *Weight* tapped: the field reads "71.8", not "73"
-- [ ] W.3 *Weight*'s range changed to 50–100 today, yesterday holding 45 and the day before 72.4, tapped on today: the field empty, its placeholder reading "50–100"
+- [x] W.1 A *Weight* (40–150) kept every day, yesterday holding 72.4 and today nothing, tapped on today: the alert's field reads "72.4" and no "40–150" shows
+- [x] W.2 Today holding 73, yesterday nothing and the day before 71.8; moved to yesterday and *Weight* tapped: the field reads "71.8", not "73"
+- [x] W.3 *Weight*'s range changed to 50–100 today, yesterday holding 45 and the day before 72.4, tapped on today: the field empty, its placeholder reading "50–100"
 - [ ] W.4 phone: a starting number saved unchanged, and another with its last digit changed from the cursor at the end — the keyboard feel no simulator shows
-- [ ] W.5 **The handover** — W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL
+- [x] W.5 **The handover** — W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL
