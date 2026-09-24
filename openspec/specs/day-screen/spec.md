@@ -2862,10 +2862,11 @@ handing the same commitment to a day view twice SHALL give two rows.
 
 ### Requirement: A day view is a value and nothing else
 
-A day view SHALL be the groups it holds, its One-offs group where it holds one, and the calendar
-date it was formed on, and nothing else. Two day views SHALL be the same day view when they are of
-the same date and hold the same groups in the same order, each group holding the same rows in the
-same order, and the same One-offs group or none, and SHALL be different when any of that differs;
+A day view SHALL be the groups it holds, its One-offs group where it holds one, its Birthdays group
+where it holds one, and the calendar date it was formed on, and nothing else. Two day views SHALL be
+the same day view when they are of the same date and hold the same groups in the same order, each
+group holding the same rows in the same order, the same One-offs group or none, and the same
+Birthdays group or none, and SHALL be different when any of that differs;
 two day views holding the same rows in the same order under different groupings SHALL therefore be
 two day views.
 
@@ -3052,8 +3053,8 @@ Reading either place again SHALL be a fresh opening there, so a change made sinc
 what the screen says about the record, about the roster and about its one-offs SHALL each be formed
 again from what is then there, the reason included and nothing carried over. A roster read again
 that holds nothing at all SHALL have the commitments the screen was handed taken on into it. Nothing
-else SHALL survive being shown again: those commitments, the three places and the day it is showing
-are all a day screen carries across.
+else SHALL survive being shown again: what the screen was opened from and the day it is showing are
+all a day screen carries across.
 
 #### Scenario: a day screen shown again on a later day holds that day's day view
 
@@ -3369,13 +3370,13 @@ record.
 A day screen SHALL go on telling it, on the same row, until one of exactly three things happens, and
 SHALL then tell nothing on any row. Nothing else SHALL end it, time passing included. The app being
 shown again SHALL end it, whether or not the record can then be read. A change reaching the record's
-place or the one-off place SHALL end it, on whichever row it was made, whatever the change; a copy
+place, the one-off place or the birthday place SHALL end it, on whichever row it was made, whatever the change; a copy
 restored through a commitments screen is such a change, and SHALL end it once the day screen is
 returned to from that commitments screen. The day
 being shown changing SHALL end it — the day changing and never the gesture made — so a move with
 nowhere to go, and today sent back to today, SHALL leave it standing.
 
-A change that reaches neither place SHALL NOT end it: a refused value moves what is told rather
+A change that reaches none of those places SHALL NOT end it: a refused value moves what is told rather
 than ending it. A commit in a total entry that says nothing is neither an end nor a refusal, so what
 was told SHALL stand exactly as it was; closing a number or note entry without committing it SHALL
 end nothing either.
@@ -3603,6 +3604,28 @@ end nothing either.
 - **AND** after its commitment row is ticked and refused again and a text of blank space alone is
   committed in the name field of the row named "Pay fine", its One-offs group holds one row, named
   "Ring mum", and it tells nothing on any row
+
+#### Scenario: what a day screen tells on a row ends when a birthday tick is kept
+
+- **WHEN** a day screen of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, is opened as of Tuesday 20 January 2026 at a record place where nothing
+  can be written — a path beneath an existing ordinary file — and a roster place, a one-off place and
+  a birthday place where nothing has been kept, with birthdays on and a calendar holding the contact
+  "kate"'s birthday worded "Kate Bell's 48th Birthday" on 20 January 2026; its one commitment row is
+  ticked and refused; and its one birthday row is then ticked
+- **THEN** its Birthdays group holds one row, saying it is ticked
+- **AND** it tells nothing on any row
+
+#### Scenario: what a day screen tells on a birthday row ends when a commitment tick is kept
+
+- **WHEN** a day screen of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, is opened as of Tuesday 20 January 2026 at a birthday place where nothing
+  can be written — a path beneath an existing ordinary file — and a record place, a roster place and
+  a one-off place where nothing has been kept, with birthdays on and a calendar holding the contact
+  "kate"'s birthday worded "Kate Bell's 48th Birthday" on 20 January 2026; its one birthday row is
+  ticked and refused; and its one commitment row is then ticked
+- **THEN** its day view says "Journaling" is kept on that date
+- **AND** it tells nothing on any row
 
 ### Requirement: A day screen tells nothing on a row where there was no change to refuse
 
@@ -5761,3 +5784,359 @@ change the hint it says, nor whether it is chosen or typed.
 - **THEN** the entry that row offers says the starting number -12.75 and no hint
 - **AND** where that history holds a whole number of thirty-eight nines on that date instead, the
   entry says that number as its starting number, digit for digit
+
+### Requirement: A day screen draws the birthdays falling on each day as one group headed Birthdays, while birthdays are on
+
+A day screen MAY be opened with a birthday switch and a calendar, which it asks for the birthdays
+falling on a run of days and which says the order words are collated in. Birthdays SHALL be on for a
+day screen exactly while it was handed both and that switch is on. While they are on, its day view
+SHALL hold one group of birthday rows, headed "Birthdays" in this package's own words, holding a row
+for each birthday the calendar hands that falls on its date, and SHALL hold no such group where none
+falls there, the day views either side alike. That group SHALL NOT be one of its groups of
+commitments, its rows SHALL NOT be among its commitment rows, and it SHALL come before every group
+of commitments. A birthday row SHALL say its birthday's words exactly as the calendar handed them,
+empty words included.
+
+#### Scenario: a day screen with birthdays on draws the birthdays falling on its day in a group headed Birthdays
+
+- **WHEN** a day screen of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, is opened as of Tuesday 20 January 2026 at a record place, a roster
+  place, a one-off place and a birthday place where nothing has been kept, with birthdays on and a
+  calendar holding the contact "kate"'s birthday worded "Kate Bell's 48th Birthday" on 20 January
+  2026 and the contact "john"'s worded "John Appleseed's 46th Birthday" on 21 January 2026
+- **THEN** its day view holds a Birthdays group headed "Birthdays", holding one row, saying "Kate
+  Bell's 48th Birthday" and saying it is not ticked
+- **AND** it holds one group of commitments, with no category, and its commitment rows are named
+  "Journaling" alone
+- **AND** the day view it says of the day after holds a Birthdays group holding one row, saying
+  "John Appleseed's 46th Birthday"
+- **AND** the day view it says of the day before holds no Birthdays group
+
+#### Scenario: a birthday row says the calendar's words exactly, and empty words make a row that says nothing and still ticks
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at four
+  places where nothing has been kept, with birthdays on and a calendar holding the contact "kate"'s
+  birthday with empty words on 20 January 2026, and its one birthday row is ticked
+- **THEN** its Birthdays group holds one row, saying nothing and saying it is ticked
+- **AND** a day screen opened the same way of a calendar holding that birthday worded " Kate Bell's
+  48th Birthday ", with blank space at both ends, holds one row saying exactly that
+
+### Requirement: A birthday row is its birthday and whether it is ticked, and offers its tick where its day has arrived
+
+A birthday row SHALL be its birthday and whether that birthday is ticked. Two birthday rows SHALL be
+the same row exactly when both agree, and two day views SHALL be different day views where a
+birthday row they hold differs. A birthday row SHALL give back its words, whether it is ticked and
+whether it offers its tick, and MUST NOT give back its birthday's contact or day. It SHALL offer its
+tick when asked as of a today no earlier than its date, however much later, whether or not it is
+ticked, and SHALL offer none when asked as of an earlier today; the today SHALL be given to it. A
+birthday row offering no tick SHALL still be held.
+
+#### Scenario: a birthday row offers its tick on its day and on any day after it, and none before
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at four
+  places where nothing has been kept, with birthdays on and a calendar holding the contact "kate"'s
+  birthday worded "Kate Bell's 48th Birthday" on 20 January 2026 and the contact "john"'s worded
+  "John Appleseed's 46th Birthday" on 21 January 2026
+- **THEN** its one birthday row offers its tick asked as of 20 January 2026, and asked as of
+  20 January 2036
+- **AND** it offers none asked as of 19 January 2026
+- **AND** the one birthday row of the day view it says of the day after offers none asked as of
+  20 January 2026, and offers its tick asked as of 21 January 2026
+
+#### Scenario: two birthday rows are the same row exactly when their birthdays and their ticks agree
+
+- **WHEN** two day screens of no commitments at all are opened as of Tuesday 20 January 2026, each
+  at four places of its own where nothing has been kept, with birthdays on and a calendar holding
+  the contact "kate"'s birthday worded "Kate Bell's 48th Birthday" on 20 January 2026
+- **THEN** their two birthday rows are the same row, and their two day views are the same day view
+- **AND** after the second screen's birthday row is ticked, the two rows are different rows and the
+  two day views are different day views
+- **AND** a third opened the same way of a calendar holding that contact's birthday worded
+  "Kate Smith's 48th Birthday" on that day holds a row that is a different row from the first's
+
+### Requirement: A day screen follows its birthday switch, and asks the calendar nothing while birthdays are off
+
+A day screen SHALL read whether its birthday switch is on each time it forms the day view of the day
+it is showing, so a switch turned on or off while the screen is left SHALL be followed once it is
+returned to. While birthdays are off, a day screen SHALL hold no Birthdays group on any day, SHALL
+say birthdays are off, SHALL say nothing about its birthday ticks, and MUST NOT ask its calendar
+anything. A day screen shown again SHALL show its birthday switch again before it forms its day view
+or asks its calendar anything, so birthdays kept on where the phone no longer gives full calendar
+access SHALL be off.
+
+#### Scenario: a day screen with birthdays off asks the calendar nothing and draws no Birthdays group
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at a
+  record place, a roster place and a one-off place where nothing has been kept and a birthday place
+  holding a run of bytes that is not what birthday ticks are written as, with a birthday switch that
+  is off, asking a phone that gives full calendar access, and a calendar holding the contact
+  "kate"'s birthday worded "Kate Bell's 48th Birthday" on 20 January 2026
+- **THEN** its day view holds no Birthdays group, and neither does the day view it says of the day
+  before or of the day after
+- **AND** it says birthdays are off, and says nothing about its birthday ticks
+- **AND** its calendar has been asked nothing
+- **AND** a day screen opened the same way with a birthday switch that is on and no calendar, and one
+  opened with a calendar and no birthday switch, each say birthdays are off the same way
+
+#### Scenario: a birthday switch turned on while a day screen is left is followed when it is returned to
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at four
+  places where nothing has been kept, with a birthday switch that is off, asking a phone that gives
+  full calendar access, and a calendar holding the contact "kate"'s birthday worded "Kate Bell's 48th
+  Birthday" on 20 January 2026; the switch is then turned on; and the day screen is returned to
+- **THEN** its day view holds a Birthdays group holding one row, saying "Kate Bell's 48th Birthday"
+- **AND** it says birthdays are on
+- **AND** after the switch is turned off and the day screen is returned to again, it holds no
+  Birthdays group and says birthdays are off
+
+#### Scenario: a day screen shown again after the phone withdraws calendar access says birthdays are off and asks the calendar nothing
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at four
+  places where nothing has been kept, with birthdays on, its switch asking a phone that gives full
+  calendar access, and a calendar holding the contact "kate"'s birthday worded "Kate Bell's 48th
+  Birthday" on 20 January 2026; the phone then denies calendar access; and the app is shown again as
+  of that same day
+- **THEN** its day view holds no Birthdays group, and it says birthdays are off
+- **AND** it does not say birthdays could not be read
+- **AND** its birthday switch is off
+- **AND** its calendar has been asked once in all, when the screen was opened
+
+### Requirement: A day screen asks the calendar for the day it is showing and the day either side, each time it forms that day's view
+
+While birthdays are on, a day screen SHALL ask its calendar once, for the days from the day before
+the one it is showing through the day after, each time it forms the day view of the day it is
+showing — being opened, shown again, returned to, moved, sent back to today or put on a picked day,
+and after a change is kept — and SHALL form the day views either side from that same answer. Saying
+either SHALL ask nothing. Where the day it is showing is the first or the last supported date, it
+SHALL ask for the days that exist. A birthday the calendar hands on a day it was not asked for SHALL
+NOT be drawn.
+
+#### Scenario: a day screen asks the calendar once for the day it shows and the day either side, and never to say either
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at four
+  places where nothing has been kept, with birthdays on and a calendar that records every ask and
+  hands, whatever it is asked for, the contact "kate"'s birthday worded "Kate Bell's 48th Birthday"
+  on 23 January 2026; the
+  day views it says of the day before and of the day after are read; and it is moved to the day
+  after
+- **THEN** its calendar has been asked twice: for 19 January through 21 January 2026, and then for
+  20 January through 22 January 2026
+- **AND** neither its day view nor the day view it says of the day after holds a Birthdays group
+- **AND** a day screen opened the same way as of Friday 31 December 9999 asks for 30 December
+  through 31 December 9999, and one opened as of Saturday 1 January 1583 asks for 1 January through
+  2 January 1583
+
+### Requirement: A day screen whose calendar cannot be read draws no Birthdays group and says so
+
+Where asking its calendar fails, a day screen SHALL hold no Birthdays group, neither on the day it is
+showing nor on either side, and SHALL say birthdays could not be read, saying nothing about its
+birthday ticks and telling no reason the calendar failed. It SHALL draw its commitments and its
+one-offs exactly as it would otherwise, SHALL keep nothing, and what it says about its record, its
+roster and its one-offs SHALL be untouched. What it says about birthdays SHALL be formed again at its
+next ask, so an ask that succeeds SHALL draw the birthdays and end the saying.
+
+#### Scenario: a day screen whose calendar cannot be read draws no Birthdays group and says birthdays could not be read
+
+- **WHEN** a day screen of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, is opened as of Tuesday 20 January 2026 at a record place, a roster place
+  and a one-off place where nothing has been kept and a birthday place holding a run of bytes that is
+  not what birthday ticks are written as, with birthdays on and a calendar whose every ask fails
+- **THEN** its day view holds one row, named "Journaling", and no Birthdays group, and neither day
+  view it says either side holds one
+- **AND** it says birthdays could not be read, and says nothing about its birthday ticks
+- **AND** it says it is keeping a record, keeping a roster and keeping one-offs
+- **AND** after the calendar holds the contact "kate"'s birthday worded "Kate Bell's 48th Birthday"
+  on 20 January 2026 and answers, and the day screen is returned to, its Birthdays group holds one
+  row saying those words and it says its birthday ticks could not be read
+
+### Requirement: A day screen draws a day's birthdays in the order their words are collated in
+
+A day screen SHALL hand each day view the birthdays falling on its date in the order its calendar
+says their words are collated in, and MUST NOT keep the order the calendar handed them in. Two
+birthdays whose words neither comes before the other SHALL be in the order of their contacts,
+compared character by character. A day screen SHALL consult no locale of its own to order them, and
+a day view SHALL draw its birthday rows in the order it was handed them.
+
+#### Scenario: a day's birthdays are drawn in the order their words are collated in, whatever order the calendar hands them
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at four
+  places where nothing has been kept, with birthdays on and a calendar collating words in
+  alphabetical order with capitals and small letters alike, handing in this order the contact
+  "zoe"'s birthday worded "Zoe Adams's Birthday", the contact "kate"'s worded "Kate Bell's 48th
+  Birthday" and the contact "anna"'s worded "anna Haro's Birthday", all on 20 January 2026
+- **THEN** its Birthdays group holds rows saying "anna Haro's Birthday", "Kate Bell's 48th Birthday"
+  and then "Zoe Adams's Birthday"
+- **AND** with a calendar collating words in the reverse of that order, the rows are in the reverse
+  order
+- **AND** of two birthdays both worded "Sam's Birthday" on that day, of the contacts "sam-2" and then
+  "sam-1" handed in that order, ticking the first row ticks the contact "sam-1"'s birthday
+
+### Requirement: A day screen keeps its birthday ticks at its own place, beside its other places
+
+A day screen SHALL name the place it keeps its birthday ticks at, and MUST NOT leave that choice to
+whatever draws it. The place SHALL be one file inside a directory belonging to this app, within the
+directory the platform reserves for an application's own supporting data, and MUST NOT be inside
+the caches directory or the temporary directory. It SHALL be the same place every time it is asked
+for, and SHALL be none of the places the day screen keeps its record, its roster and its one-offs at,
+nor the place a birthday switch is kept at by default. A day screen SHALL open its birthday place
+when it is opened and when the app is shown again, whether or not birthdays are on, and at no other
+moment; opening it SHALL write nothing there.
+
+#### Scenario: the place a day screen keeps its birthday ticks is a file of the app's own under Application Support, the same every time
+
+- **WHEN** the place a day screen keeps its birthday ticks at is asked for twice
+- **THEN** the two are the same place
+- **AND** it is one file inside a directory of this app's own within the platform's
+  application-support directory, rather than directly inside it
+- **AND** it is not inside the platform's caches directory, and not inside the temporary directory
+
+#### Scenario: the place a day screen keeps its birthday ticks is none of its other places
+
+- **WHEN** the places a day screen keeps its birthday ticks, its record, its roster and its one-offs
+  at, and the place a birthday switch is kept at by default, are all asked for
+- **THEN** the five are five different places
+
+#### Scenario: a day screen reads its birthday place again when shown and not when returned to or moved
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at four
+  places where nothing has been kept, with birthdays on and a calendar holding the contact "kate"'s
+  birthday worded "Kate Bell's 48th Birthday" on 20 January 2026; that birthday is then ticked at
+  its birthday place by something else; and the day screen is returned to, moved to the day after
+  and moved back
+- **THEN** its Birthdays group holds one row, saying it is not ticked
+- **AND** after the app is shown again as of that same day, that row says it is ticked
+- **AND** a day screen opened the same way and never ticked leaves nothing kept at its birthday
+  place
+
+### Requirement: A day screen that cannot read its birthday ticks draws its birthdays unticked and keeps no tick
+
+Opening a day screen at a birthday place holding something that cannot be read as birthday ticks
+SHALL give a day screen rather than an error. While birthdays are on, it SHALL draw its Birthdays
+group as it would otherwise, every row saying its birthday is not ticked, and SHALL say its birthday
+ticks were written by a later version of DayByDay where that is why, and otherwise only that they
+could not be read; it MUST NOT tell any other reason apart. A tick asked of a birthday row on it
+SHALL change nothing, keep nothing anywhere, throw nothing and be told on no row. It SHALL leave what
+is at that place exactly as it was, and what it says about its record, its roster and its one-offs
+SHALL NOT be read off that place.
+
+#### Scenario: a day screen whose birthday place cannot be read draws its birthdays unticked and keeps no tick
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at a record
+  place, a roster place and a one-off place where nothing has been kept and a birthday place holding
+  a run of bytes that is not what birthday ticks are written as, with birthdays on and a calendar
+  holding the contact "kate"'s birthday worded "Kate Bell's 48th Birthday" on 20 January 2026; and
+  its one birthday row is ticked
+- **THEN** ticking is not refused with an error, and it tells nothing on any row
+- **AND** its Birthdays group holds one row, saying "Kate Bell's 48th Birthday" and saying it is not
+  ticked
+- **AND** it says its birthday ticks could not be read, and does not say they were written by a later
+  version of DayByDay
+- **AND** it says it is keeping a record, keeping a roster and keeping one-offs
+- **AND** the content at that birthday place is byte-for-byte what it was before the screen was
+  opened
+- **AND** a day screen opened the same way at a birthday place that is a directory holding nothing
+  says the same, and that place is still a directory holding nothing
+
+#### Scenario: birthday ticks written in a later form make a day screen that says they are from a later version
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at a record
+  place, a roster place and a one-off place where nothing has been kept and a birthday place holding
+  birthday ticks written in a form one later than the form this app writes, holding no ticks, with
+  birthdays on and a calendar holding the contact "kate"'s birthday worded "Kate Bell's 48th
+  Birthday" on 20 January 2026
+- **THEN** it says its birthday ticks were written by a later version of DayByDay
+- **AND** its Birthdays group holds one row, saying it is not ticked
+- **AND** the content at that birthday place is byte-for-byte what it was before the screen was
+  opened
+
+### Requirement: A day screen makes and takes back a birthday row's tick, and keeps the change before the day view says so
+
+A day screen SHALL make the tick a birthday row offers where its birthday is not ticked, and SHALL
+take that tick back where it is; which of the two SHALL be read off the row. The tick SHALL be held
+against the row's birthday on that birthday's own day, whatever today the screen was handed. The
+change SHALL be kept at the birthday place before the day view says so, every day view then being
+formed again. A change that cannot be kept SHALL be refused to the caller and SHALL leave the day
+view as it was. A birthday row the screen's day view does not hold, and one offering no tick as of
+the screen's today, SHALL change nothing and throw nothing. A birthday change MUST NOT write to the
+record's place, the roster's or the one-off place.
+
+#### Scenario: ticking a birthday row keeps its tick, and ticking it again takes the tick back
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at four
+  places where nothing has been kept, with birthdays on and a calendar holding the contact "kate"'s
+  birthday worded "Kate Bell's 48th Birthday" on 20 January 2026; and its one birthday row is ticked
+- **THEN** ticking is not refused, and its Birthdays group holds one row saying it is ticked
+- **AND** a birthday store opened afterwards at its birthday place holds that birthday ticked
+- **AND** nothing has been kept at its record place, its roster place or its one-off place
+- **AND** after that row is ticked again, it says it is not ticked, and a birthday store opened
+  afterwards at its birthday place holds no ticks
+
+#### Scenario: a birthday row on a past day is ticked against its own day, not the today
+
+- **WHEN** a day screen of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2020, is opened as of Tuesday 20 January 2026 at four places where nothing has
+  been kept, with birthdays on and a calendar holding the contact "anna"'s birthday worded "Anna
+  Haro's 40th Birthday" on 29 August 2025; Friday 29 August 2025 is picked; and its one birthday row
+  is ticked
+- **THEN** that row says it is ticked
+- **AND** a birthday store opened afterwards at its birthday place holds the contact "anna"'s
+  birthday on 29 August 2025 ticked, and holds no tick on 20 January 2026
+
+#### Scenario: a birthday tick that cannot be kept is refused and leaves the day view as it was
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at a record
+  place, a roster place and a one-off place where nothing has been kept and a birthday place where
+  nothing can be written — a path beneath an existing ordinary file — with birthdays on and a
+  calendar holding the contact "kate"'s birthday worded "Kate Bell's 48th Birthday" on 20 January
+  2026; and its one birthday row is ticked
+- **THEN** ticking is refused with an error
+- **AND** its Birthdays group still holds one row, saying it is not ticked
+- **AND** a birthday store opened afterwards at that place holds no ticks
+
+#### Scenario: ticking a birthday row that the day view does not hold or that offers no tick changes nothing
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at four
+  places where nothing has been kept, with birthdays on and a calendar holding the contact "john"'s
+  birthday worded "John Appleseed's 46th Birthday" on 21 January 2026; the birthday row of the day
+  view it says of the day after is ticked; and it is then moved to the day after and its own birthday
+  row, which offers no tick as of 20 January 2026, is ticked
+- **THEN** neither ticking is refused with an error, and it tells nothing on any row
+- **AND** its Birthdays group holds one row, saying it is not ticked
+- **AND** nothing has been kept at its birthday place
+
+### Requirement: A day screen tells on the birthday row that was tapped that its change could not be kept
+
+Where a birthday tick cannot be kept, a day screen SHALL tell it on the birthday row tapped as well
+as refusing it to the caller, and what it tells SHALL name no cause. A day screen SHALL tell at most
+one row at a time, whatever its kind: a refusal on a birthday row SHALL move what is told onto that
+row and leave nothing told on any commitment or one-off row, and a refusal on a commitment row or a
+one-off row SHALL leave nothing told on any birthday row. Telling on a birthday row MUST NOT change
+what a day screen says about birthdays.
+
+#### Scenario: a refused birthday tick is told on its row and ends what was told on a commitment row
+
+- **WHEN** a day screen of a commitment named "Journaling" on a schedule listing all seven weekdays,
+  kept from 1 January 2026, is opened as of Tuesday 20 January 2026 at a record place and a birthday
+  place where nothing can be written — each a path beneath an existing ordinary file — and a roster
+  place and a one-off place where nothing has been kept, with birthdays on and a calendar holding
+  the contact "kate"'s birthday worded "Kate Bell's 48th Birthday" on 20 January 2026; its one
+  commitment row is ticked and refused; and its one birthday row is then ticked
+- **THEN** ticking the birthday row is refused with an error
+- **AND** it tells, on the birthday row, that the change could not be kept, naming no cause
+- **AND** it tells nothing on the commitment row
+- **AND** it still says birthdays are on
+
+#### Scenario: a refused commitment or one-off tick ends what was told on a birthday row
+
+- **WHEN** a one-off named "Call mum" on 20 January 2026 is added at a one-off place that is then
+  made so that it can be read from but not written to; a day screen of a commitment named
+  "Journaling" on a schedule listing all seven weekdays, kept from 1 January 2026, is opened at that
+  one-off place as of Tuesday 20 January 2026, at a record place and a birthday place where nothing
+  can be written — each a path beneath an existing ordinary file — and a roster place where nothing
+  has been kept, with birthdays on and a calendar holding the contact "kate"'s birthday worded "Kate
+  Bell's 48th Birthday" on 20 January 2026; its one birthday row is ticked and refused; and its one
+  commitment row is then ticked and refused
+- **THEN** it tells, on the commitment row, that the change could not be kept
+- **AND** it tells nothing on the birthday row
+- **AND** after the birthday row is ticked and refused again and the one-off row is then ticked and
+  refused, it tells on the one-off row and nothing on the birthday row
