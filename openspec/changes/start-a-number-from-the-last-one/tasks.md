@@ -37,7 +37,7 @@ make it pass, then the next.
 
 ## 5. The carried scenarios
 
-- [ ] 5.1 Every scenario the two MODIFIED requirements carry passes with its test unedited, and so does every other carried test
+- [ ] 5.1 Every scenario the two MODIFIED requirements carry passes with its test unedited, and so does every other carried test — the row-equality ones in `DayScreenTests.swift` and `DayViewTests.swift` included (`design.md` § Context)
 
 ## 6. The shell (ADR-1019: this Story's immediate consumer, no rule the kit does not state)
 

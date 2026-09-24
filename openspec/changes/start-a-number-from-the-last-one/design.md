@@ -9,6 +9,10 @@ facts it turns on:
 - `DayView.Row` stores the day's `number` at formation and is `Hashable` over every stored field;
   `numberEntry(asOf:)` forms the entry from the row and its commitment, which is the era holding
   the row's date, so the range it reads is the one `Number.init` refuses against.
+- Row equality is relied on in three places: `DayScreen`'s `dayView.rows.contains(row)` guard
+  before every change, the shell's `notice?.row` and `choosingRow` checks, and the row tests. No
+  shipped test or scenario compares or reuses a number row across a write to an earlier date, and
+  the shell keys rows by offset and reads each entry off the row it is rendering at tap time.
 - A range change puts a new era on the commitment from the commitments screen's today and moves no
   record; a number outside a range is refused, told "Must be between …", and writes nothing.
 - The shell opens a typed entry in an `.alert` whose `TextField` takes the hint as its placeholder
