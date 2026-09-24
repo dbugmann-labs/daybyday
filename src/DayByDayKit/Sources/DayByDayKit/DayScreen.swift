@@ -639,10 +639,13 @@ public final class DayScreen {
 
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
     /// nothing, and keeps the change before `dayView` says so. Does nothing when `row` is not one
-    /// this screen's day view holds, when this screen is not keeping a record, or when `row`
-    /// offers no number entry as of `today`. Throws when the change could not be kept at the
-    /// record's place, leaving `dayView` as it was; a value the commitment refuses or a value
-    /// that is not a number keeps nothing and does not throw.
+    /// this screen's day view holds, when this screen is not keeping a record, when `row` offers
+    /// no number entry as of `today`, or when the number entry `row` offers is chosen rather than
+    /// typed — a short range is chosen through `choose(_:on:)` and never typed, `design.md`
+    /// § *A choice is a member of its own, and a typed commit on a chosen row is inert*. Throws
+    /// when the change could not be kept at the record's place, leaving `dayView` as it was; a
+    /// value the commitment refuses or a value that is not a number keeps nothing and does not
+    /// throw.
     public func enter(_ text: String, on row: DayView.Row) throws {
         guard dayView.rows.contains(row) else {
             return
@@ -652,6 +655,10 @@ public final class DayScreen {
         }
 
         if let entry = row.numberEntry(asOf: today) {
+            guard entry.values == nil else {
+                return
+            }
+
             switch TypedNumber.read(text) {
             case .takeBack:
                 do {
@@ -730,6 +737,58 @@ public final class DayScreen {
             }
         } else {
             return
+        }
+        notice = nil
+
+        dayView = dayViewOfShownDay()
+        copyPlace?.keptAChange()
+    }
+
+    /// Chooses `value` in `row`'s chosen entry, replacing any number the day holds, or takes the
+    /// day's number back where `value` is `nil` — the clear. Keeps the change before `dayView`
+    /// says so. Does nothing when `row` is not one this screen's day view holds, when this screen
+    /// is not keeping a record, when `row` offers no chosen entry as of `today`, when `value` is
+    /// not among that entry's values, when `value` is the number the day already holds, or when
+    /// `value` is `nil` and the day holds no number — none of these is refused. Throws when the
+    /// change could not be kept at the record's place, leaving `dayView` as it was and telling on
+    /// `row` naming no cause. `design.md` § *A choice is a member of its own, and a typed commit
+    /// on a chosen row is inert*.
+    public func choose(_ value: Decimal?, on row: DayView.Row) throws {
+        guard dayView.rows.contains(row) else {
+            return
+        }
+        guard let recordStore else {
+            return
+        }
+        guard let entry = row.numberEntry(asOf: today), let values = entry.values else {
+            return
+        }
+
+        if let value {
+            guard values.contains(value), value != entry.number else {
+                return
+            }
+            guard let number = row.numberRecord(value, asOf: today) else {
+                return
+            }
+
+            do {
+                try recordStore.add(number)
+            } catch {
+                notice = Notice(row: row)
+                throw error
+            }
+        } else {
+            guard entry.number != nil else {
+                return
+            }
+
+            do {
+                try recordStore.removeNumber(on: row.recordedDay)
+            } catch {
+                notice = Notice(row: row)
+                throw error
+            }
         }
         notice = nil
 

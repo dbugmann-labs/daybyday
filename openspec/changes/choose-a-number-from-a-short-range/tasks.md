@@ -14,48 +14,48 @@ fail, make it pass, then the next.
 
 ## 2. The seam
 
-- [ ] 2.1 `DayView.NumberEntry.values` and `DayScreen.choose(_:on:)` exist as `design.md` § *The seam* writes them, and 3.1 is red before `values` is formed
-- [ ] 2.2 `History`, `Number`, `Commitment`, `Roster`, `TypedNumber` and `CommitmentsScreen` are unchanged, and `openspec/specs/` is untouched (rule 2)
+- [x] 2.1 `DayView.NumberEntry.values` and `DayScreen.choose(_:on:)` exist as `design.md` § *The seam* writes them, and 3.1 is red before `values` is formed
+- [x] 2.2 `History`, `Number`, `Commitment`, `Roster`, `TypedNumber` and `CommitmentsScreen` are unchanged, and `openspec/specs/` is untouched (rule 2)
 
 ## 3. Chosen or typed — `DayViewTests.swift`, the era one and the inert commit in `DayScreenTests.swift`
 
-- [ ] 3.1 a number entry of a range of one to ten is chosen from the ten whole numbers in it — catches eleven counted exclusive of a bound, or a hint still said
-- [ ] 3.2 a number entry of a range holding more than eleven whole numbers, or a bound that is not whole, is typed — catches a bound's fraction truncated
-- [ ] 3.3 a chosen entry on a day holding a number not among its values says that number, and its values as they are — catches 5.5 inserted into the values
-- [ ] 3.4 a number entry is chosen or typed by the range of the era holding its day — catches the newest era's range read for every day
-- [ ] 3.5 text committed in a chosen entry changes nothing, whatever it holds — catches a blank commit still taking the number back
+- [x] 3.1 a number entry of a range of one to ten is chosen from the ten whole numbers in it — catches eleven counted exclusive of a bound, or a hint still said
+- [x] 3.2 a number entry of a range holding more than eleven whole numbers, or a bound that is not whole, is typed — catches a bound's fraction truncated
+- [x] 3.3 a chosen entry on a day holding a number not among its values says that number, and its values as they are — catches 5.5 inserted into the values
+- [x] 3.4 a number entry is chosen or typed by the range of the era holding its day — catches the newest era's range read for every day
+- [x] 3.5 text committed in a chosen entry changes nothing, whatever it holds — catches a blank commit still taking the number back
 
 ## 4. The choice — `DayScreenTests.swift`
 
-- [ ] 4.1 a value chosen in a chosen entry is kept, and the entry then says it
-- [ ] 4.2 a value chosen on a day holding another number replaces it, one not among the values included
-- [ ] 4.3 choosing the value the day already holds writes nothing and is not refused — catches a same-value write refused by the place
-- [ ] 4.4 the clear takes the day's number back
-- [ ] 4.5 the clear on a day holding no number writes nothing and is not refused
-- [ ] 4.6 a choice that cannot be kept is refused, told on its row naming no cause, and leaves the day view as it was
-- [ ] 4.7 a value that is not among the entry's values changes nothing — catches `Number.init`'s range check standing in for the values
-- [ ] 4.8 a choice on a row that offers no chosen entry changes nothing — catches the entry asked as of the day shown
-- [ ] 4.9 choosing on a row the day screen's day view does not hold changes nothing
-- [ ] 4.10 choosing on a day screen that is not keeping a record changes nothing and keeps nothing
+- [x] 4.1 a value chosen in a chosen entry is kept, and the entry then says it
+- [x] 4.2 a value chosen on a day holding another number replaces it, one not among the values included
+- [x] 4.3 choosing the value the day already holds writes nothing and is not refused — catches a same-value write refused by the place
+- [x] 4.4 the clear takes the day's number back
+- [x] 4.5 the clear on a day holding no number writes nothing and is not refused
+- [x] 4.6 a choice that cannot be kept is refused, told on its row naming no cause, and leaves the day view as it was
+- [x] 4.7 a value that is not among the entry's values changes nothing — catches `Number.init`'s range check standing in for the values
+- [x] 4.8 a choice on a row that offers no chosen entry changes nothing — catches the entry asked as of the day shown
+- [x] 4.9 choosing on a row the day screen's day view does not hold changes nothing
+- [x] 4.10 choosing on a day screen that is not keeping a record changes nothing and keeps nothing
 
 ## 5. The carried scenarios — each test edited only as its scenario now says, its title unchanged
 
-- [ ] 5.1 a number entry says the range its commitment declares as a hint — "Sleep", "0–24"
-- [ ] 5.2 an entry committed empty takes the number back, and one holding nothing but space does the same — "Sleep"
-- [ ] 5.3 a number outside the commitment's range is told on the row, naming the bounds it broke — "25", between 0 and 24
-- [ ] 5.4 a second refused commit is told on the row committed on last and no longer on the first — "Sleep"
-- [ ] 5.5 committing an empty entry at a place that cannot be written is refused only on a row whose day holds a number — "Sleep"
-- [ ] 5.6 a day screen returned to after a restore tells nothing it was telling — "Sleep", "25"
+- [x] 5.1 a number entry says the range its commitment declares as a hint — "Sleep", "0–24"
+- [x] 5.2 an entry committed empty takes the number back, and one holding nothing but space does the same — "Sleep"
+- [x] 5.3 a number outside the commitment's range is told on the row, naming the bounds it broke — "25", between 0 and 24
+- [x] 5.4 a second refused commit is told on the row committed on last and no longer on the first — "Sleep"
+- [x] 5.5 committing an empty entry at a place that cannot be written is refused only on a row whose day holds a number — "Sleep"
+- [x] 5.6 a day screen returned to after a restore tells nothing it was telling — "Sleep", "25"
 
 ## 6. The shell (ADR-1019: this Story's immediate consumer, no rule the kit does not state)
 
-- [ ] 6.1 **First, before 6.2:** a popover presented from one row of the day screen's list, inside its paged days, with `.presentationCompactAdaptation(.popover)`, anchors to that row on the simulator. If it presents as a sheet, from another frame or not at all, stop and report — never switch presentation
-- [ ] 6.2 A chosen row draws as `design.md` § *The shell rides this Story* says — chevron at rest and no value; a tap opens the popover; a value tap chooses and closes; the clear, drawn only where `number` is set, clears and closes; a tap elsewhere closes and calls nothing — and the app target builds
-- [ ] 6.3 A typed row still opens its alert with the hint as placeholder, and no chosen row opens one
+- [x] 6.1 **First, before 6.2:** a popover presented from one row of the day screen's list, inside its paged days, with `.presentationCompactAdaptation(.popover)`, anchors to that row on the simulator. If it presents as a sheet, from another frame or not at all, stop and report — never switch presentation
+- [x] 6.2 A chosen row draws as `design.md` § *The shell rides this Story* says — chevron at rest and no value; a tap opens the popover; a value tap chooses and closes; the clear, drawn only where `number` is set, clears and closes; a tap elsewhere closes and calls nothing — and the app target builds
+- [x] 6.3 A typed row still opens its alert with the hint as placeholder, and no chosen row opens one
 
 ## 7. The records
 
-- [ ] 7.1 Confirm `CONTEXT.md` § *Short range* and its two amendments still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
+- [x] 7.1 Confirm `CONTEXT.md` § *Short range* and its two amendments still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
 
 ## 8. The gates
 

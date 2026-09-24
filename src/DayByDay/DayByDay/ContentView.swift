@@ -199,6 +199,11 @@ struct ContentView: View {
     @State private var commitmentsScreen: CommitmentsScreen?
     @State private var enteringRow: DayView.Row?
     @State private var enteringText = ""
+    // The chosen row whose values are open in a popover, or `nil` while none is — a chosen
+    // entry's tap opens this rather than `enteringRow`'s alert (`design.md` § *The shell rides
+    // this Story*). Attached to that row's own `Button` in `rowView(_:)`, so the popover is
+    // anchored to the row that opened it rather than presented once for the whole list.
+    @State private var choosingRow: DayView.Row?
     @State private var enteringNoteRow: DayView.Row?
     @State private var enteringNoteText = ""
     @State private var enteringTotalRow: DayView.Row?
@@ -1053,11 +1058,14 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        // `isTarget` decides whether there is a tap at all; the four `nil` checks above stay
-        // only to decide which sheet a tap opens. ADR-1045.
+        // `isTarget` decides whether there is a tap at all; the five `nil`/`values` checks
+        // above stay only to decide which sheet, alert or popover a tap opens. ADR-1045; the
+        // popover branch is this Story's own, `design.md` § *The shell rides this Story*.
         if isTarget {
             Button {
-                if let entry {
+                if let entry, entry.values != nil {
+                    choosingRow = row
+                } else if let entry {
                     enteringText = entry.number.map { "\($0)" } ?? ""
                     enteringRow = row
                 } else if let noteEntry {
@@ -1072,6 +1080,24 @@ struct ContentView: View {
             } label: {
                 label
             }
+            // Anchored to this row's own `Button` — never lifted to the list or the screen —
+            // so the popover opens from the row that was tapped, `design.md`'s own words.
+            // `.presentationCompactAdaptation(.popover)` is what keeps this a popover on an
+            // iPhone's compact size class; without it SwiftUI falls back to a sheet.
+            .popover(
+                isPresented: Binding(
+                    get: { choosingRow == row },
+                    set: { isPresented in
+                        if !isPresented {
+                            choosingRow = nil
+                        }
+                    }
+                )
+            ) {
+                if let entry, let values = entry.values {
+                    chosenValuesPopover(row: row, entry: entry, values: values)
+                }
+            }
         } else {
             // Decisions 3 and 5, ADR-1045: a row that offers nothing recedes as one thing —
             // the name, the rhythm and any mark fade together rather than by three different
@@ -1079,6 +1105,61 @@ struct ContentView: View {
             label
                 .opacity(0.5)
         }
+    }
+
+    /// A chosen row's values, opened over the screen from that row's own tap — `design.md`
+    /// § *The shell rides this Story* and the wireframe at its § *What the shell draws*: the
+    /// day's number said above the values where it is not one of them, then the values
+    /// themselves in one line, the one equal to `entry.number` a filled circle with the digit
+    /// inverted, and — only where `entry.number` is set — a divider and the clear. A value tap
+    /// chooses and closes; the clear clears and closes; a tap elsewhere (SwiftUI's own popover
+    /// dismissal) closes and calls nothing, since neither button here is what closes it that
+    /// way.
+    @ViewBuilder
+    private func chosenValuesPopover(
+        row: DayView.Row, entry: DayView.NumberEntry, values: [Decimal]
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let number = entry.number, !values.contains(number) {
+                Text("\(number)")
+                    .font(.headline)
+            }
+            // `spacing: 4` and a 26pt minimum, rather than the roomier defaults first tried here,
+            // are what keep eleven values — the most a short range ever offers — from clipping
+            // against the popover's own width, measured on the simulator (§ 6.1/6.2). The walk's
+            // `phone:` line still asks the owner whether that is comfortable for a thumb;
+            // `design.md` § Risks accepts a fix here without a delta if it is not.
+            HStack(spacing: 4) {
+                ForEach(values, id: \.self) { value in
+                    let isChosen = value == entry.number
+                    Button {
+                        try? screen.choose(value, on: row)
+                        choosingRow = nil
+                    } label: {
+                        Text("\(value)")
+                            .font(.callout)
+                            .frame(minWidth: 26, minHeight: 26)
+                            .background(Circle().fill(isChosen ? Color.accentColor : Color.clear))
+                            .foregroundStyle(isChosen ? Color.white : Color.primary)
+                    }
+                    .buttonStyle(.plain)
+                }
+                if entry.number != nil {
+                    Divider()
+                    Button {
+                        try? screen.choose(nil, on: row)
+                        choosingRow = nil
+                    } label: {
+                        Image(systemName: "xmark.circle")
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Clear")
+                }
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 12)
+        .presentationCompactAdaptation(.popover)
     }
 
     /// One one-off row's content and the two taps that act on it (grill answers 21-24, reopened
