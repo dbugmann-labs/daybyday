@@ -63,15 +63,15 @@ fail, make it pass, then the next.
 - [x] 8.2 `git diff --stat origin/main` lists only this change folder, `CONTEXT.md`, the two kit sources, the two kit test files and `ContentView.swift`
 - [x] 8.3 `pnpm run check:budgets` warns in this folder only about the three carried `day-screen` requirements over 150 words, which this Story carries whole and does not condense (`design.md` § Non-Goals)
 - [x] 8.4 `pnpm run verify` green, and `swift test` in `src/DayByDayKit` passing, its count read off the run
-- [ ] 8.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–8.4 and the walk below are ticked and that this instruction is written for the janitor. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `day-screen/spec.md` gains the two added requirements and its four MODIFIED ones are whole, `restore/spec.md`'s one MODIFIED requirement is whole, and no other spec moved. `pnpm run checks` runs after the archive commit exists, and that commit is pushed. **Any drift is a stop and a report, never a hand-edit.**
+- [x] 8.5 **The archive handover — `implementer` ticks this in its last commit before the archive**, on the evidence that 2.1–8.4 and the walk below are ticked and that this instruction is written for the janitor. The janitor runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, then reads the spec diff: `day-screen/spec.md` gains the two added requirements and its four MODIFIED ones are whole, `restore/spec.md`'s one MODIFIED requirement is whole, and no other spec moved. `pnpm run checks` runs after the archive commit exists, and that commit is pushed. **Any drift is a stop and a report, never a hand-edit.**
 
 ## The walk
 
-- [ ] W.1 A *Mood* (1–10) and a *Weight* (40–150) kept every day, today holding nothing: both rows at rest with name, rhythm and chevron, no number and no values anywhere
-- [ ] W.2 *Mood* tapped: the popover anchored under its row, the ten values 1–10 in one line, none marked, no clear, nothing dimmed
-- [ ] W.3 7 tapped: the popover closed, *Mood* struck through with its check, no number on the row
-- [ ] W.4 *Mood* tapped again: 7 a filled circle with the digit inverted, the clear drawn beside the values
-- [ ] W.5 The clear tapped: the popover closed, *Mood* not struck through and no check
-- [ ] W.6 A *Mood* day holding 5.5, tapped: "5.5" above the values, none marked, the clear drawn
+- [x] W.1 A *Mood* (1–10) and a *Weight* (40–150) kept every day, today holding nothing: both rows at rest with name, rhythm and chevron, no number and no values anywhere
+- [x] W.2 *Mood* tapped: the popover anchored under its row, the ten values 1–10 in one line, none marked, no clear, nothing dimmed
+- [x] W.3 7 tapped: the popover closed, *Mood* struck through with its check, no number on the row
+- [x] W.4 *Mood* tapped again: 7 a filled circle with the digit inverted, the clear drawn beside the values
+- [x] W.5 The clear tapped: the popover closed, *Mood* not struck through and no check
+- [x] W.6 A *Mood* day holding 5.5, tapped: "5.5" above the values, none marked, the clear drawn
 - [ ] W.7 phone: hitting the value meant, among ten in the popover, with a thumb
-- [ ] W.8 **The handover** — W.1–W.6, retaken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL
+- [x] W.8 **The handover** — W.1–W.6, retaken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL: https://github.com/dbugmann-labs/daybyday/pull/333#issuecomment-5811559812
