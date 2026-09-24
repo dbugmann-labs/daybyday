@@ -71,59 +71,6 @@ shape it lacks, not the quota.
 ## Wants
 
 
-### B-032 — start a weight entry from the last weight I gave
-*Captured 2026-09-06.*
-
-> "When entering the weight for a day, I want my last weight entry to be prefilled, so that I can
-> adjust it based on the last entry I made"
-
-- **Trigger** — once a day, on the scale, changing the number by a few hundred grams from
-  yesterday's.
-- **Touches** — `record`, for what a numeric entry is, and `day-screen` for the row it is made in.
-  It cannot be taken before B-001, which is the want that makes a weight recordable at all;
-  nothing about this is buildable while there is no weight to prefill from.
-- **Principle** — tested against *entered where you stand*: **passes, and is the sharpest example
-  of it yet** — a weight typed from scratch is five taps on a number pad, and adjusted from
-  yesterday's it is one or two, in the row. Tested against *five percent of seven things*:
-  **fails** — it deepens one payload kind that does not exist yet rather than making a new record
-  possible. Both are written down because the second is why a pass might reasonably not take it,
-  and the first is why it is worth having when B-001 lands.
-- **Open** — the last entry *ever*, or the last one before the day being entered? The day screen
-  moves between days, so entering a weight for last Tuesday can prefill from Monday or from
-  today, and only the first is "the last entry I made" as of that day.
-- **Open** — does a prefilled row read as already answered? A suggested value and a recorded one
-  must be told apart, or a day nobody stepped on the scale for silently carries a number. This is
-  the one way the want could do real damage to the record, and it is a design question rather
-  than a preference.
-- **Open** — is this weight, or every number? B-002's protein accumulates across a day and B-003's
-  mood is a single tap, so neither obviously wants it. If it is weight only, the prefill is a
-  property of a kind of payload, which is a thing `record` does not have yet.
-
-### B-034 — choose a mood from its range instead of typing it
-*Captured 2026-09-06, at the grill of `add-number-record` (#138).*
-
-> "Bounds only - but for a mood, I would like to have 1-10 (whole numbers) as predefined inputs,
-> which can be chosen with e.g. a slider"
-
-- **Trigger** — evening, once a day, saying how the day went; the one interaction the mood
-  commitment exists for.
-- **Touches** — `day-screen`, for what a row offers when the commitment declares a range. Not
-  `record`: #138's grill settled that a range is bounds and nothing else, so 5.5 is a mood and the
-  wholeness lives in the affordance rather than in what a number is.
-- **Principle** — tested against *entered where you stand*: **passes**. A mood typed on a number
-  pad is a keyboard for one digit; chosen from its range it is one gesture in the row, which is
-  what "as little interaction as the value allows" means for a value with ten possibilities.
-  Tested against *five percent of seven things*: **fails** — it deepens an entry that #139 will
-  already have made possible. Both are written down because the second is why a pass might
-  reasonably not take it.
-- **Open** — is this every number with a range, or a mood? A weight with a range of 40 to 150 has
-  a hundred and ten whole values and no useful slider, so the affordance may turn on how wide the
-  range is rather than on the range existing.
-- **Open** — a slider over whole numbers can express less than the record accepts, since the
-  record takes 5.5. Is that a deliberate narrowing, or does the row need both ways in?
-- **Open** — the *Decided* line of 2026-09-06 already sends the mood's one tap to the Story that
-  enters a number (#139). This entry is that line's missing half: what the affordance actually is.
-
 ### B-039 — be reminded to record a day before it is gone
 *Captured 2026-09-08, from the sixth grooming sweep. The wording is the sweep's.*
 
@@ -232,6 +179,21 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-24 — choose a mood from its range instead of typing it (B-034) → `FEAT: day-screen`
+  (#27), reopened under Epic #1, with B-032 in the same cluster. The missing half of the 2026-09-06
+  mood line: a number whose commitment has a **short range** — whole bounds, eleven values or fewer —
+  is **chosen** by one tap on a value and never typed; every other number is typed. One tap over the
+  slider the capture named, because the mood line promised one tap and a slider is a drag. Derived
+  from the range, not declared; choosing is the only way in, so the row never offers the 5.5 the
+  record still takes; an empty day starts with nothing chosen. Recommended as the first Story.
+- 2026-09-24 — start a weight entry from the last weight I gave (B-032) → `FEAT: day-screen` (#27),
+  with B-034. Epic #1's exclusion amended at G1 to "prefilling an entry other than a typed number
+  from the last one". A typed number on a day that holds none starts from its **starting number**:
+  the latest number on a date before that day, any era, no horizon — not the latest ever, so a
+  back-filled Tuesday starts from Monday. Every typed number, not a weight only, since nothing knows
+  a commitment is a weight. Committed unchanged it is recorded; cancelled it records nothing. The
+  range hint stays "for an empty field" and goes when the field opens prefilled — the owner's call,
+  against the recommendation to say the range whenever the entry is open.
 - 2026-09-21 — change a commitment and still have one commitment, with one day it is kept from
   (B-058) → `FEAT: commitment` (#26), reopened a fourth time under Epic #1, with B-057 in the same
   cluster. Grilled at the tenth pass, fourteen questions over three rounds, three fact agents, no
@@ -1131,3 +1093,18 @@ found nothing.
       needs a sitting of its own.
     - **Singleton**: B-041, leave until the SDK carries `reorderable(collectionID:)`, as 2026-09-15
       decided.
+- 2026-09-24 — cluster E of the eleventh pass, groomed as its own session on
+  `chore/groom-entry-affordances` (the eleventh's cluster H, B-059, was open in another session with
+  no pass line yet on `chore/backlog` a9315bf), `origin/main` at 4a8343f.
+  - **Sweep** — no new silence: every day-one line has a spec; lifecycle verbs as 2026-09-21 left
+    them, record retire carried by B-057 and deleting a restore copy answered `none`;
+    `docs/open-questions.md` holds no want in disguise.
+  - **Taken forward** — **E**, entry affordances: B-034, B-032 → `FEAT: day-screen` (#27) reopened
+    under Epic #1, whose exclusion list was amended for prefill. Ten questions over three rounds,
+    two fact agents; nine answered as recommended, the range hint against. `CONTEXT.md` gained
+    *Short range* and *Starting number* and an amendment to *Number entry*. Challenged at G1 that
+    neither weight nor mood is in the day-one week and that both fail *five percent of seven
+    things*; approved. First Story recommended: B-034's. Both amend the number entry, so they
+    serialise, and both queue behind cluster H if its Stories delta `day-screen`.
+  - **Not taken** — B-039, B-041, B-054 with the dispositions of 2026-09-21 unchanged; B-059 is
+    cluster H's.

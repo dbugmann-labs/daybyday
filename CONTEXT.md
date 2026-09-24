@@ -784,6 +784,26 @@ character like any other here, so an entry committed with one alone is *not a nu
 take-back. It had been the reverse, and it was measurably how a paste of one invisible character
 deleted the number a day held.
 
+**Amended 2026-09-24**, at the Feature grill of B-032 and B-034. A number entry is **typed** or
+**chosen**, and which is its commitment's: a commitment with a **short range** is chosen from it and
+never typed, every other number is typed. A typed entry on a day that holds no number starts from its
+**starting number**, which makes a third thing it can say; a chosen one starts with nothing chosen.
+The range is still said "for an empty field" and only there — a field that opens on a starting number
+does not say it, which the owner chose over the range being said whenever the entry is open.
+
+**Short range** — a range whose bounds are both whole numbers and which holds eleven values or fewer:
+mood's one to ten. A number commitment with one is **chosen** from it, one tap on a value, and never
+typed; a range of 40 to 150, or one with a bound of 0.5, is not short and its number is typed. It is
+a property of the range and not something a commitment declares, and it narrows only the entry: the
+record still takes 5.5 on a range of one to ten, the row just does not offer it. Agreed 2026-09-24 at
+the Feature grill of B-032 and B-034.
+
+**Starting number** — what a typed number entry starts from on a day that holds no number: the latest
+number its commitment holds on a date before that day, from any era, however far back. Not the latest
+ever, since a record carries a date and no time, and entering last Tuesday must not start from today.
+It is a suggestion until it is committed: committed unchanged it is recorded, and cancelled it records
+nothing. A total entry has none. Agreed 2026-09-24 at the Feature grill of B-032 and B-034.
+
 **Note entry** — what a note commitment's row offers in a tick's place: the note a person gives for
 that day, kept once it is committed and taken back when it is committed blank. It is deliberately
 not a **note**, which is the record `record` holds — this is the place one is made, the way a tick is
