@@ -1,5 +1,5 @@
 import Testing
-import DayByDayKit
+@testable import DayByDayKit
 
 @Test("a roster that has been given no commitment holds none")
 func aRosterThatHasBeenGivenNoCommitmentHoldsNone() {
@@ -3446,6 +3446,7 @@ func aCommitmentTakenUpAgainDaysAfterItWasStoppedBeginsANewEraOnTheDayOfTheResum
     // scheduled day at or after it, Monday 2 March, is.
     #expect(!newGym.isDue(on: CalendarDate(year: 2026, month: 2, day: 28)!))
     #expect(newGym.isDue(on: CalendarDate(year: 2026, month: 3, day: 2)!))
+    #expect(roster.eras(of: newGym)[0].keptFrom == resumeDay)
     // The older era is kept until 31 January 2026, the day it was stopped as of, and no later:
     // the roster still answers it on that day, and no longer the day after.
     #expect(
