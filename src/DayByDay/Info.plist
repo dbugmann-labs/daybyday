@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>DayByDay reads your Birthdays calendar to show each birthday on its day. It adds nothing to your calendars and changes nothing in them.</string>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>

@@ -1667,7 +1667,7 @@ place is the app's first **setting**: something the app keeps for itself, at a p
 beside the three places rather than among them. The folder, the last copy made there and any stop
 are all of it, and they last across the app being closed. No **copy** holds any of it and a
 **restore** replaces none of it, because it says where this phone copies to and not what this phone
-keeps.
+keeps. The **birthday** switch is the second, on the same terms (amended 2026-09-24, #327).
 
 **Restore** — putting a **copy** back: the record, the roster and the one-offs the phone holds become
 what the copy holds, whole, and what was there goes — said before it does, and never merged, since a
@@ -1827,6 +1827,15 @@ so a rename keeps it and each year's birthday takes its own (ADR-1062). A delete
 *row* and not its tick: the tick is kept unseen until it is taken back, and returns with a contact
 put back, so "the one record here that can go without a deliberate act" above is withdrawn — the
 row goes, the record does not. Whether birthdays are on is the phone's own setting and never kept.
+
+**Amended 2026-09-24**, at the grill of `turn-birthdays-on` (#327). "Never kept" above meant never
+in the **birthday store** and never in a **copy**; the switch's state is the app's second
+**setting**, after the copy place, and lasts across the app being closed. The switch is on only
+while the phone gives the app full calendar access: turned on, it asks, and if the phone refuses —
+at the prompt, later in Settings, or because Screen Time restricts it — it turns itself off, and
+turning it on again takes the person's hand after access is given back. Whenever the phone refuses,
+one line says so beside the switch, whoever refused, with a way to Settings; that is the
+**refused line**. The app reads no birthday until the switch is on.
 
 **Birthday store** — the store that keeps **birthday** ticks, each a contact and a day and nothing
 else: no words, no name and not whether birthdays are turned on. It is the fourth store, beside the
