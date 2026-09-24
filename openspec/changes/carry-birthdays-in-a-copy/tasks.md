@@ -69,11 +69,11 @@ watch it fail, make it pass, then the next.
 
 ## The walk
 
-- [ ] W.1 The commitments screen with birthdays off and `birthday-ticks.json` replaced by a run of bytes, after *Make a copy* is tapped — the refused copy saying *Your birthday ticks could not be read.*, and *Take out the files* with its caption naming the birthday ticks.
-- [ ] W.2 In that state, the restore sheet for a copy made before the ticks were damaged — under *Your phone*, *Your birthday ticks could not be read.* after the one-offs line.
+- [x] W.1 The commitments screen with birthdays off and `birthday-ticks.json` replaced by a run of bytes, after *Make a copy* is tapped — the refused copy saying *Your birthday ticks could not be read.*, and *Take out the files* with its caption naming the birthday ticks.
+- [x] W.2 In that state, the restore sheet for a copy made before the ticks were damaged — under *Your phone*, *Your birthday ticks could not be read.* after the one-offs line.
 - [ ] W.3 phone: tick a birthday, make a copy, take the tick back, restore that copy — the tick is back on the day screen.
 - [ ] W.4 phone: tick a birthday — the commitments screen's copy-place line shows a new last copy.
-- [ ] W.5 **The handover** — W.1–W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.3 and W.4 are the human's at G7; the conductor ticks them on the G7 approval.
+- [x] W.5 **The handover** — W.1–W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL: https://github.com/dbugmann-labs/daybyday/pull/342#issuecomment-5824015517. W.3 and W.4 are the human's at G7; the conductor ticks them on the G7 approval.
 
 ## 12. Gates and the archive handover
 
