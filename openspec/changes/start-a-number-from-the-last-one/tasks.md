@@ -14,7 +14,7 @@ make it pass, then the next.
 ## 2. The seam
 
 - [x] 2.1 `DayView.NumberEntry.startingNumber`, `DayView.Row.startingNumber` and `History.latestNumber(for:before:)` exist as `design.md` § *The seam* writes them, and 3.1 is red before the row forms one
-- [ ] 2.2 `DayScreen`, `Number`, `Commitment`, `Roster`, `TypedNumber` and `CommitmentsScreen` are unchanged, and `openspec/specs/` is untouched (rule 2)
+- [x] 2.2 `DayScreen`, `Number`, `Commitment`, `Roster`, `TypedNumber` and `CommitmentsScreen` are unchanged, and `openspec/specs/` is untouched (rule 2)
 
 ## 3. What the entry says — `DayViewTests.swift`
 
@@ -30,10 +30,10 @@ make it pass, then the next.
 
 ## 4. The day screen — `DayScreenTests.swift`
 
-- [ ] 4.1 a starting number is read across every era of its commitment — catches a lookup by the era's own entry rather than its identity
-- [ ] 4.2 a latest number outside the range of the era holding the day is no starting number, and none earlier is said instead — catches a walk back to one that fits, or bounds read exclusive
-- [ ] 4.3 a starting number keeps nothing until it is committed, and committed as it is said is entered on the day being entered
-- [ ] 4.4 a number entered on a day is the starting number of the day after it, and taking it back takes that away — catches a starting number cached across a move
+- [x] 4.1 a starting number is read across every era of its commitment — catches a lookup by the era's own entry rather than its identity
+- [x] 4.2 a latest number outside the range of the era holding the day is no starting number, and none earlier is said instead — catches a walk back to one that fits, or bounds read exclusive
+- [x] 4.3 a starting number keeps nothing until it is committed, and committed as it is said is entered on the day being entered
+- [x] 4.4 a number entered on a day is the starting number of the day after it, and taking it back takes that away — catches a starting number cached across a move
 
 ## 5. The carried scenarios
 
