@@ -219,7 +219,7 @@ amended in place.
 
 **Amended 2026-09-23**, at the grill of `stop-and-resume-as-eras` (#306), which takes the price
 above back for the day that paid it. A stop made on a day that already holds a record of the
-commitment — a tick, a number or a note — is kept until that day and not the day before, so what
+commitment — a tick, a number, a note or a total's addition — is kept until that day and not the day before, so what
 was entered that morning stays drawn; a stop on a day holding nothing still leaves the screen at
 once. The day, once given, does not move: taking the record away afterwards leaves it where it is.
 And a resume no longer clears the day: it begins a new **era**, so the days between stay a **gap**
@@ -1851,8 +1851,8 @@ seven, rounded to the nearest whole number, which never falls on a half — and 
 share owes each era's part of its own quota, summed and rounded once. The days held are the days the
 commitment is kept on, those still to come included, so the week in progress is not a part week for
 being in progress. A part week that rounds to nothing is still said, owing nothing. The **look-back**
-and a row's **standing** owe the same number, and both count every kept day of the week whichever
-era holds it. Agreed 2026-09-23 at the grill of `stop-and-resume-as-eras` (#306), replacing the rule
+and a row's **standing** owe the same number, and both count the kept days of the week that a weekly
+quota era holds, whichever of them it is; a day another kind of era holds counts in that era's unit. Agreed 2026-09-23 at the grill of `stop-and-resume-as-eras` (#306), replacing the rule
 that a part week owed the whole quota.
 
 **Standing** — how many days of its **week** a commitment has been kept, counted through a date.
