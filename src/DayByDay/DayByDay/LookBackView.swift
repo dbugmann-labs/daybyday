@@ -67,6 +67,15 @@ struct LookBackView: View {
     // height join this at the padding's own call site instead, read inline the same way, so nothing
     // needs a new trigger to keep them current.
     @State private var plotBottomInset: CGFloat = 0
+    // The day of the point a tap picked, whose value draws in a callout above it — shell drawing
+    // state, crossing no seam: the point already says its value in words, the graph only never
+    // showed it. Cleared by a second tap on the same point, a tap away from every point, or a
+    // change of span.
+    @State private var selectedDay: Int?
+    // The plot's own leading edge inside the chart, cached beside the values-axis labels'
+    // positions — a tap arrives in the chart's own space, `proxy.position(forX:)` answers in the
+    // plot's.
+    @State private var plotMinX: CGFloat = 0
     // Which notes are open — a set of places in `lookBack.notes`, empty on every visit (grill
     // decision 10). Shell drawing state, crossing no seam: `design.md` § *The fold is drawn, not
     // said*.
@@ -347,6 +356,7 @@ struct LookBackView: View {
             }
         }
         .pickerStyle(.segmented)
+        .onChange(of: span) { _, _ in selectedDay = nil }
 
         graphCard(graph)
     }
@@ -509,6 +519,14 @@ struct LookBackView: View {
                 // stretch's own half-day extension exactly at their shared boundary, so every day
                 // of the graph carries its target's rule with nothing left between two stretches.
                 // `design.md` § *The rule is stretches, not a target per day*.
+                // The tapped point's marker: a thin vertical rule through its day, under the
+                // callout the overlay draws above the point.
+                if let selectedDay, graph.points.contains(where: { $0.day == selectedDay }) {
+                    RuleMark(x: .value("Day", selectedDay))
+                        .foregroundStyle(Color.secondary.opacity(0.5))
+                        .lineStyle(StrokeStyle(lineWidth: 1))
+                }
+
                 ForEach(Array(graph.targetRule.enumerated()), id: \.offset) { index, stretch in
                     let target = (stretch.target as NSDecimalNumber).doubleValue
                     LineMark(
@@ -551,6 +569,26 @@ struct LookBackView: View {
             .chartScrollableAxes(.horizontal)
             .chartXVisibleDomain(length: visibleSpan)
             .chartScrollPosition(initialX: openingPosition)
+            // A tap picks the point nearest it across the dates axis, within a fingertip's
+            // reach; a tap on the picked point again, or away from every point, clears it. A tap
+            // rather than `chartXSelection`'s own gesture, which on a horizontally scrollable
+            // chart waits for a long press.
+            .chartGesture { proxy in
+                SpatialTapGesture().onEnded { value in
+                    let tapX = value.location.x - plotMinX
+                    let nearest = graph.points
+                        .compactMap { point -> (day: Int, distance: CGFloat)? in
+                            guard let x = proxy.position(forX: point.day) else { return nil }
+                            return (point.day, abs(x - tapX))
+                        }
+                        .min { $0.distance < $1.distance }
+                    guard let nearest, nearest.distance <= 22, nearest.day != selectedDay else {
+                        selectedDay = nil
+                        return
+                    }
+                    selectedDay = nearest.day
+                }
+            }
             // The dates-axis labels and the era label are drawn here rather than as each
             // `AxisMark`'s own `AxisValueLabel` or a `RuleMark`'s `.annotation`: both were
             // measured to either clip a label the card's own edge sits under or distort the
@@ -636,6 +674,19 @@ struct LookBackView: View {
                             }
                         }
 
+                        if let selectedDay,
+                            let point = graph.points.first(where: { $0.day == selectedDay }),
+                            let x = proxy.position(forX: point.day),
+                            let y = proxy.position(forY: (point.value as NSDecimalNumber).doubleValue)
+                        {
+                            let naturalX = frame.minX + x
+                            if naturalX >= frame.minX && naturalX <= frame.maxX {
+                                selectionCallout(
+                                    point, on: graph.days[point.day],
+                                    atX: naturalX, pointY: frame.minY + y, in: frame)
+                            }
+                        }
+
                         // Each stretch's own label, at its last day — the newest at the rule's
                         // newest end, each earlier one where the rule steps (grill decision 14).
                         // `design.md` § *The shell rides this Story*. Drawn only where `through`'s
@@ -713,12 +764,51 @@ struct LookBackView: View {
     ) {
         guard let plotFrame = proxy.plotFrame else { return }
         let frame = geometry[plotFrame]
+        plotMinX = frame.minX
         lowestLabelY = proxy.position(forY: lowest).map { frame.minY + $0 }
         highestLabelY = proxy.position(forY: highest).map { frame.minY + $0 }
         // Text-size-independent, so this alone is safe to cache against these triggers — see
         // `plotBottomInset`'s own doc comment. Never negative: a plot frame that already reaches
         // the chart's own bottom edge needs none.
         plotBottomInset = max(0, frame.maxY - geometry.size.height)
+    }
+
+    /// The tapped point's callout: its value as the point says it — a total's "150 of 120", a
+    /// number's "72.5" — over the day it was kept on, in a small card of the page's own fill,
+    /// centred over the point and clamped inside the plot like every other overlay label. Drawn
+    /// above the point, or below it where the point sits too near the plot's top for the callout
+    /// to fit.
+    private func selectionCallout(
+        _ point: LookBack.Graph.Point, on day: String, atX x: CGFloat, pointY: CGFloat,
+        in frame: CGRect
+    ) -> some View {
+        let valueFont = UIFont.preferredFont(forTextStyle: .footnote)
+        let width = max(
+            (point.inWords as NSString).size(withAttributes: [.font: valueFont]).width,
+            Self.measuredWidth(day)
+        ) + 16
+        let height = valueFont.lineHeight + Self.measuredHeight() + 10
+        let gap: CGFloat = 12
+        let fitsAbove = pointY - gap - height >= frame.minY
+        let centerY = fitsAbove ? pointY - gap - height / 2 : pointY + gap + height / 2
+        return VStack(spacing: 2) {
+            Text(point.inWords)
+                .font(.footnote.weight(.semibold))
+            Text(day)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .lineLimit(1)
+        .fixedSize()
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(
+            Color(.systemGroupedBackground), in: RoundedRectangle(cornerRadius: 8)
+        )
+        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.secondary.opacity(0.3)))
+        .position(x: Self.clampedCenterX(x, in: frame, width: width), y: centerY)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("LookBackGraphCallout")
     }
 
     /// The fixed offset, in points, from the plot's own bottom edge to a dates-axis label's
