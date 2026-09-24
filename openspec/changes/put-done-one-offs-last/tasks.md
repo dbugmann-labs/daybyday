@@ -52,8 +52,8 @@ take the next unticked scenario box, write the one test named for it, watch it f
 
 ## 9. Gates and the archive handover
 
-- [ ] 9.1 `openspec validate put-done-one-offs-last --strict` exits 0, and `pnpm run checks` is clean
-- [ ] 9.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
+- [x] 9.1 `openspec validate put-done-one-offs-last --strict` exits 0, and `pnpm run checks` is clean
+- [x] 9.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
 - [ ] 9.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 9.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — 8.1 and W.5 by the conductor — and the walk comment's URL is in W.6. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/one-off/spec.md` lost "One-offs answer the one-offs standing on a day, earliest owed first" and gained this delta's three added requirements, that `openspec/specs/day-screen/spec.md`'s one MODIFIED requirement is whole, and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
