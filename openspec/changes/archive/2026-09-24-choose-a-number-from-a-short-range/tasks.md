@@ -73,5 +73,5 @@ fail, make it pass, then the next.
 - [x] W.4 *Mood* tapped again: 7 a filled circle with the digit inverted, the clear drawn beside the values
 - [x] W.5 The clear tapped: the popover closed, *Mood* not struck through and no check
 - [x] W.6 A *Mood* day holding 5.5, tapped: "5.5" above the values, none marked, the clear drawn
-- [ ] W.7 phone: hitting the value meant, among ten in the popover, with a thumb
+- [x] W.7 phone: (G7 approved by owner, 2026-09-24)  hitting the value meant, among ten in the popover, with a thumb
 - [x] W.8 **The handover** — W.1–W.6, retaken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL: https://github.com/dbugmann-labs/daybyday/pull/333#issuecomment-5812828076
