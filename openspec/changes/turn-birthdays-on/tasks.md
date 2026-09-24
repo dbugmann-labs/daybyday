@@ -80,7 +80,7 @@ Rule 3 throughout: one scenario, one acceptance test named identically to it, on
 - [x] 7.2 `openspec validate turn-birthdays-on --strict` exits 0 and `pnpm run checks` is clean but
   for what it is expected to warn.
 - [x] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
-- [ ] 7.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
+- [x] 7.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
   that the change folder is committed, `tasks.md` has no other unticked box and the walk comment's
   URL is in § 6.7. The janitor then runs `/opsx:archive` itself and checks afterwards that
   `openspec/specs/birthday/spec.md` gained this delta's four requirements and twelve scenarios and
