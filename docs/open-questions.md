@@ -180,13 +180,15 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
-- **A short range whose values a `Decimal` cannot all hold draws fewer values than it has.** A
+- **A short range whose values a `Decimal` cannot all hold offers one value eleven times.** A
   range is short where both bounds are whole and it holds eleven values or fewer, and a chosen
   entry offers every whole number between its bounds. Bounds near thirty-eight significant digits
   can each be held while the numbers between them cannot — 999…990 (thirty-eight nines and a zero)
   to 10³⁹ are ten apart, and 999…991 needs thirty-nine digits — so the entry cannot offer all
   eleven. The loop that lists them is bounded to highest − lowest + 1 steps, so it cannot hang, as
-  it did at #324's G7 on a range of 10⁵⁰ to 10⁵⁰; what it draws for such a range is unspecified.
+  it did at #324's G7 on a range of 10⁵⁰ to 10⁵⁰ — but on that range it answers 999…990 eleven
+  times and never 10³⁹, measured at the re-check of the same G7, and the shell's values then carry
+  eleven identical identities. What a chosen entry offers there is unspecified.
   Whether such a range is typed instead is a change to `day-screen`'s rule for a short range, and
   nobody types a mood with forty digits. Found at #324's G7, 2026-09-24, and left by the owner's
   reply rather than reopening the delta.
