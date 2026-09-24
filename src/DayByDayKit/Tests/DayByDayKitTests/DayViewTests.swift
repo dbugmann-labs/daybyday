@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 import DayByDayKit
 
@@ -1870,6 +1871,24 @@ func aNumberEntryOfARangeOfOneToTenIsChosenFromTheTenWholeNumbersInIt() throws {
     let singleEntry = try #require(
         DayView(of: [singleValue], on: monday, in: history).rows[0].numberEntry(asOf: monday))
     #expect(singleEntry.values == [4])
+}
+
+/// Not a scenario: a single-value range whose bound sits past `Decimal`'s own precision, where
+/// `bound + 1 == bound` holds and a naive walk from `lowest` to `highest` would never terminate.
+/// Free-form, below the seam, `docs/process.md` § *Where the spec stops and the test starts*.
+@Test
+func numberEntryOfASingleValueRangePastDecimalsPrecisionStillReturns() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let hugeBound = Decimal(sign: .plus, exponent: 50, significand: 1)
+    let mood = Commitment(
+        name: "Mood", schedule: .weekdays([.monday, .wednesday, .saturday]), keptFrom: keptFrom,
+        kind: .number(range: Commitment.Range(lowest: hugeBound, highest: hugeBound)!))!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let history = History()
+
+    let entry = try #require(
+        DayView(of: [mood], on: monday, in: history).rows[0].numberEntry(asOf: monday))
+    #expect(entry.values == [hugeBound])
 }
 
 @Test(

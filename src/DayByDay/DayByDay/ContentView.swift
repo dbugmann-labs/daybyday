@@ -1084,6 +1084,9 @@ struct ContentView: View {
             // so the popover opens from the row that was tapped, `design.md`'s own words.
             // `.presentationCompactAdaptation(.popover)` is what keeps this a popover on an
             // iPhone's compact size class; without it SwiftUI falls back to a sheet.
+            // `arrowEdge: .top` puts the arrow on the popover's own top edge, pointing up at the
+            // row that was tapped — so the popover itself opens under that row, covering the row
+            // below it, per the wireframe at `design.md` § *What the shell draws*.
             .popover(
                 isPresented: Binding(
                     get: { choosingRow == row },
@@ -1092,7 +1095,8 @@ struct ContentView: View {
                             choosingRow = nil
                         }
                     }
-                )
+                ),
+                arrowEdge: .top
             ) {
                 if let entry, let values = entry.values {
                     chosenValuesPopover(row: row, entry: entry, values: values)

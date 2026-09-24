@@ -11,7 +11,8 @@ public struct DayView: Hashable, Sendable {
         /// Every whole number the commitment's range holds, lowest first, where the range is
         /// short — both bounds whole numbers and eleven values or fewer, both counted,
         /// `CONTEXT.md` § *Short range* — and `nil` where the entry is typed instead. Never
-        /// empty where it is not `nil`; `hint` is `nil` exactly when this is not.
+        /// empty where it is not `nil`; `hint` and this are never both non-`nil` — but a typed
+        /// entry whose commitment declares no range at all has neither.
         public let values: [Decimal]?
         /// The same range said as the cause a number outside it is refused for — "Must be
         /// between 40 and 150" — or `nil` where the commitment declares none. Internal: the
@@ -430,12 +431,15 @@ extension Commitment.Range {
     }
 
     /// Every whole number from `lowest` to `highest`, both included, lowest first — the values a
-    /// short range's entry offers. Only ever read where `isShort` holds, so the loop below never
-    /// runs across more than eleven values.
+    /// short range's entry offers. Bounded to `highest − lowest + 1` steps by the loop itself, so
+    /// it can never run more than eleven times: a `Decimal` past its own precision can make
+    /// `value + 1 == value` hold forever (`1e50 + 1 == 1e50`), so the loop counts steps down
+    /// rather than comparing `value` against `highest` on every pass.
     fileprivate var wholeNumbers: [Decimal] {
+        let stepCount = NSDecimalNumber(decimal: highest - lowest + 1).intValue
         var values: [Decimal] = []
         var value = lowest
-        while value <= highest {
+        for _ in 0..<max(stepCount, 0) {
             values.append(value)
             value += 1
         }
