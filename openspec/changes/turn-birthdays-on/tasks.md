@@ -65,8 +65,8 @@ Rule 3 throughout: one scenario, one acceptance test named identically to it, on
 - [x] 6.2 The switch just turned on — the system's calendar prompt over the screen, carrying the usage sentence.
 - [x] 6.3 The prompt allowed — the switch on, the explaining line under it, no refused line.
 - [x] 6.4 Calendar access reset, the switch turned on and the prompt refused — the switch off, the refused line and *Open Settings* under the explaining line.
-- [ ] 6.5 phone: with birthdays on, calendar access turned off for DayByDay in Settings and the app returned to — the switch off and the refused line shown.
-- [ ] 6.6 phone: *Open Settings* tapped — Settings open on DayByDay's page, with Calendars on it.
+- [x] 6.5 phone: with birthdays on, calendar access turned off for DayByDay in Settings and the app returned to — the switch off and the refused line shown.
+- [x] 6.6 phone: *Open Settings* tapped — Settings open on DayByDay's page, with Calendars on it.
 - [x] 6.7 Post the pictures to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, and
   tick this on the comment's URL — that command and never `gh pr comment --attach`. The walk's
   throwaway test resets calendar access itself; a change to `scripts/walk.ts` is a stop. The two
@@ -79,7 +79,7 @@ Rule 3 throughout: one scenario, one acceptance test named identically to it, on
   passing and twelve more than a run on `main` reports — both counts read off runs.
 - [x] 7.2 `openspec validate turn-birthdays-on --strict` exits 0 and `pnpm run checks` is clean but
   for what it is expected to warn.
-- [ ] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
+- [x] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
 - [ ] 7.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
   that the change folder is committed, `tasks.md` has no other unticked box and the walk comment's
   URL is in § 6.7. The janitor then runs `/opsx:archive` itself and checks afterwards that
