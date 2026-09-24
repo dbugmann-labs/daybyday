@@ -73,8 +73,9 @@ public final class BirthdaySwitch {
         guard !isOn else {
             return
         }
-        guard readAccess() != .full else {
-            isOn = true
+        let currentAccess = readAccess()
+        guard currentAccess != .full else {
+            applyReading(currentAccess, keptOn: true)
             persist()
             return
         }
@@ -105,8 +106,9 @@ public final class BirthdaySwitch {
     /// Applies `access` as the current reading: sets `isRefused` from it, and sets `isOn` to
     /// `keptOn && access == .full` — persisting where `keptOn` was true but the reading is not
     /// full, so a switch kept on is turned off and kept off at its place the moment a reading
-    /// says access has fallen short, per `design.md` § *Birthdays are on only while the phone
-    /// gives full calendar access*. Called by `init` (`keptOn` read off `statePlace`), `shown()`
+    /// says access has fallen short, per the requirement "Birthdays are on only while the phone
+    /// gives full calendar access" in this delta's `spec.md`. Called by `init` (`keptOn` read off
+    /// `statePlace`), `shown()`
     /// (`keptOn` the switch's own current `isOn`) and after an ask in `turnOn()` (`keptOn` always
     /// `true`, since only a switch being turned on reaches there).
     private func applyReading(_ access: CalendarAccess, keptOn: Bool) {

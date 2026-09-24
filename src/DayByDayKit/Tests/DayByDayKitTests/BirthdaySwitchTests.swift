@@ -200,12 +200,15 @@ func birthdaysTurnedOnAndRefusedAtThePromptTurnThemselvesBackOff() async {
 @Test("birthdays turned on where the phone already gives full access are on without asking")
 func birthdaysTurnedOnWhereThePhoneAlreadyGivesFullAccessAreOnWithoutAsking() async throws {
     let place = freshSwitchPlace()
-    let phone = FakePhone(access: .full)
+    let phone = FakePhone(access: .restricted)
     let switchUnderTest = birthdaySwitch(at: place, asking: phone)
+    #expect(switchUnderTest.isRefused == true)
 
+    phone.access = .full
     await switchUnderTest.turnOn()
 
     #expect(switchUnderTest.isOn == true)
+    #expect(switchUnderTest.isRefused == false)
     #expect(phone.asks == 0)
 
     let bytesAfterFirst = try Data(contentsOf: place)
@@ -267,9 +270,9 @@ func birthdaysTurnedOffAreOffAndKeptOffAndAskNothing() async throws {
 }
 
 @MainActor
-private func turnedOnAtFreshPlace(access: CalendarAccess = .full) async -> URL {
+private func turnedOnAtFreshPlace() async -> URL {
     let place = freshSwitchPlace()
-    let phone = FakePhone(access: access)
+    let phone = FakePhone(access: .full)
     let switchUnderTest = birthdaySwitch(at: place, asking: phone)
     await switchUnderTest.turnOn()
     return place
