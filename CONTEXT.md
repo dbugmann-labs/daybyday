@@ -816,6 +816,13 @@ ever, since a record carries a date and no time, and entering last Tuesday must 
 It is a suggestion until it is committed: committed unchanged it is recorded, and cancelled it records
 nothing. A total entry has none. Agreed 2026-09-24 at the Feature grill of B-032 and B-034.
 
+**Amended 2026-09-24**, at the grill of `start-a-number-from-the-last-one` (#325). A number the
+entry would refuse is not a starting number: where the latest earlier one lies outside the range
+the day's era declares — as it can after a range change — the entry has none and opens empty,
+saying the range, and never reaches further back for one that fits. Nothing says which day a
+starting number came from, and a starting number cleared from the field leaves it empty, so the
+range is said again.
+
 **Note entry** — what a note commitment's row offers in a tick's place: the note a person gives for
 that day, kept once it is committed and taken back when it is committed blank. It is deliberately
 not a **note**, which is the record `record` holds — this is the place one is made, the way a tick is
