@@ -21,6 +21,10 @@ public final class CommitmentsScreen {
     /// it is asked for, never from what a screen already holds.
     /// `openspec/changes/make-a-copy/design.md` § *The seam*.
     private let oneOffPlace: URL
+    /// The birthday place `makeACopy`, `askToRestore` and `takeOut` read — this screen keeps no
+    /// birthday store of its own to draw from, on the same footing as `oneOffPlace`.
+    /// `design.md` § *The seam*.
+    private let birthdayPlace: URL
     private var rosterStore: RosterStore?
     private var recordStore: RecordStore?
 
@@ -44,15 +48,19 @@ public final class CommitmentsScreen {
         asOf today: CalendarDate, keepingRosterAt place: URL = CommitmentsScreen.rosterPlace,
         keepingRecordAt recordPlace: URL = DayScreen.recordPlace,
         keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace,
+        keepingBirthdayTicksAt birthdayPlace: URL? = nil,
         copyingTo copyPlace: CopyPlace? = nil
     ) {
         self.place = place
         self.recordPlace = recordPlace
         self.oneOffPlace = oneOffPlace
+        self.birthdayPlace = birthdayPlace ?? DayScreen.birthdayPlace(besideRecordAt: recordPlace)
         self.dayToKeepFrom = today
         self.copyPlace = copyPlace
 
-        let opened = Self.readPlaces(place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace)
+        let opened = Self.readPlaces(
+            place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace,
+            birthdayPlace: self.birthdayPlace)
         self.rosterStore = opened.rosterStore
         self.rosterState = opened.rosterState
         self.recordStore = opened.recordStore
@@ -75,13 +83,14 @@ public final class CommitmentsScreen {
     /// real — `openspec/changes/save-change-whole/design.md` § *A torn save that cannot be undone
     /// reuses two existing states*.
     private static func readPlaces(
-        place: URL, recordPlace: URL, oneOffPlace: URL
+        place: URL, recordPlace: URL, oneOffPlace: URL, birthdayPlace: URL
     ) -> (
         rosterStore: RosterStore?, rosterState: RosterState, recordStore: RecordStore?,
         recordsBelongToNoCommitment: Bool, storesNotRead: [StoreNotRead]
     ) {
         let read = CopyPlace.readStores(
-            recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace)
+            recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
+            birthdayTicksAt: birthdayPlace)
 
         let rosterState: RosterState
         switch read.notRead.first(where: { $0.store == .roster })?.cause {
@@ -1458,7 +1467,8 @@ public final class CommitmentsScreen {
         asOf moment: Moment, writingInto directory: URL = CommitmentsScreen.copyDirectory
     ) -> Result<URL, Refusal> {
         let formed = CopyPlace.form(
-            recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace, asOf: moment)
+            recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
+            birthdayTicksAt: birthdayPlace, asOf: moment)
         switch formed.result {
         case .failure(let refusal):
             refusedChange = .makingACopy(formed.notRead.first?.store, refusal)
@@ -1493,15 +1503,16 @@ public final class CommitmentsScreen {
         let namedAs: Copy.Store?
     }
 
-    /// The five files a take-out reaches for, in the fixed order this screen answers a take-out in:
-    /// the record, the roster, the one-offs, a save in progress and a restore in progress, the last
-    /// two each named as the record. `openspec/specs/restore/spec.md` § *A take-out is the files at
-    /// the three places exactly as they lie*.
+    /// The six files a take-out reaches for, in the fixed order this screen answers a take-out in:
+    /// the record, the roster, the one-offs, the birthday ticks, a save in progress and a restore
+    /// in progress, the last two each named as the record. `openspec/specs/restore/spec.md` § *A
+    /// take-out is the files at the four places exactly as they lie*.
     private var takeOutCandidates: [TakeOutCandidate] {
         [
             TakeOutCandidate(source: recordPlace, namedAs: .record),
             TakeOutCandidate(source: place, namedAs: .roster),
             TakeOutCandidate(source: oneOffPlace, namedAs: .oneOffs),
+            TakeOutCandidate(source: birthdayPlace, namedAs: .birthdayTicks),
             TakeOutCandidate(
                 source: Self.saveInProgressPlace(besideRecordAt: recordPlace), namedAs: .record),
             TakeOutCandidate(
@@ -1619,7 +1630,8 @@ public final class CommitmentsScreen {
     /// picked directly or found already standing in a folder given as the copy place.
     private func formAwaitingRestore(for copy: Copy) -> AwaitingRestore {
         let phoneRead = CopyPlace.readStores(
-            recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace)
+            recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
+            birthdayTicksAt: birthdayPlace)
         let phoneCounts = Counts(
             kept: phoneRead.roster.map { $0.roster.commitments.count },
             stopped: phoneRead.roster.map { Self.stopped(in: $0.roster).count },
@@ -1719,14 +1731,17 @@ public final class CommitmentsScreen {
 
         do {
             try RestoreInProgress.restore(
-                copy, recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace)
+                copy, recordAt: recordPlace, rosterAt: place, oneOffsAt: oneOffPlace,
+                birthdayTicksAt: birthdayPlace)
         } catch {
             refusedChange = .restoring(.notKept)
             copyRestored = nil
             return .notKept
         }
 
-        let opened = Self.readPlaces(place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace)
+        let opened = Self.readPlaces(
+            place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace,
+            birthdayPlace: birthdayPlace)
         rosterStore = opened.rosterStore
         rosterState = opened.rosterState
         recordStore = opened.recordStore
@@ -1785,7 +1800,9 @@ public final class CommitmentsScreen {
         nameTypedBack = ""
         refusedCopyPlace = nil
 
-        let opened = Self.readPlaces(place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace)
+        let opened = Self.readPlaces(
+            place: place, recordPlace: recordPlace, oneOffPlace: oneOffPlace,
+            birthdayPlace: birthdayPlace)
         rosterStore = opened.rosterStore
         rosterState = opened.rosterState
         recordStore = opened.recordStore

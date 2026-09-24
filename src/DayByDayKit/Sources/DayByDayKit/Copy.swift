@@ -10,19 +10,24 @@ public struct Copy: Hashable, Sendable {
     public let history: History
     public let roster: Roster
     public let oneOffs: OneOffs
+    public let birthdayTicks: BirthdayTicks
 
-    public init(moment: Moment, history: History, roster: Roster, oneOffs: OneOffs) {
+    public init(
+        moment: Moment, history: History, roster: Roster, oneOffs: OneOffs,
+        birthdayTicks: BirthdayTicks = BirthdayTicks()
+    ) {
         self.moment = moment
         self.history = history
         self.roster = roster
         self.oneOffs = oneOffs
+        self.birthdayTicks = birthdayTicks
     }
 
-    /// Which of the three places a copy could not be read from — named on a refused copy so a
+    /// Which of the four places a copy could not be read from — named on a refused copy so a
     /// person is told which store to look at rather than merely that one could not be read.
     /// `openspec/changes/make-a-copy/design.md` § *The refusal is the screen's existing one, with
     /// one new cause*.
     public enum Store: Hashable, Sendable, CaseIterable {
-        case record, roster, oneOffs
+        case record, roster, oneOffs, birthdayTicks
     }
 }

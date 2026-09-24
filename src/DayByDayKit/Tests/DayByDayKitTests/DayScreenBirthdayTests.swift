@@ -1006,3 +1006,45 @@ func whatADayScreenTellsOnABirthdayRowEndsWhenACommitmentTickIsKept() async thro
     #expect(screen.dayView.rows[0].isKept)
     #expect(screen.notice == nil)
 }
+
+@MainActor
+@Test("a day screen returned to after a restore draws the birthday ticks the copy holds")
+func aDayScreenReturnedToAfterARestoreDrawsTheBirthdayTicksTheCopyHolds() async throws {
+    let january20 = CalendarDate(year: 2026, month: 1, day: 20)!
+    let kate = Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: january20)!
+    let places = freshFourPlaces()
+    let calendar = fakeCalendar(FakeCalendar(handing: [kate]))
+    let birthdaySwitch = await onSwitch()
+
+    let dayScreen = DayScreen(
+        startingFrom: [], asOf: january20, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOff,
+        keepingBirthdayTicksAt: places.birthday, readingBirthdaysFrom: calendar,
+        whileOn: birthdaySwitch)
+    let commitmentsScreen = CommitmentsScreen(
+        asOf: january20, keepingRosterAt: places.roster, keepingRecordAt: places.record,
+        keepingOneOffsAt: places.oneOff, keepingBirthdayTicksAt: places.birthday)
+
+    let copyResult = commitmentsScreen.makeACopy(
+        asOf: Moment(on: january20, hour: 14, minute: 32)!,
+        writingInto: FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString, isDirectory: true))
+    guard case .success(let copyURL) = copyResult else {
+        Issue.record("expected a copy to be made")
+        return
+    }
+
+    try dayScreen.tick(dayScreen.dayView.birthdayGroup!.rows.first { $0.birthday == kate }!)
+
+    #expect(commitmentsScreen.askToRestore(from: copyURL) == nil)
+    #expect(commitmentsScreen.confirmRestoring() == nil)
+
+    dayScreen.returnedTo(from: commitmentsScreen)
+
+    #expect(dayScreen.dayView.birthdayGroup?.rows.map(\.isTicked) == [false])
+
+    try dayScreen.tick(dayScreen.dayView.birthdayGroup!.rows.first { $0.birthday == kate }!)
+
+    #expect(dayScreen.dayView.birthdayGroup?.rows.map(\.isTicked) == [true])
+    #expect(try BirthdayStore(at: places.birthday).ticks.isTicked(kate))
+}
