@@ -2283,6 +2283,31 @@ func twoRowsForTheSameNumberCommitmentAndDateHoldingNoNumberButDifferingInStarti
     #expect(thirdView.rows[0] == firstView.rows[0])
 }
 
+@Test("a commitment sharing its name with another takes no starting number from it")
+func aCommitmentSharingItsNameWithAnotherTakesNoStartingNumberFromIt() throws {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let allWeekdays: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let range = Commitment.Range(lowest: 40, highest: 150)!
+    let firstWeight = Commitment(
+        name: "Weight", schedule: allWeekdays, keptFrom: keptFrom, kind: .number(range: range))!
+    let secondWeight = Commitment(
+        name: "Weight", schedule: allWeekdays, keptFrom: keptFrom, kind: .number(range: range))!
+    let sunday = CalendarDate(year: 2026, month: 8, day: 30)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    var history = History()
+    history.add(Number(72.4, for: firstWeight, on: sunday)!)
+
+    let dayView = DayView(of: [firstWeight, secondWeight], on: monday, in: history)
+
+    let firstEntry = try #require(dayView.rows[0].numberEntry(asOf: monday))
+    #expect(firstEntry.startingNumber == 72.4)
+
+    let secondEntry = try #require(dayView.rows[1].numberEntry(asOf: monday))
+    #expect(secondEntry.startingNumber == nil)
+}
+
 @Test("a row offers the note entry for its commitment on the date the day view is of")
 func aRowOffersTheNoteEntryForItsCommitmentOnTheDateTheDayViewIsOf() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!

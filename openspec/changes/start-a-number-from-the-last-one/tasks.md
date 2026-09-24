@@ -27,7 +27,7 @@ make it pass, then the next.
 - [x] 3.7 a chosen entry says no starting number
 - [x] 3.8 a commitment declaring no range takes any number held before its day as its starting number
 - [x] 3.9 two rows for the same number commitment and date holding no number but differing in starting number are different rows — catches a custom equality leaving it out
-- [ ] 3.10 a commitment sharing its name with another takes no starting number from it — must kill `guard day.commitment.name == commitment.name,` at `History.swift:67`, which every other test survives; the code it names exists, so its red is shown against that mutation, reverted before the commit
+- [x] 3.10 a commitment sharing its name with another takes no starting number from it — must kill `guard day.commitment.name == commitment.name,` at `History.swift:67`, which every other test survives; the code it names exists, so its red is shown against that mutation, reverted before the commit
 
 ## 4. The day screen — `DayScreenTests.swift`
 
