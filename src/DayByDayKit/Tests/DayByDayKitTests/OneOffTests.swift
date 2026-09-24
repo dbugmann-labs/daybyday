@@ -342,26 +342,135 @@ func oneOffsOwedOnOneDateKeepTheOrderTheyWereAddedIn() throws {
             == ["Call mum", "Book dentist"])
 }
 
-@Test("done and undone one-offs standing on one day are ordered by the date owed alone")
-func doneAndUndoneOneOffsStandingOnOneDayAreOrderedByTheDateOwedAlone() {
-    let sendForm = OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 28)!)!
+@Test(
+    "every one-off owed stands before every one done, and the done stand most recently ticked first"
+)
+func everyOneOffOwedStandsBeforeEveryOneDoneAndTheDoneStandMostRecentlyTickedFirst() throws {
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 20)!)!
+    let payFine = OneOff(name: "Pay fine", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let sendForm = OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 27)!)!
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+    let october5 = CalendarDate(year: 2026, month: 10, day: 5)!
+
+    let place = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        .appendingPathComponent("one-offs.json")
+    let store = try OneOffStore(at: place)
+    try store.add(callMum)
+    try store.add(payFine)
+    try store.add(sendForm)
+    try store.tick(callMum, on: september28)
+    try store.tick(payFine, on: september28)
+
+    #expect(
+        store.oneOffs.standing(on: september28, asOf: september28).map(\.name)
+            == ["Send form", "Pay fine", "Call mum"])
+    #expect(
+        store.oneOffs.standing(on: september28, asOf: october5).map(\.name)
+            == ["Pay fine", "Call mum"])
+
+    let reopened = try OneOffStore(at: place)
+    #expect(
+        reopened.oneOffs.standing(on: september28, asOf: september28).map(\.name)
+            == ["Send form", "Pay fine", "Call mum"])
+}
+
+@Test(
+    "a tick taken back returns a one-off to its place among those owed, and ticked again it is the most recently ticked"
+)
+func aTickTakenBackReturnsAOneOffToItsPlaceAmongThoseOwedAndTickedAgainItIsTheMostRecentlyTicked() {
     let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let bookDentist = OneOff(
+        name: "Book dentist", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
     let payFine = OneOff(name: "Pay fine", date: CalendarDate(year: 2026, month: 9, day: 20)!)!
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
 
     var oneOffs = OneOffs()
-    _ = oneOffs.add(sendForm)
     _ = oneOffs.add(callMum)
+    _ = oneOffs.add(bookDentist)
     _ = oneOffs.add(payFine)
-
-    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
     _ = oneOffs.tick(callMum, on: september28)
-
-    let october5 = CalendarDate(year: 2026, month: 10, day: 5)!
+    _ = oneOffs.tick(payFine, on: september28)
+    _ = oneOffs.takeBack(callMum)
 
     #expect(
         oneOffs.standing(on: september28, asOf: september28).map(\.name)
-            == ["Pay fine", "Call mum", "Send form"])
-    #expect(oneOffs.standing(on: september28, asOf: october5).map(\.name) == ["Call mum"])
+            == ["Call mum", "Book dentist", "Pay fine"])
+
+    _ = oneOffs.tick(callMum, on: september28)
+
+    #expect(
+        oneOffs.standing(on: september28, asOf: september28).map(\.name)
+            == ["Book dentist", "Call mum", "Pay fine"])
+}
+
+@Test("a one-off added already done is the most recently ticked")
+func aOneOffAddedAlreadyDoneIsTheMostRecentlyTicked() {
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 20)!)!
+    let payFine = OneOff(name: "Pay fine", date: CalendarDate(year: 2026, month: 9, day: 21)!)!
+    let september22 = CalendarDate(year: 2026, month: 9, day: 22)!
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.tick(callMum, on: september22)
+    _ = oneOffs.add(payFine, doneOn: september22)
+
+    #expect(
+        oneOffs.standing(on: september22, asOf: september28).map(\.name)
+            == ["Pay fine", "Call mum"])
+}
+
+@Test("a done one-off renamed keeps its place in the tick order")
+func aDoneOneOffRenamedKeepsItsPlaceInTheTickOrder() {
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 20)!)!
+    let payFine = OneOff(name: "Pay fine", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.add(payFine)
+    _ = oneOffs.tick(callMum, on: september28)
+    _ = oneOffs.tick(payFine, on: september28)
+    let renamed = oneOffs.rename(callMum, to: "Ask mum")
+
+    #expect(renamed)
+    #expect(
+        oneOffs.standing(on: september28, asOf: september28).map(\.name)
+            == ["Pay fine", "Ask mum"])
+}
+
+@Test("one-offs differing only in their tick order are different one-offs")
+func oneOffsDifferingOnlyInTheirTickOrderAreDifferentOneOffs() {
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let payFine = OneOff(name: "Pay fine", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let sendForm = OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    var first = OneOffs()
+    _ = first.add(callMum)
+    _ = first.add(payFine)
+    _ = first.tick(callMum, on: september28)
+    _ = first.tick(payFine, on: september28)
+
+    var second = OneOffs()
+    _ = second.add(callMum)
+    _ = second.add(payFine)
+    _ = second.tick(payFine, on: september28)
+    _ = second.tick(callMum, on: september28)
+
+    #expect(first != second)
+
+    var third = OneOffs()
+    _ = third.add(callMum)
+    _ = third.add(sendForm)
+    _ = third.add(payFine)
+    _ = third.tick(callMum, on: september28)
+    _ = third.tick(sendForm, on: september28)
+    _ = third.tick(payFine, on: september28)
+    _ = third.remove(sendForm)
+
+    #expect(third == first)
 }
 
 @Test("removing a one-off that is not held is refused")

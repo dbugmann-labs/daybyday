@@ -42,10 +42,37 @@ public final class OneOffStore {
     /// `CopyDocument.read`'s own per-store reading — `openspec/changes/restore-from-a-copy
     /// /design.md` § *Reading a copy: the envelope decides, and a later version outranks damage*.
     static func formed(from document: OneOffDocument) -> OneOffs? {
-        guard document.version >= 1 else {
+        guard Self.shapeAgrees(with: document) else {
             return nil
         }
         return document.formOneOffs()
+    }
+
+    /// Whether every entry's `tick` agrees with what `document.version` declares it should
+    /// carry, and, where the document is at or after `tickOrderIntroducedInVersion`, whether its
+    /// done entries' places give the tick order a place of its own for each, numbered from one
+    /// without a gap — `design.md` § *The form on disk: form 2, a place on every done entry*, on
+    /// the same footing as `RosterStore.shapeAgrees(with:)`. A `tick` is present exactly on a
+    /// done entry at or after that form; present anywhere else — a not-done entry, or any entry
+    /// at all before that form — disagrees and refuses the whole document.
+    private static func shapeAgrees(with document: OneOffDocument) -> Bool {
+        guard document.version >= 1 else {
+            return false
+        }
+        let ticksAgreeWithForm = document.oneOffs.allSatisfy {
+            ($0.tick != nil)
+                == (document.version >= OneOffDocument.tickOrderIntroducedInVersion
+                    && $0.doneOn != nil)
+        }
+        guard ticksAgreeWithForm else {
+            return false
+        }
+
+        let ticks = document.oneOffs.compactMap(\.tick)
+        guard !ticks.isEmpty else {
+            return true
+        }
+        return Set(ticks) == Set(1...ticks.count)
     }
 
     /// Exactly what is kept at `place`.

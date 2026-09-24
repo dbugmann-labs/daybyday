@@ -11,44 +11,44 @@ take the next unticked scenario box, write the one test named for it, watch it f
 
 ## 2. The seam
 
-- [ ] 2.1 `DayView.OneOffRow.Key` and `key` exist with the signatures in `design.md` § *The seam*, and no other public signature in the Kit changes
-- [ ] 2.2 `OneOffs` holds the tick order as `design.md` § *The tick order is a list in the value* says, and every mutation that refuses leaves it unchanged
+- [x] 2.1 `DayView.OneOffRow.Key` and `key` exist with the signatures in `design.md` § *The seam*, and no other public signature in the Kit changes
+- [x] 2.2 `OneOffs` holds the tick order as `design.md` § *The tick order is a list in the value* says, and every mutation that refuses leaves it unchanged
 
 ## 3. The order and the tick order
 
-- [ ] 3.1 every one-off owed stands before every one done, and the done stand most recently ticked first — catches the done sorted by date owed or by name
-- [ ] 3.2 a tick taken back returns a one-off to its place among those owed, and ticked again it is the most recently ticked — catches a take-back to the bottom of the owed, or a re-tick restoring its old place
-- [ ] 3.3 a one-off added already done is the most recently ticked — catches an add already done left out of the tick order
-- [ ] 3.4 a done one-off renamed keeps its place in the tick order — catches a rename made as a removal and an add
-- [ ] 3.5 one-offs differing only in their tick order are different one-offs — catches equality over entries alone, or a counter that leaves a hole after a removal
+- [x] 3.1 every one-off owed stands before every one done, and the done stand most recently ticked first — catches the done sorted by date owed or by name
+- [x] 3.2 a tick taken back returns a one-off to its place among those owed, and ticked again it is the most recently ticked — catches a take-back to the bottom of the owed, or a re-tick restoring its old place
+- [x] 3.3 a one-off added already done is the most recently ticked — catches an add already done left out of the tick order
+- [x] 3.4 a done one-off renamed keeps its place in the tick order — catches a rename made as a removal and an add
+- [x] 3.5 one-offs differing only in their tick order are different one-offs — catches equality over entries alone, or a counter that leaves a hole after a removal
 
 ## 4. The one-off store
 
-- [ ] 4.1 a one-off store kept before the tick order answers its done one-offs by the date owed, older than any tick since — catches old ticks put on top, or ordered as held
-- [ ] 4.2 a one-off store holding a tick order that could not be held is refused — catches a lenient reader, or one that renumbers what it finds
-- [ ] 4.3 A unit test beside `CopyTests` (not an acceptance test): a copy formed from one-offs with two ticks reads back as equal one-offs, and a copy nesting form-1 one-offs reads back with the order 4.1 names; no copy source file changes
+- [x] 4.1 a one-off store kept before the tick order answers its done one-offs by the date owed, older than any tick since — catches old ticks put on top, or ordered as held
+- [x] 4.2 a one-off store holding a tick order that could not be held is refused — catches a lenient reader, or one that renumbers what it finds
+- [x] 4.3 A unit test beside `CopyTests` (not an acceptance test): a copy formed from one-offs with two ticks reads back as equal one-offs, and a copy nesting form-1 one-offs reads back with the order 4.1 names; no copy source file changes
 
 ## 5. The one-off row's key
 
-- [ ] 5.1 a one-off row keeps its key when its one-off is ticked, and no other row shares it — catches a key by name alone, or one that counts whether done
+- [x] 5.1 a one-off row keeps its key when its one-off is ticked, and no other row shares it — catches a key by name alone, or one that counts whether done
 
 ## 6. The carried tests
 
-- [ ] 6.1 "a one-off store written in a later form than this app knows is refused" and "a day screen not keeping one-offs adds nothing whatever is committed in its one-off entry" write `OneOffDocument.currentVersion + 1` in place of the literal 2; nothing else in either changes
-- [ ] 6.2 "a one-off store holding what could not be a one-off is refused" writes its four fixtures at form 2, the done-before-its-date one carrying place 1; nothing else in it changes
-- [ ] 6.3 "a change is kept before the store reports it kept" holds the first store open until the second is read, with `withExtendedLifetime`; nothing else in it changes
-- [ ] 6.4 Every other test passes unedited, the two carried scenarios of the removed requirement included
+- [x] 6.1 "a one-off store written in a later form than this app knows is refused" and "a day screen not keeping one-offs adds nothing whatever is committed in its one-off entry" write `OneOffDocument.currentVersion + 1` in place of the literal 2; nothing else in either changes
+- [x] 6.2 "a one-off store holding what could not be a one-off is refused" writes its four fixtures at form 2, the done-before-its-date one carrying place 1; nothing else in it changes
+- [x] 6.3 "a change is kept before the store reports it kept" holds the first store open until the second is read, with `withExtendedLifetime`; nothing else in it changes
+- [x] 6.4 Every other test passes unedited, the two carried scenarios of the removed requirement included
 
 ## 7. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 7.1 `ContentView` keys one-off rows by `\.key` and wraps a one-off row's tick and take-back, and nothing else, in `withAnimation`, as `design.md` § *A one-off row's key* says; commitment and birthday rows are untouched
-- [ ] 7.2 The app target builds for the simulator
+- [x] 7.1 `ContentView` keys one-off rows by `\.key` and wraps a one-off row's tick and take-back, and nothing else, in `withAnimation`, as `design.md` § *A one-off row's key* says; commitment and birthday rows are untouched
+- [x] 7.2 The app target builds for the simulator
 
 ## 8. The records
 
 - [x] 8.1 The conductor removes the entry "The one-off store's 'kept before the store reports it kept' test does not keep the first store open" from `docs/open-questions.md` on this branch, and ticks this box on that commit — not the implementer's file
-- [ ] 8.2 Confirm `CONTEXT.md` § *One-off* still describes what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
-- [ ] 8.3 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
+- [x] 8.2 Confirm `CONTEXT.md` § *One-off* still describes what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
+- [x] 8.3 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## 9. Gates and the archive handover
 
