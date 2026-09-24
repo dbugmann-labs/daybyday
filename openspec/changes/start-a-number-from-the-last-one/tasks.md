@@ -61,5 +61,5 @@ make it pass, then the next.
 - [x] W.1 A *Weight* (40–150) kept every day, yesterday holding 72.4 and today nothing, tapped on today: the alert's field reads "72.4" and no "40–150" shows
 - [x] W.2 Today holding 73, yesterday nothing and the day before 71.8; moved to yesterday and *Weight* tapped: the field reads "71.8", not "73"
 - [x] W.3 *Weight*'s range changed to 50–100 today, yesterday holding 45 and the day before 72.4, tapped on today: the field empty, its placeholder reading "50–100"
-- [ ] W.4 phone: a starting number saved unchanged, and another with its last digit changed from the cursor at the end — the keyboard feel no simulator shows
+- [x] W.4 phone: a starting number saved unchanged, and another with its last digit changed from the cursor at the end — the keyboard feel no simulator shows
 - [x] W.5 **The handover** — W.1–W.3, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL
