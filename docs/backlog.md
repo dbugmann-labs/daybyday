@@ -194,6 +194,21 @@ months later.
   a commitment is a weight. Committed unchanged it is recorded; cancelled it records nothing. The
   range hint stays "for an empty field" and goes when the field opens prefilled — the owner's call,
   against the recommendation to say the range whenever the entry is open.
+- 2026-09-24 — see the birthdays my calendar already knows, and tick them off (B-059) →
+  `FEAT: birthday` (#322) under `EPIC: Birthdays` (#321), a new Epic on the recommendation.
+  Grilled at the eleventh pass, twelve questions over three rounds, one fact agent, no fact sent
+  to the owner. A birthday is a row on the day screen, never a notification; birthdays only, not
+  the day's calendar; the row says the name and the age where the calendar has the year (the
+  owner's call against name only); everyone the calendar holds, chosen nowhere in the app; read
+  from the phone's birthday calendars through Calendar access, never from Contacts; behind a
+  switch on the commitments screen, off until turned on, which also says when access is refused;
+  a birthday stays on its day and never follows forward; the tick says what the calendar says
+  now, so a renamed contact renames the row and a deleted one takes its ticked row with it (the
+  owner's call against keeping the row as ticked); its own group, *Birthdays*, first (the owner's
+  call against last); the copy carries birthday ticks; the switch off keeps them and draws
+  nothing. Term **Birthday** in `CONTEXT.md`, with **Day view** and **Copy** amended. Carried to
+  the first Story's grill as a fact to establish: whether a contact's identifier survives a new
+  phone. Left behind by id: B-039, B-054, B-032, B-034, B-041.
 - 2026-09-21 — change a commitment and still have one commitment, with one day it is kept from
   (B-058) → `FEAT: commitment` (#26), reopened a fourth time under Epic #1, with B-057 in the same
   cluster. Grilled at the tenth pass, fourteen questions over three rounds, three fact agents, no
@@ -1093,6 +1108,34 @@ found nothing.
       needs a sitting of its own.
     - **Singleton**: B-041, leave until the SDK carries `reorderable(collectionID:)`, as 2026-09-15
       decided.
+- 2026-09-24 — pass over 6 wants, the eleventh, on `chore/backlog` (PR #320, holding B-059
+  unmerged), `origin/main` at 4a8343f.
+  - **Sweep** — no silence. Day-one week: every line shipped, B-039 and B-054 the only live
+    threads. Lifecycle verbs: `commitment` gained identity, delete, collapse and eras since the
+    tenth pass (#308, #313, #317, #319); `one-off` creates, renames and removes; `restore`'s
+    delete declined by the owner on 2026-09-21. `docs/open-questions.md`: the one open product
+    question (a total's NaN day) is a product decision, not a want, and every known gap is
+    technical. `FEAT: commitment` (#26) has every Story closed and is ready to close.
+  - **Taken forward** — **H**, birthdays from the calendar: B-059 → `FEAT: birthday` (#322) under
+    `EPIC: Birthdays` (#321); the Decided line above holds what the grill settled. Recommended
+    because it is the only cluster that makes a new kind of row possible rather than deepening
+    one, and because it is the first thing the app reads that is not its own, a boundary worth
+    settling once. Proposed for G2: the day's birthdays answered from the phone's birthday
+    calendars behind a seam, with the switch's state and the ticks in a store of their own,
+    touching no screen; then the day screen draws the *Birthdays* group first and ticks it; then
+    the switch on the commitments screen and its refused line; then the copy carries the store.
+    §7: `birthday` is a new capability; the day-screen and copy Stories delta `day-screen` and
+    `restore`, which no open Story touches — nothing is open on the tracker.
+  - **Not taken**, each with the disposition this pass proposed:
+    - **E**, entry affordances: B-032, B-034 — `day-screen` Stories, buildable now; Epic #1 excludes
+      prefill by name and needs amending at its G1. Handed to a session of its own by the owner,
+      to be logged as cluster E of this pass.
+    - **C**, kept on a day not due: B-054 — unchanged since the ninth pass.
+    - **F**, a reminder: B-039 — unclaimed; H's grill answered its own half of the question (a row,
+      not a notification) and left the app-wide one where it was.
+    - **Singleton**: B-041, leave — and its "not in the SDK this project builds against" is stale:
+      this machine builds with Xcode 27 and the iOS 27 SDK since 2026-09-15 (ADR-1053), so the
+      re-read it asks for is due at the next pass.
 - 2026-09-24 — cluster E of the eleventh pass, groomed as its own session on
   `chore/groom-entry-affordances` (the eleventh's cluster H, B-059, was open in another session with
   no pass line yet on `chore/backlog` a9315bf), `origin/main` at 4a8343f.
