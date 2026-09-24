@@ -79,7 +79,7 @@ The throwaway test grants calendar access with `xcrun simctl privacy <udid> gran
 
 ## 10. Gates and the archive handover
 
-- [ ] 10.1 `openspec validate draw-birthdays-on-day-screen --strict` exits 0, and `pnpm run checks` is clean but for the three carried-requirement word-count warnings `design.md` names
-- [ ] 10.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
+- [x] 10.1 `openspec validate draw-birthdays-on-day-screen --strict` exits 0, and `pnpm run checks` is clean but for the three carried-requirement word-count warnings `design.md` names
+- [x] 10.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
 - [ ] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 10.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.6 by the conductor at G7 — and the walk comment's URL is in W.7. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/day-screen/spec.md` gained this delta's ten added requirements, that its three MODIFIED ones are whole, and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
