@@ -118,6 +118,68 @@ private func freshFourPlaces() -> (record: URL, roster: URL, oneOff: URL, birthd
     )
 }
 
+/// A fresh pair of places under one fresh temporary directory where the record cannot be
+/// written, the birthday place normal: a blocker ordinary file, not a directory, sits beneath
+/// the record path, so any write through it fails. Mirrors `DayScreenTests.swift`'s own
+/// `blockerPlaces()`, widened to this file's four places.
+private func placesWithAnUnwritableRecordPlace() throws -> (
+    record: URL, roster: URL, oneOff: URL, birthday: URL
+) {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let blocker = directory.appendingPathComponent("blocker")
+    try Data().write(to: blocker)
+    return (
+        blocker.appendingPathComponent("record.json"),
+        directory.appendingPathComponent("roster.json"),
+        directory.appendingPathComponent("one-offs.json"),
+        directory.appendingPathComponent("birthday-ticks.json")
+    )
+}
+
+/// Four places under one fresh temporary directory where neither the record nor the birthday
+/// place can be written — each its own blocker ordinary file, not a directory, so a write
+/// through either fails — and the roster and one-off places are ordinary, writable places.
+private func placesWithUnwritableRecordAndBirthday() throws -> (
+    record: URL, roster: URL, oneOff: URL, birthday: URL
+) {
+    let directory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let recordBlocker = directory.appendingPathComponent("record-blocker")
+    try Data().write(to: recordBlocker)
+    let birthdayBlocker = directory.appendingPathComponent("birthday-blocker")
+    try Data().write(to: birthdayBlocker)
+    return (
+        recordBlocker.appendingPathComponent("record.json"),
+        directory.appendingPathComponent("roster.json"),
+        directory.appendingPathComponent("one-offs.json"),
+        birthdayBlocker.appendingPathComponent("birthday-ticks.json")
+    )
+}
+
+/// A fresh path for a one-off place nothing has been kept at, under its own fresh temporary
+/// directory. Mirrors `DayScreenTests.swift`'s own `freshOneOffPlace()`, file-scoped there.
+private func freshOneOffPlace() -> URL {
+    FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        .appendingPathComponent("one-offs.json")
+}
+
+/// Makes `directory` read-only, so a file already inside it still reads but a write inside it
+/// fails. Mirrors `DayScreenTests.swift`'s own `makeReadOnly(_:)`, file-scoped there. Every
+/// caller must pair this with `makeWritable(_:)` before returning, including on its failure
+/// path.
+private func makeReadOnly(_ directory: URL) throws {
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+}
+
+/// Undoes `makeReadOnly(_:)`, restoring `directory` to a place that can be written to again.
+private func makeWritable(_ directory: URL) throws {
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+}
+
 @MainActor
 @Test(
     "a day screen with birthdays on draws the birthdays falling on its day in a group headed Birthdays"
@@ -796,4 +858,151 @@ func tickingABirthdayRowThatTheDayViewDoesNotHoldOrThatOffersNoTickChangesNothin
     #expect(screen.notice == nil)
     #expect(screen.dayView.birthdayGroup?.rows.map(\.isTicked) == [false])
     #expect(!FileManager.default.fileExists(atPath: places.birthday.path))
+}
+
+@MainActor
+@Test("a refused birthday tick is told on its row and ends what was told on a commitment row")
+func aRefusedBirthdayTickIsToldOnItsRowAndEndsWhatWasToldOnACommitmentRow() async throws {
+    let january20 = CalendarDate(year: 2026, month: 1, day: 20)!
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let kate = Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: january20)!
+
+    let places = try placesWithUnwritableRecordAndBirthday()
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: january20, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOff,
+        keepingBirthdayTicksAt: places.birthday,
+        readingBirthdaysFrom: fakeCalendar(FakeCalendar(handing: [kate])),
+        whileOn: await onSwitch())
+
+    #expect(throws: (any Error).self) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    let birthdayRow = screen.dayView.birthdayGroup!.rows[0]
+    #expect(throws: BirthdayStoreError.cannotWrite(at: places.birthday)) {
+        try screen.tick(birthdayRow)
+    }
+
+    #expect(screen.notice?.birthdayRow == birthdayRow)
+    #expect(screen.notice?.cause == nil)
+    #expect(screen.notice?.row == nil)
+    #expect(screen.birthdayState == .on)
+}
+
+@MainActor
+@Test("a refused commitment or one-off tick ends what was told on a birthday row")
+func aRefusedCommitmentOrOneOffTickEndsWhatWasToldOnABirthdayRow() async throws {
+    let january20 = CalendarDate(year: 2026, month: 1, day: 20)!
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let kate = Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: january20)!
+
+    let oneOffPlace = freshOneOffPlace()
+    let oneOffStore = try OneOffStore(at: oneOffPlace)
+    try oneOffStore.add(OneOff(name: "Call mum", date: january20)!)
+    let oneOffDirectory = oneOffPlace.deletingLastPathComponent()
+    try makeReadOnly(oneOffDirectory)
+    defer { try? makeWritable(oneOffDirectory) }
+
+    let places = try placesWithUnwritableRecordAndBirthday()
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: january20, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: oneOffPlace,
+        keepingBirthdayTicksAt: places.birthday,
+        readingBirthdaysFrom: fakeCalendar(FakeCalendar(handing: [kate])),
+        whileOn: await onSwitch())
+
+    #expect(throws: BirthdayStoreError.cannotWrite(at: places.birthday)) {
+        try screen.tick(screen.dayView.birthdayGroup!.rows[0])
+    }
+
+    #expect(throws: (any Error).self) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    #expect(screen.notice?.row == screen.dayView.rows[0])
+    #expect(screen.notice?.birthdayRow == nil)
+
+    #expect(throws: BirthdayStoreError.cannotWrite(at: places.birthday)) {
+        try screen.tick(screen.dayView.birthdayGroup!.rows[0])
+    }
+
+    #expect(throws: (any Error).self) {
+        try screen.tick(screen.dayView.oneOffGroup!.rows[0])
+    }
+
+    #expect(screen.notice?.oneOffRow == screen.dayView.oneOffGroup?.rows[0])
+    #expect(screen.notice?.birthdayRow == nil)
+}
+
+@MainActor
+@Test(
+    "what a day screen tells on a row ends when a birthday tick is kept"
+)
+func whatADayScreenTellsOnARowEndsWhenABirthdayTickIsKept() async throws {
+    let january20 = CalendarDate(year: 2026, month: 1, day: 20)!
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let kate = Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: january20)!
+
+    let places = try placesWithAnUnwritableRecordPlace()
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: january20, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOff,
+        keepingBirthdayTicksAt: places.birthday,
+        readingBirthdaysFrom: fakeCalendar(FakeCalendar(handing: [kate])),
+        whileOn: await onSwitch())
+
+    #expect(throws: (any Error).self) {
+        try screen.tick(screen.dayView.rows[0])
+    }
+
+    try screen.tick(screen.dayView.birthdayGroup!.rows[0])
+
+    #expect(screen.dayView.birthdayGroup?.rows.map(\.isTicked) == [true])
+    #expect(screen.notice == nil)
+}
+
+@MainActor
+@Test("what a day screen tells on a birthday row ends when a commitment tick is kept")
+func whatADayScreenTellsOnABirthdayRowEndsWhenACommitmentTickIsKept() async throws {
+    let january20 = CalendarDate(year: 2026, month: 1, day: 20)!
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let journaling = Commitment(
+        name: "Journaling",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: keptFrom)!
+    let kate = Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: january20)!
+
+    let places = try placesWithAnUnwritableBirthdayPlace()
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: january20, keepingRecordAt: places.record,
+        keepingRosterAt: places.roster, keepingOneOffsAt: places.oneOff,
+        keepingBirthdayTicksAt: places.birthday,
+        readingBirthdaysFrom: fakeCalendar(FakeCalendar(handing: [kate])),
+        whileOn: await onSwitch())
+
+    #expect(throws: BirthdayStoreError.cannotWrite(at: places.birthday)) {
+        try screen.tick(screen.dayView.birthdayGroup!.rows[0])
+    }
+
+    try screen.tick(screen.dayView.rows[0])
+
+    #expect(screen.dayView.rows[0].isKept)
+    #expect(screen.notice == nil)
 }

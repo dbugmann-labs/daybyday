@@ -45,25 +45,25 @@ scenario box, write the one test named for it, watch it fail, make it pass, then
 
 ## 6. What is told
 
-- [ ] 6.1 a refused birthday tick is told on its row and ends what was told on a commitment row
-- [ ] 6.2 a refused commitment or one-off tick ends what was told on a birthday row — catches two notices at once
-- [ ] 6.3 what a day screen tells on a row ends when a birthday tick is kept — catches a birthday tick that leaves the notice standing
-- [ ] 6.4 what a day screen tells on a birthday row ends when a commitment tick is kept
+- [x] 6.1 a refused birthday tick is told on its row and ends what was told on a commitment row
+- [x] 6.2 a refused commitment or one-off tick ends what was told on a birthday row — catches two notices at once
+- [x] 6.3 what a day screen tells on a row ends when a birthday tick is kept — catches a birthday tick that leaves the notice standing
+- [x] 6.4 what a day screen tells on a birthday row ends when a commitment tick is kept
 
 ## 7. The carried scenarios
 
-- [ ] 7.1 Every scenario the three MODIFIED requirements carry passes with its test unedited, and so does every other test in the suite
+- [x] 7.1 Every scenario the three MODIFIED requirements carry passes with its test unedited, and so does every other test in the suite
 
 ## 8. The shell (ADR-1019: no rule the Kit does not state)
 
-- [ ] 8.1 The adapter in `BirthdayCalendarAccess.swift` reads as `design.md` § *The shell* says, through an `EKEventStore` made or reset after access is given, and the collation is `localizedStandardCompare`
-- [ ] 8.2 `ContentView` hands the switch and the adapter to the day screen and drops its own scene-phase `birthdaySwitch.shown()`; the three lines, the section and the row are as `design.md` § *The shell* and § *What the shell draws* say, words verbatim
-- [ ] 8.3 The app target builds for the simulator
+- [x] 8.1 The adapter in `BirthdayCalendarAccess.swift` reads as `design.md` § *The shell* says, through an `EKEventStore` made or reset after access is given, and the collation is `localizedStandardCompare`
+- [x] 8.2 `ContentView` hands the switch and the adapter to the day screen and drops its own scene-phase `birthdaySwitch.shown()`; the three lines, the section and the row are as `design.md` § *The shell* and § *What the shell draws* say, words verbatim
+- [x] 8.3 The app target builds for the simulator
 
 ## 9. The records
 
-- [ ] 9.1 Confirm `CONTEXT.md` § *Birthday place* still describes what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
-- [ ] 9.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
+- [x] 9.1 Confirm `CONTEXT.md` § *Birthday place* still describes what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
+- [x] 9.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## The walk
 
