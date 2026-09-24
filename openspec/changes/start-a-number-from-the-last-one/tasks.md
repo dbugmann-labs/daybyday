@@ -13,20 +13,20 @@ make it pass, then the next.
 
 ## 2. The seam
 
-- [ ] 2.1 `DayView.NumberEntry.startingNumber`, `DayView.Row.startingNumber` and `History.latestNumber(for:before:)` exist as `design.md` § *The seam* writes them, and 3.1 is red before the row forms one
+- [x] 2.1 `DayView.NumberEntry.startingNumber`, `DayView.Row.startingNumber` and `History.latestNumber(for:before:)` exist as `design.md` § *The seam* writes them, and 3.1 is red before the row forms one
 - [ ] 2.2 `DayScreen`, `Number`, `Commitment`, `Roster`, `TypedNumber` and `CommitmentsScreen` are unchanged, and `openspec/specs/` is untouched (rule 2)
 
 ## 3. What the entry says — `DayViewTests.swift`
 
-- [ ] 3.1 a typed number entry on a day holding no number says the latest number held before that day as its starting number — catches the hint cleared beside it
-- [ ] 3.2 a number held on the entry's day or on a later day is not its starting number — catches the latest number ever, rather than the latest before
-- [ ] 3.3 a starting number is the latest number held however far back it lies — catches a look-back window
-- [ ] 3.4 a number taken back is not a starting number, and the latest one still held is
-- [ ] 3.5 a starting number is its own commitment's number and never another's — catches a match by name or by kind
-- [ ] 3.6 a number entry on a day holding a number says that number and no starting number
-- [ ] 3.7 a chosen entry says no starting number
-- [ ] 3.8 a commitment declaring no range takes any number held before its day as its starting number
-- [ ] 3.9 two rows for the same number commitment and date holding no number but differing in starting number are different rows — catches a custom equality leaving it out
+- [x] 3.1 a typed number entry on a day holding no number says the latest number held before that day as its starting number — catches the hint cleared beside it
+- [x] 3.2 a number held on the entry's day or on a later day is not its starting number — catches the latest number ever, rather than the latest before
+- [x] 3.3 a starting number is the latest number held however far back it lies — catches a look-back window
+- [x] 3.4 a number taken back is not a starting number, and the latest one still held is
+- [x] 3.5 a starting number is its own commitment's number and never another's — catches a match by name or by kind
+- [x] 3.6 a number entry on a day holding a number says that number and no starting number
+- [x] 3.7 a chosen entry says no starting number
+- [x] 3.8 a commitment declaring no range takes any number held before its day as its starting number
+- [x] 3.9 two rows for the same number commitment and date holding no number but differing in starting number are different rows — catches a custom equality leaving it out
 
 ## 4. The day screen — `DayScreenTests.swift`
 

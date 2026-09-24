@@ -18,6 +18,11 @@ public struct DayView: Hashable, Sendable {
         /// between 40 and 150" — or `nil` where the commitment declares none. Internal: the
         /// shell reads a cause off the notice, never off an entry.
         let refusalCause: String?
+        /// The number this entry's commitment held on the latest date before this row's date
+        /// that holds one, or `nil` where its day already holds a number, where the entry is
+        /// chosen, or where that number lies outside the range this entry refuses against.
+        /// `CONTEXT.md` § *Starting number*.
+        public let startingNumber: Decimal?
     }
 
     /// What a note commitment's row offers in a tick's place.
@@ -50,6 +55,15 @@ public struct DayView: Hashable, Sendable {
         /// `numberEntry(asOf:)`; see `design.md` § *A row holds the number and does not give it
         /// out*.
         let number: Decimal?
+
+        /// The number this row's commitment held on the latest date before this row's date that
+        /// holds one, kept only where this row's day holds no number, its range is not short —
+        /// a short range is chosen, never typed — and that number does not lie outside it; `nil`
+        /// otherwise. Worked out at formation, from the history this row's day view was formed
+        /// from, and part of the row: `design.md` § *The row works the starting number out at
+        /// formation, and it is part of the row*. Not given back by anything but
+        /// `numberEntry(asOf:)`.
+        let startingNumber: Decimal?
 
         /// The note the history the day view was formed from holds for this row's commitment on
         /// this row's date, or `nil` where it holds none. Not given back by anything but
@@ -109,12 +123,14 @@ public struct DayView: Hashable, Sendable {
             if let range, range.isShort {
                 return NumberEntry(
                     number: number, hint: nil, values: range.wholeNumbers,
-                    refusalCause: "Must be between \(range.lowest) and \(range.highest)")
+                    refusalCause: "Must be between \(range.lowest) and \(range.highest)",
+                    startingNumber: startingNumber)
             }
 
             return NumberEntry(
                 number: number, hint: range.map { "\($0.lowest)–\($0.highest)" }, values: nil,
-                refusalCause: range.map { "Must be between \($0.lowest) and \($0.highest)" })
+                refusalCause: range.map { "Must be between \($0.lowest) and \($0.highest)" },
+                startingNumber: startingNumber)
         }
 
         /// The number record this row makes of `decimal` — this row's commitment, on this row's
@@ -361,10 +377,13 @@ public struct DayView: Hashable, Sendable {
                     } else {
                         weekStanding = nil
                     }
+                    let number = history.number(for: commitment, on: date)
                     return Row(
                         commitment: commitment, date: date,
                         isKept: history.isKept(commitment, on: date),
-                        number: history.number(for: commitment, on: date),
+                        number: number,
+                        startingNumber: Self.startingNumber(
+                            for: commitment, heldNumber: number, on: date, in: history),
                         note: history.note(for: commitment, on: date),
                         total: history.total(for: commitment, on: date),
                         weekStanding: weekStanding)
@@ -374,6 +393,34 @@ public struct DayView: Hashable, Sendable {
             }
             return Group(category: group.category, rows: rows)
         }
+    }
+
+    /// The starting number a number row of `commitment` stores: `nil` where `heldNumber` is not
+    /// `nil` — the day already holds a number — where `commitment`'s kind is not a number or its
+    /// range is short — a short range is chosen, never typed — or where `history` holds no
+    /// earlier number for `commitment` before `date`; otherwise the latest number `history`
+    /// holds for `commitment` before `date`, or `nil` where it lies outside `commitment`'s own
+    /// range, both bounds included. `design.md` § *The row works the starting number out at
+    /// formation, and it is part of the row* and § *A refused latest number is none, never a
+    /// reach further back*.
+    private static func startingNumber(
+        for commitment: Commitment, heldNumber: Decimal?, on date: CalendarDate, in history: History
+    ) -> Decimal? {
+        guard heldNumber == nil, case .number(let range) = commitment.kind,
+            !(range?.isShort ?? false)
+        else {
+            return nil
+        }
+
+        guard let latest = history.latestNumber(for: commitment, before: date) else {
+            return nil
+        }
+
+        if let range, !(range.lowest <= latest && latest <= range.highest) {
+            return nil
+        }
+
+        return latest
     }
 
     /// The day view of the calendar date one day before this one's, or `nil` when this day view

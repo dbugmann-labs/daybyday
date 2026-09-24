@@ -57,6 +57,23 @@ public struct History: Hashable, Sendable {
         numbers[RecordedDay(commitment: commitment, date: date)]
     }
 
+    /// The number `commitment` holds on the latest date earlier than `date` that holds one, or
+    /// `nil` where none does — every era of `commitment` counted alike, by identity, and no
+    /// other commitment's number counted. Package-internal: `design.md` § *The query stays
+    /// package-internal, inside `day-screen`*; `DayView.Row`'s starting number is the one caller.
+    func latestNumber(for commitment: Commitment, before date: CalendarDate) -> Decimal? {
+        var latest: (date: CalendarDate, value: Decimal)?
+        for (day, value) in numbers {
+            guard day.commitment == commitment, day.date.days(until: date) > 0 else {
+                continue
+            }
+            if latest == nil || latest!.date.days(until: day.date) > 0 {
+                latest = (day.date, value)
+            }
+        }
+        return latest?.value
+    }
+
     public mutating func add(_ note: Note) {
         notes[RecordedDay(commitment: note.commitment, date: note.date)] = note.text
     }
