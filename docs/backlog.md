@@ -179,6 +179,11 @@ One line per entry that has left, newest first. This is the dedup index: `/atlas
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-24 — see what is still owed at the top of the One-offs group (B-060) → Story #340
+  `put-done-one-offs-last` under `FEAT: one-off` (#239), reopened with `EPIC: One-offs` (#238).
+  One-offs only: commitment rows keep the order the person set (ADR-1037) and Birthdays keep
+  theirs. It reverses #243's "MUST NOT be ordered … by whether a one-off is done"; where a ticked
+  row lands among the done, how it moves and where an untick returns it are the Story grill's.
 - 2026-09-24 — choose a mood from its range instead of typing it (B-034) → `FEAT: day-screen`
   (#27), reopened under Epic #1, with B-032 in the same cluster. The missing half of the 2026-09-06
   mood line: a number whose commitment has a **short range** — whole bounds, eleven values or fewer —
@@ -1164,3 +1169,13 @@ found nothing.
     of #325, because the birthday lane had just started on #326 and would reach #328 last anyway.
   - **Not taken** — B-039, B-041, B-054 with the dispositions of 2026-09-21 unchanged; B-059 is
     cluster H's.
+- 2026-09-24 — targeted pass over B-060 (`/atlas backlog B-060`), groomed on `chore/backlog`
+  (PR #339) in the session that captured it, `origin/main` at 329a3b6.
+  - **Sweep** — no new silence since cluster E's sweep the same morning: #332–#337 merged since,
+    `birthday` shipping both its on and off; `docs/open-questions.md` gained three known gaps and
+    no want, one of them — the one-off store's test that does not keep its first store open — owed
+    by the next Story touching those tests, which #340 is.
+  - **Promoted** — B-060 → #340 under #239, blocked by nothing; presented at G2 by the conductor
+    without `/to-tickets`, one Story under an existing Feature as B-056 was. Scope put at G2 as
+    one-offs only, accepted.
+  - **Not re-judged** — B-039, B-041, B-054; a targeted pass holds one entry.
