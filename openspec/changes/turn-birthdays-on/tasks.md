@@ -61,13 +61,13 @@ Rule 3 throughout: one scenario, one acceptance test named identically to it, on
 
 ## 6. The walk
 
-- [ ] 6.1 The commitments screen on a first visit, scrolled to its foot — the *Birthdays* switch off above *Copy*, the explaining line under it, no refused line.
-- [ ] 6.2 The switch just turned on — the system's calendar prompt over the screen, carrying the usage sentence.
-- [ ] 6.3 The prompt allowed — the switch on, the explaining line under it, no refused line.
-- [ ] 6.4 Calendar access reset, the switch turned on and the prompt refused — the switch off, the refused line and *Open Settings* under the explaining line.
+- [x] 6.1 The commitments screen on a first visit, scrolled to its foot — the *Birthdays* switch off above *Copy*, the explaining line under it, no refused line.
+- [x] 6.2 The switch just turned on — the system's calendar prompt over the screen, carrying the usage sentence.
+- [x] 6.3 The prompt allowed — the switch on, the explaining line under it, no refused line.
+- [x] 6.4 Calendar access reset, the switch turned on and the prompt refused — the switch off, the refused line and *Open Settings* under the explaining line.
 - [ ] 6.5 phone: with birthdays on, calendar access turned off for DayByDay in Settings and the app returned to — the switch off and the refused line shown.
 - [ ] 6.6 phone: *Open Settings* tapped — Settings open on DayByDay's page, with Calendars on it.
-- [ ] 6.7 Post the pictures to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, and
+- [x] 6.7 Post the pictures to the PR with `pnpm run walk -- --post-only <pr>` before hand-back, and
   tick this on the comment's URL — that command and never `gh pr comment --attach`. The walk's
   throwaway test resets calendar access itself; a change to `scripts/walk.ts` is a stop. The two
   `phone:` boxes are the human's at G7, and the conductor ticks them on the G7 approval.
