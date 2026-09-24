@@ -1609,6 +1609,12 @@ cannot read it still draws the day's birthdays, every one unticked, keeps no tic
 line, naming a file written by a later version as the other three do. Agreed 2026-09-24 while
 writing the delta of `draw-birthdays-on-day-screen` (#328).
 
+**Amended 2026-09-24**, while writing the delta of `carry-birthdays-in-a-copy` (#329). A **restore**
+writes it too, whole or not at all, so a day screen returned to from a commitments screen that
+restored a copy reads it again, and "never written but by a tick" above is withdrawn. The commitments
+screen and the **copy place** read it where the day screen keeps it: a screen given no birthday place
+keeps its ticks in the file of that name beside its **record place**, which in the app is this one.
+
 **Copy** — one file holding what the **record store**, the **roster store** and the one-off store
 hold at one moment, written for a person to keep somewhere the phone is not: their own files,
 another device, a folder they chose. It is the whole of a history and never part of one — a record
@@ -1648,6 +1654,13 @@ and the **roster** line have had all along.
 **Amended 2026-09-24**, at the Feature grill of B-059, `FEAT: birthday` (#322). A copy also holds
 what the app reads from the store that keeps **birthday** ticks, so the fourth store is carried like
 the three before it.
+
+**Amended 2026-09-24**, at the grill of `carry-birthdays-in-a-copy` (#329). The ticks are carried
+whatever the birthday switch says, since turning it off forgets nothing; ticks that cannot be read
+refuse the copy, even while birthdays are off, and are named as the person's **birthday ticks**. A
+tick made or taken back is a change kept, so the copy at the **copy place** follows it. A copy made
+before copies carried ticks holds none, and restoring it takes the phone's ticks away, like
+everything else it does not hold.
 
 **Moment** — when something happened, said to the minute: a **calendar date**, an hour of that day
 and a minute of that hour, in the reckoning of the phone it was formed on. It is the only thing here
@@ -1709,6 +1722,12 @@ something inside it does not read; a copy **from a later version** of the app, i
 store's within it; or a store that could not be written. Once it is made, both screens show what the
 copy holds at once, and the commitments screen says which copy was put back.
 
+**Amended 2026-09-24**, at the grill of `carry-birthdays-in-a-copy` (#329). A restore puts back the
+**birthday** ticks with the rest. What it says first counts none of them, as it counts nothing of the
+record, and names them only where the phone's cannot be read. A **day screen** whose birthday ticks
+cannot be read says that a copy can be restored, exactly while it is saying those ticks could not
+be read.
+
 **Take-out** — the files of the three places leaving the phone exactly as they lie, bytes and
 names untouched, through the same share sheet a **copy** leaves by. It is offered on the
 **commitments screen** only while a store cannot be read — or was written by a later version of the
@@ -1720,6 +1739,10 @@ changes nothing at the places, and it leaves nothing on the screen afterwards, f
 copy does not. A file the phone will not hand over at all makes the take-out a **refused change**
 that names the store, and nothing finer. Agreed 2026-09-21 at the grill of
 `take-out-an-unreadable-store` (#270).
+
+**Amended 2026-09-24**, at the grill of `carry-birthdays-in-a-copy` (#329). The **birthday place**
+is the fourth whose file goes out, and ticks that cannot be read offer the take-out as the other
+three stores do.
 
 **Shown** — the moment the app comes in front of a person: opened from nothing, or brought back from
 behind whatever was in front of it. It is the only moment a day screen is handed a **today**, and so
