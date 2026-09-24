@@ -321,10 +321,14 @@ public final class DayScreen {
     /// itself holds — `openspec/changes/stop-and-resume-as-eras/design.md` § *One week rule, in
     /// one place*. `birthdayGroup` is `date`'s own Birthdays group, formed by the caller —
     /// `nil` where birthdays are off, the calendar could not be read, or none fall on `date`.
+    /// Required, not defaulted (G7 review finding 3): every caller already forms this value —
+    /// this type's own instance `birthdayGroup(on:)`, or, from `init`, the static function
+    /// directly — so a default here would only let a later call site that forgot the argument
+    /// compile clean and silently drop the group instead of failing to build.
     private static func formDayView(
         of groups: [Roster.Group], roster: Roster, oneOffs oneOffStore: OneOffStore?,
         asOf today: CalendarDate, on date: CalendarDate, in history: History,
-        birthdayGroup: DayView.BirthdayGroup? = nil
+        birthdayGroup: DayView.BirthdayGroup?
     ) -> DayView {
         guard let oneOffStore else {
             return DayView(
@@ -1059,8 +1063,7 @@ public final class DayScreen {
         Self.formDayView(
             of: roster.groups(on: day), roster: roster, oneOffs: oneOffStore, asOf: today, on: day,
             in: recordStore?.history ?? History(),
-            birthdayGroup: Self.birthdayGroup(
-                on: day, from: lastBirthdayReading, calendar: calendar, ticks: birthdayStore?.ticks)
+            birthdayGroup: birthdayGroup(on: day)
         )
     }
 
@@ -1074,6 +1077,17 @@ public final class DayScreen {
         lastBirthdayReading = Self.readCalendar(
             for: day, calendar: calendar, isOn: birthdaySwitch?.isOn ?? false)
         birthdayState = Self.birthdayState(from: lastBirthdayReading, ticksState: birthdayTicksState)
+    }
+
+    /// `date`'s own Birthdays group, against this screen's own `lastBirthdayReading`, `calendar`
+    /// and `birthdayStore`'s ticks — `Self.birthdayGroup(on:from:calendar:ticks:)` read off this
+    /// instance, so every `formDayView` call site below hands it the same four values by naming
+    /// this once rather than repeating the expression (G7 review finding 3). Not callable from
+    /// `init`, which forms `dayView` before `self` is fully initialized and so calls the static
+    /// function directly, off its own local `reading` and `calendar`.
+    private func birthdayGroup(on date: CalendarDate) -> DayView.BirthdayGroup? {
+        Self.birthdayGroup(
+            on: date, from: lastBirthdayReading, calendar: calendar, ticks: birthdayStore?.ticks)
     }
 
     /// The day view of `shownDay`, drawn from `roster`, `recordStore`'s history and
@@ -1199,9 +1213,7 @@ public final class DayScreen {
         self.dayView = Self.formDayView(
             of: read.roster.groups(on: shownDay), roster: read.roster, oneOffs: read.oneOffStore,
             asOf: self.today, on: shownDay, in: read.recordStore?.history ?? History(),
-            birthdayGroup: Self.birthdayGroup(
-                on: shownDay, from: lastBirthdayReading, calendar: calendar,
-                ticks: birthdayStore?.ticks))
+            birthdayGroup: birthdayGroup(on: shownDay))
     }
 
     /// The person has come back to this screen from somewhere else in the app: the roster, and
@@ -1252,9 +1264,7 @@ public final class DayScreen {
             refreshBirthdays(for: shownDay)
             self.dayView = Self.formDayView(
                 of: [], roster: Roster(), oneOffs: nil, asOf: today, on: shownDay, in: History(),
-                birthdayGroup: Self.birthdayGroup(
-                    on: shownDay, from: lastBirthdayReading, calendar: calendar,
-                    ticks: birthdayStore?.ticks))
+                birthdayGroup: birthdayGroup(on: shownDay))
             return
         }
         guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) else {
@@ -1270,9 +1280,7 @@ public final class DayScreen {
             self.dayView = Self.formDayView(
                 of: readOnly.roster.groups(on: shownDay), roster: readOnly.roster,
                 oneOffs: openedOneOffs.store, asOf: today, on: shownDay, in: History(),
-                birthdayGroup: Self.birthdayGroup(
-                    on: shownDay, from: lastBirthdayReading, calendar: calendar,
-                    ticks: birthdayStore?.ticks))
+                birthdayGroup: birthdayGroup(on: shownDay))
             return
         }
 
@@ -1298,9 +1306,7 @@ public final class DayScreen {
             of: openedRoster.roster.groups(on: shownDay), roster: openedRoster.roster,
             oneOffs: openedOneOffs.store, asOf: today, on: shownDay,
             in: recordStore?.history ?? History(),
-            birthdayGroup: Self.birthdayGroup(
-                on: shownDay, from: lastBirthdayReading, calendar: calendar,
-                ticks: birthdayStore?.ticks))
+            birthdayGroup: birthdayGroup(on: shownDay))
     }
 
     /// Being returned to where no copy has been restored: a restore in progress is undone first,
@@ -1381,9 +1387,7 @@ public final class DayScreen {
         self.dayView = Self.formDayView(
             of: openedRoster.roster.groups(on: shownDay), roster: openedRoster.roster,
             oneOffs: oneOffStore, asOf: today, on: shownDay, in: recordStore?.history ?? History(),
-            birthdayGroup: Self.birthdayGroup(
-                on: shownDay, from: lastBirthdayReading, calendar: calendar,
-                ticks: birthdayStore?.ticks))
+            birthdayGroup: birthdayGroup(on: shownDay))
     }
 }
 

@@ -322,8 +322,9 @@ public struct DayView: Hashable, Sendable {
     /// The birthdays standing on this day view's date, or `nil` where none fall there —
     /// `openspec/changes/draw-birthdays-on-day-screen/specs/day-screen/spec.md` requirement *A
     /// day screen draws the birthdays falling on each day...*: "SHALL hold no such group where
-    /// none falls there." `nil` too where this day view was not handed any birthdays at all —
-    /// every existing initializer below, none of which takes one.
+    /// none falls there." Also `nil` from every `public` initializer below, none of which takes
+    /// one; the two package-internal initializers' own `birthdayGroup:` parameter, defaulted to
+    /// `nil`, is the only way to hand one in — `DayScreen` is their one caller.
     public let birthdayGroup: BirthdayGroup?
 
     /// Every row this day view holds, read across `groups` in the order the groups are drawn —

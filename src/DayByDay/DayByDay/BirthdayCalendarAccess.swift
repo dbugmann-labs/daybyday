@@ -36,52 +36,67 @@ struct BirthdayCalendarReadError: Error {}
 
 /// The `BirthdayCalendar` `ContentView` hands its `DayScreen` — `design.md` § *The shell* and
 /// § *The calendar is handed in, and the Kit orders by the collation it is handed*: this is the
-/// one place `EventKit` and a locale are read, and the Kit itself reads neither.
+/// one place `EventKit` and a locale are read, and the Kit itself reads neither. One
+/// `BirthdayEventStore`, made here and captured by `reading`, backs every read this calendar is
+/// ever asked for. `@MainActor` because `BirthdayEventStore` is: `ContentView.init()`, this
+/// function's one caller, already constructs `DayScreen` and `BirthdaySwitch` directly the same
+/// way.
+@MainActor
 func makeBirthdayCalendar() -> BirthdayCalendar {
-    BirthdayCalendar(
-        reading: { first, last in try readBirthdays(from: first, through: last) },
+    let store = BirthdayEventStore()
+    return BirthdayCalendar(
+        reading: { first, last in try store.read(from: first, through: last) },
         collating: { words, before in
             words.localizedStandardCompare(before) == .orderedAscending
         })
 }
 
-/// Reads the birthdays falling from `first` through `last`, both included, through a fresh
-/// `EKEventStore` — "an `EKEventStore` made or reset after access is given" (`design.md` §
-/// Risks): a read only ever happens once the switch is on, so access has already been granted
-/// by the time this runs, and a store made now is never the stale one that risk names. Throws
-/// unless access is full. Reads calendars of type `.birthday`, matching a contact by
-/// `birthdayContactIdentifier` and skipping an event with none — never by a stored calendar or
-/// event identifier, both of which change when the Birthdays calendar is rebuilt (`grill.md`
-/// § *Left open*).
+/// Holds the one `EKEventStore` `makeBirthdayCalendar()`'s reader reuses across every ask — G7
+/// review finding 1: `EKEventStore` is Apple's own documentation "slow to create" and meant to be
+/// made once and kept, not per task, and the Kit asks its calendar on every forming of the day
+/// it shows: each move, each tick, each return to the app. Made lazily, on the first read rather
+/// than at `init`, which still satisfies `design.md` § Risks' "an `EKEventStore` made or reset
+/// after access is given" — a read only ever happens once the switch is on, so access is already
+/// granted by the time this store is first made.
 @MainActor
-private func readBirthdays(from first: CalendarDate, through last: CalendarDate) throws -> [Birthday]
-{
-    guard currentCalendarAccess() == .full else {
-        throw BirthdayCalendarReadError()
-    }
+private final class BirthdayEventStore {
+    private var store: EKEventStore?
 
-    let store = EKEventStore()
-    let birthdayCalendars = store.calendars(for: .event).filter { $0.type == .birthday }
-    guard !birthdayCalendars.isEmpty else {
-        return []
-    }
-
-    let predicate = store.predicateForEvents(
-        withStart: startOfDay(first), end: endOfDay(last), calendars: birthdayCalendars)
-
-    return store.events(matching: predicate).compactMap { event in
-        guard let contact = event.birthdayContactIdentifier else {
-            return nil
+    /// Reads the birthdays falling from `first` through `last`, both included. Throws unless
+    /// access is full. Reads calendars of type `.birthday`, matching a contact by
+    /// `birthdayContactIdentifier` and skipping an event with none — never by a stored calendar
+    /// or event identifier, both of which change when the Birthdays calendar is rebuilt
+    /// (`grill.md` § *Left open*).
+    func read(from first: CalendarDate, through last: CalendarDate) throws -> [Birthday] {
+        guard currentCalendarAccess() == .full else {
+            throw BirthdayCalendarReadError()
         }
-        guard let day = calendarDate(from: event.startDate) else {
-            return nil
+
+        let store = self.store ?? EKEventStore()
+        self.store = store
+
+        let birthdayCalendars = store.calendars(for: .event).filter { $0.type == .birthday }
+        guard !birthdayCalendars.isEmpty else {
+            return []
         }
-        return Birthday(contact: contact, words: event.title, day: day)
+
+        let predicate = store.predicateForEvents(
+            withStart: startOfDay(first), end: endOfDay(last), calendars: birthdayCalendars)
+
+        return store.events(matching: predicate).compactMap { event in
+            guard let contact = event.birthdayContactIdentifier else {
+                return nil
+            }
+            guard let day = calendarDate(from: event.startDate) else {
+                return nil
+            }
+            return Birthday(contact: contact, words: event.title, day: day)
+        }
     }
 }
 
 /// `calendarDate`'s own date, at midnight in the device's own calendar — the earlier end of the
-/// span `readBirthdays(from:through:)` asks EventKit for.
+/// span `BirthdayEventStore.read(from:through:)` asks EventKit for.
 private func startOfDay(_ calendarDate: CalendarDate) -> Date {
     var components = DateComponents()
     components.year = calendarDate.year
@@ -91,8 +106,8 @@ private func startOfDay(_ calendarDate: CalendarDate) -> Date {
 }
 
 /// `calendarDate`'s own date, one second before its midnight the day after — the later end of
-/// the span `readBirthdays(from:through:)` asks EventKit for, so an event anywhere within
-/// `calendarDate`'s own day is included.
+/// the span `BirthdayEventStore.read(from:through:)` asks EventKit for, so an event anywhere
+/// within `calendarDate`'s own day is included.
 private func endOfDay(_ calendarDate: CalendarDate) -> Date {
     Calendar.current.date(
         byAdding: DateComponents(day: 1, second: -1), to: startOfDay(calendarDate))!
