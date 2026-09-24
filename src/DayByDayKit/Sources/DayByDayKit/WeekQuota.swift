@@ -46,16 +46,14 @@ enum WeekQuota {
     /// `owed` reads every day so held, days after `keptThrough` included — *A week a weekly quota
     /// era holds owes its quota in proportion to the days held* says nothing about when a day
     /// falls, days to come included. `kept` counts the same seven days against `history`, but
-    /// only through `keptThrough` where one is given — every caller gives one: a look-back passes
-    /// its own walk's end, so a week in progress, or a week a stop cuts short, never counts a
-    /// tick past the day the walk itself has reached; a day view's row passes its own date, so it
-    /// counts nothing past the day it draws. `nil`, the default, counts every day of the week
-    /// regardless of when it falls — no caller reaches for it today. `design.md` § *One week rule,
-    /// in one place*. `nil` where no day of the week is held by a weekly-quota link at all — the
-    /// caller's own reading of a gap or a different rhythm's unit decides whether the week is said
-    /// regardless.
+    /// only through `keptThrough`: a look-back passes its own walk's end, so a week in progress,
+    /// or a week a stop cuts short, never counts a tick past the day the walk itself has reached;
+    /// a day view's row passes its own date, so it counts nothing past the day it draws.
+    /// `design.md` § *One week rule, in one place*. `nil` where no day of the week is held by a
+    /// weekly-quota link at all — the caller's own reading of a gap or a different rhythm's unit
+    /// decides whether the week is said regardless.
     static func standing(
-        monday: CalendarDate, links: [Link], history: History, keptThrough end: CalendarDate? = nil
+        monday: CalendarDate, links: [Link], history: History, keptThrough end: CalendarDate
     ) -> (kept: Int, owed: Int)? {
         var kept = 0
         var owedNumerator = 0
@@ -68,7 +66,7 @@ enum WeekQuota {
             {
                 hasQuotaDay = true
                 owedNumerator += quota.timesPerWeek
-                let dayCounts = end.map { day.days(until: $0) >= 0 } ?? true
+                let dayCounts = day.days(until: end) >= 0
                 if dayCounts, history.isKept(link.commitment, on: day) {
                     kept += 1
                 }
