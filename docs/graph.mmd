@@ -98,6 +98,10 @@ flowchart TD
   I309["Story 309 — keep-a-folded-rosters-eras-together"]
   I321["Epic 321 — Birthdays"]
   I322["Feature 322 — birthday"]
+  I324["Story 324 — choose-a-number-from-a-short-range"]
+  I325["Story 325 — start-a-number-from-the-last-one"]
+  I326["Story 326 — add-birthday"]
+  I327["Story 327 — turn-birthdays-on"]
 
   I1 --> I26
   I1 --> I27
@@ -148,6 +152,8 @@ flowchart TD
   I27 --> I215
   I27 --> I223
   I27 --> I236
+  I27 --> I324
+  I27 --> I325
   I27 --> I70
   I27 --> I71
   I27 --> I72
@@ -161,6 +167,7 @@ flowchart TD
   I271 --> I276
   I271 --> I300
   I321 --> I322
+  I322 --> I326
   I53 --> I137
   I53 --> I138
   I53 --> I139
@@ -188,7 +195,7 @@ flowchart TD
   class I10 story,done
   class I11 story,done
   class I26 feature,settled
-  class I27 feature,settled
+  class I27 feature
   class I42 story,done
   class I53 feature,done
   class I55 story,done
@@ -267,3 +274,7 @@ flowchart TD
   class I309 story,done
   class I321 epic
   class I322 feature
+  class I324 story
+  class I325 story
+  class I326 story
+  class I327 story,orphan
