@@ -1172,7 +1172,9 @@ struct ContentView: View {
     /// reads 'Not saved. Try again.'" No rhythm, no entry — a birthday row offers nothing but
     /// its tick (`grill.md` § *Settled* 1). Acting on a row from a neighbouring day is inert
     /// the same way a commitment row's tap already is: `DayScreen.tick(_: DayView.BirthdayRow)`
-    /// returns early on a row `screen.dayView.birthdayGroup` does not hold.
+    /// returns early on a row `screen.dayView.birthdayGroup` does not hold. A G7 change from the
+    /// owner, after walking the phone: a small `birthday.cake` before the words, a shell-only
+    /// change this file's own doc comment on `nameLine` below has the rest of.
     @ViewBuilder
     private func birthdayRowView(_ row: DayView.BirthdayRow) -> some View {
         let nameColor: Color = row.isTicked ? .secondary : .primary
@@ -1180,11 +1182,22 @@ struct ContentView: View {
         let markColor: Color = Color.green
         let offersTick = row.offersTick(asOf: today())
 
+        // A small cake before the words, then a space — `birthday.cake`, in `name_availability
+        // .plist` since 2022 (SF Symbols 4 / iOS 16), well under this app's deployment target.
+        // `Text(Image(systemName:))` sizes the glyph to the text around it, and each concatenated
+        // piece keeps its own modifiers: the words stay `Text(verbatim: row.words)`, unedited and
+        // on its own the only one struck through, while the icon takes the same secondary colour
+        // when ticked but never a strikethrough line of its own.
+        let nameLine: Text =
+            Text(Image(systemName: "birthday.cake")).foregroundStyle(nameColor)
+            + Text(" ").foregroundStyle(nameColor)
+            + Text(verbatim: row.words)
+                .foregroundStyle(nameColor)
+                .strikethrough(row.isTicked)
+
         let label = HStack {
             VStack(alignment: .leading) {
-                Text(verbatim: row.words)
-                    .foregroundStyle(nameColor)
-                    .strikethrough(row.isTicked)
+                nameLine
                 if row == screen.notice?.birthdayRow {
                     Text("Not saved. Try again.")
                         .font(.caption)
