@@ -65,6 +65,16 @@ row's date as any committed number is, and the day it came from SHALL keep its o
 - **AND** the entry of a row for a third commitment, named "Waist" and alike "Weight" in every way
   but its name, formed from that same history, says no starting number
 
+#### Scenario: a commitment sharing its name with another takes no starting number from it
+
+- **WHEN** a day view is formed on Monday 31 August 2026 of two commitments, each formed on its own
+  and neither an era of the other, both named "Weight", both of the number kind with a range of 40
+  to 150, both on a schedule listing all seven weekdays and both kept from 1 January 2026, from a
+  history holding a number of 72.4 for the first of them on Sunday 30 August 2026 and none for the
+  second, and both its rows are asked as of that same day
+- **THEN** the entry the first row offers says the starting number 72.4
+- **AND** the entry the second row offers says no starting number
+
 #### Scenario: a starting number is read across every era of its commitment
 
 - **WHEN** a commitment named "Weight" of the number kind with a range of 40 to 150, on a schedule

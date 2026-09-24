@@ -22,11 +22,12 @@ make it pass, then the next.
 - [x] 3.2 a number held on the entry's day or on a later day is not its starting number — catches the latest number ever, rather than the latest before
 - [x] 3.3 a starting number is the latest number held however far back it lies — catches a look-back window
 - [x] 3.4 a number taken back is not a starting number, and the latest one still held is
-- [x] 3.5 a starting number is its own commitment's number and never another's — catches a match by name or by kind
+- [x] 3.5 a starting number is its own commitment's number and never another's — catches a match by kind; a match by name is 3.10's
 - [x] 3.6 a number entry on a day holding a number says that number and no starting number
 - [x] 3.7 a chosen entry says no starting number
 - [x] 3.8 a commitment declaring no range takes any number held before its day as its starting number
 - [x] 3.9 two rows for the same number commitment and date holding no number but differing in starting number are different rows — catches a custom equality leaving it out
+- [ ] 3.10 a commitment sharing its name with another takes no starting number from it — must kill `guard day.commitment.name == commitment.name,` at `History.swift:67`, which every other test survives; the code it names exists, so its red is shown against that mutation, reverted before the commit
 
 ## 4. The day screen — `DayScreenTests.swift`
 
