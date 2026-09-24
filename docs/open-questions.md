@@ -180,6 +180,16 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
 
 Things that are built, or deliberately not built, in a state someone will trip over.
 
+- **A short range whose values a `Decimal` cannot all hold draws fewer values than it has.** A
+  range is short where both bounds are whole and it holds eleven values or fewer, and a chosen
+  entry offers every whole number between its bounds. Bounds near thirty-eight significant digits
+  can each be held while the numbers between them cannot — 999…990 (thirty-eight nines and a zero)
+  to 10³⁹ are ten apart, and 999…991 needs thirty-nine digits — so the entry cannot offer all
+  eleven. The loop that lists them is bounded to highest − lowest + 1 steps, so it cannot hang, as
+  it did at #324's G7 on a range of 10⁵⁰ to 10⁵⁰; what it draws for such a range is unspecified.
+  Whether such a range is typed instead is a change to `day-screen`'s rule for a short range, and
+  nobody types a mood with forty digits. Found at #324's G7, 2026-09-24, and left by the owner's
+  reply rather than reopening the delta.
 - **The one-off store's "kept before the store reports it kept" test does not keep the first store
   open.** The scenario opens a second store at the same place *with the first still open*, but the
   test's first store is last used before the second opens, so an optimised build may release it
