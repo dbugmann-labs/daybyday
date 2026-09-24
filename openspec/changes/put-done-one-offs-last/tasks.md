@@ -6,8 +6,8 @@ take the next unticked scenario box, write the one test named for it, watch it f
 
 ## 1. Before a line is written
 
-- [ ] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they are exactly the eight titles boxed in §§ 3–5. Any other uncovered title is a stop.
-- [ ] 1.2 The test named "done and undone one-offs standing on one day are ordered by the date owed alone" is deleted in the commit that makes 3.1 pass, and no other test is deleted
+- [x] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they are exactly the eight titles boxed in §§ 3–5. Any other uncovered title is a stop.
+- [x] 1.2 The test named "done and undone one-offs standing on one day are ordered by the date owed alone" is deleted in the commit that makes 3.1 pass, and no other test is deleted
 
 ## 2. The seam
 
