@@ -1172,9 +1172,10 @@ struct ContentView: View {
     /// reads 'Not saved. Try again.'" No rhythm, no entry — a birthday row offers nothing but
     /// its tick (`grill.md` § *Settled* 1). Acting on a row from a neighbouring day is inert
     /// the same way a commitment row's tap already is: `DayScreen.tick(_: DayView.BirthdayRow)`
-    /// returns early on a row `screen.dayView.birthdayGroup` does not hold. A G7 change from the
-    /// owner, after walking the phone: a small `birthday.cake` before the words, a shell-only
-    /// change this file's own doc comment on `nameLine` below has the rest of.
+    /// returns early on a row `screen.dayView.birthdayGroup` does not hold. Two G7 changes from
+    /// the owner, after walking the phone: a small icon before the words, then — after seeing it
+    /// as an SF Symbol — the 🎂 emoji instead. A shell-only change either time; this file's own
+    /// doc comment on `nameLine` below has the rest of it.
     @ViewBuilder
     private func birthdayRowView(_ row: DayView.BirthdayRow) -> some View {
         let nameColor: Color = row.isTicked ? .secondary : .primary
@@ -1182,15 +1183,14 @@ struct ContentView: View {
         let markColor: Color = Color.green
         let offersTick = row.offersTick(asOf: today())
 
-        // A small cake before the words, then a space — `birthday.cake`, in `name_availability
-        // .plist` since 2022 (SF Symbols 4 / iOS 16), well under this app's deployment target.
-        // `Text(Image(systemName:))` sizes the glyph to the text around it, and each concatenated
-        // piece keeps its own modifiers: the words stay `Text(verbatim: row.words)`, unedited and
-        // on its own the only one struck through, while the icon takes the same secondary colour
-        // when ticked but never a strikethrough line of its own.
+        // The 🎂 emoji before the words, then a space — the owner's second G7 word on this row,
+        // in place of the SF Symbol `birthday.cake` the first one asked for. No `.foregroundStyle`
+        // on the emoji piece, so it stays in its own full colour whether or not the row is
+        // ticked; concatenation keeps each piece's own modifiers, so only the words piece —
+        // still `Text(verbatim: row.words)`, unedited — takes the secondary colour and the
+        // strikethrough once ticked.
         let nameLine: Text =
-            Text(Image(systemName: "birthday.cake")).foregroundStyle(nameColor)
-            + Text(" ").foregroundStyle(nameColor)
+            Text("🎂 ")
             + Text(verbatim: row.words)
                 .foregroundStyle(nameColor)
                 .strikethrough(row.isTicked)
