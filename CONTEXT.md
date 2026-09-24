@@ -1032,6 +1032,10 @@ drawn on **every** date wherever one-offs are being kept, holding the **one-off 
 rows where none stands there; "draws no such group where none stands" above is withdrawn. Where
 one-offs cannot be read, still no group is drawn.
 
+**Amended 2026-09-24**, at the Feature grill of B-059, `FEAT: birthday` (#322). A day view also
+draws the **birthdays** falling on its date as one group, headed *Birthdays*, before every group of
+commitments — and only while the person has turned birthdays on.
+
 **Row** — one commitment's line in a day view: its name, the **rhythm in words** it runs on, whether
 it is kept, and the place a tick is made. Ticking belongs to the row and therefore to `day-screen`:
 `record` says what a tick is and what a history answers and knows nothing of a row, of a date being
@@ -1613,6 +1617,10 @@ app. One file then carries one cause wherever it is spoken of, rather than *must
 one screen and *could not be read* on another — the reading of a later-form store the **day screen**
 and the **roster** line have had all along.
 
+**Amended 2026-09-24**, at the Feature grill of B-059, `FEAT: birthday` (#322). A copy also holds
+what the app reads from the store that keeps **birthday** ticks, so the fourth store is carried like
+the three before it.
+
 **Moment** — when something happened, said to the minute: a **calendar date**, an hour of that day
 and a minute of that hour, in the reckoning of the phone it was formed on. It is the only thing here
 that knows a time of day, and it exists because a **copy** carries one; no **store** holds a moment
@@ -1779,6 +1787,26 @@ around a typed name before it is added or renamed; the one-off still keeps exact
 A rename also keeps the one-off's **place** among those owed on its date, since it is one act and not
 a removal and an add. The sentence above that no *One-offs* group is drawn where none stands is
 withdrawn, as it is under **Day view**.
+
+**Birthday** — a person's birthday as the phone's own calendar knows it, on the day it falls each
+year: a name, the day, and the age where the calendar holds the year. It is not the app's — it is
+read from the phone's birthday calendars, through the one permission that reading a calendar takes,
+and the app never writes one, never adds one and never chooses who is on it: who has a birthday is
+decided in the phone's contacts and accounts, and an unwanted row is a birthday nobody ticks. It is
+neither a **commitment** nor a **one-off**: it recurs, it is nobody's to owe, and it stands on its
+day only — a birthday whose day has passed untouched is unticked on that day and follows nobody
+forward. A **day view** draws the birthdays on its date as one more group, headed *Birthdays*,
+before every group of commitments — the second heading that is the system's word — and draws no
+such group where none falls there or where the person has not turned birthdays on: they are read
+only behind a **switch** on the commitments screen, off until turned on, which is where the app
+asks for the calendar and where it says so when the phone refuses. A birthday takes a **tick**, and
+the tick is the app's while the birthday is the calendar's: it says what the calendar says now, so a
+renamed contact renames the row and a deleted contact takes the ticked row with it — the owner's
+call against keeping the row as it was ticked, made knowing it is the one record here that can go
+without a deliberate act. Its ticks are kept in a store of their own, carried in a **copy** like
+everything else, and kept when the switch is turned off, which draws nothing and forgets nothing.
+Agreed 2026-09-24 at the Feature grill of B-059, which groomed cluster H of the eleventh pass; the
+capability is `birthday`, under `EPIC: Birthdays` (#321).
 
 **One-off entry** — the line a **day view**'s One-offs group always ends with, where a person types a
 new one-off's name in place, as in Apple Reminders; the toolbar's `+` brings it into focus. It is
