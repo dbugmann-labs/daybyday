@@ -70,7 +70,7 @@ scenario box, write the one test named for it, watch it fail, make it pass, then
 The throwaway test grants calendar access with `xcrun simctl privacy <udid> grant calendar <bundle-id>` or answers the system prompt itself.
 
 - [ ] W.1 The commitments screen with *Birthdays* just turned on — the switch on, the explaining line under it, no refused line.
-- [ ] W.2 Tuesday 20 January 2026, reached by paging back — the *Birthdays* group first, holding "Kate Bell’s 48th Birthday" unticked, the *One-offs* group under it.
+- [ ] W.2 Saturday 29 August 2026, reached by paging back — the *Birthdays* group first, holding "Anna Haro’s 41st Birthday" unticked, the *One-offs* group under it.
 - [ ] W.3 The same row tapped — grey, struck through, with the green check.
 - [ ] W.4 Sent back to today — no *Birthdays* group.
 - [ ] W.5 Tuesday 22 June 2027, picked — John Appleseed's row first, faded, above the commitment groups.
