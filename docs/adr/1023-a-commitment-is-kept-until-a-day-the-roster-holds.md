@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-09-03
 - Deciders: Diego Bugmann
+- Amended: 2026-09-23 — `stop-and-resume-as-eras` (#306): a stop on a day already holding a record
+  of the commitment is kept until that day, taking back the price below for the days that paid it;
+  and taking a commitment up again begins a new era from that day, so the days between are a gap
+  rather than reading as kept once more. ADR-1061 is the part week that follows.
 - Amended: 2026-09-22 — a commitment gains the identity this record's own alternatives ruled out;
   equality is the identity alone, a rename or a corrected kept-from day now put a new era on it
   rather than forming a second commitment, and `give-a-commitment-an-identity` (#303) retires the
@@ -62,9 +66,11 @@ Four things are part of the decision rather than incidental to it:
   day a screen *hands* is a separate question from what the day *means*, and only the first of the
   two moved. It shipped as the day the screen was handed, so a commitment stopped this afternoon
   kept its row on this afternoon's day screen, which reads as a stop that failed on the one screen
-  whose purpose is to make the change. The price, taken knowingly: a tick made this morning on a
-  commitment stopped this afternoon is not drawn today, though the record of it stands untouched and
-  the row returns on that day if the commitment is ever taken up again. A commitment defined and
+  whose purpose is to make the change. The price, taken knowingly then, was that a tick made this
+  morning on a commitment stopped this afternoon was not drawn today. It is taken back for exactly
+  the days that paid it: a stop on a day that already holds a record of the commitment — a tick, a
+  number, a note or an addition — is kept until that day, so the row stays drawn with what was entered,
+  and a stop on a day holding nothing still leaves the screen at once. A commitment defined and
   stopped on the same day becomes one kept on no day at all, which the roster already accepts as
   what changing your mind before starting looks like. On the first date the calendar supports there
   is no day before, and the screen hands that day itself rather than refusing — a floor is not
@@ -93,16 +99,17 @@ Four things are part of the decision rather than incidental to it:
 - **Retiring needs something that holds commitments**, which is why `add-commitment-roster` (#101)
   had to land first, and why a roster must refuse a commitment it already holds: two commitments a
   person would call identical could not be told apart to stop one of them.
-- **Taking something up again is the same commitment**, offered to the roster exactly as it was. The
-  roster drops the kept-until day, the commitment returns in the place it was taken on in, and its
-  history is the one it always had. There is no separate un-stop: offering it is the act, and the
-  roster reports that it now keeps it. The price is that the dates between the stop and the
-  taking-up go back to answering that the commitment was being kept, because a roster holds one
-  kept-until day per commitment and no span of them — a model nothing has asked for. Weighed against
+- **Taking something up again is the same commitment**, in the place it was taken on in, with the
+  history it always had. Since 2026-09-23 it begins a new **era** from the day it is taken up again,
+  on the rhythm, range and target the stopped era had, and the stopped era keeps its kept-until day:
+  the days between are a **gap**, owing nothing and drawing no row. Until then the roster dropped the
+  kept-until day and the dates between went back to answering that the commitment was being kept,
+  because a roster held one kept-until day per commitment; eras (ADR-1059) are the span that model
+  lacked. A take-up-again that would leave no day between undoes the stop instead. Weighed against
   the alternative, where a mis-tapped stop has no way back and starting again means a different
   commitment with a fresh history at the end of the order, the owner chose this on 2026-09-03 at the
   grill of #102. Nothing here touches the record: every tick stands, so what was actually done on
-  those days is unchanged and a gap still shows as days that were never ticked.
+  those days is unchanged, and a record standing on a gap day stays in the store, shown nowhere.
 - **Storage has one more thing to keep.** `add-roster-store` (#103) persists the kept-until day
   beside the commitment. It is one optional date per commitment and needs no change to what a tick
   is.

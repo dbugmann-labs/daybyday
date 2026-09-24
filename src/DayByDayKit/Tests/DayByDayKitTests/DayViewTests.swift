@@ -885,6 +885,25 @@ func twoWeeklyQuotaRowsAlikeInCommitmentDateAndDayButDifferingInStandingAreDiffe
     #expect(firstView.rows[0] != secondView.rows[0])
 }
 
+@Test("two weekly-quota rows alike but for what their week owes are different rows")
+func twoWeeklyQuotaRowsAlikeButForWhatTheirWeekOwesAreDifferentRows() {
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let readingFromDayOne = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let readingFromWednesday = Commitment(
+        era: readingFromDayOne, schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!),
+        keptFrom: wednesday, kind: .tick)!
+    let history = History()
+
+    let firstView = DayView(of: [readingFromDayOne], on: wednesday, in: history)
+    let secondView = DayView(of: [readingFromWednesday], on: wednesday, in: history)
+
+    #expect(firstView.rows[0].rhythmInWords == "0/3x a week")
+    #expect(secondView.rows[0].rhythmInWords == "0/2x a week")
+    #expect(firstView.rows[0] != secondView.rows[0])
+}
+
 @Test("two weekly-quota rows whose histories differ only outside the row's week through its date are the same row")
 func twoWeeklyQuotaRowsWhoseHistoriesDifferOnlyOutsideTheRowsWeekThroughItsDateAreTheSameRow() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
@@ -1060,6 +1079,22 @@ func aRowOnAScheduleThatIsNotAWeeklyQuotaSaysItsPlainWordsWhateverItsWeekHolds()
 
     #expect(dayView.rows[0].rhythmInWords == "Mon, Wed, Sat")
     #expect(dayView.rows[1].rhythmInWords == "Every day")
+}
+
+@Test("a weekly-quota row in a part week says what its week owes")
+func aWeeklyQuotaRowInAPartWeekSaysWhatItsWeekOwes() {
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: wednesday)!
+    let stretch = Commitment(
+        name: "Stretch", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 1)!), keptFrom: saturday)!
+
+    let readingView = DayView(of: [reading], on: wednesday, in: History())
+    let stretchView = DayView(of: [stretch], on: saturday, in: History())
+
+    #expect(readingView.rows[0].rhythmInWords == "0/2x a week")
+    #expect(stretchView.rows[0].rhythmInWords == "0/0x a week")
 }
 
 @Test("moving to the day after gives the day view of the next date")

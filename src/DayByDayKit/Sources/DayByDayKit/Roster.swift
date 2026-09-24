@@ -255,8 +255,12 @@ public struct Roster: Hashable, Sendable {
     }
 
     /// Stops keeping `commitment` as of `date`, the last day it was kept, and answers `true`.
-    /// Answers `false` and changes nothing when this roster does not hold it, or has already
-    /// stopped keeping it.
+    /// Holds the whole identity mended afterwards, `mended(_:)`, so a stop as of a day before the
+    /// newest era began — one that then holds no day — drops that era and stops the one behind
+    /// it instead, exactly as a stored roster already reads such an era; every other stop leaves
+    /// the chain exactly as `mended(_:)` already found it, `retire`'s own mend a no-op on top of
+    /// one already run by `add` or `put(era:on:keptUntil:under:)`. Answers `false` and changes
+    /// nothing when this roster does not hold it, or has already stopped keeping it.
     public mutating func retire(_ commitment: Commitment, keptUntil date: CalendarDate) -> Bool {
         guard let index = entries.firstIndex(where: { $0.commitment == commitment }) else {
             return false
@@ -269,6 +273,72 @@ public struct Roster: Hashable, Sendable {
         entries[index] = Entry(
             commitment: entries[index].commitment, keptUntil: date,
             category: entries[index].category)
+
+        let runLength = entries[index...].prefix { $0.commitment.identity == commitment.identity }.count
+        entries.replaceSubrange(
+            index..<(index + runLength), with: Self.mended(Array(entries[index..<(index + runLength)])))
+
+        return true
+    }
+
+    /// Takes up again, from `date`, the commitment `commitment` identifies where this roster has
+    /// stopped keeping it, and answers `true`, reporting that this roster now keeps it. Puts a
+    /// new era in front of the stopped one, on its schedule, kind, range and target — an
+    /// interval's own count beginning there — kept from `date` or the stopped era's own day kept
+    /// from where that is later, under the category the commitment already had, keeping the
+    /// stopped era's own day kept until, and then holds the whole identity mended, `mended(_:)`:
+    /// two alike eras with no day between them join, exactly as `put(era:on:keptUntil:under:)`
+    /// already joins one it puts on. Where the new era would begin no later than the day after
+    /// that day kept until, drops that day instead rather than putting an era on — the same
+    /// collapse a same-day rhythm change already makes, so a resume the day after a stop, or
+    /// earlier, is one era, as though it had never been stopped. Answers `false` and changes
+    /// nothing when this roster does not hold `commitment` at all, is currently keeping it, or has
+    /// deleted it, or when `commitment`'s name is already held by another commitment this roster
+    /// keeps or has stopped keeping — `nameIsHeldByAnother(_:notIdentity:)` — refusing on no date.
+    /// `openspec/changes/stop-and-resume-as-eras/design.md` § *A resume is a dated
+    /// take-up-again, and `add` stays the undo* and § *A resumed era is kept from the later of the
+    /// resume day and the stopped era's day*.
+    @discardableResult
+    public mutating func keepAgain(_ commitment: Commitment, from date: CalendarDate) -> Bool {
+        guard let index = entries.firstIndex(where: { $0.commitment.identity == commitment.identity }),
+            let keptUntil = entries[index].keptUntil
+        else {
+            return false
+        }
+
+        guard !nameIsHeldByAnother(commitment.name, notIdentity: commitment.identity) else {
+            return false
+        }
+
+        let stoppedEra = entries[index].commitment
+        let category = entries[index].category
+        let resumeDate = date.days(until: stoppedEra.keptFrom) > 0 ? stoppedEra.keptFrom : date
+
+        guard resumeDate.days(until: keptUntil) < -1 else {
+            // The new era would begin no later than the day after the day it was kept until:
+            // dropped, leaving the stopped era in place with its kept-until day cleared, as though
+            // it had never been stopped.
+            entries[index] = Entry(commitment: stoppedEra, keptUntil: nil, category: category)
+            emptied = false
+            return true
+        }
+
+        var resumedSchedule = stoppedEra.schedule
+        if case .everyNDays(let interval, from: _) = resumedSchedule {
+            resumedSchedule = .everyNDays(interval, from: resumeDate)
+        }
+        let resumedEra = Commitment(
+            era: stoppedEra, schedule: resumedSchedule, keptFrom: resumeDate, kind: stoppedEra.kind)!
+
+        let precedingEntry = Entry(commitment: stoppedEra, keptUntil: keptUntil, category: category)
+        entries[index] = Entry(commitment: resumedEra, keptUntil: nil, category: category)
+        entries.insert(precedingEntry, at: index + 1)
+
+        let runLength = entries[index...].prefix { $0.commitment.identity == commitment.identity }.count
+        entries.replaceSubrange(
+            index..<(index + runLength), with: Self.mended(Array(entries[index..<(index + runLength)])))
+
+        emptied = false
         return true
     }
 
@@ -357,23 +427,42 @@ public struct Roster: Hashable, Sendable {
     }
 
     /// Mends one identity's eras, `entries` — already gathered, adjacent and newest first, the
-    /// newest's own `keptUntil` never touched — as both `put(era:on:keptUntil:under:)` and every
-    /// reader run it, `design.md` § *One mend, run by the put and by the reader*: each era but
-    /// the newest is cut to the day before the era in front of it (in the mended result, not
-    /// necessarily the one in front of it here) is kept from, carrying whatever day kept until it
-    /// already had where that is earlier; an era that then holds no day is dropped, the newest
-    /// never among them; and two eras left standing side by side alike in schedule and in kind —
-    /// range or target included — join into one, kept from the older's day and carrying the
-    /// newer's day kept until, state and category. Package-internal: `RosterDocument.formRoster()`
+    /// newest's own `keptUntil` never touched except for one case — as `put(era:on:keptUntil
+    /// :under:)`, `retire(_:keptUntil:)`, `keepAgain(_:from:)` and every reader run it, `design.md`
+    /// § *One mend carries the gap and the stop's collapse*: each era but the newest is cut to the
+    /// day before the era in front of it (in the mended result, not necessarily the one in front
+    /// of it here) is kept from, carrying whatever day kept until it already had where that is
+    /// earlier; an era that then holds no day is dropped, the newest never among them for that
+    /// alone. Two eras left standing side by side with no day between the older's day kept until
+    /// and the newer's day kept from, alike in schedule and in kind — range or target included —
+    /// join into one, kept from the older's day and carrying the newer's day kept until, state and
+    /// category; alike eras with a day between them are left as two. A stopped newest era that
+    /// holds no day is dropped where an older era stands behind it, which then carries that
+    /// dropped era's category and the earlier of the two days kept until, standing as the newest
+    /// itself — repeated against whatever now stands newest until it holds a day or nothing stands
+    /// behind it, so a stop that empties more than one era in front never leaves a no-day era
+    /// standing; a stopped newest holding no day with nothing behind it is left exactly as it is,
+    /// on the same footing as any other newest era. Package-internal: `RosterDocument.formRoster()`
     /// and `RosterDocument.folded()` are the two readers that call this, once per identity, before
     /// either answers.
     static func mended(_ entries: [Entry]) -> [Entry] {
         guard var front = entries.first else {
             return entries
         }
+        var rest = Array(entries.dropFirst())
+
+        while let frontKeptUntil = front.keptUntil,
+            front.commitment.keptFrom.days(until: frontKeptUntil) < 0,
+            let behind = rest.first
+        {
+            let keptUntil = Self.earlier(frontKeptUntil, behind.keptUntil ?? frontKeptUntil)
+            front = Entry(commitment: behind.commitment, keptUntil: keptUntil, category: front.category)
+            rest.removeFirst()
+        }
+
         var result = [front]
 
-        for entry in entries.dropFirst() {
+        for entry in rest {
             guard let dayBeforeFront = front.commitment.keptFrom.adding(days: -1) else {
                 // The front era's own day kept from is the calendar's first supported date: no
                 // day exists before it, so nothing behind it can hold one either.
@@ -388,7 +477,7 @@ public struct Roster: Hashable, Sendable {
 
             let cut = Entry(commitment: entry.commitment, keptUntil: keptUntil, category: entry.category)
             if front.commitment.schedule == cut.commitment.schedule,
-                front.commitment.kind == cut.commitment.kind
+                front.commitment.kind == cut.commitment.kind, keptUntil == dayBeforeFront
             {
                 let joined = Entry(
                     commitment: Commitment(

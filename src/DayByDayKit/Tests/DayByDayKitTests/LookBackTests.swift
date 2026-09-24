@@ -216,6 +216,103 @@ func aLookBackSaysItsMonthsNewestFirstAndLeavesNoneBetweenOut() throws {
 }
 
 @MainActor
+@Test("a tick commitment's look-back says a month in a gap as nothing out of nothing and counts no tick a gap day holds")
+func aTickCommitmentsLookBackSaysAMonthInAGapAsNothingOutOfNothingAndCountsNoTickAGapDayHolds()
+    throws
+{
+    let places = freshRosterAndRecordPlaces()
+    let olderKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let olderKeptUntil = CalendarDate(year: 2026, month: 1, day: 31)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 4, day: 1)!
+    let schedule: Schedule = .weekdays([.monday, .wednesday, .saturday])
+    let olderGym = Commitment(name: "Gym", schedule: schedule, keptFrom: olderKeptFrom)!
+    let newerGym = Commitment(era: olderGym, schedule: schedule, keptFrom: newerKeptFrom, kind: .tick)!
+    let gapTickDay = CalendarDate(year: 2026, month: 2, day: 4)!
+    let today = CalendarDate(year: 2026, month: 4, day: 15)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderGym)
+    try rosterStore.put(era: newerGym, on: olderGym, keptUntil: olderKeptUntil, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(olderGym, on: gapTickDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerGym)
+
+    #expect(
+        lookBack?.lines == [
+            .month(inWords: "April 2026", fraction: "0/7"),
+            .month(inWords: "March 2026", fraction: "0/0"),
+            .month(inWords: "February 2026", fraction: "0/0"),
+            .month(inWords: "January 2026", fraction: "0/13"),
+        ])
+    #expect(lookBack?.whole == "0/20")
+}
+
+@MainActor
+@Test("a quota commitment's look-back says a week in a gap as nothing out of nothing")
+func aQuotaCommitmentsLookBackSaysAWeekInAGapAsNothingOutOfNothing() throws {
+    let places = freshRosterAndRecordPlaces()
+    let olderKeptFrom = CalendarDate(year: 2026, month: 2, day: 23)!
+    let olderKeptUntil = CalendarDate(year: 2026, month: 3, day: 1)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 16)!
+    let quota: Schedule = .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let olderGym = Commitment(name: "Gym", schedule: quota, keptFrom: olderKeptFrom)!
+    let newerGym = Commitment(era: olderGym, schedule: quota, keptFrom: newerKeptFrom, kind: .tick)!
+    let today = CalendarDate(year: 2026, month: 3, day: 22)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderGym)
+    try rosterStore.put(era: newerGym, on: olderGym, keptUntil: olderKeptUntil, under: nil)
+    _ = try RecordStore(at: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerGym)
+
+    #expect(
+        lookBack?.lines == [
+            .week(inWords: "16–22 Mar 2026", fraction: "0/3"),
+            .week(inWords: "9–15 Mar 2026", fraction: "0/0"),
+            .week(inWords: "2–8 Mar 2026", fraction: "0/0"),
+            .week(inWords: "23 Feb – 1 Mar 2026", fraction: "0/3"),
+        ])
+}
+
+@MainActor
+@Test("a gap between a weekly quota era and one that is not is said in the unit of the era before it")
+func aGapBetweenAWeeklyQuotaEraAndOneThatIsNotIsSaidInTheUnitOfTheEraBeforeIt() throws {
+    let places = freshRosterAndRecordPlaces()
+    let olderKeptFrom = CalendarDate(year: 2026, month: 2, day: 23)!
+    let olderKeptUntil = CalendarDate(year: 2026, month: 3, day: 1)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 16)!
+    let olderGym = Commitment(
+        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: olderKeptFrom)!
+    let newerGym = Commitment(
+        era: olderGym, schedule: .weekdays([.monday, .wednesday, .saturday]),
+        keptFrom: newerKeptFrom, kind: .tick)!
+    let today = CalendarDate(year: 2026, month: 3, day: 22)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderGym)
+    try rosterStore.put(era: newerGym, on: olderGym, keptUntil: olderKeptUntil, under: nil)
+    _ = try RecordStore(at: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerGym)
+
+    #expect(
+        lookBack?.lines == [
+            .month(inWords: "March 2026", fraction: "0/3"),
+            .week(inWords: "9–15 Mar 2026", fraction: "0/0"),
+            .week(inWords: "2–8 Mar 2026", fraction: "0/0"),
+            .week(inWords: "23 Feb – 1 Mar 2026", fraction: "0/3"),
+        ])
+}
+
+@MainActor
 @Test("a look-back says a month the commitment was due on no day with nothing due")
 func aLookBackSaysAMonthTheCommitmentWasDueOnNoDayWithNothingDue() throws {
     let places = freshRosterAndRecordPlaces()
@@ -900,11 +997,29 @@ func aLookBackCountsTheWeekInProgressAgainstTheWholeQuota() throws {
     let lookBack = screen.lookBack(at: gym)
 
     #expect(lookBack?.lines.first == .week(inWords: "9–15 Mar 2026", fraction: "1/3"))
+
+    // A tick on a day of the week in progress that is still to come — after `today`, within the
+    // same week — does not count: the walk itself never reads past `today`, so the week still
+    // owes "0/3", not "1/3", `WeekQuota.standing(monday:links:history:keptThrough:)`'s own
+    // `keptThrough` and not the default that counts every day of the week regardless.
+    let laterPlaces = freshRosterAndRecordPlaces()
+    let laterTick = CalendarDate(year: 2026, month: 3, day: 13)!
+
+    let laterRosterStore = try RosterStore(at: laterPlaces.roster)
+    try laterRosterStore.add(gym)
+    let laterRecordStore = try RecordStore(at: laterPlaces.record)
+    try laterRecordStore.add(Tick(gym, on: laterTick)!)
+
+    let laterScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: laterPlaces.roster, keepingRecordAt: laterPlaces.record)
+    let laterLookBack = laterScreen.lookBack(at: gym)
+
+    #expect(laterLookBack?.lines.first == .week(inWords: "9–15 Mar 2026", fraction: "0/3"))
 }
 
 @MainActor
-@Test("a look-back counts the week a commitment is kept from against the whole quota")
-func aLookBackCountsTheWeekACommitmentIsKeptFromAgainstTheWholeQuota() throws {
+@Test("a look-back counts the week a commitment is kept from against its part of the quota")
+func aLookBackCountsTheWeekACommitmentIsKeptFromAgainstItsPartOfTheQuota() throws {
     let places = freshRosterAndRecordPlaces()
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let gym = Commitment(
@@ -921,7 +1036,7 @@ func aLookBackCountsTheWeekACommitmentIsKeptFromAgainstTheWholeQuota() throws {
         asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
     let lookBack = screen.lookBack(at: gym)
 
-    #expect(lookBack?.lines.last == .week(inWords: "29 Dec 2025 – 4 Jan 2026", fraction: "1/3"))
+    #expect(lookBack?.lines.last == .week(inWords: "29 Dec 2025 – 4 Jan 2026", fraction: "1/2"))
 }
 
 @MainActor
@@ -949,6 +1064,76 @@ func aLookBackSaysAWeekKeptPastItsQuotaAsTheDaysKeptUncapped() throws {
 }
 
 @MainActor
+@Test("a part week owes its quota times the days held over seven, rounded to the nearest whole number")
+func aPartWeekOwesItsQuotaTimesTheDaysHeldOverSevenRoundedToTheNearestWholeNumber() throws {
+    let places = freshRosterAndRecordPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 3)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 1)!), keptFrom: keptFrom)!
+    let today = CalendarDate(year: 2026, month: 3, day: 8)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    _ = try RecordStore(at: places.record)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: gym)
+
+    #expect(lookBack?.lines == [.week(inWords: "2–8 Mar 2026", fraction: "0/1")])
+
+    let saturdayPlaces = freshRosterAndRecordPlaces()
+    let saturdayKeptFrom = CalendarDate(year: 2026, month: 3, day: 7)!
+    let saturdayGym = Commitment(
+        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!),
+        keptFrom: saturdayKeptFrom)!
+    let saturdayRosterStore = try RosterStore(at: saturdayPlaces.roster)
+    try saturdayRosterStore.add(saturdayGym)
+    _ = try RecordStore(at: saturdayPlaces.record)
+    let saturdayScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: saturdayPlaces.roster,
+        keepingRecordAt: saturdayPlaces.record)
+    let saturdayLookBack = saturdayScreen.lookBack(at: saturdayGym)
+
+    #expect(saturdayLookBack?.lines == [.week(inWords: "2–8 Mar 2026", fraction: "0/1")])
+
+    let sundayPlaces = freshRosterAndRecordPlaces()
+    let sundayKeptFrom = CalendarDate(year: 2026, month: 3, day: 8)!
+    let sundayGym = Commitment(
+        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: sundayKeptFrom)!
+    let sundayRosterStore = try RosterStore(at: sundayPlaces.roster)
+    try sundayRosterStore.add(sundayGym)
+    _ = try RecordStore(at: sundayPlaces.record)
+    let sundayScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: sundayPlaces.roster, keepingRecordAt: sundayPlaces.record)
+    let sundayLookBack = sundayScreen.lookBack(at: sundayGym)
+
+    #expect(sundayLookBack?.lines == [.week(inWords: "2–8 Mar 2026", fraction: "0/0")])
+}
+
+@MainActor
+@Test("a part week that owes nothing is still said, and a day kept in it counts")
+func aPartWeekThatOwesNothingIsStillSaidAndADayKeptInItCounts() throws {
+    let places = freshRosterAndRecordPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 3, day: 8)!
+    let gym = Commitment(
+        name: "Gym", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let today = CalendarDate(year: 2026, month: 3, day: 8)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(gym)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(gym, on: keptFrom)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: gym)
+
+    #expect(lookBack?.lines == [.week(inWords: "2–8 Mar 2026", fraction: "1/0")])
+    #expect(lookBack?.whole == "1/0")
+}
+
+@MainActor
 @Test("a stopped quota commitment's look-back counts its last week through the day it was kept until")
 func aStoppedQuotaCommitmentsLookBackCountsItsLastWeekThroughTheDayItWasKeptUntil() throws {
     let places = freshRosterAndRecordPlaces()
@@ -971,7 +1156,35 @@ func aStoppedQuotaCommitmentsLookBackCountsItsLastWeekThroughTheDayItWasKeptUnti
         asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
     let lookBack = screen.lookBack(at: gym)
 
-    #expect(lookBack?.lines.first == .week(inWords: "2–8 Mar 2026", fraction: "1/3"))
+    #expect(lookBack?.lines.first == .week(inWords: "2–8 Mar 2026", fraction: "1/1"))
+}
+
+@MainActor
+@Test("a week a gap cuts owes the days its eras hold, days to come included, and counts a day kept before the stop")
+func aWeekAGapCutsOwesTheDaysItsErasHoldDaysToComeIncludedAndCountsADayKeptBeforeTheStop() throws {
+    let places = freshRosterAndRecordPlaces()
+    let olderKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let olderKeptUntil = CalendarDate(year: 2026, month: 3, day: 2)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 5)!
+    let quota: Schedule = .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let olderGym = Commitment(name: "Gym", schedule: quota, keptFrom: olderKeptFrom)!
+    let newerGym = Commitment(era: olderGym, schedule: quota, keptFrom: newerKeptFrom, kind: .tick)!
+    let today = CalendarDate(year: 2026, month: 3, day: 5)!
+    let secondMarch = CalendarDate(year: 2026, month: 3, day: 2)!
+    let fifthMarch = CalendarDate(year: 2026, month: 3, day: 5)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderGym)
+    try rosterStore.put(era: newerGym, on: olderGym, keptUntil: olderKeptUntil, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Tick(olderGym, on: secondMarch)!)
+    try recordStore.add(Tick(newerGym, on: fifthMarch)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerGym)
+
+    #expect(lookBack?.lines.first == .week(inWords: "2–8 Mar 2026", fraction: "2/2"))
 }
 
 @MainActor
@@ -1010,14 +1223,14 @@ func aLookBackSaysAWeekdayErasMonthsAndAQuotaErasWeeksEachInItsOwnUnit() throws 
         lookBack?.lines
             == [
                 .month(inWords: "March 2026", fraction: "3/5"),
-                .week(inWords: "2–8 Mar 2026", fraction: "1/3"),
+                .week(inWords: "2–8 Mar 2026", fraction: "1/1"),
                 .week(inWords: "23 Feb – 1 Mar 2026", fraction: "3/3"),
             ])
 }
 
 @MainActor
-@Test("a week two quota eras share says its kept days out of the newer era's quota")
-func aWeekTwoQuotaErasShareSaysItsKeptDaysOutOfTheNewerErasQuota() throws {
+@Test("a week two quota eras share says its kept days out of both eras' parts of their quotas")
+func aWeekTwoQuotaErasShareSaysItsKeptDaysOutOfBothErasPartsOfTheirQuotas() throws {
     let places = freshRosterAndRecordPlaces()
     let oldKeptFrom = CalendarDate(year: 2026, month: 2, day: 23)!
     let boundary = CalendarDate(year: 2026, month: 3, day: 3)!
@@ -1046,7 +1259,7 @@ func aWeekTwoQuotaErasShareSaysItsKeptDaysOutOfTheNewerErasQuota() throws {
         if case .week(let inWords, _) = line { return inWords == "2–8 Mar 2026" }
         return false
     }
-    #expect(weekOf2March == [.week(inWords: "2–8 Mar 2026", fraction: "2/5")])
+    #expect(weekOf2March == [.week(inWords: "2–8 Mar 2026", fraction: "2/4")])
     #expect(lookBack?.lines.contains(.week(inWords: "23 Feb – 1 Mar 2026", fraction: "0/3")) == true)
 }
 
@@ -1110,7 +1323,7 @@ func aMixedChainsWholeSumsItsMonthsDueDaysAndItsWeeksQuotasAlike() throws {
         asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
     let lookBack = screen.lookBack(at: new)
 
-    #expect(lookBack?.whole == "7/11")
+    #expect(lookBack?.whole == "7/9")
 }
 
 @MainActor
@@ -1595,6 +1808,47 @@ func aNumberCommitmentsGraphSaysNothingWhereOneEraGivesWayToTheNext() throws {
 }
 
 @MainActor
+@Test("a number commitment's graph says the days of a gap and no number a gap day holds")
+func aNumberCommitmentsGraphSaysTheDaysOfAGapAndNoNumberAGapDayHolds() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let olderKeptUntil = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 6)!
+    let olderWeight = Commitment(
+        name: "Weight", schedule: everyDay, keptFrom: olderKeptFrom, kind: .number(range: nil))!
+    let newerWeight = Commitment(
+        era: olderWeight, schedule: everyDay, keptFrom: newerKeptFrom, kind: .number(range: nil))!
+    let today = CalendarDate(year: 2026, month: 3, day: 8)!
+    let secondOfMarch = CalendarDate(year: 2026, month: 3, day: 2)!
+    let gapDay = CalendarDate(year: 2026, month: 3, day: 4)!
+    let seventhOfMarch = CalendarDate(year: 2026, month: 3, day: 7)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderWeight)
+    try rosterStore.put(era: newerWeight, on: olderWeight, keptUntil: olderKeptUntil, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Number(72.5, for: olderWeight, on: secondOfMarch)!)
+    try recordStore.add(Number(71, for: olderWeight, on: gapDay)!)
+    try recordStore.add(Number(70, for: newerWeight, on: seventhOfMarch)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerWeight)
+
+    #expect(lookBack?.graph?.days.count == 8)
+    #expect(lookBack?.graph?.days.first == "1 March 2026")
+    #expect(lookBack?.graph?.days.last == "8 March 2026")
+    #expect(
+        lookBack?.graph?.points == [
+            LookBack.Graph.Point(day: 1, value: 72.5, inWords: "72.5", isKept: nil),
+            LookBack.Graph.Point(day: 6, value: 70, inWords: "70", isKept: nil),
+        ])
+}
+
+@MainActor
 @Test("a look-back says a number with a fraction as its digits either side of a full stop")
 func aLookBackSaysANumberWithAFractionAsItsDigitsEitherSideOfAFullStop() throws {
     let places = freshRosterAndRecordPlaces()
@@ -1956,6 +2210,42 @@ func aTotalCommitmentsTargetRuleStepsWhereTheTargetChanged() throws {
 }
 
 @MainActor
+@Test("a total commitment's target rule runs through a gap at the target of the era before it")
+func aTotalCommitmentsTargetRuleRunsThroughAGapAtTheTargetOfTheEraBeforeIt() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let olderKeptUntil = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 6)!
+    let olderProtein = Commitment(
+        name: "Protein", schedule: everyDay, keptFrom: olderKeptFrom,
+        kind: .total(target: Commitment.Target(120)!))!
+    let newerProtein = Commitment(
+        era: olderProtein, schedule: everyDay, keptFrom: newerKeptFrom,
+        kind: .total(target: Commitment.Target(100)!))!
+    let today = CalendarDate(year: 2026, month: 3, day: 8)!
+    let olderDay = CalendarDate(year: 2026, month: 3, day: 2)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderProtein)
+    try rosterStore.put(era: newerProtein, on: olderProtein, keptUntil: olderKeptUntil, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Addition(150, for: olderProtein, on: olderDay)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerProtein)
+
+    #expect(
+        lookBack?.graph?.targetRule == [
+            LookBack.Graph.Stretch(from: 0, through: 4, target: 120, inWords: "120"),
+            LookBack.Graph.Stretch(from: 5, through: 7, target: 100, inWords: "100"),
+        ])
+}
+
+@MainActor
 @Test("a total commitment's graph runs from zero to its greatest sum where a sum passes every target")
 func aTotalCommitmentsGraphRunsFromZeroToItsGreatestSumWhereASumPassesEveryTarget() throws {
     let places = freshRosterAndRecordPlaces()
@@ -2308,6 +2598,45 @@ func aNoteCommitmentsLookBackSaysTheNotesOfEveryEraOfItsChain() throws {
             LookBack.DatedNote(dayInWords: "2 March 2026", text: "Quiet day."),
         ])
     #expect(lookBack?.keptFromInWords == "1 March 2026")
+}
+
+@MainActor
+@Test("a note commitment's look-back says no note a gap day holds")
+func aNoteCommitmentsLookBackSaysNoNoteAGapDayHolds() throws {
+    let places = freshRosterAndRecordPlaces()
+    let everyDay: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let olderKeptFrom = CalendarDate(year: 2026, month: 3, day: 1)!
+    let olderKeptUntil = CalendarDate(year: 2026, month: 3, day: 3)!
+    let newerKeptFrom = CalendarDate(year: 2026, month: 3, day: 6)!
+    let olderJournal = Commitment(
+        name: "Journal", schedule: everyDay, keptFrom: olderKeptFrom, kind: .note)!
+    let newerJournal = Commitment(
+        era: olderJournal, schedule: everyDay, keptFrom: newerKeptFrom, kind: .note)!
+    let today = CalendarDate(year: 2026, month: 3, day: 8)!
+    let secondMarch = CalendarDate(year: 2026, month: 3, day: 2)!
+    let gapDay = CalendarDate(year: 2026, month: 3, day: 4)!
+    let seventhMarch = CalendarDate(year: 2026, month: 3, day: 7)!
+
+    let rosterStore = try RosterStore(at: places.roster)
+    try rosterStore.add(olderJournal)
+    try rosterStore.put(era: newerJournal, on: olderJournal, keptUntil: olderKeptUntil, under: nil)
+    let recordStore = try RecordStore(at: places.record)
+    try recordStore.add(Note("Ran 8k.", for: olderJournal, on: secondMarch)!)
+    try recordStore.add(Note("Rested.", for: olderJournal, on: gapDay)!)
+    try recordStore.add(Note("Swam.", for: newerJournal, on: seventhMarch)!)
+
+    let screen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: places.roster, keepingRecordAt: places.record)
+    let lookBack = screen.lookBack(at: newerJournal)
+
+    #expect(
+        lookBack?.notes == [
+            LookBack.DatedNote(dayInWords: "7 March 2026", text: "Swam."),
+            LookBack.DatedNote(dayInWords: "2 March 2026", text: "Ran 8k."),
+        ])
+    #expect(lookBack?.noteCountInWords == "2 notes")
 }
 
 @MainActor

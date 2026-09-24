@@ -217,6 +217,14 @@ record stands and the row returns if the commitment is taken up again. A commitm
 stopped on the same day is one kept on no day at all, which the roster already accepts. ADR-1023 is
 amended in place.
 
+**Amended 2026-09-23**, at the grill of `stop-and-resume-as-eras` (#306), which takes the price
+above back for the day that paid it. A stop made on a day that already holds a record of the
+commitment — a tick, a number, a note or a total's addition — is kept until that day and not the day before, so what
+was entered that morning stays drawn; a stop on a day holding nothing still leaves the screen at
+once. The day, once given, does not move: taking the record away afterwards leaves it where it is.
+And a resume no longer clears the day: it begins a new **era**, so the days between stay a **gap**
+rather than reading as kept once more.
+
 **Amended 2026-09-21**, at the G1 of the tenth grooming pass, which reopened `FEAT: commitment` (#26)
 for B-058 and B-057. **A commitment is to have an identity of its own.** Two commitments are two
 however alike their parts, one commitment stays itself through a rename or a rhythm change, and
@@ -241,6 +249,28 @@ first. The day a commitment is kept from is its earliest era's, the rhythm it ru
 newest era's, and its name and its kind reach every era alike. A **stop** and a **resume** are not
 era boundaries here; #306 is where that is decided. Written 2026-09-22, while writing the delta of
 `give-a-commitment-an-identity` (#303).
+
+**Amended 2026-09-23**, at the grill of `stop-and-resume-as-eras` (#306), which decides it. A
+**stop** ends the newest era on the day it is **kept until**, and a **resume** begins a new era
+on the day it is made — never a day picked, and on the rhythm, range and target the stopped era
+had; an interval's count begins again that day. The days between are a **gap**. An era a stop
+would leave holding no day collapses, and the older era is the one stopped; a commitment whose only
+era holds no day takes the resumed era as its first, and is kept from the day of the resume. A
+resume on the day of the stop leaves no gap, and the two eras, being alike, are one again.
+
+**Gap** — the days between the day a stopped **era** was kept until and the day the next era was
+kept from. A commitment owes nothing on them and has no row on them, and a **look-back** counts
+nothing there and draws them as it draws any day that is not due — a week wholly inside a gap is
+still said, owing nothing, as a month with no due day is. A record already standing on a gap day
+stays in the store and is shown nowhere. Pausing is a stop followed by a resume, and the gap is the
+pause. Agreed 2026-09-23 at the grill of `stop-and-resume-as-eras` (#306).
+
+**Resume** — the person's word, and the stopped row's swipe label, for **taking a stopped commitment
+up again**, which is what the specs call it; the two name one act. A resume is made on the day it is
+made and asks for nothing, and it begins a new **era** there unless no day would lie between it and
+the stop, when it undoes the stop instead. A roster offered a stopped commitment again as itself,
+with no day, does that same undo. Written 2026-09-23, while writing the delta of
+`stop-and-resume-as-eras` (#306).
 
 **Fold** — the one-time reading of a roster kept in the form before identities into commitments
 with eras, done when the app first opens it after the upgrade and never again. What chains —
@@ -483,6 +513,11 @@ is that date or later. It judges that date against a
 kept-until day and against nothing else — never against a commitment's own day it is kept from,
 never against a schedule — so the refusal on a duplicate is no longer the only one it makes, but the
 rule that it never asks what day it is, and adds nothing to a commitment's own answer, is unchanged.
+
+**Amended 2026-09-23**, while writing the delta of `stop-and-resume-as-eras` (#306). Offering a
+stopped commitment again as itself still takes it up again as though it had never been stopped. A
+**resume** from a day is the other way up again, and the one a person reaches: it puts a new era on
+from that day, and the days since the stop are a **gap**.
 
 The order is **the order they were taken on** and nothing the system worked out: not alphabetical,
 which would be a rule about the owner's own words, and not by the day each is kept from, since day
@@ -1809,6 +1844,17 @@ the app a month's name is short, three letters where everything else says the mo
 two dates on one line is what the room buys. What a week *is* has not moved: Monday through Sunday,
 whatever the phone's calendar setting says.
 
+**Part week** — a **week** a **weekly quota** holds on only some of its days: the week it is kept
+from, the week it was kept until, a week a **gap** begins or ends in, and a week its rhythm changes
+in. A part week owes the quota in proportion to the days held — the quota times those days, over
+seven, rounded to the nearest whole number, which never falls on a half — and a week two quota eras
+share owes each era's part of its own quota, summed and rounded once. The days held are the days the
+commitment is kept on, those still to come included, so the week in progress is not a part week for
+being in progress. A part week that rounds to nothing is still said, owing nothing. The **look-back**
+and a row's **standing** owe the same number, and both count the kept days of the week that a weekly
+quota era holds, whichever of them it is; a day another kind of era holds counts in that era's unit. Agreed 2026-09-23 at the grill of `stop-and-resume-as-eras` (#306), replacing the rule
+that a part week owed the whole quota.
+
 **Standing** — how many days of its **week** a commitment has been kept, counted through a date.
 The **history** answers it for every commitment whatever its schedule, and consults none; it is a
 **weekly quota**'s **row** that shows it, where "1/3x a week" is a standing of one against a quota
@@ -1820,6 +1866,12 @@ its **rhythm in words**, on the day screen only — the commitments screen goes 
 and a met quota's row stays, says so, and still offers a tick. Agreed 2026-09-14 at the eighth
 grooming pass, for B-025: the owner chose the kept count over what the week still asks, told which
 side of *nothing congratulates you* it sits on.
+
+**Amended 2026-09-23**, while writing the delta of `stop-and-resume-as-eras` (#306). A quota row's
+standing counts the days of its week, through its date, that one of the commitment's weekly-quota
+**eras** holds and a record keeps — a day kept before a stop in that week included, a **gap** day never
+— and says it against what the week owes, "1/2x a week" in a **part week**. The history's own
+standing is unchanged; the row no longer reads it.
 
 **Rhythm** — a person's word for the schedule a commitment runs on, and the shape a **commitments
 screen** offers them to build one from: one of the four schedule shapes carrying nothing the
@@ -1921,6 +1973,12 @@ beside a quota's weeks, with the line where the rhythm changed between them; a w
 share is said once and judged by the newer, since two quotas do not sum. And the **whole** sums
 every line the page says, a month's due days and a week's quota alike, so a chain holding a quota
 says one again.
+
+**Amended 2026-09-23**, at the grill of `stop-and-resume-as-eras` (#306). Two sentences above no
+longer hold. A part week no longer owes the whole quota, and a week two quota eras share is no
+longer judged by the newer: each is a **part week** and owes that entry's number. A chain's eras
+can now have a **gap** between them, which the page counts nothing in and draws as it draws days
+that are not due, its weeks and months said unbroken through it.
 
 **Amended 2026-09-17**, at the grill of `look-back-at-a-number` (#274), which answers what a
 number's page draws. It draws a **graph** and no fraction of any kind: no line, no whole and no

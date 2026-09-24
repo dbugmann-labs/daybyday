@@ -3,6 +3,10 @@
 - Status: accepted
 - Date: 2026-09-14
 - Deciders: Diego Bugmann
+- Amended: 2026-09-23 — `stop-and-resume-as-eras` (#306): a quota row's standing now counts only the
+  days of its week a weekly-quota era of the commitment holds, a day kept before a stop in that week
+  included, and the row says it against what the week owes (ADR-1061). The history still answers
+  whether each day is kept; its own standing answer is untouched and no row reads it.
 - Amended: 2026-09-14 — `say-standing-in-quota-row` (#236) put the pairing of count and quota into
   words in `schedule`, said given a count, rather than in the day screen, which reads those words
   onto a quota's row. Two sentences below are changed in place; the decision is untouched.
@@ -38,6 +42,11 @@ records held for a commitment, so the capability that holds them is the one that
 answered for every commitment, whatever its schedule, and it consults no schedule to answer. It is
 the count of kept days and is never capped at the number a quota asks for. It is asked *of a date*
 and counts that date's week through it, inclusive, by date and never by when a record was entered.
+
+A quota **row** counts over its commitment's eras rather than asking this answer: it counts the days
+of the week, through its date, that a weekly-quota era holds and the history answers kept against
+that era — amended 2026-09-23, because a tick made before a stop in the week a commitment was taken
+up again belongs to the week the row says, and the look-back already counted it.
 
 The answer is the count alone — one integer. Pairing it with the quota into words a person reads is
 `schedule`'s, which says a weekly quota given a count, and a day-screen row on a weekly quota is

@@ -1146,8 +1146,13 @@ public final class CommitmentsScreen {
     /// holds — `design.md` § *The day before*, settled answer 3: the day the screen was handed
     /// answers with nothing afterwards, and only the day before it still does. Falls back to the
     /// day this screen holds itself where the calendar has no day before it (1 January 1583),
-    /// rather than refusing something a person has no remedy for. Answers `nil` and does nothing
-    /// when nothing is awaiting confirmation.
+    /// rather than refusing something a person has no remedy for. Where the record this screen
+    /// reads holds any record of the commitment — a tick, a number, a note or an addition, an
+    /// addition short of its target included — on the day this screen was handed, stops it as of
+    /// that day itself instead: something was done that day, and the stop must not undo it.
+    /// `design.md` § *The stop day's record is any record the history holds*. A screen whose
+    /// record cannot be read stops as of the day before, as it ships — nothing is known to keep.
+    /// Answers `nil` and does nothing when nothing is awaiting confirmation.
     @discardableResult public func confirmStopKeeping() -> Refusal? {
         guard let commitment = awaitingConfirmation else {
             return nil
@@ -1159,8 +1164,12 @@ public final class CommitmentsScreen {
             return .notKept
         }
 
+        let holdsRecordOnDayHanded =
+            recordStore?.history.datesRecorded(for: commitment).contains(dayToKeepFrom) ?? false
+        let keptUntil = holdsRecordOnDayHanded ? dayToKeepFrom : Self.dayBefore(dayToKeepFrom)
+
         do {
-            try rosterStore.retire(commitment, keptUntil: Self.dayBefore(dayToKeepFrom))
+            try rosterStore.retire(commitment, keptUntil: keptUntil)
         } catch {
             refusedChange = .stopping(commitment, .notKept)
             return .notKept
@@ -1247,8 +1256,11 @@ public final class CommitmentsScreen {
         return nil
     }
 
-    /// Takes `commitment` up again, in the place it has. Answers `nil` and does
-    /// nothing when `stopped` does not hold it.
+    /// Takes `commitment` up again from the day this screen was handed, as *A roster takes a
+    /// commitment it has stopped up again from a day, as a new era* says — a new era on it where
+    /// that day leaves a gap after the stopped era's own day kept until, or the same one era it
+    /// always was where it does not. `design.md` § *A resume is a dated take-up-again, and `add`
+    /// stays the undo*. Answers `nil` and does nothing when `stopped` does not hold it.
     @discardableResult public func keepAgain(_ commitment: Commitment) -> Refusal? {
         guard stopped.contains(commitment) else {
             return nil
@@ -1260,7 +1272,7 @@ public final class CommitmentsScreen {
         }
 
         do {
-            guard try rosterStore.add(commitment) else {
+            guard try rosterStore.keepAgain(commitment, from: dayToKeepFrom) else {
                 let refusal = Refusal.nameAlreadyInUse(Self.nameAlreadyHeld(commitment.name, among: kept))
                 stoppedRefusal = SheetRefusal(field: nil, refusal: refusal)
                 refusedChange = .keepingAgain(commitment, refusal)

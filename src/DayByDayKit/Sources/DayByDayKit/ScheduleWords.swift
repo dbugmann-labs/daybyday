@@ -1,7 +1,7 @@
 /// The package's own fixed English for a schedule's rhythm in words — the same shape
-/// `DayTitle.swift` holds for a day title. Nothing here is public: `Schedule.inWords` and
-/// `Schedule.inWords(given:)` are the only callers, and neither exposes this table.
-/// See `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
+/// `DayTitle.swift` holds for a day title. Nothing here is public: `Schedule.inWords`,
+/// `Schedule.inWords(given:)` and `Schedule.inWords(given:owing:)` are the only callers, and none
+/// of them exposes this table. See `docs/adr/1034-a-schedule-says-its-rhythm-in-words.md`.
 enum ScheduleWords {
     /// Monday through Sunday, paired with the three-letter name said for each — the one
     /// Monday-first list this display rule needs, since `Weekday` carries no order of its own
@@ -61,5 +61,14 @@ enum ScheduleWords {
     /// to the quota, never clamped to a week.
     static func weeklyQuota(_ timesPerWeek: Int, given count: Int) -> String {
         "\(count)/\(weeklyQuota(timesPerWeek))"
+    }
+
+    /// A weekly quota said given a count and what its week owes — the count in digits, a slash
+    /// with no space on either side, and then what the week owes in place of the quota's own
+    /// number of times a week. Both numbers are said exactly as given and judged against
+    /// nothing. `openspec/changes/stop-and-resume-as-eras/specs/schedule/spec.md` § *A weekly
+    /// quota said given what its week owes says that number in place of its own times a week*.
+    static func weeklyQuota(given count: Int, owing owed: Int) -> String {
+        "\(count)/\(owed)x a week"
     }
 }

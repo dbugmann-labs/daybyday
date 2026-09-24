@@ -103,6 +103,16 @@ func aWeeklyQuotaSaidGivenACountNoWeekCanHoldSaysTheCountAsGiven() {
     #expect(threeAWeek.inWords(given: -1) == "-1/3x a week")
 }
 
+@Test("a weekly quota said given a count and what its week owes says that number in place of its own")
+func aWeeklyQuotaSaidGivenACountAndWhatItsWeekOwesSaysThatNumberInPlaceOfItsOwn() {
+    let threeAWeek = Schedule.weeklyQuota(WeeklyQuota(timesPerWeek: 3)!)
+    let weekdaySchedule = Schedule.weekdays([.monday, .wednesday, .saturday])
+
+    #expect(threeAWeek.inWords(given: 1, owing: 2) == "1/2x a week")
+    #expect(threeAWeek.inWords(given: 0, owing: 0) == "0/0x a week")
+    #expect(weekdaySchedule.inWords(given: 1, owing: 2) == "Mon, Wed, Sat")
+}
+
 @Test("a schedule that is not a weekly quota said given a count says its plain words")
 func aScheduleThatIsNotAWeeklyQuotaSaidGivenACountSaysItsPlainWords() {
     let start = CalendarDate(year: 2026, month: 8, day: 31)!

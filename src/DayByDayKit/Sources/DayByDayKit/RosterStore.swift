@@ -192,6 +192,22 @@ public final class RosterStore {
         return true
     }
 
+    /// Kept at `place` before this returns. Answers what `Roster.keepAgain(_:from:)` answers —
+    /// `false`, without throwing and without writing, when the roster does not hold `commitment`
+    /// at all, is currently keeping it, or has deleted it, or when its name is already held by
+    /// another commitment this roster keeps or has stopped keeping. `design.md` § *The seam*.
+    @discardableResult
+    public func keepAgain(_ commitment: Commitment, from date: CalendarDate) throws -> Bool {
+        var nextRoster = roster
+        guard nextRoster.keepAgain(commitment, from: date) else {
+            return false
+        }
+        try write(nextRoster)
+
+        roster = nextRoster
+        return true
+    }
+
     /// Kept at `place` before this returns. Answers what `Roster.delete` answers — `false`,
     /// without throwing and without writing, when the roster does not hold `commitment` — one it
     /// does not hold at all, one already deleted included.

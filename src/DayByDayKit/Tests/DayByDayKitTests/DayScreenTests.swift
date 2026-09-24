@@ -1615,6 +1615,63 @@ func aDayScreenDrawsACommitmentOnTheDayItWasKeptUntilAndNotOnTheDayAfterIt() thr
 }
 
 @MainActor
+@Test("a weekly-quota row counts a day kept before a stop in the week it was taken up again")
+func aWeeklyQuotaRowCountsADayKeptBeforeAStopInTheWeekItWasTakenUpAgain() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let reading = Commitment(
+        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(reading)
+    let recordStore = try RecordStore(at: place)
+    try recordStore.add(Tick(reading, on: monday)!)
+    try rosterStore.retire(reading, keptUntil: monday)
+    try rosterStore.keepAgain(reading, from: thursday)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: thursday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: freshOneOffPlace())
+
+    #expect(screen.dayView.rows.map(\.name) == ["Reading"])
+    #expect(screen.dayView.rows[0].rhythmInWords == "1/2x a week")
+}
+
+@MainActor
+@Test("a day screen draws no row for a commitment on a day of a gap")
+func aDayScreenDrawsNoRowForACommitmentOnADayOfAGap() throws {
+    let (place, rosterPlace) = freshPlaces()
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let sundayBeforeStop = CalendarDate(year: 2026, month: 8, day: 23)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let rosterStore = try RosterStore(at: rosterPlace)
+    try rosterStore.add(journaling)
+    try rosterStore.retire(journaling, keptUntil: sundayBeforeStop)
+    try rosterStore.keepAgain(journaling, from: monday)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: monday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: freshOneOffPlace())
+
+    #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
+
+    screen.showPreviousDay()
+
+    #expect(screen.dayView.rows.isEmpty)
+
+    screen.showDay(sundayBeforeStop)
+
+    #expect(screen.dayView.rows.map(\.name) == ["Journaling"])
+}
+
+@MainActor
 @Test("moving a day screen does not read its roster again")
 func movingADayScreenDoesNotReadItsRosterAgain() throws {
     let (place, rosterPlace) = freshPlaces()
