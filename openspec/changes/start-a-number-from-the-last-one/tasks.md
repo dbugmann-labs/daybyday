@@ -37,15 +37,15 @@ make it pass, then the next.
 
 ## 5. The carried scenarios
 
-- [ ] 5.1 Every scenario the two MODIFIED requirements carry passes with its test unedited, and so does every other carried test — the row-equality ones in `DayScreenTests.swift` and `DayViewTests.swift` included (`design.md` § Context)
+- [x] 5.1 Every scenario the two MODIFIED requirements carry passes with its test unedited, and so does every other carried test — the row-equality ones in `DayScreenTests.swift` and `DayViewTests.swift` included (`design.md` § Context)
 
 ## 6. The shell (ADR-1019: this Story's immediate consumer, no rule the kit does not state)
 
-- [ ] 6.1 A typed row's tap opens its alert holding `entry.number`, or else `entry.startingNumber`, as the text it writes for a held number, with the hint still its placeholder; Save and Cancel unchanged, chosen rows untouched, and the app target builds
+- [x] 6.1 A typed row's tap opens its alert holding `entry.number`, or else `entry.startingNumber`, as the text it writes for a held number, with the hint still its placeholder; Save and Cancel unchanged, chosen rows untouched, and the app target builds
 
 ## 7. The records
 
-- [ ] 7.1 Confirm `CONTEXT.md` § *Starting number* and its amendment still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
+- [x] 7.1 Confirm `CONTEXT.md` § *Starting number* and its amendment still describe what shipped; a sentence that turns out wrong is a **stop and a G4 question**, never an edit slipped in
 
 ## 8. The gates
 

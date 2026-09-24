@@ -1076,7 +1076,8 @@ struct ContentView: View {
                 if let entry, entry.values != nil {
                     choosingRow = row
                 } else if let entry {
-                    enteringText = entry.number.map { "\($0)" } ?? ""
+                    enteringText =
+                        (entry.number ?? entry.startingNumber).map { "\($0)" } ?? ""
                     enteringRow = row
                 } else if let noteEntry {
                     enteringNoteText = noteEntry.note ?? ""
