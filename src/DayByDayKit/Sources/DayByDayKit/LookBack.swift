@@ -74,8 +74,9 @@ public struct LookBack: Hashable, Sendable {
     /// was kept until for every era behind the one this look-back was asked about, and for that
     /// one itself where it is stopped; `nil` where it is not, so it holds every day from its own
     /// day kept from on, days after today included — `openspec/changes/
-    /// stop-and-resume-as-eras/design.md` § *A week a weekly quota era holds owes its quota in
-    /// proportion to the days held*. `openspec/changes/give-a-commitment-an-identity/design.md`
+    /// stop-and-resume-as-eras/specs/look-back/spec.md` § *A week a weekly quota era holds owes
+    /// its quota in proportion to the days held*.
+    /// `openspec/changes/give-a-commitment-an-identity/design.md`
     /// § *A look-back reads a commitment's eras off the roster by its identity*. The same shape
     /// `WeekQuota.Link` already is — this is that type under the name a look-back's own chain
     /// reads by, rather than a second struct alike it.
@@ -253,10 +254,11 @@ public struct LookBack: Hashable, Sendable {
     /// `design.md` § *Risks / Trade-offs*: opened deliberately, once, on a phone, not on the
     /// daily path. Buckets each day into the calendar month or the calendar week it falls in,
     /// according to whether the era holding it — or, for a day of a gap, the era immediately
-    /// before it — runs on a weekly quota, `openspec/changes/stop-and-resume-as-eras/design.md`
-    /// § *A look-back counts nothing in a gap, and says its lines unbroken through it* — a month
-    /// or a week that holds only such days still says a line, "nothing out of nothing", rather
-    /// than being left out. Returns every line this look-back says, newest first, together with
+    /// before it — runs on a weekly quota, `openspec/changes/
+    /// stop-and-resume-as-eras/specs/look-back/spec.md` § *A look-back counts nothing in a gap,
+    /// and says its lines unbroken through it* — a month or a week that holds only such days
+    /// still says a line, "nothing out of nothing", rather than being left out. Returns every
+    /// line this look-back says, newest first, together with
     /// the whole's numerator and denominator — the sum of every line's own, month due days and
     /// week owed days alike, `openspec/changes/look-back-at-a-quota/specs/look-back/spec.md` § *A
     /// look-back says one whole across everything since the day the commitment is kept from*.

@@ -297,7 +297,7 @@ public struct Roster: Hashable, Sendable {
     /// keeps or has stopped keeping — `nameIsHeldByAnother(_:notIdentity:)` — refusing on no date.
     /// `openspec/changes/stop-and-resume-as-eras/design.md` § *A resume is a dated
     /// take-up-again, and `add` stays the undo* and § *A resumed era is kept from the later of the
-    /// resume day and the stopped era's day kept from*.
+    /// resume day and the stopped era's day*.
     @discardableResult
     public mutating func keepAgain(_ commitment: Commitment, from date: CalendarDate) -> Bool {
         guard let index = entries.firstIndex(where: { $0.commitment.identity == commitment.identity }),
