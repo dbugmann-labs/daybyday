@@ -46,7 +46,7 @@ take the next unticked scenario box, write the one test named for it, watch it f
 
 ## 8. The records
 
-- [ ] 8.1 The conductor removes the entry "The one-off store's 'kept before the store reports it kept' test does not keep the first store open" from `docs/open-questions.md` on this branch, and ticks this box on that commit — not the implementer's file
+- [x] 8.1 The conductor removes the entry "The one-off store's 'kept before the store reports it kept' test does not keep the first store open" from `docs/open-questions.md` on this branch, and ticks this box on that commit — not the implementer's file
 - [ ] 8.2 Confirm `CONTEXT.md` § *One-off* still describes what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
 - [ ] 8.3 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 

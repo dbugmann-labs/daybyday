@@ -202,13 +202,6 @@ Things that are built, or deliberately not built, in a state someone will trip o
   `simctl` grant. The cause is undiagnosed. Until it is found, a Story whose walk needs the calendar
   on is walked on the phone. Found at #328's walk, 2026-09-24; the owner walked W.1–W.5 on the phone
   and approved at G7 without simulator pictures.
-- **The one-off store's "kept before the store reports it kept" test does not keep the first store
-  open.** The scenario opens a second store at the same place *with the first still open*, but the
-  test's first store is last used before the second opens, so an optimised build may release it
-  first; nothing like `withExtendedLifetime` holds it. Harmless today because `OneOffStore` has no
-  `deinit`, and a later version that wrote in `deinit` could pass the test while breaking the rule.
-  Found at #326's G7, 2026-09-24, as the twin of a gap fixed in `BirthdayStoreTests`; outside that
-  Story's diff, so owed by a chore or the next Story that touches the one-off store's tests.
 - **A deletion's put-back is not checked.** When the roster refuses a deletion, the commitments
   screen puts the erased record back with `try?` and ignores a failure
   (`CommitmentsScreen.confirmDeleting`). If the put-back also fails, the commitment stays listed
