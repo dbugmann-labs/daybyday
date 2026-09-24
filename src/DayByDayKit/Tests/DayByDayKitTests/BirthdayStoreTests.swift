@@ -12,6 +12,14 @@ private func freshPlace() -> URL {
         .appendingPathComponent("birthdayTicks.json")
 }
 
+/// The file system's own identifier for whatever is at `place` right now. An atomic rewrite
+/// swaps in a new file even when its bytes are identical to what was there, so this changes on a
+/// rewrite where a byte comparison alone would not catch one.
+private func inode(at place: URL) throws -> UInt64 {
+    let attributes = try FileManager.default.attributesOfItem(atPath: place.path)
+    return (attributes[.systemFileNumber] as! NSNumber).uint64Value
+}
+
 @Test("a birthday store opened where nothing has been kept holds no ticks")
 func aBirthdayStoreOpenedWhereNothingHasBeenKeptHoldsNoTicks() throws {
     let place = freshPlace()
@@ -64,6 +72,8 @@ func aBirthdayTickIsKeptBeforeTheStoreReportsItKept() throws {
     let second = try BirthdayStore(at: place)
 
     #expect(second.ticks.isTicked(kate))
+
+    withExtendedLifetime(first) {}
 }
 
 @Test("a birthday tick that cannot be kept is refused and not held")
@@ -100,16 +110,19 @@ func aChangeTheBirthdayTicksRefuseLeavesThePlaceUntouched() throws {
     let store = try BirthdayStore(at: place)
     try store.tick(kate)
     let contentAfterFirst = try Data(contentsOf: place)
+    let inodeAfterFirst = try inode(at: place)
 
     let tickedAgain = try store.tick(kate)
 
     #expect(!tickedAgain)
     #expect(try Data(contentsOf: place) == contentAfterFirst)
+    #expect(try inode(at: place) == inodeAfterFirst)
 
     let takenBackNeverTicked = try store.takeBack(john)
 
     #expect(!takenBackNeverTicked)
     #expect(try Data(contentsOf: place) == contentAfterFirst)
+    #expect(try inode(at: place) == inodeAfterFirst)
 }
 
 @Test("birthday stores at different places are independent")

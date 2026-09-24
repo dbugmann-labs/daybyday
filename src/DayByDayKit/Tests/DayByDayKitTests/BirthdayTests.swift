@@ -85,7 +85,7 @@ func aDayOnWhichNoBirthdayHandedFallsHoldsNoBirthdays() {
 @Test("a birthday ticked is ticked, and no other birthday is")
 func aBirthdayTickedIsTickedAndNoOtherBirthdayIs() {
     let september25 = CalendarDate(year: 2026, month: 9, day: 25)!
-    let september27 = CalendarDate(year: 2027, month: 9, day: 25)!
+    let september25NextYear = CalendarDate(year: 2027, month: 9, day: 25)!
     let kate = Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: september25)!
 
     var ticks = BirthdayTicks()
@@ -99,7 +99,7 @@ func aBirthdayTickedIsTickedAndNoOtherBirthdayIs() {
     #expect(!ticks.isTicked(john))
 
     let kateNextYear = Birthday(
-        contact: "kate", words: "Kate Bell's 49th Birthday", day: september27)!
+        contact: "kate", words: "Kate Bell's 49th Birthday", day: september25NextYear)!
     #expect(!ticks.isTicked(kateNextYear))
 }
 
@@ -164,10 +164,10 @@ func aTickTakenBackLeavesTheBirthdayNotTicked() {
 @Test("taking back the tick of a birthday that is not ticked is refused")
 func takingBackTheTickOfABirthdayThatIsNotTickedIsRefused() {
     let september25 = CalendarDate(year: 2026, month: 9, day: 25)!
-    let september26 = CalendarDate(year: 2027, month: 9, day: 25)!
+    let september25NextYear = CalendarDate(year: 2027, month: 9, day: 25)!
     let kate = Birthday(contact: "kate", words: "Kate Bell's 48th Birthday", day: september25)!
     let kateNextYear = Birthday(
-        contact: "kate", words: "Kate Bell's 49th Birthday", day: september26)!
+        contact: "kate", words: "Kate Bell's 49th Birthday", day: september25NextYear)!
 
     var empty = BirthdayTicks()
     let takenBack = empty.takeBack(kate)
