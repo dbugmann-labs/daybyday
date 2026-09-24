@@ -2083,7 +2083,7 @@ what the screen is telling SHALL be left as it was.
 
 A row SHALL be its commitment, its day view's date, whether that day is kept and, for a number, a
 note or a total, what that day holds, and, only where its commitment is on a weekly quota, its
-standing on that date. Two rows SHALL be the same row when all of these agree, and SHALL be
+standing on that date and what its week owes. Two rows SHALL be the same row when all of these agree, and SHALL be
 different when any one differs.
 
 Two rows of one commitment on one date SHALL therefore be different rows where their days hold
@@ -2205,18 +2205,28 @@ rather than nothing at all.
 - **THEN** both rows say "Mon, Wed, Sat", saying the commitment is not kept
 - **AND** the two rows are the same row
 
+#### Scenario: two weekly-quota rows alike but for what their week owes are different rows
+
+- **WHEN** two day views are formed on Wednesday 2 September 2026, each from a history that has
+  taken no tick, the first of a commitment named "Reading" on a weekly quota of 3 times a week, kept
+  from 1 January 2026, and the second of an era of that same commitment on that same quota, kept
+  from Wednesday 2 September 2026
+- **THEN** the first row says "0/3x a week" and the second says "0/2x a week"
+- **AND** the two rows are different rows
+
 ### Requirement: A row gives back what a screen draws and what a tap makes
 
 A row SHALL be reachable only through the day view holding it, and SHALL give back four things: its
 commitment's name, its rhythm in words, whether it is kept, and what it offers — a tick or the entry
-its commitment's kind takes. It MUST NOT give back the commitment, its schedule, the day it is kept from, the
-date, the number, the note, the sum or its standing; the number, the note and the sum SHALL be given
-out only inside the entry a row offers.
+its commitment's kind takes. It MUST NOT give back the commitment, its schedule, the day it is kept
+from, the date or its standing, and SHALL give out the number, the note and the sum only inside the
+entry it offers.
 
-The words SHALL be `schedule`'s for the commitment's schedule, said given the row's standing on a
-weekly quota and plainly otherwise, and composed by no other capability. The standing SHALL be
-`record`'s answer through the row's date, whatever the kind and whether or not that date has
-arrived. Every row SHALL say its rhythm, always, kept or not and whatever it offers.
+The words SHALL be `schedule`'s for the commitment's schedule, said given the row's standing and
+what its week owes on a weekly quota and plainly otherwise, and composed by no other capability.
+Both SHALL be counted as `look-back` counts a week, the standing through the row's date, whatever the
+kind and whether or not it has arrived. Every row SHALL say its rhythm, kept or not and whatever it
+offers.
 
 #### Scenario: a row says the rhythm its commitment runs on in words
 
@@ -2298,6 +2308,24 @@ arrived. Every row SHALL say its rhythm, always, kept or not and whatever it off
   seven weekdays, both kept from 1 January 2026, from a history holding ticks for both on Monday
   31 August and Wednesday 2 September 2026
 - **THEN** the first row says "Mon, Wed, Sat" and the second says "Every day"
+
+#### Scenario: a weekly-quota row in a part week says what its week owes
+
+- **WHEN** a day view is formed on Wednesday 2 September 2026 of a commitment named "Reading" on a
+  weekly quota of 3 times a week, kept from that day, and one on Saturday 5 September 2026 of a
+  commitment named "Stretch" on a weekly quota of 1 time a week, kept from that day, each from a
+  history that has taken no tick
+- **THEN** the row of "Reading" says "0/2x a week"
+- **AND** the row of "Stretch" says "0/0x a week"
+
+#### Scenario: a weekly-quota row counts a day kept before a stop in the week it was taken up again
+
+- **WHEN** a commitment named "Reading" on a weekly quota of 3 times a week, kept from 1 January
+  2026, is taken on at a roster place; a tick for it on Monday 31 August 2026 is kept at a record
+  place; "Reading" is stopped at that roster place as of Monday 31 August 2026 and taken up again
+  there from Thursday 3 September 2026; and a day screen of no commitments at all is opened at those
+  places as of Thursday 3 September 2026
+- **THEN** its day view holds one row, named "Reading", saying "1/2x a week"
 
 ### Requirement: A day screen's reach bounds its day picker and is read again whenever its roster is
 
@@ -5160,7 +5188,8 @@ roster again for the day then shown: when the screen is opened, moved, sent back
 again or returned to, and when a tick is made. The roster asked SHALL be the one read when the app
 was last shown or the screen last returned to, whichever happened later, with any change kept since;
 asking MUST NOT open the place. A commitment the roster stopped SHALL have a row up to and including
-the day it was kept until, and none after. A commitment the roster has deleted SHALL have a row on no day,
+the day it was kept until, and none after. A commitment taken up again after a gap SHALL have no row
+on a day of the gap, and SHALL have its rows again from the day its new era is kept from. A commitment the roster has deleted SHALL have a row on no day,
 the days it was ticked on included. A group with nothing due
 produces no group, as *A day view is a value and nothing else* states.
 
@@ -5246,6 +5275,17 @@ produces no group, as *A day view is a value and nothing else* states.
   places as of Monday 31 August 2026 and moved to the day before
 - **THEN** its day view holds one row, named "Gym", saying the commitment is not kept
 - **AND** moved back to Monday 31 August 2026 its day view holds one row, named "Gym"
+
+#### Scenario: a day screen draws no row for a commitment on a day of a gap
+
+- **WHEN** a commitment named "Journaling" on a schedule listing all seven weekdays, kept from
+  1 January 2026, is taken on at a roster place, stopped there as of Sunday 23 August 2026 and taken
+  up again there from Monday 31 August 2026; and a day screen of no commitments at all is opened at
+  that roster place as of Monday 31 August 2026, at a record place where nothing has been kept, and
+  moved to the day before
+- **THEN** the day view it held when it was opened holds one row, named "Journaling"
+- **AND** after the move its day view holds no rows
+- **AND** Sunday 23 August 2026, picked on its day picker, holds one row, named "Journaling"
 
 ### Requirement: A day screen says the day its day picker opens on and the earliest day it reaches, from what its roster still holds
 
