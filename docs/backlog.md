@@ -173,6 +173,40 @@ it as a gap rather than saying it unprompted.*
 - **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
+### B-059 — see the birthdays my calendar already knows, and tick them off
+
+*Captured 2026-09-24. Two bullets of one braindump, one entry: neither half is worth having alone.*
+
+> "I want to see Birthday Reminders, that can be ticked off"
+
+> "These reminders should come from my calendar (synced from [my Outlook account] -> Birthday
+> calendar)"
+
+- **Trigger** — the morning of someone's birthday, so the call or the message happens that day
+  rather than being noticed the day after.
+- **Touches** — `one-off` for the shape, and probably nothing that exists for the source. A
+  birthday on the day is a name and a date ticked on the day screen, which is what a one-off is
+  (#239) — but it comes round every year, where a one-off carries "no rhythm", and it comes from
+  outside the app, which nothing here does yet. Either a new kind of row or an unclaimed
+  capability; `EPIC: One-offs` (#238) is the nearest parent.
+- **Principle** — tested against *restore, not sync*: **passes on the letter and strains on the
+  spirit.** Reading a calendar is not two devices kept in step, and the app would never write back.
+  But every store here today is the app's own, and a tick against a birthday the calendar can
+  rename, move or delete is a record pointing at something the app does not hold — the one place a
+  kept record could lose what it was kept against.
+- **Open** — which calendar is it on the phone? An Outlook.com account's *Birthday calendar* reaches
+  iOS Calendar through the account, and iOS also keeps a *Birthdays* calendar of its own, drawn from
+  Contacts. Whether the Outlook one is readable through EventKit at all is a fact for the grill, not
+  a question for the owner.
+- **Open** — what does a tick keep? This year's birthday for that person, so next year's comes back
+  unticked — and does a birthday nobody ticked follow you forward like a one-off does, or is it
+  gone at midnight? A birthday a day late is a different thing from a chore a day late.
+- **Open** — is "reminder" a row or a notification? Read as a row on the day screen, this is a new
+  source of rows; read as something that fires, it is B-039's question about whether this app may
+  nag, asked for one kind of day.
+- **Open** — does the calendar ask permission once, and what does the day screen show while it is
+  refused? Nothing the app does today needs a permission to read something that is not its own.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
