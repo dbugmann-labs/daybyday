@@ -40,7 +40,8 @@ public final class BirthdaySwitch {
     private let askForAccess: @MainActor () async -> Void
 
     /// Whether birthdays are on: kept on at `statePlace` and, as of the last reading taken at
-    /// `init`, `shown()` or after an ask, the phone gives full calendar access.
+    /// `init`, `shown()`, `turnOn()`'s own fresh reading when access is already full, or after an
+    /// ask, the phone gives full calendar access.
     public private(set) var isOn: Bool
 
     /// Whether the phone's calendar access, as last read, falls short of full — write-only,
@@ -64,11 +65,11 @@ public final class BirthdaySwitch {
         applyReading(access(), keptOn: Self.readStoredOnFlag(at: place) ?? false)
     }
 
-    /// Turns birthdays on: already on, this asks the phone nothing and changes nothing. Where
-    /// the last reading already gives full access, this is on and kept on without asking.
-    /// Otherwise this asks the phone for full access exactly once and reads again — on and kept
-    /// on only where that reading is full; off and kept off otherwise. `design.md` § *On is a
-    /// reading, not a memory*.
+    /// Turns birthdays on: already on, this asks the phone nothing and changes nothing.
+    /// Otherwise this takes a fresh reading; already full, this is on and kept on without asking.
+    /// Anything less, this asks the phone for full access exactly once and reads again — on and
+    /// kept on only where that second reading is full; off and kept off otherwise. `design.md`
+    /// § *On is a reading, not a memory*.
     public func turnOn() async {
         guard !isOn else {
             return
@@ -108,9 +109,9 @@ public final class BirthdaySwitch {
     /// full, so a switch kept on is turned off and kept off at its place the moment a reading
     /// says access has fallen short, per the requirement "Birthdays are on only while the phone
     /// gives full calendar access" in this delta's `spec.md`. Called by `init` (`keptOn` read off
-    /// `statePlace`), `shown()`
-    /// (`keptOn` the switch's own current `isOn`) and after an ask in `turnOn()` (`keptOn` always
-    /// `true`, since only a switch being turned on reaches there).
+    /// `statePlace`), `shown()` (`keptOn` the switch's own current `isOn`), `turnOn()`'s
+    /// already-full branch (`keptOn` always `true`, reading but never asking), and after an ask
+    /// in `turnOn()` (`keptOn` always `true`, since only a switch being turned on reaches there).
     private func applyReading(_ access: CalendarAccess, keptOn: Bool) {
         isRefused = access == .writeOnly || access == .denied || access == .restricted
         let full = access == .full

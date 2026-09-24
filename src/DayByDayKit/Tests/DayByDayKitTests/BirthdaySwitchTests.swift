@@ -200,15 +200,12 @@ func birthdaysTurnedOnAndRefusedAtThePromptTurnThemselvesBackOff() async {
 @Test("birthdays turned on where the phone already gives full access are on without asking")
 func birthdaysTurnedOnWhereThePhoneAlreadyGivesFullAccessAreOnWithoutAsking() async throws {
     let place = freshSwitchPlace()
-    let phone = FakePhone(access: .restricted)
+    let phone = FakePhone(access: .full)
     let switchUnderTest = birthdaySwitch(at: place, asking: phone)
-    #expect(switchUnderTest.isRefused == true)
 
-    phone.access = .full
     await switchUnderTest.turnOn()
 
     #expect(switchUnderTest.isOn == true)
-    #expect(switchUnderTest.isRefused == false)
     #expect(phone.asks == 0)
 
     let bytesAfterFirst = try Data(contentsOf: place)
@@ -218,6 +215,20 @@ func birthdaysTurnedOnWhereThePhoneAlreadyGivesFullAccessAreOnWithoutAsking() as
     #expect(switchUnderTest.isOn == true)
     #expect(phone.asks == 0)
     #expect(try Data(contentsOf: place) == bytesAfterFirst)
+
+    // Regression, G7 finding 1: opened while restricted (isRefused true), access becomes full
+    // without a visit — turnOn()'s already-full branch must refresh isRefused from that reading
+    // too, not just isOn.
+    let regressionPlace = freshSwitchPlace()
+    let regressionPhone = FakePhone(access: .restricted)
+    let regressionSwitch = birthdaySwitch(at: regressionPlace, asking: regressionPhone)
+    #expect(regressionSwitch.isRefused == true)
+
+    regressionPhone.access = .full
+    await regressionSwitch.turnOn()
+
+    #expect(regressionSwitch.isOn == true)
+    #expect(regressionSwitch.isRefused == false)
 }
 
 @MainActor
