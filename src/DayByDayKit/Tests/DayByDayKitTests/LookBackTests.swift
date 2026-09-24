@@ -997,6 +997,24 @@ func aLookBackCountsTheWeekInProgressAgainstTheWholeQuota() throws {
     let lookBack = screen.lookBack(at: gym)
 
     #expect(lookBack?.lines.first == .week(inWords: "9–15 Mar 2026", fraction: "1/3"))
+
+    // A tick on a day of the week in progress that is still to come — after `today`, within the
+    // same week — does not count: the walk itself never reads past `today`, so the week still
+    // owes "0/3", not "1/3", `WeekQuota.standing(monday:links:history:keptThrough:)`'s own
+    // `keptThrough` and not the default that counts every day of the week regardless.
+    let laterPlaces = freshRosterAndRecordPlaces()
+    let laterTick = CalendarDate(year: 2026, month: 3, day: 13)!
+
+    let laterRosterStore = try RosterStore(at: laterPlaces.roster)
+    try laterRosterStore.add(gym)
+    let laterRecordStore = try RecordStore(at: laterPlaces.record)
+    try laterRecordStore.add(Tick(gym, on: laterTick)!)
+
+    let laterScreen = CommitmentsScreen(
+        asOf: today, keepingRosterAt: laterPlaces.roster, keepingRecordAt: laterPlaces.record)
+    let laterLookBack = laterScreen.lookBack(at: gym)
+
+    #expect(laterLookBack?.lines.first == .week(inWords: "9–15 Mar 2026", fraction: "0/3"))
 }
 
 @MainActor

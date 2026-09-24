@@ -439,7 +439,9 @@ public struct Roster: Hashable, Sendable {
     /// category; alike eras with a day between them are left as two. A stopped newest era that
     /// holds no day is dropped where an older era stands behind it, which then carries that
     /// dropped era's category and the earlier of the two days kept until, standing as the newest
-    /// itself — a stopped newest holding no day with nothing behind it is left exactly as it is,
+    /// itself — repeated against whatever now stands newest until it holds a day or nothing stands
+    /// behind it, so a stop that empties more than one era in front never leaves a no-day era
+    /// standing; a stopped newest holding no day with nothing behind it is left exactly as it is,
     /// on the same footing as any other newest era. Package-internal: `RosterDocument.formRoster()`
     /// and `RosterDocument.folded()` are the two readers that call this, once per identity, before
     /// either answers.
@@ -449,7 +451,7 @@ public struct Roster: Hashable, Sendable {
         }
         var rest = Array(entries.dropFirst())
 
-        if let frontKeptUntil = front.keptUntil,
+        while let frontKeptUntil = front.keptUntil,
             front.commitment.keptFrom.days(until: frontKeptUntil) < 0,
             let behind = rest.first
         {

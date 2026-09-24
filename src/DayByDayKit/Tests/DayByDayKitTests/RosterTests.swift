@@ -3441,6 +3441,15 @@ func aCommitmentTakenUpAgainDaysAfterItWasStoppedBeginsANewEraOnTheDayOfTheResum
         roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 15)!) == [newGym])
     #expect(
         roster.commitments(on: CalendarDate(year: 2026, month: 1, day: 31)!).count == 2)
+    // The newer era is kept from 1 March 2026, the day of the resume, and no earlier: the
+    // closest scheduled day before it, Saturday 28 February, is not yet due, and the closest
+    // scheduled day at or after it, Monday 2 March, is.
+    #expect(!newGym.isDue(on: CalendarDate(year: 2026, month: 2, day: 28)!))
+    #expect(newGym.isDue(on: CalendarDate(year: 2026, month: 3, day: 2)!))
+    // The older era is kept until 31 January 2026, the day it was stopped as of, and no later:
+    // the roster still answers it on that day, and no longer the day after.
+    #expect(
+        roster.commitments(on: CalendarDate(year: 2026, month: 2, day: 1)!).count == 1)
 
     let moodRange = Commitment.Range(lowest: 1, highest: 10)!
     let mood = Commitment(
@@ -3624,4 +3633,34 @@ func stoppingACommitmentAsOfADayBeforeItsNewestEraBeganStopsTheEraBehindIt() {
     #expect(roster.eras(of: gym).count == 1)
     #expect(roster.commitments(on: boundary) == [roster.stopped.first!])
     #expect(roster.commitments(on: CalendarDate(year: 2026, month: 3, day: 1)!).isEmpty)
+
+    // A stop day that empties two eras in front of the one it lands on collapses both, not just
+    // the nearest: three eras — Mon from 1 Aug, Tue from 1 Sep, Wed from 10 Sep — stopped as of
+    // 25 Aug, a day before even the middle era began.
+    let reading = Commitment(
+        name: "Reading", schedule: .weekdays([.monday]),
+        keptFrom: CalendarDate(year: 2026, month: 8, day: 1)!)!
+    let secondEra = Commitment(
+        era: reading, schedule: .weekdays([.tuesday]),
+        keptFrom: CalendarDate(year: 2026, month: 9, day: 1)!, kind: .tick)!
+    let thirdEra = Commitment(
+        era: reading, schedule: .weekdays([.wednesday]),
+        keptFrom: CalendarDate(year: 2026, month: 9, day: 10)!, kind: .tick)!
+
+    var deepRoster = Roster()
+    _ = deepRoster.add(reading)
+    _ = deepRoster.put(
+        era: secondEra, on: reading, keptUntil: CalendarDate(year: 2026, month: 8, day: 31)!,
+        under: nil)
+    _ = deepRoster.put(
+        era: thirdEra, on: secondEra, keptUntil: CalendarDate(year: 2026, month: 9, day: 9)!,
+        under: nil)
+
+    let deepStopDay = CalendarDate(year: 2026, month: 8, day: 25)!
+    let deepStopped = deepRoster.retire(thirdEra, keptUntil: deepStopDay)
+
+    #expect(deepStopped)
+    #expect(deepRoster.eras(of: reading).count == 1)
+    #expect(deepRoster.commitments(on: deepStopDay) == [reading])
+    #expect(deepRoster.commitments(on: CalendarDate(year: 2026, month: 8, day: 28)!).isEmpty)
 }

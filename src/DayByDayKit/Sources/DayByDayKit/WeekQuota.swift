@@ -11,7 +11,8 @@ enum WeekQuota {
     /// One era of a chain: a commitment, and the last day it holds — `nil` where it holds every
     /// day from its own day kept from on, days after today included, the chain's front era where
     /// the commitment is not stopped. No `Link` holds a day of a gap: a day between one link's own
-    /// end and the next link's day kept from belongs to neither, and is held by nothing.
+    /// end and the next link's day kept from belongs to neither, and is held by nothing. Shared
+    /// with `LookBack`'s own chain, `LookBack.Era`, rather than each holding its own alike shape.
     struct Link {
         let commitment: Commitment
         let end: CalendarDate?
@@ -20,6 +21,11 @@ enum WeekQuota {
             self.commitment = commitment
             self.end = end
         }
+
+        /// This link's own day it is kept from — its commitment's, read here so a caller walking
+        /// a chain of links reads a link's start off the same shape it reads `commitment` and
+        /// `end` from.
+        var start: CalendarDate { commitment.keptFrom }
     }
 
     /// The `Link` of `links` holding `day` — the one whose commitment's day kept from is on or
@@ -40,12 +46,14 @@ enum WeekQuota {
     /// `owed` reads every day so held, days after `keptThrough` included — *A week a weekly quota
     /// era holds owes its quota in proportion to the days held* says nothing about when a day
     /// falls, days to come included. `kept` counts the same seven days against `history`, but
-    /// only through `keptThrough` where one is given — `nil`, the default, counts every day of
-    /// the week, which is what a look-back's own walk always wants since it never reads a day
-    /// beyond the span it has walked; a day view's row instead wants only its own date, `design.md`
-    /// § *One week rule, in one place*. `nil` where no day of the week is held by a weekly-quota
-    /// link at all — the caller's own reading of a gap or a different rhythm's unit decides
-    /// whether the week is said regardless.
+    /// only through `keptThrough` where one is given — every caller gives one: a look-back passes
+    /// its own walk's end, so a week in progress, or a week a stop cuts short, never counts a
+    /// tick past the day the walk itself has reached; a day view's row passes its own date, so it
+    /// counts nothing past the day it draws. `nil`, the default, counts every day of the week
+    /// regardless of when it falls — no caller reaches for it today. `design.md` § *One week rule,
+    /// in one place*. `nil` where no day of the week is held by a weekly-quota link at all — the
+    /// caller's own reading of a gap or a different rhythm's unit decides whether the week is said
+    /// regardless.
     static func standing(
         monday: CalendarDate, links: [Link], history: History, keptThrough end: CalendarDate? = nil
     ) -> (kept: Int, owed: Int)? {

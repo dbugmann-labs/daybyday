@@ -1681,6 +1681,7 @@ func aCommitmentTakenUpAgainThroughACommitmentsScreenDaysAfterItsStopBeginsANewE
     #expect(newestEra.keptFrom == monday)
     let olderEra = eras[1]
     #expect(olderEra.keptFrom == keptFrom)
+    #expect(laterStore.roster.entries[1].keptUntil == stoppedAsOf)
 
     #expect(laterStore.roster.commitments(on: sunday) == [newestEra])
     #expect(!newestEra.isDue(on: sunday))

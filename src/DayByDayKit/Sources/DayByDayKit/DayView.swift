@@ -272,26 +272,47 @@ public struct DayView: Hashable, Sendable {
 
     /// Forms a day view from `groups` — the same shape a roster reads its commitments back in —
     /// each drawn as its own group, dropping every commitment not due on `date` and, with it, a
-    /// group left holding none. `design.md` § *The seam*. `roster`, where given, is where a
-    /// weekly-quota row reads its commitment's whole chain from, so a week a resume's gap or a
-    /// stop cuts is judged against every era it holds and not the one shown alone —
-    /// `openspec/changes/stop-and-resume-as-eras/design.md` § *One week rule, in one place*. A
-    /// day view formed with no roster reads every commitment as its own only era.
-    public init(
-        of groups: [Roster.Group], on date: CalendarDate, in history: History, roster: Roster? = nil
+    /// group left holding none. `design.md` § *The seam*. Reads every commitment as its own only
+    /// era: `init(of:on:in:roster:)` is the form that reads a commitment's whole chain instead,
+    /// package-internal because `DayScreen` is its only caller.
+    public init(of groups: [Roster.Group], on date: CalendarDate, in history: History) {
+        self.init(of: groups, on: date, in: history, roster: nil)
+    }
+
+    /// Forms a day view exactly as `init(of:on:in:)` does, and additionally reads a weekly-quota
+    /// row's standing off `roster`'s whole chain for its commitment rather than the one era
+    /// `groups` itself holds, where `roster` is given — so a week a resume's gap or a stop cuts is
+    /// judged against every era it holds and not the one shown alone,
+    /// `openspec/changes/stop-and-resume-as-eras/design.md` § *One week rule, in one place*.
+    /// Package-internal: `DayScreen.formDayView` is the one caller, which always has a roster to
+    /// give; nothing outside the package needs a day view read this way.
+    init(
+        of groups: [Roster.Group], on date: CalendarDate, in history: History, roster: Roster?
     ) {
         self.date = date
         self.groups = Self.makeGroups(from: groups, on: date, in: history, roster: roster)
         self.oneOffGroup = nil
     }
 
-    /// Forms a day view exactly as `init(of:on:in:roster:)` does, and additionally holds a
-    /// `OneOffGroup` headed "One-offs" of the one-offs standing on `date` as of `today` — holding
-    /// no rows where none stand, rather than no group at all, since this initializer was handed
-    /// one-offs. `design.md` § *The empty group is the offer*.
+    /// Forms a day view exactly as `init(of:on:in:)` does, and additionally holds a `OneOffGroup`
+    /// headed "One-offs" of the one-offs standing on `date` as of `today` — holding no rows where
+    /// none stand, rather than no group at all, since this initializer was handed one-offs.
+    /// `design.md` § *The empty group is the offer*.
     public init(
         of groups: [Roster.Group], oneOffs: OneOffs, asOf today: CalendarDate,
-        on date: CalendarDate, in history: History, roster: Roster? = nil
+        on date: CalendarDate, in history: History
+    ) {
+        self.init(
+            of: groups, oneOffs: oneOffs, asOf: today, on: date, in: history, roster: nil)
+    }
+
+    /// Forms a day view exactly as `init(of:oneOffs:asOf:on:in:)` does, reading a weekly-quota
+    /// row's standing off `roster`'s whole chain where `roster` is given, exactly as
+    /// `init(of:on:in:roster:)` does. Package-internal for the same reason: `DayScreen
+    /// .formDayView` is the one caller.
+    init(
+        of groups: [Roster.Group], oneOffs: OneOffs, asOf today: CalendarDate,
+        on date: CalendarDate, in history: History, roster: Roster?
     ) {
         self.date = date
         self.groups = Self.makeGroups(from: groups, on: date, in: history, roster: roster)

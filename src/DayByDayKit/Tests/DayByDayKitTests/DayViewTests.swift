@@ -892,7 +892,8 @@ func twoWeeklyQuotaRowsAlikeButForWhatTheirWeekOwesAreDifferentRows() {
     let readingFromDayOne = Commitment(
         name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: keptFrom)!
     let readingFromWednesday = Commitment(
-        name: "Reading", schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!), keptFrom: wednesday)!
+        era: readingFromDayOne, schedule: .weeklyQuota(WeeklyQuota(timesPerWeek: 3)!),
+        keptFrom: wednesday, kind: .tick)!
     let history = History()
 
     let firstView = DayView(of: [readingFromDayOne], on: wednesday, in: history)

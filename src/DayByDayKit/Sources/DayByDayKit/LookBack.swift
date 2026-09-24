@@ -76,13 +76,10 @@ public struct LookBack: Hashable, Sendable {
     /// day kept from on, days after today included — `openspec/changes/
     /// stop-and-resume-as-eras/design.md` § *A week a weekly quota era holds owes its quota in
     /// proportion to the days held*. `openspec/changes/give-a-commitment-an-identity/design.md`
-    /// § *A look-back reads a commitment's eras off the roster by its identity*.
-    private struct Era {
-        let commitment: Commitment
-        let end: CalendarDate?
-
-        var start: CalendarDate { commitment.keptFrom }
-    }
+    /// § *A look-back reads a commitment's eras off the roster by its identity*. The same shape
+    /// `WeekQuota.Link` already is — this is that type under the name a look-back's own chain
+    /// reads by, rather than a second struct alike it.
+    private typealias Era = WeekQuota.Link
 
     /// A key naming a calendar month, so a walk can tell whether the day just visited has left
     /// the calendar month it was in.
@@ -126,14 +123,19 @@ public struct LookBack: Hashable, Sendable {
 
         /// The days this week counts kept, and what it owes — reading `eras` and `history` fresh
         /// rather than a running total, once the whole week has been walked, so a week two quota
-        /// eras share is judged against both. `nil` where `hasQuotaDay` is false.
-        /// `WeekQuota.standing(monday:links:history:)` itself answers `nil` for a week holding no
-        /// day any era of `eras` genuinely holds — a week a gap alone carries every day of, said
-        /// in the unit of the era before it — which this reads as owing nothing, "0/0".
-        func standing(eras: [Era], history: History) -> (kept: Int, owed: Int)? {
+        /// eras share is judged against both. `nil` where `hasQuotaDay` is false. `keptThrough` is
+        /// this look-back's own walk end, `through`, so a week in progress or a week the walk's
+        /// own stop cuts counts a tick no later than the walk itself ever reads — the same day
+        /// the fraction it counts against is judged through. `WeekQuota.standing(monday:links:
+        /// history:keptThrough:)` itself answers `nil` for a week holding no day any era of
+        /// `eras` genuinely holds — a week a gap alone carries every day of, said in the unit of
+        /// the era before it — which this reads as owing nothing, "0/0".
+        func standing(eras: [Era], history: History, keptThrough: CalendarDate) -> (
+            kept: Int, owed: Int
+        )? {
             guard hasQuotaDay else { return nil }
-            let links = eras.map { WeekQuota.Link($0.commitment, end: $0.end) }
-            return WeekQuota.standing(monday: monday, links: links, history: history) ?? (0, 0)
+            return WeekQuota.standing(
+                monday: monday, links: eras, history: history, keptThrough: keptThrough) ?? (0, 0)
         }
 
         func line(_ standing: (kept: Int, owed: Int)) -> Line {
@@ -204,29 +206,18 @@ public struct LookBack: Hashable, Sendable {
         let matching = entries.filter { $0.commitment.identity == commitment.identity }
 
         guard !matching.isEmpty else {
-            return [Era(commitment: commitment, end: keptUntil)]
+            return [Era(commitment, end: keptUntil)]
         }
 
         return matching.enumerated().map { offset, entry in
             offset == 0
-                ? Era(commitment: commitment, end: keptUntil)
-                : Era(commitment: entry.commitment, end: entry.keptUntil)
+                ? Era(commitment, end: keptUntil)
+                : Era(entry.commitment, end: entry.keptUntil)
         }
-    }
-
-    /// The Monday of `date`'s calendar week, walked back one day at a time so every step stays
-    /// at the ±1 `adding(days:)` documents as safe — the same technique
-    /// `History.standing(for:through:)` uses to find a week's start.
-    private static func monday(of date: CalendarDate) -> CalendarDate {
-        var current = date
-        while current.weekday != .monday, let previous = current.adding(days: -1) {
-            current = previous
-        }
-        return current
     }
 
     /// The Sunday six days after `monday`, walked forward one day at a time so every step stays
-    /// at the ±1 `adding(days:)` documents as safe — the same discipline `monday(of:)` above
+    /// at the ±1 `adding(days:)` documents as safe — the same discipline `WeekQuota.monday(of:)`
     /// walks backward with, rather than the single six-day step that discipline forbids.
     private static func sunday(of monday: CalendarDate) -> CalendarDate {
         var current = monday
@@ -280,7 +271,7 @@ public struct LookBack: Hashable, Sendable {
         var weeks: [WeekTally] = []
         var currentMonth = MonthTally(
             yearMonth: YearMonth(year: start.year, month: start.month), lastDay: start)
-        var currentWeekMonday = Self.monday(of: start)
+        var currentWeekMonday = WeekQuota.monday(of: start)
         var currentWeek = WeekTally(monday: currentWeekMonday, lastDay: start)
         var day = start
         // The unit of the era holding the most recent day walked — updated only on a day some era
@@ -296,7 +287,7 @@ public struct LookBack: Hashable, Sendable {
                     yearMonth: YearMonth(year: day.year, month: day.month), lastDay: day)
             }
 
-            let dayMonday = Self.monday(of: day)
+            let dayMonday = WeekQuota.monday(of: day)
             if dayMonday != currentWeekMonday {
                 weeks.append(currentWeek)
                 currentWeekMonday = dayMonday
@@ -351,7 +342,8 @@ public struct LookBack: Hashable, Sendable {
             return SortableLine(line: line, lastDay: tally.lastDay, due: tally.due, kept: tally.kept)
         }
         let weekEntries: [SortableLine] = weeks.compactMap { tally in
-            guard let standing = tally.standing(eras: eras, history: history) else { return nil }
+            guard let standing = tally.standing(eras: eras, history: history, keptThrough: end)
+            else { return nil }
             return SortableLine(
                 line: tally.line(standing), lastDay: tally.lastDay, due: standing.owed,
                 kept: standing.kept)

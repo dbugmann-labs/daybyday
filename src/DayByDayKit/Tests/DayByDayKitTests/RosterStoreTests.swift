@@ -4087,6 +4087,68 @@ func aStoppedNewestEraHoldingNoDayIsReadBackWithoutItTheEraBehindItStopped() thr
     #expect(
         store.roster.commitments(on: CalendarDate(year: 2026, month: 8, day: 31)!).isEmpty)
     #expect(try Data(contentsOf: place) == bytes)
+
+    // A stored newest era holding no day whose own collapse then also empties the era behind
+    // it is read back past both, not just the nearest: three eras — Mon from 1 Aug, Tue from
+    // 1 Sep, Wed from 10 Sep — the newest stopped as of 25 Aug, a day before even the middle
+    // era began.
+    let deepPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: deepPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let deepIdentity = "22222222-2222-2222-2222-222222222222"
+    let deepBytes = Data(
+        """
+        {
+          "version": 6,
+          "emptied": false,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Reading",
+                "keptFrom": { "year": 2026, "month": 9, "day": 10 },
+                "schedule": { "weekdays": ["wednesday"] },
+                "identity": "\(deepIdentity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 25 },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Reading",
+                "keptFrom": { "year": 2026, "month": 9, "day": 1 },
+                "schedule": { "weekdays": ["tuesday"] },
+                "identity": "\(deepIdentity)"
+              },
+              "keptUntil": { "year": 2026, "month": 9, "day": 9 },
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Reading",
+                "keptFrom": { "year": 2026, "month": 8, "day": 1 },
+                "schedule": { "weekdays": ["monday"] },
+                "identity": "\(deepIdentity)"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 31 },
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try deepBytes.write(to: deepPlace)
+
+    let deepStore = try RosterStore(at: deepPlace)
+
+    #expect(deepStore.roster.commitments.isEmpty)
+    #expect(deepStore.roster.stopped.map(\.name) == ["Reading"])
+    #expect(deepStore.roster.stopped.first?.rhythmInWords == "Mon")
+    let reading = deepStore.roster.stopped.first!
+    #expect(deepStore.roster.eras(of: reading).count == 1)
+    #expect(
+        deepStore.roster.commitments(on: CalendarDate(year: 2026, month: 8, day: 25)!)
+            == [reading])
+    #expect(
+        deepStore.roster.commitments(on: CalendarDate(year: 2026, month: 8, day: 28)!).isEmpty)
 }
 
 @Test("alike eras with days between them are read back as two")
