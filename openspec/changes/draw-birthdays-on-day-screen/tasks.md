@@ -69,17 +69,19 @@ scenario box, write the one test named for it, watch it fail, make it pass, then
 
 The throwaway test grants calendar access with `xcrun simctl privacy <udid> grant calendar <bundle-id>` or answers the system prompt itself.
 
-- [ ] W.1 The commitments screen with *Birthdays* just turned on — the switch on, the explaining line under it, no refused line.
-- [ ] W.2 Saturday 29 August 2026, reached by paging back — the *Birthdays* group first, holding "Anna Haro’s 41st Birthday" unticked, the *One-offs* group under it.
-- [ ] W.3 The same row tapped — grey, struck through, with the green check.
-- [ ] W.4 Sent back to today — no *Birthdays* group.
-- [ ] W.5 Tuesday 22 June 2027, picked — John Appleseed's row first, faded, above the commitment groups.
-- [ ] W.6 phone: birthdays turned on and a day known to be someone's birthday paged to — their row first, in the phone's own words, ticking and unticking with one tap each.
-- [ ] W.7 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.6 is the human's at G7; the conductor ticks it on the G7 approval.
+- [x] W.1 The commitments screen with *Birthdays* just turned on — the switch on, the explaining line under it, no refused line.
+- [x] W.2 Saturday 29 August 2026, reached by paging back — the *Birthdays* group first, holding "Anna Haro’s 41st Birthday" unticked, the *One-offs* group under it.
+- [x] W.3 The same row tapped — grey, struck through, with the green check.
+- [x] W.4 Sent back to today — no *Birthdays* group.
+- [x] W.5 Tuesday 22 June 2027, picked — John Appleseed's row first, faded, above the commitment groups.
+- [x] W.6 phone: birthdays turned on and a day known to be someone's birthday paged to — their row first, in the phone's own words, ticking and unticking with one tap each.
+- [x] W.7 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.6 is the human's at G7; the conductor ticks it on the G7 approval.
+  The simulator could not get calendar access, so the owner walked W.1–W.6 on the phone instead and approved from there.
+  https://github.com/dbugmann-labs/daybyday/pull/336#issuecomment-5821826867
 
 ## 10. Gates and the archive handover
 
 - [x] 10.1 `openspec validate draw-birthdays-on-day-screen --strict` exits 0, and `pnpm run checks` is clean but for the three carried-requirement word-count warnings `design.md` names
 - [x] 10.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
-- [ ] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 10.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 10.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.6 by the conductor at G7 — and the walk comment's URL is in W.7. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/day-screen/spec.md` gained this delta's ten added requirements, that its three MODIFIED ones are whole, and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
