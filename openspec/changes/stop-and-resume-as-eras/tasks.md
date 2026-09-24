@@ -77,8 +77,8 @@ to it, one red-green cycle.
   passing, the count read off the run.
 - [x] 7.2 `openspec validate stop-and-resume-as-eras --strict` exits 0 and `pnpm run checks` is clean
   but for what it is expected to warn.
-- [ ] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
-- [ ] 7.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
+- [x] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`.
+- [x] 7.4 The **implementer** ticks this box in its last commit before the archive, on the evidence
   that the change folder is committed and `tasks.md` has no other unticked box. The janitor then
   runs `/opsx:archive` and checks afterwards that `look-back/spec.md` carries the new week-line
   heading and not the removed one, that `schedule/spec.md` carries its new requirement, and that the
