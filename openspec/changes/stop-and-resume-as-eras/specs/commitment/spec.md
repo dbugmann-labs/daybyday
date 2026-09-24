@@ -90,14 +90,13 @@ deleted, or whose name one it keeps has, refusing on no date.
 ### Requirement: A commitments screen takes a commitment it has stopped up again in one tap
 
 A commitments screen SHALL take a commitment it has stopped up again from the day the screen was
-handed, as *A roster takes a commitment it has stopped up again from a day, as a new era* says,
-without asking for confirmation and without asking for a name, a rhythm or a day. It SHALL keep that at the roster place before either
-list says so; the commitment SHALL then be in what the screen keeps, in the place it has, and not in
-what it has stopped. A commitments screen asked to take up again a commitment its roster has not stopped SHALL do
-nothing and SHALL say nothing. One whose name a commitment its roster keeps already has SHALL be
-refused as a name already in use, said against that stopped commitment rather than on the sheet, and
-both lists SHALL be left as they were. One it could not keep at the roster place SHALL be refused as
-a roster that could not be written, leaving both lists as they were.
+handed, without asking for confirmation, a name, a rhythm or a day. It SHALL keep that at the roster
+place before either list says so; the commitment SHALL then be in what the screen keeps, in the place
+it has, and not in what it has stopped. A commitments screen asked to take up again a commitment its
+roster has not stopped SHALL do nothing and SHALL say nothing. One whose name a commitment its roster
+keeps already has SHALL be refused as a name already in use, said against that stopped commitment
+rather than on the sheet, and one it could not keep at the roster place SHALL be refused as a roster
+that could not be written, each leaving both lists as they were.
 
 #### Scenario: a commitment taken up again through a commitments screen moves from what it has stopped to what it keeps
 
@@ -578,16 +577,13 @@ both lists as they were.
 
 ### Requirement: A roster store reads each commitment's eras mended
 
-A roster store SHALL read each commitment's eras mended, whatever form they were kept in, and SHALL
-read a copy to be restored the same way. Newest first, each era but the newest SHALL hold only days
-before the day the kept era in front of it is kept from, read as kept until the day before where it
-carries a later day kept until or none. An era but the newest that then holds no day SHALL be
-dropped. Two eras side by side alike in schedule and kind, range or target included, with no day
-between the older's day kept until and the newer's day kept from, SHALL be read as one, kept from the
-older's day and carrying the newer's day kept until, state and category; alike eras with a gap
-between them SHALL be read as two. The newest era SHALL NOT be dropped for holding no day, except
-that a stopped newest era holding none SHALL be dropped while an older era stands behind it, which
-SHALL then carry its state, its category and the earlier of the two days kept until.
+A roster store SHALL read each commitment's eras mended, whatever form they were in, and a copy to
+be restored alike. Newest first, each era but the newest SHALL end at the latest on the day before
+the next kept era's day kept from, and SHALL be dropped where it then holds no day. Two neighbouring
+eras alike in schedule and kind, range or target included, SHALL be one where no day lies between
+them, kept from the older's day with the newer's day kept until, state and category, and two
+otherwise. The newest era SHALL be dropped for holding no day only where it is stopped with an older
+era behind it, which takes its state, category and earlier day kept until.
 
 Mending SHALL say nothing to the person and MUST NOT change what is at the place; the next change
 kept there SHALL be written mended.

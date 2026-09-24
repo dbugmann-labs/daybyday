@@ -113,8 +113,9 @@ commitment resumed before this ships already lost its gap, and nothing recovers 
   and their tests with them] → tasks.md § 1 names them; any other carried test gone red is a stop.
 - [`History.standing(for:through:)` keeps its `record` requirement but no row reads it] → left for a
   later Story; its own tests stay green.
-- [Nine carried MODIFIED requirements stay over the prose budget, and `check:budgets` reads the
-  REMOVED block's reason as prose] → condensing is an editorial Story's; the warnings are expected.
+- [Six carried MODIFIED requirements were over the prose budget on `main` and this delta grows each
+  by 22–66 words, the sentences its rules add; `check:budgets` also reads the REMOVED block's reason
+  as prose] → condensing them is an editorial Story's (ADR-1047); the seven warnings are expected.
 
 ## Open Questions
 

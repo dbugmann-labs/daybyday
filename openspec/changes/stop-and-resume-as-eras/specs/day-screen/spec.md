@@ -139,16 +139,15 @@ rather than nothing at all.
 
 A row SHALL be reachable only through the day view holding it, and SHALL give back four things: its
 commitment's name, its rhythm in words, whether it is kept, and what it offers — a tick or the entry
-its commitment's kind takes. It MUST NOT give back the commitment, its schedule, the day it is kept from, the
-date, the number, the note, the sum or its standing; the number, the note and the sum SHALL be given
-out only inside the entry a row offers.
+its commitment's kind takes. It MUST NOT give back the commitment, its schedule, the day it is kept
+from, the date or its standing, and SHALL give out the number, the note and the sum only inside the
+entry it offers.
 
 The words SHALL be `schedule`'s for the commitment's schedule, said given the row's standing and
-what its week owes on a weekly quota and plainly otherwise, and composed by no other capability. The
-standing SHALL count the days of the row's week, from its Monday through the row's date, that an era
-of the commitment running on a weekly quota holds and `record` answers kept against that era,
-whatever the kind and whether or not that date has arrived. What the week owes SHALL be as *A week a
-weekly quota era holds owes its quota in proportion to the days held* says. Every row SHALL say its rhythm, always, kept or not and whatever it offers.
+what its week owes on a weekly quota and plainly otherwise, and composed by no other capability.
+Both SHALL be counted as `look-back` counts a week, the standing through the row's date, whatever the
+kind and whether or not it has arrived. Every row SHALL say its rhythm, kept or not and whatever it
+offers.
 
 #### Scenario: a row says the rhythm its commitment runs on in words
 
