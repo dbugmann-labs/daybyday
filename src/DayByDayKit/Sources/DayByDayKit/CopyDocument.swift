@@ -32,11 +32,8 @@ struct CopyDocument: Codable {
     }
 
     /// Re-forms `moment`, and the record, the roster and the one-offs this document holds,
-    /// through the same re-forming each of their own documents already does — the one-offs
-    /// through `OneOffStore.formed(from:)`, so a nested one-off document whose done entries
-    /// disagree with what its own form declares is refused here exactly as `OneOffStore.init(at:)`
-    /// refuses it, rather than trapping on a `tick` the shape check would have caught. `nil` if
-    /// the moment or any one of the three could not be formed.
+    /// through the same re-forming each of their own documents already does. `nil` if the moment
+    /// or any one of the three could not be formed.
     func formCopy() -> Copy? {
         guard let formedMoment = moment.moment() else {
             return nil
@@ -49,7 +46,7 @@ struct CopyDocument: Codable {
         guard let formedRoster = roster.formRoster()?.roster else {
             return nil
         }
-        guard let formedOneOffs = OneOffStore.formed(from: oneOffs) else {
+        guard let formedOneOffs = oneOffs.formOneOffs() else {
             return nil
         }
 

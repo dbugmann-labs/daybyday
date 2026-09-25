@@ -42,11 +42,12 @@ struct OneOffDocument: Codable {
     /// Re-forms `oneOffs` through `OneOffs.add` and `OneOffs.add(_:doneOn:)`, so every invariant
     /// the engine has applies to what comes off the disk and a document that could not be a
     /// one-off holder is refused rather than trusted. `nil` if any one entry in the document
-    /// could not be formed, or if replaying it is refused by `OneOffs` itself — a name that says
+    /// could not be formed, if replaying it is refused by `OneOffs` itself — a name that says
     /// nothing, a date that names no day, a day done before the one-off's own date, or two
-    /// one-offs alike in name and date. Assumes `OneOffStore.shapeAgrees(with:)` has already
-    /// found this document's `tick` fields consistent with its own declared `version`; this
-    /// builds the tick order from them rather than checking them again.
+    /// one-offs alike in name and date — or, at or after `tickOrderIntroducedInVersion`, if any
+    /// done entry carries no `tick` place: this method is the one place that check runs, since
+    /// `CopyDocument.formCopy()` calls it directly rather than through
+    /// `OneOffStore.shapeAgrees(with:)`.
     ///
     /// At or after `tickOrderIntroducedInVersion`, the tick order is exactly what each done
     /// entry's own `tick` place says. Before it, this app kept no tick order at all, so one is
@@ -91,6 +92,9 @@ struct OneOffDocument: Codable {
         }
 
         if version >= Self.tickOrderIntroducedInVersion {
+            guard doneInDocumentOrder.allSatisfy({ places[$0] != nil }) else {
+                return nil
+            }
             oneOffs.doneOrder = doneInDocumentOrder.sorted { places[$0]! < places[$1]! }
         } else {
             oneOffs.doneOrder = Array(

@@ -501,24 +501,32 @@ func aCopyNestingForm1OneOffsReadsBackWithTheOrderThisAppDrawsForTicksFromBefore
             == ["Send form", "Call mum", "Book dentist", "Pay fine"])
 }
 
-// Not one of task 4.3's own two tests, but beside them for the same reason: proving
-// `CopyDocument.formCopy()` refuses a form-2 copy whose done one-off carries no `tick` rather than
-// trapping on `OneOffDocument.formOneOffs()`'s force-unwrap, which only holds once
-// `OneOffStore.shapeAgrees(with:)` has run — the check `formCopy()` skipped before this fix.
+// Not one of task 4.3's own two tests, but beside them for the same reason: proving that
+// `OneOffDocument.formOneOffs()` itself refuses a form-2 document whose done entries disagree
+// with the tick order it declares — here, "Call mum" carries no `tick` place at all — rather than
+// force-unwrapping a place that was never recorded for it, since `CopyDocument.formCopy()` calls
+// `formOneOffs()` directly and never runs `OneOffStore.shapeAgrees(with:)`. Two done entries are
+// needed to reach that force-unwrap: `Array.sorted(by:)` never calls its comparator over a single
+// element, so a fixture with only one done entry passes without ever touching the code this test
+// exists to prove.
 
 @Test("a copy nesting a form-2 one-off document whose done entry carries no tick is refused")
 func aCopyNestingAFormTwoOneOffDocumentWhoseDoneEntryCarriesNoTickIsRefused() throws {
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
     let payFine = OneOffEntryRecord(
         name: "Pay fine", date: DateRecord(CalendarDate(year: 2026, month: 9, day: 25)!),
-        doneOn: DateRecord(CalendarDate(year: 2026, month: 9, day: 28)!), tick: nil)
+        doneOn: DateRecord(september28), tick: 1)
+    let callMum = OneOffEntryRecord(
+        name: "Call mum", date: DateRecord(CalendarDate(year: 2026, month: 9, day: 20)!),
+        doneOn: DateRecord(september28), tick: nil)
 
     var oneOffDocument = OneOffDocument(OneOffs())
     oneOffDocument.version = 2
-    oneOffDocument.oneOffs = [payFine]
+    oneOffDocument.oneOffs = [payFine, callMum]
 
     var copyDocument = CopyDocument(
         Copy(
-            moment: Moment(on: CalendarDate(year: 2026, month: 9, day: 28)!, hour: 9, minute: 0)!,
+            moment: Moment(on: september28, hour: 9, minute: 0)!,
             history: History(), roster: Roster(), oneOffs: OneOffs()))
     copyDocument.oneOffs = oneOffDocument
 
