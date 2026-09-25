@@ -2743,7 +2743,7 @@ func aDayScreenNotKeepingOneOffsAddsNothingWhateverIsCommittedInItsOneOffEntry()
     let laterFormPlace = freshOneOffPlace()
     try FileManager.default.createDirectory(
         at: laterFormPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let laterFormBytes = Data(#"{"version": 2, "oneOffs": []}"#.utf8)
+    let laterFormBytes = Data(#"{"version": \#(OneOffDocument.currentVersion + 1), "oneOffs": []}"#.utf8)
     try laterFormBytes.write(to: laterFormPlace)
 
     let (secondPlace, secondRosterPlace) = freshPlaces()

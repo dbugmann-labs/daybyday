@@ -247,6 +247,22 @@ public struct DayView: Hashable, Sendable {
         let date: CalendarDate
         public let isDone: Bool
 
+        /// A one-off row's key: its one-off and its row's date, neither given back on their own
+        /// — `DayView.OneOffRow` already gives back neither, and a key must not either.
+        /// `design.md` § *A one-off row's key, and the animation in the shell*: the shell keys a
+        /// one-off row by this rather than by the row's own value, so a tick — which changes
+        /// `isDone` and so the row's value — still keys to the same place and `List` can animate
+        /// the move. Two one-offs of one name stand on today together (a rename onto a name
+        /// already held on the same date is refused, but two different dates are not), so the
+        /// key carries the one-off whole, not its name alone.
+        public struct Key: Hashable, Sendable {
+            let oneOff: OneOff
+            let date: CalendarDate
+        }
+
+        /// This row's key. `design.md` § *The seam*.
+        public var key: Key { Key(oneOff: oneOff, date: date) }
+
         public var name: String { oneOff.name }
 
         /// How late this row's one-off is, said in days — "1 day late", "400 days late" — or

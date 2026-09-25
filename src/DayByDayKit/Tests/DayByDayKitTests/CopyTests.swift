@@ -431,6 +431,111 @@ func whatIsWrittenForACopyHoldsItsOwnFormItsMomentAndTheThreeStoresAsTheyAreWrit
     #expect(try encoder.encode(copyDocument.oneOffs) == encoder.encode(OneOffDocument(OneOffs())))
 }
 
+// The two unit tests below are `openspec/changes/put-done-one-offs-last/tasks.md` § 4.3's own:
+// a copy carries the tick order because it nests `OneOffDocument` as written, with no copy code
+// of its own (`design.md` § *A copy carries it with no delta of its own*) — proved here by a real
+// encode-decode round trip through `CopyDocument`, never by comparing values that were never
+// serialized.
+
+@Test("a copy formed from one-offs with two ticks reads back as equal one-offs")
+func aCopyFormedFromOneOffsWithTwoTicksReadsBackAsEqualOneOffs() throws {
+    let callMum = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 20)!)!
+    let payFine = OneOff(name: "Pay fine", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    var oneOffs = OneOffs()
+    _ = oneOffs.add(callMum)
+    _ = oneOffs.add(payFine)
+    _ = oneOffs.tick(callMum, on: september28)
+    _ = oneOffs.tick(payFine, on: september28)
+
+    let copy = Copy(
+        moment: Moment(on: september28, hour: 9, minute: 0)!, history: History(), roster: Roster(),
+        oneOffs: oneOffs)
+    let data = try JSONEncoder().encode(CopyDocument(copy))
+    let formed = try CopyDocument.read(data).get()
+
+    #expect(formed.oneOffs == oneOffs)
+}
+
+@Test(
+    "a copy nesting form-1 one-offs reads back with the order this app draws for ticks from before the tick order was kept"
+)
+func aCopyNestingForm1OneOffsReadsBackWithTheOrderThisAppDrawsForTicksFromBeforeTheTickOrderWasKept()
+    throws
+{
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    // The same four one-offs, in the same document order, `OneOffStoreTests.swift`'s "a one-off
+    // store kept before the tick order..." (task 4.1) reads directly — carried here inside a
+    // copy instead, at form 1, to prove the copy nests the document as written rather than
+    // deriving anything of its own.
+    let payFine = OneOffEntryRecord(
+        name: "Pay fine", date: DateRecord(CalendarDate(year: 2026, month: 9, day: 25)!),
+        doneOn: DateRecord(september28), tick: nil)
+    let callMum = OneOffEntryRecord(
+        name: "Call mum", date: DateRecord(CalendarDate(year: 2026, month: 9, day: 20)!),
+        doneOn: DateRecord(september28), tick: nil)
+    let bookDentist = OneOffEntryRecord(
+        name: "Book dentist", date: DateRecord(CalendarDate(year: 2026, month: 9, day: 20)!),
+        doneOn: DateRecord(september28), tick: nil)
+    let sendForm = OneOffEntryRecord(
+        name: "Send form", date: DateRecord(CalendarDate(year: 2026, month: 9, day: 26)!),
+        doneOn: nil, tick: nil)
+
+    var oneOffDocument = OneOffDocument(OneOffs())
+    oneOffDocument.version = 1
+    oneOffDocument.oneOffs = [payFine, callMum, bookDentist, sendForm]
+
+    var copyDocument = CopyDocument(
+        Copy(
+            moment: Moment(on: september28, hour: 9, minute: 0)!, history: History(),
+            roster: Roster(), oneOffs: OneOffs()))
+    copyDocument.oneOffs = oneOffDocument
+
+    let data = try JSONEncoder().encode(copyDocument)
+    let formed = try CopyDocument.read(data).get()
+
+    #expect(
+        formed.oneOffs.standing(on: september28, asOf: september28).map(\.name)
+            == ["Send form", "Call mum", "Book dentist", "Pay fine"])
+}
+
+// Not one of task 4.3's own two tests, but beside them for the same reason: proving that
+// `OneOffDocument.formOneOffs()` itself refuses a form-2 document whose done entries disagree
+// with the tick order it declares — here, "Call mum" carries no `tick` place at all — rather than
+// force-unwrapping a place that was never recorded for it, since `CopyDocument.formCopy()` calls
+// `formOneOffs()` directly and never runs `OneOffStore.shapeAgrees(with:)`. Two done entries are
+// needed to reach that force-unwrap: `Array.sorted(by:)` never calls its comparator over a single
+// element, so a fixture with only one done entry passes without ever touching the code this test
+// exists to prove.
+
+@Test("a copy nesting a form-2 one-off document whose done entry carries no tick is refused")
+func aCopyNestingAFormTwoOneOffDocumentWhoseDoneEntryCarriesNoTickIsRefused() throws {
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+    let payFine = OneOffEntryRecord(
+        name: "Pay fine", date: DateRecord(CalendarDate(year: 2026, month: 9, day: 25)!),
+        doneOn: DateRecord(september28), tick: 1)
+    let callMum = OneOffEntryRecord(
+        name: "Call mum", date: DateRecord(CalendarDate(year: 2026, month: 9, day: 20)!),
+        doneOn: DateRecord(september28), tick: nil)
+
+    var oneOffDocument = OneOffDocument(OneOffs())
+    oneOffDocument.version = 2
+    oneOffDocument.oneOffs = [payFine, callMum]
+
+    var copyDocument = CopyDocument(
+        Copy(
+            moment: Moment(on: september28, hour: 9, minute: 0)!,
+            history: History(), roster: Roster(), oneOffs: OneOffs()))
+    copyDocument.oneOffs = oneOffDocument
+
+    let data = try JSONEncoder().encode(copyDocument)
+    let decoded = try JSONDecoder().decode(CopyDocument.self, from: data)
+
+    #expect(decoded.formCopy() == nil)
+}
+
 @MainActor
 @Test("a copy of a place kept in an earlier form is written in the form that store writes now")
 func aCopyOfAPlaceKeptInAnEarlierFormIsWrittenInTheFormThatStoreWritesNow() throws {

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-import DayByDayKit
+@testable import DayByDayKit
 
 /// A fresh place under the temporary directory, one per test, so tests are independent and need
 /// no teardown: a UUID names the directory, and the store's file sits one level under it, so the
@@ -66,6 +66,8 @@ func aChangeIsKeptBeforeTheStoreReportsItKept() throws {
     let second = try OneOffStore(at: place)
 
     #expect(second.oneOffs.standingDay(for: callMum, asOf: october5) == september25)
+
+    withExtendedLifetime(first) {}
 }
 
 @Test("a one-off change that cannot be kept is refused and not held")
@@ -168,6 +170,184 @@ func oneOffStoresAtDifferentPlacesAreIndependent() throws {
     #expect(laterFirst.oneOffs == expected)
 }
 
+@Test(
+    "a one-off store kept before the tick order answers its done one-offs by the date owed, older than any tick since"
+)
+func aOneOffStoreKeptBeforeTheTickOrderAnswersItsDoneOneOffsByTheDateOwedOlderThanAnyTickSince()
+    throws
+{
+    let place = freshPlace()
+    try FileManager.default.createDirectory(
+        at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let bytes = Data(
+        """
+        {
+          "version": 1,
+          "oneOffs": [
+            {
+              "name": "Pay fine",
+              "date": { "year": 2026, "month": 9, "day": 25 },
+              "doneOn": { "year": 2026, "month": 9, "day": 28 }
+            },
+            {
+              "name": "Call mum",
+              "date": { "year": 2026, "month": 9, "day": 20 },
+              "doneOn": { "year": 2026, "month": 9, "day": 28 }
+            },
+            {
+              "name": "Book dentist",
+              "date": { "year": 2026, "month": 9, "day": 20 },
+              "doneOn": { "year": 2026, "month": 9, "day": 28 }
+            },
+            { "name": "Send form", "date": { "year": 2026, "month": 9, "day": 26 } }
+          ]
+        }
+        """.utf8)
+    try bytes.write(to: place)
+
+    let store = try OneOffStore(at: place)
+    let september28 = CalendarDate(year: 2026, month: 9, day: 28)!
+
+    #expect(
+        store.oneOffs.standing(on: september28, asOf: september28).map(\.name)
+            == ["Send form", "Call mum", "Book dentist", "Pay fine"])
+    #expect(try Data(contentsOf: place) == bytes)
+
+    let sendForm = OneOff(name: "Send form", date: CalendarDate(year: 2026, month: 9, day: 26)!)!
+    try store.tick(sendForm, on: september28)
+
+    let reopened = try OneOffStore(at: place)
+    #expect(
+        reopened.oneOffs.standing(on: september28, asOf: september28).map(\.name)
+            == ["Send form", "Call mum", "Book dentist", "Pay fine"])
+}
+
+@Test("a one-off store holding a tick order that could not be held is refused")
+func aOneOffStoreHoldingATickOrderThatCouldNotBeHeldIsRefused() throws {
+    let noPlacePlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: noPlacePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let noPlaceBytes = Data(
+        """
+        {
+          "version": 2,
+          "oneOffs": [
+            {
+              "name": "Call mum",
+              "date": { "year": 2026, "month": 9, "day": 25 },
+              "doneOn": { "year": 2026, "month": 9, "day": 28 }
+            }
+          ]
+        }
+        """.utf8)
+    try noPlaceBytes.write(to: noPlacePlace)
+
+    let notDoneWithPlacePlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: notDoneWithPlacePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let notDoneWithPlaceBytes = Data(
+        """
+        {
+          "version": 2,
+          "oneOffs": [
+            { "name": "Call mum", "date": { "year": 2026, "month": 9, "day": 25 }, "tick": 1 }
+          ]
+        }
+        """.utf8)
+    try notDoneWithPlaceBytes.write(to: notDoneWithPlacePlace)
+
+    let samePlacePlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: samePlacePlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let samePlaceBytes = Data(
+        """
+        {
+          "version": 2,
+          "oneOffs": [
+            {
+              "name": "Call mum",
+              "date": { "year": 2026, "month": 9, "day": 25 },
+              "doneOn": { "year": 2026, "month": 9, "day": 28 },
+              "tick": 1
+            },
+            {
+              "name": "Pay fine",
+              "date": { "year": 2026, "month": 9, "day": 20 },
+              "doneOn": { "year": 2026, "month": 9, "day": 28 },
+              "tick": 1
+            }
+          ]
+        }
+        """.utf8)
+    try samePlaceBytes.write(to: samePlacePlace)
+
+    let gapPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: gapPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let gapBytes = Data(
+        """
+        {
+          "version": 2,
+          "oneOffs": [
+            {
+              "name": "Call mum",
+              "date": { "year": 2026, "month": 9, "day": 25 },
+              "doneOn": { "year": 2026, "month": 9, "day": 28 },
+              "tick": 1
+            },
+            {
+              "name": "Pay fine",
+              "date": { "year": 2026, "month": 9, "day": 20 },
+              "doneOn": { "year": 2026, "month": 9, "day": 28 },
+              "tick": 3
+            }
+          ]
+        }
+        """.utf8)
+    try gapBytes.write(to: gapPlace)
+
+    let earlyFormPlace = freshPlace()
+    try FileManager.default.createDirectory(
+        at: earlyFormPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let earlyFormBytes = Data(
+        """
+        {
+          "version": 1,
+          "oneOffs": [
+            {
+              "name": "Call mum",
+              "date": { "year": 2026, "month": 9, "day": 25 },
+              "doneOn": { "year": 2026, "month": 9, "day": 28 },
+              "tick": 1
+            }
+          ]
+        }
+        """.utf8)
+    try earlyFormBytes.write(to: earlyFormPlace)
+
+    #expect(throws: OneOffStoreError.notAStore(at: noPlacePlace)) {
+        try OneOffStore(at: noPlacePlace)
+    }
+    #expect(throws: OneOffStoreError.notAStore(at: notDoneWithPlacePlace)) {
+        try OneOffStore(at: notDoneWithPlacePlace)
+    }
+    #expect(throws: OneOffStoreError.notAStore(at: samePlacePlace)) {
+        try OneOffStore(at: samePlacePlace)
+    }
+    #expect(throws: OneOffStoreError.notAStore(at: gapPlace)) {
+        try OneOffStore(at: gapPlace)
+    }
+    #expect(throws: OneOffStoreError.notAStore(at: earlyFormPlace)) {
+        try OneOffStore(at: earlyFormPlace)
+    }
+
+    #expect(try Data(contentsOf: noPlacePlace) == noPlaceBytes)
+    #expect(try Data(contentsOf: notDoneWithPlacePlace) == notDoneWithPlaceBytes)
+    #expect(try Data(contentsOf: samePlacePlace) == samePlaceBytes)
+    #expect(try Data(contentsOf: gapPlace) == gapBytes)
+    #expect(try Data(contentsOf: earlyFormPlace) == earlyFormBytes)
+}
+
 @Test("content that is not a one-off store is refused and left as it was")
 func contentThatIsNotAOneOffStoreIsRefusedAndLeftAsItWas() throws {
     let place = freshPlace()
@@ -187,10 +367,11 @@ func aOneOffStoreWrittenInALaterFormThanThisAppKnowsIsRefused() throws {
     let place = freshPlace()
     try FileManager.default.createDirectory(
         at: place.deletingLastPathComponent(), withIntermediateDirectories: true)
-    let bytes = Data(#"{"version": 2, "oneOffs": []}"#.utf8)
+    let laterVersion = OneOffDocument.currentVersion + 1
+    let bytes = Data(#"{"version": \#(laterVersion), "oneOffs": []}"#.utf8)
     try bytes.write(to: place)
 
-    #expect(throws: OneOffStoreError.laterForm(at: place, version: 2)) {
+    #expect(throws: OneOffStoreError.laterForm(at: place, version: laterVersion)) {
         try OneOffStore(at: place)
     }
     #expect(try Data(contentsOf: place) == bytes)
@@ -204,7 +385,7 @@ func aOneOffStoreHoldingWhatCouldNotBeAOneOffIsRefused() throws {
     let blankNameBytes = Data(
         """
         {
-          "version": 1,
+          "version": 2,
           "oneOffs": [
             { "name": "   ", "date": { "year": 2026, "month": 9, "day": 25 } }
           ]
@@ -218,7 +399,7 @@ func aOneOffStoreHoldingWhatCouldNotBeAOneOffIsRefused() throws {
     let noSuchDayBytes = Data(
         """
         {
-          "version": 1,
+          "version": 2,
           "oneOffs": [
             { "name": "Call mum", "date": { "year": 2026, "month": 2, "day": 30 } }
           ]
@@ -232,12 +413,13 @@ func aOneOffStoreHoldingWhatCouldNotBeAOneOffIsRefused() throws {
     let doneBeforeDateBytes = Data(
         """
         {
-          "version": 1,
+          "version": 2,
           "oneOffs": [
             {
               "name": "Call mum",
               "date": { "year": 2026, "month": 9, "day": 25 },
-              "doneOn": { "year": 2026, "month": 9, "day": 24 }
+              "doneOn": { "year": 2026, "month": 9, "day": 24 },
+              "tick": 1
             }
           ]
         }
@@ -250,7 +432,7 @@ func aOneOffStoreHoldingWhatCouldNotBeAOneOffIsRefused() throws {
     let sameOneOffTwiceBytes = Data(
         """
         {
-          "version": 1,
+          "version": 2,
           "oneOffs": [
             { "name": "Call mum", "date": { "year": 2026, "month": 9, "day": 25 } },
             { "name": "Call mum", "date": { "year": 2026, "month": 9, "day": 25 } }

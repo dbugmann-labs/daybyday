@@ -8,8 +8,18 @@ public struct OneOffs: Hashable, Sendable {
 
     var entries: [Entry]
 
+    /// The done one-offs this holds, in the order they were ticked — oldest tick first, so the
+    /// most recently ticked is the last element. `design.md` § *The tick order is a list in the
+    /// value, not a number on a tick*: a tick or an add already done appends here, a take-back or
+    /// a removal drops, a rename replaces in place. Never a time of day. This is a stored
+    /// property, so two `OneOffs` differing only in this order are unequal — `design.md`'s
+    /// rejected "a counter stamped on each tick" would instead compare equal after a removal
+    /// left a hole one holder lacked and the other did not.
+    var doneOrder: [OneOff]
+
     public init() {
         entries = []
+        doneOrder = []
     }
 
     public mutating func add(_ oneOff: OneOff) -> Bool {
@@ -31,6 +41,7 @@ public struct OneOffs: Hashable, Sendable {
         }
 
         entries.append(Entry(oneOff: oneOff, doneOn: day))
+        doneOrder.append(oneOff)
         return true
     }
 
@@ -48,6 +59,7 @@ public struct OneOffs: Hashable, Sendable {
         }
 
         entries[index] = Entry(oneOff: oneOff, doneOn: day)
+        doneOrder.append(oneOff)
         return true
     }
 
@@ -61,6 +73,7 @@ public struct OneOffs: Hashable, Sendable {
         }
 
         entries[index] = Entry(oneOff: oneOff, doneOn: nil)
+        doneOrder.removeAll { $0 == oneOff }
         return true
     }
 
@@ -81,6 +94,9 @@ public struct OneOffs: Hashable, Sendable {
             return false
         }
 
+        if let doneIndex = doneOrder.firstIndex(of: oneOff) {
+            doneOrder[doneIndex] = renamed
+        }
         entries[index] = Entry(oneOff: renamed, doneOn: entries[index].doneOn)
         return true
     }
@@ -91,6 +107,7 @@ public struct OneOffs: Hashable, Sendable {
         }
 
         entries.remove(at: index)
+        doneOrder.removeAll { $0 == oneOff }
         return true
     }
 
@@ -110,15 +127,24 @@ public struct OneOffs: Hashable, Sendable {
         return oneOff.date.days(until: today) > 0 ? today : oneOff.date
     }
 
-    /// The one-offs this holds that stand on `day` as of `today`, ordered by each one-off's own
-    /// date, earliest first — a stable sort, so two owed on the same date keep the order they
-    /// were added in. `design.md` § *The order is `one-off`'s answer, and a day view only asks
-    /// for it*.
+    /// The one-offs this holds that stand on `day` as of `today`: every one not done first,
+    /// ordered by each one-off's own date, earliest first — a stable sort, so two owed on the
+    /// same date keep the order they were added in — then every one done, the most recently
+    /// ticked first. `design.md` § *The order is `one-off`'s answer, and a day view only asks
+    /// for it* and § *The tick order is a list in the value, not a number on a tick*.
     public func standing(on day: CalendarDate, asOf today: CalendarDate) -> [OneOff] {
-        entries
+        let onDay = entries
             .map(\.oneOff)
             .filter { standingDay(for: $0, asOf: today) == day }
+
+        let owed = onDay
+            .filter { !isDone($0) }
             .sorted { $0.date.days(until: $1.date) > 0 }
+
+        let doneOnDay = Set(onDay.filter { isDone($0) })
+        let done = doneOrder.reversed().filter { doneOnDay.contains($0) }
+
+        return owed + done
     }
 
     /// Whether this holds `oneOff` and it is done. `design.md` § *The seam*.

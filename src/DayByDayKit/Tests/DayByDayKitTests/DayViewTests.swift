@@ -249,6 +249,45 @@ func twoOneOffRowsOfOneOneOffOnDifferentDatesAreDifferentRows() {
     #expect(mondayDayView.oneOffGroup?.rows.first != tuesdayDayView.oneOffGroup?.rows.first)
 }
 
+@Test("a one-off row keeps its key when its one-off is ticked, and no other row shares it")
+func aOneOffRowKeepsItsKeyWhenItsOneOffIsTickedAndNoOtherRowSharesIt() {
+    let monday = CalendarDate(year: 2026, month: 9, day: 28)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 29)!
+    let callMum25 = OneOff(name: "Call mum", date: CalendarDate(year: 2026, month: 9, day: 25)!)!
+    let callMum28 = OneOff(name: "Call mum", date: monday)!
+
+    var first = OneOffs()
+    _ = first.add(callMum25)
+    _ = first.add(callMum28)
+    let firstDayView = DayView(
+        of: [Roster.Group](), oneOffs: first, asOf: monday, on: monday, in: History())
+
+    var second = OneOffs()
+    _ = second.add(callMum25)
+    _ = second.add(callMum28)
+    _ = second.tick(callMum25, on: monday)
+    let secondDayView = DayView(
+        of: [Roster.Group](), oneOffs: second, asOf: monday, on: monday, in: History())
+
+    let firstLateRow = firstDayView.oneOffGroup!.rows.first(where: { $0.lateInWords != nil })!
+    let secondDoneRow = secondDayView.oneOffGroup!.rows.first(where: { $0.isDone })!
+
+    #expect(firstLateRow.key == secondDoneRow.key)
+    #expect(firstLateRow != secondDoneRow)
+
+    let firstRowKeys = firstDayView.oneOffGroup!.rows.map(\.key)
+    #expect(firstRowKeys[0] != firstRowKeys[1])
+
+    var third = OneOffs()
+    _ = third.add(callMum25)
+    _ = third.add(callMum28)
+    let thirdDayView = DayView(
+        of: [Roster.Group](), oneOffs: third, asOf: tuesday, on: tuesday, in: History())
+    let thirdLateRow = thirdDayView.oneOffGroup!.rows.first(where: { $0.lateInWords == "4 days late" })!
+
+    #expect(thirdLateRow.key != firstLateRow.key)
+}
+
 @Test("two day views differing only in a one-off standing on another day are the same day view")
 func twoDayViewsDifferingOnlyInAOneOffStandingOnAnotherDayAreTheSameDayView() {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
