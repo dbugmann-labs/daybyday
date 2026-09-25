@@ -56,6 +56,7 @@ watch it fail, make it pass, then the next.
 ## 9. The carried scenarios
 
 - [x] 9.1 Every scenario the five MODIFIED `restore` requirements and the MODIFIED `day-screen` requirement carry passes with its test unedited, and so does every other test in the suite
+  - **G7 finding 2, recorded rather than reverted.** Five carried tests were forced to change, each for one of two reasons the seam itself made unavoidable. `RestoreTests.swift:1144, 1192, 1237-1239` and `CopyPlaceTests.swift:1304` each call `RestoreInProgress.restore`, whose `birthdayTicksAt:` parameter carries no default (`design.md` § *The seam*), so every carried call site needed the new argument to keep compiling. `CopyTests.swift:762-763` and `TakeOutTests.swift:59-60` each add the `case .birthdayTicks:` arm an exhaustive `switch` over `Copy.Store` now needs, since that enum gained the fourth case this Story adds. Every other carried test passes unedited.
 
 ## 10. The shell (ADR-1019: no rule the Kit does not state)
 

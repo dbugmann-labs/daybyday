@@ -126,10 +126,11 @@ public final class CommitmentsScreen {
                 // unreadable.
                 let recordNotRead = read.notRead.filter { $0.store == .record }
                 let oneOffsNotRead = read.notRead.filter { $0.store == .oneOffs }
+                let birthdayTicksNotRead = read.notRead.filter { $0.store == .birthdayTicks }
                 return (
                     nil, .notKept, nil, false,
                     recordNotRead + [StoreNotRead(store: .roster, cause: .couldNotBeRead)]
-                        + oneOffsNotRead)
+                        + oneOffsNotRead + birthdayTicksNotRead)
             }
         }
 

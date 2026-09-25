@@ -92,10 +92,10 @@ struct CopyDocument: Codable {
     /// copy: the envelope decides, and a later version outranks damage*. Reads an envelope of
     /// this document's own `version` and `moment` first: where that does not read, or its form is
     /// below 1, `data` is not a copy; where it is above `currentVersion`, it is from a later
-    /// version. Next come the envelopes of the three nested stores, read independently of one
+    /// version. Next come the envelopes of the four nested stores, read independently of one
     /// another and of the rest of the document — any one of them holding a later form than that
-    /// store reads makes the whole copy one from a later version, whatever state the other two are
-    /// in. Only then is the whole document decoded and each store's own shape checked against its
+    /// store reads makes the whole copy one from a later version, whatever state the other three
+    /// are in. Only then is the whole document decoded and each store's own shape checked against its
     /// declared form, exactly as that store's `init(at:)` checks its own place; any failure there
     /// is a damaged copy.
     static func read(_ data: Data) -> Result<Copy, CommitmentsScreen.Refusal> {

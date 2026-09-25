@@ -111,6 +111,18 @@ private func blockedPlace(named name: String) throws -> URL {
     return blocker.appendingPathComponent(name)
 }
 
+/// Makes `directory` read-only, so a write to a file already inside it fails while the file
+/// itself still reads — mirrors `CommitmentsScreenTests.swift`'s own helper of the same name.
+/// Every caller must pair this with `makeWritable(_:)`, including on its failure path.
+private func makeReadOnly(_ directory: URL) throws {
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+}
+
+/// Undoes `makeReadOnly(_:)`, restoring `directory` to one that can be written to again.
+private func makeWritable(_ directory: URL) throws {
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+}
+
 /// `copy`, written exactly as a copy was written before copies held birthday ticks: form 1,
 /// nothing named `birthdayTicks` at all — derived from the current, form-2 encoding of `copy`
 /// (which always holds no ticks unless `copy.birthdayTicks` says otherwise) by dropping that key
@@ -294,6 +306,83 @@ func aCopyIsRefusedWholeWhereTheBirthdayTicksCannotBeReadNamingThemOnlyWhereTheO
 
 @MainActor
 @Test(
+    "a commitments screen that cannot erase a removed commitment's records and cannot read the birthday ticks names the roster and the birthday ticks, dropping neither"
+)
+func aCommitmentsScreenThatCannotEraseARemovedCommitmentsRecordsAndCannotReadTheBirthdayTicksNamesTheRosterAndTheBirthdayTicksDroppingNeither()
+    throws
+{
+    // `readPlaces` rebuilds `storesNotRead` by hand once the erase the migration owes at open
+    // fails — `CommitmentsScreenTests.swift`'s own fixture for that failure, widened with a
+    // birthday place that cannot be read either, to catch the birthday-ticks entry that rebuild
+    // dropped (G7 review finding 1).
+    let places = freshFourPlaces()
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let august3rd = CalendarDate(year: 2026, month: 8, day: 3)!
+
+    try FileManager.default.createDirectory(
+        at: places.roster.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let rosterBytes = Data(
+        """
+        {
+          "version": 5,
+          "commitments": [
+            {
+              "commitment": {
+                "name": "Gym",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "11111111-1111-1111-1111-111111111111"
+              },
+              "keptUntil": { "year": 2026, "month": 8, "day": 30 },
+              "removed": true,
+              "category": null
+            },
+            {
+              "commitment": {
+                "name": "Lifting",
+                "keptFrom": { "year": 2026, "month": 1, "day": 1 },
+                "schedule": { "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                "identity": "22222222-2222-2222-2222-222222222222"
+              },
+              "removed": false,
+              "category": null
+            }
+          ]
+        }
+        """.utf8)
+    try rosterBytes.write(to: places.roster)
+
+    let gym = Commitment(
+        identity: Commitment.Identity("11111111-1111-1111-1111-111111111111")!,
+        name: "Gym",
+        schedule: .weekdays([
+            .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+        ]), keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!, kind: .tick)!
+
+    let recordDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let recordPlace = recordDirectory.appendingPathComponent("record.json")
+    let recordStore = try RecordStore(at: recordPlace)
+    try recordStore.add(Tick(gym, on: august3rd)!)
+
+    try makeReadOnly(recordDirectory)
+    defer { try? makeWritable(recordDirectory) }
+
+    try Data("not what birthday ticks are written as".utf8).write(to: places.birthday)
+
+    let screen = CommitmentsScreen(
+        asOf: monday, keepingRosterAt: places.roster, keepingRecordAt: recordPlace,
+        keepingOneOffsAt: places.oneOffs, keepingBirthdayTicksAt: places.birthday)
+
+    #expect(
+        screen.storesNotRead == [
+            CommitmentsScreen.StoreNotRead(store: .roster, cause: .couldNotBeRead),
+            CommitmentsScreen.StoreNotRead(store: .birthdayTicks, cause: .couldNotBeRead),
+        ])
+}
+
+@MainActor
+@Test(
     "a change kept where the birthday ticks cannot be read is kept, and the stop names the birthday ticks"
 )
 func aChangeKeptWhereTheBirthdayTicksCannotBeReadIsKeptAndTheStopNamesTheBirthdayTicks() throws {
@@ -314,14 +403,17 @@ func aChangeKeptWhereTheBirthdayTicksCannotBeReadIsKeptAndTheStopNamesTheBirthda
     let directory = freshCopyDirectory()
     commitmentsScreen.givenAsCopyPlace(directory)
 
-    try FileManager.default.createDirectory(
-        at: places.birthday.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data("not what birthday ticks are written as".utf8).write(to: places.birthday)
-
     let dayScreen = DayScreen(
         startingFrom: [], asOf: monday, keepingRecordAt: places.record, keepingRosterAt: places.roster,
         keepingOneOffsAt: places.oneOffs, keepingBirthdayTicksAt: places.birthday,
         copyingTo: copyPlace)
+
+    // What is at the birthday place is made a run of bytes that is not what birthday ticks are
+    // written as only now — after the day screen is opened, matching the scenario's own order
+    // (G7 review finding 5).
+    try FileManager.default.createDirectory(
+        at: places.birthday.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what birthday ticks are written as".utf8).write(to: places.birthday)
 
     try dayScreen.tick(dayScreen.dayView.rows.first { $0.name == "Gym" }!)
 
@@ -1208,8 +1300,14 @@ func aDayScreenThatSaysItsBirthdayTicksCouldNotBeReadSaysACopyCanBeRestoredAndSa
     #expect(offScreen.birthdayState == .off)
     #expect(!offScreen.saysACopyCanBeRestored)
 
-    // The calendar cannot be read: says nothing about restoring a copy.
+    // The calendar cannot be read: says nothing about restoring a copy. Opened the same way as
+    // the cases above — its birthday place also a run of bytes that is not what birthday ticks
+    // are written as (G7 review finding 3).
     let unreadableCalendarPlaces = freshFourPlaces()
+    try FileManager.default.createDirectory(
+        at: unreadableCalendarPlaces.birthday.deletingLastPathComponent(),
+        withIntermediateDirectories: true)
+    try Data("not what birthday ticks are written as".utf8).write(to: unreadableCalendarPlaces.birthday)
     let throwingCalendar = fixedThrowingCalendar()
     let throwingSwitch = await onSwitch()
     let unreadableCalendarScreen = DayScreen(

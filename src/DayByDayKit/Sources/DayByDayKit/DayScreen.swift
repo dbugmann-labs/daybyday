@@ -1238,7 +1238,7 @@ public final class DayScreen {
     /// where this screen is keeping a record, the record, are read again, and the day view is
     /// formed again for the day being shown. Takes no today, moves no day, and goes on telling
     /// what it was telling. Where `commitmentsScreen` has restored a copy since it was opened,
-    /// this instead opens all three places afresh, whether or not each was already kept, takes
+    /// this instead opens all four places afresh, whether or not each was already kept, takes
     /// on the commitments this screen was handed where the roster it reads holds nothing at
     /// all, and tells nothing on any row nor under any one-off name field —
     /// `openspec/changes/restore-from-a-copy/specs/restore/spec.md` § *A day screen returned to
@@ -1280,6 +1280,13 @@ public final class DayScreen {
             self.recordState = .unreadable
             self.oneOffStore = nil
             self.oneOffState = .unreadable
+            // The birthday place is opened afresh here too, on the same footing as the record,
+            // the roster and the one-offs just above: a torn restore this screen cannot undo
+            // must not leave `birthdayStore` holding whatever it read before the restore
+            // (G7 review finding 4).
+            let openedBirthdays = Self.openBirthdays(at: birthdayPlace)
+            self.birthdayStore = openedBirthdays.store
+            self.birthdayTicksState = openedBirthdays.state
             refreshBirthdays(for: shownDay)
             self.dayView = Self.formDayView(
                 of: [], roster: Roster(), oneOffs: nil, asOf: today, on: shownDay, in: History(),
