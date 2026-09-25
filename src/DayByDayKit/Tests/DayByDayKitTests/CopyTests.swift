@@ -453,7 +453,7 @@ func aCopyFormedFromOneOffsWithTwoTicksReadsBackAsEqualOneOffs() throws {
         moment: Moment(on: september28, hour: 9, minute: 0)!, history: History(), roster: Roster(),
         oneOffs: oneOffs)
     let data = try JSONEncoder().encode(CopyDocument(copy))
-    let formed = try #require(JSONDecoder().decode(CopyDocument.self, from: data).formCopy())
+    let formed = try CopyDocument.read(data).get()
 
     #expect(formed.oneOffs == oneOffs)
 }
@@ -494,11 +494,38 @@ func aCopyNestingForm1OneOffsReadsBackWithTheOrderThisAppDrawsForTicksFromBefore
     copyDocument.oneOffs = oneOffDocument
 
     let data = try JSONEncoder().encode(copyDocument)
-    let formed = try #require(JSONDecoder().decode(CopyDocument.self, from: data).formCopy())
+    let formed = try CopyDocument.read(data).get()
 
     #expect(
         formed.oneOffs.standing(on: september28, asOf: september28).map(\.name)
             == ["Send form", "Call mum", "Book dentist", "Pay fine"])
+}
+
+// Not one of task 4.3's own two tests, but beside them for the same reason: proving
+// `CopyDocument.formCopy()` refuses a form-2 copy whose done one-off carries no `tick` rather than
+// trapping on `OneOffDocument.formOneOffs()`'s force-unwrap, which only holds once
+// `OneOffStore.shapeAgrees(with:)` has run — the check `formCopy()` skipped before this fix.
+
+@Test("a copy nesting a form-2 one-off document whose done entry carries no tick is refused")
+func aCopyNestingAFormTwoOneOffDocumentWhoseDoneEntryCarriesNoTickIsRefused() throws {
+    let payFine = OneOffEntryRecord(
+        name: "Pay fine", date: DateRecord(CalendarDate(year: 2026, month: 9, day: 25)!),
+        doneOn: DateRecord(CalendarDate(year: 2026, month: 9, day: 28)!), tick: nil)
+
+    var oneOffDocument = OneOffDocument(OneOffs())
+    oneOffDocument.version = 2
+    oneOffDocument.oneOffs = [payFine]
+
+    var copyDocument = CopyDocument(
+        Copy(
+            moment: Moment(on: CalendarDate(year: 2026, month: 9, day: 28)!, hour: 9, minute: 0)!,
+            history: History(), roster: Roster(), oneOffs: OneOffs()))
+    copyDocument.oneOffs = oneOffDocument
+
+    let data = try JSONEncoder().encode(copyDocument)
+    let decoded = try JSONDecoder().decode(CopyDocument.self, from: data)
+
+    #expect(decoded.formCopy() == nil)
 }
 
 @MainActor
