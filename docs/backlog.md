@@ -173,6 +173,72 @@ it as a gap rather than saying it unprompted.*
 - **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
+### B-061 — come back to the app on a whole day, never half-way between two
+
+*Captured 2026-09-25.*
+
+> "When I switch to another app (swipe on the bottom of the screen on the iphone), and then I go
+> back to DayByDay, then the day screen is stuck between 2 day screens (the app switch swipe
+> starts a day change which is stopped.. It feels buggy)"
+
+- **Trigger** — leaving the app from the day screen with the home-indicator swipe, then coming
+  back to it. A defect the owner hit on the phone, not a new thing to do.
+- **Touches** — `day-screen`, and only the app shell. The paging is shell work under ADR-1043, and
+  `add-adjacent-day-views`' `design.md` keeps every motion, distance and threshold out of the kit,
+  so no requirement says where a page comes to rest. Likely a shell chore under ADR-1019, the way
+  B-050 was.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** The home-indicator swipe is
+  how every app is left on this phone, so a day screen that catches the start of it is a screen
+  arguing with the phone it lives on.
+- **Open** — does a half-way page ever settle on its own — on the next touch, on the next swipe —
+  or does it stay until something moves the day?
+- **Open** — can it be shown in the Simulator at all? The swipe that starts it is the system's, so
+  this may be a `phone:` step only, which prices it like B-041.
+
+### B-062 — open every day at its top
+
+*Captured 2026-09-25.*
+
+> "When I scroll to the bottom of the day screen and I switch to another day (swiping, day picker
+> or chevron), then this new day is directly also scrolled to the bottom.. I don't want that, it
+> should always show another day on top"
+
+- **Trigger** — a long day scrolled to its end, then a move to another day by any of the three
+  ways there: the swipe, the day picker, a chevron.
+- **Touches** — `day-screen`, and only the app shell: where a day's list is scrolled to is shell
+  state, and no requirement says where a day opens. Same paging as B-061, so the two cluster.
+- **Principle** — tested against *entered where you stand*: **passes.** A day opened at its bottom
+  puts its first rows off the screen, and those are rows an entry is made in; landing at the end
+  means a scroll before the first tap.
+- **Open** — is *Today* a fourth way there that should also open at the top? The quote names three,
+  and *Today* is also a move to another day.
+- **Open** — does coming back to the app from the background count as another day? The quote is
+  about moving between days, not about returning to the same one.
+
+### B-063 — speak a note instead of typing it, in German
+
+*Captured 2026-09-25.*
+
+> "In notes, It would be nice to have a voice input option (in German), so I can talk instead of
+> write, and it is then written down (in German)"
+
+- **Trigger** — a note entry on the day screen, where a sentence typed with one thumb is slower
+  than the same sentence said.
+- **Touches** — `day-screen`'s note entry (*A day screen enters the note a row's entry takes, and
+  keeps the change before the day view says so*); the note is committed and read exactly as a typed
+  one would be, so the change is probably the shell's alone — and possibly nothing at all, see Open.
+- **Principle** — tested against *entered where you stand*: **passes.** The note is still made in
+  the row it belongs to, with less interaction than typing it; the principle is about where an entry
+  is made, and "a sentence is typed there" names the place, not the keyboard.
+- **Open** — does the keyboard already do it? The system keyboard carries its own dictation key where
+  Dictation is on in the phone's settings. If the note field shows it and it writes German, this want
+  is a setting on the phone and not a line of code; if the field hides it, or it will not write
+  German, that is the finding.
+- **Open** — or is the want a control of the row's own — one tap to talk, without the keyboard coming
+  up first? That is a new control and a microphone permission, where the keyboard's key is neither.
+- **Open** — does a spoken note leave the phone? Apple's recogniser can run on the device for some
+  languages and not others, and a note is the most personal thing the record holds.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
