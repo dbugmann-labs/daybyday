@@ -137,6 +137,13 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   the trio is stable at three and every call site names its members. What would force the first is
   a fourth store, which `copy-on-every-change` (#268) does not add but a later capability might.
   Recorded 2026-09-16, at #267's G7.
+  **The fourth store came, 2026-09-25, and the clump grew with it rather than forcing the type.**
+  `carry-birthdays-in-a-copy` (#329) carried the birthday place in a copy, a restore, the take-out and
+  the undo of a torn restore, threading a `birthdayTicksAt:` beside the other three through about
+  fifteen signatures — and its G7 reviewer raised it again as a judgement call, not this Story's to
+  refactor. The trigger named above has fired and the second answer's ground ("stable at three") is
+  gone; the first answer now moves every one of those call sites at once, and a fifth store would
+  thread through all of them again. Recorded 2026-09-25, at #329's G7.
 
 - **A copy can be formed two ways, and only one of them checks.** `CopyDocument.formCopy()`
   (`CopyDocument.swift:37-70`) forms the three stores through `formTicks()`, `formRoster()` and
@@ -155,6 +162,10 @@ want the app to *do*, it was in the wrong file: capture it with `/atlas idea` an
   review noticing. Raised as a judgement call rather than a finding at #267's second G7 read, and
   left out of that Story deliberately: it is not #267's defect and the delta was signed without it.
   Recorded 2026-09-16, at #267's G7.
+  **The two paths now also differ by the copy's own form, 2026-09-25.** `carry-birthdays-in-a-copy`
+  (#329) moved the copy to form 2, which holds the birthday ticks, and wrote the form-1/form-2
+  branch twice — once in `formCopy()`, once in `read(_:)` — so the test-only path duplicates a rule
+  as well as skipping checks. Raised as a judgement call at #329's G7. Recorded 2026-09-25.
 
 - **"Writes nothing" over-claims, in the requirement as much as in the design.** `restore-from-a-copy`
   (#267) says of a restore in progress that cannot be read or undone, at
