@@ -45,9 +45,9 @@ struct OneOffDocument: Codable {
     /// could not be formed, if replaying it is refused by `OneOffs` itself — a name that says
     /// nothing, a date that names no day, a day done before the one-off's own date, or two
     /// one-offs alike in name and date — or, at or after `tickOrderIntroducedInVersion`, if any
-    /// done entry carries no `tick` place: this method is the one place that check runs, since
-    /// `CopyDocument.formCopy()` calls it directly rather than through
-    /// `OneOffStore.shapeAgrees(with:)`.
+    /// done entry carries no `tick` place: `OneOffStore.shapeAgrees(with:)` makes that same
+    /// check, and this method makes it too, as a guard for callers that skip that shape check —
+    /// `CopyDocument.formCopy()` calls this method directly rather than through it.
     ///
     /// At or after `tickOrderIntroducedInVersion`, the tick order is exactly what each done
     /// entry's own `tick` place says. Before it, this app kept no tick order at all, so one is
