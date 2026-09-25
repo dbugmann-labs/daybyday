@@ -5994,8 +5994,9 @@ directory the platform reserves for an application's own supporting data, and MU
 the caches directory or the temporary directory. It SHALL be the same place every time it is asked
 for, and SHALL be none of the places the day screen keeps its record, its roster and its one-offs at,
 nor the place a birthday switch is kept at by default. A day screen SHALL open its birthday place
-when it is opened and when the app is shown again, whether or not birthdays are on, and at no other
-moment; opening it SHALL write nothing there.
+when it is opened or the app is shown again, and when returned to from a commitments screen that
+restored a copy, whether or not birthdays are on, and at no other moment; opening it SHALL write
+nothing there.
 
 #### Scenario: the place a day screen keeps its birthday ticks is a file of the app's own under Application Support, the same every time
 
@@ -6022,6 +6023,18 @@ moment; opening it SHALL write nothing there.
 - **AND** after the app is shown again as of that same day, that row says it is ticked
 - **AND** a day screen opened the same way and never ticked leaves nothing kept at its birthday
   place
+
+#### Scenario: a day screen returned to after a restore draws the birthday ticks the copy holds
+
+- **WHEN** a day screen of no commitments at all is opened as of Tuesday 20 January 2026 at four
+  places where nothing has been kept, with birthdays on and a calendar holding the contact "kate"'s
+  birthday worded "Kate Bell's 48th Birthday" on 20 January 2026; a commitments screen is opened at
+  the same places and a copy is made through it as of that day at 14:32; the day screen's one
+  birthday row is then ticked; the commitments screen restores that copy; and the day screen is
+  returned to from it
+- **THEN** its Birthdays group holds one row, saying it is not ticked
+- **AND** ticking that row then keeps its tick, and a birthday store opened afterwards at its birthday
+  place holds that birthday ticked
 
 ### Requirement: A day screen that cannot read its birthday ticks draws its birthdays unticked and keeps no tick
 
