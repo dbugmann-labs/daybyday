@@ -65,5 +65,5 @@ Today holds three one-offs: "Call mum" owed three days ago, "Send form" owed tod
 - [x] W.2 "Call mum" ticked — "Send form", then "Call mum" struck through, then "Pay fine" struck through.
 - [x] W.3 "Send form" ticked — "Send form", "Call mum" and "Pay fine", all three struck through, in that order.
 - [x] W.4 "Call mum"'s tick taken back — "Call mum" saying "3 days late" first again, above "Send form" and "Pay fine", both struck through.
-- [ ] W.5 phone: tick a one-off above a done one and take the tick back — the row slides down to just below the last one owed and back up, and can be followed with the eye both ways.
+- [x] W.5 phone: tick a one-off above a done one and take the tick back — the row slides down to just below the last one owed and back up, and can be followed with the eye both ways.
 - [x] W.6 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.5 is the human's at G7; the conductor ticks it on the G7 approval.
