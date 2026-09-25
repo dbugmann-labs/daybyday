@@ -56,7 +56,7 @@ watch it fail, make it pass, then the next.
 ## 9. The carried scenarios
 
 - [x] 9.1 Every scenario the five MODIFIED `restore` requirements and the MODIFIED `day-screen` requirement carry passes with its test unedited, and so does every other test in the suite
-  - **G7 finding 2, recorded rather than reverted.** Five carried tests were forced to change, each for one of two reasons the seam itself made unavoidable. `RestoreTests.swift:1144, 1192, 1237-1239` and `CopyPlaceTests.swift:1304` each call `RestoreInProgress.restore`, whose `birthdayTicksAt:` parameter carries no default (`design.md` § *The seam*), so every carried call site needed the new argument to keep compiling. `CopyTests.swift:762-763` and `TakeOutTests.swift:59-60` each add the `case .birthdayTicks:` arm an exhaustive `switch` over `Copy.Store` now needs, since that enum gained the fourth case this Story adds. Every other carried test passes unedited.
+  - **G7 finding 2, recorded rather than reverted.** Two carried tests were forced to change, and two private test helpers gained a case, each for one of two reasons the seam itself made unavoidable. `RestoreTests.swift`'s `aRestoreStoppedBeforeItWasWholeIsUndoneWhenThePlacesAreNextOpened` (three call sites: lines 1144, 1192, 1238) and `CopyPlaceTests.swift`'s `aTornRestoreUndoneWhenAScreenIsOpenedWritesNoCopyAtTheCopyPlace` (line 1304) each call `RestoreInProgress.restore`, whose `birthdayTicksAt:` parameter carries no default (`design.md` § *The seam*), so every carried call site needed the new argument to keep compiling. `CopyTests.swift:867-868` and `TakeOutTests.swift:59-60` — each a private `laterFormBytes` helper, not a test itself — add the `case .birthdayTicks:` arm an exhaustive `switch` over `Copy.Store` now needs, since that enum gained the fourth case this Story adds. Every other carried test passes unedited.
 
 ## 10. The shell (ADR-1019: no rule the Kit does not state)
 
@@ -72,13 +72,13 @@ watch it fail, make it pass, then the next.
 
 - [x] W.1 The commitments screen with birthdays off and `birthday-ticks.json` replaced by a run of bytes, after *Make a copy* is tapped — the refused copy saying *Your birthday ticks could not be read.*, and *Take out the files* with its caption naming the birthday ticks.
 - [x] W.2 In that state, the restore sheet for a copy made before the ticks were damaged — under *Your phone*, *Your birthday ticks could not be read.* after the one-offs line.
-- [ ] W.3 phone: tick a birthday, make a copy, take the tick back, restore that copy — the tick is back on the day screen.
-- [ ] W.4 phone: tick a birthday — the commitments screen's copy-place line shows a new last copy.
-- [x] W.5 **The handover** — W.1–W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL: https://github.com/dbugmann-labs/daybyday/pull/342#issuecomment-5824015517. W.3 and W.4 are the human's at G7; the conductor ticks them on the G7 approval.
+- [x] W.3 phone: tick a birthday, make a copy, take the tick back, restore that copy — the tick is back on the day screen.
+- [x] W.4 phone: tick a birthday — the commitments screen's copy-place line shows a new last copy.
+- [x] W.5 **The handover** — W.1–W.2, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL: https://github.com/dbugmann-labs/daybyday/pull/342#issuecomment-5827790967. W.3 and W.4 are the human's at G7; the conductor ticks them on the G7 approval.
 
 ## 12. Gates and the archive handover
 
 - [x] 12.1 `openspec validate carry-birthdays-in-a-copy --strict` exits 0, and `pnpm run checks` is clean
 - [x] 12.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
-- [ ] 12.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 12.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.3 and W.4 by the conductor at G7 — and the walk comment's URL is in W.5. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/restore/spec.md` gained six requirements, renamed one, and holds its five MODIFIED ones whole; that `openspec/specs/day-screen/spec.md` changed one requirement by one sentence and one scenario; and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
+- [x] 12.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 12.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.3 and W.4 by the conductor at G7 — and the walk comment's URL is in W.5. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/restore/spec.md` gained six requirements, renamed one, and holds its five MODIFIED ones whole; that `openspec/specs/day-screen/spec.md` changed one requirement by one sentence and one scenario; and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**

@@ -1253,15 +1253,17 @@ public final class DayScreen {
         returnedToAfterARestore()
     }
 
-    /// Being returned to after a restore: opens the record, the roster and the one-off places
-    /// afresh, whether or not each was already kept, taking on the commitments this screen was
-    /// handed where the roster reads nothing at all. Where a restore in progress cannot itself be
-    /// undone, all three answer as reading nothing, exactly as `readRecordAndRoster` answers the
-    /// same condition at `init` and `shown(asOf:)`. Where only a save in progress stands and
-    /// cannot be undone, the record answers as unreadable and the roster is opened read-only,
-    /// exactly as `readRecordAndRoster` answers that condition too — but the one-offs are
-    /// unaffected by a torn save, so they are still opened afresh here, same as everywhere else
-    /// in this function.
+    /// Being returned to after a restore: opens the record, the roster, the one-off and the
+    /// birthday-tick places afresh, whether or not each was already kept, taking on the
+    /// commitments this screen was handed where the roster reads nothing at all. Where a restore
+    /// in progress cannot itself be undone, the record, the roster and the one-offs answer as
+    /// reading nothing, exactly as `readRecordAndRoster` answers the same condition at `init` and
+    /// `shown(asOf:)` — but the birthday-tick place is still opened afresh even then, on its own
+    /// footing, rather than answering as reading nothing alongside the other three (G7 review
+    /// finding 4). Where only a save in progress stands and cannot be undone, the record answers
+    /// as unreadable and the roster is opened read-only, exactly as `readRecordAndRoster` answers
+    /// that condition too — but the one-offs and the birthday ticks are unaffected by a torn
+    /// save, so they are still opened afresh here, same as everywhere else in this function.
     private func returnedToAfterARestore() {
         notice = nil
         nameRefusal = nil

@@ -1,7 +1,7 @@
 import Foundation
 
 /// The state a restore keeps beside the record place before it writes anything, and undoes if it
-/// stops before it is whole — mirroring `SaveInProgress`'s own place, but spanning all three
+/// stops before it is whole — mirroring `SaveInProgress`'s own place, but spanning all four
 /// places rather than two. `openspec/changes/restore-from-a-copy/design.md` § *Whole or nothing,
 /// across a stop* (ADR-1056): "Before it writes anything, a restore keeps a restore in progress
 /// beside the record place, in one atomic file. It holds the bytes that stood at the three places

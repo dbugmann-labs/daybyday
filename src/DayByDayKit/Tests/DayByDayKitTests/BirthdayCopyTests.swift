@@ -439,15 +439,15 @@ func aChangeKeptWhereTheBirthdayTicksCannotBeReadIsKeptAndTheStopNamesTheBirthda
         copyingTo: laterCopyPlace)
     laterCommitmentsScreen.givenAsCopyPlace(freshCopyDirectory())
 
-    try FileManager.default.createDirectory(
-        at: laterPlaces.birthday.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data(#"{"version": \#(BirthdayDocument.currentVersion + 1), "ticks": []}"#.utf8)
-        .write(to: laterPlaces.birthday)
-
     let laterDayScreen = DayScreen(
         startingFrom: [], asOf: monday, keepingRecordAt: laterPlaces.record,
         keepingRosterAt: laterPlaces.roster, keepingOneOffsAt: laterPlaces.oneOffs,
         keepingBirthdayTicksAt: laterPlaces.birthday, copyingTo: laterCopyPlace)
+
+    try FileManager.default.createDirectory(
+        at: laterPlaces.birthday.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(#"{"version": \#(BirthdayDocument.currentVersion + 1), "ticks": []}"#.utf8)
+        .write(to: laterPlaces.birthday)
 
     try laterDayScreen.tick(laterDayScreen.dayView.rows.first { $0.name == "Gym" }!)
 

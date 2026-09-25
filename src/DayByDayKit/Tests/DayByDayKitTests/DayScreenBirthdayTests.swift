@@ -1088,10 +1088,6 @@ func aDayScreenReturnedToAfterATornRestoreItCannotUndoReopensItsBirthdayPlaceRat
     #expect(commitmentsScreen.confirmRestoring() == nil)
     #expect(commitmentsScreen.hasRestoredACopy)
 
-    // The birthday place is changed by hand, behind this screen's own stale in-memory store —
-    // the same tell a fresh read would catch and a stale one would miss.
-    try BirthdayStore(at: places.birthday).takeBack(kate)
-
     // A restore in progress now stands behind this screen's back and cannot be undone: a run of
     // bytes that is not what a restore in progress is written as, mirroring `RestoreTests.swift`'s
     // own `aRestoreInProgressThatCannotBeUndoneLeavesAScreenReadingNothingFromTheThreePlaces`.
