@@ -1301,7 +1301,7 @@ func aTornRestoreUndoneWhenAScreenIsOpenedWritesNoCopyAtTheCopyPlace() throws {
         roster: journalingRoster, oneOffs: OneOffs())
     try RestoreInProgress.restore(
         copy, recordAt: places.record, rosterAt: places.roster, oneOffsAt: places.oneOffs,
-        stoppingAfter: 2)
+        birthdayTicksAt: DayScreen.birthdayPlace(besideRecordAt: places.record), stoppingAfter: 2)
 
     let directory = freshCopyPlaceDirectory()
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

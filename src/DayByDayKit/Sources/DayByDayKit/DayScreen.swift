@@ -128,6 +128,17 @@ public final class DayScreen {
             .appendingPathComponent(fileName)
     }
 
+    /// The place a screen given no birthday place of its own keeps its birthday ticks at: one
+    /// file, `birthday-ticks.json`, beside `recordPlace` — whatever `recordPlace` is, real or a
+    /// test's own temporary one. `design.md` § *A birthday place not given is the one beside the
+    /// record place*: every screen (`DayScreen`, `CommitmentsScreen`, `CopyPlace`) given no
+    /// birthday place falls back to this, so a test that hands a temporary record place never has
+    /// a birthday place default to the real Application Support file. Where `recordPlace` is
+    /// itself `DayScreen.recordPlace`, this equals `DayScreen.birthdayPlace` above.
+    static func birthdayPlace(besideRecordAt recordPlace: URL) -> URL {
+        recordPlace.deletingLastPathComponent().appendingPathComponent("birthday-ticks.json")
+    }
+
     /// Opens on `today`, reading the record kept at `recordPlace`. `copyingTo` is the copy place
     /// a kept change writes to, `nil` by default so every existing call site still compiles
     /// unchanged — `openspec/changes/copy-on-every-change/design.md` § *The seam*.
@@ -140,7 +151,7 @@ public final class DayScreen {
         keepingRecordAt recordPlace: URL = DayScreen.recordPlace,
         keepingRosterAt rosterPlace: URL = DayScreen.rosterPlace,
         keepingOneOffsAt oneOffPlace: URL = DayScreen.oneOffPlace,
-        keepingBirthdayTicksAt birthdayPlace: URL = DayScreen.birthdayPlace,
+        keepingBirthdayTicksAt birthdayPlace: URL? = nil,
         readingBirthdaysFrom calendar: BirthdayCalendar? = nil,
         whileOn birthdaySwitch: BirthdaySwitch? = nil,
         copyingTo copyPlace: CopyPlace? = nil
@@ -151,14 +162,14 @@ public final class DayScreen {
         self.recordPlace = recordPlace
         self.rosterPlace = rosterPlace
         self.oneOffPlace = oneOffPlace
-        self.birthdayPlace = birthdayPlace
+        self.birthdayPlace = birthdayPlace ?? Self.birthdayPlace(besideRecordAt: recordPlace)
         self.calendar = calendar
         self.birthdaySwitch = birthdaySwitch
         self.copyPlace = copyPlace
 
         let read = Self.readRecordAndRoster(
             recordAt: recordPlace, rosterAt: rosterPlace, oneOffAt: oneOffPlace,
-            takingOnIfEmpty: dayOne)
+            birthdayTicksAt: self.birthdayPlace, takingOnIfEmpty: dayOne)
         self.recordStore = read.recordStore
         self.recordState = read.recordState
         self.rosterState = read.rosterState
@@ -166,7 +177,7 @@ public final class DayScreen {
         self.oneOffStore = read.oneOffStore
         self.oneOffState = read.oneOffState
 
-        let openedBirthdays = Self.openBirthdays(at: birthdayPlace)
+        let openedBirthdays = Self.openBirthdays(at: self.birthdayPlace)
         self.birthdayStore = openedBirthdays.store
         self.birthdayTicksState = openedBirthdays.state
 
@@ -219,7 +230,7 @@ public final class DayScreen {
     /// so they are still opened in that branch.
     private static func readRecordAndRoster(
         recordAt recordPlace: URL, rosterAt rosterPlace: URL, oneOffAt oneOffPlace: URL,
-        takingOnIfEmpty dayOne: [Commitment]
+        birthdayTicksAt birthdayPlace: URL, takingOnIfEmpty dayOne: [Commitment]
     ) -> (
         recordStore: RecordStore?, recordState: RecordState, roster: Roster, rosterState: RosterState,
         oneOffStore: OneOffStore?, oneOffState: OneOffState
@@ -230,7 +241,8 @@ public final class DayScreen {
         // fallback just below, which still reads a roster this condition never reaches for.
         guard
             RestoreInProgress.undoTornRestore(
-                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace)
+                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace,
+                birthdayTicksAt: birthdayPlace)
         else {
             return (nil, .unreadable, Roster(), .notKept, nil, .unreadable)
         }
@@ -549,14 +561,17 @@ public final class DayScreen {
     public private(set) var birthdayState: BirthdayState
 
     /// Whether this screen says a copy can be restored, and where: exactly while it could not
-    /// read its record, could not read its one-offs, or is not keeping its roster for a reason
-    /// that is not a later version of DayByDay — `.notKept` already bundles a roster that could
-    /// not be read with one that could not be written. `false` where every store it is not keeping
-    /// was written by a later version, and where it is keeping all three. Reads no clock and no
-    /// place; changes nothing. `openspec/specs/restore/spec.md` § *A day screen that is not
-    /// keeping a store says a copy can be restored and where*.
+    /// read its record, could not read its one-offs, is not keeping its roster for a reason
+    /// that is not a later version of DayByDay, or its birthday ticks could not be read —
+    /// `.notKept` already bundles a roster that could not be read with one that could not be
+    /// written. `false` where every store it is not keeping was written by a later version, where
+    /// birthdays are off or the calendar cannot be read, and where it is keeping all three and its
+    /// birthday ticks read fine. Reads no clock and no place; changes nothing.
+    /// `openspec/specs/restore/spec.md` § *A day screen that is not keeping a store says a copy
+    /// can be restored and where*.
     public var saysACopyCanBeRestored: Bool {
         recordState == .unreadable || oneOffState == .unreadable || rosterState == .notKept
+            || birthdayState == .ticksUnreadable
     }
 
     /// What a person is told on a row, and nothing else: which row, and the cause where there is
@@ -838,8 +853,10 @@ public final class DayScreen {
     /// and keeps the change at the birthday place before `dayView` says so. Does nothing when
     /// `row` is not one this screen's day view holds, when the birthday ticks could not be
     /// read, or when `row` offers no tick as of today. Throws when the change could not be
-    /// kept, leaving `dayView` as it was. Writes no copy — `design.md` § Non-Goals: "a birthday
-    /// tick writes no copy."
+    /// kept, leaving `dayView` as it was. Writes a copy at the copy place after the change is
+    /// kept, exactly as every other kept change does — `openspec/specs/restore/spec.md` § *A
+    /// birthday tick kept on a day screen writes a copy at the copy place*: carried from #328's
+    /// own Non-Goal to this Story.
     public func tick(_ row: DayView.BirthdayRow) throws {
         guard dayView.birthdayGroup?.rows.contains(row) ?? false else {
             return
@@ -864,6 +881,7 @@ public final class DayScreen {
         notice = nil
 
         dayView = dayViewOfShownDay()
+        copyPlace?.keptAChange()
     }
 
     /// Enters what `text` holds on `row`, or takes that day's number back where it holds
@@ -1197,7 +1215,7 @@ public final class DayScreen {
 
         let read = Self.readRecordAndRoster(
             recordAt: recordPlace, rosterAt: rosterPlace, oneOffAt: oneOffPlace,
-            takingOnIfEmpty: commitments)
+            birthdayTicksAt: birthdayPlace, takingOnIfEmpty: commitments)
         self.recordStore = read.recordStore
         self.recordState = read.recordState
         self.rosterState = read.rosterState
@@ -1220,7 +1238,7 @@ public final class DayScreen {
     /// where this screen is keeping a record, the record, are read again, and the day view is
     /// formed again for the day being shown. Takes no today, moves no day, and goes on telling
     /// what it was telling. Where `commitmentsScreen` has restored a copy since it was opened,
-    /// this instead opens all three places afresh, whether or not each was already kept, takes
+    /// this instead opens all four places afresh, whether or not each was already kept, takes
     /// on the commitments this screen was handed where the roster it reads holds nothing at
     /// all, and tells nothing on any row nor under any one-off name field —
     /// `openspec/changes/restore-from-a-copy/specs/restore/spec.md` § *A day screen returned to
@@ -1235,15 +1253,17 @@ public final class DayScreen {
         returnedToAfterARestore()
     }
 
-    /// Being returned to after a restore: opens the record, the roster and the one-off places
-    /// afresh, whether or not each was already kept, taking on the commitments this screen was
-    /// handed where the roster reads nothing at all. Where a restore in progress cannot itself be
-    /// undone, all three answer as reading nothing, exactly as `readRecordAndRoster` answers the
-    /// same condition at `init` and `shown(asOf:)`. Where only a save in progress stands and
-    /// cannot be undone, the record answers as unreadable and the roster is opened read-only,
-    /// exactly as `readRecordAndRoster` answers that condition too — but the one-offs are
-    /// unaffected by a torn save, so they are still opened afresh here, same as everywhere else
-    /// in this function.
+    /// Being returned to after a restore: opens the record, the roster, the one-off and the
+    /// birthday-tick places afresh, whether or not each was already kept, taking on the
+    /// commitments this screen was handed where the roster reads nothing at all. Where a restore
+    /// in progress cannot itself be undone, the record, the roster and the one-offs answer as
+    /// reading nothing, exactly as `readRecordAndRoster` answers the same condition at `init` and
+    /// `shown(asOf:)` — but the birthday-tick place is still opened afresh even then, on its own
+    /// footing, rather than answering as reading nothing alongside the other three (G7 review
+    /// finding 4). Where only a save in progress stands and cannot be undone, the record answers
+    /// as unreadable and the roster is opened read-only, exactly as `readRecordAndRoster` answers
+    /// that condition too — but the one-offs and the birthday ticks are unaffected by a torn
+    /// save, so they are still opened afresh here, same as everywhere else in this function.
     private func returnedToAfterARestore() {
         notice = nil
         nameRefusal = nil
@@ -1253,7 +1273,8 @@ public final class DayScreen {
         // stricter rule than a torn save's own read-only fallback just below.
         guard
             RestoreInProgress.undoTornRestore(
-                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace)
+                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace,
+                birthdayTicksAt: birthdayPlace)
         else {
             self.rosterState = .notKept
             self.roster = Roster()
@@ -1261,12 +1282,29 @@ public final class DayScreen {
             self.recordState = .unreadable
             self.oneOffStore = nil
             self.oneOffState = .unreadable
+            // The birthday place is opened afresh here too, on the same footing as the record,
+            // the roster and the one-offs just above: a torn restore this screen cannot undo
+            // must not leave `birthdayStore` holding whatever it read before the restore
+            // (G7 review finding 4).
+            let openedBirthdays = Self.openBirthdays(at: birthdayPlace)
+            self.birthdayStore = openedBirthdays.store
+            self.birthdayTicksState = openedBirthdays.state
             refreshBirthdays(for: shownDay)
             self.dayView = Self.formDayView(
                 of: [], roster: Roster(), oneOffs: nil, asOf: today, on: shownDay, in: History(),
                 birthdayGroup: birthdayGroup(on: shownDay))
             return
         }
+
+        // The birthday place is opened afresh here too, whether or not birthdays are on —
+        // `openspec/specs/day-screen/spec.md` § *A day screen keeps its birthday ticks at its
+        // own place, beside its other places*: "and when returned to from a commitments screen
+        // that restored a copy" — so a day screen returned to after a restore draws the ticks
+        // the copy holds rather than a stale reading from before the restore.
+        let openedBirthdays = Self.openBirthdays(at: birthdayPlace)
+        self.birthdayStore = openedBirthdays.store
+        self.birthdayTicksState = openedBirthdays.state
+
         guard SaveInProgress.undoTornSave(recordAt: recordPlace, rosterAt: rosterPlace) else {
             let readOnly = Self.openRoster(at: rosterPlace, takingOnIfEmpty: [])
             self.rosterState = readOnly.state
@@ -1338,7 +1376,8 @@ public final class DayScreen {
         // exactly as it already was.
         guard
             RestoreInProgress.undoTornRestore(
-                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace)
+                recordAt: recordPlace, rosterAt: rosterPlace, oneOffsAt: oneOffPlace,
+                birthdayTicksAt: birthdayPlace)
         else {
             return
         }

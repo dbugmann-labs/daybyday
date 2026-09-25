@@ -1141,7 +1141,7 @@ func aRestoreStoppedBeforeItWasWholeIsUndoneWhenThePlacesAreNextOpened() throws 
 
     try RestoreInProgress.restore(
         copy, recordAt: places.record, rosterAt: places.roster, oneOffsAt: places.oneOffs,
-        stoppingAfter: 2)
+        birthdayTicksAt: DayScreen.birthdayPlace(besideRecordAt: places.record), stoppingAfter: 2)
 
     // Left mid-flight: the restore in progress stands, and the one-off place is untouched.
     #expect(
@@ -1189,7 +1189,7 @@ func aRestoreStoppedBeforeItWasWholeIsUndoneWhenThePlacesAreNextOpened() throws 
         roster: journalingAgain, oneOffs: OneOffs())
     try RestoreInProgress.restore(
         secondCopy, recordAt: places.record, rosterAt: places.roster, oneOffsAt: places.oneOffs,
-        stoppingAfter: 2)
+        birthdayTicksAt: DayScreen.birthdayPlace(besideRecordAt: places.record), stoppingAfter: 2)
 
     #expect(
         FileManager.default.fileExists(
@@ -1234,7 +1234,9 @@ func aRestoreStoppedBeforeItWasWholeIsUndoneWhenThePlacesAreNextOpened() throws 
 
     try RestoreInProgress.restore(
         secondCopy, recordAt: elsePlaces.record, rosterAt: elsePlaces.roster,
-        oneOffsAt: elsePlaces.oneOffs, stoppingAfter: 1)
+        oneOffsAt: elsePlaces.oneOffs,
+        birthdayTicksAt: DayScreen.birthdayPlace(besideRecordAt: elsePlaces.record),
+        stoppingAfter: 1)
 
     #expect(
         FileManager.default.fileExists(

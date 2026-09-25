@@ -9,15 +9,20 @@ struct CopyDocument: Codable {
     /// The form this app writes. Independent of `RecordDocument.currentVersion`,
     /// `RosterDocument.currentVersion` and `OneOffDocument.currentVersion`: a copy's own form
     /// moves on its own schedule, so a later Story can version the copy without touching a store.
-    static let currentVersion = 1
+    /// 2 as of this Story: a copy now nests the birthday ticks beside the other three.
+    /// `design.md` § *The copy's form moves to 2, and form 1 holds no ticks*.
+    static let currentVersion = 2
 
     var version: Int
     var moment: MomentRecord
     var record: RecordDocument
     var roster: RosterDocument
     var oneOffs: OneOffDocument
+    /// `nil` where this document was read at form 1, before a copy held birthday ticks at all —
+    /// told apart from a form-2 document whose ticks fail to form, which is a damaged copy.
+    var birthdayTicks: BirthdayDocument?
 
-    /// Builds the document that exactly represents `copy`, each of the three stores written in
+    /// Builds the document that exactly represents `copy`, each of the four stores written in
     /// the form that store writes now.
     init(_ copy: Copy) {
         version = Self.currentVersion
@@ -29,11 +34,15 @@ struct CopyDocument: Codable {
             additions: parts.additions)
         roster = RosterDocument(copy.roster)
         oneOffs = OneOffDocument(copy.oneOffs)
+        birthdayTicks = BirthdayDocument(copy.birthdayTicks)
     }
 
-    /// Re-forms `moment`, and the record, the roster and the one-offs this document holds,
-    /// through the same re-forming each of their own documents already does. `nil` if the moment
-    /// or any one of the three could not be formed.
+    /// Re-forms `moment`, and the record, the roster, the one-offs and the birthday ticks this
+    /// document holds, through the same re-forming each of their own documents already does.
+    /// `nil` if the moment or any one of the four could not be formed. A document at form 1, from
+    /// before a copy held birthday ticks, forms as holding none — `design.md` § *The copy's form
+    /// moves to 2, and form 1 holds no ticks*; a document at form 2 or later with no birthday
+    /// ticks, or ticks that do not form, forms as `nil`.
     func formCopy() -> Copy? {
         guard let formedMoment = moment.moment() else {
             return nil
@@ -48,6 +57,16 @@ struct CopyDocument: Codable {
         }
         guard let formedOneOffs = oneOffs.formOneOffs() else {
             return nil
+        }
+
+        let formedBirthdayTicks: BirthdayTicks
+        if version >= 2 {
+            guard let birthdayTicks, let formed = BirthdayStore.formed(from: birthdayTicks) else {
+                return nil
+            }
+            formedBirthdayTicks = formed
+        } else {
+            formedBirthdayTicks = BirthdayTicks()
         }
 
         var formedHistory = History()
@@ -66,17 +85,17 @@ struct CopyDocument: Codable {
 
         return Copy(
             moment: formedMoment, history: formedHistory, roster: formedRoster,
-            oneOffs: formedOneOffs)
+            oneOffs: formedOneOffs, birthdayTicks: formedBirthdayTicks)
     }
 
     /// Reads `data` as a copy — `openspec/changes/restore-from-a-copy/design.md` § *Reading a
     /// copy: the envelope decides, and a later version outranks damage*. Reads an envelope of
     /// this document's own `version` and `moment` first: where that does not read, or its form is
     /// below 1, `data` is not a copy; where it is above `currentVersion`, it is from a later
-    /// version. Next come the envelopes of the three nested stores, read independently of one
+    /// version. Next come the envelopes of the four nested stores, read independently of one
     /// another and of the rest of the document — any one of them holding a later form than that
-    /// store reads makes the whole copy one from a later version, whatever state the other two are
-    /// in. Only then is the whole document decoded and each store's own shape checked against its
+    /// store reads makes the whole copy one from a later version, whatever state the other three
+    /// are in. Only then is the whole document decoded and each store's own shape checked against its
     /// declared form, exactly as that store's `init(at:)` checks its own place; any failure there
     /// is a damaged copy.
     static func read(_ data: Data) -> Result<Copy, CommitmentsScreen.Refusal> {
@@ -109,6 +128,11 @@ struct CopyDocument: Codable {
         {
             return .failure(.copyFromALaterVersion)
         }
+        if let birthdayTicksVersion = storeEnvelopes?.birthdayTicks?.version,
+            birthdayTicksVersion > BirthdayDocument.currentVersion
+        {
+            return .failure(.copyFromALaterVersion)
+        }
 
         guard let document = try? JSONDecoder().decode(CopyDocument.self, from: data),
             let formedRecord = RecordStore.formed(from: document.record),
@@ -116,6 +140,21 @@ struct CopyDocument: Codable {
             let formedOneOffs = OneOffStore.formed(from: document.oneOffs)
         else {
             return .failure(.damagedCopy)
+        }
+
+        // A document at form 1, from before a copy held birthday ticks, holds none — `design.md`
+        // § *The copy's form moves to 2, and form 1 holds no ticks*. A document at form 2 or
+        // later with no birthday ticks, or ticks that do not form as their own shape, is damaged.
+        let formedBirthdayTicks: BirthdayTicks
+        if envelope.version >= 2 {
+            guard let birthdayTicks = document.birthdayTicks,
+                let formed = BirthdayStore.formed(from: birthdayTicks)
+            else {
+                return .failure(.damagedCopy)
+            }
+            formedBirthdayTicks = formed
+        } else {
+            formedBirthdayTicks = BirthdayTicks()
         }
 
         // A commitment the nested roster held removed, in a form written before a commitment
@@ -127,19 +166,20 @@ struct CopyDocument: Codable {
         return .success(
             Copy(
                 moment: moment, history: history, roster: formedRoster.roster,
-                oneOffs: formedOneOffs))
+                oneOffs: formedOneOffs, birthdayTicks: formedBirthdayTicks))
     }
 
-    /// The three nested stores' own envelopes, each read independently — a store whose object is
+    /// The four nested stores' own envelopes, each read independently — a store whose object is
     /// missing, or is not an object at all, answers `nil` for that store alone rather than failing
     /// the whole decode, so a broken record does not hide a roster written in a later form.
     private struct StoreEnvelopes: Decodable {
         var record: RecordDocumentEnvelope?
         var roster: RosterDocumentEnvelope?
         var oneOffs: OneOffDocumentEnvelope?
+        var birthdayTicks: BirthdayDocumentEnvelope?
 
         private enum CodingKeys: String, CodingKey {
-            case record, roster, oneOffs
+            case record, roster, oneOffs, birthdayTicks
         }
 
         init(from decoder: Decoder) throws {
@@ -147,6 +187,8 @@ struct CopyDocument: Codable {
             record = try? container.decode(RecordDocumentEnvelope.self, forKey: .record)
             roster = try? container.decode(RosterDocumentEnvelope.self, forKey: .roster)
             oneOffs = try? container.decode(OneOffDocumentEnvelope.self, forKey: .oneOffs)
+            birthdayTicks = try? container.decode(
+                BirthdayDocumentEnvelope.self, forKey: .birthdayTicks)
         }
     }
 }
