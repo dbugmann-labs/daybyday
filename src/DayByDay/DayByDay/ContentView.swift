@@ -997,7 +997,7 @@ struct ContentView: View {
                     // shell*: a rename still re-keys (its key carries the one-off's name), but a
                     // tick or a take-back does not, so `List` can animate the row's move rather
                     // than fading it out of one place and in at another (`oneOffRowView(_:)`'s
-                    // own `withAnimation` around the tick). Unlike a commitment row's tap, which
+                    // own `withAnimation` around the tick), unlike a commitment row's tap, which
                     // the offset above still keys through.
                     if let oneOffGroup = dayView.oneOffGroup {
                         Section {
@@ -1399,13 +1399,21 @@ struct ContentView: View {
                 if !isRenaming {
                     Button {
                         if offersTick {
-                            // The one animated change on this screen (`design.md` § *A one-off
-                            // row's key, and the animation in the shell*): a tick or a take-back
-                            // is the only mutation `\.key` (rather than the row's own value) lets
-                            // `List` see as a move, so this is the only place the animation
-                            // belongs — a rename or a remove still re-keys and still fades.
-                            withAnimation {
+                            // A tick or a take-back is the only mutation `\.key` (rather than the
+                            // row's own value) lets `List` see as a move, so this is the only
+                            // place `withAnimation` belongs on a one-off row (`design.md` § *A
+                            // one-off row's key, and the animation in the shell*) — not the one
+                            // animated change on this screen: the scroll to a freshly entered row
+                            // and the day swipe's settle are animated too. A rename still re-keys
+                            // and fades; a remove takes the row away outright, which needs no
+                            // re-key at all. Reduce Motion turns this animation off the same way
+                            // `settle(to:then:)` already turns the day swipe's off.
+                            if reduceMotion {
                                 try? screen.tick(row)
+                            } else {
+                                withAnimation {
+                                    try? screen.tick(row)
+                                }
                             }
                         }
                     } label: {
