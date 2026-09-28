@@ -261,6 +261,31 @@ it as a gap rather than saying it unprompted.*
 - **Open** — can it be shown in the Simulator? XCUITest's synthetic drags have not matched a thumb
   before (B-041), so this may be a `phone:` step.
 
+### B-066 — come back from Commitments to a day screen that is whole at once
+
+*Captured 2026-09-28.*
+
+> "When moving from commitmens back to the day screen, the heading (e.g. Monday) is loaded after
+> the rest, with a small delay - this is not so nice visually"
+
+- **Trigger** — leaving the Commitments screen for the day screen, when the rows are drawn and the
+  day title ("Monday") arrives a moment after them. A defect the owner saw on the phone, not a new
+  thing to do.
+- **Touches** — `day-screen`, and only the app shell. *A day screen says which day it is showing*
+  says what the title is and never when it is drawn, so no requirement is broken; how the title
+  lands during the return is shell work, a chore under ADR-1019 the way B-050 was. It sits beside
+  B-061, B-062 and B-064 as a defect in how the day screen is drawn rather than in what it says.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** The day title is how the
+  screen says which day a tick lands on, and a screen that settles in two steps reads as a screen
+  still loading, on a return made several times a day.
+- **Open** — is it every return from Commitments, or only some — after a change was saved there,
+  on the first return after launch, only when the day shown is not today?
+- **Open** — does the same late title show on returning from a look back or any other pushed
+  screen, or only from Commitments? That decides whether the chore is about one transition or all
+  of them.
+- **Open** — can it be shown in the Simulator? A delay this short may only be visible on the phone,
+  which would make it a `phone:` step.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
