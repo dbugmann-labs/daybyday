@@ -22,19 +22,20 @@ final class WalkthroughUITests: XCTestCase {
         app.launch()
 
         // The *Today* button is offered only off the today the screen was handed
-        // (`add-offered-today-control`, #174); on that today its slot holds a green `TodayMarker`
-        // pill that is not a button, so both states are proved here rather than assumed. The move between them is
-        // ADR-1042's horizontal swipe, the same recognizer a row that offers nothing still sits
-        // under. `add-adjacent-day-views` pages the day's rows across three `List`s rather than one
-        // (`design.md` § *What the shell draws*), so `firstMatch` no longer names a particular one
-        // — `"CurrentDayList"` is the identifier `ContentView.pagedDayContent` gives the centre
-        // list, the one under the finger before any drag.
+        // (`add-offered-today-control`, #174); on that today its slot is empty and the date row
+        // under the title says "Today" instead, so both states are proved here rather than
+        // assumed. The move between them is ADR-1042's horizontal swipe, the same recognizer a
+        // row that offers nothing still sits under. `add-adjacent-day-views` pages the day's rows
+        // across three `List`s rather than one (`design.md` § *What the shell draws*), so
+        // `firstMatch` no longer names a particular one — `"CurrentDayList"` is the identifier
+        // `ContentView.pagedDayContent` gives the centre list, the one under the finger before
+        // any drag.
         let list = app.collectionViews["CurrentDayList"]
         _ = list.waitForExistence(timeout: 60)
         let todayButton = app.buttons["Today"]
         XCTAssertTrue(
-            app.staticTexts["TodayMarker"].waitForExistence(timeout: 60),
-            "the day screen drew no Today marker on today")
+            app.buttons["DayDate"].waitForExistence(timeout: 60),
+            "the day screen drew no date row on today")
         XCTAssertFalse(todayButton.exists, "the Today button was offered on today itself")
         list.swipeRight()
 
