@@ -136,11 +136,55 @@ struct ContentView: View {
     // field is ever focused at a time (`design.md` § *A refusal under a name field is its own
     // value, and there is one at a time*), so a single `@FocusState` value stands for all of
     // them, driving both the TextField that has it and the checkmark that reads it.
+    //
+    // **`.entry` is carried by the type for what it documents, not for what `@FocusState` can
+    // hold.** `oneOffFocus` itself is only ever actually `nil` or `.row(row)` — see
+    // `oneOffEntryHasFocus`'s own doc comment for the measurement that found `@FocusState`
+    // refuses to store `.entry` at all for a field hosted in `.safeAreaBar`, in a fix round after
+    // this Story's own G7. Every switch on `oneOffFocus` below still names `.entry` for symmetry
+    // with `.row`, and because the type would not compile exhaustively without it, but reaching
+    // that branch through `oneOffFocus` itself cannot happen; `oneOffEntryHasFocus` is checked
+    // first everywhere it matters.
     private enum OneOffFocus: Hashable {
         case entry
         case row(DayView.OneOffRow)
     }
     @FocusState private var oneOffFocus: OneOffFocus?
+    // Whether the bar's own entry field has focus — plain `@State`, not `@FocusState`, and that
+    // is deliberate.
+    //
+    // **`.focused($oneOffFocus, equals: .entry)` does nothing on this SDK for a field hosted in
+    // `.safeAreaBar`, in either direction, and this is what stands in for it.** Measured on the
+    // simulator, in a fix round after this Story's own G7, in order: (1) `oneOffFocus` never
+    // became `.entry` from a tap on the bar's field — `.toolbar` was never re-invoked with
+    // anything but `nil`, while the field still visibly took the keyboard and worked for typing,
+    // `onSubmit` and the refusal caption, none of which read `oneOffFocus` at all; (2) writing
+    // `oneOffFocus = .entry` by hand from the field's own UIKit editing notifications, attached
+    // *inside* `oneOffBar`'s own view (i.e. inside `.safeAreaBar`'s content too), never reached
+    // `.toolbar` either, even though a `.onChange` attached in that same inner scope did see the
+    // write; (3) moving the identical `.onReceive`s onto the `NavigationStack`'s main content,
+    // outside `.safeAreaBar`, ruled out the write not propagating *out* — but reading `oneOffFocus`
+    // straight back after the write, from that same outer scope, moments later, still read `nil`.
+    // `@FocusState` is not slow here; it refuses to hold `.entry` as a value at all, because
+    // `.focused($oneOffFocus, equals: .entry)` is declared on a view `.safeAreaBar` never
+    // registers as one of `oneOffFocus`'s valid targets, so nothing written to it can ever stick,
+    // from anywhere. Plain `@State` carries none of that target-registration machinery, so a
+    // write here always lands — mirrored by hand off the field's own UIKit editing notifications
+    // (`body`'s own `.onReceive` pair), filtered on the field's own `accessibilityIdentifier`,
+    // the same one the walk and every acceptance test already query it by.
+    // `oneOffFocusNamesALiveField`, `commitFocusedOneOffField()` and the body-level "a tap
+    // elsewhere commits" `onChange` each check this first, before ever looking at `oneOffFocus`,
+    // which is correct again for what it was always meant for: a row's own rename field.
+    @State private var oneOffEntryHasFocus = false
+    // The live `UITextField` behind the bar's entry, captured off the begin-editing notification
+    // that sets `oneOffEntryHasFocus` above — needed because Return resigns this field's own
+    // first responder status as part of handling the key itself, measured for real on the
+    // simulator (the same behaviour the archived design already documented for a row's own
+    // field), so a refused add has to ask UIKit directly to bring it back: `.focused()`'s write
+    // direction cannot, for the same reason its read direction cannot (`oneOffEntryHasFocus`'s
+    // own doc comment). A plain strong reference: the field's own lifetime is bounded by the day
+    // screen's, the same screen this property lives on, so nothing here outlives its own view.
+    @State private var oneOffEntryField: UITextField?
     // The entry's own typed text, and the text typed into whichever row is being renamed. Each is
     // emptied on every commit `commitOneOffEntry()` or `commitRename(of:to:)` makes, kept or
     // refused alike (`design.md` § *A refusal under a name field is its own value*: "the shell
@@ -239,6 +283,33 @@ struct ContentView: View {
             // comment has the rest (ADR-1063).
             .safeAreaBar(edge: .bottom) {
                 oneOffBar
+            }
+            // Mirrors the bar's field's own UIKit editing notifications into `oneOffEntryHasFocus`
+            // by hand, filtered on the field's own `accessibilityIdentifier` — that property's
+            // own doc comment has the measurement this stands in for, and why it has to be
+            // attached out here rather than inside `oneOffBar`'s own view (i.e. inside
+            // `.safeAreaBar`'s content). `resignOneOffBarKeyboard()`'s own doc comment has the
+            // write-direction half.
+            .onReceive(
+                NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)
+            ) { notification in
+                guard let field = notification.object as? UITextField,
+                    field.accessibilityIdentifier == "OneOffEntry"
+                else {
+                    return
+                }
+                oneOffEntryField = field
+                oneOffEntryHasFocus = true
+            }
+            .onReceive(
+                NotificationCenter.default.publisher(for: UITextField.textDidEndEditingNotification)
+            ) { notification in
+                guard let field = notification.object as? UITextField,
+                    field.accessibilityIdentifier == "OneOffEntry"
+                else {
+                    return
+                }
+                oneOffEntryHasFocus = false
             }
             .navigationDestination(isPresented: $showingCommitments) {
                 if let commitmentsScreen {
@@ -469,11 +540,32 @@ struct ContentView: View {
             }
             switch oldValue {
             case .entry:
+                // Unreachable in practice — `oneOffFocus` never actually becomes `.entry`
+                // (`oneOffEntryHasFocus`'s own doc comment has the measurement); the
+                // `.onChange(of: oneOffEntryHasFocus)` right below is this branch's real
+                // counterpart, for the bar's own field.
                 commitOneOffEntry()
             case .row(let row):
                 keeping { try screen.rename(row, to: oneOffRowCommitText(for: row)) }
                 oneOffRowText = ""
             }
+        }
+        // The entry's own half of the "losing focus commits" rule above, mirrored rather than
+        // folded into the same `onChange`: `oneOffEntryHasFocus` is a separate, plain `@State`
+        // `Bool` (`oneOffEntryHasFocus`'s own doc comment has why), so it needs its own observer.
+        // `justCommittedOneOffField` is the same one-shot guard both share, consumed by whichever
+        // of the two fires first for a given commit, so an explicit commit — the checkmark, a day
+        // move, a kept or refused Return — is never repeated by this reacting to the focus change
+        // that commit itself caused.
+        .onChange(of: oneOffEntryHasFocus) { oldValue, newValue in
+            guard oldValue, !newValue else {
+                return
+            }
+            guard !justCommittedOneOffField else {
+                justCommittedOneOffField = false
+                return
+            }
+            commitOneOffEntry()
         }
     }
 
@@ -502,12 +594,25 @@ struct ContentView: View {
     /// and a blank rename removes the one-off outright (grill answer 16) rather than leaving it
     /// exactly as it was (grill answers 12 and 18). `oneOffRowCommitText(for:)` reads the refusal
     /// back out instead, the same way `oneOffEntryCommitText` already did for the entry.
+    ///
+    /// **Checks `oneOffEntryHasFocus` before ever looking at `oneOffFocus`.** The bar's own field
+    /// is tracked there, not here — `oneOffEntryHasFocus`'s own doc comment has why — so this is
+    /// the one place that stitches the two back into a single "commit whatever is focused" call
+    /// for every caller that already assumed there was only one thing to check.
     private func commitFocusedOneOffField(forDeparture: Bool = false) {
+        if oneOffEntryHasFocus {
+            commitOneOffEntry()
+            justCommittedOneOffField = true
+            oneOffEntryHasFocus = false
+            resignOneOffBarKeyboard()
+            return
+        }
         guard let focus = oneOffFocus else {
             return
         }
         switch focus {
         case .entry:
+            // Unreachable in practice — see `oneOffEntryHasFocus`'s own doc comment.
             commitOneOffEntry()
         case .row(let row):
             let refused = commitRename(of: row, to: oneOffRowCommitText(for: row))
@@ -520,29 +625,50 @@ struct ContentView: View {
         oneOffFocus = nil
     }
 
-    /// Whether `oneOffFocus` still names a field that actually exists to hold it — `.entry`
-    /// always does, wherever `oneOffBar` itself shows; `.row(row)` only while `row` is still
-    /// one of `screen.dayView.oneOffGroup`'s own rows. **The checkmark reads this, not a bare
-    /// `oneOffFocus != nil`, and that is load-bearing.** A phone check on 3a70bda found the
-    /// checkmark still showing after a one-off was removed — a blank rename committed by Return
-    /// or the checkmark, or *Remove* from the long-press menu — driven for real on the simulator
-    /// and confirmed by dumping the hierarchy at that exact point: no field anywhere in it held
-    /// focus, yet `oneOffFocus` was still non-`nil` by the checkmark's own evidence. `@FocusState`
-    /// dropping a value assigned `nil` in the very update that also tears down the view it named
-    /// — every one of the three removal paths is exactly that, unlike an ordinary rename, which
-    /// leaves the row's own field in the tree, just renamed — is the same class of `@FocusState`
-    /// unreliability `oneOffRowView(_:)`'s own doc comment already found nesting a gesture, not
-    /// removing a view, tripping into; `commitFocusedOneOffField()` above already sets
-    /// `oneOffFocus = nil` on every successful commit, removal included, so the assignment itself
-    /// is not the gap. Reading a *validated* value here, rather than chasing why the raw one goes
-    /// stale, is what actually keeps the checkmark honest: harmless everywhere else, since
-    /// `DayScreen.rename` and `.tick` already guard on the row still being one of theirs before
-    /// writing anything, so a stale `oneOffFocus` this catches was never going to reach the model.
+    /// Resigns the keyboard directly through UIKit's own responder chain, bypassing
+    /// `@FocusState` entirely — `oneOffEntryHasFocus`'s own doc comment has the measurement that
+    /// found `.focused($oneOffFocus, equals: .entry)` does nothing on this SDK for a field hosted
+    /// in `.safeAreaBar`, in either direction, so setting a plain `@State` `Bool` to `false` alone
+    /// never dismisses the entry's keyboard the way `oneOffFocus = nil` still does for a row's
+    /// own field — every caller that has just dropped the *entry's* focus specifically calls this
+    /// alongside it, never for a row's. `sendAction(_:to:from:for:)` with a `nil` target asks
+    /// whatever the key window's current first responder is to resign, which is what setting
+    /// `oneOffEntryHasFocus = false` would have done here on its own if `.focused()`'s write
+    /// direction worked for this field.
+    private func resignOneOffBarKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+
+    /// Whether a one-off field that actually exists still has focus — `oneOffEntryHasFocus`
+    /// always does, wherever `oneOffBar` itself shows (checked first, since `oneOffFocus` itself
+    /// can never read `.entry` — `oneOffEntryHasFocus`'s own doc comment has why); `.row(row)`
+    /// only while `row` is still one of `screen.dayView.oneOffGroup`'s own rows. **The checkmark
+    /// reads this, not a bare `oneOffFocus != nil`, and that is load-bearing.** A phone check on
+    /// 3a70bda found the checkmark still showing after a one-off was removed — a blank rename
+    /// committed by Return or the checkmark, or *Remove* from the long-press menu — driven for
+    /// real on the simulator and confirmed by dumping the hierarchy at that exact point: no field
+    /// anywhere in it held focus, yet `oneOffFocus` was still non-`nil` by the checkmark's own
+    /// evidence. `@FocusState` dropping a value assigned `nil` in the very update that also tears
+    /// down the view it named — every one of the three removal paths is exactly that, unlike an
+    /// ordinary rename, which leaves the row's own field in the tree, just renamed — is the same
+    /// class of `@FocusState` unreliability `oneOffRowView(_:)`'s own doc comment already found
+    /// nesting a gesture, not removing a view, tripping into; `commitFocusedOneOffField()` above
+    /// already sets `oneOffFocus = nil` on every successful commit, removal included, so the
+    /// assignment itself is not the gap. Reading a *validated* value here, rather than chasing
+    /// why the raw one goes stale, is what actually keeps the checkmark honest: harmless
+    /// everywhere else, since `DayScreen.rename` and `.tick` already guard on the row still being
+    /// one of theirs before writing anything, so a stale `oneOffFocus` this catches was never
+    /// going to reach the model.
     private var oneOffFocusNamesALiveField: Bool {
+        if oneOffEntryHasFocus {
+            return true
+        }
         switch oneOffFocus {
         case nil:
             return false
         case .entry:
+            // Unreachable in practice — see `oneOffEntryHasFocus`'s own doc comment.
             return true
         case .row(let row):
             return screen.dayView.oneOffGroup?.rows.contains(row) ?? false
@@ -992,6 +1118,20 @@ struct ContentView: View {
         // Same measured value as `CommitmentsView`'s kept list — see the comment there for
         // how it was determined.
         .listSectionSpacing(12)
+        // **Without this, the list's own bottom edge meets `oneOffBar` in a hard-edged band —
+        // walked on the phone in dark mode, and reproduced here in both.** Below the list's own
+        // last card and behind the whole width of the bar, a flat `.systemBackground` fill
+        // (white in light, black in dark) sat between the page's own grouped grey and the bar's
+        // capsule, cut off in a straight line rather than the two blending the way Messages'
+        // own field floats over its conversation. `.hard`, this List's effective default on this
+        // SDK, is what draws that opaque fill behind a bar sitting over a scroll view's edge;
+        // `.soft` is the alternative this same API offers and is what a plain toolbar or tab bar
+        // already gets automatically — checked in both appearances, the band is gone in both and
+        // the bar reads as a capsule floating over the page's own continuous background, not a
+        // panel with a bar drawn on top of it. Neither the `VStack` around `dayControls` and
+        // `pagedDayContent` nor `pagedDayContent`'s own clipping carries a background of its own
+        // to fix; this is the one line that was doing it.
+        .scrollEdgeEffectStyle(.soft, for: .bottom)
     }
 
     /// One row's content and the tap that acts on it — pulled out of `dayList(for:)` so the same
@@ -1444,14 +1584,18 @@ struct ContentView: View {
     /// all, and giving it one would also change what the checkmark does for a refused entry —
     /// asked for here only for Return.
     ///
-    /// **The refused branch re-asserts `oneOffFocus = .entry` rather than simply leaving it
-    /// untouched, and driving this for real on the simulator is what found that the second half
-    /// matters.** Pressing Return on a `TextField` resigns its first responder as part of
-    /// handling the key itself, independently of anything this closure does; `@FocusState`
-    /// reflects that resignation back, so a refusal found by *only* skipping the drop — never
-    /// writing `oneOffFocus` at all — still lost focus, keyboard included, exactly the outcome
-    /// this exists to avoid. `commitFocusedOneOffField()`'s own refused branch for a row already
-    /// re-asserts `oneOffFocus = .row(row)` for the same reason; this mirrors it for `.entry`.
+    /// **The refused branch re-asserts focus through `oneOffEntryField`, UIKit's own way, rather
+    /// than through `oneOffFocus` — mirroring `commitFocusedOneOffField()`'s own refused branch
+    /// for a row (grill answer 18), which still re-asserts through `oneOffFocus` because a row's
+    /// own field is not affected by this Story's `.safeAreaBar` gap.** Driving this for real on
+    /// the simulator found Return resigns this field's own first responder status as part of
+    /// handling the key itself, exactly as the archived design already documented for a row —
+    /// `oneOffEntryHasFocus` reads `false` and the keyboard is gone by the time `onSubmit` runs.
+    /// `justCommittedOneOffField = true` up front stops the reactive
+    /// `.onChange(of: oneOffEntryHasFocus)` this same resignation also triggers from committing a
+    /// second time; `oneOffEntryField?.becomeFirstResponder()` is what actually brings the field
+    /// back, asked of UIKit directly since `.focused()`'s write direction cannot ask it
+    /// (`oneOffEntryHasFocus`'s own doc comment).
     ///
     /// **Styled to read as a field in a bar, not stray text sitting on the keys.** The field
     /// itself carries the rounded background, in the Messages manner, via `.glassEffect(in:
@@ -1480,19 +1624,24 @@ struct ContentView: View {
         if screen.dayView.oneOffGroup != nil {
             VStack(alignment: .leading, spacing: 4) {
                 TextField("New one-off", text: oneOffEntryTextBinding)
-                    .focused($oneOffFocus, equals: .entry)
                     .onSubmit {
+                        // Set before `commitOneOffEntry()` runs: Return has already resigned
+                        // this field by the time `onSubmit` fires (this property's own doc
+                        // comment has the measurement), which fires the same
+                        // `textDidEndEditingNotification` a tap elsewhere would — this stops
+                        // the reactive `.onChange(of: oneOffEntryHasFocus)` that notification
+                        // triggers from committing a second time.
+                        justCommittedOneOffField = true
                         commitOneOffEntry()
                         if let nameRefusal = screen.nameRefusal, nameRefusal.row == nil {
-                            // Refused: re-assert focus, showing the typed text and the
-                            // cause under it (check 1) — see this property's own doc
-                            // comment for why re-asserting, not just leaving it, is needed.
-                            oneOffFocus = .entry
+                            // Refused: bring the field back, showing the typed text and the
+                            // cause under it (check 1) — see this property's own doc comment
+                            // for why this asks UIKit directly rather than `oneOffFocus`.
+                            oneOffEntryField?.becomeFirstResponder()
                         } else {
-                            // Kept, or blank (adds nothing): drop focus and close the
-                            // keyboard, matching what the checkmark already does.
-                            justCommittedOneOffField = true
-                            oneOffFocus = nil
+                            // Kept, or blank (adds nothing): already resigned by Return
+                            // itself; `oneOffEntryHasFocus` is already `false` by the time
+                            // this runs, same as the checkmark leaves it.
                         }
                     }
                     .padding(.horizontal, 14)
