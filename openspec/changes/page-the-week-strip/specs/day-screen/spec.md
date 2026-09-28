@@ -83,7 +83,7 @@ goes; where no week follows, it SHALL leave the screen exactly as it was.
 - **AND** a one-off named "Call mum" on 16 September 2026 being added at a one-off place, a day
   screen of no commitments at all opened at that one-off place as of Wednesday 16 September 2026, at
   a record place and a roster place where nothing has been kept, on which "Call mum" is committed in
-  its one-off entry and refused and which is then paged to the week before, tells nothing under its
+  its one-off entry and refused and which is then paged to the week after, tells nothing under its
   one-off entry
 
 ### Requirement: A page to the week before lands on no day earlier than the day picker reaches, save the today
