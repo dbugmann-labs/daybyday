@@ -1505,9 +1505,20 @@ struct ContentView: View {
     /// re-asserts `oneOffFocus = .row(row)` for the same reason; this mirrors it for `.entry`.
     ///
     /// **Styled to read as a field in a bar, not stray text sitting on the keys.** The field
-    /// itself carries the rounded background, in the Messages manner, via `.glassEffect(in:
-    /// .capsule)`; the horizontal padding around it matches the 16pt the list's own section
-    /// headers use (`dayList(for:)`).
+    /// itself carries the rounded background; the horizontal padding around it matches the 16pt
+    /// the list's own section headers use (`dayList(for:)`).
+    ///
+    /// **The capsule is opaque, not `.glassEffect(in: .capsule)` (a third fix round, on the
+    /// owner's own reading of the phone build).** A translucent bar let rows scrolling past
+    /// underneath show straight through it once the previous fix let them draw that far — the
+    /// bar stopped reading as its own control and became a smear of whatever row was passing.
+    /// `Color(.tertiarySystemGroupedBackground)` is Apple's own next layer up from the
+    /// `secondarySystemGroupedBackground` a `List` row already fills (`UIInterface.h`: "layered
+    /// on top of the main background, when appropriate"), so it is built to stay distinct over a
+    /// cell in both appearances without a hand-picked hex; a hairline `.separator` stroke backs
+    /// that up in light mode, where the two greys sit closer together. The refusal note gets the
+    /// same fill in its own small capsule, directly under the field, so red text floating loose
+    /// over rows doesn't repeat the same problem at a smaller size.
     @ViewBuilder
     private var oneOffBar: some View {
         if screen.dayView.oneOffGroup != nil {
@@ -1530,13 +1541,16 @@ struct ContentView: View {
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
-                    .glassEffect(in: .capsule)
+                    .background(Color(.tertiarySystemGroupedBackground), in: .capsule)
+                    .overlay(Capsule().strokeBorder(.separator, lineWidth: 0.5))
                     .accessibilityIdentifier("OneOffEntry")
                 if screen.nameRefusal?.row == nil, let nameRefusal = screen.nameRefusal {
                     Text(nameRefusal.cause ?? "Not saved. Try again.")
                         .font(.caption)
                         .foregroundStyle(.red)
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color(.tertiarySystemGroupedBackground), in: .capsule)
                 }
             }
             .padding(.horizontal, 16)
