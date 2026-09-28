@@ -197,8 +197,9 @@ struct ContentView: View {
     @State private var screen: DayScreen
     @Environment(\.scenePhase) private var scenePhase
     // `openspec/changes/add-adjacent-day-views/design.md` § *What the shell draws*: the settle
-    // at release and a chevron tap are animated, and Reduce Motion turns that half off — the
-    // drag itself goes on tracking the finger either way.
+    // at release is animated, and Reduce Motion turns that half off — the drag itself goes on
+    // tracking the finger either way. The chevrons that once played the same settle on a tap are
+    // gone (`add-week-strip`, #346); the week strip replaces the day where it stands instead.
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showingCommitments = false
     @State private var commitmentsScreen: CommitmentsScreen?
@@ -261,9 +262,9 @@ struct ContentView: View {
     // day it has just moved to.
     @State private var pickingDay = false
     // The paged day content's own width, measured off `GeometryReader` and used both to size the
-    // full slide a carry or a chevron tap settles to and as the threshold a drag must cross to
-    // carry. `dragTranslation` is the live offset applied to the three-list `HStack`: the drag's
-    // own `width` while a finger is down, and the settle's target while one is not.
+    // full slide a carry settles to and as the threshold a drag must cross to carry.
+    // `dragTranslation` is the live offset applied to the three-list `HStack`: the drag's own
+    // `width` while a finger is down, and the settle's target while one is not.
     @State private var pageWidth: CGFloat = 0
     @State private var dragTranslation: CGFloat = 0
     // Which axis the current drag has committed to, decided once from the first sample
@@ -580,7 +581,7 @@ struct ContentView: View {
     /// `forDeparture` decides what becomes of it. `false` — the checkmark and a row's own Return —
     /// holds the row focused with its typed name and the cause under it (grill answer 18, "exactly
     /// as a refused add"). `true` — every caller about to move the day away from this field or send
-    /// the app to the background: the chevrons, swipe, `Today`, the day picker and `scenePhase`
+    /// the app to the background: the week strip, swipe, `Today`, the day picker and `scenePhase`
     /// leaving `.active` — drops focus and, since `commitRename(of:to:)` has already emptied
     /// `oneOffRowText`, the typed text with it, instead of holding it open on a page about to
     /// become a neighbour or go unseen (grill answer 12, "dropped with its text by the time the
@@ -588,7 +589,7 @@ struct ContentView: View {
     /// — `scenePhase` leaving `.active` calls this once per phase it passes through on the way to
     /// the background, `.inactive` and then `.background` — finds nothing left to commit and does
     /// nothing. Called before every one of the moves `design.md` § *The shell* names: the
-    /// chevrons, swipe, `Today`, the day picker and `scenePhase` leaving `.active`, in each case
+    /// week strip, swipe, `Today`, the day picker and `scenePhase` leaving `.active`, in each case
     /// before the day actually moves.
     ///
     /// **Sends `oneOffRowCommitText(for: row)`, never raw `oneOffRowText` — a phone check on
@@ -686,15 +687,16 @@ struct ContentView: View {
         return screen.nameRefusal?.row == row
     }
 
-    /// The controls that stay put while the day's rows page beneath them: the chevrons and the
-    /// date row that opens the day picker, and the store messages — facts about the
-    /// screen rather than about a day. `design.md` § *What the shell draws*: "the icons travel,
-    /// the dock stays." Drawn outside the paged `List`s entirely, on purpose — ADR-1019's amended
-    /// guard is that nothing here decides anything a test cannot already see decided behind the
-    /// seam; this view only reads what `screen` already computed and calls the two moves the
-    /// chevrons already called before this Story. `Today` itself is no longer drawn here — it
-    /// moved into the toolbar's leading item, gated on the same `offersGoingBackToToday` and
-    /// calling the same two moves (`body`'s `.toolbar`).
+    /// The controls that stay put while the day's rows page beneath them: the date row that opens
+    /// the day picker, the week strip under it, and the store messages — facts about the screen
+    /// rather than about a day. `design.md` § *What the shell draws*: "the icons travel, the dock
+    /// stays." Drawn outside the paged `List`s entirely, on purpose — ADR-1019's amended guard is
+    /// that nothing here decides anything a test cannot already see decided behind the seam; this
+    /// view only reads what `screen` already computed and calls `showDay(_:)`, the same move the
+    /// day picker already called before this Story (`add-week-strip`, #346) replaced the chevrons
+    /// with the strip. `Today` itself is no longer drawn here — it moved into the toolbar's
+    /// leading item, gated on the same `offersGoingBackToToday` and calling the same two moves
+    /// (`body`'s `.toolbar`).
     private var dayControls: some View {
         VStack(spacing: 8) {
             HStack {
@@ -807,13 +809,21 @@ struct ContentView: View {
             .formatted(Date.FormatStyle().weekday(.wide).locale(Locale(identifier: "en_GB")))
     }
 
+    /// This app's own words for `calendarDate` in full, "25 September 2026" — day, then month in
+    /// full, then year, in fixed British English. Shared by `dateRowInWords`, for the day being
+    /// shown, and by `weekStripDay(_:)`'s accessibility label, for a week strip day's own date, so
+    /// the two say a date the same way rather than each carrying its own `Date.FormatStyle`.
+    private func fullDateInWords(_ calendarDate: CalendarDate) -> String {
+        date(from: calendarDate)
+            .formatted(
+                Date.FormatStyle().day().month(.wide).year().locale(Locale(identifier: "en_GB")))
+    }
+
     /// The date row's words: "25 September 2026", the look-back's form, and
     /// "Today, 25 September 2026" on today — where `screen.offersGoingBackToToday` is false and
     /// the toolbar offers no Today button, so "Today" is said here and only here.
     private var dateRowInWords: String {
-        let words = date(from: screen.dayPickerReach.opensOn)
-            .formatted(
-                Date.FormatStyle().day().month(.wide).year().locale(Locale(identifier: "en_GB")))
+        let words = fullDateInWords(screen.dayPickerReach.opensOn)
         return screen.offersGoingBackToToday ? words : "Today, \(words)"
     }
 
@@ -842,7 +852,12 @@ struct ContentView: View {
     /// as a target only what it offers (`CONTEXT.md` § *Offered*) and it has nowhere to go.
     /// **A tap commits a focused one-off field for departure, then calls `showDay`, and animates
     /// nothing** — `design.md` § *The shell*: a strip tap is the day picker's act, with no settle
-    /// of its own.
+    /// of its own. `.contentShape(Rectangle())` makes the whole column the tap target, the way a
+    /// day-list row's own `Button` already does, rather than only the letter and the number
+    /// themselves. Every cell speaks as one accessibility element, its date in full where it has
+    /// one and its bare letter where it does not, so VoiceOver says one thing rather than the
+    /// letter and the number as two — an offered day through the `Button`'s own label, a shown or
+    /// faded day through `.accessibilityElement(children: .ignore)`.
     private func weekStripDay(_ day: DayScreen.WeekStripDay) -> some View {
         let textColor: Color =
             if day.isShown {
@@ -867,6 +882,9 @@ struct ContentView: View {
             }
         }
         .opacity(day.isShown || day.isOffered ? 1 : 0.5)
+        .contentShape(Rectangle())
+
+        let accessibilityLabel = day.date.map(fullDateInWords) ?? day.letter
 
         return Group {
             if day.isOffered, let date = day.date {
@@ -877,20 +895,13 @@ struct ContentView: View {
                     label
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(weekStripDayAccessibilityLabel(for: date))
+                .accessibilityLabel(accessibilityLabel)
             } else {
                 label
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(accessibilityLabel)
             }
         }
-    }
-
-    /// A week strip day's accessibility label: its date in full, "31 August 2026", the date
-    /// row's own words minus the year-first day-of-week word — so VoiceOver says the day rather
-    /// than its letter, which two of the seven share (`design.md` § *The shell*).
-    private func weekStripDayAccessibilityLabel(for calendarDate: CalendarDate) -> String {
-        date(from: calendarDate)
-            .formatted(
-                Date.FormatStyle().day().month(.wide).year().locale(Locale(identifier: "en_GB")))
     }
 
     /// The day picker, opened from the date row: a graphical calendar in a medium sheet, bounded
@@ -1688,10 +1699,12 @@ struct ContentView: View {
     }
 
     /// ADR-1042, carried forward by `design.md` § *What the shell draws*: a horizontal drag on
-    /// the day screen moves the day it is showing, beside the chevrons rather than instead of
-    /// them, calling the same `showPreviousDay()` and `showNextDay()` they call — never
-    /// `showDay(_:)`, which is bounded by the day picker's reach and would silently refuse a
-    /// page back below the roster's earliest kept-from day. `minimumDistance` keeps a plain tap
+    /// the day screen moves the day it is showing, calling `showPreviousDay()` and
+    /// `showNextDay()` — never `showDay(_:)`, which is bounded by the day picker's reach and
+    /// would silently refuse a page back below the roster's earliest kept-from day. The chevrons
+    /// that once sat beside this gesture are gone; the week strip is what depicts it now
+    /// (ADR-1042's 2026-09-28 amendment, `add-week-strip` #346), and the ownership this gesture
+    /// claims over the screen is unchanged by that. `minimumDistance` keeps a plain tap
     /// on a row or a button from ever reaching either closure. What is new since the phone walk
     /// (PR #194) is that the axis is decided once, from the first sample this gesture sees, and
     /// held in `lockedDragAxis` until the finger lifts — comparing each sample's own ratio on its

@@ -10820,9 +10820,9 @@ func aDayScreensWeekStripHoldsNoDateForADayOutsideTheCalendar() {
     #expect(firstStrip.map(\.isToday) == [false, false, false, false, false, true, false])
 
     let lastSupportedPlaces = freshPlaces()
-    let lastSupportedKeptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let earliestKeptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
     let journalingFromTheEarliestDate = Commitment(
-        name: "Journaling", schedule: daily, keptFrom: lastSupportedKeptFrom)!
+        name: "Journaling", schedule: daily, keptFrom: earliestKeptFrom)!
     let lastSupported = CalendarDate(year: 9999, month: 12, day: 31)!
 
     let onLastSupported = DayScreen(
