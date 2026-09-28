@@ -11310,7 +11310,7 @@ func aDayScreenStopsTellingWhatItWasTellingWhenAPageMovesTheDayItIsShowing() thr
     try secondScreen.addOneOff(named: "Call mum")
     #expect(secondScreen.nameRefusal != nil)
 
-    secondScreen.showPreviousWeek()
+    secondScreen.showNextWeek()
 
     #expect(secondScreen.nameRefusal == nil)
 }

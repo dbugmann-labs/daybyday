@@ -20,7 +20,7 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 - [x] 3.4 a day screen paged to the week after from the last week of the calendar is left exactly as it was — catches a page clamped to 31 December 9999
 - [x] 3.5 paging a day screen does not read its roster or its record again — catches a page that re-reads a place
 - [x] 3.6 a day screen paged to another week draws the commitments its roster had not stopped keeping on the day it lands on — catches rows carried from the day it left
-- [ ] 3.7 a day screen stops telling what it was telling when a page moves the day it is showing — catches a page that clears neither notice nor name refusal
+- [x] 3.7 a day screen stops telling what it was telling when a page moves the day it is showing — catches a page that clears neither notice nor name refusal
 
 ## 4. How far back a page reaches
 
@@ -53,7 +53,7 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 ## 8. Gates and the archive handover
 
 - [x] 8.1 `openspec validate page-the-week-strip --strict` exits 0, and `pnpm run checks` is clean
-- [ ] 8.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
+- [x] 8.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
 - [ ] 8.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 8.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.4 by the conductor — and the walk comment's URL is in W.5. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/day-screen/spec.md` gained this delta's three requirements whole and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
