@@ -4,6 +4,12 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-28 — decision 5's fade reaches past rows for the first time: a **week strip**
+  day earlier than the reach takes the same opacity and no tap, so a week holding the earliest day
+  still draws seven days and the four before it recede rather than vanish. Decision 6's "the fade
+  belongs to rows" becomes "to rows and to a strip day that offers nothing"; the day being shown is
+  marked by its capsule and does not fade. Decision 6's chevrons are gone. At the grill of
+  `add-week-strip` (#346)
 - Amended: 2026-09-28 — the green *Today* pill #312 put in the toolbar's leading slot on today
   leaves it, and that slot is empty on today again. "Today" is said in words on the date row under
   the title instead — "Today, 25 September 2026" — and the *Today* button still takes the slot off
