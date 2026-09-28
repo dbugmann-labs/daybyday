@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Symbols
 import UIKit
 import DayByDayKit
 
@@ -195,6 +196,12 @@ struct ContentView: View {
     // shell's own adapter in `BirthdayCalendarAccess.swift`.
     @State private var birthdaySwitch: BirthdaySwitch
     @State private var screen: DayScreen
+    // ADR-1045's 2026-09-28 amendment: "one light impact for every change the screen keeps, and a
+    // selection tick when a day turns". Neither is read for its value — each only has to change
+    // for `.sensoryFeedback(_:trigger:)` on `body` to fire — so a plain counter is enough for
+    // both.
+    @State private var changesKept = 0
+    @State private var daysTurned = 0
     @Environment(\.scenePhase) private var scenePhase
     // `openspec/changes/add-adjacent-day-views/design.md` § *What the shell draws*: the settle
     // at release is animated, and Reduce Motion turns that half off — the drag itself goes on
@@ -302,6 +309,27 @@ struct ContentView: View {
                 copyingTo: copyPlace))
     }
 
+    /// Runs `change` against `screen`, ignoring anything it throws — every caller already does,
+    /// via `try?` — and bumps `changesKept` only where `screen.dayView` came out different
+    /// afterwards. `DayView` is `Hashable` (`DayByDayKit/DayView.swift:3`), so this is a plain
+    /// equality check rather than a second rule of its own about what counts as a change.
+    ///
+    /// **The guard is the snapshot-and-compare, not a read of whether the write "succeeded".**
+    /// Every `DayScreen` write already leaves `dayView` untouched on the three cases that must
+    /// never buzz — a row from a neighbouring day (an early `guard dayView.rows.contains(row)`
+    /// returns before touching it), a refused value (the same shape of early return), and a
+    /// value the record already held that a write still reaches the end of (the fresh
+    /// `dayViewOfShownDay()` it assigns reads equal to the one before it) — so comparing the two
+    /// snapshots catches all three without this file needing to know which guard fired inside
+    /// `DayByDayKit`.
+    private func keeping(_ change: () throws -> Void) {
+        let before = screen.dayView
+        try? change()
+        if screen.dayView != before {
+            changesKept += 1
+        }
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -333,6 +361,12 @@ struct ContentView: View {
             // draws beneath it. `screen.title` ("Fri") stays the kit's and is no longer drawn.
             .navigationTitle(weekdayInWords)
             .navigationBarTitleDisplayMode(.large)
+            // ADR-1045's 2026-09-28 amendment: "one light impact for every change the screen
+            // keeps, and a selection tick when a day turns, never the success haptic". Neither
+            // trigger's value is read — `keeping(_:)` and the day-turn call sites bump a counter
+            // purely to fire these.
+            .sensoryFeedback(.impact(weight: .light), trigger: changesKept)
+            .sensoryFeedback(.selection, trigger: daysTurned)
             .toolbar {
                 // The way back to today: a plain text button on the toolbar's left, where it
                 // is offered. On today itself, where it is not (§ *Offered*), the slot is empty
@@ -408,7 +442,7 @@ struct ContentView: View {
                 TextField(row.numberEntry(asOf: today())?.hint ?? "", text: $enteringText)
                     .keyboardType(.decimalPad)
                 Button("Save") {
-                    try? screen.enter(enteringText, on: row)
+                    keeping { try screen.enter(enteringText, on: row) }
                     enteringRow = nil
                 }
                 Button("Cancel", role: .cancel) {
@@ -449,7 +483,7 @@ struct ContentView: View {
                             }
                             ToolbarItem(placement: .confirmationAction) {
                                 Button("Save") {
-                                    try? screen.enter(enteringNoteText, on: row)
+                                    keeping { try screen.enter(enteringNoteText, on: row) }
                                     enteringNoteRow = nil
                                 }
                             }
@@ -480,12 +514,12 @@ struct ContentView: View {
                 TextField("Amount", text: $enteringTotalText)
                     .keyboardType(.decimalPad)
                 Button("Save") {
-                    try? screen.enter(enteringTotalText, on: row)
+                    keeping { try screen.enter(enteringTotalText, on: row) }
                     enteringTotalRow = nil
                 }
                 if row.offersTakeBackLast(asOf: today()) {
                     Button("Take back last", role: .destructive) {
-                        try? screen.takeBackLast(on: row)
+                        keeping { try screen.takeBackLast(on: row) }
                         enteringTotalRow = nil
                     }
                 }
@@ -569,7 +603,7 @@ struct ContentView: View {
             case .entry:
                 commitOneOffEntry()
             case .row(let row):
-                try? screen.rename(row, to: oneOffRowCommitText(for: row))
+                keeping { try screen.rename(row, to: oneOffRowCommitText(for: row)) }
                 oneOffRowText = ""
             }
         }
@@ -666,7 +700,7 @@ struct ContentView: View {
     /// last claim on it, which the refusal itself, while it stands, already holds.
     private func commitOneOffEntry() {
         let text = oneOffEntryCommitText
-        try? screen.addOneOff(named: text)
+        keeping { try screen.addOneOff(named: text) }
         oneOffEntryText = ""
     }
 
@@ -682,7 +716,7 @@ struct ContentView: View {
     /// it back on `row` there would fight that rather than hold a field that was never actually
     /// about to lose it.
     private func commitRename(of row: DayView.OneOffRow, to text: String) -> Bool {
-        try? screen.rename(row, to: text)
+        keeping { try screen.rename(row, to: text) }
         oneOffRowText = ""
         return screen.nameRefusal?.row == row
     }
@@ -890,7 +924,16 @@ struct ContentView: View {
             if day.isOffered, let date = day.date {
                 Button {
                     commitFocusedOneOffField(forDeparture: true)
+                    // `showDay(_:)` reassigns `dayView` even where `date` is already the day
+                    // shown, so this compares the shown day itself — `dayPickerReach.opensOn`,
+                    // the same property `weekdayInWords` and `dateRowInWords` read as "the day
+                    // being shown" — rather than trusting the call to mean a turn, so a tap on the
+                    // day already shown does not tick (ADR-1045, amended 2026-09-28).
+                    let before = screen.dayPickerReach.opensOn
                     screen.showDay(date)
+                    if screen.dayPickerReach.opensOn != before {
+                        daysTurned += 1
+                    }
                 } label: {
                     label
                 }
@@ -1199,6 +1242,10 @@ struct ContentView: View {
             if let markSystemName {
                 Image(systemName: markSystemName)
                     .foregroundStyle(markColor)
+                    .transition(
+                        AsymmetricTransition(
+                            insertion: .symbolEffect(.drawOn), removal: .symbolEffect(.drawOff))
+                    )
             }
             if entry != nil || noteEntry != nil || totalEntry != nil {
                 Image(systemName: "chevron.right")
@@ -1223,8 +1270,12 @@ struct ContentView: View {
                 } else if totalEntry != nil {
                     enteringTotalText = ""
                     enteringTotalRow = row
+                } else if reduceMotion {
+                    keeping { try screen.tick(row) }
                 } else {
-                    try? screen.tick(row)
+                    withAnimation {
+                        keeping { try screen.tick(row) }
+                    }
                 }
             } label: {
                 label
@@ -1304,12 +1355,22 @@ struct ContentView: View {
             if let markSystemName {
                 Image(systemName: markSystemName)
                     .foregroundStyle(markColor)
+                    .transition(
+                        AsymmetricTransition(
+                            insertion: .symbolEffect(.drawOn), removal: .symbolEffect(.drawOff))
+                    )
             }
         }
 
         if offersTick {
             Button {
-                try? screen.tick(row)
+                if reduceMotion {
+                    keeping { try screen.tick(row) }
+                } else {
+                    withAnimation {
+                        keeping { try screen.tick(row) }
+                    }
+                }
             } label: {
                 label
             }
@@ -1348,7 +1409,7 @@ struct ContentView: View {
                 ForEach(values, id: \.self) { value in
                     let isChosen = value == entry.number
                     Button {
-                        try? screen.choose(value, on: row)
+                        keeping { try screen.choose(value, on: row) }
                         choosingRow = nil
                     } label: {
                         Text("\(value)")
@@ -1362,7 +1423,7 @@ struct ContentView: View {
                 if entry.number != nil {
                     Divider()
                     Button {
-                        try? screen.choose(nil, on: row)
+                        keeping { try screen.choose(nil, on: row) }
                         choosingRow = nil
                     } label: {
                         Image(systemName: "xmark.circle")
@@ -1499,10 +1560,10 @@ struct ContentView: View {
                             // re-key at all. Reduce Motion turns this animation off the same way
                             // `settle(to:then:)` already turns the day swipe's off.
                             if reduceMotion {
-                                try? screen.tick(row)
+                                keeping { try screen.tick(row) }
                             } else {
                                 withAnimation {
-                                    try? screen.tick(row)
+                                    keeping { try screen.tick(row) }
                                 }
                             }
                         }
@@ -1517,6 +1578,11 @@ struct ContentView: View {
                             if let markSystemName {
                                 Image(systemName: markSystemName)
                                     .foregroundStyle(markColor)
+                                    .transition(
+                                        AsymmetricTransition(
+                                            insertion: .symbolEffect(.drawOn),
+                                            removal: .symbolEffect(.drawOff))
+                                    )
                             }
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -1544,7 +1610,7 @@ struct ContentView: View {
         .contextMenu {
             if !isRenaming {
                 Button("Remove", role: .destructive) {
-                    try? screen.remove(row)
+                    keeping { try screen.remove(row) }
                 }
             }
         }
@@ -1761,9 +1827,17 @@ struct ContentView: View {
     /// exactly as `design.md` § *What the shell draws* asks, and the drag's own live tracking
     /// above is untouched by this either way — the HIG lists tracking directly with a gesture as
     /// a way to reduce motion, not a target for removing it.
+    ///
+    /// `daysTurned` is bumped wherever `move` is non-`nil` — a carried swipe, in both this
+    /// branch and the animated completion below — and never on a snap-back, where `move` is
+    /// `nil` and the page only springs back to the day it already showed (ADR-1045's 2026-09-28
+    /// amendment).
     private func settle(to target: CGFloat, then move: (() -> Void)?) {
         guard !reduceMotion else {
             dragTranslation = 0
+            if move != nil {
+                daysTurned += 1
+            }
             move?()
             return
         }
@@ -1772,6 +1846,9 @@ struct ContentView: View {
             dragTranslation = target
         } completion: {
             dragTranslation = 0
+            if move != nil {
+                daysTurned += 1
+            }
             move?()
         }
     }
