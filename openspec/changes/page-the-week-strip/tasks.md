@@ -65,9 +65,9 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 
 A fresh install, so every commitment is kept from Friday 4 September 2026.
 
-- [ ] W.1 Today, with `‹` and `›` either side of the strip and today in the blue capsule.
-- [ ] W.2 `›` tapped — the same weekday of the next week in the text-colour capsule, the strip saying that week, the Today button in the toolbar.
-- [ ] W.3 From there, the strip swiped right — back on today, today in the blue capsule, no Today button.
-- [ ] W.4 `‹` tapped until the week of 31 August 2026 — Friday 4 September 2026 in the capsule, 31 to 3 faded, `‹` faded.
+- [x] W.1 Today, with `‹` and `›` either side of the strip and today in the blue capsule.
+- [x] W.2 `›` tapped — the same weekday of the next week in the text-colour capsule, the strip saying that week, the Today button in the toolbar.
+- [x] W.3 From there, the strip swiped right — back on today, today in the blue capsule, no Today button.
+- [x] W.4 `‹` tapped until the week of 31 August 2026 — Friday 4 September 2026 in the capsule, 31 to 3 faded, `‹` faded.
 - [ ] W.5 phone: a swipe follows the finger from its first movement with no hop, and the week sliding in has no filled capsule; a chevron tap slides the strip; a tap at either screen edge beside the strip does not page; `‹` in W.4's state does nothing.
-- [ ] W.6 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.5 is the human's at G7; the conductor ticks it on the G7 approval.
+- [x] W.6 **The handover** — W.1–W.4, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.5 is the human's at G7; the conductor ticks it on the G7 approval.
