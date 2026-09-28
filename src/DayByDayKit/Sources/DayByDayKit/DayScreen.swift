@@ -1303,19 +1303,22 @@ public final class DayScreen {
     /// page would leave the screen exactly as it was — `design.md` § *One landing rule, read by
     /// the page and by the strip beside it*: the one function `showPreviousWeek()`,
     /// `showNextWeek()`, `previousWeekStrip` and `nextWeekStrip` all read, so none of the four can
-    /// disagree with another. `openspec/specs/day-screen/spec.md`'s first two requirements.
+    /// disagree with another. `openspec/specs/day-screen/spec.md` § *A day screen pages to the
+    /// week before and the week after, landing on the Monday or on the today* and § *A page to
+    /// the week before lands on no day earlier than the day picker reaches, save the today*.
     ///
     /// Works entirely in day counts from `shownDay` rather than forming the target week's own
     /// `CalendarDate`s, because a week's Monday, or even its Sunday, can fall outside the
     /// calendar's supported range while a day later in that same week — or `dayPickerReach`'s own
     /// `earliest` — still falls inside it (the earliest supported date, 1 January 1583, is itself
     /// a Saturday); `CalendarDate.adding(days:)` answers `nil` for exactly that case, so building
-    /// the target week from a Monday that may not exist would lose the distinction the second
-    /// requirement's "or lies outside the calendar" clause draws. `monday` is the target week's
-    /// Monday, `sunday` its own Sunday, both as a count of days from `shownDay` — negative for a
-    /// week before it, positive for one after — and `earliest`'s own count follows the same
-    /// reckoning, read once as `dayPickerReach.earliest` stood before the page, per the second
-    /// requirement's "read off the reach as it stands before the page".
+    /// the target week from a Monday that may not exist would lose the distinction § *A page to
+    /// the week before lands on no day earlier than the day picker reaches, save the today*'s "or
+    /// lies outside the calendar" clause draws. `monday` is the target week's Monday, `sunday` its
+    /// own Sunday, both as a count of days from `shownDay` — negative for a week before it,
+    /// positive for one after — and `earliest`'s own count follows the same reckoning, read once
+    /// as `dayPickerReach.earliest` stood before the page, per that same requirement's "read off
+    /// the reach as it stands before the page".
     private func weekPageLanding(_ direction: WeekPageDirection) -> CalendarDate? {
         let offset = Self.mondayOffset(of: shownDay.weekday)
         let mondayOffset: Int
@@ -1336,8 +1339,8 @@ public final class DayScreen {
             return shownDay.adding(days: mondayOffset)
         }
 
-        let reachEarliest = dayPickerReach.earliest
-        let earliestOffset = shownDay.days(until: reachEarliest)
+        let earliestReach = dayPickerReach.earliest
+        let earliestOffset = shownDay.days(until: earliestReach)
         guard mondayOffset < earliestOffset else {
             // The target week's Monday is not earlier than the reach, so it exists (the reach
             // itself is never earlier than the calendar's own floor) and the page lands there
@@ -1346,11 +1349,11 @@ public final class DayScreen {
         }
         guard sundayOffset >= earliestOffset else {
             // Neither the today nor a day at or after the reach falls in the target week: a page
-            // there has nowhere to land, so it does nothing (the second requirement's third
-            // sentence).
+            // there has nowhere to land, so it does nothing (§ *A page to the week before lands
+            // on no day earlier than the day picker reaches, save the today*'s third sentence).
             return nil
         }
-        return reachEarliest
+        return earliestReach
     }
 
     /// Pages to the week before the one the day being shown lies in — to that week's Monday, or
@@ -1359,7 +1362,9 @@ public final class DayScreen {
     /// that week holds none of the three. Applies the landing `weekPageLanding(.before)` answers
     /// exactly as `showPreviousDay()` applies its own step: clears what is told, moves the day,
     /// forms the day view of the day landed on. Reads neither the roster nor the record again,
-    /// and does not move the today. `openspec/specs/day-screen/spec.md`'s first two requirements.
+    /// and does not move the today. `openspec/specs/day-screen/spec.md` § *A day screen pages to
+    /// the week before and the week after, landing on the Monday or on the today* and § *A page
+    /// to the week before lands on no day earlier than the day picker reaches, save the today*.
     public func showPreviousWeek() {
         guard let landing = weekPageLanding(.before) else {
             return

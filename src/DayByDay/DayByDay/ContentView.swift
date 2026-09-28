@@ -177,12 +177,13 @@ struct ContentView: View {
     // `width` while a finger is down, and the settle's target while one is not.
     @State private var pageWidth: CGFloat = 0
     @State private var dragTranslation: CGFloat = 0
-    // The week strip's own page width and live drag offset — `weekStrip`'s own pair of
-    // `pageWidth`/`dragTranslation` above, kept apart from them (`tasks.md` § 6.2: "the day
-    // swipe... and `settle(to:then:)`'s rows untouched") since the strip pages independently of
-    // the rows beneath it (`design.md` § *The shell*): a strip drag never slides
-    // `pagedDayContent`, and a day swipe never slides the strip.
-    @State private var weekStripPageWidth: CGFloat = 0
+    // The week strip's own live drag offset — `weekStrip`'s own counterpart to
+    // `dragTranslation` above, kept apart from it (`tasks.md` § 6.2: "the day swipe... and
+    // `settle(to:then:)`'s rows untouched") since the strip pages independently of the rows
+    // beneath it (`design.md` § *The shell*): a strip drag never slides `pagedDayContent`, and a
+    // day swipe never slides the strip. Unlike `pageWidth`, the strip has no counterpart to it:
+    // `weekSwipeGesture(pageWidth:)` and `weekStrip`'s own `.background` read the width straight
+    // off their own `GeometryReader`, and nothing else in this file needs it stored.
     @State private var weekDragTranslation: CGFloat = 0
     // Which axis the current drag has committed to, decided once from the first sample
     // `daySwipeGesture` sees and held until the finger lifts — the owner's own words from the
@@ -809,10 +810,17 @@ struct ContentView: View {
                             .frame(width: width)
                     }
                     .offset(x: -width + weekDragTranslation)
+                    // `.clipped()` clips to the view it is attached to's own resolved frame — an
+                    // `HStack` of three `width`-wide weeks is itself three widths wide regardless
+                    // of the `.offset()` shifting where that frame is drawn, so clipping the
+                    // `HStack` directly clipped nothing: the next week's own capsule showed past
+                    // the strip's right edge in every walk picture. The `.frame(width:)` here
+                    // resolves this view back down to one strip's width before `.clipped()` acts
+                    // on it, so both neighbours slide in from the strip's own edges
+                    // (`design.md` § *The shell*: "clipped to the strip's own width").
+                    .frame(width: width, alignment: .leading)
                     .clipped()
                     .highPriorityGesture(weekSwipeGesture(pageWidth: width))
-                    .onAppear { weekStripPageWidth = width }
-                    .onChange(of: width) { _, newWidth in weekStripPageWidth = newWidth }
                 }
             }
     }
@@ -1881,9 +1889,16 @@ struct ContentView: View {
     /// runs `move` — `settle(to:then:)`'s own structure, kept as a separate function rather than
     /// a shared one so that function's own rows stay untouched by this Story (`tasks.md` § 6.2).
     /// Skipped entirely where `reduceMotion` is set, exactly as `settle(to:then:)` skips it.
+    /// `daysTurned` is bumped wherever `move` is non-`nil` — a carried page, in both this branch
+    /// and the animated completion below — and never on a snap-back, where `move` is `nil` and
+    /// the strip only springs back to the week it already showed, exactly as `settle(to:then:)`
+    /// and the strip tap bump it (ADR-1045's 2026-09-28 amendment).
     private func settleWeekStrip(to target: CGFloat, then move: (() -> Void)?) {
         guard !reduceMotion else {
             weekDragTranslation = 0
+            if move != nil {
+                daysTurned += 1
+            }
             move?()
             return
         }
@@ -1892,6 +1907,9 @@ struct ContentView: View {
             weekDragTranslation = target
         } completion: {
             weekDragTranslation = 0
+            if move != nil {
+                daysTurned += 1
+            }
             move?()
         }
     }
