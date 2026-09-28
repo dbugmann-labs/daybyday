@@ -11070,8 +11070,8 @@ func aDayScreenShowsADayTappedOnItsWeekStrip() {
 // MARK: - page-the-week-strip
 
 @MainActor
-@Test("a day screen paged to the week after lands on that week's Monday")
-func aDayScreenPagedToTheWeekAfterLandsOnThatWeeksMonday() {
+@Test("a day screen paged to the week after lands on the same weekday of that week")
+func aDayScreenPagedToTheWeekAfterLandsOnTheSameWeekdayOfThatWeek() {
     let (place, rosterPlace) = freshPlaces()
     let daily: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
@@ -11080,7 +11080,7 @@ func aDayScreenPagedToTheWeekAfterLandsOnThatWeeksMonday() {
         name: "Journaling", schedule: daily,
         keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
     let wednesday = CalendarDate(year: 2026, month: 9, day: 16)!
-    let monday = CalendarDate(year: 2026, month: 9, day: 21)!
+    let nextWednesday = CalendarDate(year: 2026, month: 9, day: 23)!
 
     let screen = DayScreen(
         startingFrom: [journaling], asOf: wednesday, keepingRecordAt: place,
@@ -11092,7 +11092,7 @@ func aDayScreenPagedToTheWeekAfterLandsOnThatWeeksMonday() {
         screen.dayView
             == DayView(
                 of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(),
-                asOf: wednesday, on: monday, in: History()))
+                asOf: wednesday, on: nextWednesday, in: History()))
     #expect(screen.offersGoingBackToToday)
 
     let strip = screen.weekStrip
@@ -11105,17 +11105,17 @@ func aDayScreenPagedToTheWeekAfterLandsOnThatWeeksMonday() {
         CalendarDate(year: 2026, month: 9, day: 26)!,
         CalendarDate(year: 2026, month: 9, day: 27)!,
     ])
-    #expect(strip.map(\.isShown) == [true, false, false, false, false, false, false])
+    #expect(strip.map(\.isShown) == [false, false, true, false, false, false, false])
     #expect(strip.map(\.isToday) == [false, false, false, false, false, false, false])
 
     screen.showNextWeek()
 
-    #expect(screen.dayPickerReach.opensOn == CalendarDate(year: 2026, month: 9, day: 28)!)
+    #expect(screen.dayPickerReach.opensOn == CalendarDate(year: 2026, month: 9, day: 30)!)
 }
 
 @MainActor
-@Test("a day screen paged to the week before lands on that week's Monday")
-func aDayScreenPagedToTheWeekBeforeLandsOnThatWeeksMonday() {
+@Test("a day screen paged to the week before lands on the same weekday of that week")
+func aDayScreenPagedToTheWeekBeforeLandsOnTheSameWeekdayOfThatWeek() {
     let (place, rosterPlace) = freshPlaces()
     let daily: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
@@ -11131,12 +11131,12 @@ func aDayScreenPagedToTheWeekBeforeLandsOnThatWeeksMonday() {
 
     screen.showPreviousWeek()
 
-    #expect(screen.dayPickerReach.opensOn == CalendarDate(year: 2026, month: 9, day: 7)!)
+    #expect(screen.dayPickerReach.opensOn == CalendarDate(year: 2026, month: 9, day: 9)!)
     #expect(screen.offersGoingBackToToday)
 
     screen.showPreviousWeek()
 
-    #expect(screen.dayPickerReach.opensOn == CalendarDate(year: 2026, month: 8, day: 31)!)
+    #expect(screen.dayPickerReach.opensOn == CalendarDate(year: 2026, month: 9, day: 2)!)
 
     screen.showToday()
 
@@ -11144,8 +11144,10 @@ func aDayScreenPagedToTheWeekBeforeLandsOnThatWeeksMonday() {
 }
 
 @MainActor
-@Test("a day screen paged into the week holding its today lands on the today from either side")
-func aDayScreenPagedIntoTheWeekHoldingItsTodayLandsOnTheTodayFromEitherSide() {
+@Test(
+    "a day screen paged into the week holding its today lands on the same weekday and not on the today"
+)
+func aDayScreenPagedIntoTheWeekHoldingItsTodayLandsOnTheSameWeekdayAndNotOnTheToday() {
     let daily: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
@@ -11158,22 +11160,28 @@ func aDayScreenPagedIntoTheWeekHoldingItsTodayLandsOnTheTodayFromEitherSide() {
     let firstScreen = DayScreen(
         startingFrom: [journaling], asOf: wednesday, keepingRecordAt: firstPlace,
         keepingRosterAt: firstRosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    firstScreen.showNextDay()
+    firstScreen.showNextDay()
     firstScreen.showNextWeek()
     firstScreen.showPreviousWeek()
 
-    #expect(firstScreen.dayPickerReach.opensOn == wednesday)
-    #expect(!firstScreen.offersGoingBackToToday)
+    #expect(firstScreen.dayPickerReach.opensOn == CalendarDate(year: 2026, month: 9, day: 18)!)
+    #expect(firstScreen.offersGoingBackToToday)
+
+    let strip = firstScreen.weekStrip
+    #expect(strip.map(\.isShown) == [false, false, false, false, true, false, false])
+    #expect(strip.map(\.isToday) == [false, false, true, false, false, false, false])
 
     let (secondPlace, secondRosterPlace) = freshPlaces()
     let secondScreen = DayScreen(
         startingFrom: [journaling], asOf: wednesday, keepingRecordAt: secondPlace,
         keepingRosterAt: secondRosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    secondScreen.showPreviousDay()
+    secondScreen.showPreviousDay()
     secondScreen.showPreviousWeek()
-    secondScreen.showPreviousWeek()
-    secondScreen.showNextWeek()
     secondScreen.showNextWeek()
 
-    #expect(secondScreen.dayPickerReach.opensOn == wednesday)
+    #expect(secondScreen.dayPickerReach.opensOn == CalendarDate(year: 2026, month: 9, day: 14)!)
 }
 
 @MainActor
@@ -11206,7 +11214,34 @@ func aDayScreenPagedToTheWeekAfterFromTheLastWeekOfTheCalendarIsLeftExactlyAsItW
     secondScreen.showNextWeek()
 
     #expect(
-        secondScreen.dayPickerReach.opensOn == CalendarDate(year: 9999, month: 12, day: 27)!)
+        secondScreen.dayPickerReach.opensOn == CalendarDate(year: 9999, month: 12, day: 29)!)
+}
+
+@MainActor
+@Test("a day screen paged to the week after onto a day past the calendar lands on its last date")
+func aDayScreenPagedToTheWeekAfterOntoADayPastTheCalendarLandsOnItsLastDate() {
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(
+        name: "Journaling", schedule: daily,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let saturday = CalendarDate(year: 9999, month: 12, day: 25)!
+    let lastSupportedFriday = CalendarDate(year: 9999, month: 12, day: 31)!
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: saturday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+
+    screen.showNextWeek()
+
+    #expect(screen.dayPickerReach.opensOn == lastSupportedFriday)
+    #expect(screen.offersGoingBackToToday)
+
+    let strip = screen.weekStrip
+    #expect(strip.map(\.isShown) == [false, false, false, false, true, false, false])
+    #expect(strip.map(\.isToday) == [false, false, false, false, false, false, false])
 }
 
 @MainActor
@@ -11219,7 +11254,7 @@ func pagingADayScreenDoesNotReadItsRosterOrItsRecordAgain() throws {
     let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
     let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
     let wednesday = CalendarDate(year: 2026, month: 9, day: 16)!
-    let mondayInThatWeek = CalendarDate(year: 2026, month: 9, day: 7)!
+    let wednesdayInThatWeek = CalendarDate(year: 2026, month: 9, day: 9)!
 
     let rosterStore = try RosterStore(at: rosterPlace)
     try rosterStore.add(journaling)
@@ -11234,7 +11269,7 @@ func pagingADayScreenDoesNotReadItsRosterOrItsRecordAgain() throws {
     let otherRoster = try RosterStore(at: rosterPlace)
     try otherRoster.add(gym)
     let otherRecord = try RecordStore(at: place)
-    try otherRecord.add(Tick(journaling, on: mondayInThatWeek)!)
+    try otherRecord.add(Tick(journaling, on: wednesdayInThatWeek)!)
 
     screen.showPreviousWeek()
 
@@ -11414,8 +11449,10 @@ func aDayScreenMovedBelowTheEarliestDayItsRosterKeepsPagesBackNoFurtherThanTheWe
 }
 
 @MainActor
-@Test("a day screen paged back into the week holding its today lands on the today however late its roster's earliest day")
-func aDayScreenPagedBackIntoTheWeekHoldingItsTodayLandsOnTheTodayHoweverLateItsRostersEarliestDay()
+@Test(
+    "a day screen paged back into the week holding its today lands on no day earlier than its picker reaches, the today included"
+)
+func aDayScreenPagedBackIntoTheWeekHoldingItsTodayLandsOnNoDayEarlierThanItsPickerReachesTheTodayIncluded()
 {
     let (place, rosterPlace) = freshPlaces()
     let daily: Schedule = .weekdays([
@@ -11423,8 +11460,9 @@ func aDayScreenPagedBackIntoTheWeekHoldingItsTodayLandsOnTheTodayHoweverLateItsR
     ])
     let journaling = Commitment(
         name: "Journaling", schedule: daily,
-        keptFrom: CalendarDate(year: 2026, month: 9, day: 25)!)!
+        keptFrom: CalendarDate(year: 2026, month: 9, day: 18)!)!
     let wednesday = CalendarDate(year: 2026, month: 9, day: 16)!
+    let friday = CalendarDate(year: 2026, month: 9, day: 18)!
 
     let screen = DayScreen(
         startingFrom: [journaling], asOf: wednesday, keepingRecordAt: place,
@@ -11433,42 +11471,12 @@ func aDayScreenPagedBackIntoTheWeekHoldingItsTodayLandsOnTheTodayHoweverLateItsR
     screen.showNextWeek()
     screen.showPreviousWeek()
 
-    #expect(screen.dayPickerReach.opensOn == wednesday)
-    #expect(!screen.offersGoingBackToToday)
-
-    screen.showPreviousWeek()
-
-    #expect(screen.dayPickerReach.opensOn == wednesday)
-}
-
-@MainActor
-@Test("a day screen whose roster keeps nothing until more than a week after its today pages back no further than that week")
-func aDayScreenWhoseRosterKeepsNothingUntilMoreThanAWeekAfterItsTodayPagesBackNoFurtherThanThatWeek()
-{
-    let (place, rosterPlace) = freshPlaces()
-    let daily: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let journaling = Commitment(
-        name: "Journaling", schedule: daily,
-        keptFrom: CalendarDate(year: 2026, month: 10, day: 2)!)!
-    let wednesday = CalendarDate(year: 2026, month: 9, day: 16)!
-    let friday = CalendarDate(year: 2026, month: 10, day: 2)!
-
-    let screen = DayScreen(
-        startingFrom: [journaling], asOf: wednesday, keepingRecordAt: place,
-        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
-
-    screen.showDay(CalendarDate(year: 2026, month: 10, day: 5)!)
-
-    screen.showPreviousWeek()
-
-    #expect(screen.dayPickerReach.opensOn == friday)
-
-    screen.showPreviousWeek()
-
     #expect(screen.dayPickerReach.opensOn == friday)
     #expect(screen.offersGoingBackToToday)
+
+    screen.showPreviousWeek()
+
+    #expect(screen.dayPickerReach.opensOn == friday)
 }
 
 @MainActor
@@ -11499,8 +11507,10 @@ func aDayScreenPagedBackIntoTheWeekOfTheFirstSupportedDateLandsOnThatDate() {
 }
 
 @MainActor
-@Test("a day screen says as the week strip either side the strip a page there would leave it saying")
-func aDayScreenSaysAsTheWeekStripEitherSideTheStripAPageThereWouldLeaveItSaying() {
+@Test(
+    "a day screen's week strip either side holds the week a page there would land in and marks no day as shown"
+)
+func aDayScreensWeekStripEitherSideHoldsTheWeekAPageThereWouldLandInAndMarksNoDayAsShown() {
     let daily: Schedule = .weekdays([
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ])
@@ -11509,54 +11519,80 @@ func aDayScreenSaysAsTheWeekStripEitherSideTheStripAPageThereWouldLeaveItSaying(
         keptFrom: CalendarDate(year: 2026, month: 9, day: 4)!)!
     let wednesday = CalendarDate(year: 2026, month: 9, day: 16)!
 
-    func openedScreen() -> DayScreen {
-        let (place, rosterPlace) = freshPlaces()
-        return DayScreen(
-            startingFrom: [journaling], asOf: wednesday, keepingRecordAt: place,
-            keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
-    }
-
-    let screen = openedScreen()
-    screen.showPreviousWeek()
-
-    let pagedTwice = openedScreen()
-    pagedTwice.showPreviousWeek()
-    pagedTwice.showPreviousWeek()
-
-    #expect(screen.previousWeekStrip == pagedTwice.weekStrip)
-    #expect(pagedTwice.weekStrip.map(\.isShown) == [false, false, false, false, true, false, false])
-    #expect(pagedTwice.weekStrip.map(\.isOffered) == [false, false, false, false, false, true, true])
-
-    let notPaged = openedScreen()
-
-    #expect(screen.nextWeekStrip == notPaged.weekStrip)
-    #expect(notPaged.weekStrip.map(\.isShown) == [false, false, true, false, false, false, false])
-    #expect(notPaged.weekStrip.map(\.isToday) == [false, false, true, false, false, false, false])
-}
-
-@MainActor
-@Test("a day screen's week strip of the week before offers from the today it would land on however late its roster's earliest day")
-func aDayScreensWeekStripOfTheWeekBeforeOffersFromTheTodayItWouldLandOnHoweverLateItsRostersEarliestDay()
-{
-    let daily: Schedule = .weekdays([
-        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
-    ])
-    let journaling = Commitment(
-        name: "Journaling", schedule: daily,
-        keptFrom: CalendarDate(year: 2026, month: 9, day: 25)!)!
-    let wednesday = CalendarDate(year: 2026, month: 9, day: 16)!
-
     let (place, rosterPlace) = freshPlaces()
     let screen = DayScreen(
         startingFrom: [journaling], asOf: wednesday, keepingRecordAt: place,
         keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
 
-    screen.showNextWeek()
+    screen.showPreviousWeek()
 
-    let strip = screen.previousWeekStrip
-    #expect(strip?.map(\.isShown) == [false, false, true, false, false, false, false])
-    #expect(strip?.map(\.isToday) == [false, false, true, false, false, false, false])
-    #expect(strip?.map(\.isOffered) == [false, false, false, true, true, true, true])
+    let before = screen.previousWeekStrip
+    #expect(
+        before?.map(\.date) == [
+            CalendarDate(year: 2026, month: 8, day: 31)!,
+            CalendarDate(year: 2026, month: 9, day: 1)!,
+            CalendarDate(year: 2026, month: 9, day: 2)!,
+            CalendarDate(year: 2026, month: 9, day: 3)!,
+            CalendarDate(year: 2026, month: 9, day: 4)!,
+            CalendarDate(year: 2026, month: 9, day: 5)!,
+            CalendarDate(year: 2026, month: 9, day: 6)!,
+        ])
+    #expect(before?.map(\.isShown) == [false, false, false, false, false, false, false])
+    #expect(before?.map(\.isToday) == [false, false, false, false, false, false, false])
+    #expect(before?.map(\.isOffered) == [false, false, false, false, true, true, true])
+
+    let after = screen.nextWeekStrip
+    #expect(
+        after?.map(\.date) == [
+            CalendarDate(year: 2026, month: 9, day: 14)!,
+            CalendarDate(year: 2026, month: 9, day: 15)!,
+            CalendarDate(year: 2026, month: 9, day: 16)!,
+            CalendarDate(year: 2026, month: 9, day: 17)!,
+            CalendarDate(year: 2026, month: 9, day: 18)!,
+            CalendarDate(year: 2026, month: 9, day: 19)!,
+            CalendarDate(year: 2026, month: 9, day: 20)!,
+        ])
+    #expect(after?.map(\.isToday) == [false, false, true, false, false, false, false])
+    #expect(after?.map(\.isShown) == [false, false, false, false, false, false, false])
+    #expect(after?.map(\.isOffered) == [true, true, true, true, true, true, true])
+}
+
+@MainActor
+@Test(
+    "a day screen's week strip either side offers what the reach a page there would give reaches"
+)
+func aDayScreensWeekStripEitherSideOffersWhatTheReachAPageThereWouldGiveReaches() {
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(
+        name: "Journaling", schedule: daily,
+        keptFrom: CalendarDate(year: 2026, month: 9, day: 4)!)!
+    let tuesday = CalendarDate(year: 2026, month: 9, day: 1)!
+
+    let (place, rosterPlace) = freshPlaces()
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: tuesday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+
+    for _ in 0..<7 {
+        screen.showPreviousDay()
+    }
+
+    let strip = screen.nextWeekStrip
+    #expect(
+        strip?.map(\.date) == [
+            CalendarDate(year: 2026, month: 8, day: 31)!,
+            CalendarDate(year: 2026, month: 9, day: 1)!,
+            CalendarDate(year: 2026, month: 9, day: 2)!,
+            CalendarDate(year: 2026, month: 9, day: 3)!,
+            CalendarDate(year: 2026, month: 9, day: 4)!,
+            CalendarDate(year: 2026, month: 9, day: 5)!,
+            CalendarDate(year: 2026, month: 9, day: 6)!,
+        ])
+    #expect(strip?.map(\.isToday) == [false, true, false, false, false, false, false])
+    #expect(strip?.map(\.isShown) == [false, false, false, false, false, false, false])
+    #expect(strip?.map(\.isOffered) == [false, true, true, true, true, true, true])
 }
 
 @MainActor
@@ -11644,5 +11680,17 @@ func aDayScreensWeekStripEitherSideFollowsItsReachOnceItIsReturnedTo() throws {
 
     screen.returnedTo()
 
-    #expect(screen.previousWeekStrip?.map(\.isShown) == [true, false, false, false, false, false, false])
+    let strip = screen.previousWeekStrip
+    #expect(
+        strip?.map(\.date) == [
+            CalendarDate(year: 2026, month: 9, day: 7)!,
+            CalendarDate(year: 2026, month: 9, day: 8)!,
+            CalendarDate(year: 2026, month: 9, day: 9)!,
+            CalendarDate(year: 2026, month: 9, day: 10)!,
+            CalendarDate(year: 2026, month: 9, day: 11)!,
+            CalendarDate(year: 2026, month: 9, day: 12)!,
+            CalendarDate(year: 2026, month: 9, day: 13)!,
+        ])
+    #expect(strip?.map(\.isShown) == [false, false, false, false, false, false, false])
+    #expect(strip?.map(\.isOffered) == [true, true, true, true, true, true, true])
 }

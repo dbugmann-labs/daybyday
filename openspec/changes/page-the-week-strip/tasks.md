@@ -7,7 +7,7 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 ## 1. Before a line is written
 
 - [x] 1.1 From the repo root, `pnpm run check:scenarios` names this change's uncovered scenarios; they are exactly the eighteen titles boxed in §§ 3–5. Any other uncovered title is a stop.
-- [ ] 1.2 Reopened at G7: the tests named for the titles the delta no longer carries are renamed to the unticked titles in §§ 3–5 or deleted with them, and `pnpm run check:scenarios` then names exactly the seven titles new at this reopen, 3.1–3.3, 3.5, 4.4, 5.1 and 5.2, as uncovered. Any other is a stop.
+- [x] 1.2 Reopened at G7: the tests named for the titles the delta no longer carries are renamed to the unticked titles in §§ 3–5 or deleted with them, and `pnpm run check:scenarios` then names exactly the seven titles new at this reopen, 3.1–3.3, 3.5, 4.4, 5.1 and 5.2, as uncovered. Any other is a stop.
 
 ## 2. The seam
 
@@ -15,12 +15,12 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 
 ## 3. A page
 
-- [ ] 3.1 a day screen paged to the week after lands on the same weekday of that week — catches a page landing on the Monday
-- [ ] 3.2 a day screen paged to the week before lands on the same weekday of that week — catches a page that moves the today
-- [ ] 3.3 a day screen paged into the week holding its today lands on the same weekday and not on the today — catches the today's exception kept
-- [ ] 3.4 a day screen paged to the week after from the last week of the calendar is left exactly as it was — catches a page into a week holding no date; its test is edited for the Wednesday
-- [ ] 3.5 a day screen paged to the week after onto a day past the calendar lands on its last date — catches a page refused where the weekday is past 31 December 9999
-- [ ] 3.6 paging a day screen does not read its roster or its record again — catches a page that re-reads a place; its test is edited for the Wednesday
+- [x] 3.1 a day screen paged to the week after lands on the same weekday of that week — catches a page landing on the Monday
+- [x] 3.2 a day screen paged to the week before lands on the same weekday of that week — catches a page that moves the today
+- [x] 3.3 a day screen paged into the week holding its today lands on the same weekday and not on the today — catches the today's exception kept
+- [x] 3.4 a day screen paged to the week after from the last week of the calendar is left exactly as it was — catches a page into a week holding no date; its test is edited for the Wednesday
+- [x] 3.5 a day screen paged to the week after onto a day past the calendar lands on its last date — catches a page refused where the weekday is past 31 December 9999
+- [x] 3.6 paging a day screen does not read its roster or its record again — catches a page that re-reads a place; its test is edited for the Wednesday
 - [x] 3.7 a day screen paged to another week draws the commitments its roster had not stopped keeping on the day it lands on — catches rows carried from the day it left
 - [x] 3.8 a day screen stops telling what it was telling when a page moves the day it is showing — catches a page that clears neither notice nor name refusal
 
@@ -29,16 +29,16 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 - [x] 4.1 a day screen paged back into the week holding the earliest day its picker reaches lands on that day — catches a page refused where the weekday is below the reach
 - [x] 4.2 a day screen paged back from the week holding the earliest day its picker reaches is left exactly as it was — catches a dead page, or a notice cleared by a page that went nowhere
 - [x] 4.3 a day screen moved below the earliest day its roster keeps pages back no further than the week it is showing — catches a bound read off the roster's floor rather than the reach
-- [ ] 4.4 a day screen paged back into the week holding its today lands on no day earlier than its picker reaches, the today included — catches the today let below the reach
+- [x] 4.4 a day screen paged back into the week holding its today lands on no day earlier than its picker reaches, the today included — catches the today let below the reach
 - [x] 4.5 a day screen paged back into the week of the first supported date lands on that date — catches a page refused on an undated weekday
 
 ## 5. The week strip either side
 
-- [ ] 5.1 a day screen's week strip either side holds the week a page there would land in and marks no day as shown — catches a second filled capsule mid-slide
-- [ ] 5.2 a day screen's week strip either side offers what the reach a page there would give reaches — catches a neighbour strip read off the current reach
+- [x] 5.1 a day screen's week strip either side holds the week a page there would land in and marks no day as shown — catches a second filled capsule mid-slide
+- [x] 5.2 a day screen's week strip either side offers what the reach a page there would give reaches — catches a neighbour strip read off the current reach
 - [x] 5.3 a day screen says no week strip either side where a page there would leave it as it was — catches a dead week offered to the shell
 - [x] 5.4 saying the week strip either side leaves a day screen exactly as it was — catches a preview that moves the day or clears a notice
-- [ ] 5.5 a day screen's week strip either side follows its reach once it is returned to — catches a neighbour stored at a move; its test is edited for the unmarked strip
+- [x] 5.5 a day screen's week strip either side follows its reach once it is returned to — catches a neighbour stored at a move; its test is edited for the unmarked strip
 
 ## 6. The shell (ADR-1019: no rule the Kit does not state)
 
