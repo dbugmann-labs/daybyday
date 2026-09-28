@@ -40,11 +40,17 @@ project targeting 26, found `safeAreaBar(edge: .bottom)` compiles, and that atta
 `NavigationStack`'s content its field rose with the software keyboard and sat above it, with no
 keyboard tracking at all; after a day swipe it was still one bar in the same frame.
 
+**Amended 2026-09-28**, while the chore was built: `safeAreaBar` was dropped for
+`.safeAreaInset(edge: .bottom)`, because a field inside `safeAreaBar`'s content never let
+`@FocusState` hold `.entry`, read or written, so the toolbar checkmark that reads that focus never
+showed for the entry; a `@FocusState` local to the bar's own view did no better. `.safeAreaInset`
+is the ordinary view tree, and its field rose above the keyboard just the same.
+
 ## Decision
 
-**The one-off entry is a bar pinned at the foot of the day screen**, drawn with iOS 26's
-`safeAreaBar(edge: .bottom)`, the way Messages pins its field. It is always in reach, above the
-keyboard by construction, and never scrolled to.
+**The one-off entry is a bar pinned at the foot of the day screen**, drawn with
+`.safeAreaInset(edge: .bottom)` attached to the paged day content, the way Messages pins its field.
+It is always in reach, rises above the keyboard with no keyboard tracking, and is never scrolled to.
 
 - **It is drawn on every day the entry is offered, which is exactly when `oneOffGroup != nil`**, and
   nowhere else. It is one bar for the screen, not one per page, so the disabled entry line each
@@ -54,6 +60,9 @@ keyboard by construction, and never scrolled to.
   committing — on losing focus, and before the day moves — stands.
 - **The toolbar `+` is gone.** Its only job was to bring the field into view, and a bar is always
   in view.
+- **The day's rows run under the bar** rather than stopping flat at its top edge: the lists fade
+  out beneath it with `.scrollEdgeEffectStyle(.soft, for: .bottom)`, and the paged content is
+  clipped horizontally only, which still hides the neighbouring pages.
 - **One-off rows still live in the group where they stand.** Only the line that makes one moves;
   renaming from a row, its tick and its long press are untouched.
 - **The shell draws the One-offs group only where it holds at least one row.** The bar is the offer,
@@ -71,10 +80,11 @@ page, and a disabled line on each neighbour" — **and the second**, which shows
 has it focus the entry. The archive stays unedited, as every archive does; this record is where the
 change is read.
 
-**`ScrollListToBottom` goes**, with every scroll that exists to carry the entry into view.
-**Whether the keyboard-height tracking goes is not decided here.** Renames still happen in their
-row, and the tracking served them too. It goes if a rename on the last row of a long day no longer
-needs it, and stays scoped to renames if it does; the chore's PR records which, from that test.
+**`ScrollListToBottom` goes**, with every scroll that exists to carry the entry into view, **and
+so does the keyboard-height tracking.** Renames still happen in their row, and the tracking served
+them too, but a rename on the last row of a 25-row day with the keyboard up read the same frames
+with it and without it — row maxY 489, bar minY 499, keyboard minY 583. No `UIScreen.main` read and
+no keyboard notification remains in the shell.
 
 **No scenario moves, which is why this is a chore.** `openspec/specs/day-screen/spec.md` says a
 one-off committed in the one-off entry is added on the day the screen shows, and that a refused add
@@ -92,13 +102,13 @@ contradicts cannot be edited.
   reach; on a full day the new row may be off screen when it is made.
 - **Every day screen offering the entry gives up a strip at its foot**, on days a person means to
   add nothing as well as on days they do.
-- **One reach-in certainly leaves the shell, and possibly both.** What remains, if any, is the
-  keyboard tracking scoped to a row's rename field.
+- **Both reach-ins leave the shell.** Nothing in it walks the window for a scroll view or reads
+  the keyboard's frame.
 - **On a day no one-off stands on, the day screen draws no One-offs heading at all**, and the bar
   alone says one-offs are being kept. Where one-offs cannot be read there is neither.
 - **`CONTEXT.md` § *One-off entry* and § *Day view* are amended in place, dated 2026-09-28**, and no
   new term is landed.
-- **The reversal trigger is `safeAreaBar` failing the phone** — a bar that does not rise with the
+- **The reversal trigger is the safe-area inset failing the phone** — a bar that does not rise with the
   keyboard, or a drag on it that moves the day. Going back costs both reach-ins again.
 
 ## Alternatives considered
