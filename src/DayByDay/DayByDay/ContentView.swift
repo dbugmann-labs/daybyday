@@ -801,6 +801,12 @@ struct ContentView: View {
                 .onChange(of: width) { _, newWidth in weekStripPageWidth = newWidth }
             }
         }
+        // Names the strip as one region for a UI test to swipe — `docs/running-the-app.md`
+        // § *The walk*: a day cell's own label is not enough on its own, since W.4 must drive a
+        // drag that starts on one and prove it does not also tap it. `.contain` keeps every cell
+        // beneath individually reachable by its own label.
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("WeekStrip")
     }
 
     /// One week's seven days, one equal-width column each — the row `weekStrip` lays out three
