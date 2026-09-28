@@ -45,7 +45,7 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 
 - [x] 7.1 `openspec validate add-week-strip --strict` exits 0, and `pnpm run checks` is clean
 - [x] 7.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
-- [ ] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
+- [x] 7.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 7.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.6 by the conductor — and the walk comment's URL is in W.7. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/day-screen/spec.md` gained this delta's two requirements whole and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
 ## The walk
@@ -57,5 +57,5 @@ A fresh install, so every commitment is kept from Friday 4 September 2026.
 - [x] W.3 Sunday 6 September 2026 picked on the calendar, then one swipe left — Monday 7 September 2026 in the capsule and the strip saying 7 to 13.
 - [x] W.4 Wednesday 16 September 2026 picked on the calendar — the strip saying 14 to 20, Wednesday in the capsule, the date row "16 September 2026".
 - [x] W.5 Friday 4 September 2026 picked on the calendar — 31, 1, 2 and 3 faded, 4 in the capsule, 5 and 6 at full strength.
-- [ ] W.6 phone: swipe from a Sunday onto the Monday after and back — the head stays still under the finger, the strip redraws as the other week once the day lands, and it reads as what the swipe moves now that the chevrons are gone.
+- [x] W.6 phone: swipe from a Sunday onto the Monday after and back — the head stays still under the finger, the strip redraws as the other week once the day lands, and it reads as what the swipe moves now that the chevrons are gone.
 - [x] W.7 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.6 is the human's at G7; the conductor ticks it on the G7 approval. Posted: https://github.com/dbugmann-labs/daybyday/pull/348#issuecomment-5869094025
