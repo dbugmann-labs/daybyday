@@ -4,6 +4,13 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-28 — the phone now says by touch what the trailing slot says by colour: one
+  light impact for every change the screen keeps, and a selection tick when a day turns, never
+  the success haptic, since the phone's triple tap is its own way of congratulating and nothing
+  here congratulates you. The check draws on when a row becomes kept and off when the tick is
+  taken back, with the name's kept look arriving in the same transaction. Reduce Motion removes the
+  drawing and keeps the touch. This is decision 8's colour trail extended by one sense, not a
+  standing affordance, so decision 4's reversal stands. Written by `chore/feel-a-kept-change`.
 - Amended: 2026-09-28 — decision 5's fade reaches past rows for the first time: a **week strip**
   day earlier than the reach takes the same opacity and no tap, so a week holding the earliest day
   still draws seven days and the four before it recede rather than vanish. Decision 6's "the fade
