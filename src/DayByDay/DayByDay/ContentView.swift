@@ -93,95 +93,6 @@ private func date(from calendarDate: CalendarDate) -> Date {
     return Calendar.current.date(from: components)!
 }
 
-/// The one-off entry's `.id` inside `dayList(for:isShown:)`'s `ScrollViewReader` — a constant
-/// because there is exactly one entry per list. `oneOffEntryView(isShown:)` tags its `VStack`
-/// with this, and `dayList(for:isShown:)` scrolls to it, so the entry field and the refusal
-/// line under it both clear the keyboard rather than landing beneath it (2026-09-16 audit,
-/// finding 6).
-private let oneOffEntryScrollID = "oneOffEntry"
-
-/// Jumps the shown day's `List` straight to its own bottom by reaching past SwiftUI to the
-/// `UIScrollView` (a `UICollectionView`, on this SDK) the List's cells actually live in, and
-/// calls `onScrolled` once that has happened. `.background(_:)` on the List in
-/// `dayList(for:isShown:)`, keyed off `request` — a token the toolbar `+` bumps.
-///
-/// **Neither `ScrollViewReader.scrollTo(id:anchor:)` nor `.scrollPosition(id:anchor:)` ever did
-/// this**, driven for real on the simulator 2026-09-16: both left the list exactly where it was,
-/// silently, the moment the entry's row had not yet been drawn — measured on a day with as few as
-/// two rows below the fold, so this is not a matter of the jump being unusually far. Both address
-/// a row *by identity*, and a row `List` has not yet drawn has never published one for either
-/// mechanism to resolve; a manual swipe, which drives the same `UIScrollView` directly rather than
-/// asking SwiftUI to resolve an identity, was the one thing that reliably brought the row into
-/// being. This does the same thing a swipe does — move the scroll view's own `contentOffset` — but
-/// as a straight jump to the bottom rather than a distance-carrying gesture, which is exactly
-/// where the one-off entry always sits (`design.md` § *The shell*: it is always the group's last
-/// line).
-///
-/// **Finding the right `UIScrollView` is the hard part, and two things about it are load-bearing.**
-/// `pagedDayContent` lays out three `List`s side by side, so the window holds three
-/// `UIScrollView`s at once; picking the first one found anywhere in the window (tried first, and
-/// wrong) reliably returned the *previous* day's, since it is earlier in view-hierarchy order,
-/// regardless of which day is actually shown. Only the shown list ever sits at `x == 0` once
-/// `pagedDayContent`'s own `-width + dragTranslation` offset is applied — the other two sit at
-/// `±width`, off screen — so converting every candidate's frame to window coordinates and taking
-/// the one nearest `x == 0` picks the shown list correctly regardless of which of the three this
-/// view's own `.background` happens to be attached to. The other: this view is placed as the
-/// List's own background rather than as one of its rows, on purpose — a row this far below the
-/// fold is exactly the thing `List`'s laziness would leave undrawn, the same problem this exists
-/// to solve, so a marker that needed to *be* one of those rows to run would never run when it was
-/// needed.
-private struct ScrollListToBottom: UIViewRepresentable {
-    let request: Int
-    let onScrolled: () -> Void
-
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: .zero)
-        view.isHidden = true
-        view.isUserInteractionEnabled = false
-        return view
-    }
-
-    // Deferred one runloop turn: `updateUIView` runs as SwiftUI applies this update, before the
-    // List's own `UICollectionView` has necessarily finished laying out for the same change, and
-    // `contentSize` read a turn early undercounts the very rows this exists to reach.
-    // `DispatchQueue.main.async` costs no arbitrary duration, unlike the `asyncAfter` this file
-    // has already dropped elsewhere for being unreliable on the device — it waits for "whatever
-    // is left of this pass", not a guessed number of milliseconds.
-    func updateUIView(_ uiView: UIView, context: Context) {
-        guard context.coordinator.lastHandled != request else { return }
-        context.coordinator.lastHandled = request
-        DispatchQueue.main.async {
-            guard let window = uiView.window else { return }
-            let shownList = Self.scrollViews(in: window).min {
-                abs($0.convert($0.bounds, to: nil).origin.x)
-                    < abs($1.convert($1.bounds, to: nil).origin.x)
-            }
-            guard let scrollView = shownList else { return }
-            scrollView.setContentOffset(
-                CGPoint(x: 0, y: max(0, scrollView.contentSize.height - scrollView.bounds.height)),
-                animated: false)
-            scrollView.layoutIfNeeded()
-            onScrolled()
-        }
-    }
-
-    func makeCoordinator() -> Coordinator { Coordinator() }
-    final class Coordinator {
-        var lastHandled = 0
-    }
-
-    private static func scrollViews(in view: UIView) -> [UIScrollView] {
-        var result: [UIScrollView] = []
-        if let scrollView = view as? UIScrollView {
-            result.append(scrollView)
-        }
-        for subview in view.subviews {
-            result.append(contentsOf: scrollViews(in: subview))
-        }
-        return result
-    }
-}
-
 struct ContentView: View {
     // One copy place, built with `momentNow` and handed to both screens — a day screen opened
     // here and a commitments screen opened by the toolbar button below —
@@ -224,27 +135,12 @@ struct ContentView: View {
     // Which one-off name field, if any, has focus — the entry or a row's rename field. Only one
     // field is ever focused at a time (`design.md` § *A refusal under a name field is its own
     // value, and there is one at a time*), so a single `@FocusState` value stands for all of
-    // them, driving both the TextField that has it and the toolbar `+`/checkmark that read it.
+    // them, driving both the TextField that has it and the checkmark that reads it.
     private enum OneOffFocus: Hashable {
         case entry
         case row(DayView.OneOffRow)
     }
     @FocusState private var oneOffFocus: OneOffFocus?
-    // The on-screen keyboard's own height, tracked so `dayList(for:isShown:)` can pad a day
-    // list's scrollable content by exactly that much while a one-off field is focused. Needed
-    // because `List`'s own keyboard avoidance does not shrink its visible area on this SDK —
-    // `dayList(for:isShown:)`'s own doc comment has the measurement — so without this, scrolling
-    // the focused field to the bottom of the list's *unshrunk* area still lands it under the
-    // keyboard, because that field is already the list's last row and there is nothing below it
-    // left to reveal.
-    @State private var oneOffKeyboardHeight: CGFloat = 0
-    // A request token for `ScrollListToBottom`'s own doc comment — bumped only by the toolbar `+`,
-    // and read only to notice that it changed, never for its value. `List` renders cells lazily
-    // like any other lazy container, so on a day with enough rows that the one-off entry sits off
-    // screen, its `TextField` does not exist yet and the toolbar `+` alone did nothing:
-    // `oneOffFocus = .entry` has no view to focus. `ScrollListToBottom` is what actually carries
-    // the list to its own bottom first, so the field exists by the time focus is asked of it.
-    @State private var oneOffEntryScrollTarget = 0
     // The entry's own typed text, and the text typed into whichever row is being renamed. Each is
     // emptied on every commit `commitOneOffEntry()` or `commitRename(of:to:)` makes, kept or
     // refused alike (`design.md` § *A refusal under a name field is its own value*: "the shell
@@ -336,21 +232,13 @@ struct ContentView: View {
                 dayControls
                 pagedDayContent
             }
-            // Keeps `oneOffKeyboardHeight` current for `dayList(for:isShown:)`'s own bottom
-            // padding — `keyboardWillChangeFrameNotification` covers both the show and the hide,
-            // and a rotation, in one publisher. Hidden reads as the keyboard's frame starting at
-            // or past the bottom of the screen, not as a zero-height frame.
-            .onReceive(
-                NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)
-            ) { notification in
-                guard
-                    let frame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?
-                        .cgRectValue
-                else {
-                    return
-                }
-                let screenHeight = UIScreen.main.bounds.height
-                oneOffKeyboardHeight = frame.origin.y >= screenHeight ? 0 : frame.height
+            // The one-off entry, pinned at the foot of the whole screen rather than scrolled to
+            // as a line inside whichever list is showing — attached here, to the
+            // `NavigationStack`'s own direct content, exactly where the 2026-09-28 spike found it
+            // rises with the keyboard and survives a day swipe untouched. `oneOffBar`'s own doc
+            // comment has the rest (ADR-1063).
+            .safeAreaBar(edge: .bottom) {
+                oneOffBar
             }
             .navigationDestination(isPresented: $showingCommitments) {
                 if let commitmentsScreen {
@@ -386,26 +274,6 @@ struct ContentView: View {
                         commitmentsScreen = CommitmentsScreen(asOf: today(), copyingTo: copyPlace)
                         birthdaySwitch.shown()
                         showingCommitments = true
-                    }
-                }
-                // The `+`: shown exactly where `oneOffGroup != nil` says adding is offered
-                // (`design.md` § *The empty group is the offer*), and focuses the entry.
-                //
-                // **Only bumps a request token — it does not set `oneOffFocus` itself.** Setting
-                // `oneOffFocus = .entry` straight from this button, as this once did, focused
-                // nothing on a day with enough rows to push the entry off screen: driven for real
-                // on the simulator, the field stayed absent from the accessibility tree and the
-                // tap did nothing until the list was scrolled by hand. `ScrollListToBottom`'s own
-                // doc comment has the rest of what was found and why a scroll has to land first;
-                // `dayList(for:isShown:)`'s `.background` is where it sets `oneOffFocus = .entry`
-                // once that scroll has actually happened.
-                if screen.dayView.oneOffGroup != nil {
-                    ToolbarItem {
-                        Button {
-                            oneOffEntryScrollTarget += 1
-                        } label: {
-                            Image(systemName: "plus")
-                        }
                     }
                 }
                 // The green checkmark: shown while any one-off field is focused, and commits and
@@ -653,7 +521,7 @@ struct ContentView: View {
     }
 
     /// Whether `oneOffFocus` still names a field that actually exists to hold it — `.entry`
-    /// always does, wherever the toolbar `+` itself shows; `.row(row)` only while `row` is still
+    /// always does, wherever `oneOffBar` itself shows; `.row(row)` only while `row` is still
     /// one of `screen.dayView.oneOffGroup`'s own rows. **The checkmark reads this, not a bare
     /// `oneOffFocus != nil`, and that is load-bearing.** A phone check on 3a70bda found the
     /// checkmark still showing after a one-off was removed — a blank rename committed by Return
@@ -995,12 +863,12 @@ struct ContentView: View {
         GeometryReader { proxy in
             let width = proxy.size.width
             HStack(spacing: 0) {
-                dayList(for: screen.previousDayView, isShown: false)
+                dayList(for: screen.previousDayView)
                     .frame(width: width)
-                dayList(for: screen.dayView, isShown: true)
+                dayList(for: screen.dayView)
                     .frame(width: width)
                     .accessibilityIdentifier("CurrentDayList")
-                dayList(for: screen.nextDayView, isShown: false)
+                dayList(for: screen.nextDayView)
                     .frame(width: width)
             }
             .offset(x: -width + dragTranslation)
@@ -1029,157 +897,101 @@ struct ContentView: View {
     /// same `ForEach(Array(group.rows.enumerated()), id: \.offset)` keying this screen has always
     /// used, now driven by whichever of the three day views this list was handed. `nil` — only
     /// possible at either end of the calendar — draws an empty list; the drag never reveals it,
-    /// because it resists at that end (`daySwipeGesture`). `isShown` is `true` only for
-    /// `screen.dayView`'s own list, and decides nothing but which line ends the One-offs group:
-    /// the live one-off entry there, a disabled line on either neighbour (`design.md` § *The
-    /// shell*) — acting on a one-off row from a neighbouring day is inert the same way a
-    /// commitment row's tap already is, so the rows themselves need no `isShown` distinction.
+    /// because it resists at that end (`daySwipeGesture`). No list here needs telling whether it
+    /// is the one shown any more: the one-off entry no longer lives inside any of the three —
+    /// it is `oneOffBar`, pinned at the foot of the whole screen (ADR-1063) — and a rename on a
+    /// row already clears the keyboard by the same `.safeAreaBar` mechanics, unaided, on every
+    /// one of the three lists alike; the keyboard-height padding this once carried for that is
+    /// gone with it — see `oneOffBar`'s own doc comment for the measurement that found so.
     @ViewBuilder
-    private func dayList(for dayView: DayView?, isShown: Bool) -> some View {
-        // Wrapped in a `ScrollViewReader` so a refusal appearing under the entry, or the entry
-        // gaining focus, can scroll the entry (and the cause line under it) to the bottom of
-        // the list's own visible area — both `.onChange`s below, guarded on `isShown` because
-        // only the centre list ever carries a live entry field or a refusal under it. Measured
-        // on the unmodified code (2026-09-16 audit, finding 6): keyboard frame y 583 to 816,
-        // entry field y 600 to 622, refusal label y 627 to 641 — under the keyboard's top edge
-        // and unreadable.
-        //
-        // **The scroll alone does nothing on this SDK, and `.contentMargins` below is why.**
-        // `List`'s own keyboard avoidance does not shrink its visible area here — measured
-        // 2026-09-16, the entry and the refusal land at the exact same y whether or not the
-        // scroll runs, because the entry is already the list's last row: there is nothing below
-        // it left for `scrollTo(anchor: .bottom)` to reveal. `.contentMargins(.bottom:)` pads
-        // the list's own scrollable content by the keyboard's tracked height
-        // (`oneOffKeyboardHeight`) while a one-off field is focused, so there *is* room below
-        // the entry, and the scroll then has somewhere to carry it to. `.contentMargins` over
-        // `.safeAreaPadding` because this is padding for the scrollable content specifically,
-        // not a claim on the view's own layout frame — a plain `List` reads it the same way a
-        // `ScrollView` does.
-        //
-        // **This `proxy` only ever reaches a row that already exists, and that is a second,
-        // narrower job than `ScrollListToBottom` below has.** Both `.onChange`s here fire after
-        // the entry (or a row) already has focus or a refusal, which only happens once its
-        // `TextField` is in the tree; carrying an *unrendered* row into being — what the toolbar
-        // `+` needs on a day with enough rows to push the entry off screen — is
-        // `ScrollListToBottom`'s job instead, on the List's own `.background` below.
-        ScrollViewReader { proxy in
-            List {
-                if let dayView {
-                    // The Birthdays group, first of all — `openspec/specs/day-screen/spec.md`'s
-                    // *A day screen draws the birthdays falling on each day...*: "it SHALL come
-                    // before every group of commitments." `nil` while birthdays are off or none
-                    // fall on this date (`design.md` § *A group of its own, mirroring the
-                    // one-offs*). Rows are keyed by offset, not by value, for the same reason a
-                    // commitment row is just below: a tap changes `isTicked`, which is part of a
-                    // birthday row's own equality, so keying by value would read as one row
-                    // removed and another inserted.
-                    if let birthdayGroup = dayView.birthdayGroup {
-                        Section {
-                            ForEach(Array(birthdayGroup.rows.enumerated()), id: \.offset) { _, row in
-                                birthdayRowView(row)
-                            }
-                        } header: {
-                            Text(birthdayGroup.heading)
-                                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
+    private func dayList(for dayView: DayView?) -> some View {
+        List {
+            if let dayView {
+                // The Birthdays group, first of all — `openspec/specs/day-screen/spec.md`'s
+                // *A day screen draws the birthdays falling on each day...*: "it SHALL come
+                // before every group of commitments." `nil` while birthdays are off or none
+                // fall on this date (`design.md` § *A group of its own, mirroring the
+                // one-offs*). Rows are keyed by offset, not by value, for the same reason a
+                // commitment row is just below: a tap changes `isTicked`, which is part of a
+                // birthday row's own equality, so keying by value would read as one row
+                // removed and another inserted.
+                if let birthdayGroup = dayView.birthdayGroup {
+                    Section {
+                        ForEach(Array(birthdayGroup.rows.enumerated()), id: \.offset) { _, row in
+                            birthdayRowView(row)
                         }
+                    } header: {
+                        Text(birthdayGroup.heading)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                     }
-                    // A `Section` per group, the category as its header and none where there is no
-                    // category — the same arrangement `CommitmentsView`'s kept list takes.
-                    // `design.md` § *The shell rides this Story*.
-                    ForEach(dayView.groups, id: \.category) { group in
-                        Section {
-                            // `Row` carries no identity of its own beyond `isKept` and `name`
-                            // (`DayView.swift` keeps `commitment` and `date` internal to the kit),
-                            // and `isKept` is exactly what a tap flips — keying `ForEach` on the
-                            // row's value would make SwiftUI see a tap as one row removed and
-                            // another inserted. The offset within this group's own `ForEach` is
-                            // stable across a tap, exactly as the flat offset was, so it stands in
-                            // as the identity instead.
-                            ForEach(Array(group.rows.enumerated()), id: \.offset) { _, row in
-                                rowView(row)
-                            }
-                        } header: {
-                            if let category = group.category {
-                                // The platform's own padding around a category heading, dropped.
-                                // Measured on this SDK (iPhone 17 simulator, iOS 26.5) rather than
-                                // assumed, the way `.listSectionSpacing(12)` below was: the gap
-                                // between the card above and the card this heading belongs to read
-                                // 52.33pt untouched and reads 40.00pt with these insets, and the
-                                // heading itself has not moved sideways — the 16pt leading and
-                                // trailing are the platform's own, restated because
-                                // `listRowInsets` replaces all four.
-                                //
-                                // **40.00pt is the floor, and it is not these insets that set it.**
-                                // The heading's row will not lay out under 28pt however small they
-                                // go — negative values only slide the words inside it — so what is
-                                // left is that 28 plus the 12 below. Anything tighter has to come
-                                // out of `.listSectionSpacing`, and that is the gap before the
-                                // ungrouped rows, which is the one the owner asked to keep.
-                                Text(category)
-                                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
-                            }
+                }
+                // A `Section` per group, the category as its header and none where there is no
+                // category — the same arrangement `CommitmentsView`'s kept list takes.
+                // `design.md` § *The shell rides this Story*.
+                ForEach(dayView.groups, id: \.category) { group in
+                    Section {
+                        // `Row` carries no identity of its own beyond `isKept` and `name`
+                        // (`DayView.swift` keeps `commitment` and `date` internal to the kit),
+                        // and `isKept` is exactly what a tap flips — keying `ForEach` on the
+                        // row's value would make SwiftUI see a tap as one row removed and
+                        // another inserted. The offset within this group's own `ForEach` is
+                        // stable across a tap, exactly as the flat offset was, so it stands in
+                        // as the identity instead.
+                        ForEach(Array(group.rows.enumerated()), id: \.offset) { _, row in
+                            rowView(row)
                         }
-                    }
-                    // The One-offs group, after every group of commitments — `openspec/specs/
-                    // day-screen/spec.md`'s *A day view draws the one-offs standing on its date as
-                    // one group headed One-offs*. `dayView.oneOffGroup` is `nil` only where this
-                    // screen is not keeping one-offs at all; it is still drawn, holding no rows but
-                    // the entry, on a day none stand on (`design.md` § *The empty group is the
-                    // offer*). One-off rows are keyed by `\.key`, not by offset or by the row's
-                    // own value — `design.md` § *A one-off row's key, and the animation in the
-                    // shell*: a rename still re-keys (its key carries the one-off's name), but a
-                    // tick or a take-back does not, so `List` can animate the row's move rather
-                    // than fading it out of one place and in at another (`oneOffRowView(_:)`'s
-                    // own `withAnimation` around the tick), unlike a commitment row's tap, which
-                    // the offset above still keys through.
-                    if let oneOffGroup = dayView.oneOffGroup {
-                        Section {
-                            ForEach(oneOffGroup.rows, id: \.key) { row in
-                                oneOffRowView(row)
-                            }
-                            oneOffEntryView(isShown: isShown)
-                        } header: {
-                            Text(oneOffGroup.heading)
+                    } header: {
+                        if let category = group.category {
+                            // The platform's own padding around a category heading, dropped.
+                            // Measured on this SDK (iPhone 17 simulator, iOS 26.5) rather than
+                            // assumed, the way `.listSectionSpacing(12)` below was: the gap
+                            // between the card above and the card this heading belongs to read
+                            // 52.33pt untouched and reads 40.00pt with these insets, and the
+                            // heading itself has not moved sideways — the 16pt leading and
+                            // trailing are the platform's own, restated because
+                            // `listRowInsets` replaces all four.
+                            //
+                            // **40.00pt is the floor, and it is not these insets that set it.**
+                            // The heading's row will not lay out under 28pt however small they
+                            // go — negative values only slide the words inside it — so what is
+                            // left is that 28 plus the 12 below. Anything tighter has to come
+                            // out of `.listSectionSpacing`, and that is the gap before the
+                            // ungrouped rows, which is the one the owner asked to keep.
+                            Text(category)
                                 .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                         }
                     }
                 }
-            }
-            // Same measured value as `CommitmentsView`'s kept list — see the comment there for
-            // how it was determined.
-            .listSectionSpacing(12)
-            // Only the shown list ever needs carrying to its own bottom — a neighbour's entry is
-            // the disabled placeholder line `oneOffEntryView(isShown:)` draws for it, never the
-            // live `TextField` this exists to reach. `ScrollListToBottom`'s own doc comment has
-            // the rest.
-            .background {
-                if isShown {
-                    ScrollListToBottom(request: oneOffEntryScrollTarget) {
-                        oneOffFocus = .entry
+                // The One-offs group, after every group of commitments — `openspec/specs/
+                // day-screen/spec.md`'s *A day view draws the one-offs standing on its date as
+                // one group headed One-offs*. `dayView.oneOffGroup` is `nil` only where this
+                // screen is not keeping one-offs at all; the shell itself skips drawing the
+                // group where it holds no rows, since `oneOffBar` is the offer now and a heading
+                // over nothing has no job left (ADR-1063) — the kit is unchanged, and still hands
+                // back an empty group on a day none stand on, which is why this also checks
+                // `!oneOffGroup.rows.isEmpty` and not just the `nil` the kit reserves for a
+                // screen not keeping one-offs at all. One-off rows are keyed by `\.key`, not by
+                // offset or by the row's own value — `design.md` § *A one-off row's key, and the
+                // animation in the shell*: a rename still re-keys (its key carries the one-off's
+                // name), but a tick or a take-back does not, so `List` can animate the row's move
+                // rather than fading it out of one place and in at another (`oneOffRowView(_:)`'s
+                // own `withAnimation` around the tick), unlike a commitment row's tap, which the
+                // offset above still keys through.
+                if let oneOffGroup = dayView.oneOffGroup, !oneOffGroup.rows.isEmpty {
+                    Section {
+                        ForEach(oneOffGroup.rows, id: \.key) { row in
+                            oneOffRowView(row)
+                        }
+                    } header: {
+                        Text(oneOffGroup.heading)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                     }
-                }
-            }
-            // See this function's own doc comment for why: room below the entry for the scroll
-            // below to carry it into, on an SDK where keyboard avoidance alone does not make any.
-            .contentMargins(
-                .bottom, isShown && oneOffFocus != nil ? oneOffKeyboardHeight : 0, for: .scrollContent)
-            .onChange(of: screen.nameRefusal) { _, newValue in
-                guard isShown, let newValue, newValue.row == nil else {
-                    return
-                }
-                withAnimation {
-                    proxy.scrollTo(oneOffEntryScrollID, anchor: .bottom)
-                }
-            }
-            .onChange(of: oneOffFocus) { _, newValue in
-                guard isShown, newValue == .entry else {
-                    return
-                }
-                withAnimation {
-                    proxy.scrollTo(oneOffEntryScrollID, anchor: .bottom)
                 }
             }
         }
+        // Same measured value as `CommitmentsView`'s kept list — see the comment there for
+        // how it was determined.
+        .listSectionSpacing(12)
     }
 
     /// One row's content and the tap that acts on it — pulled out of `dayList(for:)` so the same
@@ -1616,12 +1428,12 @@ struct ContentView: View {
         }
     }
 
-    /// The one-off entry: a `TextField` as the last line of the shown day's One-offs group,
-    /// focused by the toolbar `+` and by nothing else — indirectly since 2026-09-16, through the
-    /// scroll `ScrollListToBottom`'s own doc comment describes, because this row may not exist
-    /// yet for a direct `oneOffFocus = .entry` to reach; a disabled, non-interactive line in the
-    /// same place on either neighbour, since typing there would commit to the wrong day.
-    /// `design.md` § *The shell*.
+    /// The one-off entry, pinned at the foot of the day screen with `.safeAreaBar(edge: .bottom)`
+    /// on `body`'s own `VStack` (ADR-1063) — one bar for the whole screen, not a line inside the
+    /// paged list, and always in reach, so nothing needs scrolling to it any more. Shown exactly
+    /// where `screen.dayView.oneOffGroup != nil` says adding is offered, the same test the
+    /// toolbar `+` (now gone, along with the scroll that used to carry the entry into view) once
+    /// gated on.
     ///
     /// **Return no longer opens a fresh entry (grill answer 25, reopened from answer 6).** A
     /// kept add — or a blank one, which adds nothing — drops focus and closes the keyboard,
@@ -1640,17 +1452,40 @@ struct ContentView: View {
     /// writing `oneOffFocus` at all — still lost focus, keyboard included, exactly the outcome
     /// this exists to avoid. `commitFocusedOneOffField()`'s own refused branch for a row already
     /// re-asserts `oneOffFocus = .row(row)` for the same reason; this mirrors it for `.entry`.
+    ///
+    /// **Styled to read as a field in a bar, not stray text sitting on the keys.** The field
+    /// itself carries the rounded background, in the Messages manner, via `.glassEffect(in:
+    /// .capsule)`; the horizontal padding around it matches the 16pt the list's own section
+    /// headers use (`dayList(for:)`), and the vertical padding below leaves clearance above the
+    /// keyboard beyond what `.safeAreaBar` already gives for free (the spike's own field, bare,
+    /// already rose to 44pt above the keyboard with none of this).
+    ///
+    /// **The keyboard-height tracking `dayList(for:)` once carried for a row's own rename field
+    /// is gone, and this is why.** Driven for real on this Story's own simulator: a 25-row day
+    /// (ten commitments and fifteen one-offs), scrolled to its foot, a rename started on the
+    /// last one-off row with the keyboard up. With the tracking still padding the list's bottom
+    /// by the keyboard's own height, gated on `oneOffFocus` naming a `.row`, the renamed field's
+    /// own frame read `maxY 489` against `.safeAreaBar`'s field at `minY 499` and the keyboard at
+    /// `minY 583` — clear of both. Removing the tracking outright and measuring the identical
+    /// rename again read the exact same three frames, `489`/`499`/`583`, pixel for pixel; a
+    /// screenshot at each state showed the same thing, the row's own name sitting fully legible
+    /// just above the bar. `.safeAreaBar` already reserves the bar's own height as a standing
+    /// safe-area inset, which every `List` beneath it — not only the one carrying the focused
+    /// field — already lays its rows out against, keyboard up or down; there was no gap left for
+    /// the tracking to close. It is dead, so it goes with the entry's own copy of it: no
+    /// `UIScreen.main` read and no `keyboardWillChangeFrameNotification` subscription remain
+    /// anywhere in this file (ADR-1063).
     @ViewBuilder
-    private func oneOffEntryView(isShown: Bool) -> some View {
-        if isShown {
-            VStack(alignment: .leading) {
+    private var oneOffBar: some View {
+        if screen.dayView.oneOffGroup != nil {
+            VStack(alignment: .leading, spacing: 4) {
                 TextField("New one-off", text: oneOffEntryTextBinding)
                     .focused($oneOffFocus, equals: .entry)
                     .onSubmit {
                         commitOneOffEntry()
                         if let nameRefusal = screen.nameRefusal, nameRefusal.row == nil {
                             // Refused: re-assert focus, showing the typed text and the
-                            // cause under it (check 1) — see this function's own doc
+                            // cause under it (check 1) — see this property's own doc
                             // comment for why re-asserting, not just leaving it, is needed.
                             oneOffFocus = .entry
                         } else {
@@ -1660,20 +1495,19 @@ struct ContentView: View {
                             oneOffFocus = nil
                         }
                     }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .glassEffect(in: .capsule)
+                    .accessibilityIdentifier("OneOffEntry")
                 if screen.nameRefusal?.row == nil, let nameRefusal = screen.nameRefusal {
                     Text(nameRefusal.cause ?? "Not saved. Try again.")
                         .font(.caption)
                         .foregroundStyle(.red)
+                        .padding(.horizontal, 4)
                 }
             }
-            // Tagged for `dayList(for:isShown:)`'s `ScrollViewReader`, which scrolls to this id
-            // on focus and on a refusal so the field and the cause line under it both clear the
-            // keyboard.
-            .id(oneOffEntryScrollID)
-        } else {
-            Text("New one-off")
-                .foregroundStyle(.secondary)
-                .opacity(0.5)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
         }
     }
 
