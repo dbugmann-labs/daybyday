@@ -905,6 +905,17 @@ Things that are built, or deliberately not built, in a state someone will trip o
   by the implementer of `collapse-a-same-day-rhythm-change` (#305), 2026-09-23, and worked around
   there by where a comment was placed; the tool is unchanged and wants a chore.
 
+- **A jump tapped during a swipe's settle lands one day off.** A carried swipe moves the day only
+  once its settle animation finishes (`ContentView.swift`, `settle(to:then:)`, about 0.35 s). A
+  control that jumps and is tapped inside that window runs first: a week strip day or the `Today`
+  button calls `showDay`/`showToday`, and then the settle's `showNextDay()` or `showPreviousDay()`
+  runs on top, so the screen ends one day past where the tap asked. The `Today` button has had this
+  since the swipe landed; the week strip makes it easier to hit because it sits right above where
+  the thumb swipes. No test covers it, and fixing it means cancelling or ignoring a pending settle
+  for every control that jumps, not only for the strip. Found at `add-week-strip`'s (#346) G7,
+  2026-09-28, and left out of that Story's fix round by the owner; wants a Story or a shell chore of
+  its own.
+
 ## Settled
 
 - 2026-09-22 — **ADR-1055 says "the same name and the same kind" where the shipped chain rule said
