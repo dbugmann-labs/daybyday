@@ -478,20 +478,31 @@ struct ContentView: View {
 
     /// Commits whatever one-off field currently has focus — the entry, or a row's rename field —
     /// and, once committed, drops focus itself: a caller that also means to drop it need not set
-    /// `oneOffFocus` a second time (the checkmark does not). Where a rename this finds is refused,
-    /// `forDeparture` decides what becomes of it. `false` — the checkmark and a row's own Return —
-    /// holds the row focused with its typed name and the cause under it (grill answer 18, "exactly
-    /// as a refused add"). `true` — every caller about to move the day away from this field or send
-    /// the app to the background: the week strip, swipe, `Today`, the day picker and `scenePhase`
-    /// leaving `.active` — drops focus and, since `commitRename(of:to:)` has already emptied
-    /// `oneOffRowText`, the typed text with it, instead of holding it open on a page about to
-    /// become a neighbour or go unseen (grill answer 12, "dropped with its text by the time the
-    /// day lands"). Guarded on `oneOffFocus` being non-`nil` at entry, so a second, redundant call
-    /// — `scenePhase` leaving `.active` calls this once per phase it passes through on the way to
+    /// `oneOffFocus` a second time (the checkmark does not). Where an add or a rename this finds
+    /// is refused, `forDeparture` decides what becomes of it, identically for both cases. `false`
+    /// — the checkmark and either field's own Return — holds the field focused with its typed
+    /// text and the cause under it (grill answer 18, "exactly as a refused add"). `true` — every
+    /// caller about to move the day away from this field or send the app to the background: the
+    /// week strip, swipe, `Today`, the day picker and `scenePhase` leaving `.active` — drops focus
+    /// and, since `commitOneOffEntry()`/`commitRename(of:to:)` have already emptied their own
+    /// state, the typed text with it, instead of holding it open on a page about to become a
+    /// neighbour or go unseen (grill answer 12, "dropped with its text by the time the day
+    /// lands"). Guarded on `oneOffFocus` being non-`nil` at entry, so a second, redundant call —
+    /// `scenePhase` leaving `.active` calls this once per phase it passes through on the way to
     /// the background, `.inactive` and then `.background` — finds nothing left to commit and does
     /// nothing. Called before every one of the moves `design.md` § *The shell* names: the
     /// week strip, swipe, `Today`, the day picker and `scenePhase` leaving `.active`, in each case
     /// before the day actually moves.
+    ///
+    /// **The `.entry` case reads `commitOneOffEntry()`'s own return the same way the `.row` case
+    /// already reads `commitRename(of:to:)`'s (a fourth fix round, on the owner's own reading of
+    /// the phone build).** Before this, the checkmark dropped focus on a refused *add* regardless
+    /// — unlike a refused *rename*, which it already left focused — because this case carried no
+    /// refusal check at all; `oneOffBar`'s own `.onSubmit` read `screen.nameRefusal` itself and
+    /// re-asserted `.entry` by hand, a second copy of exactly this logic that only Return ran.
+    /// Giving `.entry` the same shape as `.row` here is what let `.onSubmit` be deleted down to a
+    /// single call to this function, so there is now one path, not two, for a refused add's focus
+    /// to stay in step.
     ///
     /// **Sends `oneOffRowCommitText(for: row)`, never raw `oneOffRowText` — a phone check on
     /// b3860c8 found what reading the raw state here actually does.** A row refused once already
@@ -508,7 +519,11 @@ struct ContentView: View {
         }
         switch focus {
         case .entry:
-            commitOneOffEntry()
+            let refused = commitOneOffEntry()
+            guard !refused || forDeparture else {
+                oneOffFocus = .entry
+                return
+            }
         case .row(let row):
             let refused = commitRename(of: row, to: oneOffRowCommitText(for: row))
             guard !refused || forDeparture else {
@@ -565,11 +580,19 @@ struct ContentView: View {
     /// its own value*: "the shell empties its field on every commit"). What the entry shows and
     /// resends while a refusal stands is `oneOffEntryCommitText`'s own read of `nameRefusal.text`,
     /// not this state, so emptying it here never loses the typed text — only ends the entry's
-    /// last claim on it, which the refusal itself, while it stands, already holds.
-    private func commitOneOffEntry() {
+    /// last claim on it, which the refusal itself, while it stands, already holds. Returns
+    /// whether the attempt was refused — `screen.nameRefusal` standing for the entry (`row ==
+    /// nil`) once `addOneOff` has returned — the same shape `commitRename(of:to:)` already
+    /// returns for a row, so `commitFocusedOneOffField()` can treat both cases identically.
+    @discardableResult
+    private func commitOneOffEntry() -> Bool {
         let text = oneOffEntryCommitText
         keeping { try screen.addOneOff(named: text) }
         oneOffEntryText = ""
+        if let nameRefusal = screen.nameRefusal, nameRefusal.row == nil {
+            return true
+        }
+        return false
     }
 
     /// Commits `text` as a rename of `row`, empties `oneOffRowText` and reports whether it was
@@ -909,7 +932,24 @@ struct ContentView: View {
         // a line inside whichever list is showing. `oneOffBar`'s own doc comment has why this is
         // attached here, to `pagedDayContent` itself, and why `.safeAreaInset` rather than
         // `.safeAreaBar` (ADR-1063).
-        .safeAreaInset(edge: .bottom) {
+        //
+        // **`spacing: 2`, not the left-`nil` default, is what a fifth fix round trimmed** — the
+        // owner found the foot gap at a scrolled list's true end "a bit too big" on the phone.
+        // Left at its default, `.safeAreaInset` picks its own standard spacing between the list
+        // and `oneOffBar`, measured (a long day, scrolled to its foot, one-offs standing) at
+        // `43.83pt` between the last row's `maxY` and the capsule's `minY`; `oneOffBar` itself
+        // carries no top padding of its own to have trimmed instead, and the list's own bottom
+        // content inset is computed from the inset's reserved height, not a separate margin — so
+        // the `spacing:` parameter is the whole of the extra room, and the only value worth
+        // touching. `spacing: 0` measures `35.83pt`, just under the owner's asked-for 36–40pt;
+        // `2` lands at `37.83pt`, inside it with a small margin either side, because `oneOffBar`'s
+        // own `.padding(.bottom, 8)` and the capsule's own `.padding(.vertical, 10)` still
+        // separate the last row from the capsule's fill — the gap can shrink no further without
+        // touching one of those. A day with no one-offs standing never scrolls (the seed roster
+        // is five commitments, well short of a screen), so its own gap — measured `254.83pt`,
+        // `Weight`'s own `maxY` against the same capsule `minY` — sits unchanged either side of
+        // this change and nowhere near touching the capsule.
+        .safeAreaInset(edge: .bottom, spacing: 2) {
             oneOffBar
         }
     }
@@ -1489,20 +1529,21 @@ struct ContentView: View {
     /// **Return no longer opens a fresh entry (grill answer 25, reopened from answer 6).** A
     /// kept add — or a blank one, which adds nothing — drops focus and closes the keyboard,
     /// exactly as the checkmark already does for a kept commit; a refused add leaves focus where
-    /// it is, showing the typed text and the cause under it, same as check 1 already does. This
-    /// reads `screen.nameRefusal` itself, deliberately *not* routed through
-    /// `commitFocusedOneOffField()`: that function's own `.entry` case has no refusal check at
-    /// all, and giving it one would also change what the checkmark does for a refused entry —
-    /// asked for here only for Return.
+    /// it is, showing the typed text and the cause under it, same as check 1 already does. Both
+    /// Return and the checkmark call the one path, `commitFocusedOneOffField()` — see its own
+    /// doc comment for the refusal check itself. A fourth fix round, on the owner's own reading
+    /// of the phone build, found the checkmark alone had never been given this: it dropped focus
+    /// on a refused entry regardless, unlike a refused *rename*, which the checkmark already
+    /// left focused. There is no longer a second copy of this logic to keep in step — this
+    /// closure now only calls the shared function.
     ///
-    /// **The refused branch re-asserts `oneOffFocus = .entry` rather than simply leaving it
-    /// untouched, and driving this for real on the simulator is what found that the second half
-    /// matters.** Pressing Return on a `TextField` resigns its first responder as part of
-    /// handling the key itself, independently of anything this closure does; `@FocusState`
-    /// reflects that resignation back, so a refusal found by *only* skipping the drop — never
-    /// writing `oneOffFocus` at all — still lost focus, keyboard included, exactly the outcome
-    /// this exists to avoid. `commitFocusedOneOffField()`'s own refused branch for a row already
-    /// re-asserts `oneOffFocus = .row(row)` for the same reason; this mirrors it for `.entry`.
+    /// **`commitFocusedOneOffField()`'s own refused branch re-asserts focus rather than simply
+    /// leaving it untouched, and driving this for real on the simulator is what found that the
+    /// second half matters.** Pressing Return on a `TextField` resigns its first responder as
+    /// part of handling the key itself, independently of anything this closure does;
+    /// `@FocusState` reflects that resignation back, so a refusal found by *only* skipping the
+    /// drop — never writing `oneOffFocus` at all — still lost focus, keyboard included, exactly
+    /// the outcome this exists to avoid.
     ///
     /// **Styled to read as a field in a bar, not stray text sitting on the keys.** The field
     /// itself carries the rounded background; the horizontal padding around it matches the 16pt
@@ -1526,18 +1567,11 @@ struct ContentView: View {
                 TextField("New one-off", text: oneOffEntryTextBinding)
                     .focused($oneOffFocus, equals: .entry)
                     .onSubmit {
-                        commitOneOffEntry()
-                        if let nameRefusal = screen.nameRefusal, nameRefusal.row == nil {
-                            // Refused: re-assert focus, showing the typed text and the
-                            // cause under it (check 1) — see this property's own doc
-                            // comment for why re-asserting, not just leaving it, is needed.
-                            oneOffFocus = .entry
-                        } else {
-                            // Kept, or blank (adds nothing): drop focus and close the
-                            // keyboard, matching what the checkmark already does.
-                            justCommittedOneOffField = true
-                            oneOffFocus = nil
-                        }
+                        // The same path the checkmark calls (`commitFocusedOneOffField()`'s own
+                        // doc comment) — a refused add re-asserts `.entry` and keeps the keyboard
+                        // up, a kept or blank one drops focus, identically for Return and the
+                        // checkmark. `forDeparture` stays `false`: Return is not a departure.
+                        commitFocusedOneOffField()
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
