@@ -261,41 +261,19 @@ it as a gap rather than saying it unprompted.*
 - **Open** — can it be shown in the Simulator? XCUITest's synthetic drags have not matched a thumb
   before (B-041), so this may be a `phone:` step.
 
-### B-065 — see the week the shown day lies in, and go to any day of it in one tap
-
-*Captured 2026-09-28.*
-
-> "see the week the shown day lies in as a strip of seven days under the title, and tap one to go
-> there"
-
-- **Trigger** — the day screen, wanting a day earlier or later in the same week without stepping
-  through the ones between or opening the calendar sheet. It is proposal P1's half that
-  `chore/day-as-title` (PR #345) left behind: that chore made the day the title and opened the
-  calendar from its date, and could not draw the strip because the shell has no way to ask for a
-  week.
-- **Touches** — `day-screen`, and it needs kit surface: `CalendarDate.weekday`,
-  `WeekQuota.monday(of:)` and `CalendarDate.adding(days:)` are all internal, so the seven dates
-  have to come from a `DayScreen` answer, not from the shell. That makes it a Story, not a chore.
-- **Principle** — tested against *nothing congratulates you*: **passes, as long as the strip says
-  nothing about how the days went.** Seven days in a row is exactly the shape a streak is drawn in.
-  A dot, a colour or a fill for a kept or missed day would turn a way of getting around into a run
-  that breaks, so the strip carries no status of any kind.
-- **Open** — the seam: one `DayScreen` answer giving the seven dates from Monday to Sunday of the
-  shown day's week, which one is shown and which is today, bounded by `dayPickerReach`. Is a day
-  before `dayPickerReach.earliest` drawn but not tappable, or not drawn at all?
-- **Open** — the chevrons. ADR-1042 names them as the visible form of the day swipe. If the strip
-  replaces them, its sentence on how the swipe is shown needs amending in the same Story; if they
-  stay, the head carries two ways of moving one day.
-- **Open** — a strip is not a month grid, but the 2026-09-08 *Decided* line for B-040 kept the
-  calendar grid out of the day screen. `chore/day-as-title` has since put a graphical month grid in
-  the calendar sheet, so that line should be read against what shipped before this is grilled.
-
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-28 — see the week the shown day lies in, and go to any day of it in one tap (B-065) →
+  Stories #346 `add-week-strip` and #347 `page-the-week-strip`, blocked by #346, under
+  `FEAT: day-screen` (#27), reopened with Epic #1. The **week strip** marks the shown day and the
+  today and nothing about how any day went; the chevrons leave in #346 and ADR-1042 is amended there;
+  it pages by week without moving the shown day, and any move of the day brings it back. It is the
+  half of proposal P1 that `chore/day-as-title` (PR #345) could not draw, because the kit has no
+  public week. How far back it pages and a day before the reach are #346's grill.
 - 2026-09-24 — see what is still owed at the top of the One-offs group (B-060) → Story #340
   `put-done-one-offs-last` under `FEAT: one-off` (#239), reopened with `EPIC: One-offs` (#238).
   One-offs only: commitment rows keep the order the person set (ADR-1037) and Birthdays keep
@@ -1298,3 +1276,18 @@ found nothing.
     without `/to-tickets`, one Story under an existing Feature as B-056 was. Scope put at G2 as
     one-offs only, accepted.
   - **Not re-judged** — B-039, B-041, B-054; a targeted pass holds one entry.
+- 2026-09-28 — targeted pass over B-065 (`/atlas backlog B-065`), groomed on `chore/backlog`
+  (PR #344) in the session that captured it, `origin/main` at 755f9f1.
+  - **Sweep** — no new silence since the B-060 sweep: #341, #342 and #343 merged, and
+    `docs/open-questions.md` gained two technical notes on #329's copy stores and no want. It found
+    one ledger error instead: the 2026-09-08 B-040 line and `CONTEXT.md` § *Day picker* said Epic #1
+    excludes a calendar grid by name, and it names none. PR #345 had shipped a month calendar. The
+    owner kept it; both are corrected.
+  - **Promoted** — B-065 → #346, then #347 blocked by it, under #27; six questions over two rounds
+    and one fact agent, every answer as recommended except that the strip **pages by week**. The
+    split came from that answer: paging adds a second horizontal gesture that only the phone can
+    judge, so it follows the thin strip. `CONTEXT.md` gained **week strip**; *Day picker*, *Day
+    title* and *Week* were amended. Presented at G2 without `/to-tickets`, as B-056 and B-060 were.
+  - **Not re-judged** — B-039, B-041, B-054, and B-061..B-064, captured since the last pass; a
+    targeted pass holds one entry. B-061, B-062 and B-064 all change the day screen's paging, which
+    #346 also touches, so they queue behind it if they become Stories rather than shell chores.
