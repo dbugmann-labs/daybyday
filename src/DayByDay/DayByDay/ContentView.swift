@@ -836,20 +836,43 @@ struct ContentView: View {
                     // (`design.md` § *The shell*: "clipped to the strip's own width").
                     .frame(width: width, alignment: .leading)
                     .clipped()
-                    .highPriorityGesture(weekSwipeGesture(pageWidth: width))
                     // `weekStripWidth` is `weekChevronButton(direction:)`'s own counterpart to
                     // `pagedDayContent`'s `pageWidth`, kept current the same way that is.
                     .onAppear { weekStripWidth = width }
                     .onChange(of: width) { _, newWidth in weekStripWidth = newWidth }
                 }
+                // `.contentShape(Rectangle())` is what actually bounds the gesture below to this
+                // `GeometryReader`'s own one-week frame — confirmed the reason the leading chevron
+                // beside this view took no tap at all, hittable or not, and no matter which of
+                // `.gesture`, `.simultaneousGesture` or `.highPriorityGesture` carried it: the
+                // `HStack` inside is three weeks wide and shifted left by one whole `width` before
+                // `.clipped()` ever runs, and without an explicit `.contentShape` here the *drag
+                // gesture itself* — not a cell's own `Button`, which `weekStripDay(_:isInteractive:)`
+                // already covers — answered to that HStack's own pre-clip, three-week bounds rather
+                // than the single clipped week `.clipped()` draws, reaching left over the chevron
+                // beside it regardless of where exactly the gesture was attached within this view.
+                // `.clipped()` alone bounds what is drawn, not what a gesture already attached
+                // inside it answers to; `.contentShape` is what a gesture itself reads.
+                .contentShape(Rectangle())
+                .highPriorityGesture(weekSwipeGesture())
             }
     }
 
     /// The strip flanked by the two chevrons `grill.md` 16 brought back, in its own row: `‹` and
     /// `›`, fixed either side while the three weeks slide between them (`design.md` § *What the
     /// shell draws*) — the layout the owner chose over the designer's recommended pair on the date
-    /// row (`grill.md` § *Layout*). Narrower than the row it sits in only because the chevrons take
-    /// some of that row's width; nothing here sizes the strip on purpose.
+    /// row (`grill.md` § *Layout*, "a ‹ on the left screen edge"). Narrower than the row it sits in
+    /// only because the chevrons take some of that row's width; nothing else here sizes the strip
+    /// on purpose.
+    ///
+    /// Confirmed by an XCUITest run against this exact build, before `weekStrip`'s own
+    /// `.contentShape(Rectangle())` existed: `‹`, flush against the edge as the wireframe draws it,
+    /// reported `isHittable == false` and a tap at its own centre — through the element, by raw
+    /// coordinate, and by `press(forDuration:)` — changed nothing at all, while `isEnabled` stayed
+    /// `true` and the same tap on `›` at the trailing edge worked first time; disabling the strip's
+    /// own drag gesture entirely, with no other change, made `‹` answer again. That `.contentShape`
+    /// is the fix; no inset of either chevron's own position is needed once the gesture beside it
+    /// is bounded to the frame it is actually drawn in.
     private var weekStripRowWithChevrons: some View {
         HStack(spacing: 8) {
             weekChevronButton(direction: .before)
@@ -885,7 +908,16 @@ struct ContentView: View {
                 settleWeekStrip(to: -weekStripWidth) { screen.showNextWeek() }
             }
         } label: {
+            // The symbol's own intrinsic size is under 13×17pt, which sits flush against the
+            // screen's own edge here — confirmed too small and too close to that edge to take a
+            // tap reliably: an XCUITest tap at its reported centre landed on the offered cell
+            // beside it instead, and the same query reported the leading chevron not hittable at
+            // all. `.frame` widens the tappable area to the HIG's own 44pt minimum without
+            // widening what is drawn, and `.contentShape` makes that whole frame the target
+            // rather than only the glyph inside it, the same way a week-strip day's own cell does.
             Image(systemName: direction == .before ? "chevron.left" : "chevron.right")
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
         .disabled(!offered)
@@ -1947,7 +1979,14 @@ struct ContentView: View {
     /// offset starts at (near) zero the moment it is first drawn moving and tracks the finger 1:1
     /// from there; `onEnded`'s own "carries" threshold still reads the drag's raw, unadjusted
     /// `translation.width`, since how far the finger actually travelled is what decides that.
-    private func weekSwipeGesture(pageWidth: CGFloat) -> some Gesture {
+    ///
+    /// Reads `weekStripWidth` rather than taking a `pageWidth` parameter the way `daySwipeGesture`
+    /// does, because this gesture is now attached to the `GeometryReader` that measures it
+    /// directly (`weekStrip`'s own doc comment: attaching it to the offset, clipped `HStack`
+    /// inside answered to that `HStack`'s own pre-clip, three-week-wide bounds instead, which
+    /// reached leftward over the leading chevron beside this view) — a parameter would have to be
+    /// threaded through that same `GeometryReader` either way, and `weekStripWidth` already is.
+    private func weekSwipeGesture() -> some Gesture {
         let minimumDistanceCarriedBeforeRecognition: CGFloat = 40
         return DragGesture(minimumDistance: minimumDistanceCarriedBeforeRecognition)
             .onChanged { value in
@@ -1973,13 +2012,13 @@ struct ContentView: View {
                 }
 
                 let width = value.translation.width
-                let carries = abs(width) > pageWidth / 3
+                let carries = abs(width) > weekStripWidth / 3
                 if width < 0, screen.nextWeekStrip != nil, carries {
                     commitFocusedOneOffField(forDeparture: true)
-                    settleWeekStrip(to: -pageWidth) { screen.showNextWeek() }
+                    settleWeekStrip(to: -weekStripWidth) { screen.showNextWeek() }
                 } else if width > 0, screen.previousWeekStrip != nil, carries {
                     commitFocusedOneOffField(forDeparture: true)
-                    settleWeekStrip(to: pageWidth) { screen.showPreviousWeek() }
+                    settleWeekStrip(to: weekStripWidth) { screen.showPreviousWeek() }
                 } else {
                     settleWeekStrip(to: 0, then: nil)
                 }
