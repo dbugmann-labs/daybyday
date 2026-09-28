@@ -5,6 +5,12 @@
   in place of a fourth Story
 - Date: 2026-09-08
 - Deciders: Diego Bugmann
+- Amended: 2026-09-28 — **the week strip takes a horizontal swipe of its own, inside its own
+  bounds.** A swipe across the strip pages it to the week before or after and moves the day with
+  it; a swipe on the rows still moves one day. This is the *A control that owns its own bounds*
+  consequence below, not a competing claim: the strip draws its own box in the head, no day-screen
+  row gains a swipe, and the ownership claim over the rows and the background is untouched. At the
+  grill of `page-the-week-strip` (#347)
 - Amended: 2026-09-28 — **the chevrons leave, and the week strip depicts the swipe.** The day screen
   draws the seven days of the shown day's week under the date row, any of them one tap away, and the
   two chevrons that stepped one day go with it, so the head carries one control for moving rather
