@@ -546,6 +546,69 @@ public final class DayScreen {
         return Reach(opensOn: shownDay, earliest: earliest)
     }
 
+    /// One day of this screen's week strip: its letter, its date where the calendar supports one,
+    /// and the three marks the shell draws from — never a fourth. `design.md` § *The seam* and
+    /// § *Seven values, each saying everything the shell draws*.
+    public struct WeekStripDay: Hashable, Sendable {
+        /// This day's own letter, "M" through "S" — this capability's own English, Monday first,
+        /// and the same letter at the same position whether or not this day holds a date.
+        public let letter: String
+        /// This day's calendar date, or `nil` where the week strip's Monday-to-Sunday span runs
+        /// past either end of the calendar this app supports.
+        public let date: CalendarDate?
+        /// Whether this is the day the screen is showing.
+        public let isShown: Bool
+        /// Whether this is the today the screen was last handed.
+        public let isToday: Bool
+        /// Whether a tap on this day is offered: it holds a date, it is not the day being shown,
+        /// and it is not earlier than the day picker's reach.
+        public let isOffered: Bool
+    }
+
+    /// The English letter this capability says for the day `mondayOffset` days after a Monday,
+    /// "M" through "S" — fixed regardless of the device's language, region or calendar, and the
+    /// same at every position of every week: `openspec/specs/day-screen/spec.md` § *A day screen
+    /// says the week of the day it is showing as its week strip*.
+    private static let weekStripLetters = ["M", "T", "W", "T", "F", "S", "S"]
+
+    /// How many days `weekday` falls after the Monday of its own week, Monday itself being `0`.
+    /// Shared by `weekStrip` to place `shownDay` at its own position among the strip's seven,
+    /// without walking a day at a time the way `WeekQuota.monday(of:)` does — which stops rather
+    /// than stepping below the calendar's own earliest supported date, `design.md` § *Context*.
+    private static func mondayOffset(of weekday: Weekday) -> Int {
+        switch weekday {
+        case .monday: return 0
+        case .tuesday: return 1
+        case .wednesday: return 2
+        case .thursday: return 3
+        case .friday: return 4
+        case .saturday: return 5
+        case .sunday: return 6
+        }
+    }
+
+    /// This screen's week strip: the seven days of the week `shownDay` lies in, Monday first,
+    /// each carrying its own marks and its own offer. Computed fresh at every read, from
+    /// `shownDay`, `today` and `dayPickerReach` alone, and never stored — `design.md` § *Seven
+    /// values, each saying everything the shell draws*: it follows every move, every
+    /// `shown(asOf:)` and every roster read without a line of its own in any of them, and reads
+    /// neither the record nor the roster's rows. A day past either end of the calendar keeps its
+    /// letter, holds no date, is marked neither shown nor today, and is not offered — `design.md`
+    /// § *Past either end of the calendar: the letter, and no date*.
+    public var weekStrip: [WeekStripDay] {
+        let offset = Self.mondayOffset(of: shownDay.weekday)
+        let earliest = dayPickerReach.earliest
+        return (0..<7).map { position in
+            let date = shownDay.adding(days: position - offset)
+            let isShown = date == shownDay
+            let isToday = date == today
+            let isOffered = date != nil && !isShown && date!.days(until: earliest) <= 0
+            return WeekStripDay(
+                letter: Self.weekStripLetters[position], date: date, isShown: isShown,
+                isToday: isToday, isOffered: isOffered)
+        }
+    }
+
     /// Anything but `.kept` means the day is drawn from no record at all and no tick is taken.
     public private(set) var recordState: RecordState
 

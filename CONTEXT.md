@@ -993,6 +993,10 @@ knows it has reached the first or the last supported calendar date, so the chevr
 ends stay drawn. That is not an exception grudgingly made to the rule — it is the rule read
 carefully, and it is the decision `add-screen-navigation` (#93) already took when it refused
 `canShowPreviousDay` on the ground that it would answer true on every day anyone will ever look at.
+The chevrons left on 2026-09-28 with `add-week-strip` (#346), and the reading stands. The **week
+strip** reads it the same way: a strip day is offered where the screen can show it, so the day being
+shown and a day earlier than the **reach** are not targets, and nor is a day past an end of the
+calendar, which the strip does know of because it holds no date there.
 
 **Day view** — what one calendar date asks of you and what you did about it: the commitments due
 on that date, each with whether it is kept, in the order it was handed them. Like due-ness, it is a
@@ -1207,6 +1211,12 @@ finger, and the settle at release, like a chevron tap, becomes an instant change
 above are unchanged — the whole day moves and never its rows, and `Today` never animates. What makes
 any of it possible is the **adjacent day view** below. ADR-1043.
 
+**Amended 2026-09-28**, at the grill of `add-week-strip` (#346). The chevrons are gone and the swipe
+stays: the **week strip** is what depicts it now, and a tap on one of its days is a day move like the
+others — it commits a focused field for departure first and replaces the day where it stands. The
+head does not move with a swipe; a swipe that carries the day into another week redraws the strip in
+place once the day lands. ADR-1042, amended the same day.
+
 **Adjacent day view** — the day view of the day before or the day after the one a **day screen** is
 showing, answered without moving onto it. There is none past either end of the calendar. It is formed
 exactly as the shown day's is, from the screen's record and from the commitments its **roster** had
@@ -1263,6 +1273,12 @@ leaves that day showing, because a reach never moves a person off the day they a
 answered from what the screen holds, in the way § *Offered* above says the way back to today is.
 Agreed 2026-09-09 at the grill of `add-day-picker` (#176).
 
+**Date row** — the line under the day's name on a day screen that says the date being shown, in
+the app's own words: "28 September 2026", with *Today* in front on the **today**, since that is the
+one place the word appears once no `Today` button is offered. A tap on it opens the **day picker**.
+It says the month and the year, which nothing else on the head does. Named 2026-09-28, at the grill
+of `add-week-strip` (#346), for what `chore/day-as-title` (PR #345) drew.
+
 **Week strip** — the seven days of a **week** that a day screen draws under the day's name, for
 reaching any of them in one tap. A tap shows that day, as the **day picker** would. It marks two
 things and nothing else: which of the seven is the day being shown, and which is the **today**. It
@@ -1273,6 +1289,14 @@ a paged week marks no day as shown. Any move of the day, whether a swipe, the da
 a tap on the strip, brings it back to the shown day's week. When it lands, the chevrons leave, and
 the strip is what shows the day swipe. Agreed 2026-09-28 at the grooming pass for B-065; how far back
 it pages, and what it does with a day before the **reach**, are for that Story's grill.
+
+**Amended 2026-09-28**, at the grill of `add-week-strip` (#346). Each day is said by a single letter,
+"M T W T F S S", over its day of the month. A day earlier than the **reach** is drawn faded and takes
+no tap, as a row that offers nothing does, so the strip is seven days at every week; the day being
+shown is not a target either, having nowhere to go. A tap replaces the day where it stands, with no
+slide, as *Today* and the day picker do. Past either end of the calendar, in the week of 1 January
+1583 and the week of 31 December 9999, a day keeps its letter and holds no date. How far the strip
+pages is still `page-the-week-strip`'s (#347).
 
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **record store** it reads a history from and writes a tick back to, the

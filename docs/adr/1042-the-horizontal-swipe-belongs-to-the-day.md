@@ -5,6 +5,15 @@
   in place of a fourth Story
 - Date: 2026-09-08
 - Deciders: Diego Bugmann
+- Amended: 2026-09-28 — **the chevrons leave, and the week strip depicts the swipe.** The day screen
+  draws the seven days of the shown day's week under the date row, any of them one tap away, and the
+  two chevrons that stepped one day go with it, so the head carries one control for moving rather
+  than two. The sentence below saying the swipe sits beside the chevrons, and the rejected
+  alternative *Replace the chevrons with the swipe*, are superseded in their depiction half only:
+  what they asked for, something on the screen that says the day moves sideways, is now the strip,
+  and whether it reads that way is judged on the phone at that Story's G7. The ownership claim is untouched — the
+  screen still owns the horizontal swipe, and no day-screen row may take one. At the grill of
+  `add-week-strip` (#346)
 - Amended: 2026-09-09 — the depiction half is drawn per screen rather than product-wide: the
   commitments screen's row swipe is deliberately undepicted, the day screen's chevrons stay, and
   the reason the two differ is the same frequency argument that decided who owns the gesture. At
