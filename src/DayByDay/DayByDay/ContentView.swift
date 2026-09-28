@@ -872,7 +872,21 @@ struct ContentView: View {
                     .frame(width: width)
             }
             .offset(x: -width + dragTranslation)
-            .clipped()
+            // Horizontal-only clip: `.clipped()` (dropped) clips to the *whole* rendered
+            // frame, both axes at once, and that frame's height is `proxy.size.height` —
+            // already shortened by `.safeAreaInset`'s own reservation for `oneOffBar` — so it
+            // also cut every list off flat at the bar's own top edge, whatever `dayList(for:)`'s
+            // own `.scrollEdgeEffectStyle(.soft, for: .bottom)` was set to; confirmed by
+            // dropping `.clipped()` outright and watching rows draw straight through to the
+            // bar. A custom clip `Path`, `width` wide but built from a fixed, oversized rect
+            // rather than this view's own laid-out frame, hides the two neighbouring pages
+            // exactly as before while leaving the vertical extent effectively unbounded, so a
+            // `List`'s own rows can draw the whole way down — checked on the exported PNG, not
+            // by eye: at the capsule's own left edge, mid-scroll, the pixel underneath reads
+            // the row's own fill (`#FDFDFD`-ish in light, `#1A1A1C`-ish in dark, matching a
+            // cell's `#FFFFFF`/`#1C1C1E`, never the page's `#F2F2F7`/`#000000`), with no sudden
+            // jump anywhere above the bar in either appearance.
+            .clipShape(Rectangle().path(in: CGRect(x: 0, y: -4000, width: width, height: 8000)))
             // Disables all three `List`s' own scrolling for exactly as long as this drag has
             // locked the horizontal axis — the other half of the lock `daySwipeGesture` keeps in
             // `lockedDragAxis`. `.scrollDisabled` is an environment value every `List` beneath
@@ -1462,18 +1476,15 @@ struct ContentView: View {
     /// `screen.dayView.oneOffGroup != nil` says adding is offered, the same test the toolbar `+`
     /// (now gone, along with the scroll that used to carry the entry into view) once gated on.
     ///
-    /// **Attached to `pagedDayContent`, not `body`'s own outer `VStack` — a second fix round
-    /// found that placement is what lets rows run under the bar rather than stop dead at its
-    /// edge.** The `VStack` also held `dayControls`, a plain, non-scrolling view; a `VStack` with
-    /// a non-scrolling child shrinks its own layout region for the inset by default, and that
-    /// shrunk region reached the `List`s inside `pagedDayContent` too, clipping their content flat
-    /// against the bar's own top edge — a straight cut, whatever `dayList(for:)`'s own
-    /// `.scrollEdgeEffectStyle(.soft, for: .bottom)` was set to, because there was no room left
-    /// for the fade to run in. Attaching the inset directly to `pagedDayContent` instead — the
-    /// scrolling content, with no non-scrolling sibling to shrink for — is what lets each `List`
-    /// keep its own full frame and scroll rows into the reserved region, where the soft edge style
-    /// fades them, the way Messages' own field floats over the conversation beneath it; checked
-    /// scrolled mid-list, at rest and with the keyboard up, in both appearances.
+    /// **Attached to `pagedDayContent`, not `body`'s own outer `VStack`.** The `VStack` also held
+    /// `dayControls`, a plain, non-scrolling view; a `VStack` with a non-scrolling child shrinks
+    /// its own layout region for the inset by default, and a `List` reads that same shrunk region
+    /// for its own automatic bottom content inset — with the inset on the `VStack`, the last row
+    /// still overlapped the bar at rest (measured: row `maxY 839` against bar `minY 800`).
+    /// Attached to `pagedDayContent` instead, each `List` gets the correct content inset and the
+    /// last row rests clear of the bar once scrolled there (`pagedDayContent`'s own doc comment
+    /// has the frames that letting rows draw *behind* the bar while scrolling needed on top of
+    /// this — a second, separate fix).
     ///
     /// **Return no longer opens a fresh entry (grill answer 25, reopened from answer 6).** A
     /// kept add — or a blank one, which adds nothing — drops focus and closes the keyboard,
