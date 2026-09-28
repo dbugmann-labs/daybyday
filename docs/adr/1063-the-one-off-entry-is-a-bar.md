@@ -51,13 +51,17 @@ is the ordinary view tree, and its field rose above the keyboard just the same.
 **The one-off entry is a bar pinned at the foot of the day screen**, drawn with
 `.safeAreaInset(edge: .bottom)` attached to the paged day content, the way Messages pins its field.
 It is always in reach, rises above the keyboard with no keyboard tracking, and is never scrolled to.
+It is drawn as an opaque pill, and so is a refusal told under it.
 
 - **It is drawn on every day the entry is offered, which is exactly when `oneOffGroup != nil`**, and
   nowhere else. It is one bar for the screen, not one per page, so the disabled entry line each
   neighbouring page drew goes with the in-group line.
-- **Return and the toolbar checkmark commit what is typed**, as they did. A refused add keeps its
-  text and is told under the bar's field. Everything else the archived section says about
-  committing — on losing focus, and before the day moves — stands.
+- **Return and the toolbar checkmark commit what is typed, through one path, and answer a refusal
+  alike.** A kept add drops focus. A refused add keeps focus, with its text and its cause told under
+  the bar's field, whichever of the two committed it, as a refused rename already did (grill answer
+  18). The owner asked for the checkmark to match Return at the phone walk on 2026-09-28.
+  Everything else the archived section says about committing — on losing focus, and before the day
+  moves — stands.
 - **The toolbar `+` is gone.** Its only job was to bring the field into view, and a bar is always
   in view.
 - **The day's rows run under the bar** rather than stopping flat at its top edge: the lists fade
@@ -77,7 +81,9 @@ It is always in reach, rises above the keyboard with no keyboard tracking, and i
 **This supersedes the first sentence of the archived `make-one-off-on-day-screen` `design.md`
 § *The shell (ADR-1019)*** — "The entry is a `TextField` as the last line of the group on the shown
 page, and a disabled line on each neighbour" — **and the second**, which shows the toolbar `+` and
-has it focus the entry. The archive stays unedited, as every archive does; this record is where the
+has it focus the entry. **For a refused add only, it also supersedes the third sentence's** "it
+commits and drops focus", said of the checkmark: a refused add now keeps focus there, and a kept add
+still drops it. The archive stays unedited, as every archive does; this record is where the
 change is read.
 
 **`ScrollListToBottom` goes**, with every scroll that exists to carry the entry into view, **and
