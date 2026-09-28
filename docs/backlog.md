@@ -286,6 +286,39 @@ it as a gap rather than saying it unprompted.*
 - **Open** — can it be shown in the Simulator? A delay this short may only be visible on the phone,
   which would make it a `phone:` step.
 
+### B-067 — open Commitments to the roster alone, and the app's settings somewhere of their own
+
+*Captured 2026-09-28, from proposal P6.*
+
+> "move the app's settings, birthdays, the copy place, making and restoring a copy and a version
+> line, off Commitments into a Settings sheet opened from the day screen's toolbar beside
+> Commitments, so Commitments is the roster alone"
+
+- **Trigger** — opening Commitments to change a commitment and scrolling past the Birthdays switch
+  and the whole Copy section to get there, or looking for the copy place under a roster it has
+  nothing to do with. `CONTEXT.md` already calls the copy place "the app's first **setting**" and the
+  birthday switch is its second; both sit under the roster because nothing else existed.
+- **Touches** — `restore`, for one requirement: *A day screen that is not keeping a store says a copy
+  can be restored and where* says the day screen "SHALL name the commitments screen as where", so
+  moving Restore makes that line name Settings and the requirement is MODIFIED. Every other copy
+  requirement is at the `CommitmentsScreen` seam and holds whichever view calls it, and the birthday
+  switch is a type of its own (`birthday`); the rest is `day-screen` shell work — the toolbar and a
+  new sheet. No kit change is expected.
+- **Principle** — tested against *entered where you stand*: **passes.** No daily entry moves; the
+  settings are visited rarely, and a screen of their own takes nothing out of the day screen's row.
+  What changes for the daily visit is only that Commitments gets shorter.
+- **Answered 2026-09-28, by the owner** — **Restore moves with the rest** (Route A in P6), so the
+  one requirement is changed through a Story, rather than leaving *Restore from a copy* and *Take out
+  the files* on Commitments to keep the spec true as a chore.
+- **Open** — the restore grill (ninth pass) settled "told on the commitments screen only" for the
+  copy place; this want reverses where, not what, and `CONTEXT.md` § *Copy place*, § *Birthday* and
+  § *Commitments screen* each need a dated amendment and a new **Settings** term.
+- **Open** — two symbols in one glass capsule, or split by `ToolbarSpacer`; and whether the version
+  line reads the bundle's `CFBundleShortVersionString` and `CFBundleVersion` ("1.0 (1)" today). It
+  has nothing to do with `cli-version`, which is Atlas's own command.
+- **Open** — a restore confirmed from the sheet must still redraw the day screen on dismiss
+  (`returnedTo`), the way a sheet's mutation failed to redraw its presenter on #303.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
