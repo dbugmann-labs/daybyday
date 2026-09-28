@@ -772,41 +772,49 @@ struct ContentView: View {
     /// swipe can also tap the day it began on: unlike the day rows, these cells sit in a plain
     /// `HStack` with no `List` of their own underneath to cancel the touch for it.
     ///
-    /// The invisible copy of the current week (`.opacity(0)` below `GeometryReader`, ZStack
-    /// order) gives this view the height its own content wants, since a bare `GeometryReader`
-    /// otherwise expands to fill whatever height `dayControls`' own `VStack` offers it —
-    /// `pagedDayContent` can use a `GeometryReader` as its direct container because it is the
-    /// last thing in the outer `VStack` and so is free to take all the space that is left; this
-    /// view sits among fixed-height siblings and must not do the same.
+    /// The invisible copy of the current week gives this view the size its own content wants —
+    /// both its width and, critically, its height, which a bare `GeometryReader` has none of its
+    /// own and so expands to fill whatever `dayControls`' own `VStack` offers it. `.background`
+    /// rather than a `ZStack` layer of the two: a `ZStack`'s own size is the union of its
+    /// children's, so a `GeometryReader` sibling free to grow still grows the whole thing — this
+    /// view's own reported height came out well past the row's own, with a gap below it before
+    /// `pagedDayContent`, measured on the simulator — while a `.background` is sized to the view
+    /// it sits behind and cannot grow it. `pagedDayContent` can use a `GeometryReader` as its
+    /// direct container because it is the last thing in the outer `VStack` and so is free to take
+    /// all the space that is left; this view sits among fixed-height siblings and must not do the
+    /// same.
     private var weekStrip: some View {
-        ZStack {
-            weekStripRow(screen.weekStrip)
-                .opacity(0)
-                .accessibilityHidden(true)
-
-            GeometryReader { proxy in
-                let width = proxy.size.width
-                HStack(spacing: 0) {
-                    weekStripRow(screen.previousWeekStrip ?? [])
-                        .frame(width: width)
-                    weekStripRow(screen.weekStrip)
-                        .frame(width: width)
-                    weekStripRow(screen.nextWeekStrip ?? [])
-                        .frame(width: width)
-                }
-                .offset(x: -width + weekDragTranslation)
-                .clipped()
-                .highPriorityGesture(weekSwipeGesture(pageWidth: width))
-                .onAppear { weekStripPageWidth = width }
-                .onChange(of: width) { _, newWidth in weekStripPageWidth = newWidth }
+        weekStripRow(screen.weekStrip)
+            .hidden()
+            .allowsHitTesting(false)
+            .overlay {
+                // A plain, childless hit region the walk's UI test swipes —
+                // `docs/running-the-app.md` § *The walk*: sized to this view by `.overlay`, so
+                // its frame is exactly the row's own bounds, which the `.background` below draws
+                // the real, visible strip at. `.allowsHitTesting(false)` lets the touch XCUITest
+                // injects at this element's frame fall through to the real gesture beneath.
+                Color.clear
+                    .allowsHitTesting(false)
+                    .accessibilityIdentifier("WeekStrip")
             }
-        }
-        // Names the strip as one region for a UI test to swipe — `docs/running-the-app.md`
-        // § *The walk*: a day cell's own label is not enough on its own, since W.4 must drive a
-        // drag that starts on one and prove it does not also tap it. `.contain` keeps every cell
-        // beneath individually reachable by its own label.
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("WeekStrip")
+            .background {
+                GeometryReader { proxy in
+                    let width = proxy.size.width
+                    HStack(spacing: 0) {
+                        weekStripRow(screen.previousWeekStrip ?? [])
+                            .frame(width: width)
+                        weekStripRow(screen.weekStrip)
+                            .frame(width: width)
+                        weekStripRow(screen.nextWeekStrip ?? [])
+                            .frame(width: width)
+                    }
+                    .offset(x: -width + weekDragTranslation)
+                    .clipped()
+                    .highPriorityGesture(weekSwipeGesture(pageWidth: width))
+                    .onAppear { weekStripPageWidth = width }
+                    .onChange(of: width) { _, newWidth in weekStripPageWidth = newWidth }
+                }
+            }
     }
 
     /// One week's seven days, one equal-width column each — the row `weekStrip` lays out three
