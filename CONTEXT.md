@@ -1263,6 +1263,12 @@ leaves that day showing, because a reach never moves a person off the day they a
 answered from what the screen holds, in the way § *Offered* above says the way back to today is.
 Agreed 2026-09-09 at the grill of `add-day-picker` (#176).
 
+**Date row** — the line under the day's name on a day screen that says the date being shown, in
+the app's own words: "28 September 2026", with *Today* in front on the **today**, since that is the
+one place the word appears once no `Today` button is offered. A tap on it opens the **day picker**.
+It says the month and the year, which nothing else on the head does. Named 2026-09-28, at the grill
+of `add-week-strip` (#346), for what `chore/day-as-title` (PR #345) drew.
+
 **Week strip** — the seven days of a **week** that a day screen draws under the day's name, for
 reaching any of them in one tap. A tap shows that day, as the **day picker** would. It marks two
 things and nothing else: which of the seven is the day being shown, and which is the **today**. It
