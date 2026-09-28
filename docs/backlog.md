@@ -319,6 +319,26 @@ it as a gap rather than saying it unprompted.*
 - **Open** — a restore confirmed from the sheet must still redraw the day screen on dismiss
   (`returnedTo`), the way a sheet's mutation failed to redraw its presenter on #303.
 
+### B-068 — land on the day I tapped, even while a swipe is still settling
+*Captured 2026-09-28, from the twenty-first grooming sweep. The wording is the sweep's.*
+
+> "A jump tapped during a swipe's settle lands one day off."
+
+- **Trigger** — a week strip day or `Today` tapped within the ~0.35 s a carried swipe takes to
+  settle. The jump runs first, then the settle's `showNextDay()` or `showPreviousDay()` runs on top,
+  so the screen ends one day past the tap after a leftward swipe and one short after a rightward one.
+  Found at `add-week-strip`'s (#346) G7 and left out of its fix round by the owner; recorded in
+  `docs/open-questions.md` as wanting "a Story or a shell chore of its own".
+- **Touches** — `day-screen`, and probably only the app shell: the settle is `settle(to:then:)` in
+  `ContentView.swift`, and no requirement says when a jump lands. Same paging as B-061, B-062 and
+  B-064, and it queues behind #347 `page-the-week-strip`, which adds a second horizontal gesture.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** The strip sits right above
+  where the thumb swipes, so a quick tap after a swipe is the ordinary case, and a screen a day off
+  is where a tick lands on the wrong day.
+- **Open** — the fix is for every control that jumps, not only the strip: cancel the pending
+  settle, or ignore it once a jump has run.
+- **Open** — can it be shown in the Simulator inside 0.35 s, or is it a `phone:` step?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it

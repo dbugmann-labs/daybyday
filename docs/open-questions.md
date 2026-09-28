@@ -915,7 +915,7 @@ Things that are built, or deliberately not built, in a state someone will trip o
   the thumb swipes. No test covers it, and fixing it means cancelling or ignoring a pending settle
   for every control that jumps, not only for the strip. Found at `add-week-strip`'s (#346) G7,
   2026-09-28, and left out of that Story's fix round by the owner; wants a Story or a shell chore of
-  its own.
+  its own. Captured as B-068 in `docs/backlog.md`, 2026-09-28.
 
 - **A one-off name field emptied letter by letter can keep its first letter.** On the phone, the
   owner typed into a one-off field, edited, and deleted every letter; "very often" the field went
