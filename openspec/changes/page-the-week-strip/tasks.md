@@ -45,13 +45,13 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 - [x] 6.1 `ContentView` draws the strip as `design.md` § *The shell* says: three strips clipped to one, tracking a horizontal drag and resisting on a `nil` neighbour, the page called only after the strip has settled, the rows not sliding
 - [x] 6.2 A carried page commits a focused one-off field for departure before it moves the day; a drag begun on a cell never taps it; the day swipe, the strip tap and `settle(to:then:)`'s rows untouched
 - [x] 6.3 The app target builds for the simulator, and `WalkthroughUITests` passes unedited
-- [ ] 6.4 The chevrons as `design.md` § *The shell* and § *What the shell draws* say: either side of the strip and fixed while it slides, faded and taking no tap on a `nil` neighbour, a tap committing a focused field, sliding the strip a week and then paging
-- [ ] 6.5 The strip follows the finger from the drag's first sample with no jump; the neighbour weeks take no tap, and a tap beside the strip at either screen edge moves nothing, its cause confirmed before it is fixed
-- [ ] 6.6 The app target builds for the simulator, and `WalkthroughUITests` passes unedited, on the reopened build
+- [x] 6.4 The chevrons as `design.md` § *The shell* and § *What the shell draws* say: either side of the strip and fixed while it slides, faded and taking no tap on a `nil` neighbour, a tap committing a focused field, sliding the strip a week and then paging
+- [x] 6.5 The strip follows the finger from the drag's first sample with no jump; the neighbour weeks take no tap, and a tap beside the strip at either screen edge moves nothing, its cause confirmed before it is fixed
+- [x] 6.6 The app target builds for the simulator, and `WalkthroughUITests` passes unedited, on the reopened build
 
 ## 7. The records
 
-- [ ] 7.1 Confirm `CONTEXT.md` § *Week strip* and ADR-1042's 2026-09-28 page amendment, chevrons included, describe what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
+- [x] 7.1 Confirm `CONTEXT.md` § *Week strip* and ADR-1042's 2026-09-28 page amendment, chevrons included, describe what shipped; a sentence that turns out wrong is a stop and a G4 question, never an edit
 - [x] 7.2 `git diff --stat origin/main... -- openspec/specs/` reports nothing (rule 2)
 
 ## 8. Gates and the archive handover
