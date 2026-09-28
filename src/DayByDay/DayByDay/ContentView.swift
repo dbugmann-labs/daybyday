@@ -239,13 +239,6 @@ struct ContentView: View {
                 dayControls
                 pagedDayContent
             }
-            // The one-off entry, pinned at the foot of the whole screen rather than scrolled to
-            // as a line inside whichever list is showing — attached here, to the
-            // `NavigationStack`'s own direct content. `oneOffBar`'s own doc comment has why this
-            // is `.safeAreaInset`, not `.safeAreaBar` (ADR-1063).
-            .safeAreaInset(edge: .bottom) {
-                oneOffBar
-            }
             .navigationDestination(isPresented: $showingCommitments) {
                 if let commitmentsScreen {
                     CommitmentsView(screen: commitmentsScreen, birthdaySwitch: birthdaySwitch)
@@ -898,6 +891,13 @@ struct ContentView: View {
                 }
             }
         }
+        // The one-off entry, pinned at the foot of the paged content rather than scrolled to as
+        // a line inside whichever list is showing. `oneOffBar`'s own doc comment has why this is
+        // attached here, to `pagedDayContent` itself, and why `.safeAreaInset` rather than
+        // `.safeAreaBar` (ADR-1063).
+        .safeAreaInset(edge: .bottom) {
+            oneOffBar
+        }
     }
 
     /// One day's rows, in a plain `List` — the same groups, the same per-row rendering and the
@@ -907,7 +907,7 @@ struct ContentView: View {
     /// because it resists at that end (`daySwipeGesture`). No list here needs telling whether it
     /// is the one shown any more: the one-off entry no longer lives inside any of the three —
     /// it is `oneOffBar`, pinned at the foot of the whole screen (ADR-1063) — and a rename on a
-    /// row already clears the keyboard by the same `.safeAreaBar` mechanics, unaided, on every
+    /// row already clears the keyboard by the same `.safeAreaInset` mechanics, unaided, on every
     /// one of the three lists alike; the keyboard-height padding this once carried for that is
     /// gone with it — see `oneOffBar`'s own doc comment for the measurement that found so.
     @ViewBuilder
@@ -1450,7 +1450,7 @@ struct ContentView: View {
     }
 
     /// The one-off entry, pinned at the foot of the day screen with `.safeAreaInset(edge:
-    /// .bottom)` on `body`'s own `VStack` (ADR-1063) — one bar for the whole screen, not a line
+    /// .bottom)` on `pagedDayContent` (ADR-1063) — one bar for the whole screen, not a line
     /// inside the paged list, and always in reach, so nothing needs scrolling to it any more.
     /// `.safeAreaBar`, tried first, rose above the keyboard the same way `.safeAreaInset` does
     /// here, but never let `oneOffFocus` track this field, in either direction, on this SDK — nor
@@ -1461,6 +1461,19 @@ struct ContentView: View {
     /// before, field `maxY 521` against keyboard `minY 583`. Shown exactly where
     /// `screen.dayView.oneOffGroup != nil` says adding is offered, the same test the toolbar `+`
     /// (now gone, along with the scroll that used to carry the entry into view) once gated on.
+    ///
+    /// **Attached to `pagedDayContent`, not `body`'s own outer `VStack` — a second fix round
+    /// found that placement is what lets rows run under the bar rather than stop dead at its
+    /// edge.** The `VStack` also held `dayControls`, a plain, non-scrolling view; a `VStack` with
+    /// a non-scrolling child shrinks its own layout region for the inset by default, and that
+    /// shrunk region reached the `List`s inside `pagedDayContent` too, clipping their content flat
+    /// against the bar's own top edge — a straight cut, whatever `dayList(for:)`'s own
+    /// `.scrollEdgeEffectStyle(.soft, for: .bottom)` was set to, because there was no room left
+    /// for the fade to run in. Attaching the inset directly to `pagedDayContent` instead — the
+    /// scrolling content, with no non-scrolling sibling to shrink for — is what lets each `List`
+    /// keep its own full frame and scroll rows into the reserved region, where the soft edge style
+    /// fades them, the way Messages' own field floats over the conversation beneath it; checked
+    /// scrolled mid-list, at rest and with the keyboard up, in both appearances.
     ///
     /// **Return no longer opens a fresh entry (grill answer 25, reopened from answer 6).** A
     /// kept add — or a blank one, which adds nothing — drops focus and closes the keyboard,
