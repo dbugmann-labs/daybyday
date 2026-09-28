@@ -173,12 +173,107 @@ it as a gap rather than saying it unprompted.*
 - **Open** — where does the row come from? A day view draws what is due; a Tuesday row for gym is a
   row for something not due, which is the thing *offered* was landed to keep off the screen.
 
+### B-061 — come back to the app on a whole day, never half-way between two
+
+*Captured 2026-09-25.*
+
+> "When I switch to another app (swipe on the bottom of the screen on the iphone), and then I go
+> back to DayByDay, then the day screen is stuck between 2 day screens (the app switch swipe
+> starts a day change which is stopped.. It feels buggy)"
+
+- **Trigger** — leaving the app from the day screen with the home-indicator swipe, then coming
+  back to it. A defect the owner hit on the phone, not a new thing to do.
+- **Touches** — `day-screen`, and only the app shell. The paging is shell work under ADR-1043, and
+  `add-adjacent-day-views`' `design.md` keeps every motion, distance and threshold out of the kit,
+  so no requirement says where a page comes to rest. Likely a shell chore under ADR-1019, the way
+  B-050 was.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** The home-indicator swipe is
+  how every app is left on this phone, so a day screen that catches the start of it is a screen
+  arguing with the phone it lives on.
+- **Open** — does a half-way page ever settle on its own — on the next touch, on the next swipe —
+  or does it stay until something moves the day?
+- **Open** — can it be shown in the Simulator at all? The swipe that starts it is the system's, so
+  this may be a `phone:` step only, which prices it like B-041.
+
+### B-062 — open every day at its top
+
+*Captured 2026-09-25.*
+
+> "When I scroll to the bottom of the day screen and I switch to another day (swiping, day picker
+> or chevron), then this new day is directly also scrolled to the bottom.. I don't want that, it
+> should always show another day on top"
+
+- **Trigger** — a long day scrolled to its end, then a move to another day by any of the three
+  ways there: the swipe, the day picker, a chevron.
+- **Touches** — `day-screen`, and only the app shell: where a day's list is scrolled to is shell
+  state, and no requirement says where a day opens. Same paging as B-061, so the two cluster.
+- **Principle** — tested against *entered where you stand*: **passes.** A day opened at its bottom
+  puts its first rows off the screen, and those are rows an entry is made in; landing at the end
+  means a scroll before the first tap.
+- **Open** — is *Today* a fourth way there that should also open at the top? The quote names three,
+  and *Today* is also a move to another day.
+- **Open** — does coming back to the app from the background count as another day? The quote is
+  about moving between days, not about returning to the same one.
+
+### B-063 — speak a note instead of typing it, in German
+
+*Captured 2026-09-25.*
+
+> "In notes, It would be nice to have a voice input option (in German), so I can talk instead of
+> write, and it is then written down (in German)"
+
+- **Trigger** — a note entry on the day screen, where a sentence typed with one thumb is slower
+  than the same sentence said.
+- **Touches** — `day-screen`'s note entry (*A day screen enters the note a row's entry takes, and
+  keeps the change before the day view says so*); the note is committed and read exactly as a typed
+  one would be, so the change is probably the shell's alone — and possibly nothing at all, see Open.
+- **Principle** — tested against *entered where you stand*: **passes.** The note is still made in
+  the row it belongs to, with less interaction than typing it; the principle is about where an entry
+  is made, and "a sentence is typed there" names the place, not the keyboard.
+- **Open** — does the keyboard already do it? The system keyboard carries its own dictation key where
+  Dictation is on in the phone's settings. If the note field shows it and it writes German, this want
+  is a setting on the phone and not a line of code; if the field hides it, or it will not write
+  German, that is the finding.
+- **Open** — or is the want a control of the row's own — one tap to talk, without the keyboard coming
+  up first? That is a new control and a microphone permission, where the keyboard's key is neither.
+- **Open** — does a spoken note leave the phone? Apple's recogniser can run on the device for some
+  languages and not others, and a note is the most personal thing the record holds.
+
+### B-064 — swipe to another day without ticking what the swipe started on
+
+*Captured 2026-09-28.*
+
+> "When I swipe between days, and I start the swipe where I would tick or untick a one off, it does
+> the tick/untick even tho I don't want to"
+
+- **Trigger** — a swipe to the day before or after whose finger lands on a one-off row's tick. A
+  defect the owner hit on the phone, and one that writes: the unwanted tick or untick is kept in the
+  record, not only drawn.
+- **Touches** — `day-screen`, and only the app shell. No requirement mentions a swipe; the paging is
+  shell work under ADR-1043, and the one-off row is a button inside the same list the day swipe is
+  attached to. Same paging as B-061 and B-062, so the three cluster.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** A day screen is rows from top
+  to bottom, so a thumb starting a swipe has nowhere to land that is not a row; a swipe that ticks
+  what it started on turns moving between days into an entry nobody meant.
+- **Answered 2026-09-28, by the owner** — **only one-off rows**: a swipe started on a commitment's or
+  a birthday's tick does not tick it. **The swipe still happens**: the day moves *and* the one-off is
+  ticked or unticked, so the gesture is read twice rather than taken by the wrong one.
+- **Open** — can it be shown in the Simulator? XCUITest's synthetic drags have not matched a thumb
+  before (B-041), so this may be a `phone:` step.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
 
+- 2026-09-28 — see the week the shown day lies in, and go to any day of it in one tap (B-065) →
+  Stories #346 `add-week-strip` and #347 `page-the-week-strip`, blocked by #346, under
+  `FEAT: day-screen` (#27), reopened with Epic #1. The **week strip** marks the shown day and the
+  today and nothing about how any day went; the chevrons leave in #346 and ADR-1042 is amended there;
+  it pages by week without moving the shown day, and any move of the day brings it back. It is the
+  half of proposal P1 that `chore/day-as-title` (PR #345) could not draw, because the kit has no
+  public week. How far back it pages and a day before the reach are #346's grill.
 - 2026-09-24 — see what is still owed at the top of the One-offs group (B-060) → Story #340
   `put-done-one-offs-last` under `FEAT: one-off` (#239), reopened with `EPIC: One-offs` (#238).
   One-offs only: commitment rows keep the order the person set (ADR-1037) and Birthdays keep
@@ -440,7 +535,9 @@ months later.
   picker as **its own control** rather than the day title, so the Today button survives beside it;
   floored at the earliest kept-from day on the roster and **open forward**. Deliberately not a
   calendar month grid: that is a look-back view, Epic #1 excludes those by name, and it stays with
-  B-007.
+  B-007. *Premise corrected 2026-09-28, at the B-065 pass:* Epic #1 excludes graphs and per-area
+  detail pages and names no grid, and `chore/day-as-title` (PR #345) has since shipped the day picker
+  as a month calendar with the owner's agreement. `CONTEXT.md` § *Day picker* is amended to match.
 - 2026-09-08 — get to the day before or after without aiming at a chevron → **a chore on the app
   shell**, not a Story, under ADR-1019: `showPreviousDay` and `showNextDay` are already public and
   already wired to the chevrons, so the gesture carries no requirement. It sits **beside** them
@@ -1179,3 +1276,18 @@ found nothing.
     without `/to-tickets`, one Story under an existing Feature as B-056 was. Scope put at G2 as
     one-offs only, accepted.
   - **Not re-judged** — B-039, B-041, B-054; a targeted pass holds one entry.
+- 2026-09-28 — targeted pass over B-065 (`/atlas backlog B-065`), groomed on `chore/backlog`
+  (PR #344) in the session that captured it, `origin/main` at 755f9f1.
+  - **Sweep** — no new silence since the B-060 sweep: #341, #342 and #343 merged, and
+    `docs/open-questions.md` gained two technical notes on #329's copy stores and no want. It found
+    one ledger error instead: the 2026-09-08 B-040 line and `CONTEXT.md` § *Day picker* said Epic #1
+    excludes a calendar grid by name, and it names none. PR #345 had shipped a month calendar. The
+    owner kept it; both are corrected.
+  - **Promoted** — B-065 → #346, then #347 blocked by it, under #27; six questions over two rounds
+    and one fact agent, every answer as recommended except that the strip **pages by week**. The
+    split came from that answer: paging adds a second horizontal gesture that only the phone can
+    judge, so it follows the thin strip. `CONTEXT.md` gained **week strip**; *Day picker*, *Day
+    title* and *Week* were amended. Presented at G2 without `/to-tickets`, as B-056 and B-060 were.
+  - **Not re-judged** — B-039, B-041, B-054, and B-061..B-064, captured since the last pass; a
+    targeted pass holds one entry. B-061, B-062 and B-064 all change the day screen's paging, which
+    #346 also touches, so they queue behind it if they become Stories rather than shell chores.

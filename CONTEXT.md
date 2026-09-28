@@ -1239,6 +1239,15 @@ the app's — the one place in this app where that is true, taken deliberately a
 nothing the app owns can state which date is on screen. And the picker is now the answer anything
 asks when it needs to know *which* day a screen is showing, which is the day its **reach** opens on.
 
+**Amended 2026-09-28**, by `chore/day-as-title` (PR #345) and at the grooming pass for B-065. The
+picker is opened from the **date row** under the day's name, which says the date and takes the tap,
+and it is **a month calendar**. The sentence above calling it deliberately not a calendar month
+grid is withdrawn, and so is its reason: Epic #1 excludes graphs and per-area detail pages, and
+names no grid. A grid that only reaches a day and marks no day kept or missed is not a look-back.
+The date is the app's to say again, "25 September 2026" and "Today, 25 September 2026" on the
+**today**, in fixed British English words, so the half of the amendment above about the device's
+words no longer holds.
+
 **Reach** — what a day screen says about its **day picker**, as one answer rather than as two dates
 anything outside could have worked out: the day the picker opens on, which is the day being shown,
 and the earliest day it reaches. The earliest is the earliest day anything on the **roster** has been
@@ -1253,6 +1262,17 @@ own, and a reach that rises above the day being shown — a commitment edited, a
 leaves that day showing, because a reach never moves a person off the day they are looking at. It is
 answered from what the screen holds, in the way § *Offered* above says the way back to today is.
 Agreed 2026-09-09 at the grill of `add-day-picker` (#176).
+
+**Week strip** — the seven days of a **week** that a day screen draws under the day's name, for
+reaching any of them in one tap. A tap shows that day, as the **day picker** would. It marks two
+things and nothing else: which of the seven is the day being shown, and which is the **today**. It
+says nothing about how any day went, whether kept, missed or due, because seven days in a row is the
+shape a streak is drawn in (§ *Product principles*, *Nothing congratulates you*). It holds the week
+the shown day lies in. It can be paged to the week before or after without moving the shown day, and
+a paged week marks no day as shown. Any move of the day, whether a swipe, the day picker, *Today* or
+a tap on the strip, brings it back to the shown day's week. When it lands, the chevrons leave, and
+the strip is what shows the day swipe. Agreed 2026-09-28 at the grooming pass for B-065; how far back
+it pages, and what it does with a day before the **reach**, are for that Story's grill.
 
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **record store** it reads a history from and writes a tick back to, the
@@ -1790,6 +1810,11 @@ The **date** is no longer the app's to say at all: the day picker beside the tit
 whatever words the device uses, which is the half of ADR-1022 this Story reverses and the reason
 nothing the app owns can state which date is on screen. ADR-1022, amended the same day.
 
+**Amended 2026-09-28**, by `chore/day-as-title` (PR #345). The day screen no longer draws the day
+title. What it draws under the bar is the weekday in full, "Friday", and under that the **date
+row**, which says the date in the app's own words again: § *Day picker*, amended the same day. The
+day title is still the kit's answer, and its words are unchanged.
+
 **One-off** — something owed once, on a date, and never again: a form to send back by Friday, a
 call to make on the 20th. It is a **name** and a **calendar date** and nothing else — no rhythm, no
 day it is kept from, no kind and no category — and it takes a tick. Deliberately not a
@@ -1970,10 +1995,10 @@ decided 2026-09-14 at the eighth grooming pass, for **standing**; no rule shape 
 
 **Week** — the seven days from a Monday through the following Sunday, the same on every phone
 whatever its calendar setting, so a restored history reads the same wherever it lands. It is the
-span a **weekly quota** is counted over, and nothing else consults it. Nothing happens when a week
-turns: an unmet quota leaves no record behind and is carried into nothing, the next week starts at
-zero, and the week that turned stays readable by looking back at its days. Agreed 2026-09-14 at the
-eighth grooming pass, for B-025.
+span a **weekly quota** is counted over, and nothing else consults it; since 2026-09-28 the **week
+strip** does as well. Nothing happens when a week turns: an unmet quota leaves no record behind and
+is carried into nothing, the next week starts at zero, and the week that turned stays readable by
+looking back at its days. Agreed 2026-09-14 at the eighth grooming pass, for B-025.
 
 **Amended 2026-09-16**, at the grill of `look-back-at-a-quota` (#273). A week is now said as well as
 counted over: a **look-back** says one as the span of its seven days, "9–15 Mar 2026", "30 Mar – 5
