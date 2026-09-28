@@ -52,10 +52,10 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 
 A fresh install, so every commitment is kept from Friday 4 September 2026.
 
-- [ ] W.1 Today — the date row at the leading edge saying "Today, …", the strip under it with today in a blue capsule, no chevrons and no Today button.
-- [ ] W.2 The strip's Monday tapped from today, or its Sunday where today is a Monday — that day in the text-colour capsule, today's letter and number blue, the Today button in the toolbar.
-- [ ] W.3 Sunday 6 September 2026 picked on the calendar, then one swipe left — Monday 7 September 2026 in the capsule and the strip saying 7 to 13.
-- [ ] W.4 Wednesday 16 September 2026 picked on the calendar — the strip saying 14 to 20, Wednesday in the capsule, the date row "16 September 2026".
-- [ ] W.5 Friday 4 September 2026 picked on the calendar — 31, 1, 2 and 3 faded, 4 in the capsule, 5 and 6 at full strength.
+- [x] W.1 Today — the date row at the leading edge saying "Today, …", the strip under it with today in a blue capsule, no chevrons and no Today button.
+- [x] W.2 The strip's Monday tapped from today, or its Sunday where today is a Monday — that day in the text-colour capsule, today's letter and number blue, the Today button in the toolbar.
+- [x] W.3 Sunday 6 September 2026 picked on the calendar, then one swipe left — Monday 7 September 2026 in the capsule and the strip saying 7 to 13.
+- [x] W.4 Wednesday 16 September 2026 picked on the calendar — the strip saying 14 to 20, Wednesday in the capsule, the date row "16 September 2026".
+- [x] W.5 Friday 4 September 2026 picked on the calendar — 31, 1, 2 and 3 faded, 4 in the capsule, 5 and 6 at full strength.
 - [ ] W.6 phone: swipe from a Sunday onto the Monday after and back — the head stays still under the finger, the strip redraws as the other week once the day lands, and it reads as what the swipe moves now that the chevrons are gone.
-- [ ] W.7 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.6 is the human's at G7; the conductor ticks it on the G7 approval.
+- [x] W.7 **The handover** — W.1–W.5, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.6 is the human's at G7; the conductor ticks it on the G7 approval. Posted: https://github.com/dbugmann-labs/daybyday/pull/348#issuecomment-5866836301
