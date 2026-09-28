@@ -557,7 +557,9 @@ months later.
   picker as **its own control** rather than the day title, so the Today button survives beside it;
   floored at the earliest kept-from day on the roster and **open forward**. Deliberately not a
   calendar month grid: that is a look-back view, Epic #1 excludes those by name, and it stays with
-  B-007.
+  B-007. *Premise corrected 2026-09-28, at the B-065 pass:* Epic #1 excludes graphs and per-area
+  detail pages and names no grid, and `chore/day-as-title` (PR #345) has since shipped the day picker
+  as a month calendar with the owner's agreement. `CONTEXT.md` § *Day picker* is amended to match.
 - 2026-09-08 — get to the day before or after without aiming at a chevron → **a chore on the app
   shell**, not a Story, under ADR-1019: `showPreviousDay` and `showNextDay` are already public and
   already wired to the chevrons, so the gesture carries no requirement. It sits **beside** them
