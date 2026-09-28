@@ -261,6 +261,35 @@ it as a gap rather than saying it unprompted.*
 - **Open** — can it be shown in the Simulator? XCUITest's synthetic drags have not matched a thumb
   before (B-041), so this may be a `phone:` step.
 
+### B-065 — see the week the shown day lies in, and go to any day of it in one tap
+
+*Captured 2026-09-28.*
+
+> "see the week the shown day lies in as a strip of seven days under the title, and tap one to go
+> there"
+
+- **Trigger** — the day screen, wanting a day earlier or later in the same week without stepping
+  through the ones between or opening the calendar sheet. It is proposal P1's half that
+  `chore/day-as-title` (PR #345) left behind: that chore made the day the title and opened the
+  calendar from its date, and could not draw the strip because the shell has no way to ask for a
+  week.
+- **Touches** — `day-screen`, and it needs kit surface: `CalendarDate.weekday`,
+  `WeekQuota.monday(of:)` and `CalendarDate.adding(days:)` are all internal, so the seven dates
+  have to come from a `DayScreen` answer, not from the shell. That makes it a Story, not a chore.
+- **Principle** — tested against *nothing congratulates you*: **passes, as long as the strip says
+  nothing about how the days went.** Seven days in a row is exactly the shape a streak is drawn in.
+  A dot, a colour or a fill for a kept or missed day would turn a way of getting around into a run
+  that breaks, so the strip carries no status of any kind.
+- **Open** — the seam: one `DayScreen` answer giving the seven dates from Monday to Sunday of the
+  shown day's week, which one is shown and which is today, bounded by `dayPickerReach`. Is a day
+  before `dayPickerReach.earliest` drawn but not tappable, or not drawn at all?
+- **Open** — the chevrons. ADR-1042 names them as the visible form of the day swipe. If the strip
+  replaces them, its sentence on how the swipe is shown needs amending in the same Story; if they
+  stay, the head carries two ways of moving one day.
+- **Open** — a strip is not a month grid, but the 2026-09-08 *Decided* line for B-040 kept the
+  calendar grid out of the day screen. `chore/day-as-title` has since put a graphical month grid in
+  the calendar sheet, so that line should be read against what shipped before this is grilled.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
