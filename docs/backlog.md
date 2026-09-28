@@ -239,6 +239,28 @@ it as a gap rather than saying it unprompted.*
 - **Open** — does a spoken note leave the phone? Apple's recogniser can run on the device for some
   languages and not others, and a note is the most personal thing the record holds.
 
+### B-064 — swipe to another day without ticking what the swipe started on
+
+*Captured 2026-09-28.*
+
+> "When I swipe between days, and I start the swipe where I would tick or untick a one off, it does
+> the tick/untick even tho I don't want to"
+
+- **Trigger** — a swipe to the day before or after whose finger lands on a one-off row's tick. A
+  defect the owner hit on the phone, and one that writes: the unwanted tick or untick is kept in the
+  record, not only drawn.
+- **Touches** — `day-screen`, and only the app shell. No requirement mentions a swipe; the paging is
+  shell work under ADR-1043, and the one-off row is a button inside the same list the day swipe is
+  attached to. Same paging as B-061 and B-062, so the three cluster.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** A day screen is rows from top
+  to bottom, so a thumb starting a swipe has nowhere to land that is not a row; a swipe that ticks
+  what it started on turns moving between days into an entry nobody meant.
+- **Open** — is it only a one-off row? The quote names one-offs; whether a commitment's tick or a
+  birthday's does the same is a fact to find before the grill, not a question for the owner.
+- **Open** — does the day still move as well, or does the tick take the gesture instead of the swipe?
+- **Open** — can it be shown in the Simulator? XCUITest's synthetic drags have not matched a thumb
+  before (B-041), so this may be a `phone:` step.
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
