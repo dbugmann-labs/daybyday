@@ -10650,3 +10650,419 @@ func aDayScreenOpenedOnARosterWhoseLastCommitmentWasDeletedTakesNothingOn() thro
     #expect(later.roster.stopped.isEmpty)
     #expect(!later.roster.commitments(on: tuesday).contains { $0.name == "Gym" })
 }
+
+// MARK: - add-week-strip
+
+@MainActor
+@Test("a day screen says the seven days of its week, Monday first, each by its letter")
+func aDayScreenSaysTheSevenDaysOfItsWeekMondayFirstEachByItsLetter() {
+    let (place, rosterPlace) = freshPlaces()
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(
+        name: "Journaling", schedule: daily,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: wednesday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+
+    let strip = screen.weekStrip
+    #expect(strip.map(\.date) == [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ])
+    #expect(strip.map(\.letter) == ["M", "T", "W", "T", "F", "S", "S"])
+    #expect(strip.map(\.isShown) == [false, false, true, false, false, false, false])
+    #expect(strip.map(\.isToday) == [false, false, true, false, false, false, false])
+}
+
+@MainActor
+@Test("a day screen's week strip marks the today apart from the day it is showing")
+func aDayScreensWeekStripMarksTheTodayApartFromTheDayItIsShowing() {
+    let (place, rosterPlace) = freshPlaces()
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(
+        name: "Journaling", schedule: daily,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: thursday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    screen.showPreviousDay()
+    screen.showPreviousDay()
+
+    let strip = screen.weekStrip
+    #expect(strip.map(\.date) == [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ])
+    #expect(strip.map(\.isShown) == [false, true, false, false, false, false, false])
+    #expect(strip.map(\.isToday) == [false, false, false, true, false, false, false])
+}
+
+@MainActor
+@Test("a day screen moved into another week holds that week in its strip and marks no day as the today")
+func aDayScreenMovedIntoAnotherWeekHoldsThatWeekInItsStripAndMarksNoDayAsTheToday() {
+    let (place, rosterPlace) = freshPlaces()
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(
+        name: "Journaling", schedule: daily,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: monday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    screen.showPreviousDay()
+
+    let stripAfterFirstMove = screen.weekStrip
+    #expect(stripAfterFirstMove.map(\.date) == [
+        CalendarDate(year: 2026, month: 8, day: 24)!,
+        CalendarDate(year: 2026, month: 8, day: 25)!,
+        CalendarDate(year: 2026, month: 8, day: 26)!,
+        CalendarDate(year: 2026, month: 8, day: 27)!,
+        CalendarDate(year: 2026, month: 8, day: 28)!,
+        CalendarDate(year: 2026, month: 8, day: 29)!,
+        CalendarDate(year: 2026, month: 8, day: 30)!,
+    ])
+    #expect(stripAfterFirstMove.map(\.isShown) == [false, false, false, false, false, false, true])
+    #expect(stripAfterFirstMove.map(\.isToday) == [false, false, false, false, false, false, false])
+
+    screen.showNextDay()
+
+    let stripAfterSecondMove = screen.weekStrip
+    #expect(stripAfterSecondMove.map(\.date) == [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ])
+    #expect(stripAfterSecondMove.map(\.isShown) == [true, false, false, false, false, false, false])
+    #expect(stripAfterSecondMove.map(\.isToday) == [true, false, false, false, false, false, false])
+}
+
+@MainActor
+@Test("a day screen's week strip runs across the turn of a month and a year")
+func aDayScreensWeekStripRunsAcrossTheTurnOfAMonthAndAYear() {
+    let (place, rosterPlace) = freshPlaces()
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(
+        name: "Journaling", schedule: daily,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let thursday = CalendarDate(year: 2026, month: 12, day: 31)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: thursday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+
+    let strip = screen.weekStrip
+    #expect(strip.map(\.date) == [
+        CalendarDate(year: 2026, month: 12, day: 28)!,
+        CalendarDate(year: 2026, month: 12, day: 29)!,
+        CalendarDate(year: 2026, month: 12, day: 30)!,
+        CalendarDate(year: 2026, month: 12, day: 31)!,
+        CalendarDate(year: 2027, month: 1, day: 1)!,
+        CalendarDate(year: 2027, month: 1, day: 2)!,
+        CalendarDate(year: 2027, month: 1, day: 3)!,
+    ])
+    #expect(strip.map(\.letter) == ["M", "T", "W", "T", "F", "S", "S"])
+}
+
+@MainActor
+@Test("a day screen's week strip holds no date for a day outside the calendar")
+func aDayScreensWeekStripHoldsNoDateForADayOutsideTheCalendar() {
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+
+    let firstSupportedPlaces = freshPlaces()
+    let firstSupportedKeptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let journalingFromTheFirstSupportedDate = Commitment(
+        name: "Journaling", schedule: daily, keptFrom: firstSupportedKeptFrom)!
+    let firstSupported = CalendarDate(year: 1583, month: 1, day: 1)!
+
+    let onFirstSupported = DayScreen(
+        startingFrom: [journalingFromTheFirstSupportedDate], asOf: firstSupported,
+        keepingRecordAt: firstSupportedPlaces.record,
+        keepingRosterAt: firstSupportedPlaces.roster, keepingOneOffsAt: freshOneOffPlace())
+
+    let firstStrip = onFirstSupported.weekStrip
+    #expect(firstStrip.map(\.letter) == ["M", "T", "W", "T", "F", "S", "S"])
+    #expect(firstStrip.map(\.date) == [
+        nil, nil, nil, nil, nil,
+        CalendarDate(year: 1583, month: 1, day: 1)!,
+        CalendarDate(year: 1583, month: 1, day: 2)!,
+    ])
+    #expect(firstStrip.map(\.isShown) == [false, false, false, false, false, true, false])
+    #expect(firstStrip.map(\.isToday) == [false, false, false, false, false, true, false])
+
+    let lastSupportedPlaces = freshPlaces()
+    let lastSupportedKeptFrom = CalendarDate(year: 1583, month: 1, day: 1)!
+    let journalingFromTheEarliestDate = Commitment(
+        name: "Journaling", schedule: daily, keptFrom: lastSupportedKeptFrom)!
+    let lastSupported = CalendarDate(year: 9999, month: 12, day: 31)!
+
+    let onLastSupported = DayScreen(
+        startingFrom: [journalingFromTheEarliestDate], asOf: lastSupported,
+        keepingRecordAt: lastSupportedPlaces.record,
+        keepingRosterAt: lastSupportedPlaces.roster, keepingOneOffsAt: freshOneOffPlace())
+
+    let lastStrip = onLastSupported.weekStrip
+    #expect(lastStrip.map(\.date) == [
+        CalendarDate(year: 9999, month: 12, day: 27)!,
+        CalendarDate(year: 9999, month: 12, day: 28)!,
+        CalendarDate(year: 9999, month: 12, day: 29)!,
+        CalendarDate(year: 9999, month: 12, day: 30)!,
+        CalendarDate(year: 9999, month: 12, day: 31)!,
+        nil, nil,
+    ])
+    #expect(lastStrip.map(\.letter) == ["M", "T", "W", "T", "F", "S", "S"])
+}
+
+@MainActor
+@Test("a day screen shown again on a later day follows it in its week strip only where it was showing its today")
+func aDayScreenShownAgainOnALaterDayFollowsItInItsWeekStripOnlyWhereItWasShowingItsToday() {
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let sunday = CalendarDate(year: 2026, month: 9, day: 6)!
+    let followingMonday = CalendarDate(year: 2026, month: 9, day: 7)!
+
+    let (firstPlace, firstRosterPlace) = freshPlaces()
+    let journalingOne = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let firstScreen = DayScreen(
+        startingFrom: [journalingOne], asOf: sunday, keepingRecordAt: firstPlace,
+        keepingRosterAt: firstRosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    firstScreen.shown(asOf: followingMonday)
+
+    let firstStrip = firstScreen.weekStrip
+    #expect(firstStrip.map(\.date) == [
+        CalendarDate(year: 2026, month: 9, day: 7)!,
+        CalendarDate(year: 2026, month: 9, day: 8)!,
+        CalendarDate(year: 2026, month: 9, day: 9)!,
+        CalendarDate(year: 2026, month: 9, day: 10)!,
+        CalendarDate(year: 2026, month: 9, day: 11)!,
+        CalendarDate(year: 2026, month: 9, day: 12)!,
+        CalendarDate(year: 2026, month: 9, day: 13)!,
+    ])
+    #expect(firstStrip.map(\.isShown) == [true, false, false, false, false, false, false])
+    #expect(firstStrip.map(\.isToday) == [true, false, false, false, false, false, false])
+
+    let (secondPlace, secondRosterPlace) = freshPlaces()
+    let journalingTwo = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let secondScreen = DayScreen(
+        startingFrom: [journalingTwo], asOf: sunday, keepingRecordAt: secondPlace,
+        keepingRosterAt: secondRosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    secondScreen.showPreviousDay()
+    secondScreen.shown(asOf: followingMonday)
+
+    let secondStrip = secondScreen.weekStrip
+    #expect(secondStrip.map(\.date) == [
+        CalendarDate(year: 2026, month: 8, day: 31)!,
+        CalendarDate(year: 2026, month: 9, day: 1)!,
+        CalendarDate(year: 2026, month: 9, day: 2)!,
+        CalendarDate(year: 2026, month: 9, day: 3)!,
+        CalendarDate(year: 2026, month: 9, day: 4)!,
+        CalendarDate(year: 2026, month: 9, day: 5)!,
+        CalendarDate(year: 2026, month: 9, day: 6)!,
+    ])
+    #expect(secondStrip.map(\.isShown) == [false, false, false, false, false, true, false])
+    #expect(secondStrip.map(\.isToday) == [false, false, false, false, false, false, false])
+}
+
+@MainActor
+@Test("a day screen's week strip is the same whatever its record holds and whatever is ticked")
+func aDayScreensWeekStripIsTheSameWhateverItsRecordHoldsAndWhateverIsTicked() throws {
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let (garbledPlace, garbledRosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: garbledPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a record is written as".utf8).write(to: garbledPlace)
+    let journalingOne = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let garbledScreen = DayScreen(
+        startingFrom: [journalingOne], asOf: wednesday, keepingRecordAt: garbledPlace,
+        keepingRosterAt: garbledRosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    #expect(garbledScreen.recordState == .unreadable)
+
+    let (nothingKeptPlace, nothingKeptRosterPlace) = freshPlaces()
+    let journalingTwo = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let nothingKeptScreen = DayScreen(
+        startingFrom: [journalingTwo], asOf: wednesday, keepingRecordAt: nothingKeptPlace,
+        keepingRosterAt: nothingKeptRosterPlace, keepingOneOffsAt: freshOneOffPlace())
+
+    #expect(garbledScreen.weekStrip == nothingKeptScreen.weekStrip)
+
+    let stripBeforeTheTick = nothingKeptScreen.weekStrip
+    try nothingKeptScreen.tick(nothingKeptScreen.dayView.rows[0])
+
+    #expect(nothingKeptScreen.weekStrip == stripBeforeTheTick)
+}
+
+@MainActor
+@Test("a day screen's week strip offers every day of its week but the one it is showing")
+func aDayScreensWeekStripOffersEveryDayOfItsWeekButTheOneItIsShowing() {
+    let (place, rosterPlace) = freshPlaces()
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(
+        name: "Journaling", schedule: daily,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: wednesday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+
+    #expect(screen.weekStrip.map(\.isOffered) == [true, true, false, true, true, true, true])
+}
+
+@MainActor
+@Test("a day screen's week strip offers no day earlier than its day picker reaches")
+func aDayScreensWeekStripOffersNoDayEarlierThanItsDayPickerReaches() throws {
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 9, day: 4)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+
+    let (place, rosterPlace) = freshPlaces()
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: saturday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+
+    #expect(screen.weekStrip.map(\.isOffered) == [false, false, false, false, true, false, true])
+
+    let (garbledPlace, garbledRosterPlace) = freshPlaces()
+    try FileManager.default.createDirectory(
+        at: garbledRosterPlace.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("not what a roster is written as".utf8).write(to: garbledRosterPlace)
+    let wednesday = CalendarDate(year: 2026, month: 9, day: 2)!
+    let garbledScreen = DayScreen(
+        startingFrom: [journaling], asOf: wednesday, keepingRecordAt: garbledPlace,
+        keepingRosterAt: garbledRosterPlace, keepingOneOffsAt: freshOneOffPlace())
+
+    #expect(garbledScreen.rosterState == .notKept)
+    #expect(garbledScreen.weekStrip.map(\.isOffered) == [false, false, false, true, true, true, true])
+}
+
+@MainActor
+@Test("a day screen moved below the earliest day its roster keeps offers the days between in its strip")
+func aDayScreenMovedBelowTheEarliestDayItsRosterKeepsOffersTheDaysBetweenInItsStrip() {
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let keptFrom = CalendarDate(year: 2026, month: 9, day: 4)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+
+    let (place, rosterPlace) = freshPlaces()
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: keptFrom)!
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: saturday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+    screen.showPreviousDay()
+    screen.showPreviousDay()
+    screen.showPreviousDay()
+
+    let strip = screen.weekStrip
+    #expect(strip.map(\.isShown) == [false, false, true, false, false, false, false])
+    #expect(strip.map(\.isOffered) == [false, false, false, true, true, true, true])
+}
+
+@MainActor
+@Test("a day screen's week strip offers the days its roster reaches once it is returned to")
+func aDayScreensWeekStripOffersTheDaysItsRosterReachesOnceItIsReturnedTo() throws {
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journalingKeptFrom = CalendarDate(year: 2026, month: 9, day: 4)!
+    let journaling = Commitment(name: "Journaling", schedule: daily, keptFrom: journalingKeptFrom)!
+    let saturday = CalendarDate(year: 2026, month: 9, day: 5)!
+
+    let (place, rosterPlace) = freshPlaces()
+    let firstRosterStore = try RosterStore(at: rosterPlace)
+    _ = try firstRosterStore.add(journaling)
+
+    let screen = DayScreen(
+        startingFrom: [], asOf: saturday, keepingRecordAt: place, keepingRosterAt: rosterPlace,
+        keepingOneOffsAt: freshOneOffPlace())
+
+    #expect(screen.weekStrip.map(\.isOffered) == [false, false, false, false, true, false, true])
+
+    let gymKeptFrom = CalendarDate(year: 2026, month: 1, day: 1)!
+    let gym = Commitment(name: "Gym", schedule: daily, keptFrom: gymKeptFrom)!
+    let secondRosterStore = try RosterStore(at: rosterPlace)
+    _ = try secondRosterStore.add(gym)
+
+    screen.returnedTo()
+
+    #expect(screen.weekStrip.map(\.isOffered) == [true, true, true, true, true, false, true])
+}
+
+@MainActor
+@Test("a day screen shows a day tapped on its week strip")
+func aDayScreenShowsADayTappedOnItsWeekStrip() {
+    let (place, rosterPlace) = freshPlaces()
+    let daily: Schedule = .weekdays([
+        .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
+    ])
+    let journaling = Commitment(
+        name: "Journaling", schedule: daily,
+        keptFrom: CalendarDate(year: 2026, month: 1, day: 1)!)!
+    let thursday = CalendarDate(year: 2026, month: 9, day: 3)!
+    let monday = CalendarDate(year: 2026, month: 8, day: 31)!
+    let sunday = CalendarDate(year: 2026, month: 9, day: 6)!
+
+    let screen = DayScreen(
+        startingFrom: [journaling], asOf: thursday, keepingRecordAt: place,
+        keepingRosterAt: rosterPlace, keepingOneOffsAt: freshOneOffPlace())
+
+    let mondaySlot = screen.weekStrip.first { $0.letter == "M" }
+    #expect(mondaySlot?.date == monday)
+    screen.showDay(mondaySlot!.date!)
+
+    #expect(
+        screen.dayView
+            == DayView(
+                of: [Roster.Group(category: nil, commitments: [journaling])], oneOffs: OneOffs(),
+                asOf: thursday, on: monday, in: History()))
+    #expect(screen.offersGoingBackToToday)
+    #expect(screen.weekStrip.map(\.isShown) == [true, false, false, false, false, false, false])
+    #expect(screen.weekStrip.map(\.isToday) == [false, false, false, true, false, false, false])
+
+    let sundaySlot = screen.weekStrip.last { $0.letter == "S" }
+    #expect(sundaySlot?.date == sunday)
+    screen.showDay(sundaySlot!.date!)
+
+    #expect(screen.weekStrip.map(\.isShown) == [false, false, false, false, false, false, true])
+}

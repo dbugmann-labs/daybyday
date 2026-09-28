@@ -698,19 +698,13 @@ struct ContentView: View {
     private var dayControls: some View {
         VStack(spacing: 8) {
             HStack {
-                Button {
-                    playSettle(towards: .previous)
-                } label: {
-                    Image(systemName: "chevron.left")
-                }
-                .buttonStyle(.borderless)
-                .accessibilityLabel("Previous day")
-                Spacer()
-                // The date row: between the chevrons, under the weekday title, and the way into
-                // the day picker — a tap opens the calendar sheet below. It says "Today" in words
-                // on today, where the toolbar offers no Today button, so the word shows once in
-                // either state. It animates nothing, whatever a page settle is doing
-                // (`design.md` § *What the shell draws*).
+                // The date row: leading, under the weekday title, and the way into the day
+                // picker — a tap opens the calendar sheet below. The chevrons that used to
+                // flank it are gone (`add-week-strip`, #346): the week strip beneath it is what
+                // shows a day move now. It says "Today" in words on today, where the toolbar
+                // offers no Today button, so the word shows once in either state. It animates
+                // nothing, whatever a page settle is doing (`design.md` § *What the shell
+                // draws*).
                 Button {
                     pickingDay = true
                 } label: {
@@ -721,17 +715,11 @@ struct ContentView: View {
                 .accessibilityLabel("Day")
                 .accessibilityValue(dateRowInWords)
                 Spacer()
-                Button {
-                    playSettle(towards: .next)
-                } label: {
-                    Image(systemName: "chevron.right")
-                }
-                .buttonStyle(.borderless)
-                .accessibilityLabel("Next day")
             }
             .sheet(isPresented: $pickingDay) {
                 dayPickerSheet
             }
+            weekStrip
             switch screen.recordState {
             case .kept:
                 EmptyView()
@@ -829,6 +817,82 @@ struct ContentView: View {
         return screen.offersGoingBackToToday ? words : "Today, \(words)"
     }
 
+    /// The week strip: `screen.weekStrip`'s seven days, one equal-width column each, under the
+    /// date row (`add-week-strip`, #346). Reads `screen.weekStrip` and nothing else, so it redraws
+    /// when the day lands and never during the day swipe — `design.md` § *The shell*. Indexed by
+    /// position rather than by the day itself: two days past either end of the calendar carry the
+    /// same letter and no date, and so compare equal, which `ForEach(id: \.self)` cannot tell
+    /// apart.
+    private var weekStrip: some View {
+        HStack(spacing: 4) {
+            ForEach(Array(screen.weekStrip.enumerated()), id: \.offset) { _, day in
+                weekStripDay(day)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+    }
+
+    /// One day of the week strip: its letter over its day of the month, where it has one — a day
+    /// past either end of the calendar draws its letter alone (`design.md` § *Past either end of
+    /// the calendar: the letter, and no date*). The day being shown draws in a capsule, the
+    /// text colour inverted inside it, blue where that day is also the today; the today alone,
+    /// where it is not also being shown, draws its letter and its number in blue with no capsule.
+    /// A day neither shown nor offered takes ADR-1045 decision 5's opacity and no tap — the shown
+    /// day's own cell is excluded from that fade and is not a target either, since a screen draws
+    /// as a target only what it offers (`CONTEXT.md` § *Offered*) and it has nowhere to go.
+    /// **A tap commits a focused one-off field for departure, then calls `showDay`, and animates
+    /// nothing** — `design.md` § *The shell*: a strip tap is the day picker's act, with no settle
+    /// of its own.
+    private func weekStripDay(_ day: DayScreen.WeekStripDay) -> some View {
+        let textColor: Color =
+            if day.isShown {
+                Color(.systemBackground)
+            } else if day.isToday {
+                .accentColor
+            } else {
+                .primary
+            }
+        let label = VStack(spacing: 2) {
+            Text(day.letter)
+                .font(.caption2)
+            Text(day.date.map { String($0.day) } ?? "")
+                .font(.body)
+        }
+        .foregroundStyle(textColor)
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity)
+        .background {
+            if day.isShown {
+                Capsule().fill(day.isToday ? Color.accentColor : Color.primary)
+            }
+        }
+        .opacity(day.isShown || day.isOffered ? 1 : 0.5)
+
+        return Group {
+            if day.isOffered, let date = day.date {
+                Button {
+                    commitFocusedOneOffField(forDeparture: true)
+                    screen.showDay(date)
+                } label: {
+                    label
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(weekStripDayAccessibilityLabel(for: date))
+            } else {
+                label
+            }
+        }
+    }
+
+    /// A week strip day's accessibility label: its date in full, "31 August 2026", the date
+    /// row's own words minus the year-first day-of-week word — so VoiceOver says the day rather
+    /// than its letter, which two of the seven share (`design.md` § *The shell*).
+    private func weekStripDayAccessibilityLabel(for calendarDate: CalendarDate) -> String {
+        date(from: calendarDate)
+            .formatted(
+                Date.FormatStyle().day().month(.wide).year().locale(Locale(identifier: "en_GB")))
+    }
+
     /// The day picker, opened from the date row: a graphical calendar in a medium sheet, bounded
     /// by `screen.dayPickerReach`, which the shell computes neither end of, per ADR-1019's
     /// 2026-09-04 amendment. Picking a day commits any focused one-off field as every other day
@@ -858,14 +922,6 @@ struct ContentView: View {
         .labelsHidden()
         .padding()
         .presentationDetents([.medium])
-    }
-
-    /// The day the finger is asked to carry towards: `.previous` reveals `screen.previousDayView`
-    /// and moves the page rightward under it; `.next` reveals `screen.nextDayView` and moves the
-    /// page leftward. `design.md` § *What the shell draws*: leftwards onto the next day,
-    /// rightwards onto the previous — a chevron tap plays the same settle a completed drag does.
-    private enum Neighbour {
-        case previous, next
     }
 
     /// Three lists in a row — the day before, the day being shown and the day after — each the
@@ -1684,29 +1740,6 @@ struct ContentView: View {
                     settle(to: 0, then: nil)
                 }
             }
-    }
-
-    /// Plays a chevron tap's settle: the same full-page slide a carried drag ends with, in the
-    /// same direction — leftwards onto the next day, rightwards onto the previous
-    /// (`design.md` § *What the shell draws*). Where there is no day view on that side the page
-    /// has nowhere to go, so the day is moved directly with no slide to play — `showPreviousDay()`
-    /// and `showNextDay()` are themselves already a no-op there.
-    private func playSettle(towards neighbour: Neighbour) {
-        commitFocusedOneOffField(forDeparture: true)
-        switch neighbour {
-        case .previous:
-            guard screen.previousDayView != nil else {
-                screen.showPreviousDay()
-                return
-            }
-            settle(to: pageWidth) { screen.showPreviousDay() }
-        case .next:
-            guard screen.nextDayView != nil else {
-                screen.showNextDay()
-                return
-            }
-            settle(to: -pageWidth) { screen.showNextDay() }
-        }
     }
 
     /// Slides `dragTranslation` to `target` and, once that finishes, resets it to zero and runs
