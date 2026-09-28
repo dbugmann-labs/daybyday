@@ -256,10 +256,10 @@ struct ContentView: View {
     // losing focus; without this, the second finds the field already emptied by the first — a
     // harmless no-op for an add, but not for a rename, which a blank text removes outright.
     @State private var justCommittedOneOffField = false
-    // The day picker's identity, bumped on every day picked so SwiftUI rebuilds the picker and
-    // with it drops the calendar it popped open: a compact `DatePicker` offers no way to close
-    // that calendar, and left alone it stays open over the day it has just moved to.
-    @State private var dayPickerIdentity = 0
+    // Whether the calendar sheet the date row opens is showing — `dayControls`' own `Button`
+    // sets it, and a day picked in the sheet clears it, so the sheet never stays open over the
+    // day it has just moved to.
+    @State private var pickingDay = false
     // The paged day content's own width, measured off `GeometryReader` and used both to size the
     // full slide a carry or a chevron tap settles to and as the threshold a drag must cross to
     // carry. `dragTranslation` is the live offset applied to the three-list `HStack`: the drag's
@@ -328,29 +328,22 @@ struct ContentView: View {
                     CommitmentsView(screen: commitmentsScreen, birthdaySwitch: birthdaySwitch)
                 }
             }
+            // The day is the title: the weekday in full, large, over the date row `dayControls`
+            // draws beneath it. `screen.title` ("Fri") stays the kit's and is no longer drawn.
+            .navigationTitle(weekdayInWords)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 // The way back to today: a plain text button on the toolbar's left, where it
-                // is offered. On today itself, where it is not (§ *Offered*), the same slot
-                // holds a green pill that says "you are on today" and offers no tap. Still
-                // gated on `screen.offersGoingBackToToday` and still calls exactly what the
-                // button under the day row used to.
+                // is offered. On today itself, where it is not (§ *Offered*), the slot is empty
+                // and the date row says "Today" in words instead — green is the kept checkmark's
+                // alone (ADR-1045). Still gated on `screen.offersGoingBackToToday` and still
+                // calls exactly what the button under the day row used to.
                 ToolbarItem(placement: .topBarLeading) {
                     if screen.offersGoingBackToToday {
                         Button("Today") {
                             commitFocusedOneOffField(forDeparture: true)
                             screen.showToday()
                         }
-                    } else {
-                        // Drawn by the toolbar as a prominent button so it sits exactly where
-                        // the Today button does, but it takes no touch and reads as a label, not
-                        // a control. Not `.disabled`: that washes any tint to grey.
-                        Button("Today") {}
-                            .buttonStyle(.glassProminent)
-                            .tint(.green)
-                            .allowsHitTesting(false)
-                            .accessibilityRemoveTraits(.isButton)
-                            .accessibilityAddTraits(.isStaticText)
-                            .accessibilityIdentifier("TodayMarker")
                     }
                 }
                 ToolbarItem {
@@ -694,7 +687,7 @@ struct ContentView: View {
     }
 
     /// The controls that stay put while the day's rows page beneath them: the chevrons and the
-    /// day picker, and the two store messages — facts about the
+    /// date row that opens the day picker, and the store messages — facts about the
     /// screen rather than about a day. `design.md` § *What the shell draws*: "the icons travel,
     /// the dock stays." Drawn outside the paged `List`s entirely, on purpose — ADR-1019's amended
     /// guard is that nothing here decides anything a test cannot already see decided behind the
@@ -711,38 +704,22 @@ struct ContentView: View {
                     Image(systemName: "chevron.left")
                 }
                 .buttonStyle(.borderless)
+                .accessibilityLabel("Previous day")
                 Spacer()
-                Text(screen.title)
-                // The day picker: between the chevrons and beside the short weekday title, and
-                // what says the date now that the title says only the weekday
-                // (`shorten-day-title/grill.md` § *Settled* 5). Bounded by `screen.dayPickerReach`,
-                // which the shell computes neither end of, per ADR-1019's 2026-09-04 amendment.
-                // `.labelsHidden()` because the weekday text beside it already labels the row; the
-                // default (non-`.graphical`) style is what B-040 asked for and B-007 explicitly
-                // left out. The picker always replaces where it stands and animates nothing,
-                // whatever a page settle is doing (`design.md` § *What the shell draws*).
-                DatePicker(
-                    "Day",
-                    selection: Binding(
-                        get: { date(from: screen.dayPickerReach.opensOn) },
-                        set: { newDate in
-                            let components = Calendar.current.dateComponents(
-                                [.year, .month, .day], from: newDate)
-                            guard
-                                let picked = CalendarDate(
-                                    year: components.year!, month: components.month!,
-                                    day: components.day!)
-                            else { return }
-                            commitFocusedOneOffField(forDeparture: true)
-                            screen.showDay(picked)
-                            dayPickerIdentity += 1
-                        }
-                    ),
-                    in: date(from: screen.dayPickerReach.earliest)...,
-                    displayedComponents: [.date]
-                )
-                .labelsHidden()
-                .id(dayPickerIdentity)
+                // The date row: between the chevrons, under the weekday title, and the way into
+                // the day picker — a tap opens the calendar sheet below. It says "Today" in words
+                // on today, where the toolbar offers no Today button, so the word shows once in
+                // either state. It animates nothing, whatever a page settle is doing
+                // (`design.md` § *What the shell draws*).
+                Button {
+                    pickingDay = true
+                } label: {
+                    Text(dateRowInWords)
+                }
+                .buttonStyle(.borderless)
+                .accessibilityIdentifier("DayDate")
+                .accessibilityLabel("Day")
+                .accessibilityValue(dateRowInWords)
                 Spacer()
                 Button {
                     playSettle(towards: .next)
@@ -750,6 +727,10 @@ struct ContentView: View {
                     Image(systemName: "chevron.right")
                 }
                 .buttonStyle(.borderless)
+                .accessibilityLabel("Next day")
+            }
+            .sheet(isPresented: $pickingDay) {
+                dayPickerSheet
             }
             switch screen.recordState {
             case .kept:
@@ -822,19 +803,61 @@ struct ContentView: View {
             }
         }
         .padding(.horizontal)
-        .padding(.top, 24)
-        // The gap below the last of these controls — `Today` where it shows, otherwise the day
-        // row itself — down to where `pagedDayContent` starts. Lifting the four controls out of
-        // the `List` (`tasks.md` § 4.1) took the `List`'s own top content margin out with them,
-        // and the phone walk (PR #194) reported what was left too tight. Not measured against a
-        // booted Simulator the way #180 and ADR-1043's chore did, and the way the category
-        // heading's inset below is ("Measured on this SDK"): the constraint is the session's, not
-        // the machine's — a cold Simulator boot is silent long enough to trip this harness's own
-        // stream watchdog, and ADR-1019 records the Simulator booting here without issue
-        // otherwise. So this reuses the 24pt already established above, for the same visual
-        // weight on both sides of this fixed block. The second phone walk (PR #194) confirmed it
-        // on a paired iPhone: the gap reads right on both a today and a non-today day.
-        .padding(.bottom, 24)
+        // No gap above: the large title carries the space the 24pt here used to. And 12pt below,
+        // down to where `pagedDayContent` starts — half the 24pt the phone walk on PR #194 chose
+        // when the dock stood alone under an empty bar, now that the title sits over it. A
+        // starting point for the owner to tune on the phone, not a measurement.
+        .padding(.bottom, 12)
+    }
+
+    /// The navigation title: the shown day's weekday in full, "Friday". Formatted here from
+    /// `screen.dayPickerReach.opensOn` — the day being shown — through `date(from:)`, in British
+    /// English because every word the kit draws is English ("Every day", "14 March 2026") and a
+    /// weekday in the device's own language beside them would be the worse mix.
+    private var weekdayInWords: String {
+        date(from: screen.dayPickerReach.opensOn)
+            .formatted(Date.FormatStyle().weekday(.wide).locale(Locale(identifier: "en_GB")))
+    }
+
+    /// The date row's words: "25 September 2026", the look-back's form, and
+    /// "Today, 25 September 2026" on today — where `screen.offersGoingBackToToday` is false and
+    /// the toolbar offers no Today button, so "Today" is said here and only here.
+    private var dateRowInWords: String {
+        let words = date(from: screen.dayPickerReach.opensOn)
+            .formatted(
+                Date.FormatStyle().day().month(.wide).year().locale(Locale(identifier: "en_GB")))
+        return screen.offersGoingBackToToday ? words : "Today, \(words)"
+    }
+
+    /// The day picker, opened from the date row: a graphical calendar in a medium sheet, bounded
+    /// by `screen.dayPickerReach`, which the shell computes neither end of, per ADR-1019's
+    /// 2026-09-04 amendment. Picking a day commits any focused one-off field as every other day
+    /// move does, shows that day and closes the sheet.
+    private var dayPickerSheet: some View {
+        DatePicker(
+            "Day",
+            selection: Binding(
+                get: { date(from: screen.dayPickerReach.opensOn) },
+                set: { newDate in
+                    let components = Calendar.current.dateComponents(
+                        [.year, .month, .day], from: newDate)
+                    guard
+                        let picked = CalendarDate(
+                            year: components.year!, month: components.month!,
+                            day: components.day!)
+                    else { return }
+                    commitFocusedOneOffField(forDeparture: true)
+                    screen.showDay(picked)
+                    pickingDay = false
+                }
+            ),
+            in: date(from: screen.dayPickerReach.earliest)...,
+            displayedComponents: [.date]
+        )
+        .datePickerStyle(.graphical)
+        .labelsHidden()
+        .padding()
+        .presentationDetents([.medium])
     }
 
     /// The day the finger is asked to carry towards: `.previous` reveals `screen.previousDayView`

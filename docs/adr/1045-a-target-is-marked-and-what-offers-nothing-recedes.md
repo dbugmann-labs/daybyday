@@ -4,6 +4,12 @@
   2026-09-09, where that Story dissolved; this record is written by `chore/mark-the-offered-row`,
   which that grill named in its place
 - Date: 2026-09-09
+- Amended: 2026-09-28 — the green *Today* pill #312 put in the toolbar's leading slot on today
+  leaves it, and that slot is empty on today again. "Today" is said in words on the date row under
+  the title instead — "Today, 25 September 2026" — and the *Today* button still takes the slot off
+  today, so the word shows once in either state. Green goes back to meaning a checkmark — the kept
+  row's, *this day is done* (decision 8), and the toolbar's while a one-off name field is open —
+  and never a place on the calendar. Written by `chore/day-as-title`.
 - Amended: 2026-09-23 — a note commitment's look-back lists its notes under a **count**, "38
   notes", which is the first figure a look-back says beside something other than a fraction. It was
   the owner's call at the grill, against the recommendation that the list's length already says it,
