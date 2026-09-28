@@ -56,8 +56,8 @@ scenario box, write the one test named for it, watch it fail, make it pass.
 
 ## 8. Gates and the archive handover
 
-- [ ] 8.1 `openspec validate page-the-week-strip --strict` exits 0, and `pnpm run checks` is clean
-- [ ] 8.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
+- [x] 8.1 `openspec validate page-the-week-strip --strict` exits 0, and `pnpm run checks` is clean
+- [x] 8.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing, its count read off the run
 - [ ] 8.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
 - [ ] 8.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.5 by the conductor — and the walk comment's URL is in W.6. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/day-screen/spec.md` gained this delta's three requirements whole and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
