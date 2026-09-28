@@ -909,7 +909,8 @@ Things that are built, or deliberately not built, in a state someone will trip o
   once its settle animation finishes (`ContentView.swift`, `settle(to:then:)`, about 0.35 s). A
   control that jumps and is tapped inside that window runs first: a week strip day or the `Today`
   button calls `showDay`/`showToday`, and then the settle's `showNextDay()` or `showPreviousDay()`
-  runs on top, so the screen ends one day past where the tap asked. The `Today` button has had this
+  runs on top, so the screen ends one day off where the tap asked: past it after a leftward swipe,
+  short of it after a rightward one. The `Today` button has had this
   since the swipe landed; the week strip makes it easier to hit because it sits right above where
   the thumb swipes. No test covers it, and fixing it means cancelling or ignoring a pending settle
   for every control that jumps, not only for the strip. Found at `add-week-strip`'s (#346) G7,
