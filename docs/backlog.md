@@ -255,9 +255,9 @@ it as a gap rather than saying it unprompted.*
 - **Principle** — tested against *an iPhone, in your hand*: **passes.** A day screen is rows from top
   to bottom, so a thumb starting a swipe has nowhere to land that is not a row; a swipe that ticks
   what it started on turns moving between days into an entry nobody meant.
-- **Open** — is it only a one-off row? The quote names one-offs; whether a commitment's tick or a
-  birthday's does the same is a fact to find before the grill, not a question for the owner.
-- **Open** — does the day still move as well, or does the tick take the gesture instead of the swipe?
+- **Answered 2026-09-28, by the owner** — **only one-off rows**: a swipe started on a commitment's or
+  a birthday's tick does not tick it. **The swipe still happens**: the day moves *and* the one-off is
+  ticked or unticked, so the gesture is read twice rather than taken by the wrong one.
 - **Open** — can it be shown in the Simulator? XCUITest's synthetic drags have not matched a thumb
   before (B-041), so this may be a `phone:` step.
 
