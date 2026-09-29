@@ -50,4 +50,4 @@ A fresh install, calendar access reset, and the simulator's On My iPhone holding
 - [ ] W.7 phone: a copy restored from Settings, the sheet closed with Done — the day screen drawing what the copy holds.
 - [ ] W.8 phone: birthdays turned on in Settings with calendar access given, the sheet swiped down — the Birthdays group on a day a birthday falls.
 - [ ] W.9 phone: calendar access turned off for DayByDay — Settings shows the refused line, and "Open iPhone Settings" opens DayByDay's page in the phone's Settings.
-- [ ] W.10 **The handover** — W.1–W.6, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.7–W.9 are the human's at G7; the conductor ticks them on the G7 approval.
+- [x] W.10 **The handover** — W.1–W.6, taken on the final build, are posted to the PR with `pnpm run walk -- --post-only <pr>`, never `gh pr comment --attach`, before hand-back, and this box is ticked on that comment's URL. W.7–W.9 are the human's at G7; the conductor ticks them on the G7 approval.
