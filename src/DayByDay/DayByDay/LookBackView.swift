@@ -11,15 +11,16 @@ import DayByDayKit
 /// **Layout is Option B of the G7 proposal** (PR #280), amended by the `look-back-layout` shell
 /// chore, by `look-back-name-twice`, again by `look-back-at-a-quota`'s Option A (the same table,
 /// with week rows added — `design.md` § *What the shell draws*), and now by `look-back-one-title`.
-/// The name is drawn once, as the navigation bar's title with the rhythm as its
-/// `navigationSubtitle`, replacing #290's name-twice — a `.largeTitle` in the body beneath the
-/// bar's own — and #289's name in the bar with the rhythm as the body's first line. The bar is set
-/// `.large`, and on a page that fits the screen it draws inline and centred until a scroll and
-/// back; the owner judges that on the phone. The dates and the whole are one card of
-/// label-and-value rows — "Kept from", "Kept until" where stopped, "The whole" where the look-back
-/// says one — wide enough that no date wraps (walk W.3 on PR #280); a commitment still kept draws
-/// only the "Kept from" row rather than a "—" that would say nothing. A tick's page has that card
-/// and nothing else above its lines.
+/// The name is drawn once, as the navigation bar's large title, and collapses into the bar on
+/// scroll, replacing #290's name-twice — a `.largeTitle` in the body beneath the bar's own. The
+/// rhythm is the body's first line, small and secondary under it: #289's arrangement, taken again
+/// because a `navigationSubtitle` holds the bar's title inline and centred at rest on iOS 26, on
+/// a page that fits and one that scrolls alike, and goes large only after a scroll and back. The
+/// dates and the whole are one card of label-and-value rows — "Kept from", "Kept until" where
+/// stopped, "The whole" where the look-back says one — wide enough that no date wraps (walk W.3 on
+/// PR #280); a commitment still kept draws only the "Kept from" row rather than a "—" that would
+/// say nothing. A tick's page has that card and nothing else above its lines. The card's outer
+/// vertical padding is 6pt, so the edge to a row's text is about the 12pt between two rows.
 /// The heading over the lines — "Weeks", "Months" or "Months and weeks" — and the `Grid` carry the
 /// same horizontal inset as the card's own inner padding, so the line labels and the card labels
 /// share a left edge and the fractions share the card's right edge. Still a hand-drawn
@@ -118,7 +119,15 @@ struct LookBackView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 if let lookBack {
-                    headCard(lookBack)
+                    // The rhythm sits directly under the bar's large title, close over the head
+                    // card so it reads as the title's subtitle rather than a block of its own — the page
+                    // takes no top padding of its own, the bar's large title leaves room enough.
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(lookBack.rhythmInWords)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        headCard(lookBack)
+                    }
                     if let graph = lookBack.graph {
                         graphSection(graph)
                     } else if case .number = commitment.kind {
@@ -136,12 +145,11 @@ struct LookBackView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
+            .padding([.horizontal, .bottom])
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle(lookBack?.name ?? "")
         .navigationBarTitleDisplayMode(.large)
-        .navigationSubtitle(Text(lookBack?.rhythmInWords ?? ""))
     }
 
     /// The one card at the head of the page: "Kept from", "Kept until" where the commitment is
@@ -161,7 +169,8 @@ struct LookBackView: View {
                 dateRow(label: "The whole", value: whole, valueFont: .title3.monospacedDigit())
             }
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
