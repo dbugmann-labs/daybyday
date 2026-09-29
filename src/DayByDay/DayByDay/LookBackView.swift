@@ -24,9 +24,8 @@ import DayByDayKit
 /// The heading over the lines — "Weeks", "Months" or "Months and weeks" — and the `Grid` carry the
 /// same horizontal inset as the card's own inner padding, so the line labels and the card labels
 /// share a left edge and the fractions share the card's right edge. Still a hand-drawn
-/// `ScrollView` and `Grid` rather than the platform `List` the rest of the shell is built from, so
-/// the whole — the one summary figure this screen has — can be set larger than the other rows'
-/// values. Every card and row draws exactly what `LookBack` hands it — nothing here composes
+/// `ScrollView` and `Grid` rather than the platform `List` the rest of the shell is built from.
+/// The whole draws at the dates' size, in monospaced digits. Every card and row draws exactly what `LookBack` hands it — nothing here composes
 /// a string of its own, `say-nothing-where-the-rhythm-changed` (#300) having taken the one line
 /// that did.
 ///
@@ -166,7 +165,7 @@ struct LookBackView: View {
             }
             if let whole = lookBack.whole {
                 Divider()
-                dateRow(label: "The whole", value: whole, valueFont: .title3.monospacedDigit())
+                dateRow(label: "The whole", value: whole, valueFont: .body.monospacedDigit())
             }
         }
         .padding(.horizontal, 16)
