@@ -261,11 +261,64 @@ it as a gap rather than saying it unprompted.*
 - **Open** — can it be shown in the Simulator? XCUITest's synthetic drags have not matched a thumb
   before (B-041), so this may be a `phone:` step.
 
+### B-066 — come back from Commitments to a day screen that is whole at once
+
+*Captured 2026-09-28.*
+
+> "When moving from commitmens back to the day screen, the heading (e.g. Monday) is loaded after
+> the rest, with a small delay - this is not so nice visually"
+
+- **Trigger** — leaving the Commitments screen for the day screen, when the rows are drawn and the
+  day title ("Monday") arrives a moment after them. A defect the owner saw on the phone, not a new
+  thing to do.
+- **Touches** — `day-screen`, and only the app shell. *A day screen says which day it is showing*
+  says what the title is and never when it is drawn, so no requirement is broken; how the title
+  lands during the return is shell work, a chore under ADR-1019 the way B-050 was. It sits beside
+  B-061, B-062 and B-064 as a defect in how the day screen is drawn rather than in what it says.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** The day title is how the
+  screen says which day a tick lands on, and a screen that settles in two steps reads as a screen
+  still loading, on a return made several times a day.
+- **Open** — is it every return from Commitments, or only some — after a change was saved there,
+  on the first return after launch, only when the day shown is not today?
+- **Open** — does the same late title show on returning from a look back or any other pushed
+  screen, or only from Commitments? That decides whether the chore is about one transition or all
+  of them.
+- **Open** — can it be shown in the Simulator? A delay this short may only be visible on the phone,
+  which would make it a `phone:` step.
+
+### B-068 — land on the day I tapped, even while a swipe is still settling
+*Captured 2026-09-28, from the twenty-first grooming sweep. The wording is the sweep's.*
+
+> "A jump tapped during a swipe's settle lands one day off."
+
+- **Trigger** — a week strip day or `Today` tapped within the ~0.35 s a carried swipe takes to
+  settle. The jump runs first, then the settle's `showNextDay()` or `showPreviousDay()` runs on top,
+  so the screen ends one day past the tap after a leftward swipe and one short after a rightward one.
+  Found at `add-week-strip`'s (#346) G7 and left out of its fix round by the owner; recorded in
+  `docs/open-questions.md` as wanting "a Story or a shell chore of its own".
+- **Touches** — `day-screen`, and probably only the app shell: the settle is `settle(to:then:)` in
+  `ContentView.swift`, and no requirement says when a jump lands. Same paging as B-061, B-062 and
+  B-064, and it queues behind #347 `page-the-week-strip`, which adds a second horizontal gesture.
+- **Principle** — tested against *an iPhone, in your hand*: **passes.** The strip sits right above
+  where the thumb swipes, so a quick tap after a swipe is the ordinary case, and a screen a day off
+  is where a tick lands on the wrong day.
+- **Open** — the fix is for every control that jumps, not only the strip: cancel the pending
+  settle, or ignore it once a jump has run.
+- **Open** — can it be shown in the Simulator inside 0.35 s, or is it a `phone:` step?
+
 ## Decided
 
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-29 — open Commitments to the roster alone, and the app's settings somewhere of their own
+  (B-067) → Story #353 `add-settings-screen` under `FEAT: restore` (#264), reopened with
+  `EPIC: Restore` (#263). The copy place, making, taking out and restoring a copy, the birthday switch
+  and a version line move to **Settings**, a screen reached from the day screen beside Commitments and
+  from nowhere else. Restore moves with the rest (P6's Route A), so the one requirement placing any of
+  it, restore's *A day screen that is not keeping a store says a copy can be restored and where*, is
+  changed rather than kept true by leaving Restore behind. `CONTEXT.md` gained **Settings**.
 
 - 2026-09-28 — see the week the shown day lies in, and go to any day of it in one tap (B-065) →
   Stories #346 `add-week-strip` and #347 `page-the-week-strip`, blocked by #346, under
@@ -1291,3 +1344,20 @@ found nothing.
   - **Not re-judged** — B-039, B-041, B-054, and B-061..B-064, captured since the last pass; a
     targeted pass holds one entry. B-061, B-062 and B-064 all change the day screen's paging, which
     #346 also touches, so they queue behind it if they become Stories rather than shell chores.
+- 2026-09-29 — targeted pass over B-067 (`/atlas backlog B-067`), groomed on `chore/backlog`
+  (PR #352) in the session that captured it, `origin/main` at 00dc206.
+  - **Sweep** — one new silence since the B-065 sweep: `docs/open-questions.md`'s *A jump tapped
+    during a swipe's settle lands one day off*, found at #346's G7, said it wanted a Story or chore of
+    its own. The owner confirmed it and it was captured as B-068. #345, #348 and #350 merged since, and
+    the day-one week and the lifecycle verbs turned up nothing new.
+  - **Promoted** — B-067 → #353 under #264, reopened with #263, blocked by nothing. Six questions over
+    two rounds and one fact agent, every answer as recommended: the name is **Settings**, and the
+    phone's own is *the phone's Settings*; the version line rides in the Story; reached from the day
+    screen only; `FEAT: restore` because the Story's one delta is that spec's; one Story, not P6's
+    Route B chore followed by a Story; one term. The fact agent found restore's requirement at
+    `:1318` is the only one that places any of this, and that the birthday refused line's
+    *Open Settings* is in no spec. Presented at G2 without `/to-tickets`, as B-056, B-060 and B-065
+    were. `CONTEXT.md` gained **Settings**; *Commitments screen*, *Copy place*, *Restore*,
+    *Take-out* and *Birthday* were amended.
+  - **Not re-judged** — B-039, B-041, B-054, B-061..B-064, B-066, B-068. #353 and #347 share no
+    spec; both change `ContentView.swift`, in different regions, so a rebase covers it.
