@@ -723,74 +723,94 @@ struct ContentView: View {
                 dayPickerSheet
             }
             weekStripRowWithChevrons
-            switch screen.recordState {
-            case .kept:
-                EmptyView()
-            case .unreadable:
-                Text("The record could not be read.")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            case .writtenByALaterVersion:
-                Text("The record was written by a newer version of DayByDay and must not be deleted.")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
+            // The store lines, held in one card and drawn only while one of them applies — the
+            // same states the switches below read, so the card can neither appear empty nor hide
+            // a line. Words alone, offering nothing to act on (`restore/spec.md`); the causes red,
+            // the way out grey, no colour of its own. The look-back's radius; its fill would vanish here, on
+            // the plain `systemBackground` the controls stand on, so the fill is the next step grey.
+            if storeLinesApply {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                    VStack(alignment: .leading, spacing: 8) {
+                    switch screen.recordState {
+                    case .kept:
+                        EmptyView()
+                    case .unreadable:
+                        Text("The record could not be read.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    case .writtenByALaterVersion:
+                        Text("The record was written by a newer version of DayByDay and must not be deleted.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
 
-            switch screen.rosterState {
-            case .kept:
-                EmptyView()
-            case .notKept:
-                Text("The roster could not be read or could not be written.")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            case .writtenByALaterVersion:
-                Text("The roster was written by a newer version of DayByDay and must not be deleted.")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
+                    switch screen.rosterState {
+                    case .kept:
+                        EmptyView()
+                    case .notKept:
+                        Text("The roster could not be read or could not be written.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    case .writtenByALaterVersion:
+                        Text("The roster was written by a newer version of DayByDay and must not be deleted.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
 
-            switch screen.oneOffState {
-            case .kept:
-                EmptyView()
-            case .unreadable:
-                Text("The one-offs could not be read.")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            case .writtenByALaterVersion:
-                Text("The one-offs were written by a newer version of DayByDay and must not be deleted.")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
+                    switch screen.oneOffState {
+                    case .kept:
+                        EmptyView()
+                    case .unreadable:
+                        Text("The one-offs could not be read.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    case .writtenByALaterVersion:
+                        Text("The one-offs were written by a newer version of DayByDay and must not be deleted.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
 
-            // The three birthday lines, after the one-off lines — `design.md` § *The shell*.
-            // `.off` and `.on` say nothing: birthdays being off is not a fault, and the group
-            // itself already says they are on.
-            switch screen.birthdayState {
-            case .off, .on:
-                EmptyView()
-            case .calendarUnreadable:
-                Text("Birthdays could not be read.")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            case .ticksUnreadable:
-                Text("The birthday ticks could not be read.")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            case .ticksWrittenByALaterVersion:
-                Text(
-                    "The birthday ticks were written by a newer version of DayByDay and must not be deleted."
-                )
-                .font(.caption)
-                .foregroundStyle(.red)
-            }
+                    // The three birthday lines, after the one-off lines — `design.md` § *The shell*.
+                    // `.off` and `.on` say nothing: birthdays being off is not a fault, and the group
+                    // itself already says they are on.
+                    switch screen.birthdayState {
+                    case .off, .on:
+                        EmptyView()
+                    case .calendarUnreadable:
+                        Text("Birthdays could not be read.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    case .ticksUnreadable:
+                        Text("The birthday ticks could not be read.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    case .ticksWrittenByALaterVersion:
+                        Text(
+                            "The birthday ticks were written by a newer version of DayByDay and must not be deleted."
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                    }
 
-            // The one line pointing at the way out — `design.md` § *What the shell draws*: the
-            // secondary grey, not the red the causes above take, so the way out does not read as a
-            // third thing wrong.
-            if screen.saysACopyCanBeRestored {
-                Text("A copy can be restored from Settings")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    // The one line pointing at the way out — `design.md` § *What the shell draws*: the
+                    // secondary grey, not the red the causes above take, so the way out does not read as a
+                    // third thing wrong.
+                    if screen.saysACopyCanBeRestored {
+                        Text("A copy can be restored from Settings")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    Color(.secondarySystemBackground),
+                    in: RoundedRectangle(cornerRadius: 12))
             }
         }
         .padding(.horizontal)
@@ -799,6 +819,35 @@ struct ContentView: View {
         // when the dock stood alone under an empty bar, now that the title sits over it. A
         // starting point for the owner to tune on the phone, not a measurement.
         .padding(.bottom, 12)
+    }
+
+    /// Whether any store line `dayControls` draws applies — the four states its switches read and
+    /// the way-out line, each state switched exhaustively, so a case added to one of them stops
+    /// this compiling rather than leaving the card empty or a line hidden.
+    private var storeLinesApply: Bool {
+        let recordFaulty: Bool
+        switch screen.recordState {
+        case .kept: recordFaulty = false
+        case .unreadable, .writtenByALaterVersion: recordFaulty = true
+        }
+        let rosterFaulty: Bool
+        switch screen.rosterState {
+        case .kept: rosterFaulty = false
+        case .notKept, .writtenByALaterVersion: rosterFaulty = true
+        }
+        let oneOffsFaulty: Bool
+        switch screen.oneOffState {
+        case .kept: oneOffsFaulty = false
+        case .unreadable, .writtenByALaterVersion: oneOffsFaulty = true
+        }
+        let birthdaysFaulty: Bool
+        switch screen.birthdayState {
+        case .off, .on: birthdaysFaulty = false
+        case .calendarUnreadable, .ticksUnreadable, .ticksWrittenByALaterVersion:
+            birthdaysFaulty = true
+        }
+        return recordFaulty || rosterFaulty || oneOffsFaulty || birthdaysFaulty
+            || screen.saysACopyCanBeRestored
     }
 
     /// The navigation title: the shown day's weekday in full, "Friday". Formatted here from
@@ -1166,8 +1215,9 @@ struct ContentView: View {
 
     /// One day's rows, in a plain `List` — the same groups, the same per-row rendering and the
     /// same `ForEach(Array(group.rows.enumerated()), id: \.offset)` keying this screen has always
-    /// used, now driven by whichever of the three day views this list was handed. `nil` — only
-    /// possible at either end of the calendar — draws an empty list; the drag never reveals it,
+    /// used, now driven by whichever of the three day views this list was handed. Where the day
+    /// holds nothing the list says one thing instead — "Nothing is due on this day." — and `nil`
+    /// — only possible at either end of the calendar — draws an empty list, no line; the drag never reveals it,
     /// because it resists at that end (`daySwipeGesture`). No list here needs telling whether it
     /// is the one shown any more: the one-off entry no longer lives inside any of the three —
     /// it is `oneOffBar`, pinned at the foot of the whole screen (ADR-1063) — and a rename on a
@@ -1257,6 +1307,21 @@ struct ContentView: View {
                         Text(oneOffGroup.heading)
                             .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 6, trailing: 16))
                     }
+                }
+                // The one line where the rows would be, drawn exactly when every group above is
+                // absent — the kit hands a day with nothing due "no groups and no rows"
+                // (`day-screen/spec.md`), read here the way the One-offs check above reads its
+                // own empty group. Not while the roster cannot be read: the store banner in
+                // `dayControls` says why the list is empty, and this would only contradict it.
+                // One sentence for every day, on purpose: saying "is due" of today and "was due"
+                // of a past day would need this view to compare the list's date with `today()`,
+                // and a wrong tense is a thing a test would catch — not a thing the shell may decide.
+                if dayView.groups.isEmpty && dayView.birthdayGroup == nil
+                    && (dayView.oneOffGroup?.rows.isEmpty ?? true) && screen.rosterState == .kept
+                {
+                    Text("Nothing is due on this day.")
+                        .foregroundStyle(.secondary)
+                        .listRowBackground(Color.clear)
                 }
             }
         }
