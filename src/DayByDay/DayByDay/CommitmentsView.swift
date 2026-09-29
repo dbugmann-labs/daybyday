@@ -11,6 +11,31 @@ private enum RhythmKind: String, CaseIterable, Identifiable, Hashable {
     case weeklyQuota = "Times a week"
 
     var id: String { rawValue }
+
+    /// The word a segment draws: four of them share one row, so the longer names shorten. What
+    /// the segment selects is still the case.
+    var segmentName: String {
+        switch self {
+        case .weekdays: "Weekdays"
+        case .dayOfMonth: "Monthly"
+        case .everyNDays: "Every N"
+        case .weeklyQuota: "Per week"
+        }
+    }
+}
+
+/// Segments where the text has room, the menu today's sheet draws where it does not: at an
+/// accessibility text size four words no longer fit one row. A drawing rule only.
+private struct SegmentedUnlessLarge: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    func body(content: Content) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            content.pickerStyle(.menu)
+        } else {
+            content.pickerStyle(.segmented)
+        }
+    }
 }
 
 private let allWeekdays: [Weekday] = [
@@ -684,6 +709,7 @@ private struct CommitmentSheet: View {
                             Text(kindChoiceName(kind)).tag(kind)
                         }
                     }
+                    .modifier(SegmentedUnlessLarge())
                     .disabled(changing != nil)
 
                     // Plain `TextField`s bound to `String`: no formatter, and nothing that blocks a
@@ -770,9 +796,10 @@ private struct CommitmentSheet: View {
                 Section {
                     Picker("Rhythm", selection: $rhythmKind) {
                         ForEach(RhythmKind.allCases) { kind in
-                            Text(kind.rawValue).tag(kind)
+                            Text(kind.segmentName).tag(kind)
                         }
                     }
+                    .modifier(SegmentedUnlessLarge())
                     .disabled(!canChangeMoreThanNameAndCategory)
                     .onChange(of: rhythmKind) { _, newValue in
                         screen.sheetFieldEdited(.rhythm)
