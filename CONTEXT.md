@@ -1582,6 +1582,12 @@ request — the first of the three things `FEAT: restore` (#264) puts there, wit
 one held and naming the store that would not read; a copy it has made leaves nothing on the screen,
 because the screen cannot know whether the share sheet kept it.
 
+**Amended 2026-09-29**, at the grooming pass for B-067. The **copy**, the **copy place**, the
+**take-out**, the **restore** and the **birthday** switch leave this screen for **Settings** when that
+lands, and the commitments screen becomes the roster alone: its two lists and what is done to them.
+What moves is where these are drawn, not what they do. A commitments screen still makes, takes out and
+restores a copy exactly as above; it is only drawn from Settings.
+
 **Refused change** — the change a screen was asked for last and would not make: which change it was,
 the commitment it was asked about where there is one, and why it was refused. A screen keeps at most
 one, because one refusal is one event and the ask a person is waiting on an answer for is the one
@@ -1749,6 +1755,10 @@ are all of it, and they last across the app being closed. No **copy** holds any 
 **restore** replaces none of it, because it says where this phone copies to and not what this phone
 keeps. The **birthday** switch is the second, on the same terms (amended 2026-09-24, #327).
 
+**Amended 2026-09-29**, at the grooming pass for B-067. Once **Settings** lands, the copy place is
+said there, next to when the last copy was made, and nowhere else. The commitments screen no longer
+says it.
+
 **Restore** — putting a **copy** back: the record, the roster and the one-offs the phone holds become
 what the copy holds, whole, and what was there goes — said before it does, and never merged, since a
 merge is sync under another name. It is the answer to a new phone and to a store that cannot be read
@@ -1779,6 +1789,10 @@ record, and names them only where the phone's cannot be read. A **day screen** w
 cannot be read says that a copy can be restored, exactly while it is saying those ticks could not
 be read.
 
+**Amended 2026-09-29**, at the grooming pass for B-067. A restore moves to **Settings** when that
+lands, not the commitments screen, and a **day screen** whose store cannot be read names Settings as
+where. That sentence is the one thing the move changes in what the app says.
+
 **Take-out** — the files of the three places leaving the phone exactly as they lie, bytes and
 names untouched, through the same share sheet a **copy** leaves by. It is offered on the
 **commitments screen** only while a store cannot be read — or was written by a later version of the
@@ -1794,6 +1808,18 @@ that names the store, and nothing finer. Agreed 2026-09-21 at the grill of
 **Amended 2026-09-24**, at the grill of `carry-birthdays-in-a-copy` (#329). The **birthday place**
 is the fourth whose file goes out, and ticks that cannot be read offer the take-out as the other
 three stores do.
+
+**Amended 2026-09-29**, at the grooming pass for B-067. The take-out is offered on **Settings** once
+that lands, still only while a store cannot be read.
+
+**Settings** — the screen where the app keeps its settings: the things it holds for itself and changes
+only when the person does. The **copy place** is the first and the **birthday** switch the second.
+Beside them are the acts that belong with the copy place, making a **copy**, the **take-out** and the
+**restore**, and one line saying which version of the app this is. It is reached from the day screen,
+beside the commitments screen, and from nowhere else. Here the word means this screen: the phone's
+own Settings app is *the phone's Settings*, never plain Settings. Agreed 2026-09-29 at the grooming
+pass for B-067, which moves these off the commitments screen so that screen is the roster alone. How
+the screen is drawn is for that Story's grill.
 
 **Shown** — the moment the app comes in front of a person: opened from nothing, or brought back from
 behind whatever was in front of it. It is the only moment a day screen is handed a **today**, and so
@@ -1947,6 +1973,11 @@ at the prompt, later in Settings, or because Screen Time restricts it — it tur
 turning it on again takes the person's hand after access is given back. Whenever the phone refuses,
 one line says so beside the switch, whoever refused, with a way to Settings; that is the
 **refused line**. The app reads no birthday until the switch is on.
+
+**Amended 2026-09-29**, at the grooming pass for B-067. Once **Settings** lands, the switch and its
+**refused line** are there rather than on the commitments screen. The refused line's "way to
+Settings" means *the phone's Settings*, and now that the line sits inside the app's own Settings it
+has to say which one it means. How it says so is for that Story's grill.
 
 **Birthday store** — the store that keeps **birthday** ticks, each a contact and a day and nothing
 else: no words, no name and not whether birthdays are turned on. It is the fourth store, beside the

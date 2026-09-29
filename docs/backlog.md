@@ -286,39 +286,6 @@ it as a gap rather than saying it unprompted.*
 - **Open** — can it be shown in the Simulator? A delay this short may only be visible on the phone,
   which would make it a `phone:` step.
 
-### B-067 — open Commitments to the roster alone, and the app's settings somewhere of their own
-
-*Captured 2026-09-28, from proposal P6.*
-
-> "move the app's settings, birthdays, the copy place, making and restoring a copy and a version
-> line, off Commitments into a Settings sheet opened from the day screen's toolbar beside
-> Commitments, so Commitments is the roster alone"
-
-- **Trigger** — opening Commitments to change a commitment and scrolling past the Birthdays switch
-  and the whole Copy section to get there, or looking for the copy place under a roster it has
-  nothing to do with. `CONTEXT.md` already calls the copy place "the app's first **setting**" and the
-  birthday switch is its second; both sit under the roster because nothing else existed.
-- **Touches** — `restore`, for one requirement: *A day screen that is not keeping a store says a copy
-  can be restored and where* says the day screen "SHALL name the commitments screen as where", so
-  moving Restore makes that line name Settings and the requirement is MODIFIED. Every other copy
-  requirement is at the `CommitmentsScreen` seam and holds whichever view calls it, and the birthday
-  switch is a type of its own (`birthday`); the rest is `day-screen` shell work — the toolbar and a
-  new sheet. No kit change is expected.
-- **Principle** — tested against *entered where you stand*: **passes.** No daily entry moves; the
-  settings are visited rarely, and a screen of their own takes nothing out of the day screen's row.
-  What changes for the daily visit is only that Commitments gets shorter.
-- **Answered 2026-09-28, by the owner** — **Restore moves with the rest** (Route A in P6), so the
-  one requirement is changed through a Story, rather than leaving *Restore from a copy* and *Take out
-  the files* on Commitments to keep the spec true as a chore.
-- **Open** — the restore grill (ninth pass) settled "told on the commitments screen only" for the
-  copy place; this want reverses where, not what, and `CONTEXT.md` § *Copy place*, § *Birthday* and
-  § *Commitments screen* each need a dated amendment and a new **Settings** term.
-- **Open** — two symbols in one glass capsule, or split by `ToolbarSpacer`; and whether the version
-  line reads the bundle's `CFBundleShortVersionString` and `CFBundleVersion` ("1.0 (1)" today). It
-  has nothing to do with `cli-version`, which is Atlas's own command.
-- **Open** — a restore confirmed from the sheet must still redraw the day screen on dismiss
-  (`returnedTo`), the way a sheet's mutation failed to redraw its presenter on #303.
-
 ### B-068 — land on the day I tapped, even while a swipe is still settling
 *Captured 2026-09-28, from the twenty-first grooming sweep. The wording is the sweep's.*
 
@@ -344,6 +311,14 @@ it as a gap rather than saying it unprompted.*
 One line per entry that has left, newest first. This is the dedup index: `/atlas idea` reads it
 before writing a new entry, so a want that was dropped once is not re-argued from scratch three
 months later.
+
+- 2026-09-29 — open Commitments to the roster alone, and the app's settings somewhere of their own
+  (B-067) → Story #353 `add-settings-screen` under `FEAT: restore` (#264), reopened with
+  `EPIC: Restore` (#263). The copy place, making, taking out and restoring a copy, the birthday switch
+  and a version line move to **Settings**, a screen reached from the day screen beside Commitments and
+  from nowhere else. Restore moves with the rest (P6's Route A), so the one requirement placing any of
+  it, restore's *A day screen that is not keeping a store says a copy can be restored and where*, is
+  changed rather than kept true by leaving Restore behind. `CONTEXT.md` gained **Settings**.
 
 - 2026-09-28 — see the week the shown day lies in, and go to any day of it in one tap (B-065) →
   Stories #346 `add-week-strip` and #347 `page-the-week-strip`, blocked by #346, under
@@ -1369,3 +1344,20 @@ found nothing.
   - **Not re-judged** — B-039, B-041, B-054, and B-061..B-064, captured since the last pass; a
     targeted pass holds one entry. B-061, B-062 and B-064 all change the day screen's paging, which
     #346 also touches, so they queue behind it if they become Stories rather than shell chores.
+- 2026-09-29 — targeted pass over B-067 (`/atlas backlog B-067`), groomed on `chore/backlog`
+  (PR #352) in the session that captured it, `origin/main` at 00dc206.
+  - **Sweep** — one new silence since the B-065 sweep: `docs/open-questions.md`'s *A jump tapped
+    during a swipe's settle lands one day off*, found at #346's G7, said it wanted a Story or chore of
+    its own. The owner confirmed it and it was captured as B-068. #345, #348 and #350 merged since, and
+    the day-one week and the lifecycle verbs turned up nothing new.
+  - **Promoted** — B-067 → #353 under #264, reopened with #263, blocked by nothing. Six questions over
+    two rounds and one fact agent, every answer as recommended: the name is **Settings**, and the
+    phone's own is *the phone's Settings*; the version line rides in the Story; reached from the day
+    screen only; `FEAT: restore` because the Story's one delta is that spec's; one Story, not P6's
+    Route B chore followed by a Story; one term. The fact agent found restore's requirement at
+    `:1318` is the only one that places any of this, and that the birthday refused line's
+    *Open Settings* is in no spec. Presented at G2 without `/to-tickets`, as B-056, B-060 and B-065
+    were. `CONTEXT.md` gained **Settings**; *Commitments screen*, *Copy place*, *Restore*,
+    *Take-out* and *Birthday* were amended.
+  - **Not re-judged** — B-039, B-041, B-054, B-061..B-064, B-066, B-068. #353 and #347 share no
+    spec; both change `ContentView.swift`, in different regions, so a rebase covers it.
