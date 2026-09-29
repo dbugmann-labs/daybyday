@@ -1305,6 +1305,21 @@ slide, as *Today* and the day picker do. Past either end of the calendar, in the
 1583 and the week of 31 December 9999, a day keeps its letter and holds no date. How far the strip
 pages is still `page-the-week-strip`'s (#347).
 
+**Amended 2026-09-28**, at the grill of `page-the-week-strip` (#347), and again at its G7 the same
+day, once the owner had paged it on the phone. **A page moves the day**: the B-065 pass's "without
+moving the shown day" and "a paged week marks no day as shown" are withdrawn, so the strip only ever
+holds the shown day's week and there is no paged state to come back from. A page is a day move like
+the others, left to the week after and right to the week before, and **it keeps the weekday**: a
+Wednesday pages to the Wednesday before or after, the **today** included. Where that weekday is
+earlier than the **reach**, it lands on the reach's earliest day instead, and past the calendar's
+last day on that day; it pages back as far as the week holding the reach's earliest day and forward
+as far as the calendar goes. It is made two ways: a swipe on the strip, which slides the strip under
+the finger, and a **chevron** either side of the strip, which is drawn faded and takes no tap where a page
+would do nothing. While the strip slides, the week coming in marks no day as shown, only the today;
+the rows are replaced where they stand once it lands, and under the day swipe on the rows the strip
+still redraws in place. The chevrons #346 took off the head come back here as the week's, not the
+day's: they page weeks, never step one day.
+
 **Day screen** — the day view a person is actually looking at, together with what it takes to answer
 and to keep an answer: the **record store** it reads a history from and writes a tick back to, the
 **roster store** it reads its commitments from, and the

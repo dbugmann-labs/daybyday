@@ -177,6 +177,36 @@ struct ContentView: View {
     // `width` while a finger is down, and the settle's target while one is not.
     @State private var pageWidth: CGFloat = 0
     @State private var dragTranslation: CGFloat = 0
+    // The week strip's own live drag offset — `weekStrip`'s own counterpart to `dragTranslation`
+    // above, kept apart from it (`tasks.md` § 6.2: "the day swipe... and `settle(to:then:)`'s
+    // rows untouched") since the strip pages independently of the rows beneath it: a strip drag
+    // never slides `pagedDayContent`, and a day swipe never slides the strip.
+    @State private var weekDragTranslation: CGFloat = 0
+    // The first sample's own `translation.width`, reported by `weekSwipeGesture()`'s `DragGesture`
+    // once minimum distance is met — subtracted from every later sample so the strip tracks the
+    // finger from zero instead of jumping by that first sample; `nil` between drags. Reset by
+    // `onChange(of: isDraggingWeekStrip)`, the same as `lockedDragAxis` is below, so a cancelled
+    // drag cannot leave a stale baseline for the next one to subtract.
+    @State private var weekDragStartWidth: CGFloat?
+    // Set for as long as `beginWeekStripSettle(to:then:)`'s own animation is in flight.
+    // `finishWeekStripSettleNow()` is what a chevron tap, a carried release or a new drag starting
+    // calls before acting on its own input, so at most one settle is ever in flight: each finishes
+    // the one running, at once and without animation, and only then decides what to do with the
+    // day that leaves the screen on.
+    @State private var weekStripIsSettling = false
+    // The move the settle currently in flight will make once it lands, run by
+    // `finishWeekStripSettle(generation:)` — reached either through that settle's own animation
+    // completion or through `finishWeekStripSettleNow()` finishing it early.
+    @State private var weekStripSettleMove: (() -> Void)?
+    // Bumped by `finishWeekStripSettleNow()` before it finishes a settle early, and by
+    // `beginWeekStripSettle(to:then:)` when it starts one; `finishWeekStripSettle(generation:)`
+    // acts only where the generation it was handed still matches, so a settle's own animation
+    // completion, reaching it after `finishWeekStripSettleNow()` already has, does nothing.
+    @State private var weekStripSettleGeneration = 0
+    // The week strip's own last measured width — `weekChevronButton(direction:)`'s counterpart to
+    // `pageWidth` above, kept current the same way that is, from the strip's own `GeometryReader`
+    // (`weekStrip`'s `.onAppear`/`.onChange(of:)`).
+    @State private var weekStripWidth: CGFloat = 0
     // Which axis the current drag has committed to, decided once from the first sample
     // `daySwipeGesture` sees and held until the finger lifts — the owner's own words from the
     // phone walk: "once I start swiping, no more scrolling, and once I start scrolling, no more
@@ -196,6 +226,14 @@ struct ContentView: View {
     // cancelled drag can never leave the day lists unable to scroll the way a reset that lived
     // only in `onEnded`'s `defer` would.
     @GestureState private var isDraggingDay = false
+    // `weekSwipeGesture()`'s own counterpart to `isDraggingDay` above, and reset the same way, by
+    // `weekStrip`'s own `onChange(of: isDraggingWeekStrip)`: cancelled, it clears
+    // `weekDragStartWidth` and, where nothing is settling, snaps `weekDragTranslation` back to
+    // zero rather than leaving the strip drawn part-way onto a neighbour until the next drag.
+    // Becoming `true` is read the other way round too — a new drag starting is itself one of the
+    // inputs `finishWeekStripSettleNow()` finishes a running settle for, so the drag begins from a
+    // strip at rest.
+    @GestureState private var isDraggingWeekStrip = false
 
     /// Builds the one `CopyPlace` this view holds before the day screen it hands it to, so the
     /// same instance backs both — `design.md` § *One copy place, handed to both screens*.
@@ -646,7 +684,7 @@ struct ContentView: View {
             .sheet(isPresented: $pickingDay) {
                 dayPickerSheet
             }
-            weekStrip
+            weekStripRowWithChevrons
             switch screen.recordState {
             case .kept:
                 EmptyView()
@@ -752,16 +790,146 @@ struct ContentView: View {
         return screen.offersGoingBackToToday ? words : "Today, \(words)"
     }
 
-    /// The week strip: `screen.weekStrip`'s seven days, one equal-width column each, under the
-    /// date row (`add-week-strip`, #346). Reads `screen.weekStrip` and nothing else, so it redraws
-    /// when the day lands and never during the day swipe — `design.md` § *The shell*. Indexed by
-    /// position rather than by the day itself: two days past either end of the calendar carry the
-    /// same letter and no date, and so compare equal, which `ForEach(id: \.self)` cannot tell
-    /// apart.
+    /// The week strip: three weeks — `screen.previousWeekStrip`, `screen.weekStrip` and
+    /// `screen.nextWeekStrip` — laid out side by side and clipped to the middle one's own width,
+    /// under the date row (`page-the-week-strip`), exactly as `pagedDayContent` lays out the day
+    /// before, the day being shown and the day after (`design.md` § *The shell*). A horizontal
+    /// drag on it tracks the finger (`weekSwipeGesture()`), resisting where the neighbour it would
+    /// reveal is `nil`; past a third of the width it pages (`pageWeekStrip(_:)`) —
+    /// `pagedDayContent`'s own rows never slide for it, and the day swipe never slides this.
+    /// `.highPriorityGesture` — rather than the day swipe's own
+    /// `.simultaneousGesture` — is what takes the touch from an offered cell's `Button` before a
+    /// swipe can also tap the day it began on: unlike the day rows, these cells sit in a plain
+    /// `HStack` with no `List` of their own underneath to cancel the touch for it.
+    ///
+    /// The invisible copy of the current week gives this view the size its own content wants —
+    /// both its width and, critically, its height, which a bare `GeometryReader` has none of its
+    /// own and so expands to fill whatever `dayControls`' own `VStack` offers it. `.background`
+    /// rather than a `ZStack` layer of the two, since a `.background` is sized to the view it sits
+    /// behind and cannot grow it the way a `ZStack`'s own union-of-children sizing would.
     private var weekStrip: some View {
+        weekStripRow(screen.weekStrip)
+            .hidden()
+            .allowsHitTesting(false)
+            .overlay {
+                // A plain, childless hit region the walk's UI test swipes —
+                // `docs/running-the-app.md` § *The walk*: sized to this view by `.overlay`, so
+                // its frame is exactly the row's own bounds, which the `.background` below draws
+                // the real, visible strip at. `.allowsHitTesting(false)` lets the touch XCUITest
+                // injects at this element's frame fall through to the real gesture beneath.
+                Color.clear
+                    .allowsHitTesting(false)
+                    .accessibilityIdentifier("WeekStrip")
+            }
+            .background {
+                GeometryReader { proxy in
+                    let width = proxy.size.width
+                    HStack(spacing: 0) {
+                        // `isInteractive: false`: a neighbour's own offered cells must never take
+                        // a tap (`design.md` § *The shell*, "The neighbour weeks MUST take none").
+                        weekStripRow(screen.previousWeekStrip ?? [], isInteractive: false)
+                            .frame(width: width)
+                        weekStripRow(screen.weekStrip)
+                            .frame(width: width)
+                        weekStripRow(screen.nextWeekStrip ?? [], isInteractive: false)
+                            .frame(width: width)
+                    }
+                    .offset(x: -width + weekDragTranslation)
+                    // The `.frame(width:)` here resolves the offset, three-week-wide `HStack` back
+                    // down to one strip's own width before `.clipped()` acts on it, so both
+                    // neighbours slide in from the strip's own edges rather than past them
+                    // (`design.md` § *The shell*: "clipped to the strip's own width").
+                    .frame(width: width, alignment: .leading)
+                    .clipped()
+                    // `weekStripWidth` is `weekChevronButton(direction:)`'s own counterpart to
+                    // `pagedDayContent`'s `pageWidth`, kept current the same way that is.
+                    .onAppear { weekStripWidth = width }
+                    .onChange(of: width) { _, newWidth in weekStripWidth = newWidth }
+                }
+                // `.clipped()` bounds what is drawn, not what the gesture below answers to — the
+                // `HStack` inside is three weeks wide before it; `.contentShape` bounds the gesture
+                // itself to this one-week frame.
+                .contentShape(Rectangle())
+                .highPriorityGesture(weekSwipeGesture())
+            }
+            // The cancellation half of the reset described on `isDraggingWeekStrip` above, the
+            // same pattern `pagedDayContent`'s own `onChange(of: isDraggingDay)` follows: a drag
+            // that never reaches `onEnded` — an incoming call, the app backgrounded mid-drag —
+            // still resets here once SwiftUI resets `isDraggingWeekStrip` for it. Becoming `true`
+            // finishes a settle already running at once, so this drag starts from a strip at rest.
+            .onChange(of: isDraggingWeekStrip) { _, dragging in
+                if dragging {
+                    finishWeekStripSettleNow()
+                } else {
+                    weekDragStartWidth = nil
+                    if !weekStripIsSettling {
+                        weekDragTranslation = 0
+                    }
+                }
+            }
+    }
+
+    /// The strip flanked by the two chevrons `grill.md` 16 brought back, in its own row: `‹` and
+    /// `›`, fixed either side while the three weeks slide between them (`design.md` § *What the
+    /// shell draws*) — the layout the owner chose over the designer's recommended pair on the date
+    /// row (`grill.md` § *Layout*, "a ‹ on the left screen edge"). Narrower than the row it sits in
+    /// only because the chevrons take some of that row's width; nothing else here sizes the strip
+    /// on purpose. `spacing: 4` rather than the day-list's own gaps, and the chevron's own narrower
+    /// frame (`weekChevronButton(direction:)`), give the strip back the width the owner asked for.
+    private var weekStripRowWithChevrons: some View {
         HStack(spacing: 4) {
-            ForEach(Array(screen.weekStrip.enumerated()), id: \.offset) { _, day in
-                weekStripDay(day)
+            weekChevronButton(direction: .before)
+            weekStrip
+            weekChevronButton(direction: .after)
+        }
+    }
+
+    /// Which way a week chevron pages — `weekChevronButton(direction:)`'s own parameter, private
+    /// to this file: the Kit states no rule about a chevron at all (ADR-1019), so this exists only
+    /// to share that function's body between the two.
+    private enum WeekChevronDirection {
+        case before
+        case after
+    }
+
+    /// A chevron beside the week strip, `grill.md` 16: a tap pages the week exactly as a carried
+    /// swipe does, `grill.md` 17 — `pageWeekStrip(_:)`. Faded and disabled where its own neighbour
+    /// strip is `nil` — the same `screen.previousWeekStrip`/`nextWeekStrip` a swipe resists on and
+    /// `pageWeekStrip(_:)` itself re-reads, so the two can never disagree about where a page has
+    /// nowhere to go.
+    private func weekChevronButton(direction: WeekChevronDirection) -> some View {
+        let offered =
+            direction == .before ? screen.previousWeekStrip != nil : screen.nextWeekStrip != nil
+        return Button {
+            pageWeekStrip(direction)
+        } label: {
+            // The glyph's own intrinsic size is under 13×17pt; `.frame` widens the tappable area
+            // without widening what is drawn, narrower than the HIG's own 44pt minimum at the
+            // owner's own request so the strip keeps more of the row, and `.contentShape` makes
+            // that whole frame the target rather than only the glyph inside it.
+            Image(systemName: direction == .before ? "chevron.left" : "chevron.right")
+                .frame(width: 32, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderless)
+        .disabled(!offered)
+        .opacity(offered ? 1 : 0.5)
+        .accessibilityLabel(direction == .before ? "Week before" : "Week after")
+    }
+
+    /// One week's seven days, one equal-width column each — the row `weekStrip` lays out three
+    /// of, side by side. Reads only what it is handed, so a neighbour drawn from
+    /// `screen.previousWeekStrip`/`nextWeekStrip` redraws only when the page it previews does.
+    /// Indexed by position rather than by the day itself: two days past either end of the
+    /// calendar carry the same letter and no date, and so compare equal, which
+    /// `ForEach(id: \.self)` cannot tell apart. `isInteractive` is `false` for a neighbour week,
+    /// whose own offered cells must draw exactly as the shown week's do but take no tap.
+    private func weekStripRow(_ days: [DayScreen.WeekStripDay], isInteractive: Bool = true)
+        -> some View
+    {
+        HStack(spacing: 4) {
+            ForEach(Array(days.enumerated()), id: \.offset) { _, day in
+                weekStripDay(day, isInteractive: isInteractive)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -783,7 +951,11 @@ struct ContentView: View {
     /// one and its bare letter where it does not, so VoiceOver says one thing rather than the
     /// letter and the number as two — an offered day through the `Button`'s own label, a shown or
     /// faded day through `.accessibilityElement(children: .ignore)`.
-    private func weekStripDay(_ day: DayScreen.WeekStripDay) -> some View {
+    ///
+    /// `isInteractive` gates the `Button` on top of `day.isOffered`, so a neighbour week's own
+    /// offered days draw exactly as the shown week's do but take no tap at all (`design.md` § *The
+    /// shell*: "Only the chevrons and the shown week's offered cells take a tap").
+    private func weekStripDay(_ day: DayScreen.WeekStripDay, isInteractive: Bool) -> some View {
         let textColor: Color =
             if day.isShown {
                 Color(.systemBackground)
@@ -812,7 +984,7 @@ struct ContentView: View {
         let accessibilityLabel = day.date.map(fullDateInWords) ?? day.letter
 
         return Group {
-            if day.isOffered, let date = day.date {
+            if isInteractive, day.isOffered, let date = day.date {
                 Button {
                     commitFocusedOneOffField(forDeparture: true)
                     // `showDay(_:)` reassigns `dayView` even where `date` is already the day
@@ -1766,5 +1938,144 @@ struct ContentView: View {
             }
             move?()
         }
+    }
+
+    /// A horizontal drag on the week strip pages it to the week before or the week after —
+    /// `design.md` § *The shell*: left reveals the week after, right the week before, resisting
+    /// where that neighbour is `nil` (`screen.previousWeekStrip`/`nextWeekStrip`). Past a third of
+    /// the strip's own width a released drag carries: `pageWeekStrip(_:)`. A mostly vertical drag
+    /// does nothing, checked fresh on every sample rather than locked once: unlike
+    /// `daySwipeGesture`, nothing beneath this view scrolls, so there is no competing gesture for
+    /// an axis lock to arbitrate. `minimumDistance` mirrors `daySwipeGesture`'s own 40pt, which
+    /// keeps a plain tap on a cell from ever reaching this gesture's closures at all.
+    ///
+    /// `onChanged` tracks the finger from its first sample with no jump at recognition
+    /// (`design.md` § *The shell*) by subtracting `weekDragStartWidth` — that first sample's own
+    /// `translation.width`, whatever it is — from every later one, rather than a fixed 40pt, since
+    /// a diagonal first sample can carry less than 40pt of `width` on its own; `weekDragTranslation`
+    /// and the neighbour a drag resists on both read that adjusted value's own sign throughout, not
+    /// the raw sample's, so the two can never disagree as the finger crosses back over its own
+    /// start. Reads `weekStripWidth` rather than taking a `pageWidth` parameter, since this gesture
+    /// is attached to the `GeometryReader` that measures it directly. `.updating($isDraggingWeekStrip)`
+    /// is `pagedDayContent`'s own `isDraggingDay` pattern, for the same reason: a cancelled drag
+    /// reaches neither `onChanged` again nor `onEnded` at all, and only a `@GestureState` reset is
+    /// told of it.
+    private func weekSwipeGesture() -> some Gesture {
+        DragGesture(minimumDistance: 40)
+            .updating($isDraggingWeekStrip) { _, isDraggingWeekStrip, _ in
+                isDraggingWeekStrip = true
+            }
+            .onChanged { value in
+                if weekDragStartWidth == nil {
+                    weekDragStartWidth = value.translation.width
+                }
+                guard abs(value.translation.width) > abs(value.translation.height) else {
+                    return
+                }
+                let adjusted = value.translation.width - (weekDragStartWidth ?? 0)
+                if adjusted < 0 {
+                    weekDragTranslation = screen.nextWeekStrip == nil ? 0 : adjusted
+                } else {
+                    weekDragTranslation = screen.previousWeekStrip == nil ? 0 : adjusted
+                }
+            }
+            .onEnded { value in
+                defer { weekDragStartWidth = nil }
+                guard abs(value.translation.width) > abs(value.translation.height) else {
+                    beginWeekStripSettle(to: 0, then: nil)
+                    return
+                }
+
+                let adjusted = value.translation.width - (weekDragStartWidth ?? 0)
+                guard abs(adjusted) > weekStripWidth / 3 else {
+                    beginWeekStripSettle(to: 0, then: nil)
+                    return
+                }
+                pageWeekStrip(adjusted < 0 ? .after : .before)
+            }
+    }
+
+    /// Finishes any settle already running (`finishWeekStripSettleNow()`) and then pages
+    /// `direction` if the week it goes to is still offered once that settle has landed — commits a
+    /// focused one-off field for departure and slides the strip a full width
+    /// (`beginWeekStripSettle(to:then:)`), calling `screen.showPreviousWeek()`/`showNextWeek()`
+    /// only once that settle finishes, so the page never lands mid-slide. Reading
+    /// `previousWeekStrip`/`nextWeekStrip` after finishing rather than before is what keeps a
+    /// chevron tap or a carried release from ever starting a page the day the settle just landed
+    /// on has already refused.
+    private func pageWeekStrip(_ direction: WeekChevronDirection) {
+        finishWeekStripSettleNow()
+        switch direction {
+        case .before:
+            guard screen.previousWeekStrip != nil else {
+                return
+            }
+            commitFocusedOneOffField(forDeparture: true)
+            beginWeekStripSettle(to: weekStripWidth) { screen.showPreviousWeek() }
+        case .after:
+            guard screen.nextWeekStrip != nil else {
+                return
+            }
+            commitFocusedOneOffField(forDeparture: true)
+            beginWeekStripSettle(to: -weekStripWidth) { screen.showNextWeek() }
+        }
+    }
+
+    /// Slides `weekDragTranslation` to `target` and, once that finishes, runs `move` — `settle(to:
+    /// then:)`'s own structure, kept separate so that function's own rows stay untouched (`tasks.md`
+    /// § 6.2). Finishes any settle already running first (`finishWeekStripSettleNow()`), so at most
+    /// one is ever in flight.
+    private func beginWeekStripSettle(to target: CGFloat, then move: (() -> Void)?) {
+        finishWeekStripSettleNow()
+        weekStripIsSettling = true
+        weekStripSettleMove = move
+        weekStripSettleGeneration += 1
+        let generation = weekStripSettleGeneration
+
+        // Nothing to animate — already at `target`, as a resisted release or a mostly vertical
+        // drag both leave `weekDragTranslation` — so `finishWeekStripSettle(generation:)` runs
+        // straight away rather than through a `withAnimation` whose value never actually changes.
+        guard !reduceMotion, target != weekDragTranslation else {
+            finishWeekStripSettle(generation: generation)
+            return
+        }
+
+        withAnimation(.easeOut, completionCriteria: .logicallyComplete) {
+            weekDragTranslation = target
+        } completion: {
+            finishWeekStripSettle(generation: generation)
+        }
+    }
+
+    /// Finishes a settle already in flight at once, without animation, so a chevron tap, a carried
+    /// release or a drag beginning while the strip is still sliding acts on the day that settle
+    /// leaves it showing rather than the one it started on. A no-op where nothing is settling.
+    private func finishWeekStripSettleNow() {
+        guard weekStripIsSettling else {
+            return
+        }
+        weekStripSettleGeneration += 1
+        finishWeekStripSettle(generation: weekStripSettleGeneration)
+    }
+
+    /// Runs the move the settle `generation` names, ticks only where that move actually changed
+    /// the day being shown, and clears `weekStripIsSettling` — reached either by
+    /// `beginWeekStripSettle(to:then:)`'s own animation completion or by
+    /// `finishWeekStripSettleNow()` finishing that settle early. Acts only where `generation`
+    /// still matches, so whichever of the two reaches a given settle second does nothing.
+    private func finishWeekStripSettle(generation: Int) {
+        guard weekStripIsSettling, generation == weekStripSettleGeneration else {
+            return
+        }
+        weekDragTranslation = 0
+        if let move = weekStripSettleMove {
+            let before = screen.dayPickerReach.opensOn
+            move()
+            if screen.dayPickerReach.opensOn != before {
+                daysTurned += 1
+            }
+        }
+        weekStripSettleMove = nil
+        weekStripIsSettling = false
     }
 }
