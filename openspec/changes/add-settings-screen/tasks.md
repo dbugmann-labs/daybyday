@@ -19,7 +19,7 @@ red, a Kit signature that has to move, a word on a moved line that has to change
 ## 3. The shell (ADR-1019: no rule the Kit does not state)
 
 - [ ] 3.1 `SettingsView` draws what `design.md` § *The shell* and § *What the shell draws* say, every section, sheet and picker moved from `CommitmentsView` with its words unchanged but "Open iPhone Settings", and the switch in `.tint(.accentColor)`
-- [ ] 3.2 `CommitmentsView` draws its two lists, what is done to them and "Some records belong to no commitment.", nothing of copies or birthdays, and no longer takes the birthday switch
+- [ ] 3.2 `CommitmentsView` draws its two lists, what is done to them, the roster-state lines ("The roster could not be read or could not be written.", "The roster was written by a newer version of DayByDay and must not be deleted.") and "Some records belong to no commitment.", nothing of copies or birthdays, and no longer takes the birthday switch
 - [ ] 3.3 `ContentView`'s toolbar carries `list.bullet` labelled "Commitments" and `gearshape` labelled "Settings" in one trailing group; the Settings sheet builds its own `CommitmentsScreen`, calls `birthdaySwitch.shown()` on opening, `returnedTo(from:)` on every dismissal and `shown(asOf:)` when the app is shown again, as § *Settings builds a Kit screen of its own* says
 - [ ] 3.4 The day screen's restore line reads "A copy can be restored from Settings", and `saysACopyCanBeRestored`'s doc comment names Settings as where
 - [ ] 3.5 `git diff --stat origin/main... -- src/DayByDayKit/` lists `DayScreen.swift` alone, its doc comment the only change, and no test file
