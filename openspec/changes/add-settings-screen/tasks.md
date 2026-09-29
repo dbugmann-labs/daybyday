@@ -35,7 +35,7 @@ red, a Kit signature that has to move, a word on a moved line that has to change
 - [x] 5.1 `openspec validate add-settings-screen --strict` exits 0, and `pnpm run checks` is clean
 - [x] 5.2 `pnpm run verify` green, and `swift test` from `src/DayByDayKit` passing with the same count a run on `origin/main` reports, both read off runs
 - [x] 5.3 **G7** — the reviewer's findings answered, and the PR rebased onto current `main`
-- [ ] 5.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.7 to W.9 by the conductor on the G7 approval — and the walk comment's URL is in W.10. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/restore/spec.md` changed in this one requirement's three sentences and nowhere else, and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
+- [x] 5.4 **The implementer ticks this box in its last commit before the archive**, on the evidence that every other box is ticked — W.7 to W.9 by the conductor on the G7 approval — and the walk comment's URL is in W.10. The janitor then runs `/opsx:archive` itself, never a hand-applied version of the sync it prints, and checks afterwards that `openspec/specs/restore/spec.md` changed in this one requirement's three sentences and nowhere else, and that no other spec file moved. **Any drift is a stop and a report, never a hand-edit.**
 
 ## The walk
 
