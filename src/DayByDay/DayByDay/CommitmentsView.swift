@@ -653,7 +653,7 @@ struct CommitmentsView: View {
                         } label: {
                             Image(systemName: "play.circle")
                         }
-                        .tint(.green)
+                        .tint(.accentColor)
                         .accessibilityLabel("Resume")
                         Button(role: .destructive) {
                             screen.askToDelete(commitment)
