@@ -1,0 +1,25 @@
+{
+  "fill": {
+    "linear-gradient": [
+      "extended-srgb:0.29020,0.37255,0.49412,1.00000",
+      "extended-srgb:0.13725,0.18431,0.25882,1.00000"
+    ]
+  },
+  "groups": [
+    {
+      "name": "Days",
+      "layers": [
+        { "name": "Back leaf",   "image-name": "back.svg",   "glass": false, "opacity": 0.28,
+          "fill": { "solid": "extended-srgb:1.00000,1.00000,1.00000,1.00000" } },
+        { "name": "Middle leaf", "image-name": "middle.svg", "glass": false, "opacity": 0.55,
+          "fill": { "solid": "extended-srgb:1.00000,1.00000,1.00000,1.00000" } },
+        { "name": "Front leaf",  "image-name": "front.svg",  "glass": true,
+          "fill": { "solid": "extended-srgb:1.00000,1.00000,1.00000,1.00000" } }
+      ],
+      "shadow": { "kind": "neutral", "opacity": 0.35 },
+      "specular": true,
+      "translucency": { "enabled": true, "value": 0.3 }
+    }
+  ],
+  "supported-platforms": { "squares": [ "iOS" ] }
+}
