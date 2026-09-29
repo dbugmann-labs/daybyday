@@ -11,6 +11,31 @@ private enum RhythmKind: String, CaseIterable, Identifiable, Hashable {
     case weeklyQuota = "Times a week"
 
     var id: String { rawValue }
+
+    /// The word a segment draws: four of them share one row, so the longer names shorten. What
+    /// the segment selects is still the case.
+    var segmentName: String {
+        switch self {
+        case .weekdays: "Weekdays"
+        case .dayOfMonth: "Monthly"
+        case .everyNDays: "Every N"
+        case .weeklyQuota: "Per week"
+        }
+    }
+}
+
+/// Segments where the text has room, the menu today's sheet draws where it does not: at an
+/// accessibility text size four words no longer fit one row. A drawing rule only.
+private struct SegmentedUnlessLarge: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    func body(content: Content) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            content.pickerStyle(.menu)
+        } else {
+            content.pickerStyle(.segmented)
+        }
+    }
 }
 
 private let allWeekdays: [Weekday] = [
@@ -563,6 +588,11 @@ private struct CommitmentSheet: View {
     @State private var highest: String
     @State private var target: String
     @State private var restartDate: Date
+    /// Whether a person has changed anything since the sheet opened. Set only by the `onChange`
+    /// handlers below, which do not fire on the initial population, so an untouched sheet is
+    /// never "edited". It guards a stray swipe and makes *Cancel* ask.
+    @State private var isEdited = false
+    @State private var confirmingDiscard = false
     @Environment(\.dismiss) private var dismiss
 
     /// `commitment` is `nil` to define a new commitment, and the one to change otherwise. Every
@@ -673,7 +703,7 @@ private struct CommitmentSheet: View {
             Form {
                 Section {
                     TextField("Name", text: $name)
-                        .onChange(of: name) { _, _ in screen.sheetFieldEdited(.name) }
+                        .onChange(of: name) { _, _ in isEdited = true; screen.sheetFieldEdited(.name) }
 
                     if let nameRefusal = sheetRefusal(under: .name) {
                         refusalText(nameRefusal)
@@ -684,21 +714,28 @@ private struct CommitmentSheet: View {
                             Text(kindChoiceName(kind)).tag(kind)
                         }
                     }
+                    .modifier(SegmentedUnlessLarge())
                     .disabled(changing != nil)
+                    .onChange(of: kindChoice) { _, _ in isEdited = true }
 
-                    // Plain `TextField`s bound to `String`: no formatter, no `keyboardType` that
-                    // forbids a minus or a separator, and nothing that blocks a character — this
-                    // screen says "that is not a number" out loud rather than the shell silently
-                    // refusing the keystroke. `design.md` § *One reading of a typed number*.
+                    // Plain `TextField`s bound to `String`: no formatter, and nothing that blocks a
+                    // legal character — this screen says "that is not a number" out loud rather
+                    // than the shell silently refusing the keystroke. `design.md` § *One reading
+                    // of a typed number*. The keyboard is `.numbersAndPunctuation` and not
+                    // `.decimalPad` because a range end may be negative and the decimal pad has
+                    // no minus; this one has digits, minus, dot and comma, so no legal character
+                    // is out of reach and the refusal stays reachable for what is typed anyway.
                     switch kindChoice {
                     case .tick, .note:
                         EmptyView()
                     case .number:
                         HStack {
                             TextField("Lowest", text: $lowest)
-                                .onChange(of: lowest) { _, _ in screen.sheetFieldEdited(.range) }
+                                .keyboardType(.numbersAndPunctuation)
+                                .onChange(of: lowest) { _, _ in isEdited = true; screen.sheetFieldEdited(.range) }
                             TextField("Highest", text: $highest)
-                                .onChange(of: highest) { _, _ in screen.sheetFieldEdited(.range) }
+                                .keyboardType(.numbersAndPunctuation)
+                                .onChange(of: highest) { _, _ in isEdited = true; screen.sheetFieldEdited(.range) }
                         }
                         .disabled(!canChangeMoreThanNameAndCategory)
                         // `TextField`, unlike `Picker`/`Toggle`/`Stepper`/`DatePicker` above and
@@ -712,7 +749,8 @@ private struct CommitmentSheet: View {
                         }
                     case .total:
                         TextField("Target", text: $target)
-                            .onChange(of: target) { _, _ in screen.sheetFieldEdited(.target) }
+                            .keyboardType(.numbersAndPunctuation)
+                            .onChange(of: target) { _, _ in isEdited = true; screen.sheetFieldEdited(.target) }
                             .disabled(!canChangeMoreThanNameAndCategory)
                             .foregroundStyle(canChangeMoreThanNameAndCategory ? Color.primary : Color.secondary)
 
@@ -727,16 +765,19 @@ private struct CommitmentSheet: View {
                     // the text field; only where it sits and how its label reads changed.
                     if enteringNewCategory {
                         TextField("New category", text: $category)
+                            .onChange(of: category) { _, _ in isEdited = true }
                     } else {
                         Menu {
                             ForEach(screen.categoriesInUse, id: \.self) { existing in
                                 Button(existing) {
                                     category = existing
+                                    isEdited = true
                                 }
                             }
                             Button("New…") {
                                 category = ""
                                 enteringNewCategory = true
+                                isEdited = true
                             }
                         } label: {
                             HStack {
@@ -764,11 +805,13 @@ private struct CommitmentSheet: View {
                 Section {
                     Picker("Rhythm", selection: $rhythmKind) {
                         ForEach(RhythmKind.allCases) { kind in
-                            Text(kind.rawValue).tag(kind)
+                            Text(kind.segmentName).tag(kind)
                         }
                     }
+                    .modifier(SegmentedUnlessLarge())
                     .disabled(!canChangeMoreThanNameAndCategory)
                     .onChange(of: rhythmKind) { _, newValue in
+                        isEdited = true
                         screen.sheetFieldEdited(.rhythm)
                         // A rhythm switched onto weekdays with nothing behind its chips starts
                         // from every weekday offered — `design.md` § *The weekdays offered are
@@ -802,7 +845,7 @@ private struct CommitmentSheet: View {
                         }
                         .controlSize(.small)
                         .disabled(!canChangeMoreThanNameAndCategory)
-                        .onChange(of: selectedWeekdays) { _, _ in screen.sheetFieldEdited(.rhythm) }
+                        .onChange(of: selectedWeekdays) { _, _ in isEdited = true; screen.sheetFieldEdited(.rhythm) }
                     case .dayOfMonth:
                         Picker("Day", selection: $dayOfMonth) {
                             ForEach(1...31, id: \.self) { day in
@@ -812,7 +855,7 @@ private struct CommitmentSheet: View {
                         .pickerStyle(.wheel)
                         .frame(height: 150)
                         .disabled(!canChangeMoreThanNameAndCategory)
-                        .onChange(of: dayOfMonth) { _, _ in screen.sheetFieldEdited(.rhythm) }
+                        .onChange(of: dayOfMonth) { _, _ in isEdited = true; screen.sheetFieldEdited(.rhythm) }
                     case .everyNDays:
                         LabeledContent("Every") {
                             HStack {
@@ -821,6 +864,7 @@ private struct CommitmentSheet: View {
                                     .multilineTextAlignment(.trailing)
                                     .frame(width: 44)
                                     .onChange(of: intervalDays) { _, _ in
+                                        isEdited = true
                                         screen.sheetFieldEdited(.rhythm)
                                     }
                                 Text("day(s)")
@@ -830,7 +874,7 @@ private struct CommitmentSheet: View {
                     case .weeklyQuota:
                         Stepper("\(timesPerWeek) time(s) a week", value: $timesPerWeek, in: 1...7)
                             .disabled(!canChangeMoreThanNameAndCategory)
-                            .onChange(of: timesPerWeek) { _, _ in screen.sheetFieldEdited(.rhythm) }
+                            .onChange(of: timesPerWeek) { _, _ in isEdited = true; screen.sheetFieldEdited(.rhythm) }
                     }
 
                     if let rhythmRefusal = sheetRefusal(under: .rhythm) {
@@ -839,7 +883,7 @@ private struct CommitmentSheet: View {
 
                     DatePicker("Kept from", selection: $keptFromDate, displayedComponents: [.date])
                         .disabled(!canChangeMoreThanNameAndCategory)
-                        .onChange(of: keptFromDate) { _, _ in screen.sheetFieldEdited(.keptFrom) }
+                        .onChange(of: keptFromDate) { _, _ in isEdited = true; screen.sheetFieldEdited(.keptFrom) }
 
                     if let keptFromRefusal = sheetRefusal(under: .keptFrom) {
                         refusalText(keptFromRefusal)
@@ -875,14 +919,23 @@ private struct CommitmentSheet: View {
                             restart(commitment)
                         }
                     }
-                    .onChange(of: restartDate) { _, _ in screen.sheetFieldEdited(.restartDay) }
+                    .onChange(of: restartDate) { _, _ in isEdited = true; screen.sheetFieldEdited(.restartDay) }
                 }
             }
+            .interactiveDismissDisabled(isEdited)
             .navigationTitle(changing == nil ? "Define a commitment" : "Change \(changing!.name)")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        dismiss()
+                        if isEdited {
+                            confirmingDiscard = true
+                        } else {
+                            dismiss()
+                        }
+                    }
+                    .confirmationDialog("Discard changes?", isPresented: $confirmingDiscard) {
+                        Button("Discard", role: .destructive) { dismiss() }
+                        Button("Keep editing", role: .cancel) {}
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
